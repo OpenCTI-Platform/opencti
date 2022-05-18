@@ -117,10 +117,6 @@ const styles = (theme) => ({
   icon: {
     marginRight: '10px',
   },
-  item: {
-    paddingLeft: 10,
-    // textTransform: 'uppercase',
-  },
   sortField: {
     float: 'left',
   },
@@ -129,6 +125,19 @@ const styles = (theme) => ({
     fontSize: 14,
     float: 'left',
     color: theme.palette.header.text,
+  },
+  listItem: {
+    paddingLeft: 10,
+    paddingTop: 0,
+  },
+  listScrollItem: {
+    width: '83.5%',
+    top: '64px',
+    zIndex: 999,
+    position: 'fixed',
+    backgroundColor: theme.palette.header.background,
+    padding: '10px 0 10px 10px',
+
   },
   sortArrowButton: {
     float: 'left',
@@ -153,7 +162,7 @@ const styles = (theme) => ({
     cursor: 'pointer',
   },
   filters: {
-    padding: '0 0 9px 0',
+    padding: '0 0 9px 12px',
     '@media (max-width: 1250px)': {
       marginTop: '20px',
     },
@@ -174,8 +183,27 @@ const styles = (theme) => ({
 });
 
 class CyioListLines extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      scrollValue: 0,
+    };
+  }
+
   reverseBy(field) {
     this.props.handleSort(field, !this.props.orderAsc);
+  }
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  handleScroll(event) {
+    this.setState({ scrollValue: window.pageYOffset });
   }
 
   sortBy(event) {
@@ -194,12 +222,12 @@ class CyioListLines extends Component {
       const orderComponent = orderAsc ? (
         <ArrowDropDown
           classes={{ root: classes.sortIcon }}
-          style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
+          // style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
         />
       ) : (
         <ArrowDropUp
           classes={{ root: classes.sortIcon }}
-          style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
+          // style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
         />
       );
       return (
@@ -462,14 +490,15 @@ class CyioListLines extends Component {
                     </Button>
                   </Tooltip>
                   {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
-                    <Tooltip title={t('Share')}>
+                    <Tooltip title={t('Merge')}>
                       <Button
                         variant="contained"
                         // onClick={handleDisplayEdit &&
                         // handleDisplayEdit.bind(this, selectedElements)}
                         className={classes.iconButton}
-                        disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
-                          || disabled}
+                        // disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                        //   || disabled}
+                        disabled={true}
                         color="primary"
                         size="large"
                       >
@@ -538,9 +567,10 @@ class CyioListLines extends Component {
           >
             {!noHeaders ? (
               <ListItem
-                classes={{ root: classes.item }}
                 divider={true}
-                style={{ paddingTop: 0 }}
+                className={this.state.scrollValue > 130
+                  ? classes.listScrollItem
+                  : classes.listItem}
               >
                 <ListItemIcon
                   style={{

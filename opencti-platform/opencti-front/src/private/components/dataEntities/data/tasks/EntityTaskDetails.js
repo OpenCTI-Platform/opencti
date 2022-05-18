@@ -9,15 +9,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { Grid, Switch, Tooltip } from '@material-ui/core';
-import Chip from '@material-ui/core/Chip';
-import Link from '@material-ui/core/Link';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Launch from '@material-ui/icons/Launch';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, Information } from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
 const styles = (theme) => ({
@@ -78,7 +72,7 @@ class EntityTaskDetailsComponent extends Component {
       classes,
       refreshQuery,
       task,
-      fd,
+      fldt,
       history,
     } = this.props;
     return (
@@ -98,7 +92,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {task.name}
+                {task.name && t(task.name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -119,7 +113,6 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Associated Activities')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Activity Name')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -130,7 +123,6 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Resource Type')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Screen Shot')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -141,7 +133,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Related Tasks')}
                 </Typography>
                 <div className="clearfix" />
-                {task.related_tasks.name}
+                {task.related_tasks.name && t(task.related_tasks.name)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -154,7 +146,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {task.id}
+                {task.id && (task.id)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -165,7 +157,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('End Date')}
                 </Typography>
                 <div className="clearfix" />
-                {task.modified}
+                {task.modified && fldt(task.modified)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -176,7 +168,6 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Dependencies')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Dependency Name')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -187,7 +178,6 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Responsible Parties')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Responsible Party 1')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -198,7 +188,6 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Resource Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Screenshot Name')}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -213,7 +202,14 @@ class EntityTaskDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {task.description}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {task.description && t(task.description)}
+
+                    </Markdown>
                   </div>
                 </div>
               </div>
@@ -238,9 +234,11 @@ class EntityTaskDetailsComponent extends Component {
                 {t('Markings')}
               </Typography>
               <div className="clearfix" />
-              <p className={classes.markingText}>
-                {t('IEP: WHITE')}
-              </p>
+              {task?.markings && (
+                <p className={classes.markingText}>
+                  {t(task?.markings)}
+                </p>
+              )}
             </Grid>
           </Grid>
         </Paper>
@@ -254,7 +252,7 @@ EntityTaskDetailsComponent.propTypes = {
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
-  fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const EntityTaskDetails = createFragmentContainer(

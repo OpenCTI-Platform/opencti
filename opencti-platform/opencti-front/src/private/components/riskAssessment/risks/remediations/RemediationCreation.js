@@ -1,111 +1,96 @@
 /* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import * as Yup from 'yup';
 import * as R from 'ramda';
+import * as Yup from 'yup';
 import { compose } from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles/index';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
-import {
-  Add,
-  Edit,
-  Close,
-  Delete,
-  ArrowBack,
-  AddCircleOutline,
-  CheckCircleOutline,
-} from '@material-ui/icons';
+import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
+import NoteAddIcon from '@material-ui/icons/NoteAdd';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import IconButton from '@material-ui/core/IconButton';
+import { Information } from 'mdi-material-ui';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
-import Slide from '@material-ui/core/Slide';
 import Dialog from '@material-ui/core/Dialog';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import Button from '@material-ui/core/Button';
-import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
-import { dayStartDate, parse } from '../../../../../utils/Time';
-import {toastGenericError} from "../../../../../utils/bakedToast";
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Slide from '@material-ui/core/Slide';
+import AddIcon from '@material-ui/icons/Add';
+import { MoreVertOutlined } from '@material-ui/icons';
 import {
-  commitMutation,
-  QueryRenderer,
-} from '../../../../../relay/environment';
+  QueryRenderer as QR,
+  commitMutation as CM,
+  createFragmentContainer,
+} from 'react-relay';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
-import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
-import RemediationCreationGeneral from './RemediationCreationGeneral';
-import RelatedTasks from './RelatedTasks';
-import RequiredResources from './RequiredResources';
-import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioCoreObjectLatestHistory';
-import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioCoreObjectAssetCreationExternalReferences from '../../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
-import Loader from '../../../../../components/Loader';
-import RemediationCreationDetails from './RemediationCreationDetails';
-// import RemediationCreationDetails from './RemediationCreationDetails';
+import { commitMutation } from '../../../../../relay/environment';
+import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { dateFormat, parse } from '../../../../../utils/Time';
+import { adaptFieldValue } from '../../../../../utils/String';
+import SelectField from '../../../../../components/SelectField';
+import TextField from '../../../../../components/TextField';
+import DatePickerField from '../../../../../components/DatePickerField';
+import MarkDownField from '../../../../../components/MarkDownField';
+import ResponseType from '../../../common/form/ResponseType';
+import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
+import Source from '../../../common/form/Source';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
-    marginBottom: 0,
-  },
-  header: {
-    margin: '-25px -24px 20px -24px',
-    padding: '23px 24px 24px 24px',
-    height: '64px',
-    backgroundColor: theme.palette.background.paper,
-  },
-  buttonPopover: {
-    textTransform: 'capitalize',
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  iconButton: {
-    float: 'left',
-    minWidth: '0px',
-    marginRight: 15,
-    padding: '8px 16px 8px 8px',
-  },
-  dialogActions: {
-    justifyContent: 'flex-start',
-    padding: '10px 0 20px 22px',
-  },
-  title: {
-    float: 'left',
-    textTransform: 'capitalize',
-  },
-  rightContainer: {
-    float: 'right',
-    marginTop: '-10px',
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
+    margin: 0,
   },
   drawerPaper: {
-    minHeight: '100vh',
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
+    backgroundColor: theme.palette.background.paper,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
   },
+  menuItem: {
+    padding: '15px 0',
+    width: '152px',
+    margin: '0 20px',
+    justifyContent: 'center',
+  },
+  dialogTitle: {
+    padding: '24px 0 16px 24px',
+  },
+  dialogContent: {
+    padding: '0 24px',
+    marginBottom: '24px',
+    overflow: 'hidden',
+  },
+  dialogClosebutton: {
+    float: 'left',
+    marginLeft: '15px',
+    marginBottom: '20px',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
+  popoverDialog: {
+    fontSize: '18px',
+    lineHeight: '24px',
+    color: theme.palette.header.text,
+  },
 });
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction='up' ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const remediationCreationMutation = graphql`
   mutation RemediationCreationMutation($input: RiskResponseAddInput) {
@@ -117,31 +102,50 @@ const remediationCreationMutation = graphql`
 
 const remediationValidation = (t) =>
   Yup.object().shape({
-     name: Yup.string().required(t('This field is required')),
-     actor_type: Yup.string().required(t('This field is required')),
-     actor_ref: Yup.string().required(t('This field is required')),
-     response_type: Yup.string().required(t('This field is required')),
-     lifecycle: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t('This field is required')),
+    actor_type: Yup.string().required(t('This field is required')),
+    actor_ref: Yup.string().required(t('This field is required')),
+    response_type: Yup.string().required(t('This field is required')),
+    lifecycle: Yup.string().required(t('This field is required')),
   });
-  
+
 class RemediationCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false,
+      anchorEl: null,
+      details: false,
+      close: false,
       onSubmit: false,
+      open: false,
     };
   }
 
+  handleOpen(event) {
+    this.setState({ anchorEl: event.currentTarget });
+    event.stopPropagation();
+  }
 
-  handleOpen() {
-    this.setState({ open: true });
+  handleClose() {
+    this.setState({ anchorEl: null });
+    this.props.handleOpenCreation();
+  }
+
+  handleSubmit() {
+    this.setState({ onSumbit: true });
+  }
+
+  onReset() {
+    this.handleClose();
+  }
+
+  handleCancelCloseClick() {
+    this.setState({ close: false });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-      
-    const adaptedValues = R.pickAll(['actor_ref','actor_type'], values)
-   
+    const adaptedValues = R.pickAll(['actor_ref', 'actor_type'], values);
+
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
@@ -150,9 +154,9 @@ class RemediationCreation extends Component {
       R.dissoc('actor_type'),
       R.dissoc('oscal_type'),
       R.dissoc('oscal_party'),
-      R.assoc('origins', [{'origin_actors':[adaptedValues]}])
+      R.assoc('origins', [{ origin_actors: [adaptedValues] }])
     )(values);
-console.log('Final', finalValues)
+
     CM(environmentDarkLight, {
       mutation: remediationCreationMutation,
       variables: {
@@ -163,220 +167,355 @@ console.log('Final', finalValues)
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/activities/risk assessment/risks/' + this.props.riskId.id);
+        this.props.history.push(
+          `/activities/risk assessment/risks/${this.props.riskId}/remediation`
+        );
       },
-      onError: (err) => {
-        toastGenericError("Failed to create Remediation")
-      }
+      onError: (err) => toastGenericError('Failed to create Remediation'),
     });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  handleSubmit() {
     this.setState({ onSubmit: true });
   }
 
-  onReset() {
-    this.handleClose();
-  }
-
-
   render() {
-    const { t, classes, remediationId, open, history, riskId } = this.props;
-    const risk_id = this.props.riskId;
+    const {
+      classes,
+      t,
+      disabled,
+      risk,
+      remediationId,
+      history,
+      riskId,
+      handleOpenCreation,
+    } = this.props;
     return (
-      <div className={classes.container}>
-        <Formik
-          initialValues={{
-            risk_id: riskId.id,
-            response_type: '',
-            lifecycle: '',
-            name: '',
-            description: '',
-            created: null,
-            modified: null,
-            actor_type: '',
-            actor_ref: '',
-          }}
-          validationSchema={remediationValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.onReset.bind(this)}
+      <>
+        <Dialog
+          open={this.props.openCreation}
+          keepMounted={true}
+          onClose={this.handleClose.bind(this)}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <>
-              <div className={classes.header}>
-                <Typography
-                  variant='h1'
-                  color='secondary'
-                  gutterBottom={true}
-                  classes={{ root: classes.title }}
-                >
-                  {t('New Remediation')}
-                </Typography>
-                <div className={classes.rightContainer}>
-                  <Tooltip title={t('Cancel')}>
-                    <Button
-                      variant='outlined'
-                      size='small'
-                      startIcon={<Close />}
-                      color='primary'
-                      // onClick={() => history.goBack()}
-                      onClick={this.handleOpen.bind(this)}
-                      className={classes.iconButton}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                  </Tooltip>
-                  <Tooltip title={t('Create')}>
-                    <Button
-                      variant='contained'
-                      color='primary'
-                      startIcon={<CheckCircleOutline />}
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.iconButton }}
-                    >
-                      {t('Done')}
-                    </Button>
-                  </Tooltip>
-                  <Dialog
-                    open={this.state.open}
-                    keepMounted={true}
-                    TransitionComponent={Transition}
-                    onClose={this.handleClose.bind(this)}
-                  >
-                    <DialogContent>
-                      <Typography className={classes.popoverDialog}>
-                        {t('Are you sure you’d like to cancel?')}
-                      </Typography>
-                      <DialogContentText>
-                        {t('Your progress will not be saved')}
-                      </DialogContentText>
-                    </DialogContent>
-                    <DialogActions className={classes.dialogActions}>
-                      <Button
-                        onClick={this.handleClose.bind(this)}
-                        // disabled={this.state.deleting}
-                        classes={{ root: classes.buttonPopover }}
-                        variant='outlined'
-                        size='small'
-                      >
-                        {t('Go Back')}
-                      </Button>
-                      <Button
-                        color='secondary'
-                        // disabled={this.state.deleting}
-                        onClick={() => history.goBack()}
-                        classes={{ root: classes.buttonPopover }}
-                        variant='contained'
-                        size='small'
-                      >
-                        {t('Yes, Cancel')}
-                      </Button>
-                    </DialogActions>
-                  </Dialog>
-                </div>
-              </div>
+          <Formik
+            enableReinitialize={true}
+            initialValues={{
+              risk_id: riskId,
+              response_type: '',
+              lifecycle: '',
+              name: '',
+              description: '',
+              created: null,
+              modified: null,
+              actor_type: '',
+              actor_ref: '',
+            }}
+            validationSchema={remediationValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
+          >
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
               <Form>
-                <Grid
-                  container={true}
-                  spacing={3}
-                  classes={{ container: classes.gridContainer }}
-                >
-                  <Grid item={true} xs={12}>
-                    <RemediationCreationGeneral
-                      setFieldValue={setFieldValue}
-                      values={values}
-                      remediationId={remediationId}
-                    />
+                <DialogTitle classes={{ root: classes.dialogTitle }}>
+                  {t('New Remediation')}
+                </DialogTitle>
+                <DialogContent classes={{ root: classes.dialogContent }}>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Name')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Name')}>
+                            <Information fontSize='inherit' color='disabled' />
+                          </Tooltip>
+                        </div>
+                        <div className='clearfix' />
+                        <Field
+                          component={TextField}
+                          name='name'
+                          fullWidth={true}
+                          size='small'
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                        />
+                      </div>
+                    </Grid>
                   </Grid>
-                  {/* <Grid item={true} xs={6}>
-                    <RemediationCreationDetails
-                      setFieldValue={setFieldValue}
-                      values={values}
-                    />
-                  </Grid> */}
-                </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '12px' }}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Created')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Created')}>
+                            <Information fontSize='inherit' color='disabled' />
+                          </Tooltip>
+                        </div>
+                        <div className='clearfix' />
+                        <Field
+                          component={DatePickerField}
+                          name='created'
+                          fullWidth={true}
+                          size='small'
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)'
+                          )}
+                          style={{ height: '38.09px' }}
+                        />
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Last Modified')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Last Modified')}>
+                            <Information fontSize='inherit' color='disabled' />
+                          </Tooltip>
+                        </div>
+                        <div className='clearfix' />
+                        <Field
+                          component={DatePickerField}
+                          name='modified'
+                          fullWidth={true}
+                          size='small'
+                          variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)'
+                          )}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid xs={12} item={true}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                        <Tooltip title={t('Description')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                      <div className='clearfix' />
+                      <Field
+                        component={TextField}
+                        name='description'
+                        fullWidth={true}
+                        multiline={true}
+                        rows='4'
+                        variant='outlined'
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid
+                      style={{ marginTop: '10px', marginBottom: '20px' }}
+                      item={true}
+                      xs={6}
+                    >
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Source')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                        <Tooltip title={t('Source')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                      <div className='clearfix' />
+                      <Source
+                        variant='outlined'
+                        values={values}
+                        setFieldValue={setFieldValue}
+                        size='small'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '50%', padding: '0 0 12px 0' }}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid style={{ marginBottom: '15px' }} item={true} xs={6}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Response Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                        <Tooltip title={t('Response type')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                      <div className='clearfix' />
+                      <ResponseType
+                        variant='outlined'
+                        name='response_type'
+                        size='small'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Lifecycle')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                        <Tooltip title={t('Lifecycle')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                      <div className='clearfix' />
+                      <RiskLifeCyclePhase
+                        variant='outlined'
+                        name='lifecycle'
+                        size='small'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                      />
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+                <DialogActions classes={{ root: classes.dialogClosebutton }}>
+                  <Button
+                    variant='outlined'
+                    // onClick={handleReset}
+                    onClick={() => {
+                      this.props.handleOpenCreation();
+                      this.setState({ close: true });
+                      {
+                        handleReset;
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Submit')}
+                  </Button>
+                </DialogActions>
               </Form>
-              <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-                style={{ marginTop: 25 }}
-              >
-                <Grid
-                  style={{ pointerEvents: 'none', opacity: '0.4' }}
-                  item={true}
-                  xs={6}
-                >
-                  {/* <StixCoreObjectExternalReferences
-                      stixCoreObjectId={remediation.id}
-                    /> */}
-                  {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
-                  <RequiredResources remediationId={remediationId} />
-                </Grid>
-                <Grid
-                  style={{ pointerEvents: 'none', opacity: '0.4' }}
-                  item={true}
-                  xs={6}
-                >
-                  {/* <CyioCoreObjectLatestHistory /> */}
-                  <RelatedTasks remediationId={remediationId} />
-                </Grid>
-              </Grid>
-              <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-                style={{ marginTop: 50 }}
-              >
-                <Grid
-                  style={{ pointerEvents: 'none', opacity: '0.4' }}
-                  item={true}
-                  xs={6}
-                >
-                  <CyioCoreObjectAssetCreationExternalReferences />
-                  {/* <CyioCoreObjectExternalReferences
-                    cyioCoreObjectId={remediationId}
-                  /> */}
-                </Grid>
-                <Grid
-                  style={{ pointerEvents: 'none', opacity: '0.4' }}
-                  item={true}
-                  xs={6}
-                >
-                  <CyioCoreObjectOrCyioCoreRelationshipNotes
-                    cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
-                    marginTop='0px'
-                  />
-                </Grid>
-              </Grid>
-            </>
-          )}
-        </Formik>
-      </div>
+            )}
+          </Formik>
+        </Dialog>
+        <Dialog
+          open={this.state.close}
+          keepMounted={true}
+          // TransitionComponent={Transition}
+          onClose={this.handleCancelCloseClick.bind(this)}
+        >
+          <DialogContent>
+            <Typography className={classes.popoverDialog}>
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <Typography align='left'>
+              {t('Your progress will not be saved')}
+            </Typography>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              // onClick={this.handleCloseDelete.bind(this)}
+              // disabled={this.state.deleting}
+              // onClick={handleReset}
+              onClick={this.handleCancelCloseClick.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant='outlined'
+              size='small'
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() =>
+                history.push(
+                  `/activities/risk assessment/risks/${this.props.riskId}/remediation`
+                )
+              }
+              color='secondary'
+              // disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
+              variant='contained'
+              size='small'
+            >
+              {t('Yes, Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
     );
   }
 }
 
 RemediationCreation.propTypes = {
-  remediationId: PropTypes.string,
-  riskId: PropTypes.string,
+  cyioCoreRelationshipId: PropTypes.string,
+  handleDisplayEdit: PropTypes.func,
+  displayEdit: PropTypes.bool,
+  history: PropTypes.object,
+  disabled: PropTypes.bool,
+  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
+  onDelete: PropTypes.func,
+  connectionKey: PropTypes.string,
+  enableReferences: PropTypes.bool,
+  risk: PropTypes.object,
+  riskId: PropTypes.string,
+  remediation: PropTypes.object,
+  remediationId: PropTypes.string,
+  openCreation: PropTypes.bool,
+  handleOpenCreation: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true })
-)(RemediationCreation);
+export default compose(inject18n, withStyles(styles))(RemediationCreation);

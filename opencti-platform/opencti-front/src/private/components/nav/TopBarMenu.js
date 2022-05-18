@@ -47,7 +47,11 @@ import TopMenuVSAC from './TopMenuVSAC';
 import TopMenuAssets from './TopMenuAssets';
 import TopMenuDataEntities from './TopMenuDataEntities';
 import TopMenuDataRolesEntities from './TopMenuDataRolesEntities';
+import TopMenuDataAssessmentPlatformsEntities from './TopMenuDataAssessmentPlatformsEntities';
+// import TopMenuDataResponsiblePartiesEntities from './TopMenuDataResponsiblePartiesEntities';
+import TopMenuDataPartiesEntities from './TopMenuDataPartiesEntities';
 import TopMenuDataTasksEntities from './TopMenuDataTasksEntities';
+import TopMenuDataLocationsEntities from './TopMenuDataLocationsEntities';
 import TopMenuRiskAssessment from './TopMenuRiskAssessment';
 import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuDevice from './TopMenuDevice';
@@ -246,16 +250,28 @@ const TopBarMenu = ({
               <TopMenuAssets />
             )}
           {(location.pathname === '/data/entities'
-          || location.pathname === '/data/data source') && (
+            || location.pathname === '/data/data source') && (
               <TopMenuDataEntities />
             )}
           {(location.pathname === '/data/entities/roles'
-          || location.pathname === '/data/data source/roles') && (
+            || location.pathname === '/data/data source/roles') && (
               <TopMenuDataRolesEntities />
             )}
+          {(location.pathname === '/data/entities/assessment_platform'
+            || location.pathname === '/data/data source/assessment_platform') && (
+              <TopMenuDataAssessmentPlatformsEntities />
+            )}
+          {(location.pathname === '/data/entities/parties'
+          || location.pathname === '/data/data source/parties') && (
+              <TopMenuDataPartiesEntities />
+          )}
           {(location.pathname === '/data/entities/tasks'
-          || location.pathname === '/data/data source/tasks') && (
+            || location.pathname === '/data/data source/tasks') && (
               <TopMenuDataTasksEntities />
+            )}
+          {(location.pathname === '/data/entities/locations'
+          || location.pathname === '/data/data source/locations') && (
+              <TopMenuDataLocationsEntities />
             )}
           {location.pathname.includes('/defender HQ/assets/devices/') && (
             <TopMenuDevice />

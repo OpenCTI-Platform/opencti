@@ -220,7 +220,6 @@ class SoftwareCardComponent extends Component {
                   {t('Version')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                   {node.version && t(node.version)}
                 </Typography>
                 <div className="clearfix" />
@@ -233,7 +232,6 @@ class SoftwareCardComponent extends Component {
                   {t('CPE ID')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                   {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
                 </Typography>
               </Grid>
@@ -257,7 +255,6 @@ class SoftwareCardComponent extends Component {
                   {t('Patch Level')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                   {node.patch_level && t(node.patch_level)}
                 </Typography>
                 <div className="clearfix" />
@@ -270,7 +267,6 @@ class SoftwareCardComponent extends Component {
                   {t('SWID')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                   {node.software_identifier && t(node.software_identifier)}
                 </Typography>
               </Grid>

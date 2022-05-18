@@ -64,7 +64,7 @@ const styles = (theme) => ({
 class CyioDomainObjectAssetOverview extends Component {
   render() {
     const {
-      t, fldt, classes, cyioDomainObject, withoutMarking, withPattern, refreshQuery,
+      fd, t, fldt, classes, cyioDomainObject, withoutMarking, withPattern, refreshQuery,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     // const otherCyioIds = cyioDomainObject?.x_opencti_cyio_ids || [];
@@ -90,7 +90,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   {t('ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip title={t('ID')}>
+                  <Tooltip title={t('Uniquely identifies this object')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -107,7 +107,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   {t('Asset ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Asset ID')}>
+                  <Tooltip title={t('Identifies the identifier defined by the standard')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -127,7 +127,7 @@ class CyioDomainObjectAssetOverview extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
                   <Tooltip
-                    title={t('Asset Type')}
+                    title={t('Identifies the type of the Object')}
                   >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
@@ -295,7 +295,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject?.release_date && fldt(cyioDomainObject.release_date)}
+                {cyioDomainObject?.release_date && fd(cyioDomainObject.release_date)}
               </div>
               <div>
                 <Typography
@@ -328,6 +328,7 @@ CyioDomainObjectAssetOverview.propTypes = {
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
   fldt: PropTypes.func,
+  fd: PropTypes.func,
   withoutMarking: PropTypes.bool,
 };
 

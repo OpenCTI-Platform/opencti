@@ -40,6 +40,9 @@ import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
 
 const styles = (theme) => ({
+  dialogMain: {
+    overflow: 'hidden',
+  },
   dialogClosebutton: {
     float: 'left',
     marginLeft: '15px',
@@ -56,6 +59,7 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflow: 'hidden',
+    height: '650px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -208,6 +212,7 @@ class EntitiesTasksCreation extends Component {
         <Dialog
           open={openDataCreation}
           keepMounted={true}
+          className={classes.dialogMain}
           onClose={() => handleTaskCreation()}
         >
           <Formik
