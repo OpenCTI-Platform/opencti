@@ -37,7 +37,7 @@ import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/SelectField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { insertNode } from '../../../../../utils/Store';
-import { parse } from '../../../../../utils/Time';
+import { dateFormat, parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import TaskType from '../../../common/form/TaskType';
@@ -212,7 +212,6 @@ class RelatedTaskCreation extends Component {
       });
     }
     if (values.start_date) {
-      console.log("Valuesxx", values)
       this.setState({
         timing: {
           within_date_range: {
@@ -598,8 +597,7 @@ class RelatedTaskCreation extends Component {
                             'The value must be a date (YYYY-MM-DD)',
                           )}
                           style={{ height: '38.09px' }}
-                          onChange={(_, date) => this.setState({ startDate: date })}
-                          value={this.state.startDate}
+                          onChange={(_, date) => this.setState({ startDate: dateFormat(date,"YYYY-MM-DD") })}
                         />
                       </div>
                     </Grid>
@@ -631,8 +629,7 @@ class RelatedTaskCreation extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                           minDate={this.state.startDate}
-                          value={this.state.endDate}
-                          onChange={(_, date) => this.setState({ endDate: date })}
+                          onChange={(_, date) => this.setState({ endDate: dateFormat(date,"YYYY-MM-DD") })}
                         />
                       </div>
                     </Grid>
