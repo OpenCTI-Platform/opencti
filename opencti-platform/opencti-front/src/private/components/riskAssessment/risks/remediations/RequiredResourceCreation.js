@@ -385,6 +385,7 @@ class RequiredResourceCreation extends Component {
           color='inherit'
           aria-label='Add'
           edge='end'
+          style={{ marginTop: '-15px' }}
           onClick={this.handleOpen.bind(this)}
         >
           <Add fontSize='small' />

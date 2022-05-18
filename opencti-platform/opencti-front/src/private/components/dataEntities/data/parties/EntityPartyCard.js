@@ -132,6 +132,7 @@ class EntityPartyCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
+
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -225,7 +226,7 @@ class EntityPartyCardComponent extends Component {
                   {t('Author')}
                 </Typography>
                 <Typography>
-                  {t('')}
+                  {t(node?.name)}
                 </Typography>
               </Grid>
             </Grid>

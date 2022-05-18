@@ -21,6 +21,7 @@ import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
 // import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 import RemediationDetailsPopover from './RemediationDetailsPopover';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -196,33 +197,13 @@ class RemediationPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          {/* <MenuItem
-            className={classes.menuItem}
-            divider={true}
-            onClick={this.handleOpenEdit.bind(this)}
-          >
-            {t('Update')}
-          </MenuItem> */}
           <MenuItem
             className={classes.menuItem}
             onClick={this.handleDisplayEdit.bind(this)}
           >
             {t('Edit Remediation')}
           </MenuItem>
-          {/* <MenuItem
-            className={classes.menuItem}
-            divider={true}
-            onClick={this.handleOpenDelete.bind(this)}
-          >
-            {t('Delete')}
-          </MenuItem> */}
         </Menu>
-        {/* <StixCoreRelationshipEdition
-          variant="noGraph"
-          cyioCoreRelationshipId={cyioCoreRelationshipId}
-          open={this.state.displayUpdate}
-          handleClose={this.handleCloseUpdate.bind(this)}
-        /> */}
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
@@ -259,26 +240,33 @@ class RemediationPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <QR
-          environment={QueryRendererDarkLight}
-          query={remediationPopoverQuery}
-          variables={{ id: cyioCoreRelationshipId }}
-          render={({ error, props, retry }) => {
-            if (props) {
-              return (
-                <RemediationDetailsPopover
-                  cyioCoreRelationshipId={cyioCoreRelationshipId}
-                  displayEdit={this.state.displayEdit}
-                  history={history}
-                  handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-                  remediation={props.riskResponse}
-                  riskId={riskId}
-                />
-              );
-            }
-            return <></>;
-          }}
-        />
+        {this.state.displayEdit && (
+          <QR
+            environment={QueryRendererDarkLight}
+            query={remediationPopoverQuery}
+            variables={{ id: cyioCoreRelationshipId }}
+            render={({ error, props, retry }) => {
+              if (error) {
+                console.error(error);
+                toastGenericError('Request Failed');
+              }
+              if (props) {
+                return (
+                  <RemediationDetailsPopover
+                    cyioCoreRelationshipId={cyioCoreRelationshipId}
+                    displayEdit={this.state.displayEdit}
+                    history={history}
+                    handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+                    remediation={props.riskResponse}
+                    riskId={riskId}
+                  />
+                );
+              }
+              return <></>;
+            }}
+          />
+        )
+        }
       </div>
     );
   }
