@@ -51,6 +51,24 @@ class TopMenuData extends Component {
           </Button>
           <Button
             component={Link}
+            to="/dashboard/data/relationships"
+            variant={
+              location.pathname === '/dashboard/data/relationships'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/data/relationships'
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Relationships')}
+          </Button>
+          <Button
+            component={Link}
             to="/dashboard/data/tasks"
             variant={
               location.pathname === '/dashboard/data/tasks'
@@ -126,26 +144,6 @@ class TopMenuData extends Component {
             classes={{ root: classes.button }}
           >
             {t('Data sharing')}
-          </Button>
-        </Security>
-        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-          <Button
-            component={Link}
-            to="/dashboard/data/taxii"
-            variant={
-              location.pathname === '/dashboard/data/taxii'
-                ? 'contained'
-                : 'text'
-            }
-            size="small"
-            color={
-              location.pathname === '/dashboard/data/taxii'
-                ? 'secondary'
-                : 'primary'
-            }
-            classes={{ root: classes.button }}
-          >
-            {t('TAXII collections')}
           </Button>
         </Security>
       </div>

@@ -39,7 +39,7 @@ export const adaptFiltersFrontendFormat = (filters) => {
 };
 
 export const convertFiltersToQueryOptions = (filters, opts = {}) => {
-  const { after, before, defaultTypes = [], field = 'updated_at' } = opts;
+  const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const queryFilters = [];
   const types = [...defaultTypes];
   if (filters) {
@@ -61,5 +61,5 @@ export const convertFiltersToQueryOptions = (filters, opts = {}) => {
   if (before) {
     queryFilters.push({ key: field, values: [before], operator: 'lte' });
   }
-  return { types, orderMode: 'asc', orderBy: [field, 'internal_id'], filters: queryFilters };
+  return { types, orderMode, orderBy: [field, 'internal_id'], filters: queryFilters };
 };

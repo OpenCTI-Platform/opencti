@@ -375,7 +375,7 @@ const FeedCreation = (props) => {
             initialValues={{
               name: '',
               separator: ';',
-              rolling_time: 3600,
+              rolling_time: 60,
               include_header: true,
               feed_types: [],
             }}

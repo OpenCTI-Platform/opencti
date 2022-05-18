@@ -49,6 +49,16 @@ class SharingMenu extends Component {
           >
             <ListItemText primary={t('Feeds (CSV)')} />
           </MenuItem>
+          <MenuItem
+            component={Link}
+            to={'/dashboard/data/sharing/taxii'}
+            selected={location.pathname.includes(
+              '/dashboard/data/sharing/taxii',
+            )}
+            dense={false}
+          >
+            <ListItemText primary={t('TAXII collections')} />
+          </MenuItem>
         </MenuList>
       </Drawer>
     );

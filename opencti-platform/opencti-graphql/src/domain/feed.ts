@@ -18,16 +18,15 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
     if (!isStixCyberObservable(feedType) && !isStixDomainObject(feedType)) {
       throw UnsupportedError(`${feedType} is not supported in http feeds`);
     }
-  }
-  // Check that attributes are mapped correctly
-  for (let index = 0; index < input.feed_types.length; index += 1) {
-    const mappingTypes = input.feed_attributes.map((a) => a.mappings).flat().map((m) => m.type);
-    if (mappingTypes.length !== input.feed_types.length) {
-      throw UnsupportedError('Feed is not mapped correctly');
-    }
-    mappingTypes.forEach((a) => {
-      if (!input.feed_types.includes(a)) {
-        throw UnsupportedError(`${a} cannot be used in mapping without global definition`);
+    input.feed_attributes.forEach((f) => {
+      if (f.mappings.length !== input.feed_types.length) {
+        throw UnsupportedError('Feed mappings length does not match global types length');
+      }
+      if (!f.mappings.map((m) => m.type).includes(feedType)) {
+        throw UnsupportedError(`The mapping of the type ${feedType} is missing in the attribute ${f.attribute}.`);
+      }
+      if (f.mappings.filter((m) => !input.feed_types.includes(m.type)).length > 0) {
+        throw UnsupportedError(`The attribute ${f.attribute} contains an invalid mapping.`);
       }
     });
   }

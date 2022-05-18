@@ -47,9 +47,9 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       const feed = await findFeed(user, id);
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
-      const extraOptions = { defaultTypes: feed.feed_types, field: 'created_at', after: fromDate };
+      const extraOptions = { defaultTypes: feed.feed_types, field: 'created_at', orderMode: 'desc', after: fromDate };
       const options = convertFiltersToQueryOptions(filters, extraOptions);
-      const args = { connectionFormat: false, ...options };
+      const args = { connectionFormat: false, first: 5000, ...options };
       const elements = await listThings(user, feed.feed_types, args);
       if (feed.include_header) {
         res.write(`${feed.feed_attributes.map((a) => a.attribute).join(',')}\r\n`);

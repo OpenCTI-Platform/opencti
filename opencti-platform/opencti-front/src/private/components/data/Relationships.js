@@ -2,28 +2,19 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import ToolBar from './ToolBar';
-import RelationshipsStixDomainObjectsLines, {
-  relationshipsStixDomainObjectsLinesQuery,
-} from './relationships/RelationshipsStixDomainObjectsLines';
+import RelationshipsStixCoreRelationshipsLines, {
+  relationshipsStixCoreRelationshipsLinesQuery,
+} from './relationships/RelationshipsStixCoreRelationshipsLines';
 import inject18n from '../../../components/i18n';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
-import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
 import { isUniqFilter } from '../common/lists/Filters';
 import { UserContext } from '../../../utils/Security';
-
-const styles = () => ({
-  container: {
-    paddingRight: 250,
-  },
-});
 
 class Relationships extends Component {
   constructor(props) {
@@ -31,7 +22,7 @@ class Relationships extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-stix-domain-objects',
+      'view-stix-core-relationships',
     );
     this.state = {
       sortBy: R.propOr('created_at', 'sortBy', params),
@@ -39,11 +30,7 @@ class Relationships extends Component {
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
-      types: R.propOr([], 'types', params),
       numberOfElements: { number: 0, symbol: '' },
-      selectedElements: null,
-      deSelectedElements: null,
-      selectAll: false,
       openExports: false,
     };
   }
@@ -52,7 +39,7 @@ class Relationships extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-stix-domain-objects',
+      'view-stix-core-relationships',
       this.state,
     );
   }
@@ -71,36 +58,6 @@ class Relationships extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
-  }
-
-  handleClearSelectedElements() {
-    this.setState({
-      selectAll: false,
-      selectedElements: null,
-      deSelectedElements: null,
-    });
-  }
-
-  handleToggle(type) {
-    if (this.state.types.includes(type)) {
-      this.setState(
-        {
-          types: R.filter((t) => t !== type, this.state.types),
-        },
-        () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        {
-          types: R.append(type, this.state.types),
-        },
-        () => this.saveView(),
-      );
-    }
-  }
-
-  handleClear() {
-    this.setState({ types: [] }, () => this.saveView());
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -142,76 +99,43 @@ class Relationships extends Component {
     this.setState({ numberOfElements });
   }
 
-  handleToggleSelectEntity(entity) {
-    const { selectedElements, deSelectedElements, selectAll } = this.state;
-    if (entity.id in (selectedElements || {})) {
-      const newSelectedElements = R.omit([entity.id], selectedElements);
-      this.setState({
-        selectAll: false,
-        selectedElements: newSelectedElements,
-      });
-    } else if (selectAll && entity.id in (deSelectedElements || {})) {
-      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
-      this.setState({
-        deSelectedElements: newDeSelectedElements,
-      });
-    } else if (selectAll) {
-      const newDeSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        deSelectedElements || {},
-      );
-      this.setState({
-        deSelectedElements: newDeSelectedElements,
-      });
-    } else {
-      const newSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        selectedElements || {},
-      );
-      this.setState({
-        selectAll: false,
-        selectedElements: newSelectedElements,
-      });
-    }
-  }
-
-  handleToggleSelectAll() {
-    this.setState({
-      selectAll: !this.state.selectAll,
-      selectedElements: null,
-      deSelectedElements: null,
-    });
-  }
-
   // eslint-disable-next-line class-methods-use-this
   buildColumns(helper) {
     const isRuntimeSort = helper.isRuntimeFieldEnable();
     return {
-      entity_type: {
-        label: 'Type',
+      fromType: {
+        label: 'From type',
+        width: '10%',
+        isSortable: false,
+      },
+      fromName: {
+        label: 'From name',
+        width: '15%',
+        isSortable: false,
+      },
+      relationship_type: {
+        label: 'Relationship type',
         width: '10%',
         isSortable: true,
       },
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: true,
+      toType: {
+        label: 'To type',
+        width: '10%',
+        isSortable: false,
       },
-      createdBy: {
-        label: 'Author',
+      toName: {
+        label: 'To name',
         width: '15%',
-        isSortable: isRuntimeSort,
+        isSortable: false,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       created_at: {
         label: 'Creation date',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       objectMarking: {
@@ -228,18 +152,8 @@ class Relationships extends Component {
       searchTerm,
       filters,
       numberOfElements,
-      selectedElements,
-      deSelectedElements,
-      selectAll,
-      types,
       openExports,
     } = this.state;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original
-        - Object.keys(deSelectedElements || {}).length;
-    }
-    const entityTypes = R.map((n) => ({ id: n, value: n }), types);
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -253,18 +167,14 @@ class Relationships extends Component {
               handleAddFilter={this.handleAddFilter.bind(this)}
               handleRemoveFilter={this.handleRemoveFilter.bind(this)}
               handleChangeView={this.handleChangeView.bind(this)}
-              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               handleToggleExports={this.handleToggleExports.bind(this)}
               openExports={openExports}
-              exportEntityType="Stix-Domain-Object"
-              selectAll={selectAll}
+              exportEntityType="stix_core_relationship"
               disableCards={true}
               keyword={searchTerm}
               filters={filters}
-              noPadding={true}
               paginationOptions={paginationOptions}
               numberOfElements={numberOfElements}
-              iconExtension={true}
               availableFilterKeys={[
                 'labelledBy',
                 'markedBy',
@@ -274,49 +184,20 @@ class Relationships extends Component {
               ]}
             >
               <QueryRenderer
-                query={relationshipsStixDomainObjectsLinesQuery}
+                query={relationshipsStixCoreRelationshipsLinesQuery}
                 variables={{ count: 25, ...paginationOptions }}
                 render={({ props }) => (
-                  <RelationshipsStixDomainObjectsLines
+                  <RelationshipsStixCoreRelationshipsLines
                     data={props}
                     paginationOptions={paginationOptions}
                     dataColumns={this.buildColumns(helper)}
                     initialLoading={props === null}
                     onLabelClick={this.handleAddFilter.bind(this)}
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                    selectAll={selectAll}
                     setNumberOfElements={this.setNumberOfElements.bind(this)}
                   />
                 )}
               />
             </ListLines>
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              filters={
-                entityTypes.length > 0
-                  ? R.assoc('entity_type', entityTypes, filters)
-                  : R.assoc(
-                    'entity_type',
-                    [
-                      {
-                        id: 'Stix-Domain-Object',
-                        value: 'Stix-Domain-Object',
-                      },
-                    ],
-                    filters,
-                  )
-              }
-              search={searchTerm}
-              handleClearSelectedElements={this.handleClearSelectedElements.bind(
-                this,
-              )}
-              withPaddingRight={true}
-            />
           </div>
         )}
       </UserContext.Consumer>
@@ -324,25 +205,16 @@ class Relationships extends Component {
   }
 
   render() {
-    const { classes } = this.props;
-    const { view, types, sortBy, orderAsc, searchTerm, filters } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
-      types: types.length > 0 ? types : null,
       search: searchTerm,
       filters: finalFilters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div className={classes.container}>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixDomainObjectsRightBar
-          types={types}
-          handleToggle={this.handleToggle.bind(this)}
-          handleClear={this.handleClear.bind(this)}
-        />
-      </div>
+      <div>{view === 'lines' ? this.renderLines(paginationOptions) : ''}</div>
     );
   }
 }
@@ -354,4 +226,4 @@ Relationships.propTypes = {
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter, withStyles(styles))(Relationships);
+export default R.compose(inject18n, withRouter)(Relationships);

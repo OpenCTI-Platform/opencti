@@ -702,11 +702,11 @@ class DashboardComponent extends Component {
                 xxs: 1200,
               }}
               cols={{
-                lg: 18,
-                md: 18,
-                sm: 18,
-                xs: 18,
-                xxs: 18,
+                lg: 20,
+                md: 20,
+                sm: 20,
+                xs: 20,
+                xxs: 20,
               }}
               isDraggable={false}
               isResizable={false}
