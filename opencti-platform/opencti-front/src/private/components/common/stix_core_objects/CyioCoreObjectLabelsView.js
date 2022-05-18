@@ -257,55 +257,55 @@ const CyioCoreObjectLabelsView = (props) => {
           >
             <Add fontSize="small" />
           </IconButton>
+          <div className="clearfix" />
+          {labels ? (
+            <div className={classes.objectLabel}>
+              {map(
+                (label) => (
+                  <Chip
+                    key={label.id}
+                    variant="outlined"
+                    classes={{ root: classes.label }}
+                    label={label.name}
+                    style={{
+                      color: label.color,
+                      borderColor: label.color,
+                      backgroundColor: hexToRGB(label.color),
+                    }}
+                    onDelete={() => handleRemoveLabel(label.id, label.__typename)}
+                    deleteIcon={
+                      <CancelOutlined
+                        className={classes.deleteIcon}
+                        style={{
+                          color: label.color,
+                        }}
+                      />
+                    }
+                  />
+                ),
+                labelsNodes,
+              )}
+            </div>
+          ) : (
+            <Field
+              component={SelectField}
+              variant='outlined'
+              size='small'
+              name="labels"
+              fullWidth={true}
+              containerstyle={{ width: '50%' }}
+            >
+              <MenuItem key="activist" value="activist">
+                {t('activist')}
+              </MenuItem>
+              <MenuItem key="competitor" value="competitor">
+                {t('competitor')}
+              </MenuItem>
+            </Field>
+          )}
         </>
       )}
       {/* </Security> */}
-      <div className="clearfix" />
-      {labels ? (
-        <div className={classes.objectLabel}>
-          {map(
-            (label) => (
-              <Chip
-                key={label.id}
-                variant="outlined"
-                classes={{ root: classes.label }}
-                label={label.name}
-                style={{
-                  color: label.color,
-                  borderColor: label.color,
-                  backgroundColor: hexToRGB(label.color),
-                }}
-                onDelete={() => handleRemoveLabel(label.id, label.__typename)}
-                deleteIcon={
-                  <CancelOutlined
-                    className={classes.deleteIcon}
-                    style={{
-                      color: label.color,
-                    }}
-                  />
-                }
-              />
-            ),
-            labelsNodes,
-          )}
-        </div>
-      ) : (
-        <Field
-          component={SelectField}
-          variant='outlined'
-          size='small'
-          name="labels"
-          fullWidth={true}
-          containerstyle={{ width: '50%' }}
-        >
-          <MenuItem key="activist" value="activist">
-            {t('activist')}
-          </MenuItem>
-          <MenuItem key="competitor" value="competitor">
-            {t('competitor')}
-          </MenuItem>
-        </Field>
-      )}
       <Formik
         initialValues={{ new_labels: [] }}
         onSubmit={onSubmit}

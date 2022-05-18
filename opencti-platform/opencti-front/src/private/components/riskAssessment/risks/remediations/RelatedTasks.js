@@ -49,6 +49,8 @@ class RelatedTasks extends Component {
       classes,
       remediationId,
       history,
+      toType,
+      fromType,
     } = this.props;
     return (
       // <QueryRenderer
@@ -63,6 +65,8 @@ class RelatedTasks extends Component {
                 remediationId={remediationId}
                 history={history}
                 data={props}
+                fromType={fromType}
+                toType={toType}
                 refreshQuery={retry}
               />
             );
@@ -123,6 +127,8 @@ class RelatedTasks extends Component {
 }
 
 RelatedTasks.propTypes = {
+  toType: PropTypes.string,
+  fromType: PropTypes.string,
   remediationId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,

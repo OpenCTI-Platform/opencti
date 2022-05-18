@@ -121,7 +121,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '1px 0 2px 5px' }}>
-                  <Tooltip title={t('Installed Operating System')} >
+                  <Tooltip title={t('Uniquely identifies this object')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -147,7 +147,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   {t('Asset ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
-                  <Tooltip title={t('Installed Software')} >
+                  <Tooltip title={t('Identifies the identifier defined by the standard')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -174,7 +174,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   {t('Asset Type')}
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip title={t('Asset Type')}>
+                  <Tooltip title={t('Identifies the type of the Object')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
