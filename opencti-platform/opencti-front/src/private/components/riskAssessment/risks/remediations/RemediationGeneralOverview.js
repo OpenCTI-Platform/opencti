@@ -8,8 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
+import PersonIcon from '@material-ui/icons/Person';
+import LayersIcon from '@material-ui/icons/Layers';
+import BuildIcon from '@material-ui/icons/Build';
 import Chip from '@material-ui/core/Chip';
 import { InformationOutline, Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -27,6 +28,11 @@ const styles = (theme) => ({
     padding: '45px 35px 42px 35px',
     borderRadius: 6,
     position: 'relative',
+  },
+  avatarIcon: {
+    width: '35px',
+    height: '35px',
+    color: 'white',
   },
   chip: {
     color: theme.palette.header.text,
@@ -136,19 +142,16 @@ class RemediationGeneralOverviewComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 <div style={{ display: 'flex' }}>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    badgeContent={
-                      <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                    }
-                  >
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                  </Badge>
+                {remediationOriginData.actor_type === 'assessment_platform'
+                    && <LayersIcon className={classes.avatarIcon} />}
+                  {remediationOriginData.actor_type === 'tool'
+                    && <BuildIcon className={classes.avatarIcon} />}
+                  {remediationOriginData.actor_type === 'party'
+                    && <PersonIcon className={classes.avatarIcon} />}
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
                       {remediationOriginData.actor_ref?.name
-                      && t(remediationOriginData.actor_ref?.name)}
+                        && t(remediationOriginData.actor_ref?.name)}
                     </Typography>
                     <Typography color="textSecondary" variant="disabled">
                       {/* {t('Lorem Ipsum Dolor Ist')} */}

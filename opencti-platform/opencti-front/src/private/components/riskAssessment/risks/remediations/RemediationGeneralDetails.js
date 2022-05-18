@@ -10,8 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import { Grid, Switch, Tooltip } from '@material-ui/core';
 import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
+import PersonIcon from '@material-ui/icons/Person';
 import Link from '@material-ui/core/Link';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -29,6 +28,11 @@ const styles = (theme) => ({
     margin: '10px 0 0 0',
     padding: '24px 24px 32px 24px',
     borderRadius: 6,
+  },
+  avatarIcon: {
+    width: '35px',
+    height: '35px',
+    color: 'white',
   },
   link: {
     fontSize: '16px',
@@ -120,17 +124,9 @@ class RemediationGeneralDetailsComponent extends Component {
                   {t('Source')}
                 </Typography>
                 <div className="clearfix" />
-                <div style={{ display: 'flex' }}>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    badgeContent={
-                      <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                    }
-                  >
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                  </Badge>
-                  <div style={{ marginLeft: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <PersonIcon className={classes.avatarIcon} />
+                  <div style={{ marginLeft: '10px' }}>
                     <Typography variant="subtitle1">
                       {remediationOriginData.name && t(remediationOriginData.name)}
                     </Typography>
@@ -153,7 +149,7 @@ class RemediationGeneralDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
                   {remediation.response_type && t(remediation.response_type)}
                 </Button>
@@ -173,7 +169,7 @@ class RemediationGeneralDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
                   {remediation.lifecycle && t(remediation.lifecycle)}
                 </Button>
