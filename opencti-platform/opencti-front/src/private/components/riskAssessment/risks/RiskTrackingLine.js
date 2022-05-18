@@ -11,6 +11,7 @@ import List from '@material-ui/core/List';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
+import FlagOutlinedIcon from '@material-ui/icons/FlagOutlined';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import Grid from '@material-ui/core/Grid';
 import ListItem from '@material-ui/core/ListItem';
@@ -91,6 +92,9 @@ const styles = (theme) => ({
   cardContent: {
     display: 'flex',
     alignItems: 'center',
+  },
+  avatarIconColor: {
+    color: 'white',
   },
   buttonExpand: {
     position: 'absolute',
@@ -266,10 +270,12 @@ class RiskTrackingLineContainer extends Component {
               <div style={{ display: 'flex', textAlign: 'left' }}>
                 {this.state.value ? '' : (
                   <div className={classes.cardContent}>
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                    <Avatar>
+                      <FlagOutlinedIcon className={classes.avatarIconColor} />
+                    </Avatar>
                     <div style={{ marginLeft: '16px', paddingTop: '10px' }}>
                       <Typography>
-                        {t('Risk Log Entry Title')}
+                        {node.name && t(node.name)}
                       </Typography>
                       <Typography color="textSecondary" variant="h3">
                         {t('Logged By')}
@@ -289,7 +295,9 @@ class RiskTrackingLineContainer extends Component {
                         {t('Entry Type')}
                       </Typography>
                       <div className={classes.cardContent}>
-                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                        <Avatar>
+                          <FlagOutlinedIcon className={classes.avatarIconColor} />
+                        </Avatar>
                         <Typography style={{ marginLeft: '10px' }} align="left">
                           {node.entry_type && t(node.entry_type)}
                         </Typography>
@@ -353,7 +361,9 @@ class RiskTrackingLineContainer extends Component {
                         {t('Logged By')}
                       </Typography>
                       <div className={classes.cardContent}>
-                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                        <Avatar>
+                          <FlagOutlinedIcon className={classes.avatarIconColor} />
+                        </Avatar>
                         <div style={{ textAlign: 'left', marginLeft: '10px' }}>
                           <Typography variant="subtitle2">
                             {riskTrackingLoggedBy?.name && t(riskTrackingLoggedBy?.name)}

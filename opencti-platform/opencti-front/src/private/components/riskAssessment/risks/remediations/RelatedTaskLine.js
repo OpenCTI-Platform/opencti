@@ -17,8 +17,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Typography from '@material-ui/core/Typography';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
+import PersonIcon from '@material-ui/icons/Person';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
@@ -86,6 +85,11 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  avatarIcon: {
+    width: '35px',
+    height: '35px',
+    color: 'white',
   },
   cardContent: {
     display: 'flex',
@@ -181,6 +185,7 @@ class RelatedTaskLine extends Component {
       remediationId,
       displayRelation,
       entityId,
+      relatedTaskId,
     } = this.props;
     const { expanded } = this.state;
     const taskDependency = pipe(
@@ -221,7 +226,7 @@ class RelatedTaskLine extends Component {
                       {t('Start Date: ')}
                     </Typography>
                     <Typography align="left" color="textSecondary" variant="h3">
-                      {data.timing?.start_date || data.timing?.on_date}
+                      {data.timing?.start_date && fldt(data.timing?.start_date)}
                     </Typography>
                   </Grid>
                   <Grid style={{ display: 'flex' }} item={true} xs={6}>
@@ -229,7 +234,7 @@ class RelatedTaskLine extends Component {
                       {t('End Date: ')}
                     </Typography>
                     <Typography align="left" color="textSecondary" variant="h3">
-                      {data.timing?.end_date && t(data.timing?.end_date)}
+                      {data.timing?.end_date && fldt(data.timing?.end_date)}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -288,7 +293,7 @@ class RelatedTaskLine extends Component {
                     <Typography align="left" color="textSecondary" variant="h3">{t('Start Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {/* {t('21 June 2021')} */}
-                      {data.timing?.start_date || data.timing?.on_date}
+                      {data.timing?.start_date && fldt(data.timing?.start_date)}
                     </Typography>
                   </div>
                 </Grid>
@@ -318,7 +323,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('End Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {data.timing?.end_date && t(data.timing?.end_date)}
+                      {data.timing?.end_date && fldt(data.timing?.end_date)}
                     </Typography>
                   </div>
                 </Grid>
@@ -326,7 +331,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
                     <div className={classes.cardContent}>
-                      <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                      <PersonIcon className={classes.avatarIcon} />
                       <div style={{ marginLeft: '10px' }}>
                         <Typography variant="subtitle1">
                           {responsibleRoles?.name && t(responsibleRoles?.name)}
@@ -397,6 +402,7 @@ class RelatedTaskLine extends Component {
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
             data={data}
+            relatedTaskId={relatedTaskId}
           />
         </div>
       </div>
@@ -417,6 +423,7 @@ RelatedTaskLine.propTypes = {
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
+  relatedTaskId: PropTypes.string,
 };
 
 export default compose(

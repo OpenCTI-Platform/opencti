@@ -105,7 +105,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      'Uniquely identifies this object.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -136,7 +136,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      'Identifies the POAM ID associated with the related POAM Item referencing this Risk.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -168,7 +168,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      'Indicates the date and time at which the object was originally created.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -198,7 +198,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      'Indicates the date and time that this particular version of the object was last modified.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -228,7 +228,7 @@ class RiskEditionOverviewComponent extends Component {
             <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
               <Tooltip
                 title={t(
-                  'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                  'Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system.',
                 )}
               >
                 <Information fontSize="inherit" color="disabled" />
@@ -258,7 +258,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      'Weakness',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -286,7 +286,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      'Identifies the level of risk',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -315,7 +315,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      'Identifies a control impacted by this risk.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -384,7 +384,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority.",
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -412,7 +412,7 @@ class RiskEditionOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
                     title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      'Likelihood.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -442,7 +442,7 @@ class RiskEditionOverviewComponent extends Component {
             <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
               <Tooltip
                 title={t(
-                  'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                  'Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined.',
                 )}
               >
                 <Information fontSize="inherit" color="disabled" />

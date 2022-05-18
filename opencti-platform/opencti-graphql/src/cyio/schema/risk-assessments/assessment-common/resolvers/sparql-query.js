@@ -1,3 +1,4 @@
+import { UserInputError } from "apollo-server-express";
 import {
   optionalizePredicate, 
   parameterizePredicate, 
@@ -488,6 +489,8 @@ const subjectReducer = (item) => {
     ...(item.subject_type && {subject_type: item.subject_type}),
     ...(item.subject_ref && {subject_ref_iri: item.subject_ref}),
     ...(item.subject_context && {subject_context: item.subject_context}),
+    ...(item.subject_name && {subject_name: item.subject_name}),
+    ...(item.subject_version && {subject_version: item.subject_version}),
   }
 }
 const taskReducer = (item) => {
@@ -2177,8 +2180,10 @@ export const detachFromMitigatingFactorQuery = (id, field, itemIris) => {
 // Observation support functions
 export const insertObservationQuery = (propValues) => {
   const id_material = {
+    //TODO: Need the actor_ref and actor_type
     ...(propValues.collected && {"collected": propValues.collected}),
     ...(propValues.methods && {"methods": propValues.methods}),
+    ...(propValues.methods && {"observation_type": propValues.methods}),
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
@@ -2711,6 +2716,8 @@ export const selectRiskQuery = (id, select) => {
 }
 export const selectRiskByIriQuery = (iri, select) => {
   const insertSelections = [], groupByClause = [];
+  let occurrences = '', occurrenceQuery = '';
+
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
@@ -2729,10 +2736,6 @@ export const selectRiskByIriQuery = (iri, select) => {
     select.push('remediation_type');
     select.push('remediation_lifecycle')
   }
-  // Update select to collect related observation count
-  if (select.includes('occurrences')) {
-    select.push('observation_subject')
-  }
 
   // build selectionClause and predicate list
   let { selectionClause, predicates } = buildSelectVariables(riskPredicateMap, select);
@@ -2750,9 +2753,6 @@ export const selectRiskByIriQuery = (iri, select) => {
     selectionClause = selectionClause.replace('?remediation_type','');
     selectionClause = selectionClause.replace('?remediation_lifecycle','')
   }
-  if (select.includes('occurrences')) {
-    selectionClause = selectionClause.replace('?observation_subject','')
-  }
 
   // Populate the insertSelections that compute results
   if (select.includes('risk_level')) {
@@ -2766,28 +2766,44 @@ export const selectRiskByIriQuery = (iri, select) => {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
   }
   if (select.includes('occurrences')) {
-    insertSelections.push(`(COUNT(?observation_subject) as ?occurrences)`);
+    occurrences = '?occurrences';
+    occurrenceQuery = `
+      OPTIONAL {
+        {
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?related_observations) AS ?count)
+          WHERE {
+            ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+          }
+          GROUP BY ?iri
+        }
+      }
+      BIND(IF(!BOUND(?count), 0, ?count) AS ?occurrences)
+  `;
   }
+
   // build "GROUP BY" clause if performing counting or consolidation
   if (select.includes('risk_level') || select.includes('response_type') || 
       select.includes('response_lifecycle') || select.includes('occurrences')) {
-      groupByClause.push(`GROUP BY ?iri ${selectionClause.trim()}`); 
+      groupByClause.push(`GROUP BY ?iri ${selectionClause.trim()} ${occurrences}`); 
   }
   
   return `
-  SELECT DISTINCT ?iri ${selectionClause.trim()}
+  SELECT DISTINCT ?iri ${selectionClause.trim()} ${occurrences}
   ${insertSelections.join("\n")}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> .
     ${predicates}
+    ${occurrenceQuery}
   }
   ${groupByClause.join("\n")}
   `
 }
 export const selectAllRisks = (select, args) => {
   const insertSelections = [], groupByClause = [];
+  let occurrences = '', occurrenceQuery = '';
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -2804,10 +2820,6 @@ export const selectAllRisks = (select, args) => {
   if (select.includes('response_type')|| select.includes('lifecycle')) {
     select.push('remediation_type');
     select.push('remediation_lifecycle')
-  }
-  // Update select to collect related observation count
-  if (select.includes('occurrences')) {
-    select.push('observation_subject')
   }
 
   if (args !== undefined ) {
@@ -2840,9 +2852,6 @@ export const selectAllRisks = (select, args) => {
     selectionClause = selectionClause.replace('?remediation_type','');
     selectionClause = selectionClause.replace('?remediation_lifecycle','')
   }
-  if (select.includes('occurrences')) {
-    selectionClause = selectionClause.replace('?observation_subject','')
-  }
 
   // Populate the insertSelections that compute results
   if (select.includes('risk_level')) {
@@ -2856,21 +2865,36 @@ export const selectAllRisks = (select, args) => {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
   }
   if (select.includes('occurrences')) {
-    insertSelections.push(`(COUNT(?observation_subject) as ?occurrences)`);
+    occurrences = '?occurrences';
+    occurrenceQuery = `
+      OPTIONAL {
+        {
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?related_observations) AS ?count)
+          WHERE {
+            ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+          }
+          GROUP BY ?iri
+        }
+      }
+      BIND(IF(!BOUND(?count), 0, ?count) AS ?occurrences)
+  `;
   }
+
   // build "GROUP BY" clause if performing counting or consolidation
   if (select.includes('risk_level') || select.includes('response_type') || 
       select.includes('response_lifecycle') || select.includes('occurrences')) {
-      groupByClause.push(`GROUP BY ?iri ${selectionClause.trim()}`); 
+      groupByClause.push(`GROUP BY ?iri ${selectionClause.trim()} ${occurrences}`); 
   }
 
   return `
-  SELECT DISTINCT ?iri ${selectionClause.trim()} 
+  SELECT DISTINCT ?iri ${selectionClause.trim()} ${occurrences}
   ${insertSelections.join("\n")}
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> . 
     ${predicates}
+    ${occurrenceQuery}
   }
   ${groupByClause.join("\n")}
   `
@@ -3332,14 +3356,15 @@ export const selectSubjectQuery = (id, select) => {
 export const selectSubjectByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
+  const cloneSelect = [...select];
   // defensive code to protect against query not supplying subject type
-  if (!select.includes('subject_type')) select.push('subject_type');
+  if (!select.includes('subject_type')) cloneSelect.push('subject_type');
   // get the references name and version, if name is asked for
   if (select.includes('name')) {
-    select.push('subject_name');
-    select.push('subject_version');
+    cloneSelect.push('subject_name');
+    cloneSelect.push('subject_version');
   }
-  const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
+  const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, cloneSelect);
   return `
   SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>

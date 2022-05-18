@@ -9,15 +9,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { Grid, Switch, Tooltip } from '@material-ui/core';
-import Chip from '@material-ui/core/Chip';
-import Link from '@material-ui/core/Link';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Launch from '@material-ui/icons/Launch';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, Information } from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
 const styles = (theme) => ({
@@ -78,7 +72,7 @@ class EntityRoleDetailsComponent extends Component {
       classes,
       refreshQuery,
       role,
-      fd,
+      fldt,
       history,
     } = this.props;
     return (
@@ -98,8 +92,7 @@ class EntityRoleDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {/* TODO 'Add Name info' */}
-                {t('')}
+                {role.name && t(role.name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -110,7 +103,7 @@ class EntityRoleDetailsComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Jun 3, 2022')}
+                {role.created && fldt(role.created)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -121,8 +114,7 @@ class EntityRoleDetailsComponent extends Component {
                   {t('Short Name')}
                 </Typography>
                 <div className="clearfix" />
-                {/* TODO ' Ad Short Name info' */}
-                {t('')}
+                {role.short_name && t(role.short_name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -133,7 +125,7 @@ class EntityRoleDetailsComponent extends Component {
                   {t('Role Identifier')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Role Identifier')}
+                {role.role_identifier && t(role.role_identifier)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -146,8 +138,7 @@ class EntityRoleDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {/* TODO 'Add ID' */}
-                {t('')}
+                {role.id && t(role.id)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -158,8 +149,7 @@ class EntityRoleDetailsComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {/* TODO: 'Add Last Modified' */}
-                {t('')}
+                {role.modified && fldt(role.modified)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -174,8 +164,13 @@ class EntityRoleDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {/* TODO: 'Add Description' */}
-                    {t('')}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {role?.description && t(role?.description)}
+                    </Markdown>
                   </div>
                 </div>
               </div>
@@ -200,9 +195,11 @@ class EntityRoleDetailsComponent extends Component {
                 {t('Markings')}
               </Typography>
               <div className="clearfix" />
-              <p className={classes.markingText}>
-                {t('IEP: WHITE')}
-              </p>
+              {role?.markings && (
+                <p className={classes.markingText}>
+                  {t(role?.markings)}
+                </p>
+              )}
             </Grid>
           </Grid>
         </Paper>
@@ -216,7 +213,7 @@ EntityRoleDetailsComponent.propTypes = {
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
-  fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const EntityRoleDetails = createFragmentContainer(

@@ -59,7 +59,6 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '4px 0 0 0',
     padding: 0,
     borderRadius: 6,
     position: 'relative',
@@ -83,7 +82,6 @@ const styles = (theme) => ({
   },
   cardContent: {
     display: 'flex',
-    alignItems: 'center',
   },
   buttonExpand: {
     position: 'absolute',
@@ -221,7 +219,7 @@ class RelatedTasksLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, remediationId, data, refreshQuery, history,
+      t, classes, remediationId, data, refreshQuery, history, fromType, toType,
     } = this.props;
     const { expanded } = this.state;
     const relatedTaskData = data.riskResponse;
@@ -236,11 +234,12 @@ class RelatedTasksLinesContainer extends Component {
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 28 }} />}
         > */}
-          <div>
             <RelatedTaskCreation
               relatedTaskData={relatedTaskData}
               display={true}
               contextual={true}
+              fromType={fromType}
+              toType={toType}
               history={history}
               refreshQuery={refreshQuery}
               remediationId={remediationId}
@@ -249,7 +248,6 @@ class RelatedTasksLinesContainer extends Component {
             //   data.riskResponse.external_references.edges
             // }
             />
-          </div>
           {/* </Security> */}
         </div>
         <div className="clearfix" />
@@ -260,6 +258,7 @@ class RelatedTasksLinesContainer extends Component {
               key={relatedTask.id}
               data={relatedTask}
               refreshQuery={refreshQuery}
+              relatedTaskId={relatedTask.id}
             />
           ))}
         </Paper>
@@ -324,6 +323,8 @@ class RelatedTasksLinesContainer extends Component {
 }
 
 RelatedTasksLinesContainer.propTypes = {
+  toType: PropTypes.string,
+  fromType: PropTypes.string,
   remediationId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -358,6 +359,45 @@ const RelatedTasksLines = createFragmentContainer(
             task_type
             name
             description
+            timing {
+              ... on DateRangeTiming {
+                start_date
+                end_date
+              }
+            }
+            task_dependencies {
+              __typename
+              id
+              name
+            }
+            related_tasks {
+              __typename
+              id
+              name
+            }
+            associated_activities {
+              __typename
+              id
+              activity_id {
+                __typename
+                id
+                name
+              }
+              responsible_roles {
+                __typename
+                role {
+                  __typename
+                  id
+                  role_identifier
+                  name
+                }
+                parties {
+                  id
+                  party_type
+                  name
+                }
+              }
+            }
             links {
               __typename
               id

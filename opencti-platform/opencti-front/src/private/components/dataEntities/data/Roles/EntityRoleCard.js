@@ -132,6 +132,7 @@ class EntityRoleCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
+
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -224,10 +225,10 @@ class EntityRoleCardComponent extends Component {
                 >
                   {t('Author')}
                 </Typography>
-                <Typography>
-                  {/* TODO: 'Add Author Info' */}
-                  {t('')}
-                </Typography>
+                {/* TODO: Get Author Name for Display */}
+                {/* <Typography>
+                  {t(node?.name)}
+                </Typography> */}
               </Grid>
             </Grid>
             <Grid container={true} >
