@@ -217,7 +217,6 @@ class NetworkCardComponent extends Component {
                   {t('Network ID')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                   {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
@@ -241,7 +240,6 @@ class NetworkCardComponent extends Component {
                   {t('Network Range')}
                 </Typography>
                 <Typography>
-                    {/* {t('Lorem Ipsum')} */}
                     {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>

@@ -169,7 +169,7 @@ class EntityRoleDetailsComponent extends Component {
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
-                      {role.description && t(role.description)}
+                      {role?.description && t(role?.description)}
                     </Markdown>
                   </div>
                 </div>
@@ -195,9 +195,11 @@ class EntityRoleDetailsComponent extends Component {
                 {t('Markings')}
               </Typography>
               <div className="clearfix" />
-              <p className={classes.markingText}>
-                {t('IEP: WHITE')}
-              </p>
+              {role?.markings && (
+                <p className={classes.markingText}>
+                  {t(role?.markings)}
+                </p>
+              )}
             </Grid>
           </Grid>
         </Paper>
