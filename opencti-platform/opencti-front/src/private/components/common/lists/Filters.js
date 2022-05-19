@@ -638,6 +638,7 @@ class Filters extends Component {
           'yara',
           'tanium-signal',
           'spl',
+          'eql',
         ]);
         this.setState({
           entities: {
@@ -1222,8 +1223,7 @@ class Filters extends Component {
     this.handleCloseFilters();
     const urlParams = { filters: JSON.stringify(this.state.filters) };
     this.props.history.push(
-      `/dashboard/search${
-        this.state.keyword.length > 0 ? `/${this.state.keyword}` : ''
+      `/dashboard/search${this.state.keyword.length > 0 ? `/${this.state.keyword}` : ''
       }?${new URLSearchParams(urlParams).toString()}`,
     );
   }

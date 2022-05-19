@@ -1,5 +1,6 @@
 import sys
 
+import eql
 import plyara
 from parsuricata import parse_rules
 from sigma.parser.collection import SigmaCollectionParser
@@ -63,6 +64,16 @@ def main():  # pylint: disable=too-many-branches
         result = False
         try:
             parse_rules(indicator_value)
+            result = True
+        except:  # pylint: disable=bare-except
+            result = False
+        return_data({"status": "success", "data": result})
+
+    if pattern_type == "eql":
+        result = False
+        try:
+            with eql.parser.elasticsearch_syntax, eql.parser.ignore_missing_functions:
+                eql.parse_query(indicator_value)
             result = True
         except:  # pylint: disable=bare-except
             result = False

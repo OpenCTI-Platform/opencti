@@ -66,6 +66,11 @@ const inlineStyles = {
     color: '#ef6c00',
     border: '1px solid #ef6c00',
   },
+  eql: {
+    backgroundColor: 'rgba(32, 201, 151, 0.10)',
+    color: '#007bff',
+    border: '1px solid #007bff',
+  },
 };
 
 const ItemPatternType = (props) => {
@@ -138,6 +143,14 @@ const ItemPatternType = (props) => {
         <Chip
           classes={{ root: style }}
           style={inlineStyles['tanium-signal']}
+          label={t(label)}
+        />
+      );
+    case 'eql':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.eql}
           label={t(label)}
         />
       );

@@ -180,6 +180,19 @@ class IndicatorsRightBar extends Component {
             />
             <ListItemText primary="Splunk SPL" />
           </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleIndicatorType.bind(this, 'eql')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={indicatorTypes.includes('eql')}
+              disableRipple={true}
+              size="small"
+            />
+            <ListItemText primary="Elastic EQL" />
+          </ListItem>
         </List>
         <QueryRenderer
           query={stixCyberObservablesLinesSubTypesQuery}
@@ -236,7 +249,7 @@ class IndicatorsRightBar extends Component {
             return <div />;
           }}
         />
-      </Drawer>
+      </Drawer >
     );
   }
 }
