@@ -14,6 +14,8 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
+import Checkbox from '@mui/material/Checkbox';
+import Box from '@mui/material/Box';
 import { ListItemAvatar } from '@mui/material';
 import { deepPurple } from '@mui/material/colors';
 import { SubscriptionFocus } from '../../../components/Subscription';
@@ -76,6 +78,7 @@ const settingsQuery = graphql`
       platform_theme_light_logo
       platform_theme_light_logo_login
       platform_enable_reference
+      platform_hidden_types
       platform_providers {
         name
         strategy
@@ -119,6 +122,7 @@ const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_login
         platform_language
         platform_login_message
+        platform_hidden_types
       }
     }
   }
@@ -171,6 +175,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
+  platform_hidden_types: Yup.array().nullable(),
 });
 
 class Settings extends Component {
@@ -214,6 +219,13 @@ class Settings extends Component {
         finalValue = '#000000';
       }
     }
+    if (name === 'platform_hidden_types') {
+      if (finalValue.includes('Threats')) {
+        finalValue = finalValue.filter(
+          (n) => !['Threat-Actor', 'Intrusion-Set', 'Campaign'].includes(n),
+        );
+      }
+    }
     settingsValidation(this.props.t)
       .validateAt(name, { [name]: finalValue })
       .then(() => {
@@ -235,8 +247,12 @@ class Settings extends Component {
             if (props && props.settings) {
               const { settings } = props;
               const { id, editContext } = settings;
-              const initialValues = R.pick(
-                [
+              const initialValues = R.pipe(
+                R.assoc(
+                  'platform_hidden_types',
+                  settings.platform_hidden_types || [],
+                ),
+                R.pick([
                   'platform_title',
                   'platform_favicon',
                   'platform_email',
@@ -261,9 +277,9 @@ class Settings extends Component {
                   'platform_theme_light_logo_login',
                   'platform_map_tile_server_dark',
                   'platform_map_tile_server_light',
-                ],
-                settings,
-              );
+                  'platform_hidden_types',
+                ]),
+              )(settings);
               const authProviders = settings.platform_providers;
               const modules = settings.platform_modules;
               let i = 0;
@@ -283,7 +299,7 @@ class Settings extends Component {
                           initialValues={initialValues}
                           validationSchema={settingsValidation(t)}
                         >
-                          {() => (
+                          {({ values }) => (
                             <Form style={{ marginTop: 20 }}>
                               <Field
                                 component={TextField}
@@ -379,6 +395,101 @@ class Settings extends Component {
                                 <MenuItem value="en-us">English</MenuItem>
                                 <MenuItem value="fr-fr">Français</MenuItem>
                                 <MenuItem value="zh-cn">简化字</MenuItem>
+                              </Field>
+                              <Field
+                                component={SelectField}
+                                variant="standard"
+                                name="platform_hidden_types"
+                                label={t('Hidden entity types')}
+                                fullWidth={true}
+                                multiple={true}
+                                containerstyle={{
+                                  marginTop: 20,
+                                  width: '100%',
+                                }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onChange={this.handleSubmitField.bind(this, id)}
+                                helpertext={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_hidden_types"
+                                  />
+                                }
+                                renderValue={(selected) => (
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      flexWrap: 'wrap',
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    {selected.map((value) => (
+                                      <Chip
+                                        key={value}
+                                        label={t(`entity_${value}`)}
+                                      />
+                                    ))}
+                                  </Box>
+                                )}
+                              >
+                                <MenuItem value="Threats">
+                                  <Checkbox
+                                    checked={
+                                      values.platform_hidden_types.indexOf(
+                                        'Threats',
+                                      ) > -1
+                                    }
+                                  />
+                                  {t('Threats')}
+                                </MenuItem>
+                                <MenuItem
+                                  value="Threat-Actor"
+                                  disabled={(
+                                    values.platform_hidden_types || []
+                                  ).includes('Threats')}
+                                >
+                                  <Checkbox
+                                    checked={
+                                      values.platform_hidden_types.indexOf(
+                                        'Threat-Actor',
+                                      ) > -1
+                                    }
+                                    style={{ marginLeft: 10 }}
+                                  />
+                                  {t('entity_Threat-Actor')}
+                                </MenuItem>
+                                <MenuItem
+                                  value="Intrusion-Set"
+                                  disabled={(
+                                    values.platform_hidden_types || []
+                                  ).includes('Threats')}
+                                >
+                                  <Checkbox
+                                    checked={
+                                      values.platform_hidden_types.indexOf(
+                                        'Intrusion-Set',
+                                      ) > -1
+                                    }
+                                    style={{ marginLeft: 10 }}
+                                  />
+                                  {t('entity_Intrusion-Set')}
+                                </MenuItem>
+                                <MenuItem
+                                  value="Campaign"
+                                  disabled={(
+                                    values.platform_hidden_types || []
+                                  ).includes('Threats')}
+                                >
+                                  <Checkbox
+                                    checked={
+                                      values.platform_hidden_types.indexOf(
+                                        'Campaign',
+                                      ) > -1
+                                    }
+                                    style={{ marginLeft: 10 }}
+                                  />
+                                  {t('entity_Campaign')}
+                                </MenuItem>
                               </Field>
                             </Form>
                           )}

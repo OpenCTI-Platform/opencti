@@ -3390,10 +3390,10 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        fromId: fragmentVariables.search,
-        toId: fragmentVariables.search,
-        fromTypes: fragmentVariables.search,
-        toTypes: fragmentVariables.search,
+        fromId: fragmentVariables.fromId,
+        toId: fragmentVariables.toId,
+        fromTypes: fragmentVariables.fromTypes,
+        toTypes: fragmentVariables.toTypes,
         search: fragmentVariables.search,
         count,
         cursor,

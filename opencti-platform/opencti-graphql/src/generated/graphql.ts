@@ -11117,6 +11117,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_enable_reference?: Maybe<Array<Maybe<Scalars['String']>>>;
   platform_favicon?: Maybe<Scalars['String']>;
   platform_feature_flags?: Maybe<Array<Maybe<Module>>>;
+  platform_hidden_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   platform_language?: Maybe<Scalars['String']>;
   platform_login_message?: Maybe<Scalars['String']>;
   platform_map_tile_server_dark?: Maybe<Scalars['String']>;
@@ -20187,6 +20188,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_enable_reference?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Module']>>>, ParentType, ContextType>;
+  platform_hidden_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

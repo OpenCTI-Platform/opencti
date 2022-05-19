@@ -25,6 +25,7 @@ const rootPrivateQuery = graphql`
     settings {
       platform_map_tile_server_dark
       platform_map_tile_server_light
+      platform_hidden_types
       platform_feature_flags {
         id
         enable
@@ -52,11 +53,14 @@ const isModuleEnable = (settings, id) => {
   const module = R.find((f) => f.id === id, modules);
   return module !== undefined && module.enable === true;
 };
+// eslint-disable-next-line max-len
+const isEntityTypeHidden = (settings, id) => settings.platform_hidden_types && settings.platform_hidden_types.includes(id);
 const buildHelper = (settings) => ({
   isModuleEnable: (id) => isModuleEnable(settings, id),
   isRuleEngineEnable: () => isModuleEnable(settings, 'RULE_ENGINE'),
   isFeatureEnable: (id) => isFeatureEnable(settings, id),
   isRuntimeFieldEnable: () => isFeatureEnable(settings, 'RUNTIME_SORTING'),
+  isEntityTypeHidden: (id) => isEntityTypeHidden(settings, id),
 });
 
 const Root = () => {

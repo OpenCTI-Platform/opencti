@@ -57,6 +57,7 @@ export const multipleAttributes = [
   'x_opencti_files',
   'platform_enable_reference',
   'feed_types',
+  'platform_hidden_types',
   // meta
   INPUT_OBJECTS,
   INPUT_MARKINGS,

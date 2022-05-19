@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import { PublicOutlined } from '@mui/icons-material';
 import { DiamondOutline, ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import { UserContext } from '../../../utils/Security';
 
 const styles = (theme) => ({
   button: {
@@ -25,65 +26,84 @@ class TopMenuThreats extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
-      <div>
-        <Button
-          component={Link}
-          to="/dashboard/threats/threat_actors"
-          variant={
-            location.pathname.includes('/dashboard/threats/threat_actors')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/threat_actors')
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <PublicOutlined className={classes.icon} fontSize="small" />
-          {t('Threat actors')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/threats/intrusion_sets"
-          variant={
-            location.pathname.includes('/dashboard/threats/intrusion_sets')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/intrusion_sets')
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <DiamondOutline className={classes.icon} fontSize="small" />
-          {t('Intrusion sets')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/threats/campaigns"
-          variant={
-            location.pathname.includes('/dashboard/threats/campaigns')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/threats/campaigns'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <ChessKnight className={classes.icon} fontSize="small" />
-          {t('Campaigns')}
-        </Button>
-      </div>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            {!helper.isEntityTypeHidden('Threats')
+              && !helper.isEntityTypeHidden('Threat-Actor') && (
+                <Button
+                  component={Link}
+                  to="/dashboard/threats/threat_actors"
+                  variant={
+                    location.pathname.includes(
+                      '/dashboard/threats/threat_actors',
+                    )
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname.includes(
+                      '/dashboard/threats/threat_actors',
+                    )
+                      ? 'secondary'
+                      : 'primary'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <PublicOutlined className={classes.icon} fontSize="small" />
+                  {t('Threat actors')}
+                </Button>
+            )}
+            {!helper.isEntityTypeHidden('Intrusion-Set') && (
+              <Button
+                component={Link}
+                to="/dashboard/threats/intrusion_sets"
+                variant={
+                  location.pathname.includes(
+                    '/dashboard/threats/intrusion_sets',
+                  )
+                    ? 'contained'
+                    : 'text'
+                }
+                size="small"
+                color={
+                  location.pathname.includes(
+                    '/dashboard/threats/intrusion_sets',
+                  )
+                    ? 'secondary'
+                    : 'primary'
+                }
+                classes={{ root: classes.button }}
+              >
+                <DiamondOutline className={classes.icon} fontSize="small" />
+                {t('Intrusion sets')}
+              </Button>
+            )}
+            {!helper.isEntityTypeHidden('Campaign') && (
+              <Button
+                component={Link}
+                to="/dashboard/threats/campaigns"
+                variant={
+                  location.pathname.includes('/dashboard/threats/campaigns')
+                    ? 'contained'
+                    : 'text'
+                }
+                size="small"
+                color={
+                  location.pathname === '/dashboard/threats/campaigns'
+                    ? 'secondary'
+                    : 'primary'
+                }
+                classes={{ root: classes.button }}
+              >
+                <ChessKnight className={classes.icon} fontSize="small" />
+                {t('Campaigns')}
+              </Button>
+            )}
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 }

@@ -89,6 +89,7 @@ export const internalObjectsAttributes = {
     'platform_language',
     'platform_login_message',
     'platform_enable_reference',
+    'platform_hidden_types',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',
