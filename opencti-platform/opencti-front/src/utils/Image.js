@@ -59,13 +59,10 @@ export const exportPdf = (
   pixelRatio = 1,
   adjust = null,
 ) => {
-  const documentWidth = 595.28;
-  const documentHeight = 841.89;
   const container = document.getElementById(domElementId);
   const { offsetWidth, offsetHeight } = container;
   const imageWidth = offsetWidth * pixelRatio;
   const imageHeight = offsetHeight * pixelRatio;
-  const isLandscape = imageWidth >= imageHeight;
   return new Promise((resolve) => {
     htmlToImage
       .toPng(container, {
@@ -88,10 +85,10 @@ export const exportPdf = (
       .then((image) => {
         const docDefinition = {
           pageSize: {
-            width: documentWidth,
-            height: documentHeight,
+            width: imageWidth,
+            height: 'auto',
           },
-          pageOrientation: isLandscape ? 'landscape' : 'portrait',
+          pageOrientation: 'portrait',
           pageMargins: [0, 0, 0, 0],
           background: () => ({
             canvas: [
@@ -99,8 +96,8 @@ export const exportPdf = (
                 type: 'rect',
                 x: 0,
                 y: 0,
-                w: documentWidth,
-                h: documentHeight,
+                w: imageWidth,
+                h: imageHeight,
                 color: backgroundColor,
               },
             ],
@@ -108,7 +105,7 @@ export const exportPdf = (
           content: [
             {
               image,
-              width: isLandscape ? documentHeight : documentWidth,
+              width: imageWidth,
               alignment: 'center',
             },
           ],
