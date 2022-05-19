@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -8,17 +6,15 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
-import Checkbox from '@material-ui/core/Checkbox';
-import RouterIcon from '@material-ui/icons/Router';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
-import { DiamondOutline } from 'mdi-material-ui';
 import Skeleton from '@material-ui/lab/Skeleton';
-import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import ItemIcon from '../../../../components/ItemIcon';
-import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
+import inject18n from '../../../../../components/i18n';
+import ItemIcon from '../../../../../components/ItemIcon';
+import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
+import EntitiesAssessmentPlatformsPopover from './EntitiesAssessmentPlatformsPopover';
 
 const styles = (theme) => ({
   item: {
@@ -41,8 +37,7 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
   },
   goIcon: {
-    position: 'absolute',
-    right: -10,
+    minWidth: '0px',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -54,19 +49,19 @@ const styles = (theme) => ({
   },
 });
 
-class NetworkLineComponent extends Component {
+class EntityAssessmentPlatformLineComponent extends Component {
   render() {
     const {
+      t,
       fd,
-      node,
       classes,
+      node,
       selectAll,
       dataColumns,
       onLabelClick,
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -74,7 +69,7 @@ class NetworkLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/defender HQ/assets/network/${node.id}`}
+        to={`/data/entities/assessment_platform/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
@@ -93,101 +88,61 @@ class NetworkLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
+                style={{ height: '24px', width: dataColumns.type.width }}
+              >
+                {node.entity_type && t(node.entity_type)}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {/* KK-HWELL-011 */}
-                {node.name && node.name}
+                {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.asset_type.width }}
+                style={{ width: dataColumns.author.width }}
               >
-                {node.asset_type && <ItemIcon type={node.asset_type}/>}
+                {/* {node.entity_type && t(node.entity_type)} */}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.asset_id.width }}
-              >
-                {node.asset_id && node.asset_id}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.network_id.width }}
-              >
-                {node.network_id && node.network_id}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.network_range.width }}
-              >
-                {node.network_address_range && `${node.network_address_range.starting_ip_address
-                && node.network_address_range.starting_ip_address.ip_address_value} - ${node.network_address_range.starting_ip_address
-                && node.network_address_range.starting_ip_address.ip_address_value}`}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.label_name.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <CyioCoreObjectLabels
                   variant="inList"
                   labels={node.labels}
                   onClick={onLabelClick.bind(this)}
                 />
-                {/* <StixCoreObjectLabels
-                  variant="inList"
-                  labels={objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                /> */}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creation_date.width }}
+              >
+                {node.created && fd(node.created)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.marking.width }}
+              >
+                {node?.parent_types && t(node.parent_types)}
               </div>
             </div>
           }
         />
-        {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <DiamondOutline />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={node.objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                {fd(node.created)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                {fd(node.modified)}
-              </div>
-            </div>
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon> */}
+        <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
+          <EntitiesAssessmentPlatformsPopover
+            // history={history}
+            nodeId={node?.id}
+            // riskNode={riskData.node}
+            node={node}
+          />
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
-NetworkLineComponent.propTypes = {
+EntityAssessmentPlatformLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -196,85 +151,57 @@ NetworkLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const NetworkLineFragment = createFragmentContainer(
-  NetworkLineComponent,
+const EntityAssessmentPlatformLineFragment = createFragmentContainer(
+  EntityAssessmentPlatformLineComponent,
   {
     node: graphql`
-      fragment NetworkLine_node on NetworkAsset {
+      fragment EntityAssessmentPlatformLine_node on AssessmentPlatform {
+        __typename
         id
+        entity_type
+        description
         name
-        asset_id
-        asset_type
-        network_name
-        network_id
-        # network_address_range {
-        #   ending_ip_address{
-        #     ... on IpV4Address {
-        #       ip_address_value
-        #     }
-        #   }
-        #   starting_ip_address{
-        #     ... on IpV4Address {
-        #       ip_address_value
-        #     }
-        #   }
-        # }
+        created
+        modified
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
-        external_references {
+        links {
+          __typename
           id
           source_name
           description
+          entity_type
           url
           hashes {
             value
           }
           external_id
         }
-        notes {
+        remarks {
           __typename
           id
-          # created
-          # modified
           entity_type
           abstract
           content
           authors
         }
-        # created
-        # modified
-        # objectMarking {
-        #   edges {
-        #     node {
-        #       id
-        #       definition
-        #     }
-        #   }
-        # }
-        # objectLabel {
-        #   edges {
-        #     node {
-        #       id
-        #       value
-        #       color
-        #     }
-        #   }
-        # }
       }
     `,
   },
 );
 
-export const NetworkLine = compose(
+export const EntityAssessmentPlatformLine = compose(
   inject18n,
   withStyles(styles),
-)(NetworkLineFragment);
+)(EntityAssessmentPlatformLineFragment);
 
-class NetworkLineDummyComponent extends Component {
+class EntityAssessmentPlatformLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -298,7 +225,18 @@ class NetworkLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.asset_type.width }}
+                style={{ width: dataColumns.type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.author.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -309,7 +247,7 @@ class NetworkLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.asset_id.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -320,7 +258,7 @@ class NetworkLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.network_id.width }}
+                style={{ width: dataColumns.creation_date.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -331,18 +269,7 @@ class NetworkLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.network_range.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.label_name.width }}
+                style={{ width: dataColumns.marking.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -354,20 +281,17 @@ class NetworkLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
       </ListItem>
     );
   }
 }
 
-NetworkLineDummyComponent.propTypes = {
+EntityAssessmentPlatformLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const NetworkLineDummy = compose(
+export const EntityAssessmentPlatformLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(NetworkLineDummyComponent);
+)(EntityAssessmentPlatformLineDummyComponent);

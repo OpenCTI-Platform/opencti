@@ -65,13 +65,13 @@ const styles = (theme) => ({
   }
 });
 
-class EntityTaskDetailsComponent extends Component {
+class EntityAssessmentPlatformDetailsComponent extends Component {
   render() {
     const {
       t,
       classes,
       refreshQuery,
-      task,
+      assessmentPlatform,
       fldt,
       history,
     } = this.props;
@@ -92,7 +92,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {task.name && t(task.name)}
+                {assessmentPlatform.name && t(assessmentPlatform.name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -100,9 +100,10 @@ class EntityTaskDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Milestone')}
+                  {t('Created')}
                 </Typography>
                 <div className="clearfix" />
+                {assessmentPlatform.created && fldt(assessmentPlatform.created)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -110,30 +111,10 @@ class EntityTaskDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Associated Activities')}
+                  {t('User Component')}
                 </Typography>
                 <div className="clearfix" />
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Resource Type')}
-                </Typography>
-                <div className="clearfix" />
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Related Tasks')}
-                </Typography>
-                <div className="clearfix" />
-                {task.related_tasks.name && t(task.related_tasks.name)}
+                {assessmentPlatform.uses_components.name && t(assessmentPlatform.uses_components.name)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -146,7 +127,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {task.id && (task.id)}
+                {assessmentPlatform.id && t(assessmentPlatform.id)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -154,40 +135,10 @@ class EntityTaskDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('End Date')}
+                  {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {task.modified && fldt(task.modified)}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Dependencies')}
-                </Typography>
-                <div className="clearfix" />
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Responsible Parties')}
-                </Typography>
-                <div className="clearfix" />
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Resource Name')}
-                </Typography>
-                <div className="clearfix" />
+                {assessmentPlatform.modified && fldt(assessmentPlatform.modified)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -207,8 +158,7 @@ class EntityTaskDetailsComponent extends Component {
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
-                      {task.description && t(task.description)}
-
+                      {assessmentPlatform.description && t(assessmentPlatform.description)}
                     </Markdown>
                   </div>
                 </div>
@@ -218,11 +168,11 @@ class EntityTaskDetailsComponent extends Component {
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={3}>
               <CyioCoreObjectLabelsView
-                labels={task.labels}
+                labels={assessmentPlatform.labels}
                 marginTop={0}
                 refreshQuery={refreshQuery}
-                id={task.id}
-                typename={task.__typename}
+                id={assessmentPlatform.id}
+                typename={assessmentPlatform.__typename}
               />
             </Grid>
             <Grid item={true} xs={4}>
@@ -234,9 +184,9 @@ class EntityTaskDetailsComponent extends Component {
                 {t('Markings')}
               </Typography>
               <div className="clearfix" />
-              {task?.markings && (
+              {assessmentPlatform?.markings && (
                 <p className={classes.markingText}>
-                  {t(task?.markings)}
+                  {t(assessmentPlatform?.markings)}
                 </p>
               )}
             </Grid>
@@ -247,25 +197,32 @@ class EntityTaskDetailsComponent extends Component {
   }
 }
 
-EntityTaskDetailsComponent.propTypes = {
-  task: PropTypes.object,
+EntityAssessmentPlatformDetailsComponent.propTypes = {
+  assessmentPlatform: PropTypes.object,
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
   fldt: PropTypes.func,
 };
 
-const EntityTaskDetails = createFragmentContainer(
-  EntityTaskDetailsComponent,
+const EntityAssessmentPlatformDetails = createFragmentContainer(
+  EntityAssessmentPlatformDetailsComponent,
   {
-    task: graphql`
-      fragment EntityTaskDetails_task on OscalTask {
+    assessmentPlatform: graphql`
+      fragment EntityAssessmentPlatformDetails_assessmentPlatform on AssessmentPlatform {
         __typename
         id
+        entity_type
         created
         modified
         name
         description
+        uses_components {
+          __typename
+          id
+          entity_type
+          name
+        }
         labels {
           __typename
           id
@@ -274,17 +231,9 @@ const EntityTaskDetails = createFragmentContainer(
           entity_type
           description
         }
-        related_tasks {
-          id
-          name
-        }
-        associated_activities {
-          id
-          entity_type
-        }
       }
     `,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(EntityTaskDetails);
+export default compose(inject18n, withStyles(styles))(EntityAssessmentPlatformDetails);

@@ -7,8 +7,9 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Typography from '@material-ui/core/Typography';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
+import PersonIcon from '@material-ui/icons/Person';
+import LayersIcon from '@material-ui/icons/Layers';
+import BuildIcon from '@material-ui/icons/Build';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
@@ -55,6 +56,11 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  avatarIcon: {
+    width: '35px',
+    height: '35px',
+    color: 'white',
   },
   statusButton: {
     cursor: 'default',
@@ -127,17 +133,14 @@ class RemediationEntityLineComponent extends Component {
           primary={
             <div className={classes.ListItem}>
               <div className={classes.bodyItem}>
-                <div style={{ display: 'flex' }}>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    badgeContent={
-                      <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                    }
-                  >
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                  </Badge>
-                  <div style={{ marginLeft: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {SourceOfDetection.actor_type === 'assessment_platform'
+                    && <LayersIcon className={classes.avatarIcon} />}
+                  {SourceOfDetection.actor_type === 'tool'
+                    && <BuildIcon className={classes.avatarIcon} />}
+                  {SourceOfDetection.actor_type === 'party'
+                    && <PersonIcon className={classes.avatarIcon} />}
+                  <div style={{ marginLeft: '10px' }}>
                     <Typography variant="subtitle1">
                       {SourceOfDetection.actor_ref?.name
                         && truncate(t(SourceOfDetection.actor_ref?.name), 25)}

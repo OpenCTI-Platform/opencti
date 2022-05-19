@@ -162,7 +162,7 @@ const styles = (theme) => ({
     cursor: 'pointer',
   },
   filters: {
-    padding: '0 0 9px 0',
+    padding: '0 0 9px 12px',
     '@media (max-width: 1250px)': {
       marginTop: '20px',
     },
