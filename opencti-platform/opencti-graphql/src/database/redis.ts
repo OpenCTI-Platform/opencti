@@ -36,6 +36,7 @@ import type {
 } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
+import { BYPASS } from '../utils/access';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
@@ -552,18 +553,23 @@ export const fetchStreamInfo = async () => {
   return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: info.length };
 };
 
-const processStreamResult = async (results: Array<any>, callback: any) => {
+const processStreamResult = async (user: AuthUser, results: Array<any>, callback: any) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
-  const lastElement = R.last(streamData);
-  // Prepare the elements
-  const processedResults = [];
-  for (let index = 0; index < streamData.length; index += 1) {
-    const dataElement = streamData[index];
-    processedResults.push(dataElement);
+  // Filter data with user markings
+  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+  if (!isBypass) {
+    const userMarkings = user.allowed_marking.map((m) => m.standard_id);
+    const filteredEvents = streamData.filter((s) => {
+      const dataMarkings = s.data.data.object_marking_refs ?? [];
+      if (dataMarkings.length === 0) return true;
+      return dataMarkings.some((r) => userMarkings.includes(r));
+    });
+    await callback(filteredEvents);
+    return R.last(filteredEvents)?.id;
   }
-  // Callback the data
-  await callback(processedResults);
-  return lastElement?.id;
+  // User can bypass any right
+  await callback(streamData);
+  return R.last(streamData)?.id;
 };
 
 const WAIT_TIME = 1000;
@@ -593,7 +599,7 @@ export const createStreamProcessor = (user: AuthUser, provider: string, callback
       // Process the event results
       if (streamResult && streamResult.length > 0) {
         const [, results] = streamResult[0];
-        const lastElementId = await processStreamResult(results, callback);
+        const lastElementId = await processStreamResult(user, results, callback);
         startEventId = lastElementId || startEventId;
       }
     } catch (err) {
