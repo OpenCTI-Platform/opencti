@@ -299,4 +299,10 @@ export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', fa
 export const ENABLED_SUBSCRIPTION_MANAGER = booleanConf('subscription_scheduler:enabled', false);
 export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);
 
+const platformState = { stopping: false };
+export const getStoppingState = () => platformState.stopping;
+export const setStoppingState = (state) => {
+  platformState.stopping = state;
+};
+
 export default nconf;

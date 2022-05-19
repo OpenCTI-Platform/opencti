@@ -75,7 +75,6 @@ import {
   X_DETECTION,
 } from '../schema/identifier';
 import {
-  isStixData,
   lockResource,
   notify,
   redisAddDeletions,
@@ -143,7 +142,7 @@ import {
   isDatedInternalObject,
   isInternalObject,
 } from '../schema/internalObject';
-import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
+import { isStixCoreObject, isStixData, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   booleanAttributes,

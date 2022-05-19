@@ -91,6 +91,7 @@ import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
+const WAIT_TIME_ACTION = 2000;
 
 const syncManagerInstance = (syncId) => {
   const STATE_UPDATE_SIZE = 100;
@@ -333,7 +334,7 @@ const syncManagerInstance = (syncId) => {
 };
 
 const initSyncManager = () => {
-  const WAIT_TIME_ACTION = 2000;
+  let scheduler;
   let syncListening = true;
   const syncManagers = new Map();
   const processStep = async () => {
@@ -390,20 +391,12 @@ const initSyncManager = () => {
       lock = await lockResource([SYNC_MANAGER_KEY]);
       await processingLoop();
     } catch (e) {
-      // We dont care about failing to get the lock.
+      // We don't care about failing to get the lock.
       logApp.info('[OPENCTI-MODULE] Sync manager already in progress by another API');
     } finally {
       logApp.debug('[OPENCTI-MODULE] Sync manager done');
       if (lock) await lock.unlock();
     }
-  };
-  let scheduler;
-  const shutdown = async () => {
-    syncListening = false;
-    if (scheduler) {
-      return clearIntervalAsync(scheduler);
-    }
-    return true;
   };
   return {
     start: async () => {
@@ -412,7 +405,13 @@ const initSyncManager = () => {
         await syncManagerHandler();
       }, WAIT_TIME_ACTION);
     },
-    shutdown,
+    shutdown: async () => {
+      syncListening = false;
+      if (scheduler) {
+        return clearIntervalAsync(scheduler);
+      }
+      return true;
+    },
   };
 };
 const syncManager = initSyncManager();

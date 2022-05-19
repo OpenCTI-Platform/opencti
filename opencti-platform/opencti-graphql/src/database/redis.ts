@@ -5,7 +5,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
-import conf, { booleanConf, configureCA, DEV_MODE, ENABLED_CACHING, logApp } from '../config/conf';
+import conf, { booleanConf, configureCA, DEV_MODE, ENABLED_CACHING, getStoppingState, logApp } from '../config/conf';
 import {
   generateCreateMessage,
   generateDeleteMessage,
@@ -13,8 +13,7 @@ import {
   isEmptyField,
   isInferredIndex,
 } from './utils';
-import { isStixObject } from '../schema/stixCoreObject';
-import { isStixRelationship } from '../schema/stixRelationship';
+import { isStixData } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
@@ -48,12 +47,17 @@ export const EVENT_VERSION_V4 = '4';
 const BASE_DATABASE = 0; // works key for tracking / stream
 const CONTEXT_DATABASE = 1; // locks / user context
 const REDIS_EXPIRE_TIME = 90;
-
-export const isStixData = (instance: StoreObject) => isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type);
+const MAX_RETRY_COMMAND = 10;
 
 const isStreamPublishable = (instance: StoreObject) => INCLUDE_INFERENCES || !isInferredIndex(instance._index);
 
-const redisOptions = (database: number | undefined): RedisOptions => ({
+const sleep = (ms: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+const redisOptions = (database: number): RedisOptions => ({
   keyPrefix: REDIS_PREFIX,
   db: database,
   port: conf.get('redis:port'),
@@ -61,22 +65,22 @@ const redisOptions = (database: number | undefined): RedisOptions => ({
   username: conf.get('redis:username'),
   password: conf.get('redis:password'),
   tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
-  retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
+  retryStrategy: /* istanbul ignore next */ (times) => {
+    if (getStoppingState()) return null;
+    return Math.min(times * 50, 2000);
+  },
   lazyConnect: true,
   enableAutoPipelining: false,
   enableOfflineQueue: true,
-  maxRetriesPerRequest: 30,
+  maxRetriesPerRequest: MAX_RETRY_COMMAND,
   showFriendlyErrorStack: DEV_MODE,
 });
 
-export const pubsub = new RedisPubSub({
-  publisher: new Redis(redisOptions(undefined)),
-  subscriber: new Redis(redisOptions(undefined)),
-});
-const createRedisClient = (provider: string, database = BASE_DATABASE) => {
-  const client = new Redis(redisOptions(database));
+const createRedisClient = (provider: string, database?: number) => {
+  const client = new Redis(redisOptions(database ?? BASE_DATABASE));
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
+  client.on('error', (err) => logApp.error(`[REDIS] Redis '${provider}' client error`, { error: err }));
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   client.defineCommand('cacheGet', {
     lua:
@@ -97,10 +101,14 @@ const createRedisClient = (provider: string, database = BASE_DATABASE) => {
   });
   return client;
 };
+
+const publisher = createRedisClient('Pubsub publisher');
+const subscriber = createRedisClient('Pubsub subscriber');
 const clientBase = createRedisClient('Client base');
 const clientCache = createRedisClient('Client cache');
 const clientContext = createRedisClient('Client context', CONTEXT_DATABASE);
 
+export const pubsub = new RedisPubSub({ publisher, subscriber });
 export const createMemorySessionStore = () => {
   return new SessionStoreMemory({
     checkPeriod: 3600000, // prune expired entries every 1h
@@ -114,7 +122,21 @@ export const createRedisSessionStore = () => {
 
 export const redisIsAlive = async () => {
   try {
-    await clientBase.get('test-key');
+    const client = new Redis({
+      keyPrefix: REDIS_PREFIX,
+      db: BASE_DATABASE,
+      port: conf.get('redis:port'),
+      host: conf.get('redis:hostname'),
+      username: conf.get('redis:username'),
+      password: conf.get('redis:password'),
+      tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
+      lazyConnect: true,
+      maxRetriesPerRequest: 0,
+      showFriendlyErrorStack: DEV_MODE,
+    });
+    client.on('error', () => undefined /* do nothing */);
+    await client.get('test-key');
+    client.disconnect();
   } catch {
     throw DatabaseError('Redis seems down');
   }
@@ -285,9 +307,12 @@ export const lockResource = async (resources: Array<string>, automaticExtension 
       }
       // Then unlock in redis
       try {
-        await lock.release();
+        // Only try to unlock if redis connection is ready
+        if (clientContext.status === 'ready') {
+          await lock.release();
+        }
       } catch (e) {
-        logApp.debug('[REDIS] Failed to unlock resource', { locks });
+        logApp.warn('[REDIS] Failed to unlock resource', { locks });
       }
     },
   };
@@ -543,7 +568,13 @@ const processStreamResult = async (results: Array<any>, callback: any) => {
 
 const WAIT_TIME = 1000;
 const MAX_RANGE_MESSAGES = 500;
-export const createStreamProcessor = (user: AuthUser, provider: string, callback: any, maxRange = MAX_RANGE_MESSAGES) => {
+
+export interface StreamProcessor {
+  info: () => Promise<object>;
+  start: (from: string | undefined) => Promise<void>;
+  shutdown: () => Promise<void>;
+}
+export const createStreamProcessor = (user: AuthUser, provider: string, callback: any, maxRange = MAX_RANGE_MESSAGES): StreamProcessor => {
   let client: Redis;
   let startEventId: string;
   let processingLoopPromise: Promise<void>;
@@ -557,16 +588,19 @@ export const createStreamProcessor = (user: AuthUser, provider: string, callback
       return false;
     }
     try {
+      // Consume the data stream
       const streamResult = await client.xread('COUNT', maxRange, 'BLOCK', WAIT_TIME, 'STREAMS', REDIS_STREAM_NAME, startEventId);
+      // Process the event results
       if (streamResult && streamResult.length > 0) {
         const [, results] = streamResult[0];
         const lastElementId = await processStreamResult(results, callback);
         startEventId = lastElementId || startEventId;
       }
     } catch (err) {
-      logApp.error('Error in redis stream read', { error: err });
+      logApp.error(`Error in redis streams read for ${provider}`, { error: err });
+      await sleep(2000);
     }
-    return true;
+    return streamListening;
   };
   const processingLoop = async () => {
     while (streamListening) {
@@ -588,11 +622,12 @@ export const createStreamProcessor = (user: AuthUser, provider: string, callback
       processingLoopPromise = processingLoop();
     },
     shutdown: async () => {
-      logApp.info(`[STREAM] Shutdown stream processor for ${user.user_email}`);
+      logApp.info(`[STREAM] Shutdown stream processor for ${provider}`);
       streamListening = false;
       if (processingLoopPromise) {
         await processingLoopPromise;
       }
+      logApp.info('[STREAM] Stream processor current promise terminated');
       if (client) {
         await client.disconnect();
       }
@@ -617,12 +652,6 @@ export const redisCreateWork = async (element: StoreObject) => {
 export const redisGetWork = async (internalId: string) => {
   return clientBase.hgetall(internalId);
 };
-// export const redisUpdateWork = async (id: string, input) => {
-//   const data = R.flatten(R.toPairs(input));
-//   return redisTx(clientBase, (tx) => {
-//     tx.hset(id, data);
-//   });
-// };
 export const redisUpdateWorkFigures = async (workId: string) => {
   const timestamp = now();
   const [, , fetched]: any = await redisTx(clientBase, async (tx) => {

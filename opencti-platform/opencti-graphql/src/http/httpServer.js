@@ -104,9 +104,8 @@ const listenServer = async () => {
         httpServer.on('close', () => {
           seeMiddleware.shutdown();
         });
-        httpServer.listen(PORT, () => {
-          resolve(httpServer);
-        });
+        const server = httpServer.listen(PORT);
+        resolve({ server });
       });
     } catch (e) {
       logApp.error('[OPENCTI] API start fail', { error: e });
@@ -115,12 +114,12 @@ const listenServer = async () => {
   });
 };
 
-const stopServer = async (httpServer) => {
+const stopServer = async ({ server }) => {
   return new Promise((resolve) => {
-    httpServer.close(() => {
+    server.close(() => {
       resolve();
     });
-    httpServer.emit('close'); // force server close
+    server.emit('close'); // force server close
   });
 };
 

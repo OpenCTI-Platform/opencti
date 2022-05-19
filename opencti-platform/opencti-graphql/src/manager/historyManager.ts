@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { createStreamProcessor, lockResource } from '../database/redis';
+import { createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
 import conf, { logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -113,7 +113,7 @@ const historyStreamHandler = async (streamEvents: Array<StreamEvent>) => {
 const initHistoryManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let scheduler: SetIntervalAsyncTimer;
-  let streamProcessor;
+  let streamProcessor: StreamProcessor;
   let syncListening = true;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
@@ -131,8 +131,6 @@ const initHistoryManager = () => {
       while (syncListening) {
         await wait(WAIT_TIME_ACTION);
       }
-      await streamProcessor.shutdown();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.info('[OPENCTI-MODULE] History manager already started by another API');
@@ -141,14 +139,8 @@ const initHistoryManager = () => {
       }
     } finally {
       if (lock) await lock.unlock();
+      if (streamProcessor) await streamProcessor.shutdown();
     }
-  };
-  const shutdown = async () => {
-    syncListening = false;
-    if (scheduler) {
-      return clearIntervalAsync(scheduler);
-    }
-    return true;
   };
   return {
     start: async () => {
@@ -168,10 +160,20 @@ const initHistoryManager = () => {
       }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
-        await historyHandler(lastEventId);
+        if (syncListening) {
+          await historyHandler(lastEventId);
+        }
       }, SCHEDULE_TIME);
     },
-    shutdown,
+    shutdown: async () => {
+      syncListening = false;
+      if (scheduler) {
+        logApp.info('[OPENCTI-MODULE] History manager before clearIntervalAsync');
+        await clearIntervalAsync(scheduler);
+        logApp.info('[OPENCTI-MODULE] History manager after clearIntervalAsync');
+      }
+      return true;
+    },
   };
 };
 const historyManager = initHistoryManager();

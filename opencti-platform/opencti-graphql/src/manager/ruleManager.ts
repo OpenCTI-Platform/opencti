@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { createStreamProcessor, EVENT_VERSION_V4, lockResource } from '../database/redis';
+import { createStreamProcessor, EVENT_VERSION_V4, lockResource, StreamProcessor } from '../database/redis';
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
@@ -300,7 +300,7 @@ const getInitRuleManager = async (): Promise<BasicStoreEntity> => {
 const initRuleManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let scheduler: SetIntervalAsyncTimer;
-  let streamProcessor;
+  let streamProcessor: StreamProcessor;
   let syncListening = true;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
@@ -314,14 +314,11 @@ const initRuleManager = () => {
       lock = await lockResource([RULE_ENGINE_KEY]);
       logApp.info('[OPENCTI-MODULE] Running rule manager');
       // Start the stream listening
-      // activatedRules = await getActivatedRules();
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
       await streamProcessor.start(lastEventId);
       while (syncListening) {
         await wait(WAIT_TIME_ACTION);
       }
-      await streamProcessor.shutdown();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.info('[OPENCTI-MODULE] Rule engine already started by another API');
@@ -330,14 +327,8 @@ const initRuleManager = () => {
       }
     } finally {
       if (lock) await lock.unlock();
+      if (streamProcessor) await streamProcessor.shutdown();
     }
-  };
-  const shutdown = async () => {
-    syncListening = false;
-    if (scheduler) {
-      return clearIntervalAsync(scheduler);
-    }
-    return true;
   };
   return {
     start: async () => {
@@ -346,7 +337,13 @@ const initRuleManager = () => {
         await ruleHandler(ruleManager.lastEventId);
       }, SCHEDULE_TIME);
     },
-    shutdown,
+    shutdown: async () => {
+      syncListening = false;
+      if (scheduler) {
+        return clearIntervalAsync(scheduler);
+      }
+      return true;
+    },
   };
 };
 const ruleEngine = initRuleManager();

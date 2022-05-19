@@ -80,36 +80,61 @@ export const startModules = async () => {
 };
 
 export const shutdownModules = async () => {
-  // region API initialization
-  await httpServer.shutdown();
-  logApp.info('[OPENCTI] API stopped');
+  // region API shutdown
+  let stopTime;
+  if (ENABLED_API) {
+    stopTime = new Date().getTime();
+    await httpServer.shutdown();
+    logApp.info(`[OPENCTI] API stopped in ${new Date().getTime() - stopTime} ms`);
+  }
   // endregion
   // region Expiration manager
-  await expiredManager.shutdown();
-  logApp.info('[OPENCTI-MODULE] Expiration manager stopped');
+  if (ENABLED_EXPIRED_MANAGER) {
+    stopTime = new Date().getTime();
+    await expiredManager.shutdown();
+    logApp.info(`[OPENCTI-MODULE] Expiration manager stopped in ${new Date().getTime() - stopTime} ms`);
+  }
   // endregion
   // region Retention manager
-  await retentionManager.shutdown();
-  logApp.info('[OPENCTI-MODULE] Retention manager stopped');
+  if (ENABLED_RETENTION_MANAGER) {
+    stopTime = new Date().getTime();
+    await retentionManager.shutdown();
+    logApp.info(`[OPENCTI-MODULE] Retention manager stopped in ${new Date().getTime() - stopTime} ms`);
+  }
   // endregion
   // region Task manager
-  await taskManager.shutdown();
-  logApp.info('[OPENCTI-MODULE] Task manager stopped');
+  if (ENABLED_TASK_SCHEDULER) {
+    stopTime = new Date().getTime();
+    await taskManager.shutdown();
+    logApp.info(`[OPENCTI-MODULE] Task manager stopped in ${new Date().getTime() - stopTime} ms`);
+  }
   // endregion
   // region Inference engine
-  await ruleEngine.shutdown();
-  logApp.info('[OPENCTI-MODULE] Rule engine stopped');
+  if (ENABLED_RULE_ENGINE) {
+    stopTime = new Date().getTime();
+    await ruleEngine.shutdown();
+    logApp.info(`[OPENCTI-MODULE] Rule engine stopped in ${new Date().getTime() - stopTime} ms`);
+  }
   // endregion
   // region Subscription manager
-  await subscriptionManager.shutdown();
-  logApp.info('[OPENCTI-MODULE] Subscription manager stopped');
+  if (ENABLED_SUBSCRIPTION_MANAGER) {
+    stopTime = new Date().getTime();
+    await subscriptionManager.shutdown();
+    logApp.info(`[OPENCTI-MODULE] Subscription manager stopped in  ${new Date().getTime() - stopTime} ms`);
+  }
   // endregion
   // region Sync manager
-  await syncManager.shutdown();
-  logApp.info('[OPENCTI-MODULE] Sync manager stopped');
+  if (ENABLED_SYNC_MANAGER) {
+    stopTime = new Date().getTime();
+    await syncManager.shutdown();
+    logApp.info(`[OPENCTI-MODULE] Sync manager stopped in ${new Date().getTime() - stopTime} ms`);
+  }
   // endregion
   // region History manager
-  await historyManager.shutdown();
-  logApp.info('[OPENCTI-MODULE] History manager stopped');
+  if (ENABLED_HISTORY_MANAGER) {
+    stopTime = new Date().getTime();
+    await historyManager.shutdown();
+    logApp.info(`[OPENCTI-MODULE] History manager stopped in ${new Date().getTime() - stopTime} ms`);
+  }
   // endregion
 };
