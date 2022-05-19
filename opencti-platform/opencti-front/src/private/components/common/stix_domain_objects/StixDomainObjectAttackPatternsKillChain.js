@@ -272,7 +272,7 @@ StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
 
 export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery(
-    $elementId: String
+    $elementId: [String]
     $elementWithTargetTypes: [String]
     $first: Int
     $filters: [StixCoreRelationshipsFiltering]

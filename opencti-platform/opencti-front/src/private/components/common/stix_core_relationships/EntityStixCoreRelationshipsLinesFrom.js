@@ -69,7 +69,7 @@ EntityStixCoreRelationshipsLinesFrom.propTypes = {
 
 export const entityStixCoreRelationshipsLinesFromQuery = graphql`
   query EntityStixCoreRelationshipsLinesFromPaginationQuery(
-    $fromId: String
+    $fromId: [String]
     $fromRole: String
     $toTypes: [String]
     $relationship_type: [String]
@@ -102,7 +102,7 @@ export default createPaginationContainer(
     data: graphql`
       fragment EntityStixCoreRelationshipsLinesFrom_data on Query
       @argumentDefinitions(
-        fromId: { type: "String" }
+        fromId: { type: "[String]" }
         fromRole: { type: "String" }
         toTypes: { type: "[String]" }
         relationship_type: { type: "[String]" }

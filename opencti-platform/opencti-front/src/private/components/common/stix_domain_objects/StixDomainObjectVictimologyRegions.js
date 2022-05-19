@@ -136,7 +136,7 @@ StixDomainObjectVictimologyRegionsComponent.propTypes = {
 
 export const stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery = graphql`
   query StixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery(
-    $fromId: String
+    $fromId: [String]
     $toTypes: [String]
     $relationship_type: [String]
     $first: Int

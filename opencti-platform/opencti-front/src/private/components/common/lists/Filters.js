@@ -19,6 +19,7 @@ import Chip from '@mui/material/Chip';
 import { withRouter } from 'react-router-dom';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
@@ -29,6 +30,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 import { statusFieldStatusesSearchQuery } from '../form/StatusField';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   filters: {
@@ -72,6 +74,8 @@ const directFilters = [
   'sightedBy',
   'container_type',
   'toSightingId',
+  'fromId',
+  'toId',
 ];
 const uniqFilters = [
   'revoked',
@@ -83,9 +87,177 @@ const uniqFilters = [
   'toSightingId',
   'basedOn',
 ];
+
+export const allEntityTypes = [
+  'Attack-Pattern',
+  'Campaign',
+  'Note',
+  'Observed-Data',
+  'Opinion',
+  'Report',
+  'Course-Of-Action',
+  'Individual',
+  'Organization',
+  'Sector',
+  'Indicator',
+  'Infrastructure',
+  'Intrusion-Set',
+  'City',
+  'Country',
+  'Region',
+  'Position',
+  'Malware',
+  'Threat-Actor',
+  'Tool',
+  'Vulnerability',
+  'Incident',
+  'Stix-Cyber-Observable',
+  'Stix-Core-Relationship',
+  'StixFile',
+  'IPv4-Addr',
+  'Domain-Name',
+  'Email-Address',
+  'Email-Message',
+  'indicates',
+  'targets',
+  'uses',
+  'located-at',
+];
+
 export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('start_date')
   || key.endsWith('end_date');
+
+export const filtersStixCoreObjectsSearchQuery = graphql`
+  query FiltersStixCoreObjectsSearchQuery(
+    $search: String
+    $types: [String]
+    $count: Int
+    $filters: [StixCoreObjectsFiltering]
+  ) {
+    stixCoreObjects(
+      search: $search
+      types: $types
+      first: $count
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          entity_type
+          ... on AttackPattern {
+            name
+            description
+            x_mitre_id
+          }
+          ... on Note {
+            attribute_abstract
+            content
+          }
+          ... on ObservedData {
+            first_observed
+            last_observed
+          }
+          ... on Opinion {
+            opinion
+          }
+          ... on Report {
+            name
+          }
+          ... on Campaign {
+            name
+            description
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on System {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+            description
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+          }
+          ... on ThreatActor {
+            name
+            description
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on Incident {
+            name
+            description
+          }
+          ... on StixCyberObservable {
+            observable_value
+          }
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          objectMarking {
+            edges {
+              node {
+                definition
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 class Filters extends Component {
   constructor(props) {
@@ -207,6 +379,54 @@ class Filters extends Component {
                   sightedByEntities,
                   this.state.entities.sightedBy,
                 ),
+              },
+            });
+          });
+        break;
+      case 'fromId':
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: ['Stix-Core-Object'],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 100,
+        })
+          .toPromise()
+          .then((data) => {
+            const fromIdEntities = R.pipe(
+              R.pathOr([], ['stixCoreObjects', 'edges']),
+              R.map((n) => ({
+                label: defaultValue(n.node),
+                value: n.node.id,
+                type: n.node.entity_type,
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                fromId: R.union(fromIdEntities, this.state.entities.fromId),
+              },
+            });
+          });
+        break;
+      case 'toId':
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: ['Stix-Core-Object'],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 100,
+        })
+          .toPromise()
+          .then((data) => {
+            const toIdEntities = R.pipe(
+              R.pathOr([], ['stixCoreObjects', 'edges']),
+              R.map((n) => ({
+                label: defaultValue(n.node),
+                value: n.node.id,
+                type: n.node.entity_type,
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                toId: R.union(toIdEntities, this.state.entities.toId),
               },
             });
           });
@@ -579,43 +799,7 @@ class Filters extends Component {
             type: n,
           })),
           R.sortWith([R.ascend(R.prop('label'))]),
-        )(
-          availableEntityTypes || [
-            'Attack-Pattern',
-            'Campaign',
-            'Note',
-            'Observed-Data',
-            'Opinion',
-            'Report',
-            'Course-Of-Action',
-            'Individual',
-            'Organization',
-            'Sector',
-            'Indicator',
-            'Infrastructure',
-            'Intrusion-Set',
-            'City',
-            'Country',
-            'Region',
-            'Position',
-            'Malware',
-            'Threat-Actor',
-            'Tool',
-            'Vulnerability',
-            'Incident',
-            'Stix-Cyber-Observable',
-            'Stix-Core-Relationship',
-            'StixFile',
-            'IPv4-Addr',
-            'Domain-Name',
-            'Email-Address',
-            'Email-Message',
-            'indicates',
-            'targets',
-            'uses',
-            'located-at',
-          ],
-        );
+        )(availableEntityTypes || allEntityTypes);
         if (this.props.allEntityTypes) {
           entitiesTypes = R.prepend(
             { label: t('entity_All'), value: 'all', type: 'entity' },
@@ -629,6 +813,62 @@ class Filters extends Component {
               entitiesTypes,
               this.state.entities.entity_type,
             ),
+          },
+        });
+        break;
+      case 'fromTypes':
+        // eslint-disable-next-line no-case-declarations
+        // eslint-disable-next-line no-case-declarations
+        let fromTypesTypes = R.pipe(
+          R.map((n) => ({
+            label: t(
+              n.toString()[0] === n.toString()[0].toUpperCase()
+                ? `entity_${n.toString()}`
+                : `relationship_${n.toString()}`,
+            ),
+            value: n,
+            type: n,
+          })),
+          R.sortWith([R.ascend(R.prop('label'))]),
+        )(availableEntityTypes || allEntityTypes);
+        if (this.props.allEntityTypes) {
+          fromTypesTypes = R.prepend(
+            { label: t('entity_All'), value: 'all', type: 'entity' },
+            fromTypesTypes,
+          );
+        }
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            fromTypes: R.union(fromTypesTypes, this.state.entities.fromTypes),
+          },
+        });
+        break;
+      case 'toTypes':
+        // eslint-disable-next-line no-case-declarations
+        // eslint-disable-next-line no-case-declarations
+        let toTypesTypes = R.pipe(
+          R.map((n) => ({
+            label: t(
+              n.toString()[0] === n.toString()[0].toUpperCase()
+                ? `entity_${n.toString()}`
+                : `relationship_${n.toString()}`,
+            ),
+            value: n,
+            type: n,
+          })),
+          R.sortWith([R.ascend(R.prop('label'))]),
+        )(availableEntityTypes || allEntityTypes);
+        if (this.props.allEntityTypes) {
+          toTypesTypes = R.prepend(
+            { label: t('entity_All'), value: 'all', type: 'entity' },
+            toTypesTypes,
+          );
+        }
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            toTypes: R.union(toTypesTypes, this.state.entities.toTypes),
           },
         });
         break;
@@ -807,10 +1047,20 @@ class Filters extends Component {
                 autoHighlight={true}
                 getOptionLabel={(option) => (option.label ? option.label : '')}
                 noOptionsText={t('No available options')}
-                options={entities[filterKey] ? entities[filterKey] : []}
+                options={
+                  ['fromId', 'toId'].includes(filterKey)
+                    // eslint-disable-next-line max-len
+                    ? (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0))
+                    : entities[filterKey] || []
+                }
                 onInputChange={this.searchEntities.bind(this, filterKey)}
                 inputValue={inputValues[filterKey] || ''}
                 onChange={this.handleChange.bind(this, filterKey)}
+                groupBy={
+                  ['fromId', 'toId'].includes(filterKey)
+                    ? (option) => option.type
+                    : null
+                }
                 isOptionEqualToValue={(option, value) => option.value === value.value
                 }
                 renderInput={(params) => (
@@ -896,13 +1146,23 @@ class Filters extends Component {
               selectOnFocus={true}
               autoSelect={false}
               autoHighlight={true}
+              options={
+                ['fromId', 'toId'].includes(filterKey)
+                  // eslint-disable-next-line max-len
+                  ? (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0))
+                  : entities[filterKey] || []
+              }
               getOptionLabel={(option) => (option.label ? option.label : '')}
               noOptionsText={t('No available options')}
-              options={entities[filterKey] ? entities[filterKey] : []}
               onInputChange={this.searchEntities.bind(this, filterKey)}
               onChange={this.handleChange.bind(this, filterKey)}
               isOptionEqualToValue={(option, value) => option.value === value}
               inputValue={inputValues[filterKey] || ''}
+              groupBy={
+                ['fromId', 'toId'].includes(filterKey)
+                  ? (option) => option.type
+                  : null
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}

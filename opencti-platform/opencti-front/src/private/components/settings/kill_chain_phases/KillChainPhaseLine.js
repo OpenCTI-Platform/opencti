@@ -29,6 +29,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 5,
   },
   goIcon: {
     position: 'absolute',

@@ -76,10 +76,10 @@ interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
     id: string;
     relationId: string;
   };
-  elementId?: string;
-  fromId?: string;
+  elementId?: string | Array<string>;
+  fromId?: string | Array<string>;
   fromRole?: string;
-  toId?: string;
+  toId?: string | Array<string>;
   toRole?: string;
   fromTypes?: Array<string>,
   toTypes?: Array<string>,
@@ -104,7 +104,7 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
   const { relationFilter } = args;
   const {
     filters = [],
-    elementId,
+    elementId = [],
     fromId,
     fromRole,
     toId,
@@ -138,7 +138,7 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
   }
   const nestedElement = [];
   if (elementId) {
-    nestedElement.push({ key: 'internal_id', values: [elementId] });
+    nestedElement.push({ key: 'internal_id', values: Array.isArray(elementId) ? elementId : [elementId] });
   }
   if (nestedElement.length > 0) {
     finalFilters.push({ key: 'connections', nested: nestedElement });
@@ -153,7 +153,7 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
   // region from filtering
   const nestedFrom = [];
   if (fromId) {
-    nestedFrom.push({ key: 'internal_id', values: [fromId] });
+    nestedFrom.push({ key: 'internal_id', values: Array.isArray(fromId) ? fromId : [fromId] });
   }
   if (fromTypes && fromTypes.length > 0) {
     nestedFrom.push({ key: 'types', values: fromTypes });
@@ -170,7 +170,7 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
   // region to filtering
   const nestedTo = [];
   if (toId) {
-    nestedTo.push({ key: 'internal_id', values: [toId] });
+    nestedTo.push({ key: 'internal_id', values: Array.isArray(toId) ? toId : [toId] });
   }
   if (toTypes && toTypes.length > 0) {
     nestedTo.push({ key: 'types', values: toTypes });
@@ -213,10 +213,10 @@ export const listAllRelations = async <T extends StoreProxyRelation>(user: AuthU
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   connectionFormat?: boolean;
-  elementId?: string;
-  fromId?: string;
+  elementId?: string | Array<string>;
+  fromId?: string | Array <string>;
   fromRole?: string;
-  toId?: string;
+  toId?: string | Array <string>;
   toRole?: string;
   fromTypes?: Array<string>;
   toTypes?: Array<string>;
@@ -240,7 +240,7 @@ const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> =
   // region element
   const nestedElement = [];
   if (elementId) {
-    nestedElement.push({ key: 'internal_id', values: [elementId] });
+    nestedElement.push({ key: 'internal_id', values: Array.isArray(elementId) ? elementId : [elementId] });
   }
   if (nestedElement.length > 0) {
     customFilters.push({ key: 'connections', nested: nestedElement });
@@ -256,7 +256,7 @@ const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> =
   // region from filtering
   const nestedFrom = [];
   if (fromId) {
-    nestedFrom.push({ key: 'internal_id', values: [fromId] });
+    nestedFrom.push({ key: 'internal_id', values: Array.isArray(fromId) ? fromId : [fromId] });
   }
   if (fromTypes && fromTypes.length > 0) {
     nestedFrom.push({ key: 'types', values: fromTypes });
@@ -273,7 +273,7 @@ const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> =
   // region to filtering
   const nestedTo = [];
   if (toId) {
-    nestedTo.push({ key: 'internal_id', values: [toId] });
+    nestedTo.push({ key: 'internal_id', values: Array.isArray(toId) ? toId : [toId] });
   }
   if (toTypes && toTypes.length > 0) {
     nestedTo.push({ key: 'types', values: toTypes });

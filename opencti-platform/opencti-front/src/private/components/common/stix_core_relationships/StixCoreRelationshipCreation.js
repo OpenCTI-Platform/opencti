@@ -138,7 +138,7 @@ const styles = (theme) => ({
 });
 
 export const stixCoreRelationshipCreationQuery = graphql`
-  query StixCoreRelationshipCreationQuery($fromId: String!, $toId: String!) {
+  query StixCoreRelationshipCreationQuery($fromId: [String]!, $toId: [String]!) {
     stixCoreRelationships(fromId: $fromId, toId: $toId) {
       edges {
         node {

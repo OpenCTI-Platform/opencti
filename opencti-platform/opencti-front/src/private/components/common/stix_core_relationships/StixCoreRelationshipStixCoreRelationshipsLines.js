@@ -137,7 +137,7 @@ StixCoreRelationshipStixCoreRelationshipsLinesContainer.propTypes = {
 
 export const stixCoreRelationshipStixCoreRelationshipsLinesQuery = graphql`
   query StixCoreRelationshipStixCoreRelationshipsLinesQuery(
-    $fromId: String
+    $fromId: [String]
     $relationship_type: [String]
     $count: Int!
     $cursor: ID
@@ -162,7 +162,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
     data: graphql`
         fragment StixCoreRelationshipStixCoreRelationshipsLines_data on Query
         @argumentDefinitions(
-          fromId: { type: "String" }
+          fromId: { type: "[String]" }
           relationship_type: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }

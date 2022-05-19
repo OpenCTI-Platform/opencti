@@ -7,11 +7,13 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { compose, pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
+import { Link } from 'react-router-dom';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { defaultValue } from '../../../../utils/Graph';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   item: {
@@ -28,6 +30,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 5,
   },
   goIcon: {
     position: 'absolute',
@@ -45,9 +48,23 @@ const styles = (theme) => ({
 
 class RelationshipsStixCoreRelationshipLineComponent extends Component {
   render() {
-    const { t, fd, classes, dataColumns, node, onLabelClick } = this.props;
+    const { t, fd, classes, dataColumns, node } = this.props;
+    const remoteNode = node.from ? node.from : node.to;
+    let link = null;
+    if (remoteNode) {
+      link = `${resolveLink(remoteNode.entity_type)}/${
+        remoteNode.id
+      }/knowledge/relations/${node.id}`;
+    }
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={link}
+        disabled={link === null}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
@@ -56,8 +73,9 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromType.width }}
+                style={{ width: dataColumns.fromType.width, display: 'flex' }}
               >
+                <ItemIcon type={node.from.entity_type} variant="inline" />
                 {node.from
                   ? t(`entity_${node.from.entity_type}`)
                   : t('Restricted')}
@@ -66,7 +84,9 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.fromName.width }}
               >
-                {node.from ? defaultValue(node.from, true) : t('Restricted')}
+                <code>
+                  {node.from ? defaultValue(node.from, true) : t('Restricted')}
+                </code>
               </div>
               <div
                 className={classes.bodyItem}
@@ -76,31 +96,30 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toType.width }}
+                style={{ width: dataColumns.toType.width, display: 'flex' }}
               >
+                <ItemIcon type={node.to.entity_type} variant="inline" />
                 {node.to ? t(`entity_${node.to.entity_type}`) : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.toName.width }}
               >
-                {node.to ? defaultValue(node, true) : t('Restricted')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={node.objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                />
+                <code>
+                  {node.to ? defaultValue(node.to, true) : t('Restricted')}
+                </code>
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
                 {fd(node.created_at)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {pathOr('', ['createdBy', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -119,6 +138,9 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
             </div>
           }
         />
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -3461,23 +3483,23 @@ class RelationshipsStixCoreRelationshipLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
                   width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
                   height="100%"
                 />
               </div>

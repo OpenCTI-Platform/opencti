@@ -42,6 +42,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 5,
   },
   goIcon: {
     position: 'absolute',
@@ -226,7 +227,7 @@ StixCyberObservableEntitiesLinesComponent.propTypes = {
 
 export const stixCyberObservableEntitiesLinesQuery = graphql`
   query StixCyberObservableEntitiesLinesPaginationQuery(
-    $elementId: String
+    $elementId: [String]
     $relationship_type: [String]
     $toTypes: [String]
     $startTimeStart: DateTime
@@ -265,7 +266,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
     data: graphql`
       fragment StixCyberObservableEntitiesLines_data on Query
       @argumentDefinitions(
-        elementId: { type: "String" }
+        elementId: { type: "[String]" }
         relationship_type: { type: "[String]" }
         toTypes: { type: "[String]" }
         startTimeStart: { type: "DateTime" }

@@ -70,7 +70,7 @@ EntityStixCoreRelationshipsLinesToTo.propTypes = {
 export const entityStixCoreRelationshipsLinesToQuery = graphql`
   query EntityStixCoreRelationshipsLinesToPaginationQuery(
     $fromTypes: [String]
-    $toId: String
+    $toId: [String]
     $toRole: String
     $relationship_type: [String]
     $search: String
@@ -103,7 +103,7 @@ export default createPaginationContainer(
       fragment EntityStixCoreRelationshipsLinesTo_data on Query
       @argumentDefinitions(
         fromTypes: { type: "[String]" }
-        toId: { type: "String" }
+        toId: { type: "[String]" }
         toRole: { type: "String" }
         relationship_type: { type: "[String]" }
         search: { type: "String" }

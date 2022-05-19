@@ -64,6 +64,10 @@ RelationshipsStixCoreRelationshipsLines.propTypes = {
 export const relationshipsStixCoreRelationshipsLinesQuery = graphql`
   query RelationshipsStixCoreRelationshipsLinesPaginationQuery(
     $search: String
+    $fromId: [String]
+    $toId: [String]
+    $fromTypes: [String]
+    $toTypes: [String]
     $count: Int!
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
@@ -73,6 +77,10 @@ export const relationshipsStixCoreRelationshipsLinesQuery = graphql`
     ...RelationshipsStixCoreRelationshipsLines_data
       @arguments(
         search: $search
+        fromId: $fromId
+        toId: $toId
+        fromTypes: $fromTypes
+        toTypes: $toTypes
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -3314,6 +3322,10 @@ export default createPaginationContainer(
       fragment RelationshipsStixCoreRelationshipsLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
+        fromId: { type: "[String]" }
+        toId: { type: "[String]" }
+        fromTypes: { type: "[String]" }
+        toTypes: { type: "[String]" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
         orderBy: {
@@ -3325,6 +3337,10 @@ export default createPaginationContainer(
       ) {
         stixCoreRelationships(
           search: $search
+          fromId: $fromId
+          toId: $toId
+          fromTypes: $fromTypes
+          toTypes: $toTypes
           first: $count
           after: $cursor
           orderBy: $orderBy
@@ -3374,7 +3390,10 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        types: fragmentVariables.types,
+        fromId: fragmentVariables.search,
+        toId: fragmentVariables.search,
+        fromTypes: fragmentVariables.search,
+        toTypes: fragmentVariables.search,
         search: fragmentVariables.search,
         count,
         cursor,

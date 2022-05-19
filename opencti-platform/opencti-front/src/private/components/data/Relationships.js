@@ -110,7 +110,7 @@ class Relationships extends Component {
       },
       fromName: {
         label: 'From name',
-        width: '15%',
+        width: '18%',
         isSortable: false,
       },
       relationship_type: {
@@ -125,18 +125,18 @@ class Relationships extends Component {
       },
       toName: {
         label: 'To name',
-        width: '15%',
-        isSortable: false,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
+        width: '18%',
         isSortable: false,
       },
       created_at: {
         label: 'Creation date',
         width: '10%',
         isSortable: true,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '15%',
+        isSortable: isRuntimeSort,
       },
       objectMarking: {
         label: 'Marking',
@@ -176,7 +176,10 @@ class Relationships extends Component {
               paginationOptions={paginationOptions}
               numberOfElements={numberOfElements}
               availableFilterKeys={[
-                'labelledBy',
+                'fromId',
+                'toId',
+                'fromTypes',
+                'toTypes',
                 'markedBy',
                 'created_start_date',
                 'created_end_date',
@@ -206,8 +209,19 @@ class Relationships extends Component {
 
   render() {
     const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
-    const finalFilters = convertFilters(filters);
+    let finalFilters = convertFilters(filters);
+    const fromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
+    const toId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
+    const fromTypes = R.head(finalFilters.filter((n) => n.key === 'fromTypes'))?.values || null;
+    const toTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
+    finalFilters = finalFilters.filter(
+      (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
+    );
     const paginationOptions = {
+      fromId,
+      toId,
+      fromTypes,
+      toTypes,
       search: searchTerm,
       filters: finalFilters,
       orderBy: sortBy,

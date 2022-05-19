@@ -42,7 +42,7 @@ const styles = (theme) => ({
 
 const entityStixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
   query EntityStixCoreRelationshipsTimelineStixCoreRelationshipQuery(
-    $elementId: String
+    $elementId: [String]
     $elementWithTargetTypes: [String]
     $relationship_type: [String]
     $startTimeStart: DateTime

@@ -72,8 +72,8 @@ StixCoreObjectStixCyberObservablesLines.propTypes = {
 
 export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
   query StixCoreObjectStixCyberObservablesLinesPaginationQuery(
-    $fromId: String
-    $toId: String
+    $fromId: [String]
+    $toId: [String]
     $fromTypes: [String]
     $toTypes: [String]
     $relationship_type: [String]
@@ -117,8 +117,8 @@ export default createPaginationContainer(
     data: graphql`
       fragment StixCoreObjectStixCyberObservablesLines_data on Query
       @argumentDefinitions(
-        fromId: { type: "String" }
-        toId: { type: "String" }
+        fromId: { type: "[String]" }
+        toId: { type: "[String]" }
         fromTypes: { type: "[String]" }
         toTypes: { type: "[String]" }
         relationship_type: { type: "[String]" }

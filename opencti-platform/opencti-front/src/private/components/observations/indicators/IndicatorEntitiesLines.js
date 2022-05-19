@@ -84,7 +84,7 @@ IndicatorEntitiesLines.propTypes = {
 
 export const indicatorEntitiesLinesQuery = graphql`
   query IndicatorEntitiesLinesPaginationQuery(
-    $fromId: String
+    $fromId: [String]
     $relationship_type: [String]
     $startTimeStart: DateTime
     $startTimeStop: DateTime
@@ -121,7 +121,7 @@ export default createPaginationContainer(
     data: graphql`
       fragment IndicatorEntitiesLines_data on Query
       @argumentDefinitions(
-        fromId: { type: "String" }
+        fromId: { type: "[String]" }
         relationship_type: { type: "[String]" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }

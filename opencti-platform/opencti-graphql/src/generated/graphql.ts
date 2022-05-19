@@ -9614,7 +9614,7 @@ export type QueryStixCoreRelationshipArgs = {
 export type QueryStixCoreRelationshipsArgs = {
   after?: InputMaybe<Scalars['ID']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  elementId?: InputMaybe<Scalars['String']>;
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   endDate?: InputMaybe<Scalars['DateTime']>;
   filterMode?: InputMaybe<FilterMode>;
@@ -9622,7 +9622,7 @@ export type QueryStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   fromRole?: InputMaybe<Scalars['String']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
@@ -9637,7 +9637,7 @@ export type QueryStixCoreRelationshipsArgs = {
   stix?: InputMaybe<Scalars['Boolean']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -11782,6 +11782,7 @@ export type StixCoreRelationshipsFiltering = {
 export enum StixCoreRelationshipsOrdering {
   Confidence = 'confidence',
   Created = 'created',
+  CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   EntityType = 'entity_type',
   KillChainPhase = 'killChainPhase',
