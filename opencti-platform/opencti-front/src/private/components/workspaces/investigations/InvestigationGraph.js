@@ -1421,7 +1421,6 @@ class InvestigationGraphComponent extends Component {
       decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
-    await this.resetAllFilters();
     const selectedTimeRangeInterval = computeTimeRangeInterval(
       this.graphObjects,
     );

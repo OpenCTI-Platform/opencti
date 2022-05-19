@@ -40,6 +40,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
+import Badge from '@mui/material/Badge';
 import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
 import { Field, Form, Formik } from 'formik';
@@ -558,7 +559,15 @@ class InvestigationGraphBar extends Component {
                     onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
                     size="large"
                   >
-                    <FilterListOutlined />
+                    <Badge
+                      badgeContent={Math.abs(
+                        currentStixCoreObjectsTypes.length
+                          - stixCoreObjectsTypes.length,
+                      )}
+                      color="secondary"
+                    >
+                      <FilterListOutlined />
+                    </Badge>
                   </IconButton>
                 </span>
               </Tooltip>
@@ -611,7 +620,14 @@ class InvestigationGraphBar extends Component {
                     onClick={this.handleOpenMarkedBy.bind(this)}
                     size="large"
                   >
-                    <CenterFocusStrongOutlined />
+                    <Badge
+                      badgeContent={Math.abs(
+                        currentMarkedBy.length - markedBy.length,
+                      )}
+                      color="secondary"
+                    >
+                      <CenterFocusStrongOutlined />
+                    </Badge>
                   </IconButton>
                 </span>
               </Tooltip>
@@ -664,7 +680,14 @@ class InvestigationGraphBar extends Component {
                     onClick={this.handleOpenCreatedBy.bind(this)}
                     size="large"
                   >
-                    <AccountBalanceOutlined />
+                    <Badge
+                      badgeContent={Math.abs(
+                        currentCreatedBy.length - createdBy.length,
+                      )}
+                      color="secondary"
+                    >
+                      <AccountBalanceOutlined />
+                    </Badge>
                   </IconButton>
                 </span>
               </Tooltip>
