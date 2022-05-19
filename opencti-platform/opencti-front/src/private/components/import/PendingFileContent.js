@@ -758,14 +758,10 @@ class PendingFileContentComponent extends Component {
     const originalObject = this.state.indexedObjects[objectId];
     const originalObjectWithDependencies = this.state.indexedObjectsWithDependencies[objectId];
     if (originalObject.type !== 'x-opencti-simple-observable') {
-      const newObject = R.assoc(
-        'type',
-        event.target.value.toLowerCase(),
-        originalObject,
-      );
+      const newObject = R.assoc('type', event.target.value, originalObject);
       const newObjectWithDependencies = R.assoc(
         'type',
-        event.target.value.toLowerCase(),
+        event.target.value,
         originalObjectWithDependencies,
       );
       const indexedObjects = R.assoc(
@@ -929,6 +925,7 @@ class PendingFileContentComponent extends Component {
       ...stixDomainObjectTypes.edges.map((n) => n.node.id),
       'Marking-Definition',
       'Identity',
+      'Location',
     ];
     const scoTypes = observableTypes.edges.map((n) => n.node.id);
     let entityId = null;
@@ -1174,7 +1171,7 @@ class PendingFileContentComponent extends Component {
                               'report',
                               'note',
                               'opinion',
-                            ].includes(object.type) || type === 'StixFile' ? (
+                            ].includes(object.type) ? (
                                 type
                               ) : (
                               <Select

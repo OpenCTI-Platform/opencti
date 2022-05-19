@@ -34,7 +34,7 @@ export const convertStixType = (s) => {
   if (type.includes('Ipv')) {
     type = type.replaceAll('Ipv', 'IPv');
   }
-  if (type === 'File') {
+  if (type === 'File' || type === 'Stixfile') {
     return 'StixFile';
   }
   return type;
