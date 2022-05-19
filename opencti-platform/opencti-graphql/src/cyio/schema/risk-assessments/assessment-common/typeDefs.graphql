@@ -1851,6 +1851,10 @@ type OscalTaskEdge {
     risk_level
     "Risk Status"
     risk_status
+    "Response Type"
+    response_type
+    "Lifecycle"
+    lifecycle
     "Occurrences"
     occurrences
     "Deadline"

@@ -63,6 +63,7 @@ class RelatedResponse extends Component {
       variant,
       onChange,
       onFocus,
+      multiple,
       containerstyle,
       editContext,
       disabled,
@@ -81,7 +82,7 @@ class RelatedResponse extends Component {
           name={name}
           label={label}
           fullWidth={true}
-          multiple={true}
+          multiple={multiple}
           containerstyle={containerstyle}
           variant={variant}
           disabled={disabled || false}

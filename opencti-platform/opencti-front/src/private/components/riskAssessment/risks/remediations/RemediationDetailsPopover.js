@@ -470,8 +470,8 @@ class RemediationDetailsPopover extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
-              color='secondary'
+                    onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+                    color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
               variant='contained'

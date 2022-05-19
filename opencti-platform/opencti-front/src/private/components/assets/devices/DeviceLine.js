@@ -112,7 +112,6 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.asset_id.width }}
               >
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.asset_id && node.asset_id}
               </div>
               <div
@@ -131,8 +130,6 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.fqdn.width }}
               >
-                {/* {fd(node.created)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.fqdn && node.fqdn}
               </div>
               <div
@@ -146,8 +143,6 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.network_id.width }}
               >
-                {/* {fd(node.modified)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.network_id && node.network_id}
               </div>
               <div

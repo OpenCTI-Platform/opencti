@@ -178,6 +178,7 @@ class RequiredResourceLineComponent extends Component {
       remediationId,
       displayRelation,
       entityId,
+      requiredResourceId,
     } = this.props;
     const { expanded } = this.state;
     const requiredResourceNode = pipe(
@@ -210,7 +211,7 @@ class RequiredResourceLineComponent extends Component {
                 <GroupIcon fontSize='large' color="disabled" />
                 <div style={{ marginLeft: '10px' }}>
                   <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
-                    {requiredResourceNode.name && t(requiredResourceNode.name)}
+                    {data.name && t(data.name)}
                   </Typography>
                   <Typography align="left" variant="subtitle1">
                     <Markdown
@@ -218,7 +219,7 @@ class RequiredResourceLineComponent extends Component {
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
-                      {requiredResourceNode.description && t(requiredResourceNode.description)}
+                      {data.description && t(data.description)}
                     </Markdown>
                   </Typography>
                 </div>
@@ -233,7 +234,7 @@ class RequiredResourceLineComponent extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {requiredResourceNode.name && t(requiredResourceNode.name)}
+                      {data.name && t(data.name)}
                     </Typography>
                   </div>
                 </Grid>
@@ -255,7 +256,6 @@ class RequiredResourceLineComponent extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {/* {t('Lorem Ipsum')} */}
                       {data.id && t(data.id)}
                     </Typography>
                   </div>
@@ -296,7 +296,7 @@ class RequiredResourceLineComponent extends Component {
                         parserOptions={{ commonmark: true }}
                         className="markdown"
                       >
-                        {requiredResourceNode.description && t(requiredResourceNode.description)}
+                        {data.description && t(data.description)}
                       </Markdown>
                     </div>
                   </div>
@@ -332,6 +332,7 @@ class RequiredResourceLineComponent extends Component {
             remediationId={remediationId}
             data={data}
             refreshQuery={refreshQuery}
+            requiredResourceId={requiredResourceId}
           />
         </div>
       </div>
@@ -352,6 +353,7 @@ RequiredResourceLineComponent.propTypes = {
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
+  requiredResourceId: PropTypes.string,
 };
 
 export default compose(

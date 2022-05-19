@@ -108,7 +108,6 @@ class NetworkLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.asset_id.width }}
               >
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.asset_id && node.asset_id}
               </div>
               <div
