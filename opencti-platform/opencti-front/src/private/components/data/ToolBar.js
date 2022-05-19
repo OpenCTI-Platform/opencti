@@ -36,7 +36,7 @@ import {
   LinkOffOutlined,
   LanguageOutlined,
 } from '@mui/icons-material';
-import { Label, Merge } from 'mdi-material-ui';
+import { AutoFix, Label, Merge } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -65,6 +65,7 @@ import { defaultValue } from '../../../utils/Graph';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security, {
+  UserContext,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
 } from '../../../utils/Security';
@@ -223,6 +224,7 @@ class ToolBar extends Component {
     this.state = {
       displayTask: false,
       displayUpdate: false,
+      displayRescan: false,
       displayMerge: false,
       actions: [],
       actionsInputs: [{}],
@@ -253,6 +255,14 @@ class ToolBar extends Component {
 
   handleOpenUpdate() {
     this.setState({ displayUpdate: true });
+  }
+
+  handleOpenRescan() {
+    this.setState({ displayRescan: true });
+  }
+
+  handleCloseRescan() {
+    this.setState({ displayRescan: false });
   }
 
   handleCloseUpdate() {
@@ -373,6 +383,14 @@ class ToolBar extends Component {
 
   handleChangeKeptEntityId(entityId) {
     this.setState({ keptEntityId: entityId });
+  }
+
+  handleLaunchRescan() {
+    const actions = [{ type: 'RULE_ELEMENT_RESCAN' }];
+    this.setState({ actions }, () => {
+      this.handleCloseRescan();
+      this.handleOpenTask();
+    });
   }
 
   handleLaunchMerge() {
@@ -1042,6 +1060,25 @@ class ToolBar extends Component {
                 </IconButton>
               </span>
             </Tooltip>
+            <UserContext.Consumer>
+              {({ helper }) => {
+                const label = helper.isRuleEngineEnable() ? 'Rule rescan' : 'Rule rescan (engine is disabled)';
+                const buttonDisable = !helper.isRuleEngineEnable() || numberOfSelectedElements === 0
+                    || this.state.processing;
+                return <Tooltip title={t(label)}>
+                  <span>
+                    <IconButton
+                        aria-label="update"
+                        disabled={buttonDisable}
+                        onClick={this.handleOpenRescan.bind(this)}
+                        color="primary"
+                        size="large">
+                      <AutoFix />
+                    </IconButton>
+                  </span>
+                </Tooltip>;
+              }}
+            </UserContext.Consumer>
             <Tooltip title={t('Merge')}>
               <span>
                 <IconButton
@@ -1558,6 +1595,50 @@ class ToolBar extends Component {
                 classes={{ root: classes.button }}
               >
                 {t('Merge')}
+              </Button>
+            </div>
+          </div>
+        </Drawer>
+        <Drawer
+            open={this.state.displayRescan}
+            anchor="right"
+            elevation={1}
+            sx={{ zIndex: 1202 }}
+            classes={{ paper: classes.drawerPaper }}
+            onClose={this.handleCloseRescan.bind(this)}
+        >
+          <div className={classes.header}>
+            <IconButton
+                aria-label="Close"
+                className={classes.closeButton}
+                onClick={this.handleCloseRescan.bind(this)}
+                size="large"
+                color="primary"
+            >
+              <CloseOutlined fontSize="small" color="primary" />
+            </IconButton>
+            <Typography variant="h6">{t('Rule entity rescan')}</Typography>
+          </div>
+          <div className={classes.container}>
+            <Typography
+                variant="h4"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+            >
+              {t('Selected rules')}
+            </Typography>
+            <Alert severity="warning" style={{ marginTop: 20 }}>
+              {t(
+                'The elements will be rescan with all compatible activated rules.',
+              )}
+            </Alert>
+            <div className={classes.buttons}>
+              <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={this.handleLaunchRescan.bind(this)}
+                  classes={{ root: classes.button }}>
+                {t('Rescan')}
               </Button>
             </div>
           </div>

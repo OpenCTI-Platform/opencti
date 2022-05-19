@@ -725,7 +725,7 @@ enum TaskActionType {
   REMOVE
   REPLACE
   MERGE
-  RESCAN
+  RULE_ELEMENT_RESCAN
 }
 enum TaskContextType {
   ATTRIBUTE

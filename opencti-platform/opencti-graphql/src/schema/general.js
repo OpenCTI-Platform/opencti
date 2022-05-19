@@ -1,6 +1,8 @@
 import * as R from 'ramda';
 
 // General
+export const KNOWLEDGE_DELETE = 'KNDELETE';
+
 export const ID_INTERNAL = 'internal_id';
 export const ID_STANDARD = 'standard_id';
 export const INTERNAL_IDS_ALIASES = 'i_aliases_ids';

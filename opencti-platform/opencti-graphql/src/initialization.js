@@ -22,6 +22,7 @@ import { BYPASS, BYPASS_REFERENCE, ROLE_ADMINISTRATOR, SYSTEM_USER } from './uti
 import { smtpIsAlive } from './database/smtp';
 import { createStatus, createStatusTemplate } from './domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
+import { KNOWLEDGE_DELETE } from './schema/general';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -36,7 +37,6 @@ export const TAXII_CAPABILITIES = {
   description: 'Access Taxii feed',
   dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage Taxii collections', attribute_order: 2510 }],
 };
-export const KNOWLEDGE_DELETE = 'KNDELETE';
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,
   description: 'Access knowledge',

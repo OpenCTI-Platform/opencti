@@ -8,9 +8,8 @@ import { deleteElementById, storeLoadById, patchAttribute } from '../database/mi
 import { buildFilters } from '../database/repository';
 import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
-import { KNOWLEDGE_DELETE } from '../initialization';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
-import { RULE_PREFIX } from '../schema/general';
+import { RULE_PREFIX, KNOWLEDGE_DELETE } from '../schema/general';
 import { listEntities } from '../database/middleware-loader';
 
 export const MAX_TASK_ELEMENTS = 500;
@@ -26,6 +25,7 @@ export const ACTION_TYPE_REPLACE = 'REPLACE';
 export const ACTION_TYPE_MERGE = 'MERGE';
 export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
 export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
+export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 
 const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();

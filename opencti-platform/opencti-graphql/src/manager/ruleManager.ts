@@ -53,7 +53,7 @@ export const getManagerInfo = async (user: AuthUser): Promise<RuleManager> => {
   return { activated: ENABLED_RULE_ENGINE, ...ruleStatus };
 };
 
-const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
+export const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
   return {
     version: EVENT_VERSION_V4,
     type,

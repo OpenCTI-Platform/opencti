@@ -13442,7 +13442,7 @@ export enum TaskActionType {
   Merge = 'MERGE',
   Remove = 'REMOVE',
   Replace = 'REPLACE',
-  Rescan = 'RESCAN'
+  RuleElementRescan = 'RULE_ELEMENT_RESCAN'
 }
 
 export type TaskConnection = {

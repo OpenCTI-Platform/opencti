@@ -10,6 +10,7 @@ import {
   ACTION_TYPE_REPLACE,
   ACTION_TYPE_RULE_APPLY,
   ACTION_TYPE_RULE_CLEAR,
+  ACTION_TYPE_RULE_ELEMENT_RESCAN,
   executeTaskQuery,
   findAll,
   MAX_TASK_ELEMENTS,
@@ -26,7 +27,7 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   mergeEntities,
-  patchAttribute, storeLoadByIdWithRefs,
+  patchAttribute, stixLoadById, storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { now } from '../utils/format';
 import {
@@ -38,13 +39,16 @@ import {
 } from '../database/utils';
 import { elPaginate, elUpdate } from '../database/engine';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
+import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { rulesCleanHandler, rulesApplyHandler } from './ruleManager';
+import { rulesCleanHandler, rulesApplyHandler, buildInternalEvent } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
 import { listAllRelations } from '../database/middleware-loader';
-import { getRule } from '../domain/rules';
+import { getActivatedRules, getRule } from '../domain/rules';
+import { isStixRelationship } from '../schema/stixRelationship';
+import { isStixObject } from '../schema/stixCoreObject';
+import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -220,7 +224,6 @@ const executeMerge = async (user, context, element) => {
   const { values } = context;
   await mergeEntities(user, element.internal_id, values);
 };
-
 const executeRuleApply = async (user, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
@@ -228,10 +231,38 @@ const executeRuleApply = async (user, context, element) => {
   const event = await storeCreateEntityEvent(user, instance, '-', { publishStreamEvent: false });
   await rulesApplyHandler([event], [rule]);
 };
-
 const executeRuleClean = async (context, element) => {
   const { rule } = context;
   await rulesCleanHandler([element], [rule]);
+};
+const executeRuleElementRescan = async (user, context, element) => {
+  const { rules } = context ?? {};
+  const activatedRules = await getActivatedRules();
+  // Filter activated rules by context specification
+  const rulesToApply = rules ? activatedRules.filter((r) => rules.includes(r.id)) : activatedRules;
+  if (rulesToApply.length > 0) {
+    const ruleRescanTypes = rulesToApply.map((r) => r.scan.types).flat();
+    if (isStixRelationship(element.entity_type)) {
+      const needRescan = ruleRescanTypes.includes(element.entity_type);
+      if (needRescan) {
+        const data = await stixLoadById(user, element.internal_id);
+        const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
+        await rulesApplyHandler([event]);
+      }
+    } else if (isStixObject(element.entity_type)) {
+      const args = { connectionFormat: false, fromId: element.internal_id };
+      const relations = await listAllRelations(user, ABSTRACT_STIX_RELATIONSHIP, args);
+      for (let index = 0; index < relations.length; index += 1) {
+        const relation = relations[index];
+        const needRescan = ruleRescanTypes.includes(relation.entity_type);
+        if (needRescan) {
+          const data = await stixLoadById(user, relation.internal_id);
+          const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
+          await rulesApplyHandler([event], rulesToApply);
+        }
+      }
+    }
+  }
 };
 
 const executeProcessing = async (user, processingElements) => {
@@ -262,6 +293,9 @@ const executeProcessing = async (user, processingElements) => {
         }
         if (type === ACTION_TYPE_RULE_CLEAR) {
           await executeRuleClean(context, element);
+        }
+        if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
+          await executeRuleElementRescan(user, context, element);
         }
       }
     } catch (err) {
