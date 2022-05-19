@@ -95,6 +95,7 @@ const styles = (theme) => ({
 class CyioAddNotes extends Component {
   constructor(props) {
     super(props);
+    this.timeout = null;
     this.state = {
       open: false,
       search: '',
@@ -202,15 +203,14 @@ class CyioAddNotes extends Component {
 
   handleSearch(event) {
     const keyword = event.target.value;
-    if (keyword.length === 0) {
-      this.setState({ expanded: false });
-      return;
-    } else {
-      setTimeout(
-        () => this.setState({ search: keyword, expanded: true }),
-        2500
-      );
-    }
+    if (this.timeout) clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => {
+      if (keyword.length === 0) {
+        this.setState({ expanded: false });
+      } else {
+        this.setState({ search: keyword, expanded: true });
+      }
+    }, 1500);
   }
 
   render() {
@@ -275,7 +275,7 @@ class CyioAddNotes extends Component {
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <TextField
                   style={{ width: 495 }}
-                  onChange={(event) => setTimeout(() => this.handleSearch(event), 2000)}
+                  onChange={(event) => this.handleSearch(event)}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end" >
@@ -330,48 +330,14 @@ class CyioAddNotes extends Component {
                         />
                       );
                     }
-                    return (
-                      <List>
-                        {Array.from(Array(20), (e, i) => (
-                          <ListItem key={i} divider={true} button={false}>
-                            <ListItemIcon>
-                              <Skeleton
-                                animation="wave"
-                                variant="circle"
-                                width={30}
-                                height={30}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <Skeleton
-                                  animation="wave"
-                                  variant="rect"
-                                  width="90%"
-                                  height={15}
-                                  style={{ marginBottom: 10 }}
-                                />
-                              }
-                              secondary={
-                                <Skeleton
-                                  animation="wave"
-                                  variant="rect"
-                                  width="90%"
-                                  height={15}
-                                />
-                              }
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    );
+                    return <></>;
                   }}
                 />
               </div>
             </Collapse>
           </Dialog>
         </div>
-      </div >
+      </div>
     );
   }
 }
