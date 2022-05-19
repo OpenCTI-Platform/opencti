@@ -168,9 +168,7 @@ const initHistoryManager = () => {
     shutdown: async () => {
       syncListening = false;
       if (scheduler) {
-        logApp.info('[OPENCTI-MODULE] History manager before clearIntervalAsync');
         await clearIntervalAsync(scheduler);
-        logApp.info('[OPENCTI-MODULE] History manager after clearIntervalAsync');
       }
       return true;
     },
