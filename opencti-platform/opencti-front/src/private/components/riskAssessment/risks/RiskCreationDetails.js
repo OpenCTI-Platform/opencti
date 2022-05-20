@@ -17,6 +17,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
+import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -234,7 +235,7 @@ class RiskCreationDetailsComponent extends Component {
               </div>
               <div className="clearfix" />
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="riskDetailsDescription"
                 fullWidth={true}
                 multiline={true}

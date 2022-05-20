@@ -11,6 +11,9 @@ import Button from '@material-ui/core/Button';
 import PersonIcon from '@material-ui/icons/Person';
 import LayersIcon from '@material-ui/icons/Layers';
 import BuildIcon from '@material-ui/icons/Build';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import Chip from '@material-ui/core/Chip';
 import { InformationOutline, Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -235,7 +238,13 @@ class RemediationGeneralOverviewComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {remediation.description && t(remediation.description)}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {remediation.description && t(remediation.description)}
+                    </Markdown>
                   </div>
                 </div>
               </div>
