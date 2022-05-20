@@ -97,9 +97,9 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'linux':
       return <img src={linuxIcon} style={style} alt="linux-icon" />;
     case 'component':
-      return <img src={componentsIcon} style={style} alt="components-icon" />;
+      return <img src={softwareIcon} style={style} alt="software-icon" />;
     case 'inventory_item':
-      return <img src={inventoryItemIcon} style={style} alt="inventoryItem-icon" />;
+      return <img src={deviceIcon} style={style} alt="device-icon" />;
     case 'resource':
       return <img src={resourceIcon} style={style} alt="resource-icon" />;
     case 'location':

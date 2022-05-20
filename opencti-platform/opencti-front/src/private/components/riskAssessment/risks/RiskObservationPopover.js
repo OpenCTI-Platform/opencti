@@ -62,9 +62,10 @@ const styles = (theme) => ({
     height: '80px',
     overflowY: 'scroll',
   },
-  itemIcon: {
+  observationContainer: {
     color: theme.palette.primary.text,
     display: 'flex',
+    alignItems: 'center',
   },
 });
 
@@ -98,7 +99,6 @@ class RiskObservationPopover extends Component {
       R.pathOr([], ['subjects']),
       // R.mergeAll,
     )(data);
-
     return (
       <>
         <DialogTitle style={{ color: 'white' }}>
@@ -217,9 +217,17 @@ class RiskObservationPopover extends Component {
                   {data.subjects && data.subjects.map((subject, i) => {
                     if (subject && subject.subject_context === 'target') {
                       return (
-                        <div className={classes.itemIcon}>
-                          <ItemIcon key={i} type={subject.subject_type} />
-                          <Typography key={i} variant="h2" color="primary">
+                        <div className={classes.observationContainer}>
+                          <ItemIcon
+                            key={i}
+                            type={subject.subject_type}
+                            style={{ height: '26px', padding: '0 0 10px' }}
+                          />
+                          <Typography
+                            key={i} variant="h2"
+                            color="primary"
+                            style={{ padding: '0 10px' }}
+                          >
                             {subject.subject_ref && t(subject.subject_ref.name)}
                           </Typography>
                         </div>
