@@ -114,24 +114,18 @@ class SoftwareLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.version.width }}
               >
-                {/* {fd(node.created)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.version && node.version}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.cpeId.width }}
               >
-                {/* {fd(node.modified)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.cpe_identifier && node.cpe_identifier}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.swId.width }}
               >
-                {/* {fd(node.modified)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.software_identifier && node.software_identifier}
               </div>
               <div

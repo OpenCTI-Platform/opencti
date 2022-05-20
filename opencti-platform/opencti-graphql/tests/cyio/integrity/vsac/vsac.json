@@ -1,0 +1,66 @@
+{
+  "tests": [
+    {
+      "root": "vsac",
+      "test": "vsac.scan",
+      "describe": "Verifying Vulnerability Scan",
+      "expected": {
+        "scanName": {
+          "check": "equal",
+          "value": "438.nessus"
+        },
+        "scanAnalysis": {
+          "check": "exists"
+        },
+        "hostNum": {
+          "check": "equal",
+          "value": 183
+        },
+        "recordNum": {
+          "check": "equal",
+          "value": 1693
+        },
+        "hostScanDate": {
+          "check": "exists"
+        },
+        "totalHostNum": {
+          "check": "equal",
+          "value": 288
+        },
+        "scanId": {
+          "check": "exists"
+        },
+        "policyName": {
+          "check": "equal",
+          "value": "Internal Scan"
+        },
+        "totalRecordNum": {
+          "check": "equals",
+          "value": 18453
+        },
+        "reportName": {
+          "check": "equals",
+          "value": "TBC - Internal Scan - Weekly 3"
+        },
+        "scanVendor": {
+          "check": "exists"
+        },
+        "scanVendorName": {
+          "check": "equals",
+          "value": "Tenable"
+        },
+        "targetObservations": {
+          "check": "exists"
+        },
+        "uniqueCVECount": {
+          "check": "equals",
+          "value": 2422
+        },
+        "totalCVECount": {
+          "check": "equals",
+          "value": 598284
+        }
+      }
+    }
+  ]
+}

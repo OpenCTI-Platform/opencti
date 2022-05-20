@@ -221,7 +221,6 @@ class DeviceCardComponent extends Component {
                   {t('FQDN')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                   {node.fqdn && truncate(t(node.fqdn), 25)}
                 </Typography>
               </Grid>
@@ -251,7 +250,6 @@ class DeviceCardComponent extends Component {
                   {t('Network ID')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                   {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>

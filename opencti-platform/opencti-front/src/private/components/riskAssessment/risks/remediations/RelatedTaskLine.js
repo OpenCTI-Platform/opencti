@@ -17,8 +17,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Typography from '@material-ui/core/Typography';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
+import PersonIcon from '@material-ui/icons/Person';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
@@ -86,6 +85,11 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  avatarIcon: {
+    width: '35px',
+    height: '35px',
+    color: 'white',
   },
   cardContent: {
     display: 'flex',
@@ -250,7 +254,6 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {/* {t('Lorem Ipsum')} */}
                       {data.name && t(data.name)}
                     </Typography>
                   </div>
@@ -266,7 +269,6 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {/* {t('Lorem Ipsum')} */}
                       {data.id && t(data.id)}
                     </Typography>
                   </div>
@@ -329,7 +331,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
                     <div className={classes.cardContent}>
-                      <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                      <PersonIcon className={classes.avatarIcon} />
                       <div style={{ marginLeft: '10px' }}>
                         <Typography variant="subtitle1">
                           {responsibleRoles?.name && t(responsibleRoles?.name)}
