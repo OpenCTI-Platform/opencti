@@ -156,6 +156,7 @@ class RemediationCreation extends Component {
       R.dissoc('oscal_party'),
       R.assoc('origins', [{ origin_actors: [adaptedValues] }])
     )(values);
+
     CM(environmentDarkLight, {
       mutation: remediationCreationMutation,
       variables: {

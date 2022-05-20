@@ -213,7 +213,7 @@ class Risks extends Component {
           'name_m',
           'risk_level',
           'risk_status',
-          'risk_response',
+          'response_type',
           'deadline_start_date',
           'created_start_date',
           'created_end_date',
@@ -304,7 +304,7 @@ class Risks extends Component {
         width: '16%',
         isSortable: true,
       },
-      risk_response: {
+      response_type: {
         label: 'Response',
         width: '11%',
         isSortable: true,
@@ -354,7 +354,7 @@ class Risks extends Component {
           'name_m',
           'risk_level',
           'risk_status',
-          'risk_response',
+          'response_type',
           'deadline_start_date',
           'created_start_date',
           'created_end_date',
