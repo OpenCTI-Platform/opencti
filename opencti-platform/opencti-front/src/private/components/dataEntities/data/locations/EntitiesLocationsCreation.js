@@ -105,6 +105,8 @@ class EntitiesLocationsCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
       R.dissoc('created'),
+      values.address.length === 0
+      && R.dissoc('address'),
       R.dissoc('email_addresses'),
       R.dissoc('modified'),
     )(values);
@@ -117,8 +119,8 @@ class EntitiesLocationsCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.props.handleChandleLocationCreationlose();
-        this.prop.history.push('/data/entities/locations');
+        this.props.handleLocationCreation();
+        this.props.history.push('/data/entities/locations');
       },
       onError: (err) => {
         console.error(err);
@@ -154,7 +156,7 @@ class EntitiesLocationsCreation extends Component {
   }
 
   onReset() {
-    this.props.handleChandleLocationCreationlose();
+    this.props.handleLocationCreation();
   }
 
   render() {
