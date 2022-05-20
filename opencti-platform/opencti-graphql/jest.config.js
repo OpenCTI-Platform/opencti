@@ -1,7 +1,7 @@
 module.exports = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['./jest.setup.js'],
-  testRegex: '__tests__/.*.test.js$',
+  testRegex: 'tests/.*.test.js$',
   transform: {
     '\\.js$': ['babel-jest'],
     '\\.graphql$': 'jest-transform-graphql',
