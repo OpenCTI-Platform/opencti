@@ -15,6 +15,8 @@ import remarkParse from 'remark-parse';
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
+import ItemIcon from '../../../../../components/ItemIcon';
+
 const styles = (theme) => ({
   paper: {
     height: '100%',
@@ -292,7 +294,15 @@ class EntityPartyDetailsComponent extends Component {
                   <div className={classes.scrollBg}>
                     <div className={classes.scrollAddressDiv}>
                       <div className={classes.scrollObj}>
-                        {party.addresses && t(party.addresses.map((value) => value.street_address))}
+                        {party.addresses && party.addresses.map((address) => (
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <ItemIcon type={address.address_type} />
+                            <Typography>
+                              {t(`${address.street_address}, ${address.city}, ${address.administrative_area}, ${address.postal_code} ${address.country_code}`)}
+                            </Typography>
+                          </div>
+                        )
+                        )}
                       </div>
                     </div>
                   </div>

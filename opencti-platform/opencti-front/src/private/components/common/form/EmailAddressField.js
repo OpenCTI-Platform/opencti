@@ -75,7 +75,7 @@ const styles = (theme) => ({
   },
 });
 
-class DataAddressField extends Component {
+class EmailAddressField extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -96,8 +96,8 @@ class DataAddressField extends Component {
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
-    if (this.state.ipAddress.every((value) => value.phone_number !== this.state.value)) {
-      this.state.ipAddress.push({ 'phone_number': this.state.value, 'usage_type': this.state.selectedMode });
+    if (this.state.ipAddress.every((value) => value.email_address !== this.state.value)) {
+      this.state.ipAddress.push({ 'email_address': this.state.value, 'usage_type': this.state.selectedMode });
     }
     this.setState({ value: '', open: false, selectedMode: '' }, this.handleSubmit());
   }
@@ -109,8 +109,8 @@ class DataAddressField extends Component {
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
-    if (this.state.ipAddress.every((value) => value.phone_number !== this.state.value)) {
-      this.state.ipAddress[this.state.editValueKey].phone_number = this.state.value;
+    if (this.state.ipAddress.every((value) => value.email_address !== this.state.value)) {
+      this.state.ipAddress[this.state.editValueKey].email_address = this.state.value;
       this.state.ipAddress[this.state.editValueKey].usage_type = this.state.selectedMode;
     }
     this.setState({ value: '', editOpen: false, selectedMode: '' }, this.handleSubmit());
@@ -124,7 +124,7 @@ class DataAddressField extends Component {
     const editValue = this.state.ipAddress.filter((v, i) => i === key)[0];
     this.setState({
       selectedMode: editValue.usage_type,
-      value: editValue.phone_number,
+      value: editValue.email_address,
       editValueKey: key,
       editOpen: true,
     })
@@ -136,11 +136,6 @@ class DataAddressField extends Component {
 
   handleDeleteAddress(key) {
     this.setState({ ipAddress: this.state.ipAddress.filter((value, i) => i !== key) }, this.handleSubmit());
-  }
-
-  handleReset(){
-    this.props.setFieldValue(this.props.name, []);
-    this.setState({ ipAddress: [...this.props.addressValues] });
   }
 
   render() {
@@ -173,7 +168,7 @@ class DataAddressField extends Component {
                   <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                     <ItemIcon type={address.usage_type} />
                     <Typography>
-                      {(address.phone_number && t(address.phone_number.substr(0, 15).concat('...')))}
+                      {(address.email_address && t(address.email_address.substr(0, 15).concat('...')))}
                     </Typography>
                   </div>
                   <div style={{ display: 'flex' }}>
@@ -310,7 +305,7 @@ class DataAddressField extends Component {
   }
 }
 
-DataAddressField.propTypes = {
+EmailAddressField.propTypes = {
   name: PropTypes.string,
   device: PropTypes.object,
   classes: PropTypes.object,
@@ -318,4 +313,4 @@ DataAddressField.propTypes = {
   fldt: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(DataAddressField);
+export default compose(inject18n, withStyles(styles))(EmailAddressField);

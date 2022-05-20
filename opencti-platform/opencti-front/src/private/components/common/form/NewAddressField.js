@@ -32,6 +32,8 @@ import {
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import inject18n from '../../../../components/i18n';
+import TaskType from '../../common/form/TaskType';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -113,6 +115,10 @@ class NewAddressField extends Component {
     ));
   }
 
+  onReset() {
+    this.setState({ open: false });
+  }
+
   render() {
     const {
       t,
@@ -146,11 +152,7 @@ class NewAddressField extends Component {
               {this.state.ipAddress.map((address, key) => (
                 <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {address.address_type === 'office'
-                      ? <ApartmentOutlined />
-                      : address.address_type === 'mobile'
-                        ? <HomeOutlinedIcon />
-                        : <CallIcon />}
+                    <ItemIcon type={address.address_type} />
                     <Typography>
                       {t(`${address.street_address}, ${address.city}, ${address.administrative_area}, ${address.postal_code} ${address.country_code}`)}
                     </Typography>
@@ -176,7 +178,7 @@ class NewAddressField extends Component {
         </div>
         <Dialog
           open={this.state.open}
-          onClose={() => this.setState({ open: false })}
+          onClose={this.onReset.bind(this)}
           fullWidth={true}
           maxWidth='sm'
         >
@@ -192,7 +194,7 @@ class NewAddressField extends Component {
             }}
             validationSchema={NewAddressFieldValidation(t)}
             onSubmit={this.handleSubmit.bind(this)}
-          // onReset={this.onReset.bind(this)}
+            onReset={this.onReset.bind(this)}
           >
             {({
               submitForm,
@@ -211,7 +213,7 @@ class NewAddressField extends Component {
                       <Field
                         component={SelectField}
                         name="address_type"
-                        label='Usage Type'
+                        label='Address Type'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
@@ -285,11 +287,11 @@ class NewAddressField extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="country_code"
-                          variant='outlined'
+                        <TaskType
+                          name='country_code'
+                          taskType='Iso3166CountryCode'
                           fullWidth={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -350,7 +352,7 @@ class NewAddressField extends Component {
                 <DialogActions className={classes.dialogAction}>
                   <Button
                     variant='outlined'
-                    onClick={() => this.setState({ open: false })}
+                    onClick={handleReset}
                   >
                     {t('Cancel')}
                   </Button>

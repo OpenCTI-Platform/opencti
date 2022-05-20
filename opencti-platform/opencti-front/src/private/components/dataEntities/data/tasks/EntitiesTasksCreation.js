@@ -313,6 +313,7 @@ class EntitiesTasksCreation extends Component {
                       <div className="clearfix" />
                       <TaskType
                           name="task_type"
+                          taskType='OscalTaskType'
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
