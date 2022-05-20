@@ -65,7 +65,6 @@ const styles = (theme) => ({
   itemIcon: {
     color: theme.palette.primary.text,
     display: 'flex',
-    flexDirection: 'column',
   },
 });
 
@@ -99,7 +98,7 @@ class RiskObservationPopover extends Component {
       R.pathOr([], ['subjects']),
       // R.mergeAll,
     )(data);
-    console.log('subjectTypes', subjectTypes);
+
     return (
       <>
         <DialogTitle style={{ color: 'white' }}>
@@ -209,12 +208,6 @@ class RiskObservationPopover extends Component {
                 <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
                   <MapIcon fontSize="small" style={{ marginRight: '8px' }} />Where
                 </Typography>
-                  <div className={classes.itemIcon}>
-                  {subjectTypes.map((subject, i) => (
-                    <ItemIcon key={i} type={subject.subject_type}
-                    />
-                  ))}
-                  </div>
               </Grid>
               <Grid item={true} xs={9}>
                 <DialogContentText>
@@ -224,9 +217,12 @@ class RiskObservationPopover extends Component {
                   {data.subjects && data.subjects.map((subject, i) => {
                     if (subject && subject.subject_context === 'target') {
                       return (
-                        <Typography key={i} variant="h2" color="primary">
-                          {subject.subject_ref && t(subject.subject_ref.name)}
-                        </Typography>
+                        <div className={classes.itemIcon}>
+                          <ItemIcon key={i} type={subject.subject_type} />
+                          <Typography key={i} variant="h2" color="primary">
+                            {subject.subject_ref && t(subject.subject_ref.name)}
+                          </Typography>
+                        </div>
                       );
                     }
                     return <></>;
