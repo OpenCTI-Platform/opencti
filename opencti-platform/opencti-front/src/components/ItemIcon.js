@@ -58,6 +58,8 @@ import componentsIcon from '../resources/images/assets/componentsIcon.svg';
 import userPersonIcon from '../resources/images/assets/userPersonIcon.svg';
 import partiesIcon from '../resources/images/assets/partiesIcon.svg';
 import locationsIcon from '../resources/images/assets/locationsIcon.svg';
+import inventoryItemIcon from '../resources/images/assets/inventoryItem.svg';
+import resourceIcon from '../resources/images/assets/resource.svg';
 
 const iconSelector = (type, variant, fontSize, color) => {
   let style = {};
@@ -96,10 +98,10 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <img src={linuxIcon} style={style} alt="linux-icon" />;
     case 'component':
       return <img src={componentsIcon} style={style} alt="components-icon" />;
-    // case 'inventory_item':
-    //   return <img src={componentsIcon} style={style} alt="components-icon" />;
-    // case 'resource':
-    //   return <img src={componentsIcon} style={style} alt="components-icon" />;
+    case 'inventory_item':
+      return <img src={inventoryItemIcon} style={style} alt="inventoryItem-icon" />;
+    case 'resource':
+      return <img src={resourceIcon} style={style} alt="resource-icon" />;
     case 'location':
       return <img src={locationsIcon} style={style} alt="locations-icon" />;
     case 'party':

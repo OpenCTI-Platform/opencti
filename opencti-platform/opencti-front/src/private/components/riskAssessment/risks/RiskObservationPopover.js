@@ -98,6 +98,7 @@ class RiskObservationPopover extends Component {
       R.pathOr([], ['subjects']),
       // R.mergeAll,
     )(data);
+
     return (
       <>
         <DialogTitle style={{ color: 'white' }}>

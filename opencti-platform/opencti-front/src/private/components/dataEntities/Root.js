@@ -46,40 +46,28 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/data/entities/assessment_platform"
-          component={AssessmentPlatformsEntities}
-        />
-        <BoundaryRoute
-          exact
           path="/data/entities/tasks"
           component={TasksEntities}
         />
-        <BoundaryRoute
-          exact
-          path="/data/entities/roles/:roleId"
-          render={(routeProps) => <RootRole {...routeProps} me={me} />}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/entities/tasks/:taskId"
-          render={(routeProps) => <RootTask {...routeProps} me={me} />}
-          // path="/data/entities/locations"
-          component={LocationsEntities}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/entities/responsible_parties"
-          component={ResponsiblePartiesEntities}
-        />
-
         <BoundaryRoute
           exact
           path="/data/entities/parties"
           component={PartiesEntities}
         />
         <BoundaryRoute
-          path="/data/entities/locations/:locationId"
-          render={(routeProps) => <RootLocation {...routeProps} me={me} />}
+          exact
+          path="/data/entities/locations"
+          component={LocationsEntities}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/assessment_platform"
+          component={AssessmentPlatformsEntities}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/responsible_parties"
+          component={ResponsiblePartiesEntities}
         />
 
         {/* Data Source Section */}
@@ -95,15 +83,8 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/data/data source/assessment_platform"
-          component={AssessmentPlatformsDataSource}
-        />
-        <BoundaryRoute
-          exact
-          // path="/data/entities/parties"
-          component={PartiesEntities}
-          path="/data/data source/responsible_parties"
-          // component={ResponsiblePartiesDataSource}
+          path="/data/data source/tasks"
+          component={TasksDataSource}
         />
         <BoundaryRoute
           exact
@@ -112,21 +93,24 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/data/data source/tasks"
-          component={TasksDataSource}
+          path="/data/data source/locations"
+          component={LocationsDataSource}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/data source/assessment_platform"
+          component={AssessmentPlatformsDataSource}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/data source/responsible_parties"
+          component={ResponsiblePartiesDataSource}
         />
 
         {/* Entities Root Path Section */}
 
         <BoundaryRoute
           exact
-          path="/data/data source/locations"
-          component={LocationsDataSource}
-        />
-        <BoundaryRoute
-          exact
-          // path="/data/data source"
-          component={DataSources}
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
         />
@@ -141,13 +125,17 @@ class Root extends Component {
           render={(routeProps) => <RootParty {...routeProps} me={me} />}
         />
         <BoundaryRoute
-          exact
-          path="/data/entities/assessment_platform/:assessmentPlatformId"
-          render={(routeProps) => <RootAssessmentPlatform {...routeProps} me={me} />}
+          path="/data/entities/locations/:locationId"
+          render={(routeProps) => <RootLocation {...routeProps} me={me} />}
         />
         <BoundaryRoute
           path="/data/entities/responsible_parties/:respPartyId"
           render={(routeProps) => <RootResponsibleParty {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/assessment_platform/:assessmentPlatformId"
+          render={(routeProps) => <RootAssessmentPlatform {...routeProps} me={me} />}
         />
 
         {/* Data Source Root Path Section */}
