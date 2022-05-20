@@ -1629,7 +1629,7 @@ class ToolBar extends Component {
             </Typography>
             <Alert severity="warning" style={{ marginTop: 20 }}>
               {t(
-                'The elements will be rescan with all compatible activated rules.',
+                'Element will be rescan with all compatible activated rules',
               )}
             </Alert>
             <div className={classes.buttons}>
