@@ -26,8 +26,8 @@ class SessionStoreMemory extends Store {
 
     this.options = {};
     this.options.checkPeriod = options.checkPeriod;
-    this.options.max = options.max || Infinity;
-    this.options.ttl = options.ttl;
+    this.options.max = options.max || 1000;
+    this.options.ttl = options.ttl || 86400;
     this.options.dispose = options.dispose;
     this.options.stale = options.stale;
     this.options.noDisposeOnSet = options.noDisposeOnSet;
