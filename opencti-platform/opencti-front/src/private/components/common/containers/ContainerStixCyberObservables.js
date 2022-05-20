@@ -151,8 +151,13 @@ class ContainerStixCyberObservablesComponent extends Component {
       },
       observable_value: {
         label: 'Value',
-        width: '40%',
+        width: '30%',
         isSortable: isRuntimeSort,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '20%',
+        isSortable: false,
       },
       createdBy: {
         label: 'Creator',
@@ -161,7 +166,7 @@ class ContainerStixCyberObservablesComponent extends Component {
       },
       created_at: {
         label: 'Creation date',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       objectMarking: {

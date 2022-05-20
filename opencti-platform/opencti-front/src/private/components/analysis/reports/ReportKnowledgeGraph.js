@@ -1065,6 +1065,10 @@ class ReportKnowledgeGraphComponent extends Component {
     );
   }
 
+  handleApplySuggestion() {
+    this.forceUpdate();
+  }
+
   handleTimeRangeChange(selectedTimeRangeInterval) {
     this.setState({
       selectedTimeRangeInterval,
@@ -1133,6 +1137,8 @@ class ReportKnowledgeGraphComponent extends Component {
           currentMode={mode}
           adjust={this.handleZoomToFit.bind(this)}
           knowledge={true}
+          enableSuggestions={true}
+          onApplied={this.handleApplySuggestion.bind(this)}
         />
         <ReportKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}

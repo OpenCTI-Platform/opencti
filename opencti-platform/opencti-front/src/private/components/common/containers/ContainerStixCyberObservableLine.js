@@ -15,6 +15,7 @@ import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
+import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -102,6 +103,15 @@ class ContainerStixCyberObservableLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
                 {pathOr('', ['createdBy', 'name'], node)}
@@ -168,6 +178,15 @@ const ContainerStixCyberObservableLineFragment = createFragmentContainer(
         entity_type
         parent_types
         created_at
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
         createdBy {
           ... on Identity {
             id
@@ -230,6 +249,17 @@ class ContainerStixCyberObservableLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.observable_value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <Skeleton
                   animation="wave"

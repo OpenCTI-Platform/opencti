@@ -97,9 +97,10 @@ const LeftBar = ({ t, location, classes, theme }) => {
   return (
     <UserContext.Consumer>
       {({ helper }) => {
-        const hideThreats = helper.isEntityTypeHidden('Threat-Actor')
-          && helper.isEntityTypeHidden('Intrusion-Set')
-          && helper.isEntityTypeHidden('Campaign');
+        const hideThreats = helper.isEntityTypeHidden('Threats')
+          || (helper.isEntityTypeHidden('Threat-Actor')
+            && helper.isEntityTypeHidden('Intrusion-Set')
+            && helper.isEntityTypeHidden('Campaign'));
         return (
           <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
             <Toolbar />

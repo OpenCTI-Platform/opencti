@@ -32,6 +32,7 @@ import MenuItem from '@mui/material/MenuItem';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Markdown from 'react-markdown';
+import CircularProgress from '@mui/material/CircularProgress';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ItemMarking from '../../../../components/ItemMarking';
@@ -43,7 +44,6 @@ import {
   QueryRenderer,
 } from '../../../../relay/environment';
 import { defaultValue } from '../../../../utils/Graph';
-import { parse } from '../../../../utils/Time';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
@@ -70,7 +70,7 @@ const styles = () => ({
     float: 'right',
   },
   modes: {
-    margin: '-6px 20px 0 0',
+    margin: '-6px 20px 0 20px',
     float: 'right',
   },
   suggestions: {
@@ -458,8 +458,6 @@ class ContainerHeaderComponent extends Component {
             confidence: container.confidence,
             fromId: indicator.id,
             toId: selectedEntity[type],
-            start_time: parse(container.created).format(),
-            stop_time: parse(container.created).format(),
             createdBy: container.createdBy?.id,
             objectMarking: container.objectMarking.edges.map((m) => m.node.id),
           };
@@ -493,6 +491,9 @@ class ContainerHeaderComponent extends Component {
         }),
       );
       MESSAGING$.notifySuccess('Suggestion successfully applied.');
+      if (this.props.onApplied) {
+        this.props.onApplied();
+      }
       this.setState({
         applied: [...this.state.applied, type],
         applying: this.state.applying.filter((n) => n !== type),
@@ -652,7 +653,12 @@ class ContainerHeaderComponent extends Component {
                               fontSize="small"
                               disabled={suggestions.length === 0}
                               color={
-                                displaySuggestions ? 'secondary' : 'primary'
+                                // eslint-disable-next-line no-nested-ternary
+                                suggestions.length === 0
+                                  ? 'disabled'
+                                  : displaySuggestions
+                                    ? 'secondary'
+                                    : 'primary'
                               }
                             />
                           </Badge>
@@ -724,7 +730,14 @@ class ContainerHeaderComponent extends Component {
                                     || !selectedEntity[suggestion.type]
                                   }
                                 >
-                                  <AddTaskOutlined />
+                                  {applying.includes(suggestion.type) ? (
+                                    <CircularProgress
+                                      size={20}
+                                      color="inherit"
+                                    />
+                                  ) : (
+                                    <AddTaskOutlined />
+                                  )}
                                 </IconButton>
                               </ListItemSecondaryAction>
                             </ListItem>
@@ -765,6 +778,7 @@ ContainerHeaderComponent.propTypes = {
   currentMode: PropTypes.string,
   knowledge: PropTypes.bool,
   adjust: PropTypes.func,
+  onApplied: PropTypes.func,
 };
 
 const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {

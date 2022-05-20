@@ -16,6 +16,8 @@ import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
+import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   item: {
@@ -99,7 +101,16 @@ class ContainerStixDomainObjectLineComponent extends Component {
               >
                 {node.x_mitre_id
                   ? `[${node.x_mitre_id}] ${node.name}`
-                  : node.name}
+                  : defaultValue(node)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -229,6 +240,15 @@ const ContainerStixDomainObjectLineFragment = createFragmentContainer(
         ... on Incident {
           name
         }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
         createdBy {
           ... on Identity {
             id
@@ -291,6 +311,17 @@ class ContainerStixDomainObjectLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <Skeleton
                   animation="wave"
