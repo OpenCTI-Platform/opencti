@@ -21,7 +21,7 @@ const createSessionMiddleware = () => {
       cookie: {
         _expires: conf.get('app:session_timeout'),
         secure: booleanConf('app:https_cert:cookie_secure', false),
-        sameSite: 'strict',
+        sameSite: 'lax',
       },
     }),
     store,
