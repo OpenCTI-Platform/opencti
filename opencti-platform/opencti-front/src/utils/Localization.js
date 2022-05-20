@@ -547,6 +547,8 @@ const i18n = {
       'Related entities': 'Entités liées',
       'Indicators composed with this observable':
         'Indicateurs composés avec cet observable',
+      'You must provide at least one external reference for this type of entity':
+        "Vous devez fournir au moins une référence externe pour ce type d'entité",
       Overview: 'Aperçu',
       View: 'Aperçu',
       Relationships: 'Relations',
@@ -745,7 +747,8 @@ const i18n = {
       'Rule rescan': 'Rafraichissement des règles',
       'Rule entity rescan': 'Rafraichissement des règles pour les entités',
       'Selected rules': 'Règles sélectionnées',
-      'Element will be rescan with all compatible activated rules': 'L\'élément sera rafraichi avec toutes les règles activées et compatibles',
+      'Element will be rescan with all compatible activated rules':
+        "L'élément sera rafraichi avec toutes les règles activées et compatibles",
       'Launch a background task': 'Lancer une tâche de fond',
       'Take deletions into account': 'Prendre en compte les suppressions',
       Initiator: 'Initiateur',
@@ -2110,7 +2113,8 @@ const i18n = {
       'Rule rescan': '规则重新扫描',
       'Rule entity rescan': '规则实体重新扫描',
       'Selected rules': '选定的规则',
-      'Element will be rescan with all compatible activated rules': '将使用所有兼容的激活规则重新扫描元素',
+      'Element will be rescan with all compatible activated rules':
+        '将使用所有兼容的激活规则重新扫描元素',
       'Launch a background task': '启动后台任务',
       'Take deletions into account': '考虑删除',
       Initiator: '发起者',

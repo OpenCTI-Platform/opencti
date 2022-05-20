@@ -69,7 +69,6 @@ const styles = (theme) => ({
     margin: '5px 10px 0 0',
   },
   content: {
-    height: 40,
     width: 'auto',
     overflow: 'hidden',
   },
@@ -309,7 +308,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
             )}
           </Badge>
         </div>
-        <div className={classes.content}>
+        <div
+          className={classes.content}
+          style={{
+            height:
+              node.context_data.references
+              && node.context_data.references.length > 0
+                ? 'auto'
+                : 40,
+          }}
+        >
           <Paper classes={{ root: classes.paper }}>
             <div className={classes.date}>{nsdt(node.timestamp)}</div>
             <Tooltip
