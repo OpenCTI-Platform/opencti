@@ -137,9 +137,6 @@ class FeedPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem component="a" href={`/feed/${feedId}`}>
-            {t('View')}
-          </MenuItem>
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
