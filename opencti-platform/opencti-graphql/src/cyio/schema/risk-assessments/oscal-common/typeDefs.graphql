@@ -925,6 +925,11 @@
     role: OscalRole!
     "Identifies one or more references to the parties that are responsible for performing the associated role."
     parties: [OscalParty!]!
+    # DarkLight extensions
+    "Identifies a name given to the responsible party to make it friendlier."
+    name: String
+    "Identifies a summary of the reponsible party's purpose and associated responsibilities."
+    description: String
   }
   input OscalResponsiblePartyAddInput {
     # ResponsibleParty
@@ -932,7 +937,13 @@
     role: ID!
     "Identifies one or more references to the parties that are responsible for performing the associated role."
     parties: [ID!]!
+    # DarkLight extensions
+    "Identifies a name given to the responsible party to make it friendlier."
+    name: String
+    "Identifies a summary of the reponsible party's purpose and associated responsibilities."
+    description: String
   }
+
   "Defines identifying information about a Responsible Role in OSCAL"
   input OscalResponsibleRoleAddInput {
     # ResponsibleRole
@@ -940,11 +951,18 @@
     role: ID!
     "Identifies one or more references to the parties that are responsible for performing the associated role."
     parties: [ID]
+    # DarkLight extensions
+    "Identifies a name given to the responsible role to make it friendlier."
+    name: String
+    "Identifies a summary of the reponsible role's purpose and associated responsibilities."
+    description: String
   }
   # Ordering
   enum OscalResponsiblePartyOrdering {
     "Label"
     label_name
+    "Name"
+    name
   }
   # Filtering
   input OscalResponsiblePartyFiltering {
@@ -958,6 +976,8 @@
     label_name
     "Role Identifier"
     role_identifier
+    "Name"
+    name
   }
   # Pagination
   type OscalResponsiblePartyConnection {
