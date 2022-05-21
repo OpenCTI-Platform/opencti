@@ -233,7 +233,13 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 connection.add_callback_threadsafe(cb)
                 if work_id is not None:
                     self.api.work.report_expectation(
-                        work_id, {"error": error, "source": content if len(content) <  else "Bundle too large"}
+                        work_id,
+                        {
+                            "error": error,
+                            "source": content
+                            if len(content) < 50000
+                            else "Bundle too large",
+                        },
                     )
                 return False
             return None
