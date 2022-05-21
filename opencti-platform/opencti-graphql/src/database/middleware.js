@@ -2093,7 +2093,8 @@ const buildRelationTimeFilter = (input) => {
 
 const upsertElementRaw = async (user, element, type, updatePatch) => {
   // Upsert relation
-  const forceUpdate = updatePatch.update === true;
+  // const forceUpdate = updatePatch.update === true;
+  const forceUpdate = updatePatch.update === true || (typeof updatePatch.confidence === 'number' && typeof element.confidence === 'number' && updatePatch.confidence > element.confidence);
   const patchInputs = []; // Sourced inputs for event stream
   const impactedInputs = []; // All inputs impacted by modifications (+inner)
   const rawRelations = [];
@@ -2854,7 +2855,8 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
         // If creation is not by a reference
         // We can in best effort try to merge a common stix_id
         const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
-        if (resolvedInput.update === true) {
+        // if (resolvedInput.update === true) {
+        if (resolvedInput.update === true || (typeof resolvedInput.confidence === 'number' && typeof existingByStandard.confidence === 'number' && resolvedInput.confidence > existingByStandard.confidence)) {
           // The new one is new reference, merge all found entities
           // Target entity is existingByStandard by default or any other
           const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
