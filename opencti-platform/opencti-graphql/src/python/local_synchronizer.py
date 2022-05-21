@@ -70,7 +70,9 @@ class TestLocalSynchronizer:
                 }
                 self.opencti_target_client.stix2.import_bundle(bundle)
             elif msg.event == "update":
-                previous = jsonpatch.apply_patch(data["data"], data["context"]["reverse_patch"])
+                previous = jsonpatch.apply_patch(
+                    data["data"], data["context"]["reverse_patch"]
+                )
                 current = data["data"]
                 # In case of update always apply operation to the previous id
                 current["id"] = previous["id"]
@@ -93,9 +95,7 @@ class TestLocalSynchronizer:
 
     def sync(self):
         # Reset the connector state if exists
-        self.opencti_source_helper.set_state(
-            {"connectorLastEventId": '-'}
-        )
+        self.opencti_source_helper.set_state({"connectorLastEventId": "-"})
         # Start to listen the stream from start specified parameter
         self.stream = self.opencti_source_helper.listen_stream(
             self._process_message,

@@ -45,7 +45,7 @@ export const relatedContainers = async (user, containerId, args) => {
   if (elements.length === 0) {
     return buildPagination(0, null, [], 0);
   }
-  const elementsIds = elements.map((element) => element.id);
+  const elementsIds = elements.map((element) => element.id).slice(0, 800);
   const queryArgs = {
     ...args,
     filters: [...(args.filters || []), { key: buildRefRelationKey(RELATION_OBJECT), values: elementsIds }],
