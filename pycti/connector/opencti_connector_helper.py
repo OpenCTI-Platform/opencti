@@ -23,6 +23,8 @@ from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]
 
+logging.getLogger("pika").setLevel(logging.ERROR)
+
 
 def killProgramHook(etype, value, tb):
     traceback.print_exception(etype, value, tb)
@@ -856,7 +858,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     delivery_mode=2,  # make message persistent
                 ),
             )
-            logging.info("Bundle has been sent")
         except (UnroutableError, NackError) as e:
             logging.error("Unable to send bundle, retry...%s", e)
             self._send_bundle(channel, bundle, **kwargs)
