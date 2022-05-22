@@ -66,35 +66,33 @@ export const normalizeName = (name) => {
 const stixCyberObservableContribution = {
   definition: {
     // Observables
-    [C.ENTITY_AUTONOMOUS_SYSTEM]: [{ src: 'number' }],
-    [C.ENTITY_DIRECTORY]: [{ src: 'path' }],
-    [C.ENTITY_DOMAIN_NAME]: [{ src: 'value' }],
-    [C.ENTITY_EMAIL_ADDR]: [{ src: 'value' }],
-    [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }],
-    [C.ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [{ src: 'hashes' }, { src: 'url' }],
-    [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [[{ src: 'hashes' }], [{ src: 'name' }]],
-    [C.ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [
-      [{ src: 'hashes' }],
-      [{ src: 'serial_number' }],
-      [{ src: 'subject' }],
-    ],
-    [C.ENTITY_IPV4_ADDR]: [{ src: 'value' }],
-    [C.ENTITY_IPV6_ADDR]: [{ src: 'value' }],
-    [C.ENTITY_MAC_ADDR]: [{ src: 'value' }],
-    [C.ENTITY_MUTEX]: [{ src: NAME_FIELD }],
-    [C.ENTITY_NETWORK_TRAFFIC]: [
+    [C.ENTITY_AUTONOMOUS_SYSTEM]: [{ src: 'number' }], // number
+    [C.ENTITY_DIRECTORY]: [{ src: 'path' }], // path
+    [C.ENTITY_DOMAIN_NAME]: [{ src: 'value' }], // value
+    [C.ENTITY_EMAIL_ADDR]: [{ src: 'value' }], // value
+    [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }], // from_ref, subject, body
+    [C.ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [[{ src: 'hashes' }], [{ src: 'url' }]], // hashes, (!) payload_bin > Cause of volume
+    [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [[{ src: 'hashes' }], [{ src: 'name' }]], // hashes, name, (!) extensions, parent_directory_ref
+    [C.ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [[{ src: 'hashes' }], [{ src: 'serial_number' }], [{ src: 'subject' }]], // hashes, serial_number
+    [C.ENTITY_IPV4_ADDR]: [{ src: 'value' }], // value
+    [C.ENTITY_IPV6_ADDR]: [{ src: 'value' }], // value
+    [C.ENTITY_MAC_ADDR]: [{ src: 'value' }], // value
+    [C.ENTITY_MUTEX]: [{ src: NAME_FIELD }], // name
+    [C.ENTITY_NETWORK_TRAFFIC]: [ // start, (!) end, src_ref, dst_ref, src_port, dst_port, protocols, (!) extensions
       { src: 'start' },
+      { src: 'end' },
       { src: 'src', dest: 'src_ref' },
       { src: 'dst', dest: 'dst_ref' },
       { src: 'src_port' },
       { src: 'dst_port' },
       { src: 'protocols' },
     ],
-    [C.ENTITY_PROCESS]: [[{ src: 'pid', dependencies: ['command_line'] }, { src: 'command_line' }], [{ src: 'command_line' }]],
-    [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'vendor' }, { src: 'version' }],
-    [C.ENTITY_URL]: [{ src: 'value' }],
-    [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }],
-    [C.ENTITY_WINDOWS_REGISTRY_KEY]: [{ src: 'attribute_key' }, { src: 'values' }],
+    [C.ENTITY_PROCESS]: [{ src: 'pid', dependencies: ['command_line'] }, { src: 'command_line' }], // v4
+    [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'swid' }, { src: 'vendor' }, { src: 'version' }], // name, cpe, swid, vendor, version
+    [C.ENTITY_URL]: [{ src: 'value' }], // value
+    [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }], // account_type, user_id, account_login
+    [C.ENTITY_WINDOWS_REGISTRY_KEY]: [{ src: 'attribute_key', dst: 'key' }, { src: 'values' }], // key, values
+    // Added types
     [C.ENTITY_CRYPTOGRAPHIC_KEY]: [{ src: 'value' }],
     [C.ENTITY_CRYPTOGRAPHIC_WALLET]: [{ src: 'value' }],
     [C.ENTITY_HOSTNAME]: [{ src: 'value' }],
@@ -134,32 +132,33 @@ const stixEntityContribution = {
   definition: {
     // Internal
     [I.ENTITY_TYPE_SETTINGS]: () => OPENCTI_PLATFORM_UUID,
-    [I.ENTITY_TYPE_MIGRATION_STATUS]: [{ src: 'internal_id' }],
-    [I.ENTITY_TYPE_MIGRATION_REFERENCE]: [], // ALL
+    [I.ENTITY_TYPE_MIGRATION_STATUS]: () => uuidv4(),
+    [I.ENTITY_TYPE_MIGRATION_REFERENCE]: [{ src: 'title' }, { src: 'timestamp' }],
     [I.ENTITY_TYPE_GROUP]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_USER]: [{ src: 'user_email' }],
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
-    [I.ENTITY_TYPE_RULE_MANAGER]: [{ src: 'internal_id' }],
-    [I.ENTITY_TYPE_RULE]: [{ src: 'internal_id' }],
-    [I.ENTITY_TYPE_HISTORY]: [{ src: 'internal_id' }],
-    [I.ENTITY_TYPE_WORKSPACE]: [], // ALL
+    [I.ENTITY_TYPE_CONNECTOR]: () => uuidv4(),
+    [I.ENTITY_TYPE_RULE_MANAGER]: () => uuidv4(),
+    [I.ENTITY_TYPE_RULE]: () => uuidv4(),
+    [I.ENTITY_TYPE_HISTORY]: () => uuidv4(),
+    [I.ENTITY_TYPE_STATUS_TEMPLATE]: [{ src: NAME_FIELD }],
+    [I.ENTITY_TYPE_STATUS]: [{ src: 'template_id' }, { src: 'type' }],
+    [I.ENTITY_TYPE_WORKSPACE]: () => uuidv4(),
     [I.ENTITY_TYPE_FEED]: () => uuidv4(),
-    [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
-    [I.ENTITY_TYPE_TASK]: [], // ALL
-    [I.ENTITY_TYPE_RETENTION_RULE]: [], // ALL
-    [I.ENTITY_TYPE_SYNC]: [], // ALL
-    [I.ENTITY_TYPE_STREAM_COLLECTION]: [], // ALL
-    [I.ENTITY_TYPE_USER_SUBSCRIPTION]: [], // ALL
-    [I.ENTITY_TYPE_STATUS_TEMPLATE]: [{ src: NAME_FIELD }], // ALL
-    [I.ENTITY_TYPE_STATUS]: [{ src: 'template_id' }, { src: 'type' }], // ALL
+    [I.ENTITY_TYPE_TAXII_COLLECTION]: () => uuidv4(),
+    [I.ENTITY_TYPE_TASK]: () => uuidv4(),
+    [I.ENTITY_TYPE_RETENTION_RULE]: () => uuidv4(),
+    [I.ENTITY_TYPE_SYNC]: () => uuidv4(),
+    [I.ENTITY_TYPE_STREAM_COLLECTION]: () => uuidv4(),
+    [I.ENTITY_TYPE_USER_SUBSCRIPTION]: () => uuidv4(),
     // Stix Domain
+    // Entities
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_NOTE]: () => uuidv4(), // No standard_id
+    [D.ENTITY_TYPE_CONTAINER_NOTE]: () => uuidv4(),
     [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [{ src: 'objects' }],
-    [D.ENTITY_TYPE_CONTAINER_OPINION]: () => uuidv4(), // No standard_id
+    [D.ENTITY_TYPE_CONTAINER_OPINION]: () => uuidv4(),
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
     [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
@@ -213,7 +212,7 @@ const resolveContribution = (type) => {
 };
 export const idGen = (type, raw, data, namespace) => {
   // If empty data, generate an error message
-  if (R.isEmpty(data)) {
+  if (isEmptyField(data)) {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type];
     throw UnsupportedError(`Cant create key for ${type} from empty data`, { data: raw, properties });

@@ -142,7 +142,7 @@ import {
   isDatedInternalObject,
   isInternalObject,
 } from '../schema/internalObject';
-import { isStixCoreObject, isStixData, isStixObject } from '../schema/stixCoreObject';
+import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   booleanAttributes,
@@ -1434,30 +1434,30 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
       // In some condition the impacted element will not generate a new standard.
       // It's the case of HASH for example. If SHA1 is added after MD5, it's an impact without actual change
       preparedElements.push({ key: ID_STANDARD, value: [standardId] });
-      // For stix element, looking for keeping old stix ids
-      if (isStixData(instance)) {
-        // Standard id is generated from data depending on multiple ways and multiple attributes
-        if (isStandardIdUpgraded(instance, updatedInstance)) {
-          // If update already contains a change of the other stix ids
-          // we need to impact directly the impacted and updated related input
-          const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
-          if (stixInput) {
-            stixInput.value = R.uniq([...stixInput.value, instance.standard_id]);
-          } else {
-            // If no stix ids modification, add the standard id in the list and patch the element
-            const ids = R.uniq([...(instance[IDS_STIX] ?? []), instance.standard_id]);
-            preparedElements.push({ key: IDS_STIX, value: ids });
-          }
-        } else if (isStandardIdDowngraded(instance, updatedInstance)) {
-          // If standard_id is downgraded, we need to remove the old one from the other stix ids
-          const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
-          if (stixInput) {
-            stixInput.value = stixInput.value.filter((i) => i !== standardId);
-          } else {
-            // If no stix ids modification, add the standard id in the list and patch the element
-            const ids = (instance[IDS_STIX] ?? []).filter((i) => i !== standardId);
-            preparedElements.push({ key: IDS_STIX, value: ids });
-          }
+    }
+    // For stix element, looking for keeping old stix ids
+    if (isStixCyberObservable(instance.entity_type)) {
+      // Standard id is generated from data depending on multiple ways and multiple attributes
+      if (isStandardIdUpgraded(instance, updatedInstance)) {
+        // If update already contains a change of the other stix ids
+        // we need to impact directly the impacted and updated related input
+        const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
+        if (stixInput) {
+          stixInput.value = R.uniq([...stixInput.value, instance.standard_id]);
+        } else {
+          // If no stix ids modification, add the standard id in the list and patch the element
+          const ids = R.uniq([...(instance[IDS_STIX] ?? []), instance.standard_id]);
+          preparedElements.push({ key: IDS_STIX, value: ids });
+        }
+      } else if (isStandardIdDowngraded(instance, updatedInstance)) {
+        // If standard_id is downgraded, we need to remove the old one from the other stix ids
+        const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
+        if (stixInput) {
+          stixInput.operation = UPDATE_OPERATION_REPLACE;
+          stixInput.value = stixInput.value.filter((i) => i !== standardId);
+        } else {
+          // In case of downgrade we purge the other stix ids.
+          preparedElements.push({ key: IDS_STIX, value: [] });
         }
       }
     }
