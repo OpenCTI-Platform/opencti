@@ -1,5 +1,6 @@
-from stix2 import Report
+import uuid
 
+from stix2 import Report
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 
@@ -27,7 +28,11 @@ def test_crate_bundle():
     observables = [report]
 
     bundle = stix_splitter.stix2_create_bundle(
-        observables, use_json=False, event_version=None
+        "bundle--" + str(uuid.uuid4()),
+        0,
+        observables,
+        use_json=False,
+        event_version=None,
     )
 
     for key in ["type", "id", "spec_version", "objects"]:
@@ -35,7 +40,7 @@ def test_crate_bundle():
     assert len(bundle.keys()) == 4
 
     bundle = stix_splitter.stix2_create_bundle(
-        observables, use_json=False, event_version=1
+        "bundle--" + str(uuid.uuid4()), 0, observables, use_json=False, event_version=1
     )
     for key in ["type", "id", "spec_version", "objects", "x_opencti_event_version"]:
         assert key in bundle
