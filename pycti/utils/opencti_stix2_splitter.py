@@ -59,6 +59,7 @@ class OpenCTIStix2Splitter:
             bundle_data["id"] = "bundle--" + str(uuid.uuid4())
 
         raw_data = {}
+
         # Build flat list of elements
         for item in bundle_data["objects"]:
             raw_data[item["id"]] = item
