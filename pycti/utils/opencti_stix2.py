@@ -202,12 +202,12 @@ class OpenCTIStix2:
         :return: list of imported stix2 objects
         :rtype: List
         """
-        self.opencti.set_retry_number(retry_number)
         data = json.loads(json_data)
         return self.import_bundle(
             data,
             update,
             types,
+            retry_number,
         )
 
     def resolve_author(self, title: str) -> Optional[Identity]:
@@ -1696,7 +1696,11 @@ class OpenCTIStix2:
         return bundle
 
     def import_bundle(
-        self, stix_bundle: Dict, update: bool = False, types: List = None
+        self,
+        stix_bundle: Dict,
+        update: bool = False,
+        types: List = None,
+        retry_number: int = None,
     ) -> List:
         # Check if the bundle is correctly formatted
         if "type" not in stix_bundle or stix_bundle["type"] != "bundle":
@@ -1708,12 +1712,13 @@ class OpenCTIStix2:
             if "x_opencti_event_version" in stix_bundle
             else None
         )
+        if retry_number is not None:
+            self.opencti.set_retry_number(retry_number)
         stix2_splitter = OpenCTIStix2Splitter()
         try:
             bundles = stix2_splitter.split_bundle(stix_bundle, False, event_version)
         except RecursionError:
             bundles = [stix_bundle]
-
         # Import every elements in a specific order
         imported_elements = []
 
