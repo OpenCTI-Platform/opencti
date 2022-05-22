@@ -141,9 +141,16 @@ const Login = ({ classes, theme, settings }) => {
   const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
   const authSSOs = filter((p) => p.type === 'SSO', providers);
   const isAuthButtons = authSSOs.length > 0;
+  const isLoginMessage = loginMessage && loginMessage.length > 0;
   let loginHeight = 280;
-  if (isAuthButtons && isAuthForm) {
+  if (isAuthButtons && isAuthForm && isLoginMessage) {
+    loginHeight = 400;
+  } else if (isAuthButtons && isAuthForm) {
     loginHeight = 350;
+  } else if (isAuthButtons && isLoginMessage) {
+    loginHeight = 250;
+  } else if (isAuthForm && isLoginMessage) {
+    loginHeight = 400;
   } else if (isAuthButtons) {
     loginHeight = 150;
   }
