@@ -352,7 +352,7 @@ jobs:
       - run:
           name: Install buildx
           command: |
-            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64"
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
             curl --output docker-buildx \
               --silent --show-error --location --fail --retry 3 \
               "$BUILDX_BINARY_URL"
@@ -389,7 +389,7 @@ jobs:
       - run:
           name: Install buildx
           command: |
-            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64"
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
             curl --output docker-buildx \
               --silent --show-error --location --fail --retry 3 \
               "$BUILDX_BINARY_URL"
@@ -425,7 +425,7 @@ jobs:
       - run:
           name: Install buildx
           command: |
-            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64"
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
             curl --output docker-buildx \
               --silent --show-error --location --fail --retry 3 \
               "$BUILDX_BINARY_URL"
@@ -462,7 +462,7 @@ jobs:
       - run:
           name: Install buildx
           command: |
-            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64"
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
             curl --output docker-buildx \
               --silent --show-error --location --fail --retry 3 \
               "$BUILDX_BINARY_URL"
