@@ -47,7 +47,6 @@ import {
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
-  ENTITY_X509_V3_EXTENSIONS_TYPE,
   ENTITY_CRYPTOGRAPHIC_KEY,
   ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_HOSTNAME,
@@ -122,7 +121,6 @@ import {
   RELATION_SRC_PAYLOAD,
   RELATION_TO,
   RELATION_VALUES,
-  RELATION_X509_V3_EXTENSIONS,
   STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD,
 } from '../schema/stixCyberObservableRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
@@ -1198,9 +1196,6 @@ export const buildInputDataFromStix = (stix: StixObject): unknown => {
     };
     return { ...buildObservableInputFromStix(valueType), WindowsRegistryValueType: input } as MutationStixCyberObservableAddArgs;
   }
-  if (type === ENTITY_X509_V3_EXTENSIONS_TYPE) {
-    // TODO JRI x509 v3 extension need to be remove? Sam?
-  }
   if (type === ENTITY_CRYPTOGRAPHIC_KEY) {
     const cryptoKey = stix as StixCryptographicKey;
     const input:CryptographicKeyAddInput = { value: cryptoKey.value };
@@ -1555,8 +1550,7 @@ export const stixCyberObservableRelationshipsMapping = {
   [`${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [OBS_RELATION_CONTENT],
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_PROCESS}`]: [RELATION_CREATOR_USER],
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_WINDOWS_REGISTRY_KEY}`]: [RELATION_CREATOR_USER],
-  [`${ENTITY_WINDOWS_REGISTRY_KEY}_${ENTITY_WINDOWS_REGISTRY_VALUE_TYPE}`]: [RELATION_VALUES],
-  [`${ENTITY_X509_V3_EXTENSIONS_TYPE}_${ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE}`]: [RELATION_X509_V3_EXTENSIONS]
+  [`${ENTITY_WINDOWS_REGISTRY_KEY}_${ENTITY_WINDOWS_REGISTRY_VALUE_TYPE}`]: [RELATION_VALUES]
 };
 
 export const stixCyberObservableTypeFields = () => {

@@ -85,6 +85,8 @@ export const dateAttributes = [
   'attribute_date',
   'validity_not_before',
   'validity_not_after',
+  'private_key_usage_period_not_before',
+  'private_key_usage_period_not_after',
   'start',
   'end',
   'created_time',
@@ -222,7 +224,6 @@ const stixCyberObservableMutation = graphql`
     $UserAccount: UserAccountAddInput
     $WindowsRegistryKey: WindowsRegistryKeyAddInput
     $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
-    $X509V3ExtensionsType: X509V3ExtensionsTypeAddInput
     $Hostname: HostnameAddInput
     $CryptographicKey: CryptographicKeyAddInput
     $CryptocurrencyWallet: CryptocurrencyWalletAddInput
@@ -258,7 +259,6 @@ const stixCyberObservableMutation = graphql`
       UserAccount: $UserAccount
       WindowsRegistryKey: $WindowsRegistryKey
       WindowsRegistryValueType: $WindowsRegistryValueType
-      X509V3ExtensionsType: $X509V3ExtensionsType
       Hostname: $Hostname
       CryptographicKey: $CryptographicKey
       CryptocurrencyWallet: $CryptocurrencyWallet

@@ -891,7 +891,7 @@ const convertX509CertificateToStix = (instance: StoreCyberObservable, type: stri
     subject_public_key_algorithm: instance.subject_public_key_algorithm,
     subject_public_key_modulus: instance.subject_public_key_modulus,
     subject_public_key_exponent: instance.subject_public_key_exponent,
-    x509_v3_extensions: cleanObject({ // TODO JRI Remove the type from API? SAM?
+    x509_v3_extensions: cleanObject({
       basic_constraints: instance.basic_constraints,
       name_constraints: instance.name_constraints,
       policy_constraints: instance.policy_constraints,

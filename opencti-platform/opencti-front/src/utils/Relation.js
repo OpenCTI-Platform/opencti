@@ -97,7 +97,6 @@ const relationsTypesMapping = {
   'Indicator_Windows-Registry-Key': ['based-on'],
   'Indicator_Windows-Registry-Value-Type': ['based-on'],
   'Indicator_X509-Certificate': ['based-on'],
-  'Indicator_X509-v3-Extensions-Type': ['based-on'],
   'Indicator_Cryptographic-Key': ['based-on'],
   'Indicator_Cryptocurrency-Wallet': ['based-on'],
   Indicator_Hostname: ['based-on'],
@@ -148,7 +147,6 @@ const relationsTypesMapping = {
   Infrastructure_Text: ['consists-of'],
   'Infrastructure_User-Agent': ['consists-of'],
   'Infrastructure_X509-Certificate': ['consists-of'],
-  'Infrastructure_X509-V3-Extensions-Type': ['consists-of'],
   'Intrusion-Set_Attack-Pattern': ['uses'],
   'Intrusion-Set_City': ['originates-from', 'targets'],
   'Intrusion-Set_Country': ['originates-from', 'targets'],
@@ -304,11 +302,9 @@ const stixCyberObservableRelationshipTypesMapping = {
   StixFile_Text: ['contains'],
   'StixFile_User-Agent': ['contains'],
   'StixFile_x509-Certificate': ['contains'],
-  'StixFile_x509-v3-Extensions-Type': ['contains'],
   'User-Account_Process': ['creator-user'],
   'User-Account_Windows-Registry-Key': ['creator-user'],
   'Windows-Registry-Key_Windows-Registry-Value-Type': ['values'],
-  'x509-v3-Extensions-Type_x509-Certificate': ['x509-v3-extensions'],
 };
 
 export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {

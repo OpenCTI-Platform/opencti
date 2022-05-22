@@ -29,7 +29,6 @@ export const INPUT_PARENT = 'parent';
 export const INPUT_CHILD = 'child';
 export const INPUT_BODY_MULTIPART = 'bodyMultipart';
 export const INPUT_VALUES = 'values';
-export const INPUT_X509_V3_EXTENSIONS = 'x509V3Extensions';
 export const INPUT_LINKED = 'xOpenctiLinkedTo';
 
 export const RELATION_OPERATING_SYSTEM = 'operating-system';
@@ -59,7 +58,6 @@ export const RELATION_PARENT = 'parent';
 export const RELATION_CHILD = 'child';
 export const RELATION_BODY_MULTIPART = 'body-multipart';
 export const RELATION_VALUES = 'values';
-export const RELATION_X509_V3_EXTENSIONS = 'x509-v3-extensions';
 export const RELATION_LINKED = 'x_opencti_linked-to';
 
 export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = {
@@ -90,7 +88,6 @@ export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = 
   [RELATION_CHILD]: 'child_refs',
   [RELATION_BODY_MULTIPART]: 'body_multipart',
   [RELATION_VALUES]: 'values_refs',
-  [RELATION_X509_V3_EXTENSIONS]: 'x509_v3_extensions',
   [RELATION_LINKED]: 'x_opencti_linked_to_refs',
 };
 
@@ -128,7 +125,6 @@ export const STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD: { [k: string]: string } =
   child_refs: INPUT_CHILD,
   body_multipart: INPUT_BODY_MULTIPART,
   values_refs: INPUT_VALUES,
-  x509_v3_extensions: INPUT_X509_V3_EXTENSIONS,
   x_opencti_linked_to_refs: INPUT_LINKED,
 };
 export const STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
@@ -165,7 +161,6 @@ export const STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD: { [k: string]: string } = 
   [RELATION_CHILD]: INPUT_CHILD,
   [RELATION_BODY_MULTIPART]: INPUT_BODY_MULTIPART,
   [RELATION_VALUES]: INPUT_VALUES,
-  [RELATION_X509_V3_EXTENSIONS]: INPUT_X509_V3_EXTENSIONS,
   [RELATION_LINKED]: INPUT_LINKED,
 };
 
@@ -203,7 +198,6 @@ export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_CHILD,
   RELATION_BODY_MULTIPART,
   RELATION_VALUES,
-  RELATION_X509_V3_EXTENSIONS,
   RELATION_LINKED,
 ];
 schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);

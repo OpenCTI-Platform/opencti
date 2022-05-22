@@ -146,7 +146,6 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'User-Account':
     case 'Windows-Registry-Key':
     case 'Windows-Registry-Value-Type':
-    case 'X509-V3-Extensions-Type':
     case 'Cryptographic-Key':
     case 'Cryptocurrency-Wallet':
     case 'Hostname':

@@ -6397,6 +6397,23 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   subject_public_key_exponent: Int
   validity_not_before: DateTime
   validity_not_after: DateTime
+  # X509V3ExtensionsType
+  basic_constraints: String
+  name_constraints: String
+  policy_constraints: String
+  key_usage: String
+  extended_key_usage: String
+  subject_key_identifier: String
+  authority_key_identifier: String
+  subject_alternative_name: String
+  issuer_alternative_name: String
+  subject_directory_attributes: String
+  crl_distribution_points: String
+  inhibit_any_policy: String
+  private_key_usage_period_not_before: DateTime
+  private_key_usage_period_not_after: DateTime
+  certificate_policies: String
+  policy_mappings: String
   # Technical
   creator: User
   toStix: String
@@ -6420,6 +6437,23 @@ input X509CertificateAddInput {
   subject_public_key_exponent: Int
   validity_not_before: DateTime
   validity_not_after: DateTime
+  # X509V3ExtensionsType
+  basic_constraints: String
+  name_constraints: String
+  policy_constraints: String
+  key_usage: String
+  extended_key_usage: String
+  subject_key_identifier: String
+  authority_key_identifier: String
+  subject_alternative_name: String
+  issuer_alternative_name: String
+  subject_directory_attributes: String
+  crl_distribution_points: String
+  inhibit_any_policy: String
+  private_key_usage_period_not_before: DateTime
+  private_key_usage_period_not_after: DateTime
+  certificate_policies: String
+  policy_mappings: String
 }
 type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -7455,123 +7489,6 @@ input WindowsRegistryValueTypeAddInput {
   data: String
   data_type: String
 }
-type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  # StixObject
-  x_opencti_stix_ids: [String]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: String
-    toId: String
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
-  ): StixCoreRelationshipConnection
-  # StixCyberObservable
-  x_opencti_score: Int
-  x_opencti_description: String
-  observable_value: String!
-  indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCyberObservableRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: String
-    toId: String
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: [StixCyberObservableRelationshipsFiltering]
-    filterMode: FilterMode
-  ): StixCyberObservableRelationshipConnection
-  # X509V3ExtensionsType
-  basic_constraints: String
-  name_constraints: String
-  policy_constraints: String
-  key_usage: String
-  extended_key_usage: String
-  subject_key_identifier: String
-  authority_key_identifier: String
-  subject_alternative_name: String
-  issuer_alternative_name: String
-  subject_directory_attributes: String
-  crl_distribution_points: String
-  inhibit_any_policy: String
-  private_key_usage_period_not_before: DateTime
-  private_key_usage_period_not_after: DateTime
-  certificate_policies: String
-  policy_mappings: String
-  # Technical
-  creator: User
-  toStix: String
-  importFiles(first: Int): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-}
-input X509V3ExtensionsTypeAddInput {
-  basic_constraints: String
-  name_constraints: String
-  policy_constraints: String
-  key_usage: String
-  extended_key_usage: String
-  subject_key_identifier: String
-  authority_key_identifier: String
-  subject_alternative_name: String
-  issuer_alternative_name: String
-  subject_directory_attributes: String
-  crl_distribution_points: String
-  inhibit_any_policy: String
-  private_key_usage_period_not_before: DateTime
-  private_key_usage_period_not_after: DateTime
-  certificate_policies: String
-  policy_mappings: String
-}
 type CryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
@@ -8125,7 +8042,6 @@ union StixObjectOrStixRelationship =
   | UserAccount
   | WindowsRegistryKey
   | WindowsRegistryValueType
-  | X509V3ExtensionsType
   | CryptographicKey
   | CryptocurrencyWallet
   | Hostname
@@ -8180,7 +8096,6 @@ union StixCoreObjectOrStixCoreRelationship =
   | UserAccount
   | WindowsRegistryKey
   | WindowsRegistryValueType
-  | X509V3ExtensionsType
   | CryptographicKey
   | CryptocurrencyWallet
   | Hostname
@@ -10243,7 +10158,6 @@ type Mutation {
     UserAccount: UserAccountAddInput
     WindowsRegistryKey: WindowsRegistryKeyAddInput
     WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
-    X509V3ExtensionsType: X509V3ExtensionsTypeAddInput
     CryptographicKey: CryptographicKeyAddInput
     CryptocurrencyWallet: CryptocurrencyWalletAddInput
     Hostname: HostnameAddInput

@@ -100,7 +100,6 @@ const stixCyberObservableContribution = {
     [C.ENTITY_TEXT]: [{ src: 'value' }],
     // Types embedded
     [C.ENTITY_EMAIL_MIME_PART_TYPE]: [], // ALL
-    [C.ENTITY_X509_V3_EXTENSIONS_TYPE]: [], // ALL
     [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL
   },
   resolvers: {

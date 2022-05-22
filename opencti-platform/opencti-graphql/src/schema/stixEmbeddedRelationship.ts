@@ -67,11 +67,6 @@ export const stixRefsExtractor = (data: any, idGenerator: (key: string, data: un
       // eslint-disable-next-line
       return data[key].map((e: any) => idGenerator('Label', { value: e }));
     }
-    // cyber embedding (x509-v3-extensions, body_multipart)
-    if (key === 'x509_v3_extensions' && data[key]) {
-      // eslint-disable-next-line
-      return data[key].map((e: any) => idGenerator('X509-V3-Extensions-Type', e));
-    }
     if (key === 'body_multipart' && data[key]) {
       // eslint-disable-next-line
       return data[key].map((e: any) => idGenerator('Email-Mime-Part-Type', e));
