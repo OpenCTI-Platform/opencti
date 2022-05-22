@@ -1,4 +1,4 @@
-FROM node:18.2.0-alpine3.15 AS base
+FROM node:16-alpine AS base
 
 RUN corepack enable
 

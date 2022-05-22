@@ -5,7 +5,7 @@ jobs:
   build_frontend:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+      - image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
     resource_class: large
     steps:
       - run:
@@ -34,7 +34,7 @@ jobs:
   build_platform:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+      - image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
     resource_class: medium+
     steps:
       - run:
@@ -58,7 +58,7 @@ jobs:
   build_platform_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+      - image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
     resource_class: medium+
     steps:
       - run:
