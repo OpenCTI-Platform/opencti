@@ -66,6 +66,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.channel = self.pika_connection.channel()
         self.channel.basic_qos(prefetch_count=1)
         self.processing_count: int = 0
+        self.current_bundle_id: [str, None] = None
+        self.current_bundle_seq: int = 0
 
     @property
     def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
@@ -164,9 +166,22 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             processing_count = self.processing_count
             if self.processing_count == PROCESSING_COUNT:
                 processing_count = None  # type: ignore
-            self.api.stix2.import_bundle_from_json(
-                content, update, types, processing_count
-            )
+
+            data = json.loads(content)
+            # Check if everything is fine in data to ensure new logic
+            #### MAGIC OP! ####
+            if "id" in data and "x_opencti_seq" in data:
+                # If sequence has changed (received number greater than current number), wait 2 secs
+                if (
+                    self.current_bundle_id == data["id"]
+                    and data["x_opencti_seq"] > self.current_bundle_seq
+                ):
+                    time.sleep(2)
+                # Refresh current ID and current bundle seq
+                self.current_bundle_id = data["id"]
+                self.current_bundle_seq = data["x_opencti_seq"]
+
+            self.api.stix2.import_bundle(data, update, types, processing_count)
             # Ack the message
             cb = functools.partial(self.ack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
