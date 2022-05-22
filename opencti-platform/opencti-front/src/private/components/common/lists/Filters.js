@@ -703,7 +703,7 @@ class Filters extends Component {
             });
           });
         break;
-      case 'status_id':
+      case 'x_opencti_workflow_id':
         fetchQuery(statusFieldStatusesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           first: 50,
@@ -723,9 +723,12 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                status_id: R.union(
-                  statusEntities,
-                  this.state.entities.status_id,
+                x_opencti_workflow_id: R.uniqBy(
+                  R.prop('value'),
+                  R.union(
+                    statusEntities,
+                    this.state.entities.x_opencti_workflow_id,
+                  ),
                 ),
               },
             });

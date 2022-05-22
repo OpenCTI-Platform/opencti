@@ -1623,7 +1623,7 @@ enum StixDomainObjectsOrdering {
   valid_from
   valid_until
   indicator_pattern
-  status_id
+  x_opencti_workflow_id
   createdBy
   objectMarking
 }
@@ -1650,7 +1650,7 @@ enum StixDomainObjectsFilter {
   report_types
   x_opencti_organization_type
   published
-  status_id
+  x_opencti_workflow_id
 }
 input StixDomainObjectsFiltering {
   key: StixDomainObjectsFilter!
@@ -1758,7 +1758,7 @@ enum AttackPatternsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum AttackPatternsFilter {
   name
@@ -1773,7 +1773,7 @@ enum AttackPatternsFilter {
   labelledBy
   mitigatedBy
   revoked
-  status_id
+  x_opencti_workflow_id
 }
 input AttackPatternsFiltering {
   key: AttackPatternsFilter!
@@ -1899,7 +1899,7 @@ enum CampaignsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum CampaignsFilter {
   name
@@ -1911,7 +1911,7 @@ enum CampaignsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input CampaignsFiltering {
@@ -2030,7 +2030,7 @@ enum ContainersOrdering {
   updated_at
   createdBy
   objectMarking
-  status_id
+  x_opencti_workflow_id
 }
 enum ContainersFilter {
   entity_type
@@ -2046,7 +2046,7 @@ enum ContainersFilter {
   markedBy
   labelledBy
   objectContains
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input ContainersFiltering {
@@ -2148,7 +2148,7 @@ enum NotesOrdering {
   created_at
   updated_at
   createdBy
-  status_id
+  x_opencti_workflow_id
   objectMarking
 }
 enum NotesFilter {
@@ -2163,7 +2163,7 @@ enum NotesFilter {
   markedBy
   labelledBy
   objectContains
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input NotesFiltering {
@@ -2300,7 +2300,7 @@ enum ObservedDatasOrdering {
   created_at
   updated_at
   createdBy
-  status_id
+  x_opencti_workflow_id
   objectMarking
 }
 enum ObservedDatasFilter {
@@ -2315,7 +2315,7 @@ enum ObservedDatasFilter {
   markedBy
   labelledBy
   objectContains
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input ObservedDatasFiltering {
@@ -2452,7 +2452,7 @@ enum OpinionsOrdering {
   updated_at
   createdBy
   objectMarking
-  status_id
+  x_opencti_workflow_id
 }
 enum OpinionsFilter {
   explanation
@@ -2466,7 +2466,7 @@ enum OpinionsFilter {
   markedBy
   labelledBy
   objectContains
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input OpinionsFiltering {
@@ -2603,7 +2603,7 @@ enum ReportsOrdering {
   updated_at
   createdBy
   objectMarking
-  status_id
+  x_opencti_workflow_id
 }
 enum ReportsFilter {
   name
@@ -2618,7 +2618,7 @@ enum ReportsFilter {
   markedBy
   labelledBy
   objectContains
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input ReportsFiltering {
@@ -2754,7 +2754,7 @@ enum CoursesOfActionOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
   objectMarking
   x_mitre_id
 }
@@ -2768,7 +2768,7 @@ enum CoursesOfActionFilter {
   markedBy
   labelledBy
   mitigatedBy
-  status_id
+  x_opencti_workflow_id
   x_mitre_id
 }
 input CoursesOfActionFiltering {
@@ -2883,7 +2883,7 @@ enum IdentitiesOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum IdentitiesFilter {
   entity_type
@@ -2898,7 +2898,7 @@ enum IdentitiesFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input IdentitiesFiltering {
@@ -3019,7 +3019,7 @@ enum IndividualsOrdering {
   lastname
   created
   modified
-  status_id
+  x_opencti_workflow_id
   objectMarking
 }
 enum IndividualsFilter {
@@ -3032,7 +3032,7 @@ enum IndividualsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
 }
 input IndividualsFiltering {
   key: IndividualsFilter!
@@ -3152,7 +3152,7 @@ enum OrganizationsOrdering {
   created
   modified
   x_opencti_organization_type
-  status_id
+  x_opencti_workflow_id
 }
 enum OrganizationsFilter {
   name
@@ -3166,7 +3166,7 @@ enum OrganizationsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input OrganizationsFiltering {
@@ -3297,7 +3297,7 @@ enum SectorsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
   objectMarking
 }
 enum SectorsFilter {
@@ -3311,7 +3311,7 @@ enum SectorsFilter {
   markedBy
   labelledBy
   partOf
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input SectorsFiltering {
@@ -3432,7 +3432,7 @@ enum SystemsOrdering {
   lastname
   created
   modified
-  status_id
+  x_opencti_workflow_id
 }
 enum SystemsFilter {
   name
@@ -3444,7 +3444,7 @@ enum SystemsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input SystemsFiltering {
@@ -3574,7 +3574,7 @@ enum IndicatorsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
   objectMarking
 }
 enum IndicatorsFilter {
@@ -3596,7 +3596,7 @@ enum IndicatorsFilter {
   labelledBy
   basedOn
   indicates
-  status_id
+  x_opencti_workflow_id
   sightedBy
   revoked
 }
@@ -3732,7 +3732,7 @@ enum InfrastructuresOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum InfrastructuresFilter {
   name
@@ -3747,7 +3747,7 @@ enum InfrastructuresFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input InfrastructuresFiltering {
@@ -3865,7 +3865,7 @@ enum IntrusionSetsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum IntrusionSetsFilter {
   name
@@ -3877,7 +3877,7 @@ enum IntrusionSetsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input IntrusionSetsFiltering {
@@ -4002,7 +4002,7 @@ enum LocationsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum LocationsFilter {
   entity_type
@@ -4016,7 +4016,7 @@ enum LocationsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input LocationsFiltering {
@@ -4139,7 +4139,7 @@ enum PositionsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum PositionsFilter {
   created
@@ -4149,7 +4149,7 @@ enum PositionsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input PositionsFiltering {
@@ -4275,7 +4275,7 @@ enum CitiesOrdering {
   updated_at
   objectMarking
   objectLabel
-  status_id
+  x_opencti_workflow_id
 }
 enum CitiesFilter {
   name
@@ -4286,7 +4286,7 @@ enum CitiesFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
   revoked
 }
 input CitiesFiltering {
@@ -4405,7 +4405,7 @@ enum CountriesOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum CountriesFilter {
   created
@@ -4414,7 +4414,7 @@ enum CountriesFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
 }
 input CountriesFiltering {
   key: CountriesFilter!
@@ -4532,7 +4532,7 @@ enum RegionsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum RegionsFilter {
   created
@@ -4541,7 +4541,7 @@ enum RegionsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
 }
 input RegionsFiltering {
   key: RegionsFilter!
@@ -4666,7 +4666,7 @@ enum MalwaresOrdering {
   updated_at
   objectMarking
   objectLabel
-  status_id
+  x_opencti_workflow_id
 }
 enum MalwaresFilter {
   name
@@ -4682,7 +4682,7 @@ enum MalwaresFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
 }
 input MalwaresFiltering {
   key: MalwaresFilter!
@@ -4807,7 +4807,7 @@ enum ThreatActorsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum ThreatActorsFilter {
   name
@@ -4819,7 +4819,7 @@ enum ThreatActorsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
 }
 input ThreatActorsFiltering {
   key: ThreatActorsFilter!
@@ -4949,7 +4949,7 @@ enum ToolsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum ToolsFilter {
   name
@@ -4960,7 +4960,7 @@ enum ToolsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
 }
 input ToolsFiltering {
   key: ToolsFilter!
@@ -5078,7 +5078,7 @@ enum VulnerabilitiesOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
 }
 enum VulnerabilitiesFilter {
   name
@@ -5092,7 +5092,7 @@ enum VulnerabilitiesFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
 }
 input VulnerabilitiesFiltering {
   key: VulnerabilitiesFilter!
@@ -5215,7 +5215,7 @@ enum IncidentsOrdering {
   modified
   created_at
   updated_at
-  status_id
+  x_opencti_workflow_id
   objectMarking
 }
 enum IncidentsFilter {
@@ -5227,7 +5227,7 @@ enum IncidentsFilter {
   createdBy
   markedBy
   labelledBy
-  status_id
+  x_opencti_workflow_id
 }
 input IncidentsFiltering {
   key: IncidentsFilter!
@@ -8183,7 +8183,7 @@ enum StixCoreRelationshipsOrdering {
   toValidUntil
   toObservableValue
   toPatternType
-  status_id
+  x_opencti_workflow_id
   createdBy
 }
 enum StixCoreRelationshipsFilter {
@@ -8200,7 +8200,7 @@ enum StixCoreRelationshipsFilter {
   toCreatedAt
   toPatternType
   toMainObservableType
-  status_id
+  x_opencti_workflow_id
   revoked
   relationship_type
   fromTypes
@@ -8326,7 +8326,7 @@ enum StixSightingRelationshipsOrdering {
   toPatternType
   toCreatedAt
   attribute_count
-  status_id
+  x_opencti_workflow_id
 }
 enum StixSightingRelationshipsFilter {
   fromId
@@ -8342,7 +8342,7 @@ enum StixSightingRelationshipsFilter {
   labelledBy
   toPatternType
   toMainObservableType
-  status_id
+  x_opencti_workflow_id
 }
 input StixSightingRelationshipsFiltering {
   key: StixSightingRelationshipsFilter!

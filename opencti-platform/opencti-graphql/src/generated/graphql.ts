@@ -424,9 +424,9 @@ export enum AttackPatternsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
-  XMitreId = 'x_mitre_id'
+  XMitreId = 'x_mitre_id',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type AttackPatternsFiltering = {
@@ -441,9 +441,9 @@ export enum AttackPatternsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
-  XMitreId = 'x_mitre_id'
+  XMitreId = 'x_mitre_id',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Attribute = {
@@ -833,8 +833,8 @@ export enum CampaignsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type CampaignsFiltering = {
@@ -852,8 +852,8 @@ export enum CampaignsOrdering {
   Modified = 'modified',
   Name = 'name',
   RolePlayed = 'role_played',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export enum Capabilities {
@@ -913,8 +913,8 @@ export enum CitiesFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type CitiesFiltering = {
@@ -933,8 +933,8 @@ export enum CitiesOrdering {
   Name = 'name',
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type City = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
@@ -1322,8 +1322,8 @@ export enum ContainersFilter {
   ObjectContains = 'objectContains',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type ContainersFiltering = {
@@ -1341,8 +1341,8 @@ export enum ContainersOrdering {
   Name = 'name',
   ObjectMarking = 'objectMarking',
   Published = 'published',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type ContextData = {
@@ -1363,7 +1363,7 @@ export enum CountriesFilter {
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
-  StatusId = 'status_id'
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type CountriesFiltering = {
@@ -1379,8 +1379,8 @@ export enum CountriesOrdering {
   Description = 'description',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Country = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
@@ -1755,8 +1755,8 @@ export enum CoursesOfActionFilter {
   MitigatedBy = 'mitigatedBy',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  XMitreId = 'x_mitre_id'
+  XMitreId = 'x_mitre_id',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type CoursesOfActionFiltering = {
@@ -1772,9 +1772,9 @@ export enum CoursesOfActionOrdering {
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
-  XMitreId = 'x_mitre_id'
+  XMitreId = 'x_mitre_id',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -3746,9 +3746,9 @@ export enum IdentitiesFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
-  XOpenctiAliases = 'x_opencti_aliases'
+  XOpenctiAliases = 'x_opencti_aliases',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type IdentitiesFiltering = {
@@ -3763,8 +3763,8 @@ export enum IdentitiesOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Identity = {
@@ -4143,7 +4143,7 @@ export enum IncidentsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id'
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type IncidentsFiltering = {
@@ -4161,8 +4161,8 @@ export enum IncidentsOrdering {
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type IndexingMetrics = {
@@ -4388,13 +4388,13 @@ export enum IndicatorsFilter {
   PatternVersion = 'pattern_version',
   Revoked = 'revoked',
   SightedBy = 'sightedBy',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
   XOpenctiDetection = 'x_opencti_detection',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
-  XOpenctiScore = 'x_opencti_score'
+  XOpenctiScore = 'x_opencti_score',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type IndicatorsFiltering = {
@@ -4415,12 +4415,12 @@ export enum IndicatorsOrdering {
   Pattern = 'pattern',
   PatternType = 'pattern_type',
   PatternVersion = 'pattern_version',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
   XOpenctiDetection = 'x_opencti_detection',
-  XOpenctiScore = 'x_opencti_score'
+  XOpenctiScore = 'x_opencti_score',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObject & StixObject & {
@@ -4617,8 +4617,8 @@ export enum IndividualsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type IndividualsFiltering = {
@@ -4636,7 +4636,7 @@ export enum IndividualsOrdering {
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id'
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Inference = {
@@ -4848,8 +4848,8 @@ export enum InfrastructuresFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type InfrastructuresFiltering = {
@@ -4867,8 +4867,8 @@ export enum InfrastructuresOrdering {
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type InternalObject = {
@@ -5094,8 +5094,8 @@ export enum IntrusionSetsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type IntrusionSetsFiltering = {
@@ -5110,8 +5110,8 @@ export enum IntrusionSetsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type KillChainPhase = BasicObject & StixMetaObject & StixObject & {
@@ -5511,9 +5511,9 @@ export enum LocationsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
-  XOpenctiAliases = 'x_opencti_aliases'
+  XOpenctiAliases = 'x_opencti_aliases',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type LocationsFiltering = {
@@ -5530,8 +5530,8 @@ export enum LocationsOrdering {
   Longitude = 'longitude',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Log = {
@@ -5931,8 +5931,8 @@ export enum MalwaresFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type MalwaresFiltering = {
@@ -5952,8 +5952,8 @@ export enum MalwaresOrdering {
   Name = 'name',
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
@@ -7450,8 +7450,8 @@ export enum NotesFilter {
   Modified = 'modified',
   ObjectContains = 'objectContains',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type NotesFiltering = {
@@ -7468,8 +7468,8 @@ export enum NotesOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Number = {
@@ -7702,8 +7702,8 @@ export enum ObservedDatasFilter {
   NumberObserved = 'number_observed',
   ObjectContains = 'objectContains',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type ObservedDatasFiltering = {
@@ -7722,8 +7722,8 @@ export enum ObservedDatasOrdering {
   Modified = 'modified',
   NumberObserved = 'number_observed',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
@@ -7942,8 +7942,8 @@ export enum OpinionsFilter {
   ObjectContains = 'objectContains',
   Opinion = 'opinion',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type OpinionsFiltering = {
@@ -7960,8 +7960,8 @@ export enum OpinionsOrdering {
   Modified = 'modified',
   ObjectMarking = 'objectMarking',
   Opinion = 'opinion',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export enum OrderingMode {
@@ -8175,10 +8175,10 @@ export enum OrganizationsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
-  XOpenctiReliability = 'x_opencti_reliability'
+  XOpenctiReliability = 'x_opencti_reliability',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type OrganizationsFiltering = {
@@ -8193,8 +8193,8 @@ export enum OrganizationsOrdering {
   Created = 'created',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  XOpenctiOrganizationType = 'x_opencti_organization_type'
+  XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type OverviewMetrics = {
@@ -8408,8 +8408,8 @@ export enum PositionsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type PositionsFiltering = {
@@ -8426,8 +8426,8 @@ export enum PositionsOrdering {
   Name = 'name',
   PostalAddress = 'postal_address',
   PostalCode = 'postal_code',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -10452,7 +10452,7 @@ export enum RegionsFilter {
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
-  StatusId = 'status_id'
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type RegionsFiltering = {
@@ -10468,8 +10468,8 @@ export enum RegionsOrdering {
   Description = 'description',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type RegisterConnectorInput = {
@@ -10701,7 +10701,7 @@ export enum ReportsFilter {
   PublishedDay = 'published_day',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
-  StatusId = 'status_id'
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type ReportsFiltering = {
@@ -10719,8 +10719,8 @@ export enum ReportsOrdering {
   Name = 'name',
   ObjectMarking = 'objectMarking',
   Published = 'published',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type RetentionRule = {
@@ -11075,8 +11075,8 @@ export enum SectorsFilter {
   Name = 'name',
   PartOf = 'partOf',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type SectorsFiltering = {
@@ -11094,8 +11094,8 @@ export enum SectorsOrdering {
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type SessionDetail = {
@@ -11763,13 +11763,13 @@ export enum StixCoreRelationshipsFilter {
   Modified = 'modified',
   RelationshipType = 'relationship_type',
   Revoked = 'revoked',
-  StatusId = 'status_id',
   ToCreatedAt = 'toCreatedAt',
   ToId = 'toId',
   ToMainObservableType = 'toMainObservableType',
   ToName = 'toName',
   ToPatternType = 'toPatternType',
-  ToTypes = 'toTypes'
+  ToTypes = 'toTypes',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixCoreRelationshipsFiltering = {
@@ -11791,14 +11791,14 @@ export enum StixCoreRelationshipsOrdering {
   ObjectMarking = 'objectMarking',
   RelationshipType = 'relationship_type',
   StartTime = 'start_time',
-  StatusId = 'status_id',
   StopTime = 'stop_time',
   ToName = 'toName',
   ToObservableValue = 'toObservableValue',
   ToPatternType = 'toPatternType',
   ToValidFrom = 'toValidFrom',
   ToValidUntil = 'toValidUntil',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixCyberObservable = {
@@ -12387,12 +12387,12 @@ export enum StixDomainObjectsFilter {
   PatternType = 'pattern_type',
   Published = 'published',
   ReportTypes = 'report_types',
-  StatusId = 'status_id',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
   XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
-  XOpenctiOrganizationType = 'x_opencti_organization_type'
+  XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixDomainObjectsFiltering = {
@@ -12412,10 +12412,10 @@ export enum StixDomainObjectsOrdering {
   Name = 'name',
   ObjectMarking = 'objectMarking',
   Published = 'published',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
-  ValidUntil = 'valid_until'
+  ValidUntil = 'valid_until',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixEditMutations = {
@@ -12913,11 +12913,11 @@ export enum StixSightingRelationshipsFilter {
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
-  StatusId = 'status_id',
   ToId = 'toId',
   ToMainObservableType = 'toMainObservableType',
   ToPatternType = 'toPatternType',
-  XOpenctiNegative = 'x_opencti_negative'
+  XOpenctiNegative = 'x_opencti_negative',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixSightingRelationshipsFiltering = {
@@ -12937,14 +12937,14 @@ export enum StixSightingRelationshipsOrdering {
   Modified = 'modified',
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
-  StatusId = 'status_id',
   ToCreatedAt = 'toCreatedAt',
   ToName = 'toName',
   ToPatternType = 'toPatternType',
   ToValidFrom = 'toValidFrom',
   ToValidUntil = 'toValidUntil',
   UpdatedAt = 'updated_at',
-  XOpenctiNegative = 'x_opencti_negative'
+  XOpenctiNegative = 'x_opencti_negative',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StreamCollection = {
@@ -13390,8 +13390,8 @@ export enum SystemsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type SystemsFiltering = {
@@ -13408,7 +13408,7 @@ export enum SystemsOrdering {
   Lastname = 'lastname',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id'
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Task = {
@@ -13896,8 +13896,8 @@ export enum ThreatActorsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type ThreatActorsFiltering = {
@@ -13912,8 +13912,8 @@ export enum ThreatActorsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type TimeSeries = {
@@ -14112,7 +14112,7 @@ export enum ToolsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id'
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type ToolsFiltering = {
@@ -14127,8 +14127,8 @@ export enum ToolsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -14758,11 +14758,11 @@ export enum VulnerabilitiesFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
   XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiAttackVector = 'x_opencti_attack_vector',
   XOpenctiBaseScore = 'x_opencti_base_score',
-  XOpenctiBaseSeverity = 'x_opencti_base_severity'
+  XOpenctiBaseSeverity = 'x_opencti_base_severity',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type VulnerabilitiesFiltering = {
@@ -14777,11 +14777,11 @@ export enum VulnerabilitiesOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
-  StatusId = 'status_id',
   UpdatedAt = 'updated_at',
   XOpenctiAttackVector = 'x_opencti_attack_vector',
   XOpenctiBaseScore = 'x_opencti_base_score',
-  XOpenctiBaseSeverity = 'x_opencti_base_severity'
+  XOpenctiBaseSeverity = 'x_opencti_base_severity',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
