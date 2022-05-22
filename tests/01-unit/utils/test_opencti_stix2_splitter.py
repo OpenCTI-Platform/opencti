@@ -36,13 +36,20 @@ def test_crate_bundle():
         event_version=None,
     )
 
-    for key in ["type", "id", "spec_version", "objects"]:
+    for key in ["type", "id", "spec_version", "objects", "x_opencti_seq"]:
         assert key in bundle
-    assert len(bundle.keys()) == 4
+    assert len(bundle.keys()) == 5
 
     bundle = stix_splitter.stix2_create_bundle(
         "bundle--" + str(uuid.uuid4()), 0, observables, use_json=False, event_version=1
     )
-    for key in ["type", "id", "spec_version", "objects", "x_opencti_event_version"]:
+    for key in [
+        "type",
+        "id",
+        "spec_version",
+        "objects",
+        "x_opencti_event_version",
+        "x_opencti_seq",
+    ]:
         assert key in bundle
-    assert len(bundle.keys()) == 5
+    assert len(bundle.keys()) == 6
