@@ -269,7 +269,8 @@ class UserHistoryLineComponent extends Component {
           className={classes.content}
           style={{
             height:
-              node.context_data.references
+              node.context_data
+              && node.context_data.references
               && node.context_data.references.length > 0
                 ? 'auto'
                 : 40,

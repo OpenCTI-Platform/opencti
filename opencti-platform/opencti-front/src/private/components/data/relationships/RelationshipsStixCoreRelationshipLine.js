@@ -75,7 +75,7 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.fromType.width, display: 'flex' }}
               >
-                <ItemIcon type={node.from.entity_type} variant="inline" />
+                <ItemIcon type={node.from && node.from.entity_type} variant="inline" />
                 {node.from
                   ? t(`entity_${node.from.entity_type}`)
                   : t('Restricted')}
@@ -98,7 +98,7 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.toType.width, display: 'flex' }}
               >
-                <ItemIcon type={node.to.entity_type} variant="inline" />
+                <ItemIcon type={node.to && node.to.entity_type} variant="inline" />
                 {node.to ? t(`entity_${node.to.entity_type}`) : t('Restricted')}
               </div>
               <div

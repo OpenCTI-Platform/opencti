@@ -131,7 +131,7 @@ export const stixCoreRelationshipsExportAsk = async (user, args) => {
   const ordersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsOrdering;
   let newArgsFiltersFilters = argsFilters.filters;
   const initialParams = {};
-  if (argsFilters && argsFilters.filters && argsFilters.filters.length > 0) {
+  if (argsFilters.filters && argsFilters.filters.length > 0) {
     if (argsFilters.filters.filter((n) => n.key === 'fromId').length > 0) {
       initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'fromId')).values);
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'fromId');

@@ -435,9 +435,9 @@ class Settings extends Component {
                                 <MenuItem value="Threats">
                                   <Checkbox
                                     checked={
-                                      values.platform_hidden_types.indexOf(
-                                        'Threats',
-                                      ) > -1
+                                      (
+                                        values.platform_hidden_types || []
+                                      ).indexOf('Threats') > -1
                                     }
                                   />
                                   {t('Threats')}
@@ -450,9 +450,9 @@ class Settings extends Component {
                                 >
                                   <Checkbox
                                     checked={
-                                      values.platform_hidden_types.indexOf(
-                                        'Threat-Actor',
-                                      ) > -1
+                                      (
+                                        values.platform_hidden_types || []
+                                      ).indexOf('Threat-Actor') > -1
                                     }
                                     style={{ marginLeft: 10 }}
                                   />
@@ -466,9 +466,9 @@ class Settings extends Component {
                                 >
                                   <Checkbox
                                     checked={
-                                      values.platform_hidden_types.indexOf(
-                                        'Intrusion-Set',
-                                      ) > -1
+                                      (
+                                        values.platform_hidden_types || []
+                                      ).indexOf('Intrusion-Set') > -1
                                     }
                                     style={{ marginLeft: 10 }}
                                   />
@@ -482,9 +482,9 @@ class Settings extends Component {
                                 >
                                   <Checkbox
                                     checked={
-                                      values.platform_hidden_types.indexOf(
-                                        'Campaign',
-                                      ) > -1
+                                      (
+                                        values.platform_hidden_types || []
+                                      ).indexOf('Campaign') > -1
                                     }
                                     style={{ marginLeft: 10 }}
                                   />
