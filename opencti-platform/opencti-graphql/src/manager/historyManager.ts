@@ -10,7 +10,6 @@ import type { StreamEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import { EVENT_TYPE_UPDATE } from '../database/rabbitmq';
-import { isStixRelationship } from '../schema/stixRelationship';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import { listEntities } from '../database/middleware-loader';
 import type { StoreProxyEntity } from '../types/store';
@@ -18,7 +17,6 @@ import { BASE_TYPE_ENTITY } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-common';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -60,12 +58,12 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
       contextData.commit = updateEvent.commit?.message;
       contextData.references = updateEvent.commit?.references;
     }
-    if (isStixRelationship(event.data.type)) {
+    if (stix.type === 'relationship') {
       const rel: StixRelation = stix as StixRelation;
       contextData.from_id = rel.extensions[STIX_EXT_OCTI].source_ref;
       contextData.to_id = rel.extensions[STIX_EXT_OCTI].target_ref;
     }
-    if (isStixSightingRelationship(event.data.type)) {
+    if (stix.type === 'sighting') {
       const sighting: StixSighting = stix as StixSighting;
       contextData.from_id = sighting.extensions[STIX_EXT_OCTI].sighting_of_ref;
       contextData.to_id = R.head(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs);
