@@ -29,6 +29,7 @@ import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 import ThreatVictimologyAll from './ThreatVictimologyAll';
 import ThreatVictimologySectors from './ThreatVictimologySectors';
 import ThreatVictimologyCountries from './ThreatVictimologyCountries';
+import ThreatVictimologyRegions from './ThreatVictimologyRegions';
 import ThreatActivityCampaigns from './ThreatActivityCampaigns';
 import ThreatActivityIndicators from './ThreatActivityIndicators';
 import ThreatActivityReports from './ThreatActivityReports';
@@ -42,6 +43,7 @@ import WidgetPopover from './WidgetPopover';
 import GlobalVictimologyAll from './GlobalVictimologyAll';
 import GlobalVictimologySectors from './GlobalVictimologySectors';
 import GlobalVictimologyCountries from './GlobalVictimologyCountries';
+import GlobalVictimologyRegions from './GlobalVictimologyRegions';
 import GlobalActivityIntrusionSets from './GlobalActivityIntrusionSets';
 import GlobalActivityMalwares from './GlobalActivityMalwares';
 import GlobalActivityReports from './GlobalActivityReports';
@@ -232,6 +234,16 @@ class DashboardComponent extends Component {
             widget={widget}
           />
         );
+      case 'regions':
+        return (
+          <GlobalVictimologyRegions
+            startDate={startDate}
+            endDate={endDate}
+            timeField={timeField}
+            widget={widget}
+            mapReload={this.state.mapReload}
+          />
+        );
       case 'countries':
         return (
           <GlobalVictimologyCountries
@@ -342,6 +354,16 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
+          />
+        );
+      case 'regions':
+        return (
+          <ThreatVictimologyRegions
+            startDate={startDate}
+            endDate={endDate}
+            timeField={timeField}
+            widget={widget}
+            mapReload={this.state.mapReload}
           />
         );
       case 'countries':

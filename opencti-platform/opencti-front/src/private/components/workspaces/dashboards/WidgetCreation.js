@@ -88,6 +88,7 @@ const LIST = { key: 'list', name: 'List' };
 const visualizationTypesMapping = {
   all: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
   sectors: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
+  regions: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
   countries: [MAP, HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
   'intrusion-sets': [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
   malwares: [HORIZONTAL_BAR, DONUT, AREA, VERTICAL_BAR, TIMELINE, LIST],
@@ -323,6 +324,22 @@ class WidgetCreation extends Component {
         <Grid item={true} xs="4">
           <Card variant="outlined" className={classes.card2}>
             <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'regions')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Victimology - Regions')}
+                </Typography>
+                <br />
+                <Typography variant="body1">{t('Targeted regions')}</Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card variant="outlined" className={classes.card2}>
+            <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'countries')}
               style={{ height: '100%' }}
             >
@@ -512,6 +529,22 @@ class WidgetCreation extends Component {
                 </Typography>
                 <br />
                 <Typography variant="body1">{t('Targeted sectors')}</Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card variant="outlined" className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'regions')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Victimology - Regions')}
+                </Typography>
+                <br />
+                <Typography variant="body1">{t('Targeted regions')}</Typography>
               </CardContent>
             </CardActionArea>
           </Card>
