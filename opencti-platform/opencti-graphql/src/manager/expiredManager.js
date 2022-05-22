@@ -8,6 +8,7 @@ import { patchAttribute } from '../database/middleware';
 import conf, { logApp } from '../config/conf';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { SYSTEM_USER } from '../utils/access';
+import { TYPE_LOCK_ERROR } from '../config/errors';
 
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true
@@ -41,8 +42,11 @@ const expireHandler = async () => {
     const opts = { filters, connectionFormat: false, callback };
     await elList(SYSTEM_USER, READ_DATA_INDICES, opts);
   } catch (e) {
-    // We dont care about failing to get the lock.
-    logApp.info('[OPENCTI-MODULE] Expiration manager already in progress by another API');
+    if (e.name === TYPE_LOCK_ERROR) {
+      logApp.info('[OPENCTI-MODULE] Expiration manager already started by another API');
+    } else {
+      logApp.error('[OPENCTI-MODULE] Expiration manager failed to start', { error: e });
+    }
   } finally {
     logApp.debug('[OPENCTI-MODULE] Expiration manager done');
     if (lock) await lock.unlock();

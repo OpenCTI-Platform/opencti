@@ -355,7 +355,6 @@ const taskHandler = async () => {
     };
     await updateTask(task.id, patch);
   } catch (e) {
-    // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
     } else {

@@ -25,7 +25,7 @@ from pycti.connector.opencti_connector_helper import (
 )
 from requests.exceptions import RequestException, Timeout
 
-PROCESSING_COUNT: int = 3
+PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 60
 
 

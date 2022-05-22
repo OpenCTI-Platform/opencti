@@ -636,6 +636,10 @@ const inputResolveRefs = async (user, input, type) => {
       cleanedInput[src] = null;
     }
   }
+  // If nothing to resolve, just forward the input
+  if (expectedIds.length === 0) {
+    return input;
+  }
   const simpleResolutionsPromise = internalFindByIds(user, fetchingIds.map((i) => i.id));
   let embeddedFromPromise = Promise.resolve();
   if (embeddedFromResolution) {
@@ -680,6 +684,12 @@ const inputResolveRefs = async (user, input, type) => {
   const expectedUnresolvedIds = unresolvedIds.filter((u) => !(input[INPUT_OBJECTS] || []).includes(u));
   if (expectedUnresolvedIds.length > 0) {
     throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });
+  }
+  // In case of objects missing reference, we reject twice before accepting
+  const retryNumber = user.origin?.call_retry_number;
+  const objectRefsUnresolvedIds = unresolvedIds.filter((u) => (input[INPUT_OBJECTS] ?? []).includes(u));
+  if (isNotEmptyField(retryNumber) && objectRefsUnresolvedIds.length > 0 && retryNumber <= 2) {
+    throw MissingReferenceError({ input, unresolvedIds });
   }
   const complete = { ...cleanedInput, entity_type: type };
   const resolvedRefs = R.mergeAll(resolved);

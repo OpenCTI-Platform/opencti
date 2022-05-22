@@ -15,7 +15,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { buildInputDataFromStix } from '../database/stix';
 import { sleep } from '../../tests/utils/testQuery';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { UnsupportedError } from '../config/errors';
+import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { addStixCyberObservable } from '../domain/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -391,8 +391,11 @@ const initSyncManager = () => {
       lock = await lockResource([SYNC_MANAGER_KEY]);
       await processingLoop();
     } catch (e) {
-      // We don't care about failing to get the lock.
-      logApp.info('[OPENCTI-MODULE] Sync manager already in progress by another API');
+      if (e.name === TYPE_LOCK_ERROR) {
+        logApp.info('[OPENCTI-MODULE] Sync manager already in progress by another API');
+      } else {
+        logApp.error('[OPENCTI-MODULE] Sync manager failed to start', { error: e });
+      }
     } finally {
       logApp.debug('[OPENCTI-MODULE] Sync manager done');
       if (lock) await lock.unlock();
