@@ -142,7 +142,9 @@ const initializeSchema = async () => {
   // New platform so delete all indices to prevent conflict
   const isInternalIndexExists = await elIndexExists(INDEX_INTERNAL_OBJECTS);
   if (isInternalIndexExists) {
-    throw ConfigurationError('[INIT] Fail initialize schema, index already exists');
+    throw ConfigurationError('[INIT] Fail initialize schema, index already exists, previous initialization fail '
+        + 'because you kill the platform before the end of the initialization. Please remove your '
+        + 'elastic/opensearch data and restart.');
   }
   // Create default indexes
   await elCreateIndexes();
