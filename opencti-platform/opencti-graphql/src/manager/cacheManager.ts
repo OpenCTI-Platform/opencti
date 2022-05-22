@@ -1,11 +1,16 @@
 import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { pubsub } from '../database/redis';
 import { connectors } from '../database/repository';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_STATUS } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_RULE,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_STATUS_TEMPLATE
+} from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { UnsupportedError } from '../config/errors';
-import type { BasicStoreEntity } from '../types/store';
-import { listEntities } from '../database/middleware-loader';
+import type { BasicStoreEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
+import { EntityOptions, listEntities } from '../database/middleware-loader';
 
 let cache: any = {};
 
@@ -22,10 +27,13 @@ export const getConfigCache = async<T extends BasicStoreEntity>(type: string): P
 
 const workflowStatuses = async () => {
   const reloadStatuses = async () => {
-    return listEntities(SYSTEM_USER, [ENTITY_TYPE_STATUS], {
-      orderBy: ['order'],
-      orderMode: 'asc',
-      connectionFormat: false });
+    const templates = await listEntities<BasicWorkflowTemplateEntity>(SYSTEM_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { connectionFormat: false });
+    const args:EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: 'asc', connectionFormat: false };
+    const statuses = await listEntities<BasicWorkflowStatusEntity>(SYSTEM_USER, [ENTITY_TYPE_STATUS], args);
+    return statuses.map((status) => {
+      const template = templates.find((t) => t.internal_id === status.template_id);
+      return { ...status, name: template?.name ?? 'Error with template association' };
+    });
   };
   return { values: await reloadStatuses(), fn: reloadStatuses };
 };

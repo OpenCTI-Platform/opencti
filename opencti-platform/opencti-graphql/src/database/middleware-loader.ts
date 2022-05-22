@@ -225,7 +225,7 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   relationshipTypes?: Array<string>;
   elementWithTargetTypes?: Array<string>;
 }
-interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
+export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
   indices?: Array<string>;
 }
 const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {

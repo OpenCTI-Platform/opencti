@@ -73,6 +73,7 @@ import {
   VALID_FROM,
   VALID_UNTIL,
   X_DETECTION,
+  X_WORKFLOW_ID,
 } from '../schema/identifier';
 import {
   lockResource,
@@ -1166,7 +1167,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     }
   }
   // eslint-disable-next-line no-use-before-define
-  const data = updateAttributeRaw(targetEntity, updateAttributes);
+  const data = await updateAttributeRaw(targetEntity, updateAttributes);
   const { impactedInputs } = data;
   // region Update elasticsearch
   // Elastic update with partial instance to prevent data override
@@ -1348,7 +1349,7 @@ const updateDateRangeValidation = (instance, inputs, from, to) => {
     throw DatabaseError(`You cant update an element with ${to} less than ${from}`, data);
   }
 };
-export const updateAttributeRaw = (instance, inputs, opts = {}) => {
+export const updateAttributeRaw = async (instance, inputs, opts = {}) => {
   // Upsert option is only useful to force aliases to be kept when upserting the entity
   const { impactStandardId = true, upsert = false } = opts;
   const elements = Array.isArray(inputs) ? inputs : [inputs];
@@ -1492,6 +1493,8 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
   // Update all needed attributes with inner elements if needed
   const updatedInputs = [];
   const impactedInputs = [];
+  const isWorkflowChange = inputKeys.includes(X_WORKFLOW_ID);
+  const platformStatuses = isWorkflowChange ? await getConfigCache(ENTITY_TYPE_STATUS) : [];
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
@@ -1514,6 +1517,7 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
       });
       if (filteredIns.length > 0) {
         const updatedInputsFiltered = filteredIns.map((filteredInput) => {
+          // TODO JRI Rework that part
           const previous = getPreviousInstanceValue(filteredInput.key, instance);
           if (filteredInput.operation === UPDATE_OPERATION_ADD) {
             return {
@@ -1528,6 +1532,17 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
               operation: filteredInput.operation,
               key: filteredInput.key,
               value: (previous || []).filter((n) => !filteredInput.value.includes(n)),
+              previous,
+            };
+          }
+          // Specific input resolution for workflow
+          if (filteredInput.key === X_WORKFLOW_ID) {
+            // workflow_id is not a relation but message must contain the name and not the internal id
+            const workflowStatus = platformStatuses.find((p) => p.id === R.head(filteredInput.value));
+            return {
+              operation: filteredInput.operation,
+              key: filteredInput.key,
+              value: [workflowStatus.name],
               previous,
             };
           }
@@ -1660,7 +1675,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       throw FunctionalError('This update will produce a duplicate', { id: initial.id, type });
     }
     // noinspection UnnecessaryLocalVariableJS
-    const data = updateAttributeRaw(initial, attributes, opts);
+    const data = await updateAttributeRaw(initial, attributes, opts);
     const { updatedInstance, impactedInputs, updatedInputs } = data;
     // Check the consistency of the observable.
     if (isStixCyberObservable(updatedInstance.entity_type)) {
@@ -1785,7 +1800,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     if (lock) await lock.unlock();
   }
 };
-export const patchAttributeRaw = (instance, patch, opts = {}) => {
+export const patchAttributeRaw = async (instance, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
   return updateAttributeRaw(instance, inputs, opts);
 };
@@ -1997,7 +2012,7 @@ const buildInnerRelation = (from, to, type) => {
   }
   return relations;
 };
-const upsertIdentifiedFields = (element, input, fields) => {
+const upsertIdentifiedFields = async (element, input, fields) => {
   const upsertUpdated = [];
   const upsertImpacted = [];
   if (fields) {
@@ -2016,7 +2031,7 @@ const upsertIdentifiedFields = (element, input, fields) => {
       }
     }
     if (!R.isEmpty(patch)) {
-      const patched = patchAttributeRaw(element, patch, { upsert: true });
+      const patched = await patchAttributeRaw(element, patch, { upsert: true });
       upsertImpacted.push(...patched.impactedInputs);
       upsertUpdated.push(...patched.updatedInputs);
     }
@@ -2117,7 +2132,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
     if (ids.length > 0) {
       const patch = { x_opencti_stix_ids: ids };
       const operations = { x_opencti_stix_ids: UPDATE_OPERATION_ADD };
-      const patched = patchAttributeRaw(element, patch, { operations, upsert: true });
+      const patched = await patchAttributeRaw(element, patch, { operations, upsert: true });
       impactedInputs.push(...patched.impactedInputs);
       patchInputs.push(...patched.updatedInputs);
     }
@@ -2129,7 +2144,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
     if (isNotEmptyField(timePatch)) {
       const basePatch = { number_observed: element.number_observed + updatePatch.number_observed };
       const patch = { ...basePatch, ...timePatch };
-      const patched = patchAttributeRaw(element, patch, { upsert: true });
+      const patched = await patchAttributeRaw(element, patch, { upsert: true });
       impactedInputs.push(...patched.impactedInputs);
       patchInputs.push(...patched.updatedInputs);
     }
@@ -2146,7 +2161,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
     const timePatch = handleRelationTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
     const patch = { ...basePatch, ...timePatch };
     if (isNotEmptyField(patch)) {
-      const patched = patchAttributeRaw(element, patch, { upsert: true });
+      const patched = await patchAttributeRaw(element, patch, { upsert: true });
       impactedInputs.push(...patched.impactedInputs);
       patchInputs.push(...patched.updatedInputs);
     }
@@ -2163,7 +2178,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
     const countPatch = isNotEmptyField(timePatch) ? { attribute_count: element.attribute_count + updatePatch.attribute_count, ...timePatch } : {};
     const patch = { ...basePatch, ...countPatch };
     if (isNotEmptyField(patch)) {
-      const patched = patchAttributeRaw(element, patch, { upsert: true });
+      const patched = await patchAttributeRaw(element, patch, { upsert: true });
       impactedInputs.push(...patched.impactedInputs);
       patchInputs.push(...patched.updatedInputs);
     }
@@ -2171,26 +2186,26 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
   // Upsert entities
   if (isInternalObject(type) && forceUpdate) {
     const fields = internalObjectsFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixDomainObject(type) && forceUpdate) {
     const fields = stixDomainObjectFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixMetaObject(type) && forceUpdate) {
     const fields = stixMetaObjectsFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   // Upsert SCOs
   if (isStixCyberObservable(type) && forceUpdate) {
     const fields = stixCyberObservableFieldsToBeUpdated[type];
-    const { upsertImpacted, upsertUpdated } = upsertIdentifiedFields(element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
@@ -2373,7 +2388,7 @@ const buildRelationData = async (input, opts = {}) => {
       const platformStatuses = await getConfigCache(ENTITY_TYPE_STATUS);
       const statusesForType = platformStatuses.filter((p) => p.type === type);
       if (statusesForType.length > 0) {
-        data.x_opencti_workflow_id = R.head(statusesForType).id;
+        data[X_WORKFLOW_ID] = R.head(statusesForType).id;
       }
     }
   }
@@ -2723,7 +2738,7 @@ const buildEntityData = async (user, input, type, opts = {}) => {
     const platformStatuses = await getConfigCache(ENTITY_TYPE_STATUS);
     const statusesForType = platformStatuses.filter((p) => p.type === type);
     if (statusesForType.length > 0) {
-      data = R.assoc('x_opencti_workflow_id', R.head(statusesForType).id, data);
+      data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);
     }
   }
   // -- Aliased entities

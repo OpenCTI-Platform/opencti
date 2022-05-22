@@ -475,5 +475,17 @@ interface BasicTaskEntity extends BasicStoreEntity {
   created_at: Date;
 }
 
+interface BasicWorkflowTemplateEntity extends BasicStoreEntity {
+  name: string;
+  color: string;
+}
+
+interface BasicWorkflowStatusEntity extends BasicStoreEntity {
+  template_id: string;
+  type: string;
+  order: number;
+  disabled: boolean;
+}
+
 type BasicStoreObject = BasicStoreEntity | BasicStoreCyberObservable | BasicStoreRelation;
 type StoreObject = StoreEntity | StoreCyberObservable | StoreRelation;
