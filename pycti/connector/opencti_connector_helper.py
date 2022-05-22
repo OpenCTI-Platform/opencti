@@ -862,64 +862,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             logging.error("Unable to send bundle, retry...%s", e)
             self._send_bundle(channel, bundle, **kwargs)
 
-    def split_stix2_bundle(self, bundle) -> list:
-        """splits a valid stix2 bundle into a list of bundles
-
-        :param bundle: valid stix2 bundle
-        :type bundle:
-        :raises Exception: if data is not valid JSON
-        :return: returns a list of bundles
-        :rtype: list
-        """
-
-        self.cache_index = {}
-        self.cache_added = []
-        try:
-            bundle_data = json.loads(bundle)
-        except Exception as e:
-            raise Exception("File data is not a valid JSON") from e
-
-        # validation = validate_parsed_json(bundle_data)
-        # if not validation.is_valid:
-        #     raise ValueError('The bundle is not a valid STIX2 JSON:' + bundle)
-
-        # Index all objects by id
-        for item in bundle_data["objects"]:
-            self.cache_index[item["id"]] = item
-
-        bundles = []
-        # Reports must be handled because of object_refs
-        for item in bundle_data["objects"]:
-            if item["type"] == "report":
-                items_to_send = self.stix2_deduplicate_objects(
-                    self.stix2_get_report_objects(item)
-                )
-                for item_to_send in items_to_send:
-                    self.cache_added.append(item_to_send["id"])
-                bundles.append(self.stix2_create_bundle(items_to_send))
-
-        # Relationships not added in previous reports
-        for item in bundle_data["objects"]:
-            if item["type"] == "relationship" and item["id"] not in self.cache_added:
-                items_to_send = self.stix2_deduplicate_objects(
-                    self.stix2_get_relationship_objects(item)
-                )
-                for item_to_send in items_to_send:
-                    self.cache_added.append(item_to_send["id"])
-                bundles.append(self.stix2_create_bundle(items_to_send))
-
-        # Entities not added in previous reports and relationships
-        for item in bundle_data["objects"]:
-            if item["type"] != "relationship" and item["id"] not in self.cache_added:
-                items_to_send = self.stix2_deduplicate_objects(
-                    self.stix2_get_entity_objects(item)
-                )
-                for item_to_send in items_to_send:
-                    self.cache_added.append(item_to_send["id"])
-                bundles.append(self.stix2_create_bundle(items_to_send))
-
-        return bundles
-
     def stix2_get_embedded_objects(self, item) -> Dict:
         """gets created and marking refs for a stix2 item
 
@@ -1045,7 +987,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         bundle = {
             "type": "bundle",
             "id": f"bundle--{uuid.uuid4()}",
-            "spec_version": "2.0",
+            "spec_version": "2.1",
             "objects": items,
         }
         return json.dumps(bundle)

@@ -25,7 +25,6 @@ class StixCyberObservableTypes(Enum):
     USER_ACCOUNT = "User-Account"
     WINDOWS_REGISTRY_KEY = "Windows-Registry-Key"
     WINDOWS_REGISTRY_VALUE_TYPE = "Windows-Registry-Value-Type"
-    X509_V3_EXTENSIONS_TYPE = "X509-V3-Extensions-Type"
     HOSTNAME = "Hostname"
     CRYPTOGRAPHIC_KEY = "Cryptographic-Key"
     CRYPTOCURRENCY_WALLET = "Cryptocurrency-Wallet"
