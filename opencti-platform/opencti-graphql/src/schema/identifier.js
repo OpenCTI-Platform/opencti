@@ -337,6 +337,10 @@ const isStandardIdChanged = (previous, updated, operation) => {
   const dataUpdated = R.fromPairs(Object.entries(updated).filter(([k]) => currentWay.map((w) => w.src).includes(k)));
   const patch = jsonpatch.compare(dataPrevious, dataUpdated);
   const numberOfOperations = patch.length;
+  // If no operations, standard id will not change
+  if (numberOfOperations === 0) {
+    return false;
+  }
   const numberOfUpgrade = patch.filter((p) => p.op === operation).length;
   return numberOfOperations === numberOfUpgrade;
 };
