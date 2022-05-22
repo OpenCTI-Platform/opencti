@@ -176,6 +176,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     self.current_bundle_id == data["id"]
                     and data["x_opencti_seq"] > self.current_bundle_seq
                 ):
+                    logging.info("Throttling due to deps change")
                     time.sleep(2)
                 # Refresh current ID and current bundle seq
                 self.current_bundle_id = data["id"]
