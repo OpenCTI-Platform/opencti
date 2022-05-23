@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { compose, evolve } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -105,9 +104,6 @@ class EntitiesLocationsCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
       R.dissoc('created'),
-      values.address.length === 0
-      && R.dissoc('address'),
-      R.dissoc('email_addresses'),
       R.dissoc('modified'),
     )(values);
     CM(environmentDarkLight, {
@@ -484,7 +480,7 @@ EntitiesLocationsCreation.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(EntitiesLocationsCreation);
