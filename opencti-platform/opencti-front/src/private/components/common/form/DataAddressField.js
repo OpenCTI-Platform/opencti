@@ -8,15 +8,10 @@ import { withStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import ApartmentOutlined from '@material-ui/icons/ApartmentOutlined';
-import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
-import CallIcon from '@material-ui/icons/Call';
 import Typography from '@material-ui/core/Typography';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import TextField from '@material-ui/core/TextField';
-import { truncate } from '../../../../utils/String';
 import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
@@ -24,7 +19,6 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import { Dialog, DialogContent, DialogActions } from '@material-ui/core';
-import NewTextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -219,9 +213,9 @@ class DataAddressField extends Component {
                   onChange={this.handleChangeMode.bind(this)}
                   className={classes.dataSelect}
                 >
-                  <MenuItem value='office'><ApartmentOutlined />{t('Office')}</MenuItem>
-                  <MenuItem value='mobile'><HomeOutlinedIcon />{t('Mobile')}</MenuItem>
-                  <MenuItem value='home'><CallIcon />{t('Home')}</MenuItem>
+                  <MenuItem value='office'> <ItemIcon type='office' />{t('Office')}</MenuItem>
+                  <MenuItem value='mobile'> <ItemIcon type='mobile' />{t('Mobile')}</MenuItem>
+                  <MenuItem value='home'> <ItemIcon type='home' />{t('Home')}</MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -274,9 +268,9 @@ class DataAddressField extends Component {
                   onChange={this.handleChangeMode.bind(this)}
                   className={classes.dataSelect}
                 >
-                  <MenuItem value='office'><ApartmentOutlined />{t('Office')}</MenuItem>
-                  <MenuItem value='mobile'><HomeOutlinedIcon />{t('Mobile')}</MenuItem>
-                  <MenuItem value='home'><CallIcon />{t('Home')}</MenuItem>
+                  <MenuItem value='office'><ItemIcon type='office' />{t('Office')}</MenuItem>
+                  <MenuItem value='mobile'><ItemIcon type='mobile' />{t('Mobile')}</MenuItem>
+                  <MenuItem value='home'><ItemIcon type='home' />{t('Home')}</MenuItem>
                 </Select>
               </FormControl>
             </div>

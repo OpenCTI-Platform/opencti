@@ -170,7 +170,12 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Telephone Number')}
                 </Typography>
                 <div className="clearfix" />
-                {party.telephone_numbers && t(party.telephone_numbers.map((number) => number.phone_number))}
+                {party.telephone_numbers && party.telephone_numbers.map((number) => (
+                  <Typography style={{ display: 'flex', alignItems: 'center' }}>
+                    <ItemIcon type={number.usage_type} />
+                    {t(number.phone_number)}
+                  </Typography>
+                ))}
               </div>
             </Grid>
             <Grid item={true} xs={4}>

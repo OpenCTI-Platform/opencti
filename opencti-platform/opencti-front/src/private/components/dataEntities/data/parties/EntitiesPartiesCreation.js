@@ -132,8 +132,6 @@ class EntitiesPartiesCreation extends Component {
         : R.dissoc('addresses'),
       R.dissoc('modified'),
       R.dissoc('marking'),
-      R.dissoc('job_title'),
-      R.dissoc('email_addresses'),
       R.dissoc('external_identifiers'),
       R.dissoc('member_of_organizations'),
     )(values);
@@ -508,12 +506,12 @@ class EntitiesPartiesCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={SelectField}
-                          variant='outlined'
+                          component={TextField}
                           name="job_title"
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
+                          size="small"
                           containerstyle={{ width: '100%' }}
+                          variant='outlined'
                         />
                       </div>
                       <div style={{ marginTop: '10px' }}>
