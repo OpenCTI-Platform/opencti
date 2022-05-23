@@ -155,6 +155,18 @@ const responsiblePartyResolvers = {
   },
   Mutation: {
     createOscalResponsibleParty: async (_, { input }, { dbName, selectMap, dataSources }) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
       let parties, role;
       if (input.parties !== undefined) {
