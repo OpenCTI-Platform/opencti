@@ -148,6 +148,7 @@ const createApp = async (app) => {
       const data = await loadFile(auth, file);
       res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
+      res.set({ 'Cache-Control': 'no-cache' });
       if (data.metaData.mimetype === 'text/html') {
         res.set({ 'Content-type': 'text/html; charset=utf-8' });
       } else {
@@ -176,6 +177,7 @@ const createApp = async (app) => {
         const converter = new showdown.Converter();
         const html = converter.makeHtml(markDownData);
         res.set({ 'Content-Security-Policy': 'sandbox' });
+        res.set({ 'Cache-Control': 'no-cache' });
         res.send(html);
       } else {
         res.send('Unsupported file type');

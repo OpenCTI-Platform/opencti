@@ -338,6 +338,9 @@ const FeedCreation = (props) => {
     'IPv4-Addr',
     'IPv6-Addr',
     'Domain-Name',
+    'Hostname',
+    'Email-Addr',
+    'Email-Message',
   ]);
 
   return (
