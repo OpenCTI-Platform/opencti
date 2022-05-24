@@ -74,8 +74,8 @@ export const FunctionalError = (reason, data) => error('FunctionalError', 'Busin
 });
 
 export const TYPE_LOCK_ERROR = 'ExecutionError';
-export const LockTimeoutError = (data) => error('LockError', 'Lock timeout', {
-  reason: 'Execution timeout, too many concurrent call on the same entities',
+export const LockTimeoutError = (data, reason) => error('LockError', 'Lock timeout', {
+  reason: reason ?? 'Execution timeout, too many concurrent call on the same entities',
   http_status: 500,
   category: CATEGORY_BUSINESS,
   ...data,

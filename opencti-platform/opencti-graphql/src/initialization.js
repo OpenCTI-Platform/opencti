@@ -1,5 +1,4 @@
 // Admin user initialization
-import { ApolloError } from 'apollo-errors';
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
@@ -17,7 +16,7 @@ import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
-import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
+import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from './config/errors';
 import { BYPASS, BYPASS_REFERENCE, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { createStatus, createStatusTemplate } from './domain/status';
@@ -330,13 +329,11 @@ const platformInit = async (withMarkings = true) => {
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.error('[OPENCTI] Platform cant get the lock for initialization');
+      const reason = '[OPENCTI] Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
+      throw LockTimeoutError({ participantIds: [PLATFORM_LOCK_ID] }, reason);
     } else {
-      const isApolloError = e instanceof ApolloError;
-      const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
-      logApp.error('[OPENCTI] Platform initialization fail', { error });
+      throw UnknownError('[OPENCTI] Platform initialization fail', { error: e });
     }
-    throw e;
   } finally {
     if (lock) {
       await lock.unlock();
