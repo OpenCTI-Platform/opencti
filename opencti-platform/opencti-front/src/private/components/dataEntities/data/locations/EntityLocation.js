@@ -109,6 +109,7 @@ class EmtityLocationComponent extends Component {
         <RoleEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
+          location={location}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>
