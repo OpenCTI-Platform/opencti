@@ -61,14 +61,26 @@ const initHttpRollingFeeds = (app: Express.Application) => {
           const attribute = feed.feed_attributes[attrIndex];
           const mapping = attribute.mappings.find((f) => f.type === element.entity_type);
           if (mapping) {
-            const data = element[mapping.attribute];
+            const isComplexKey = mapping.attribute.includes('.');
+            const baseKey = isComplexKey ? mapping.attribute.split('.')[0] : mapping.attribute;
+            const data = element[baseKey];
             if (isNotEmptyField(data)) {
-              if (isMultipleAttribute(mapping.attribute)) {
+              if (isMultipleAttribute(baseKey)) {
                 dataElements.push(`"${escape(data.join(','))}"`);
-              } else if (isDictionaryAttribute(mapping.attribute)) {
-                dataElements.push(`"${escape(JSON.stringify(data))}"`);
+              } else if (isDictionaryAttribute(baseKey)) {
+                if (isComplexKey) {
+                  const [, innerKey] = mapping.attribute.split('.');
+                  const dictInnerData = data[innerKey.toUpperCase()];
+                  if (isNotEmptyField(dictInnerData)) {
+                    dataElements.push(`"${escape(String(dictInnerData))}"`);
+                  } else {
+                    dataElements.push('""');
+                  }
+                } else {
+                  dataElements.push(`"${escape(JSON.stringify(data))}"`);
+                }
               } else {
-                dataElements.push(`"${escape(data)}"`);
+                dataElements.push(`"${escape(String(data))}"`);
               }
             } else {
               dataElements.push('""');
