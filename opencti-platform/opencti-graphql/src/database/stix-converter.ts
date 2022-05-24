@@ -110,7 +110,6 @@ import {
   INPUT_MARKINGS,
   INPUT_OBJECTS
 } from '../schema/general';
-import { basePath, baseUrl } from '../config/conf';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 
 export const isTrustedStixId = (stixId: string): boolean => {
@@ -141,12 +140,6 @@ const assertType = (type: string, instanceType: string) => {
     throw UnsupportedError(`${instanceType} not compatible with ${type}`);
   }
 };
-// const mandatory = <T>(data: T): T => {
-//   if (isEmptyField(data)) {
-//     throw UnsupportedError('mandatory field');
-//   }
-//   return data;
-// };
 const isValidStix = (data: S.StixObject): boolean => {
   // TODO @JRI @SAM
   return !R.isEmpty(data);
@@ -183,7 +176,7 @@ const buildOCTIExtensions = (instance: StoreBase): S.StixOpenctiExtension => {
     aliases: instance.x_opencti_aliases ?? [],
     files: (instance.x_opencti_files ?? []).map((file) => ({
       name: file.name,
-      uri: `${baseUrl}${basePath}/storage/get/${file.id}`,
+      uri: `/storage/get/${file.id}`,
       version: file.version,
       mime_type: file.mime_type,
     })),

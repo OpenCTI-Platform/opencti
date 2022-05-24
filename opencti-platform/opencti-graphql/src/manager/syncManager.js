@@ -162,7 +162,7 @@ const syncManagerInstance = (syncId) => {
     await mergeEntities(user, data.id, sourceIds);
   };
   const handleFilesSync = async (user, id, stix) => {
-    const { token } = syncElement;
+    const { token, uri } = syncElement;
     const entityType = stix.extensions[STIX_EXT_OCTI].type;
     const entityFiles = stix.extensions[STIX_EXT_OCTI].files ?? [];
     const entityDirectory = `import/${entityType}/${id}/`;
@@ -185,7 +185,8 @@ const syncManagerInstance = (syncId) => {
       const fileToUploadId = filesToUpload[index];
       const fileToUpload = R.find((c) => `${c.name}-${c.version}` === fileToUploadId, entityFiles);
       const { uri: fileUri, name, mime_type: mimetype, version } = fileToUpload;
-      const fileStream = await axios.get(fileUri, { responseType: 'stream', headers: { authorization: `Bearer ${token}` } });
+      const config = { responseType: 'stream', headers: { authorization: `Bearer ${token}` } };
+      const fileStream = await axios.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`, config);
       const file = { createReadStream: () => fileStream.data, filename: name, mimetype, version };
       await stixCoreObjectImportPush(user, id, file);
     }
