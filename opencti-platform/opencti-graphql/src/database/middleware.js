@@ -847,7 +847,7 @@ const mergeInstanceWithUpdateInputs = (instance, inputs) => {
   const resolvedInputs = R.filter((f) => !R.isEmpty(f), remappedInputs);
   return mergeInstanceWithInputs(instance, resolvedInputs);
 };
-const listEntitiesByHashes = (user, type, hashes) => {
+const listEntitiesByHashes = async (user, type, hashes) => {
   if (isEmptyField(hashes)) {
     return [];
   }
