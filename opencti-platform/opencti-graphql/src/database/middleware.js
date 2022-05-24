@@ -637,10 +637,6 @@ const inputResolveRefs = async (user, input, type) => {
       cleanedInput[src] = null;
     }
   }
-  // If nothing to resolve, just forward the input
-  if (expectedIds.length === 0) {
-    return input;
-  }
   const simpleResolutionsPromise = internalFindByIds(user, fetchingIds.map((i) => i.id));
   let embeddedFromPromise = Promise.resolve();
   if (embeddedFromResolution) {

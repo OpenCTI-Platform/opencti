@@ -407,6 +407,9 @@ export const generateAliasesId = (aliases, instance = {}) => {
 };
 
 export const generateAliasesIdsForInstance = (instance) => {
+  if (isEmptyField(instance.entity_type)) {
+    throw UnsupportedError('Cant generate alias without entity type ', { instance });
+  }
   if (isStixObjectAliased(instance.entity_type)) {
     const aliases = [instance.name, ...(instance.aliases || []), ...(instance.x_opencti_aliases || [])];
     return generateAliasesId(aliases, instance);
