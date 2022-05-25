@@ -219,7 +219,7 @@ class PendingFileLineComponent extends Component {
             </Button>
             <Button
               onClick={this.handleRemoveFile.bind(this, file.id)}
-              color="primary"
+              color="secondary"
             >
               {t('Delete')}
             </Button>
