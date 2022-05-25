@@ -56,7 +56,28 @@ class CyioCoreObjectLabels extends Component {
     this.state = {
       popoverAnchorEl: null,
       openedPopover: null,
+      windowWidth: window.innerWidth,
+      labelCount: 2,
     };
+  }
+
+  componentDidMount() {
+    this.handleWindowChange();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.state.windowWidth !== window.innerWidth) {
+      this.handleWindowChange();
+    }
+  }
+
+  handleWindowChange() {
+    this.setState({ windowWidth: window.innerWidth });
+    if (window.innerWidth < 1670) {
+      this.setState({ labelCount: 1 });
+    } else {
+      this.setState({ labelCount: 2 });
+    }
   }
 
   handlePopoverOpen(event) {
@@ -71,6 +92,9 @@ class CyioCoreObjectLabels extends Component {
     const {
       classes, labels, t, onClick, variant, theme,
     } = this.props;
+    const {
+      labelCount,
+    } = this.state;
     let style = classes.label;
     if (variant === 'inList') {
       style = classes.labelInList;
@@ -96,7 +120,7 @@ class CyioCoreObjectLabels extends Component {
                   key={label.id}
                   variant="outlined"
                   classes={{ root: style }}
-                  label={truncate(label.name, 14)}
+                  label={truncate(label.name, 10)}
                   style={{
                     color: label.color,
                     borderColor: label.color,
@@ -109,7 +133,7 @@ class CyioCoreObjectLabels extends Component {
                   }
                 />
               ),
-              take(2, labelsNodes),
+              take(labelCount, labelsNodes),
             )
           ) : (
             <Chip
@@ -132,7 +156,7 @@ class CyioCoreObjectLabels extends Component {
             />
           )}
         </div>
-        {labelsNodes.length > 2 && (
+        {labelsNodes.length > labelCount && (
           <MoreHorizIcon
             onMouseEnter={(e) => this.handlePopoverOpen(e)}
             onMouseLeave={this.handlePopoverClose.bind(this)}
@@ -157,7 +181,7 @@ class CyioCoreObjectLabels extends Component {
           onClose={this.handlePopoverClose.bind(this)}
         >
           <List>
-            {labelsNodes.slice(2).map((label, i) => (
+            {labelsNodes.slice(labelCount).map((label, i) => (
               <ListItem key={i}>
                 <Chip
                   key={label.id}
