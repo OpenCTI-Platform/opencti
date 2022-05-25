@@ -146,14 +146,14 @@ const createApp = async (app) => {
       }
       const { file } = req.params;
       const data = await loadFile(auth, file);
-      res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
+      res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
-      res.set({ 'Cache-Control': 'no-cache' });
+      res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
       res.set({ Pragma: 'no-cache' });
       if (data.metaData.mimetype === 'text/html') {
         res.set({ 'Content-type': 'text/html; charset=utf-8' });
       } else {
-        res.setHeader('Content-type', data.metaData.mimetype);
+        res.set('Content-type', data.metaData.mimetype);
       }
       const stream = await downloadFile(file);
       stream.pipe(res);
@@ -264,9 +264,9 @@ const createApp = async (app) => {
   app.get('*', (req, res) => {
     const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
     const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
-    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    res.header('Expires', '-1');
-    res.header('Pragma', 'no-cache');
+    res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.set('Expires', '-1');
+    res.set('Pragma', 'no-cache');
     return res.send(withOptionValued);
   });
 

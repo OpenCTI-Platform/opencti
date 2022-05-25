@@ -86,7 +86,7 @@ const LocationMiniMap = (props) => {
             }
           />
           <GeoJSON data={countries} style={getStyle} />
-          {position ? (
+          {mapPosition && (
             <Marker
               position={mapPosition}
               icon={
@@ -95,8 +95,6 @@ const LocationMiniMap = (props) => {
                   : positionIcon(theme.palette.mode === 'dark')
               }
             />
-          ) : (
-            ''
           )}
         </MapContainer>
       </Paper>
@@ -106,7 +104,7 @@ const LocationMiniMap = (props) => {
 
 LocationMiniMap.propTypes = {
   countries: PropTypes.array,
-  city: PropTypes.string,
+  city: PropTypes.object,
   zoom: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
