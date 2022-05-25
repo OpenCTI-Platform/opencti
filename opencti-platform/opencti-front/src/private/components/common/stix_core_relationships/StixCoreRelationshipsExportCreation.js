@@ -146,7 +146,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     }
     if (paginationOptions.fromId) {
       finalFilters = R.append(
-        { key: 'fromId', values: [paginationOptions.fromId] },
+        { key: 'fromId', values: paginationOptions.fromId },
         finalFilters,
       );
     } else {
@@ -154,7 +154,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     }
     if (paginationOptions.toId) {
       finalFilters = R.append(
-        { key: 'toId', values: [paginationOptions.toId] },
+        { key: 'toId', values: paginationOptions.toId },
         finalFilters,
       );
     } else {

@@ -169,7 +169,7 @@ class Relationships extends Component {
               handleChangeView={this.handleChangeView.bind(this)}
               handleToggleExports={this.handleToggleExports.bind(this)}
               openExports={openExports}
-              exportEntityType="stix_core_relationship"
+              exportEntityType="stix-core-relationship"
               disableCards={true}
               keyword={searchTerm}
               filters={filters}
