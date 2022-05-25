@@ -149,6 +149,7 @@ const createApp = async (app) => {
       res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set({ 'Cache-Control': 'no-cache' });
+      res.set({ Pragma: 'no-cache' });
       if (data.metaData.mimetype === 'text/html') {
         res.set({ 'Content-type': 'text/html; charset=utf-8' });
       } else {
