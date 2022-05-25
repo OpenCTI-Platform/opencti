@@ -9,7 +9,6 @@ import { AddOutlined, CancelOutlined, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
-import { filter, includes, map, pipe } from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
@@ -472,15 +471,31 @@ const FeedEditionContainer = (props) => {
                                     resultProps
                                     && resultProps.schemaAttributes
                                   ) {
-                                    const attributes = pipe(
-                                      map((n) => n.node),
-                                      filter(
-                                        (n) => !includes(
+                                    let attributes = R.pipe(
+                                      R.map((n) => n.node),
+                                      R.filter(
+                                        (n) => !R.includes(
                                           n.value,
                                           ignoredAttributesInFeeds,
                                         ) && !n.value.startsWith('i_'),
                                       ),
                                     )(resultProps.schemaAttributes.edges);
+                                    if (
+                                      attributes.filter(
+                                        (n) => n.value === 'hashes',
+                                      )
+                                    ) {
+                                      attributes = R.sortBy(
+                                        R.prop('value'),
+                                        [
+                                          ...attributes,
+                                          { value: 'hashes.MD5' },
+                                          { value: 'hashes.SHA-1' },
+                                          { value: 'hashes.SHA-256' },
+                                          { value: 'hashes.SHA-512' },
+                                        ].filter((n) => n.value !== 'hashes'),
+                                      );
+                                    }
                                     return (
                                       <Select
                                         style={{ width: 150 }}
