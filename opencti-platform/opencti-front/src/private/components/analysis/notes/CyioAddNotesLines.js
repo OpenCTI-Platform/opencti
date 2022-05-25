@@ -101,9 +101,12 @@ class CyioAddNotesLinesContainer extends Component {
       (n) => n.id,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
+    const filteredValue = data.cyioNotes
+      ? filter((value) => (value.node.abstract.toLowerCase()).includes(this.props.search.toLowerCase()), data.cyioNotes.edges)
+      : [];
     return (
       <List>
-        {(data.cyioNotes && data.cyioNotes.edges.length > 0 ) ? data.cyioNotes.edges.map((noteNode) => {
+        {filteredValue.length > 0 ? filteredValue.map((noteNode) => {
           const note = noteNode.node;
           const alreadyAdded = entityNotesIds.includes(note.id);
           const noteId = note.external_id ? `(${note.external_id})` : '';
@@ -171,6 +174,7 @@ CyioAddNotesLinesContainer.propTypes = {
   classes: PropTypes.object,
   handleDataCollect: PropTypes.func,
   t: PropTypes.func,
+  search: PropTypes.string,
   fld: PropTypes.func,
 };
 
