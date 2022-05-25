@@ -334,7 +334,7 @@ class CyioAddExternalReferences extends Component {
                           handleDataCollect={this.handleDataCollect.bind(this)}
                           paginationOptions={paginationOptions}
                           open={this.state.open}
-                          search={this.state.search}
+                          search={this.state.search.toLowerCase()}
                         />
                       );
                     }

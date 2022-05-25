@@ -101,12 +101,9 @@ class CyioAddNotesLinesContainer extends Component {
       (n) => n.id,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
-    const filteredValue = data.cyioNotes
-      ? filter((value) => (value.node.abstract.toLowerCase()).includes(this.props.search), data.cyioNotes.edges)
-      : [];
     return (
       <List>
-        {filteredValue.length > 0 ? filteredValue.map((noteNode) => {
+        {(data.cyioNotes && data.cyioNotes.edges.length > 0 ) ? data.cyioNotes.edges.map((noteNode) => {
           const note = noteNode.node;
           const alreadyAdded = entityNotesIds.includes(note.id);
           const noteId = note.external_id ? `(${note.external_id})` : '';
@@ -174,13 +171,17 @@ CyioAddNotesLinesContainer.propTypes = {
   classes: PropTypes.object,
   handleDataCollect: PropTypes.func,
   t: PropTypes.func,
-  search: PropTypes.string,
   fld: PropTypes.func,
 };
 
 export const cyioAddNotesLinesQuery = graphql`
-  query CyioAddNotesLinesQuery {
+  query CyioAddNotesLinesQuery(
+    $search: String
+  ) {
     ...CyioAddNotesLines_data
+    @arguments(
+      search: $search
+    )
   }
 `;
 
@@ -188,8 +189,11 @@ const CyioAddNotesLines = createFragmentContainer(
   CyioAddNotesLinesContainer,
   {
     data: graphql`
-      fragment CyioAddNotesLines_data on Query {
-        cyioNotes{
+      fragment CyioAddNotesLines_data on Query 
+      @argumentDefinitions(
+        search: { type: "String" }
+      ){
+        cyioNotes(search: $search){
           edges {
             node {
               __typename
