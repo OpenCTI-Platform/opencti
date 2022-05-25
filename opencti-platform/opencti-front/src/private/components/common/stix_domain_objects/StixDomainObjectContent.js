@@ -82,11 +82,6 @@ const styles = () => ({
     textAlign: 'center',
     position: 'relative',
   },
-  pdfPage: {
-    width: '100%',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
 });
 
 const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
@@ -154,7 +149,7 @@ class StixDomainObjectContentComponent extends Component {
       currentFileId: R.propOr(R.head(files)?.id, 'currentFileId', params),
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
-      pdfViewerZoom: 2,
+      pdfViewerZoom: 1.2,
       markdownSelectedTab: 'write',
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
@@ -178,7 +173,9 @@ class StixDomainObjectContentComponent extends Component {
       if (!currentFileId) {
         return this.setState({ isLoading: false });
       }
-      const currentFile = R.head(R.filter((n) => n.id === currentFileId, files));
+      const currentFile = R.head(
+        R.filter((n) => n.id === currentFileId, files),
+      );
       const currentFileType = currentFile && currentFile.metaData.mimetype;
       if (currentFileType === 'application/pdf') {
         return this.setState({ isLoading: false });
@@ -500,7 +497,7 @@ class StixDomainObjectContentComponent extends Component {
                 {Array.from(new Array(totalPdfPageNumber), (el, index) => (
                   <Page
                     key={`page_${index + 1}`}
-                    className={classes.pdfPage}
+                    style={{ position: 'absolute', top: '50%', left: '50%' }}
                     pageNumber={index + 1}
                     height={height}
                     scale={this.state.pdfViewerZoom}
