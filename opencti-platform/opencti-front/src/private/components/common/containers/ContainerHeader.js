@@ -491,6 +491,10 @@ class ContainerHeaderComponent extends Component {
         }),
       );
       MESSAGING$.notifySuccess('Suggestion successfully applied.');
+      localStorage.setItem(`suggestions-${container.id}`, [
+        ...(localStorage.getItem(`suggestions-${container.id}`) || []),
+        type,
+      ]);
       if (this.props.onApplied) {
         this.props.onApplied();
       }
@@ -633,6 +637,7 @@ class ContainerHeaderComponent extends Component {
                 const suggestions = this.generateSuggestions(
                   props.container.objects.edges.map((o) => o.node),
                 );
+                const appliedSuggestions = localStorage.getItem(`suggestions-${container.id}`) || [];
                 return (
                   <div className={classes.suggestions}>
                     <ToggleButtonGroup
@@ -646,7 +651,11 @@ class ContainerHeaderComponent extends Component {
                           disabled={suggestions.length === 0}
                         >
                           <Badge
-                            badgeContent={suggestions.length}
+                            badgeContent={
+                              suggestions.filter(
+                                (n) => !appliedSuggestions.includes(n.type),
+                              ).length
+                            }
                             color="secondary"
                           >
                             <AssistantOutlined
