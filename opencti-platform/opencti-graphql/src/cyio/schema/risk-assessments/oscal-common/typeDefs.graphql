@@ -118,7 +118,118 @@
     createOscalUser(input: OscalUserAddInput): OscalUser
     deleteOscalUser(id: ID!): String!
     editOscalUser( id: ID!, input: [EditInput]!, commitMessage: String): OscalUser
+    # Export OSCAL Model
+    exportOscal(model: OscalModelType, id: ID, media_type: OscalMediaType): ID
+    # Generate Report
+    generateRiskReport( 
+      report: RiskReportType!, 
+      id: ID, 
+      media_type: ReportMediaType, 
+      options: [RiskReportOption]): ID
   }
+
+  "Defines the types of OSCAL Models"
+  enum OscalModelType {
+    "OSCAL Assessment Plan"
+    ap
+    "OSCAL Assessment Results"
+    ar
+    "OSCAL Catalog"
+    catalog
+    "OSCAL Component Definition"
+    component_definition
+    "OSCAL Plan of Action and Milestones"
+    poam
+    "OSCAL Profile"
+    profile
+    "OSCAL System Security Plan"
+    ssp
+  }
+
+  "Defines the media types for OSCAL export"
+  enum OscalMediaType {
+    "application/oscal+json"
+    application_oscal_json
+    "application/oscal+xml"
+    application_oscal_xml
+    "application/oscal+yaml"
+    application_oscal_yaml
+    "application/oscal+csv"
+    application_oscal_csv
+  }
+
+  "Defines an risk reporting option"
+  input RiskReportOption {
+    "Identifies the name of the option"
+    name: ReportOptionType!
+    "Identifies the value(s) for the option"
+    values: [String!]
+  }
+
+  "Defines the types of Risk Reports"
+  enum RiskReportType {
+    "Security Assessment Report (SAR)"
+    sar
+    "Vulnerability Assessment Report (VAR)"
+    var
+    "Asset Inventory Report (AIR)"
+    air
+    "Cybersecurity Risk Assessment Report (CRA)"
+    cra
+    "Threat Assessment Report (TAR)"
+    tar
+  } 
+
+  "Defines the Options for Reports"
+  enum ReportOptionType {
+    "Appendices"
+    appendices
+    "Description"
+    description
+    "Purpose"
+    purpose
+    "Max Items"
+    max_items
+    "Sections"
+    sections
+    "Title"
+    title
+  }
+
+  "Defines the media types for Reports"
+  enum ReportMediaType {
+    "text/markdown"
+    markdown
+    "application/pdf"
+    pdf
+    "text/html"
+    html
+  }
+
+## Report-specifics
+  "Defines the sections in a Security Assessment Report"
+  enum SarSections {
+    "Risk Tracking Details"
+    tracking
+    "Collected During Testing"
+    collected_during_testing
+    "Mitigating Factors"
+    mitigating_factor  }
+
+  "Appendices of a Security Assessment Report"
+  enum SarAppendices {
+    "Database Scan"
+    db_scan
+    "Web Scan"
+    web_scan
+    "Penetration Testing"
+    pen_test
+    "Manual Test"
+    manual_test
+  }
+
+
+
 
   "Defines identifying information about a system privilege held by the user."
   type AuthorizedPrivilege {
@@ -814,6 +925,11 @@
     role: OscalRole!
     "Identifies one or more references to the parties that are responsible for performing the associated role."
     parties: [OscalParty!]!
+    # DarkLight extensions
+    "Identifies a name given to the responsible party to make it friendlier."
+    name: String
+    "Identifies a summary of the reponsible party's purpose and associated responsibilities."
+    description: String
   }
   input OscalResponsiblePartyAddInput {
     # ResponsibleParty
@@ -821,7 +937,13 @@
     role: ID!
     "Identifies one or more references to the parties that are responsible for performing the associated role."
     parties: [ID!]!
+    # DarkLight extensions
+    "Identifies a name given to the responsible party to make it friendlier."
+    name: String
+    "Identifies a summary of the reponsible party's purpose and associated responsibilities."
+    description: String
   }
+
   "Defines identifying information about a Responsible Role in OSCAL"
   input OscalResponsibleRoleAddInput {
     # ResponsibleRole
@@ -829,11 +951,18 @@
     role: ID!
     "Identifies one or more references to the parties that are responsible for performing the associated role."
     parties: [ID]
+    # DarkLight extensions
+    "Identifies a name given to the responsible role to make it friendlier."
+    name: String
+    "Identifies a summary of the reponsible role's purpose and associated responsibilities."
+    description: String
   }
   # Ordering
   enum OscalResponsiblePartyOrdering {
     "Label"
     label_name
+    "Name"
+    name
   }
   # Filtering
   input OscalResponsiblePartyFiltering {
@@ -847,6 +976,8 @@
     label_name
     "Role Identifier"
     role_identifier
+    "Name"
+    name
   }
   # Pagination
   type OscalResponsiblePartyConnection {

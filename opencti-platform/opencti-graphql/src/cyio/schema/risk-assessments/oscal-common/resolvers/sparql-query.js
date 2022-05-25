@@ -172,6 +172,9 @@ export const oscalResponsiblePartyReducer = (item) => {
     // Oscal Responsible Party
     ...(item.role &&  {role_iri: item.role}),
     ...(item.parties && {parties_iri: item.parties}),
+    // DarkLight extensions
+    ...(item.name && {name: item.name}),
+    ...(item.description &&  {description: item.description}),
   }
 }
 export const oscalRoleReducer = (item) => {
@@ -1225,7 +1228,16 @@ export const responsiblePartyPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "role_identifier");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-
+  name: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  description: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
 }
 export const rolePredicateMap = {
   id: {
