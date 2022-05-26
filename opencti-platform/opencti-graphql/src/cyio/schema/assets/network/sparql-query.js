@@ -260,6 +260,13 @@ export const selectNetworkByIriQuery = (iri, select) => {
     BIND(${iri} AS ?iri)
     ?iri a <http://scap.nist.gov/ns/asset-identification#Network> .
     ${predicates}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    }
   }
   `
 }
@@ -287,6 +294,13 @@ export const selectAllNetworks = (select, args) => {
   WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Network> . 
     ${predicates}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    }
   }
   `
 }
