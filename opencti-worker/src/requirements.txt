@@ -1,1 +1,1 @@
-git+https://github.com/opencti-platform/client-python@master#pycti
+pycti==5.3.1

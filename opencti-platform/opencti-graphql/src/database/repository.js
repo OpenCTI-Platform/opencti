@@ -1,6 +1,6 @@
 import { assoc, filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { connectorConfig } from './rabbitmq';
+import { registerConnectorQueues } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 import { listEntities } from './middleware-loader';
@@ -78,7 +78,7 @@ export const completeConnector = (connector) => {
   if (connector) {
     return pipe(
       assoc('connector_scope', connector.connector_scope ? connector.connector_scope.split(',') : []),
-      assoc('config', connectorConfig(connector.id)),
+      assoc('config', registerConnectorQueues(connector.id, connector.name, connector.connector_scope ? connector.connector_scope.split(',') : [])),
       assoc('active', sinceNowInMinutes(connector.updated_at) < 5)
     )(connector);
   }
