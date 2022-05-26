@@ -366,22 +366,22 @@ class StixDomainObjectCreation extends Component {
           || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'Infrastructure'].indexOf(r) >= 0,
           ) && (
-              <MenuItem value="Infrastructure">{t('Infrastructure')}</MenuItem>
-            ))}
+            <MenuItem value="Infrastructure">{t('Infrastructure')}</MenuItem>
+          ))}
         {targetStixDomainObjectTypes === undefined
           || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'Attack-Pattern'].indexOf(r) >= 0,
           ) && (
-              <MenuItem value="Attack-Pattern">{t('Attack pattern')}</MenuItem>
-            ))}
+            <MenuItem value="Attack-Pattern">{t('Attack pattern')}</MenuItem>
+          ))}
         {targetStixDomainObjectTypes === undefined
           || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'Course-Of-Action'].indexOf(r) >= 0,
           ) && (
-              <MenuItem value="Course-Of-Action">
-                {t('Course of action')}
-              </MenuItem>
-            ))}
+            <MenuItem value="Course-Of-Action">
+              {t('Course of action')}
+            </MenuItem>
+          ))}
         {targetStixDomainObjectTypes === undefined
           || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'Indicator'].indexOf(r) >= 0,
