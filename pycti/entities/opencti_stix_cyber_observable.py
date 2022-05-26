@@ -1283,6 +1283,46 @@ class StixCyberObservable:
             return None
 
     """
+        Promote a Stix-Observable to an Indicator
+
+        :param id: the Stix-Observable id
+        :return void
+    """
+
+    def promote_to_indicator(self, **kwargs):
+        id = kwargs.get("id", None)
+        custom_attributes = kwargs.get("customAttributes", None)
+        if id is not None:
+            self.opencti.log("info", "Promoting Stix-Observable {" + id + "}.")
+            query = (
+                """
+                    mutation StixCyberObservableEdit($id: ID!) {
+                        stixCyberObservableEdit(id: $id) {
+                            promote {
+                                """
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
+                + """    
+                            }                               
+                        }
+                    }
+             """
+            )
+            result = self.opencti.query(query, {"id": id})
+            return self.opencti.process_multiple_fields(
+                result["data"]["stixCyberObservableEdit"]["promote"]
+            )
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_stix_cyber_observable_promote] Missing parameters: id",
+            )
+            return None
+
+    """
         Delete a Stix-Observable
 
         :param id: the Stix-Observable id
