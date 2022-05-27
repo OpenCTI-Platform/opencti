@@ -210,7 +210,7 @@ const buildStixObject = (instance: BasicStoreCommon): S.StixObject => {
 };
 
 // Meta
-const buildKillChainPhases = (instance: StoreEntity): Array<SMO.StixInternalKillChainPhase> => {
+const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Array<SMO.StixInternalKillChainPhase> => {
   return (instance[INPUT_KILLCHAIN] ?? []).map((k) => {
     const data: SMO.StixInternalKillChainPhase = {
       kill_chain_name: k.kill_chain_name,
@@ -933,7 +933,8 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         source_ref: instance.from?.internal_id,
         source_type: instance.from?.entity_type,
         target_ref: instance.to?.internal_id,
-        target_type: instance.to?.entity_type
+        target_type: instance.to?.entity_type,
+        kill_chain_phases: buildKillChainPhases(instance)
       })
     }
   };

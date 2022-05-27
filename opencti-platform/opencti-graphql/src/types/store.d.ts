@@ -175,6 +175,7 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_DOMAIN_FROM]: Array<BasicStoreEntity>;
   [INPUT_DOMAIN_TO]: Array<BasicStoreEntity>;
   [INPUT_LABELS]: Array<StoreLabel>;
+  [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
 }
 
 interface StoreProxyEdge<T extends StoreProxyEntity> {

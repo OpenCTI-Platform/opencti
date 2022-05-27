@@ -1,6 +1,7 @@
 import type { StixId } from './stix';
 import type { StixRelationshipObject, StixOpenctiExtension } from './stix-common';
 import { STIX_EXT_OCTI } from './stix-extensions';
+import { StixKillChainPhase } from './stix-common';
 
 // Relationship Specific Properties
 // relationship_type, description, source_ref, target_ref, start_time, stop_time
@@ -9,6 +10,7 @@ interface relationExtension extends StixOpenctiExtension {
   source_type: string;
   target_ref: string;
   target_type: string;
+  kill_chain_phases: Array<StixKillChainPhase>;
 }
 interface StixRelation extends StixRelationshipObject {
   relationship_type: string;
