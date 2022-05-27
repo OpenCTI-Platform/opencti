@@ -2,8 +2,7 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
-import { compose, propOr, map } from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Delete from '@material-ui/icons/Delete';
@@ -13,14 +12,9 @@ import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import Select from '@material-ui/core/Select';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import { Dialog, DialogContent, DialogActions } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
-import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -69,7 +63,7 @@ const styles = (theme) => ({
   },
 });
 
-class DataAddressField extends Component {
+class EmailAddressField extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -78,8 +72,7 @@ class DataAddressField extends Component {
       value: '',
       error: false,
       editValueKey: '',
-      ipAddress: [...this.props.addressValues],
-      selectedMode: '',
+      emailAddress: [...this.props.addressValues],
     };
   }
 
@@ -90,10 +83,10 @@ class DataAddressField extends Component {
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
-    if (this.state.ipAddress.every((value) => value.phone_number !== this.state.value)) {
-      this.state.ipAddress.push({ 'phone_number': this.state.value, 'usage_type': this.state.selectedMode });
+    if (this.state.emailAddress.every((value) => value !== this.state.value)) {
+      this.state.emailAddress.push( this.state.value );
     }
-    this.setState({ value: '', open: false, selectedMode: '' }, this.handleSubmit());
+    this.setState({ value: '', open: false }, this.handleSubmit());
   }
 
   handleEditAddress() {
@@ -103,38 +96,27 @@ class DataAddressField extends Component {
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
-    if (this.state.ipAddress.every((value) => value.phone_number !== this.state.value)) {
-      this.state.ipAddress[this.state.editValueKey].phone_number = this.state.value;
-      this.state.ipAddress[this.state.editValueKey].usage_type = this.state.selectedMode;
+    if (this.state.emailAddress.every((value) => value !== this.state.value)) {
+      this.state.emailAddress[this.state.editValueKey] = this.state.value;
     }
-    this.setState({ value: '', editOpen: false, selectedMode: '' }, this.handleSubmit());
+    this.setState({ value: '', editOpen: false }, this.handleSubmit());
   }
 
   handleSubmit() {
-    this.props.setFieldValue(this.props.name, this.state.ipAddress);
+    this.props.setFieldValue(this.props.name, this.state.emailAddress);
   }
 
   handleEditionAddress(key) {
-    const editValue = this.state.ipAddress.filter((v, i) => i === key)[0];
+    const editValue = this.state.emailAddress.filter((v, i) => i === key)[0];
     this.setState({
-      selectedMode: editValue.usage_type,
-      value: editValue.phone_number,
+      value: editValue,
       editValueKey: key,
       editOpen: true,
     })
   }
 
-  handleChangeMode(event) {
-    this.setState({ selectedMode: event.target.value });
-  }
-
   handleDeleteAddress(key) {
-    this.setState({ ipAddress: this.state.ipAddress.filter((value, i) => i !== key) }, this.handleSubmit());
-  }
-
-  handleReset(){
-    this.props.setFieldValue(this.props.name, []);
-    this.setState({ ipAddress: [...this.props.addressValues] });
+    this.setState({ emailAddress: this.state.emailAddress.filter((value, i) => i !== key) }, this.handleSubmit());
   }
 
   render() {
@@ -162,12 +144,11 @@ class DataAddressField extends Component {
         <div className={classes.scrollBg}>
           <div className={classes.scrollDiv}>
             <div className={classes.scrollObj}>
-              {this.state.ipAddress.map((address, key) => (
+              {this.state.emailAddress.map((address, key) => (
                 <div key={key} style={{ display: 'grid', gridTemplateColumns: '75% 1fr' }}>
                   <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    <ItemIcon type={address.usage_type} />
                     <Typography>
-                      {(address.phone_number && t(address.phone_number.substr(0, 15).concat('...')))}
+                      {(address && t(address.substr(0, 15).concat('...')))}
                     </Typography>
                   </div>
                   <div style={{ display: 'flex' }}>
@@ -199,39 +180,20 @@ class DataAddressField extends Component {
             {t(`Add or Edit ${title}`)}
           </DialogContent>
           <DialogContent style={{ overflow: 'hidden', display: 'flex', alignItems: 'end' }}>
-            <div style={{ marginRight: '20px' }}>
-              <FormControl
-                size='small'
+              <TextField
+                error={error}
+                label='Enter Email Address'
+                helperText={error ? helperText : ''}
+                onChange={(event) => this.setState({ value: event.target.value })}
+                onFocus={() => this.setState({ error: false })}
                 fullWidth={true}
-                className={classes.dataEntities}
-              >
-                <InputLabel>
-                  {t('Usage Type')}
-                </InputLabel>
-                <Select
-                  value={this.state.selectedMode}
-                  onChange={this.handleChangeMode.bind(this)}
-                  className={classes.dataSelect}
-                >
-                  <MenuItem value='office'> <ItemIcon type='office' />{t('Office')}</MenuItem>
-                  <MenuItem value='mobile'> <ItemIcon type='mobile' />{t('Mobile')}</MenuItem>
-                  <MenuItem value='home'> <ItemIcon type='home' />{t('Home')}</MenuItem>
-                </Select>
-              </FormControl>
-            </div>
-            <TextField
-              error={error}
-              helperText={error ? helperText : ''}
-              onChange={(event) => this.setState({ value: event.target.value })}
-              onFocus={() => this.setState({ error: false })}
-              fullWidth={true}
-              value={this.state.value}
-            />
+                value={this.state.value}
+              />
           </DialogContent>
           <DialogActions className={classes.dialogAction}>
             <Button
               variant='outlined'
-              onClick={() => this.setState({ open: false, value: '', selectedMode: '' })}
+              onClick={() => this.setState({ open: false, value: '' })}
             >
               {t('Cancel')}
             </Button>
@@ -254,28 +216,9 @@ class DataAddressField extends Component {
             {t(`Add or Edit ${title}`)}
           </DialogContent>
           <DialogContent style={{ overflow: 'hidden', display: 'flex', alignItems: 'end' }}>
-            <div style={{ marginRight: '20px' }}>
-              <FormControl
-                size='small'
-                fullWidth={true}
-                className={classes.dataEntities}
-              >
-                <InputLabel>
-                  {t('Usage Type')}
-                </InputLabel>
-                <Select
-                  value={this.state.selectedMode}
-                  onChange={this.handleChangeMode.bind(this)}
-                  className={classes.dataSelect}
-                >
-                  <MenuItem value='office'><ItemIcon type='office' />{t('Office')}</MenuItem>
-                  <MenuItem value='mobile'><ItemIcon type='mobile' />{t('Mobile')}</MenuItem>
-                  <MenuItem value='home'><ItemIcon type='home' />{t('Home')}</MenuItem>
-                </Select>
-              </FormControl>
-            </div>
             <TextField
               error={error}
+              label='Enter Email Address'
               helperText={error ? helperText : ''}
               onChange={(event) => this.setState({ value: event.target.value })}
               onFocus={() => this.setState({ error: false })}
@@ -286,7 +229,7 @@ class DataAddressField extends Component {
           <DialogActions className={classes.dialogAction}>
             <Button
               variant='outlined'
-              onClick={() => this.setState({ editOpen: false, value: '', selectedMode: '' })}
+              onClick={() => this.setState({ editOpen: false, value: '' })}
             >
               {t('Cancel')}
             </Button>
@@ -304,7 +247,7 @@ class DataAddressField extends Component {
   }
 }
 
-DataAddressField.propTypes = {
+EmailAddressField.propTypes = {
   name: PropTypes.string,
   device: PropTypes.object,
   classes: PropTypes.object,
@@ -312,4 +255,4 @@ DataAddressField.propTypes = {
   fldt: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(DataAddressField);
+export default compose(inject18n, withStyles(styles))(EmailAddressField);

@@ -16,6 +16,9 @@ import {
   FeedbackOutlined,
   LanguageOutlined,
   WifiTetheringOutlined,
+  ApartmentOutlined,
+  HomeOutlined,
+  Call,
   Scanner,
   Visibility,
   PlaceOutlined,
@@ -134,6 +137,12 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <Work style={style} fontSize={fontSize} role="img" />;
     case 'voip_handset':
       return <Phone style={style} fontSize={fontSize} role="img" />;
+    case 'office':
+      return <ApartmentOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'mobile':
+      return <HomeOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'home':
+      return <Call style={style} fontSize={fontSize} role="img" />;
     case 'pbx':
       return <PhoneLocked style={style} fontSize={fontSize} role="img" />;
     case 'computing_device':

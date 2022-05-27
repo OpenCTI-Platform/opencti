@@ -25,12 +25,14 @@ import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../../utils/Time';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
+import TaskType from '../../../common/form/TaskType';
 import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import DataAddressField from '../../../common/form/DataAddressField';
+import EmailAddressField from '../../../common/form/EmailAddressField';
 import NewAddressField from '../../../common/form/NewAddressField';
 import LocationField from '../../../common/form/LocationField';
 import { ipv6AddrRegex, telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
@@ -80,9 +82,11 @@ const entitiesPartiesCreationMutation = graphql`
   }
 `;
 
-const riskValidation = (t) => Yup.object().shape({
+const EntitiesPartiesCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  party_type: Yup.string().required(t('This field is required')),
 });
+
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
@@ -120,15 +124,17 @@ class EntitiesPartiesCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = evolve(
-      {
-        deadline: () => parse(values.deadline).format(),
-      },
-      values,
-    );
     const finalValues = R.pipe(
-      R.assoc('name', values.name),
-    )(adaptedValues);
+      R.dissoc('id'),
+      R.dissoc('created'),
+      values.addresses.length > 0
+        ? R.dissoc('locations')
+        : R.dissoc('addresses'),
+      R.dissoc('modified'),
+      R.dissoc('marking'),
+      R.dissoc('external_identifiers'),
+      R.dissoc('member_of_organizations'),
+    )(values);
     CM(environmentDarkLight, {
       mutation: entitiesPartiesCreationMutation,
       variables: {
@@ -138,7 +144,8 @@ class EntitiesPartiesCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        this.props.handlePartyCreation();
+        this.props.history.push('/data/entities/parties');
       },
       onError: (err) => {
         console.error(err);
@@ -174,7 +181,7 @@ class EntitiesPartiesCreation extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handlePartyCreation();
   }
 
   render() {
@@ -198,14 +205,23 @@ class EntitiesPartiesCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               name: '',
-              created: null,
-              modified: null,
-              telephone_numbers: [],
-              email_address: [],
-              address: [],
+              office: '',
               locations: [],
+              addresses: [],
+              mail_stop: '',
+              created: null,
+              job_title: '',
+              modified: null,
+              short_name: '',
+              party_type: '',
+              description: '',
+              marking: '',
+              email_addresses: [],
+              telephone_numbers: [],
+              external_identifiers: [],
+              member_of_organizations: '',
             }}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={EntitiesPartiesCreationValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -404,11 +420,11 @@ class EntitiesPartiesCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="party_type"
+                        <TaskType
+                          name='party_type'
+                          taskType='PartyType'
                           fullWidth={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -431,7 +447,7 @@ class EntitiesPartiesCreation extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="member_of"
+                          name='member_of_organizations'
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -469,7 +485,7 @@ class EntitiesPartiesCreation extends Component {
                           title='Telephone numbers'
                           name='telephone_numbers'
                           validation={telephoneFormatRegex}
-                          helperText='Please enter a valid Telephone Number. Example: +1 999 999-9999'
+                          helperText='Please enter a valid Telephone Number. Example: +17895551234 (10-15 digits)'
                         />
                       </div>
                     </Grid>
@@ -490,12 +506,12 @@ class EntitiesPartiesCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={SelectField}
-                          variant='outlined'
+                          component={TextField}
                           name="job_title"
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
+                          size="small"
                           containerstyle={{ width: '100%' }}
+                          variant='outlined'
                         />
                       </div>
                       <div style={{ marginTop: '10px' }}>
@@ -547,12 +563,12 @@ class EntitiesPartiesCreation extends Component {
                         />
                       </div>
                       <div style={{ marginTop: '10px' }}>
-                        <DataAddressField
+                        <EmailAddressField
                           setFieldValue={setFieldValue}
                           values={values}
-                          addressValues={values.email_address}
+                          addressValues={values.email_addresses}
                           title='Email Address'
-                          name='email_address'
+                          name='email_addresses'
                           validation={emailAddressRegex}
                           helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                         />
@@ -577,11 +593,9 @@ class EntitiesPartiesCreation extends Component {
                         <NewAddressField
                           setFieldValue={setFieldValue}
                           values={values}
-                          addressValues={values.address}
+                          addressValues={values.addresses}
                           title='Address(es)'
-                          name='address'
-                          validation={emailAddressRegex}
-                          helperText='Please enter a valid Email Address. Example: support@darklight.ai'
+                          name='addresses'
                         />
                       ) : (
                         <LocationField
@@ -624,8 +638,7 @@ class EntitiesPartiesCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    onClick={() => handlePartyCreation()}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
