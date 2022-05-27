@@ -22,6 +22,7 @@ import { commitMutation } from '../../../../relay/environment';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { dateFormat, parse } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
+import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 
@@ -201,7 +202,7 @@ class RiskEditionDetailsComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="riskDetailsDescription"
                     fullWidth={true}
                     multiline={true}
