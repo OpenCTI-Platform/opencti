@@ -7,7 +7,7 @@ import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relation
 import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
 import StixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsAreaChart';
 import StixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsVerticalBars';
-import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
+import StixCoreRelationshipsDistributionList from '../../common/stix_core_relationships/StixCoreRelationshipsDistributionList';
 
 const styles = () => ({
   container: {
@@ -75,7 +75,7 @@ class GlobalActivityVulnerabilities extends Component {
         );
       case 'list':
         return (
-          <StixCoreRelationshipsList
+          <StixCoreRelationshipsDistributionList
             title={`${t('Activity')} - ${t('Vulnerabilities')}`}
             relationshipType="stix-core-relationship"
             toTypes={['Vulnerability']}

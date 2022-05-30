@@ -7,18 +7,22 @@ import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { head, pathOr } from 'ramda';
 import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
+import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
+import Chip from '@mui/material/Chip';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
+import { convertFilters } from '../../../../utils/ListParameters';
+import Filters, { isUniqFilter } from '../lists/Filters';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   container: {
@@ -26,6 +30,7 @@ const styles = (theme) => ({
     height: '100%',
     overflow: 'auto',
     paddingBottom: 10,
+    marginBottom: 10,
   },
   paper: {
     height: '100%',
@@ -52,6 +57,30 @@ const styles = (theme) => ({
   itemIconDisabled: {
     marginRight: 0,
     color: theme.palette.grey[700],
+  },
+  parameters: {
+    margin: '0 0 20px 0',
+    padding: 0,
+  },
+  filters: {
+    float: 'left',
+    margin: '-4px 0 0 15px',
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.background.accent,
+    margin: '0 10px 0 10px',
+  },
+  export: {
+    float: 'right',
+    margin: '0 0 0 20px',
+  },
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: theme.spacing(1) / 4,
   },
 });
 
@@ -210,13 +239,85 @@ const stixDomainObjectsListQuery = graphql`
 `;
 
 class StixDomainObjectsList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      filters: R.propOr({}, 'filters', props.config),
+    };
+  }
+
+  handleSaveConfig() {
+    const { config, onConfigChange } = this.props;
+    const { filters } = this.state;
+    onConfigChange({ ...config, filters });
+  }
+
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: R.assoc(
+            key,
+            isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
+            this.state.filters,
+          ),
+        },
+        () => this.handleSaveConfig(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.handleSaveConfig(),
+      );
+    }
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.handleSaveConfig());
+  }
+
   renderContent() {
-    const { t, fsd, containerId, dateAttribute, classes, types } = this.props;
-    const filters = [];
+    const { filters } = this.state;
+    const {
+      t,
+      fsd,
+      containerId,
+      dateAttribute,
+      classes,
+      types,
+      startDate,
+      endDate,
+    } = this.props;
+    const finalFilters = convertFilters(filters);
     if (containerId) {
-      filters.push({
+      finalFilters.push({
         key: 'objectContains',
         values: [containerId],
+      });
+    }
+    if (startDate) {
+      finalFilters.push({
+        key: 'created',
+        values: [startDate],
+        operator: 'gt',
+      });
+    }
+    if (endDate) {
+      finalFilters.push({
+        key: 'created',
+        values: [endDate],
+        operator: 'lt',
       });
     }
     return (
@@ -224,10 +325,10 @@ class StixDomainObjectsList extends Component {
         query={stixDomainObjectsListQuery}
         variables={{
           types: types || ['Stix-Domain-Object'],
-          first: 10,
+          first: 50,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters,
+          filters: finalFilters,
         }}
         render={({ props }) => {
           if (
@@ -238,11 +339,11 @@ class StixDomainObjectsList extends Component {
             const data = props.stixDomainObjects.edges;
             return (
               <div id="container" className={classes.container}>
-                <List>
+                <List style={{ marginTop: -10 }}>
                   {data.map((stixCoreObjectEdge) => {
                     const stixCoreObject = stixCoreObjectEdge.node;
-                    const markingDefinition = head(
-                      pathOr([], ['objectMarking', 'edges'], stixCoreObject),
+                    const markingDefinition = R.head(
+                      R.pathOr([], ['objectMarking', 'edges'], stixCoreObject),
                     );
                     return (
                       <ListItem
@@ -270,7 +371,7 @@ class StixDomainObjectsList extends Component {
                           }
                         />
                         <div style={inlineStyles.itemAuthor}>
-                          {pathOr('', ['createdBy', 'name'], stixCoreObject)}
+                          {R.pathOr('', ['createdBy', 'name'], stixCoreObject)}
                         </div>
                         <div style={inlineStyles.itemDate}>
                           {fsd(stixCoreObject[dateAttribute])}
@@ -325,18 +426,97 @@ class StixDomainObjectsList extends Component {
   }
 
   render() {
-    const { t, classes, title, variant, height } = this.props;
+    const { filters } = this.state;
+    const { t, classes, title, variant, height, onConfigChange } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
+        <div
+          className={classes.parameters}
           style={{
             margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
           }}
         >
-          {title || t('Reports list')}
-        </Typography>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{
+              float: 'left',
+              margin: '2px 20px 0 0',
+            }}
+          >
+            {title || t('Reports list')}
+          </Typography>
+          {onConfigChange && (
+            <div style={{ marginTop: -4, float: 'left' }}>
+              <Filters
+                availableFilterKeys={[
+                  'markedBy',
+                  'createdBy',
+                  'labelledBy',
+                  'confidence_gt',
+                ]}
+                handleAddFilter={this.handleAddFilter.bind(this)}
+                handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+                size="small"
+              />
+            </div>
+          )}
+          <div className={classes.filters}>
+            {R.map((currentFilter) => {
+              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const values = (
+                <span>
+                  {R.map(
+                    (n) => (
+                      <span key={n.value}>
+                        {n.value && n.value.length > 0
+                          ? truncate(n.value, 15)
+                          : t('No label')}{' '}
+                        {R.last(currentFilter[1]).value !== n.value && (
+                          <code>OR</code>
+                        )}
+                      </span>
+                    ),
+                    currentFilter[1],
+                  )}
+                </span>
+              );
+              return (
+                <Tooltip
+                  title={
+                    <div>
+                      <strong>{label}</strong>: {values}
+                    </div>
+                  }
+                >
+                  <span>
+                    <Chip
+                      key={currentFilter[0]}
+                      label={
+                        <div>
+                          <strong>{label}</strong>: {values}
+                        </div>
+                      }
+                      onDelete={this.handleRemoveFilter.bind(
+                        this,
+                        currentFilter[0],
+                      )}
+                      size="small"
+                    />
+                    {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
+                      <Chip
+                        size="small"
+                        classes={{ root: classes.operator }}
+                        label={t('AND')}
+                      />
+                    )}
+                  </span>
+                </Tooltip>
+              );
+            }, R.toPairs(filters))}
+          </div>
+          <div className="clearfix" />
+        </div>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
@@ -359,6 +539,10 @@ StixDomainObjectsList.propTypes = {
   height: PropTypes.number,
   dateAttribute: PropTypes.string,
   variant: PropTypes.string,
+  config: PropTypes.object,
+  onConfigChange: PropTypes.func,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
 };
 
 export default R.compose(

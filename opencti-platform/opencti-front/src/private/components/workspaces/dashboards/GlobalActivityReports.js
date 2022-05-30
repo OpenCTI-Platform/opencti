@@ -18,7 +18,7 @@ const styles = () => ({
 
 class GlobalActivityReports extends Component {
   render() {
-    const { t, widget, startDate, endDate, timeField } = this.props;
+    const { t, widget, startDate, endDate, timeField, onConfigChange } = this.props;
     let dateAttribute = 'created_at';
     if (timeField === 'functional') {
       dateAttribute = 'created';
@@ -82,6 +82,10 @@ class GlobalActivityReports extends Component {
             types={['Report']}
             dateAttribute={dateAttribute}
             variant="inLine"
+            config={widget.config}
+            onConfigChange={onConfigChange.bind(this)}
+            startDate={startDate}
+            endDate={endDate}
           />
         );
       default:
@@ -109,6 +113,7 @@ GlobalActivityReports.propTypes = {
   widget: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  onConfigChange: PropTypes.func,
 };
 
 export default R.compose(inject18n, withStyles(styles))(GlobalActivityReports);

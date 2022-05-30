@@ -171,6 +171,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'part-of':
     case 'drops':
     case 'delivers':
+    case 'compromises':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     default:
       return <HelpOutlined style={style} fontSize={fontSize} role="img" />;

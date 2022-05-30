@@ -7,7 +7,7 @@ import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relation
 import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
 import StixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsAreaChart';
 import StixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsVerticalBars';
-import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
+import StixCoreRelationshipsDistributionList from '../../common/stix_core_relationships/StixCoreRelationshipsDistributionList';
 import StixDomainObjectsTimeline from '../../common/stix_domain_objects/StixDomainObjectsTimeline';
 
 const styles = () => ({
@@ -76,7 +76,7 @@ class GlobalActivityIntrusionSets extends Component {
         );
       case 'list':
         return (
-          <StixCoreRelationshipsList
+          <StixCoreRelationshipsDistributionList
             title={`${t('Activity')} - ${t('Intrusion Sets')}`}
             relationshipType="stix-core-relationship"
             toTypes={['Intrusion-Set']}

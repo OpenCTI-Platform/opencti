@@ -8,7 +8,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Popover from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
-import { FilterListOutlined } from '@mui/icons-material';
+import InputAdornment from '@mui/material/InputAdornment';
+import { FilterListOutlined, PaletteOutlined } from '@mui/icons-material';
 import * as PropTypes from 'prop-types';
 import Tooltip from '@mui/material/Tooltip';
 import { ToyBrickSearchOutline } from 'mdi-material-ui';
@@ -20,6 +21,10 @@ import { withRouter } from 'react-router-dom';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
+import MenuList from '@mui/material/MenuList';
+import MenuItem from '@mui/material/MenuItem';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
@@ -43,6 +48,10 @@ const styles = (theme) => ({
   container: {
     width: 490,
     padding: 20,
+  },
+  container2: {
+    width: 300,
+    padding: 0,
   },
   icon: {
     paddingTop: 4,
@@ -88,7 +97,7 @@ const uniqFilters = [
   'basedOn',
 ];
 
-export const allEntityTypes = [
+export const entityTypes = [
   'Attack-Pattern',
   'Campaign',
   'Note',
@@ -112,17 +121,20 @@ export const allEntityTypes = [
   'Vulnerability',
   'Incident',
   'Stix-Cyber-Observable',
-  'Stix-Core-Relationship',
   'StixFile',
   'IPv4-Addr',
   'Domain-Name',
-  'Email-Address',
+  'Email-Addr',
   'Email-Message',
+];
+export const relationTypes = [
+  'Stix-Core-Relationship',
   'indicates',
   'targets',
   'uses',
   'located-at',
 ];
+export const allEntityTypes = [...entityTypes, ...relationTypes];
 
 export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('start_date')
@@ -269,6 +281,9 @@ class Filters extends Component {
       filters: {},
       keyword: '',
       inputValues: {},
+      anchorElSearchScope: {},
+      searchScope: {},
+      openSearchScope: {},
     };
   }
 
@@ -281,6 +296,7 @@ class Filters extends Component {
   }
 
   searchEntities(filterKey, event) {
+    const { searchScope } = this.state;
     const { t, theme, availableEntityTypes, availableRelationshipTypes } = this.props;
     if (!event) {
       return;
@@ -385,9 +401,9 @@ class Filters extends Component {
         break;
       case 'fromId':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
-          types: ['Stix-Core-Object'],
+          types: (searchScope && searchScope.fromId) || ['Stix-Core-Object'],
           search: event.target.value !== 0 ? event.target.value : '',
-          count: 100,
+          count: 50,
         })
           .toPromise()
           .then((data) => {
@@ -409,7 +425,7 @@ class Filters extends Component {
         break;
       case 'toId':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
-          types: ['Stix-Core-Object'],
+          types: (searchScope && searchScope.toId) || ['Stix-Core-Object'],
           search: event.target.value !== 0 ? event.target.value : '',
           count: 100,
         })
@@ -995,7 +1011,7 @@ class Filters extends Component {
 
   renderFilters() {
     const { t, classes, availableFilterKeys, variant, noDirectFilters } = this.props;
-    const { entities, keyword, inputValues } = this.state;
+    const { entities, keyword, inputValues, searchScope } = this.state;
     return (
       <Grid container={true} spacing={2}>
         {variant === 'dialog' && (
@@ -1042,6 +1058,19 @@ class Filters extends Component {
               </Grid>
             );
           }
+          let options = [];
+          if (['fromId', 'toId'].includes(filterKey)) {
+            if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
+              options = (entities[filterKey] || [])
+                .filter((n) => (searchScope[filterKey] || []).includes(n.type))
+                .sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
+            } else {
+              // eslint-disable-next-line max-len
+              options = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
+            }
+          } else if (entities[filterKey]) {
+            options = entities[filterKey];
+          }
           return (
             <Grid key={filterKey} item={true} xs={6}>
               <Autocomplete
@@ -1051,12 +1080,7 @@ class Filters extends Component {
                 autoHighlight={true}
                 getOptionLabel={(option) => (option.label ? option.label : '')}
                 noOptionsText={t('No available options')}
-                options={
-                  ['fromId', 'toId'].includes(filterKey)
-                    // eslint-disable-next-line max-len
-                    ? (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0))
-                    : entities[filterKey] || []
-                }
+                options={options}
                 onInputChange={this.searchEntities.bind(this, filterKey)}
                 inputValue={inputValues[filterKey] || ''}
                 onChange={this.handleChange.bind(this, filterKey)}
@@ -1069,12 +1093,18 @@ class Filters extends Component {
                 }
                 renderInput={(params) => (
                   <TextField
-                    {...params}
+                    {...R.dissoc('InputProps', params)}
                     label={t(`filter_${filterKey}`)}
                     variant="outlined"
                     size="small"
                     fullWidth={true}
                     onFocus={this.searchEntities.bind(this, filterKey)}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: ['fromId', 'toId'].includes(filterKey)
+                        ? this.renderSearchScopeSelection(filterKey)
+                        : params.InputProps.endAdornment,
+                    }}
                   />
                 )}
                 renderOption={(props, option) => (
@@ -1097,8 +1127,8 @@ class Filters extends Component {
   }
 
   renderListFilters() {
-    const { t, classes, availableFilterKeys, noDirectFilters } = this.props;
-    const { open, anchorEl, entities, inputValues } = this.state;
+    const { t, classes, availableFilterKeys, noDirectFilters, size, fontSize } = this.props;
+    const { open, anchorEl, entities, inputValues, searchScope } = this.state;
     return (
       <div className={classes.filters}>
         {this.props.variant === 'text' ? (
@@ -1117,9 +1147,9 @@ class Filters extends Component {
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
             style={{ float: 'left', marginTop: -2 }}
-            size="large"
+            size={size || 'large'}
           >
-            <FilterListOutlined />
+            <FilterListOutlined fontSize={fontSize || 'medium'} />
           </IconButton>
         )}
         <Popover
@@ -1143,51 +1173,69 @@ class Filters extends Component {
           && R.filter(
             (n) => R.includes(n, directFilters),
             availableFilterKeys,
-          ).map((filterKey) => (
-            <Autocomplete
-              key={filterKey}
-              className={classes.autocomplete}
-              selectOnFocus={true}
-              autoSelect={false}
-              autoHighlight={true}
-              options={
-                ['fromId', 'toId'].includes(filterKey)
-                  // eslint-disable-next-line max-len
-                  ? (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0))
-                  : entities[filterKey] || []
+          ).map((filterKey) => {
+            let options = [];
+            if (['fromId', 'toId'].includes(filterKey)) {
+              if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
+                options = (entities[filterKey] || [])
+                  .filter((n) => (searchScope[filterKey] || []).includes(n.type))
+                  .sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
+              } else {
+                // eslint-disable-next-line max-len
+                options = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
               }
-              getOptionLabel={(option) => (option.label ? option.label : '')}
-              noOptionsText={t('No available options')}
-              onInputChange={this.searchEntities.bind(this, filterKey)}
-              onChange={this.handleChange.bind(this, filterKey)}
-              isOptionEqualToValue={(option, value) => option.value === value}
-              inputValue={inputValues[filterKey] || ''}
-              groupBy={
-                ['fromId', 'toId'].includes(filterKey)
-                  ? (option) => option.type
-                  : null
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  name={filterKey}
-                  label={t(`filter_${filterKey}`)}
-                  variant="outlined"
-                  size="small"
-                  fullWidth={true}
-                  onFocus={this.searchEntities.bind(this, filterKey)}
-                />
-              )}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  <div className={classes.icon} style={{ color: option.color }}>
-                    <ItemIcon type={option.type} />
-                  </div>
-                  <div className={classes.text}>{option.label}</div>
-                </li>
-              )}
-            />
-          ))}
+            } else if (entities[filterKey]) {
+              options = entities[filterKey];
+            }
+            return (
+              <Autocomplete
+                key={filterKey}
+                className={classes.autocomplete}
+                selectOnFocus={true}
+                autoSelect={false}
+                autoHighlight={true}
+                options={options}
+                getOptionLabel={(option) => (option.label ? option.label : '')}
+                noOptionsText={t('No available options')}
+                onInputChange={this.searchEntities.bind(this, filterKey)}
+                onChange={this.handleChange.bind(this, filterKey)}
+                isOptionEqualToValue={(option, value) => option.value === value}
+                inputValue={inputValues[filterKey] || ''}
+                groupBy={
+                  ['fromId', 'toId'].includes(filterKey)
+                    ? (option) => option.type
+                    : null
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...R.dissoc('InputProps', params)}
+                    label={t(`filter_${filterKey}`)}
+                    variant="outlined"
+                    size="small"
+                    fullWidth={true}
+                    onFocus={this.searchEntities.bind(this, filterKey)}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: ['fromId', 'toId'].includes(filterKey)
+                        ? this.renderSearchScopeSelection(filterKey)
+                        : params.InputProps.endAdornment,
+                    }}
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <li {...props}>
+                    <div
+                      className={classes.icon}
+                      style={{ color: option.color }}
+                    >
+                      <ItemIcon type={option.type} />
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </li>
+                )}
+              />
+            );
+          })}
         <div className="clearfix" />
       </div>
     );
@@ -1226,13 +1274,123 @@ class Filters extends Component {
     this.handleCloseFilters();
     const urlParams = { filters: JSON.stringify(this.state.filters) };
     this.props.history.push(
-      `/dashboard/search${this.state.keyword.length > 0 ? `/${this.state.keyword}` : ''
+      `/dashboard/search${
+        this.state.keyword.length > 0 ? `/${this.state.keyword}` : ''
       }?${new URLSearchParams(urlParams).toString()}`,
     );
   }
 
+  handleOpenSearchScope(key, event) {
+    const { openSearchScope, anchorElSearchScope } = this.state;
+    this.setState({
+      openSearchScope: R.assoc(key, true, openSearchScope),
+      anchorElSearchScope: R.assoc(
+        key,
+        event.currentTarget,
+        anchorElSearchScope,
+      ),
+    });
+  }
+
+  handleCloseSearchScope(key) {
+    const { openSearchScope, anchorElSearchScope } = this.state;
+    this.setState({
+      openSearchScope: R.assoc(key, false, openSearchScope),
+      anchorElSearchScope: R.assoc(key, null, anchorElSearchScope),
+    });
+  }
+
+  handleToggleSearchScope(key, value) {
+    const { searchScope } = this.state;
+    this.setState({
+      searchScope: R.assoc(
+        key,
+        (searchScope[key] || []).includes(value)
+          ? searchScope[key].filter((n) => n !== value)
+          : [...(searchScope[key] || []), value],
+        searchScope,
+      ),
+    });
+  }
+
+  renderSearchScopeSelection(key) {
+    const { t, classes } = this.props;
+    const { openSearchScope, searchScope, anchorElSearchScope } = this.state;
+    const entitiesTypes = R.pipe(
+      R.map((n) => ({
+        label: t(
+          n.toString()[0] === n.toString()[0].toUpperCase()
+            ? `entity_${n.toString()}`
+            : `relationship_${n.toString()}`,
+        ),
+        value: n,
+        type: n,
+      })),
+      R.sortWith([R.ascend(R.prop('label'))]),
+    )(entityTypes);
+    return (
+      <React.Fragment>
+        <InputAdornment position="start">
+          <IconButton
+            onClick={this.handleOpenSearchScope.bind(this, key)}
+            size="small"
+            edge="end"
+            style={{ marginRight: -8 }}
+          >
+            <PaletteOutlined
+              fontSize="small"
+              color={
+                searchScope[key] && searchScope[key].length > 0
+                  ? 'secondary'
+                  : 'primary'
+              }
+            />
+          </IconButton>
+          <Popover
+            classes={{ paper: classes.container2 }}
+            open={openSearchScope[key]}
+            anchorEl={anchorElSearchScope[key]}
+            onClose={this.handleCloseSearchScope.bind(this, key)}
+            anchorOrigin={{
+              vertical: 'center',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'center',
+              horizontal: 'left',
+            }}
+            elevation={8}
+          >
+            <MenuList dense={true}>
+              {entitiesTypes.map((entityType) => (
+                <MenuItem
+                  key={entityType.value}
+                  value={entityType.value}
+                  dense={true}
+                  onClick={this.handleToggleSearchScope.bind(
+                    this,
+                    key,
+                    entityType.value,
+                  )}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={(searchScope[key] || []).includes(
+                      entityType.value,
+                    )}
+                  />
+                  <ListItemText primary={entityType.label} />
+                </MenuItem>
+              ))}
+            </MenuList>
+          </Popover>
+        </InputAdornment>
+      </React.Fragment>
+    );
+  }
+
   renderDialogFilters() {
-    const { t, classes, disabled } = this.props;
+    const { t, classes, disabled, size, fontSize } = this.props;
     const { open, filters } = this.state;
     return (
       <React.Fragment>
@@ -1240,9 +1398,9 @@ class Filters extends Component {
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
-            size="medium"
+            size={size || 'medium'}
           >
-            <ToyBrickSearchOutline fontSize="medium" />
+            <ToyBrickSearchOutline fontSize={fontSize || 'medium'} />
           </IconButton>
         </Tooltip>
         <Dialog

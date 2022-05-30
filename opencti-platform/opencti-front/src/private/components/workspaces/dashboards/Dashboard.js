@@ -51,6 +51,7 @@ import GlobalActivityIndicators from './GlobalActivityIndicators';
 import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
 import ThreatVulnerabilities from './ThreatVulnerabilities';
 import { fromB64, toB64 } from '../../../../utils/String';
+import GlobalActivityStixCoreRelationships from './GlobalActivityStixCoreRelationships';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -198,6 +199,17 @@ class DashboardComponent extends Component {
     this.saveManifest(newManifest);
   }
 
+  onConfigChange(config) {
+    const manifest = this.decodeManifest();
+    const newManifest = R.assoc(
+      'widgets',
+      R.map((n) => R.assoc('config', config, n), manifest.widgets),
+      manifest,
+    );
+    this.setState({ mapReload: true }, () => this.setState({ mapReload: false }));
+    this.saveManifest(newManifest);
+  }
+
   static getDayStartDate() {
     return dayStartDate(null, false);
   }
@@ -288,6 +300,7 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
+            onConfigChange={this.onConfigChange.bind(this)}
           />
         );
       case 'indicators':
@@ -317,6 +330,16 @@ class DashboardComponent extends Component {
             timeField={timeField}
             widget={widget}
             field="x_opencti_detection"
+          />
+        );
+      case 'relationships_list':
+        return (
+          <GlobalActivityStixCoreRelationships
+            startDate={startDate}
+            endDate={endDate}
+            timeField={timeField}
+            widget={widget}
+            onConfigChange={this.onConfigChange.bind(this)}
           />
         );
       default:
