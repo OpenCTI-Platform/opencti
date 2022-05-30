@@ -157,7 +157,6 @@ class StixDomainObjectBookmarkComponent extends Component {
                 size="small"
                 onClick={deleteBookMark.bind(this, node.id, node.entity_type)}
                 color="secondary"
-                style={{ marginTop: 10 }}
               >
                 <StarBorderOutlined />
               </IconButton>

@@ -43,13 +43,10 @@ import Checkbox from '@mui/material/Checkbox';
 import Badge from '@mui/material/Badge';
 import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
-import { Field, Form, Formik } from 'formik';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 import Slide from '@mui/material/Slide';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -59,8 +56,6 @@ import StixCoreRelationshipEdition from '../../common/stix_core_relationships/St
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { resolveLink } from '../../../../utils/Entity';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
-import SelectField from '../../../../components/SelectField';
-import TextField from '../../../../components/TextField';
 import { dateFormat } from '../../../../utils/Time';
 import { parseDomain } from '../../../../utils/Graph';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
@@ -204,23 +199,6 @@ class InvestigationGraphBar extends Component {
     );
   }
 
-  handleOpenExpandElements() {
-    this.setState({ openExpandElements: true });
-  }
-
-  handleCloseExpandElements() {
-    this.setState({ openExpandElements: false });
-  }
-
-  onResetExpandElements() {
-    this.handleCloseExpandElements();
-  }
-
-  onSubmitExpandElements(values, { resetForm }) {
-    this.props.handleExpandElements(values);
-    resetForm();
-  }
-
   handleSelectByType(type) {
     this.props.handleSelectByType(type);
     this.handleCloseSelectByType();
@@ -267,6 +245,7 @@ class InvestigationGraphBar extends Component {
       theme,
       lastLinkFirstSeen,
       lastLinkLastSeen,
+      handleOpenExpandElements,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -279,7 +258,6 @@ class InvestigationGraphBar extends Component {
       anchorElSelectByType,
       openEditRelation,
       openEditEntity,
-      openExpandElements,
       relationReversed,
       openCreatedRelation,
     } = this.state;
@@ -807,7 +785,7 @@ class InvestigationGraphBar extends Component {
                   <span>
                     <IconButton
                       color="primary"
-                      onClick={this.handleOpenExpandElements.bind(this)}
+                      onClick={handleOpenExpandElements.bind(this)}
                       disabled={!expandEnabled}
                       size="large"
                     >
@@ -887,123 +865,6 @@ class InvestigationGraphBar extends Component {
                       {t('Remove')}
                     </Button>
                   </DialogActions>
-                </Dialog>
-                <Dialog
-                  PaperProps={{ elevation: 1 }}
-                  open={openExpandElements}
-                  onClose={this.handleCloseExpandElements.bind(this)}
-                >
-                  <Formik
-                    enableReinitialize={true}
-                    initialValues={{
-                      entity_type: 'All',
-                      relationship_type: 'All',
-                      limit: 100,
-                    }}
-                    onSubmit={this.onSubmitExpandElements.bind(this)}
-                    onReset={this.onResetExpandElements.bind(this)}
-                  >
-                    {({ submitForm, handleReset, isSubmitting }) => (
-                      <Form>
-                        <DialogTitle>{t('Expand elements')}</DialogTitle>
-                        <DialogContent>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="entity_type"
-                            label={t('Entity types')}
-                            fullWidth={true}
-                            containerstyle={{
-                              width: '100%',
-                            }}
-                          >
-                            {[
-                              'All',
-                              'Attack-Pattern',
-                              'Campaign',
-                              'Note',
-                              'Observed-Data',
-                              'Opinion',
-                              'Report',
-                              'Course-Of-Action',
-                              'Individual',
-                              'Organization',
-                              'Sector',
-                              'Indicator',
-                              'Infrastructure',
-                              'Intrusion-Set',
-                              'City',
-                              'Country',
-                              'Region',
-                              'Position',
-                              'Malware',
-                              'Threat-Actor',
-                              'Tool',
-                              'Vulnerability',
-                              'Incident',
-                              'Stix-Cyber-Observable',
-                              'Domain-Name',
-                              'IPv4-Addr',
-                              'IPv6-Addr',
-                              'StixFile',
-                            ].map((entityType) => (
-                              <MenuItem key={entityType} value={entityType}>
-                                {t(`entity_${entityType}`)}
-                              </MenuItem>
-                            ))}
-                          </Field>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="relationship_type"
-                            label={t('Relationship type')}
-                            fullWidth={true}
-                            containerstyle={{
-                              marginTop: 20,
-                              width: '100%',
-                            }}
-                          >
-                            {[
-                              'All',
-                              'indicates',
-                              'targets',
-                              'uses',
-                              'located-at',
-                              'attributed-to',
-                            ].map((relationshipType) => (
-                              <MenuItem
-                                key={relationshipType}
-                                value={relationshipType}
-                              >
-                                {t(`relationship_${relationshipType}`)}
-                              </MenuItem>
-                            ))}
-                          </Field>
-                          <Field
-                            component={TextField}
-                            variant="standard"
-                            name="limit"
-                            label={t('Limit')}
-                            type="number"
-                            fullWidth={true}
-                            style={{ marginTop: 20 }}
-                          />
-                        </DialogContent>
-                        <DialogActions>
-                          <Button onClick={handleReset} disabled={isSubmitting}>
-                            {t('Cancel')}
-                          </Button>
-                          <Button
-                            color="secondary"
-                            onClick={submitForm}
-                            disabled={isSubmitting}
-                          >
-                            {t('Expand elements')}
-                          </Button>
-                        </DialogActions>
-                      </Form>
-                    )}
-                  </Formik>
                 </Dialog>
               </div>
             )}
@@ -1097,7 +958,8 @@ InvestigationGraphBar.propTypes = {
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
   onAddRelation: PropTypes.func,
-  handleExpandElements: PropTypes.func,
+  handleOpenExpandElements: PropTypes.func,
+  handleCloseExpandElements: PropTypes.func,
   handleDeleteSelected: PropTypes.func,
   handleCloseEntityEdition: PropTypes.func,
   handleCloseRelationEdition: PropTypes.func,

@@ -118,7 +118,6 @@ class CampaignCardComponent extends Component {
                     : addBookmark.bind(this, node.id, 'Campaign')
                 }
                 color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
-                style={{ marginTop: 10 }}
               >
                 <StarBorderOutlined />
               </IconButton>

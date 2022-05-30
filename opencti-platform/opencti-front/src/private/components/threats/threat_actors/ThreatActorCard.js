@@ -113,7 +113,6 @@ class ThreatActorCardComponent extends Component {
                     : addBookmark.bind(this, node.id, 'Threat-Actor')
                 }
                 color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
-                style={{ marginTop: 10 }}
               >
                 <StarBorderOutlined />
               </IconButton>
