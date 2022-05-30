@@ -378,6 +378,52 @@ class OpenCTIStix2:
                         "type": kill_chain_phase["entity_type"],
                     }
                 kill_chain_phases_ids.append(kill_chain_phase["id"])
+        elif (
+            self.opencti.get_attribute_in_extension("kill_chain_phases", stix_object)
+            is not None
+        ):
+            for kill_chain_phase in self.opencti.get_attribute_in_extension(
+                "kill_chain_phases", stix_object
+            ):
+                if (
+                    kill_chain_phase["kill_chain_name"] + kill_chain_phase["phase_name"]
+                    in self.mapping_cache
+                ):
+                    kill_chain_phase = self.mapping_cache[
+                        kill_chain_phase["kill_chain_name"]
+                        + kill_chain_phase["phase_name"]
+                    ]
+                else:
+                    if (
+                        "x_opencti_order" not in kill_chain_phase
+                        and self.opencti.get_attribute_in_extension(
+                            "order", kill_chain_phase
+                        )
+                        is not None
+                    ):
+                        kill_chain_phase[
+                            "x_opencti_order"
+                        ] = self.opencti.get_attribute_in_extension(
+                            "order", kill_chain_phase
+                        )
+                    kill_chain_phase = self.opencti.kill_chain_phase.create(
+                        kill_chain_name=kill_chain_phase["kill_chain_name"],
+                        phase_name=kill_chain_phase["phase_name"],
+                        x_opencti_order=kill_chain_phase["x_opencti_order"]
+                        if "x_opencti_order" in kill_chain_phase
+                        else 0,
+                        stix_id=kill_chain_phase["id"]
+                        if "id" in kill_chain_phase
+                        else None,
+                    )
+                    self.mapping_cache[
+                        kill_chain_phase["kill_chain_name"]
+                        + kill_chain_phase["phase_name"]
+                    ] = {
+                        "id": kill_chain_phase["id"],
+                        "type": kill_chain_phase["entity_type"],
+                    }
+                kill_chain_phases_ids.append(kill_chain_phase["id"])
         # Object refs
         object_refs_ids = (
             stix_object["object_refs"] if "object_refs" in stix_object else []
