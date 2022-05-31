@@ -117,7 +117,8 @@
     "port": 9000,
     "use_ssl": false,
     "access_key": "ChangeMe",
-    "secret_key": "ChangeMe"
+    "secret_key": "ChangeMe",
+    "excluded_files": [".DS_Store"]
   },
   "rabbitmq": {
     "hostname": "localhost",

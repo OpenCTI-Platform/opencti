@@ -1,6 +1,6 @@
 import * as Minio from 'minio';
 import * as He from 'he';
-import { assoc, concat, map, sort, filter } from 'ramda';
+import * as R from 'ramda';
 import querystring from 'querystring';
 import conf, { booleanConf, configureCA, logApp, logAudit } from '../config/conf';
 import { buildPagination } from './utils';
@@ -11,6 +11,7 @@ import { UPLOAD_ACTION } from '../config/audit';
 
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
+const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
 
 const minioClient = new Minio.Client({
   endPoint: conf.get('minio:endpoint'),
@@ -119,13 +120,17 @@ export const loadFile = async (user, filename) => {
   }
 };
 
+const isFileObjectExcluded = (id) => {
+  const fileName = id.includes('/') ? R.last(id.split('/')) : id;
+  return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
+};
 export const rawFilesListing = (user, directory, recursive = false) => {
   return new Promise((resolve, reject) => {
     const files = [];
     const stream = minioClient.listObjectsV2(bucketName, directory, recursive);
     stream.on('data', async (obj) => {
-      if (obj.name) {
-        files.push(assoc('id', obj.name, obj));
+      if (obj.name && !isFileObjectExcluded(obj.name)) {
+        files.push(R.assoc('id', obj.name, obj));
       }
     });
     /* istanbul ignore next */
@@ -136,7 +141,7 @@ export const rawFilesListing = (user, directory, recursive = false) => {
     stream.on('end', () => resolve(files));
   }).then((files) => {
     return Promise.all(
-      map((elem) => {
+      R.map((elem) => {
         const filename = He.decode(elem.name);
         return loadFile(user, filename);
       }, files)
@@ -167,11 +172,11 @@ export const upload = async (user, path, fileUpload, metadata = {}) => {
 export const filesListing = async (user, first, path, entityId = null) => {
   const files = await rawFilesListing(user, path);
   const inExport = await loadExportWorksAsProgressFiles(user, path);
-  const allFiles = concat(inExport, files);
-  const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);
-  let fileNodes = map((f) => ({ node: f }), sortedFiles);
+  const allFiles = R.concat(inExport, files);
+  const sortedFiles = R.sort((a, b) => b.lastModified - a.lastModified, allFiles);
+  let fileNodes = R.map((f) => ({ node: f }), sortedFiles);
   if (entityId) {
-    fileNodes = filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
+    fileNodes = R.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
   }
   return buildPagination(first, null, fileNodes, allFiles.length);
 };
@@ -179,6 +184,6 @@ export const filesListing = async (user, first, path, entityId = null) => {
 export const deleteAllFiles = async (user, path) => {
   const files = await rawFilesListing(user, path);
   const inExport = await loadExportWorksAsProgressFiles(user, path);
-  const allFiles = concat(inExport, files);
+  const allFiles = R.concat(inExport, files);
   return Promise.all(allFiles.map((file) => deleteFile(user, file.id)));
 };
