@@ -197,7 +197,7 @@ import type {
   EmailMimePartTypeAddInput,
   WindowsRegistryValueTypeAddInput,
 } from '../generated/graphql';
-import type { StixRelation, StixSighting } from '../types/stix-sro';
+import type { RelationExtension, StixRelation, StixSighting } from '../types/stix-sro';
 import type {
   StixAttackPattern,
   StixCampaign,
@@ -243,7 +243,7 @@ const buildExternalRefs = (element: StixDomainObject | { external_references: Ar
   return (element.external_references ?? []).map((v) => generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, v));
 };
 
-const buildKillChainRefs = (element: StixAttackPattern | StixIndicator | StixInfrastructure | StixMalware | StixTool) => {
+const buildKillChainRefs = (element: StixAttackPattern | StixIndicator | StixInfrastructure | StixMalware | StixTool | RelationExtension) => {
   return (element.kill_chain_phases ?? []).map((v) => generateStandardId(ENTITY_TYPE_KILL_CHAIN_PHASE, v));
 };
 
@@ -293,7 +293,7 @@ export const buildInputDataFromStix = (stix: StixObject): unknown => {
       description: relationship.description,
       externalReferences: buildExternalRefs(relationship),
       fromId: relationship.source_ref,
-      // killChainPhases: undefined, // TODO JRI What about killChainPhases?
+      killChainPhases: buildKillChainRefs(relationship.extensions[STIX_EXT_OCTI]),
       lang: relationship.lang,
       modified: relationship.modified,
       objectLabel: buildLabelRefs(relationship),

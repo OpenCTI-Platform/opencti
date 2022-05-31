@@ -5,7 +5,7 @@ import { StixKillChainPhase } from './stix-common';
 
 // Relationship Specific Properties
 // relationship_type, description, source_ref, target_ref, start_time, stop_time
-interface relationExtension extends StixOpenctiExtension {
+export interface RelationExtension extends StixOpenctiExtension {
   source_ref: string;
   source_type: string;
   target_ref: string;
@@ -20,7 +20,7 @@ interface StixRelation extends StixRelationshipObject {
   start_time: Date;
   stop_time: Date;
   extensions: {
-    [STIX_EXT_OCTI] : relationExtension
+    [STIX_EXT_OCTI] : RelationExtension
   };
 }
 
