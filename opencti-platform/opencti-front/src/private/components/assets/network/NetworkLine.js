@@ -118,8 +118,8 @@ class NetworkLineComponent extends Component {
                 style={{ width: dataColumns.network_range.width }}
               >
                 {node.network_address_range && `${node.network_address_range.starting_ip_address
-                  && node.network_address_range.starting_ip_address.ip_address_value} - ${node.network_address_range.starting_ip_address
-                  && node.network_address_range.starting_ip_address.ip_address_value}`}
+                  && node.network_address_range.starting_ip_address.ip_address_value} - ${node.network_address_range.ending_ip_address
+                  && node.network_address_range.ending_ip_address.ip_address_value}`}
               </div>
               <div
                 className={classes.bodyItem}
