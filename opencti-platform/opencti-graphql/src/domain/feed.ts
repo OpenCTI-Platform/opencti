@@ -7,11 +7,14 @@ import type { FeedAddInput, QueryFeedsArgs } from '../generated/graphql';
 import type { StoreEntityFeed } from '../types/store';
 import { elReplace } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
+  if (input.separator.length > 1) {
+    throw ValidationError('separator', { message: 'Separator must be only one char' });
+  }
   // Check that every type in feed are correct
   for (let index = 0; index < input.feed_types.length; index += 1) {
     const feedType = input.feed_types[index];

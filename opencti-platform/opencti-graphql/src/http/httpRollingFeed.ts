@@ -37,7 +37,13 @@ const extractUserFromRequest = async (req: Express.Request, res: Express.Respons
   return user;
 };
 
-const escape = (str: string) => R.replace(/"/g, '"""', str);
+const dataFormat = (separator: string, data: string) => {
+  if (data.includes(separator) || data.includes('"')) {
+    const escapedData = data.replaceAll('"', '""');
+    return `"${escapedData}"`;
+  }
+  return data;
+};
 
 const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
@@ -66,24 +72,24 @@ const initHttpRollingFeeds = (app: Express.Application) => {
             const data = element[baseKey];
             if (isNotEmptyField(data)) {
               if (isMultipleAttribute(baseKey)) {
-                dataElements.push(`"${escape(data.join(','))}"`);
+                dataElements.push(dataFormat(feed.separator, data.join(',')));
               } else if (isDictionaryAttribute(baseKey)) {
                 if (isComplexKey) {
                   const [, innerKey] = mapping.attribute.split('.');
                   const dictInnerData = data[innerKey.toUpperCase()];
                   if (isNotEmptyField(dictInnerData)) {
-                    dataElements.push(`"${escape(String(dictInnerData))}"`);
+                    dataElements.push(dataFormat(feed.separator, String(dictInnerData)));
                   } else {
-                    dataElements.push('""');
+                    dataElements.push(dataFormat(feed.separator, ''));
                   }
                 } else {
-                  dataElements.push(`"${escape(JSON.stringify(data))}"`);
+                  dataElements.push(dataFormat(feed.separator, JSON.stringify(data)));
                 }
               } else {
-                dataElements.push(`"${escape(String(data))}"`);
+                dataElements.push(dataFormat(feed.separator, String(data)));
               }
             } else {
-              dataElements.push('""');
+              dataElements.push(dataFormat(feed.separator, ''));
             }
           }
         }

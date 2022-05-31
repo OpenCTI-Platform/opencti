@@ -4,7 +4,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "es6",
-    "lib": ["es2019"],
+    "lib": ["es2021"],
     "strict": true,
     "allowJs": true,
     "noImplicitAny": true,
