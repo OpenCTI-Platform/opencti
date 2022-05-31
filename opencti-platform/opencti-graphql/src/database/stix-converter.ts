@@ -501,7 +501,7 @@ const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalw
     ...buildStixDomain(instance),
     name: instance.name,
     description: instance.description,
-    malware_types: [],
+    malware_types: instance.malware_types,
     is_family: instance.is_family,
     aliases: instance.aliases,
     kill_chain_phases: buildKillChainPhases(instance),

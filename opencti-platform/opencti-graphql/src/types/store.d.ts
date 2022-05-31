@@ -251,6 +251,7 @@ interface BasicStoreEntity extends StoreProxyEntity {
   received_lines: Array<string>;
   parent_types: Array<string>;
   report_types: Array<string>;
+  malware_types: Array<string>;
   aliases: Array<string>;
   authors: Array<string>;
   indicator_types: Array<string>;
