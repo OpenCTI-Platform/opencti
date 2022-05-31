@@ -41,6 +41,9 @@ const styles = (theme) => ({
   },
   dialogContent: {
     overflowY: 'hidden',
+    '@media (max-height: 1000px)': {
+      overflowY: 'scroll',
+    },
   },
   popoverDialog: {
     fontSize: '18px',
@@ -226,7 +229,7 @@ class RiskObservationPopover extends Component {
                           <Typography
                             key={i} variant="h2"
                             color="primary"
-                            style={{ padding: '0 10px' }}
+                            style={{ margin: '0 0 0 10px' }}
                           >
                             {subject.subject_ref && t(subject.subject_ref.name)}
                           </Typography>
