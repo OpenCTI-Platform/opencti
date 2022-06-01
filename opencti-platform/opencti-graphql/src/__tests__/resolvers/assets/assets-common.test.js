@@ -90,37 +90,54 @@ const assetLocationQuery = `query assetLocationQuery {
     modified
   }
 }`;
-describe('Successfully Query Common Assets', () => {
-  // it('Return asset location list', async () => {
-  //   const result = await submitOperation(assetLocationListQuery);
+describe('Test Common Assets', () => {
+  let currentAssetLocationId = '';
 
-  //   expect(result.data.assetLocationList).toBe('object');
-  // });
+  it('Create a new asset location', async () => {
+    const createAssetLocation = `mutation createAssetLocation($input: AssetLocationAddInput) {
+      createAssetLocation(input: $input){
+        id
+    }
+  }`;
+    const variables = {
+      input: {
+        name: 'Testing Asset Location',
+      },
+    };
+    const result = await submitOperation(createAssetLocation, variables);
+    currentAssetLocationId = result.data.createAssetLocation.id;
+
+    expect(typeof { value: result.data }).toBe('object');
+  });
 
   it('Return a single asset location', async () => {
     const result = await submitOperation(assetLocationQuery);
     expect(typeof { value: result.data }).toBe('object');
   });
+  it('Return a single asset location', async () => {
+    const result = await submitOperation(assetLocationQuery);
+    expect(typeof { value: result.data }).toBe('object');
+  });
 
-  // it('Return it asset list', async () => {
-  //   const result = await submitOperation(itAssetListQuery);
+  it('Returns a list of assets', async () => {
+    const result = await submitOperation(assetListQuery);
 
-  //   expect(result.data.itAssetList).toBe('object');
-  // });
-
-  // it('Return a single it asset', async () => {
-  //   const result = await submitOperation(itAssetQuery);
-  //   expect(typeof { value: result.data }).toBe('object');
-  // });
-
-  // it('Returns a list of assets', async () => {
-  //   const result = await submitOperation(assetListQuery);
-
-  //   expect(typeof { value: result.data.assetList.edges[0] }).toBe('object');
-  // });
+    expect(typeof { value: result.data.assetList.edges[0] }).toBe('object');
+  });
 
   it('Return a single asset', async () => {
     const result = await submitOperation(assetQuery);
     expect(typeof { value: result.data }).toBe('object');
+  });
+
+  // ATTEMPT TO CLEAN UP TEST DATA
+  it('Delete the newly created asset location', async () => {
+    const deleteAssetLocation = `mutation deleteAssetLocation($id: ID!) {
+      deleteAssetLocation(id:$id) }`;
+
+    const variables = { id: currentAssetLocationId };
+    const result = await submitOperation(deleteAssetLocation, variables);
+
+    expect(typeof { value: result.data.deleteAssetLocation }).toBe('object');
   });
 });
