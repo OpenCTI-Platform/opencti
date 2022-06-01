@@ -177,16 +177,18 @@ class Export extends Component {
       values.db_scan && 'db_scan',
       values.web_scan && 'web_scan',
       values.manual_test && 'manual_test',
-      values.penetration_test && 'penetration_test',
+      values.pen_test && 'pen_test',
       values.mitigating_factors && 'mitigating_factors',
     ];
     const finalValues = pipe(
       assoc('appendices', appendices.filter((value) => value !== false)),
       dissoc('db_scan'),
+      dissoc('pen_test'),
       dissoc('web_scan'),
       dissoc('manual_test'),
-      dissoc('penetration_test'),
       dissoc('mitigating_factors'),
+      dissoc('collected_during_assessment'),
+      dissoc('include_risk_tracking_details'),
       toPairs,
       map((n) => ({
         name: n[0],
@@ -272,10 +274,10 @@ class Export extends Component {
               purpose: '',
               max_items: 0,
               db_scan: false,
-              web_scan: false,
               description: '',
+              web_scan: false,
+              pen_test: false,
               manual_test: false,
-              penetration_test: false,
               mitigating_factors: false,
               collected_during_assessment: false,
               include_risk_tracking_details: false,
@@ -501,7 +503,7 @@ class Export extends Component {
                         <Field
                           component={SwitchField}
                           type="checkbox"
-                          name="penetration_test"
+                          name="pen_test"
                           containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                           inputProps={{ 'aria-label': 'ant design' }}
                         />
