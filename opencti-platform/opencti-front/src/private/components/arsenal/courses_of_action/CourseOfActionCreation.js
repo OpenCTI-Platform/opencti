@@ -134,7 +134,7 @@ class CourseOfActionCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
-          this.props.objectLabel,
+          this.props.paginationOptions,
           newEdge,
         );
       },
