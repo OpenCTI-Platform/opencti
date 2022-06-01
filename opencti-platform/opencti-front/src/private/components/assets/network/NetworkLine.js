@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -66,7 +64,6 @@ class NetworkLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -102,7 +99,7 @@ class NetworkLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.asset_type.width }}
               >
-                {node.asset_type && <ItemIcon type={node.asset_type}/>}
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -121,8 +118,8 @@ class NetworkLineComponent extends Component {
                 style={{ width: dataColumns.network_range.width }}
               >
                 {node.network_address_range && `${node.network_address_range.starting_ip_address
-                && node.network_address_range.starting_ip_address.ip_address_value} - ${node.network_address_range.starting_ip_address
-                && node.network_address_range.starting_ip_address.ip_address_value}`}
+                  && node.network_address_range.starting_ip_address.ip_address_value} - ${node.network_address_range.ending_ip_address
+                  && node.network_address_range.ending_ip_address.ip_address_value}`}
               </div>
               <div
                 className={classes.bodyItem}
@@ -207,18 +204,18 @@ const NetworkLineFragment = createFragmentContainer(
         asset_type
         network_name
         network_id
-        # network_address_range {
-        #   ending_ip_address{
-        #     ... on IpV4Address {
-        #       ip_address_value
-        #     }
-        #   }
-        #   starting_ip_address{
-        #     ... on IpV4Address {
-        #       ip_address_value
-        #     }
-        #   }
-        # }
+        network_address_range {
+          ending_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          starting_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+        }
         labels {
           id
           name
