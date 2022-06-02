@@ -12,6 +12,9 @@ import Badge from '@material-ui/core/Badge';
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { InformationOutline, Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
@@ -98,7 +101,7 @@ class RiskOverviewComponent extends Component {
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'ID',
+                    'Uniquely identifies this object',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -121,7 +124,7 @@ class RiskOverviewComponent extends Component {
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'Created',
+                    'Indicates the date and time at which the object was originally created.',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -142,7 +145,7 @@ class RiskOverviewComponent extends Component {
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'Modified',
+                    'Indicates the date and time that this particular version of the object was last modified.',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -165,7 +168,7 @@ class RiskOverviewComponent extends Component {
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'Description',
+                    'Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system.',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -175,7 +178,13 @@ class RiskOverviewComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {risk.description && t(risk.description)}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {risk.description && t(risk.description)}
+                    </Markdown>
                   </div>
                 </div>
               </div>
@@ -239,7 +248,7 @@ class RiskOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '11px 0 0 5px' }}>
                   <Tooltip
                     title={t(
-                      'Priority',
+                     "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority.",
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />

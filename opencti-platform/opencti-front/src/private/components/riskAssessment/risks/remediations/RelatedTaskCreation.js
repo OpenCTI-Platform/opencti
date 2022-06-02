@@ -37,7 +37,7 @@ import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/SelectField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { insertNode } from '../../../../../utils/Store';
-import { parse } from '../../../../../utils/Time';
+import { dateFormat, parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import TaskType from '../../../common/form/TaskType';
@@ -156,10 +156,16 @@ export const RelatedTaskCreationAddReferenceMutation = graphql`
 
 const RelatedTaskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // external_id: Yup.string(),
-  // url: Yup.string().url(t('The value must be an URL')),
   task_type: Yup.string().required(t('This field is required')),
   description: Yup.string().required(t('This field is required')),
+  start_date: Yup.date().required('This field is required'),
+  end_date: Yup.date()
+  .when("start_date", {
+    is: Yup.date,
+    then: Yup.date().nullable().min(
+      Yup.ref('start_date'),
+      "End date can't be before start date")
+  })
 });
 
 class RelatedTaskCreation extends Component {
@@ -172,6 +178,9 @@ class RelatedTaskCreation extends Component {
       responsible_roles: [],
       associated_activities: [],
       timing: {},
+      start_date: '',
+      end_date: null,
+
     };
   }
 
@@ -202,11 +211,11 @@ class RelatedTaskCreation extends Component {
         )),
       });
     }
-    if (values.start_date && values.end_date) {
+    if (values.start_date) {
       this.setState({
         timing: {
           within_date_range: {
-            start_date: values.start_date === null ? null : parse(values.start_date),
+            start_date: values.start_date === null ? '' : parse(values.start_date),
             end_date: values.end_date === null ? null : parse(values.end_date),
           }
         },
@@ -266,8 +275,8 @@ class RelatedTaskCreation extends Component {
         toId: taskResponse.id,
         fromId: this.props.remediationId,
         fieldName: 'tasks',
-        to_type: 'OscalTask',
-        from_type: 'RiskResponse',
+        to_type: this.props.toType,
+        from_type: this.props.fromType,
       },
       onCompleted: () => {
         this.props.refreshQuery();
@@ -411,6 +420,7 @@ class RelatedTaskCreation extends Component {
           color="inherit"
           aria-label="Add"
           edge="end"
+          style={{ marginTop: '-15px' }}
           onClick={this.handleOpen.bind(this)}
         >
           <Add fontSize="small" />
@@ -428,7 +438,7 @@ class RelatedTaskCreation extends Component {
               name: '',
               description: '',
               task_type: '',
-              start_date: null,
+              start_date: '',
               end_date: null,
               task_dependencies: [],
               related_tasks: [],
@@ -525,6 +535,7 @@ class RelatedTaskCreation extends Component {
                         <div className="clearfix" />
                         <TaskType
                           name="task_type"
+                          taskType='OscalTaskType'
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
@@ -588,6 +599,7 @@ class RelatedTaskCreation extends Component {
                             'The value must be a date (YYYY-MM-DD)',
                           )}
                           style={{ height: '38.09px' }}
+                          onChange={(_, date) => this.setState({ startDate: dateFormat(date,"YYYY-MM-DD") })}
                         />
                       </div>
                     </Grid>
@@ -618,6 +630,8 @@ class RelatedTaskCreation extends Component {
                           )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
+                          minDate={this.state.startDate}
+                          onChange={(_, date) => this.setState({ endDate: dateFormat(date,"YYYY-MM-DD") })}
                         />
                       </div>
                     </Grid>
@@ -887,6 +901,8 @@ class RelatedTaskCreation extends Component {
 }
 
 RelatedTaskCreation.propTypes = {
+  toType: PropTypes.string,
+  fromType: PropTypes.string,
   relatedTaskData: PropTypes.object,
   remediationId: PropTypes.string,
   paginationOptions: PropTypes.object,

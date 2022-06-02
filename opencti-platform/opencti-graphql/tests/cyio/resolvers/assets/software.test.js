@@ -18,6 +18,7 @@ const softwareAssetList = `query softwareAssetListQuery {
     }
   }
 `;
+
 describe('Software Asset Tests', () => {
   let softwareAssetId = '';
   it('Return software asset list', async () => {

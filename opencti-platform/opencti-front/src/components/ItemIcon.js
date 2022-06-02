@@ -16,6 +16,9 @@ import {
   FeedbackOutlined,
   LanguageOutlined,
   WifiTetheringOutlined,
+  ApartmentOutlined,
+  HomeOutlined,
+  Call,
   Scanner,
   Visibility,
   PlaceOutlined,
@@ -54,6 +57,14 @@ import networkIcon from '../resources/images/assets/networkIcon.svg';
 import softwareIcon from '../resources/images/assets/softwareIcon.svg';
 import deviceIcon from '../resources/images/assets/deviceIcon.svg';
 import linuxIcon from '../resources/images/assets/linuxIcon.svg';
+import appendeciesIcon from '../resources/images/entities/appendeciesIcon.svg';
+import collectIcon from '../resources/images/entities/collectIcon.svg';
+import poamIcon from '../resources/images/entities/poamIcon.svg';
+import userPersonIcon from '../resources/images/assets/userPersonIcon.svg';
+import partiesIcon from '../resources/images/assets/partiesIcon.svg';
+import locationsIcon from '../resources/images/assets/locationsIcon.svg';
+import inventoryItemIcon from '../resources/images/assets/inventoryItem.svg';
+import resourceIcon from '../resources/images/assets/resource.svg';
 
 const iconSelector = (type, variant, fontSize, color) => {
   let style = {};
@@ -90,6 +101,18 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <MicrosoftWindows style={style} fontSize={fontSize} role="img" />;
     case 'linux':
       return <img src={linuxIcon} style={style} alt="linux-icon" />;
+    case 'component':
+      return <img src={softwareIcon} style={style} alt="software-icon" />;
+    case 'inventory_item':
+      return <img src={inventoryItemIcon} style={style} alt="inventoryItem-icon" />;
+    case 'resource':
+      return <img src={resourceIcon} style={style} alt="resource-icon" />;
+    case 'location':
+      return <img src={locationsIcon} style={style} alt="locations-icon" />;
+    case 'party':
+      return <img src={partiesIcon} style={style} alt="party-icon" />;
+    case 'user':
+      return <img src={userPersonIcon} style={style} alt="user-icon" />;
     case 'other':
       return <img src={deviceIcon} style={style} alt="device-icon" />;
     case 'physical_device':
@@ -102,6 +125,12 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <img src={networkIcon} style={style} alt="network-icon" />;
     case 'software':
       return <img src={softwareIcon} style={style} alt="software-icon" />;
+    case 'appendecies':
+      return <img src={appendeciesIcon} style={style} alt="appendecies-icon" />;
+    case 'collected':
+      return <img src={collectIcon} style={style} alt="collected-icon" />;
+    case 'poam':
+      return <img src={poamIcon} style={style} alt="poam-icon" />;
     case 'switch':
       return <Scanner style={style} fontSize={fontSize} role="img" />;
     case 'storage_array':
@@ -116,6 +145,12 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <Work style={style} fontSize={fontSize} role="img" />;
     case 'voip_handset':
       return <Phone style={style} fontSize={fontSize} role="img" />;
+    case 'office':
+      return <ApartmentOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'mobile':
+      return <HomeOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'home':
+      return <Call style={style} fontSize={fontSize} role="img" />;
     case 'pbx':
       return <PhoneLocked style={style} fontSize={fontSize} role="img" />;
     case 'computing_device':

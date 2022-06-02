@@ -90,6 +90,7 @@ const assetLocationQuery = `query assetLocationQuery {
     modified
   }
 }`;
+
 describe('Test Common Assets', () => {
   let currentAssetLocationId = '';
 
@@ -114,6 +115,7 @@ describe('Test Common Assets', () => {
     const result = await submitOperation(assetLocationQuery);
     expect(typeof { value: result.data }).toBe('object');
   });
+
   it('Return a single asset location', async () => {
     const result = await submitOperation(assetLocationQuery);
     expect(typeof { value: result.data }).toBe('object');
@@ -139,5 +141,6 @@ describe('Test Common Assets', () => {
     const result = await submitOperation(deleteAssetLocation, variables);
 
     expect(typeof { value: result.data.deleteAssetLocation }).toBe('object');
+
   });
 });

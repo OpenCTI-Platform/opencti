@@ -102,7 +102,7 @@ class CyioAddNotesLinesContainer extends Component {
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
     const filteredValue = data.cyioNotes
-      ? filter((value) => (value.node.abstract.toLowerCase()).includes(this.props.search), data.cyioNotes.edges)
+      ? filter((value) => (value.node.abstract.toLowerCase()).includes(this.props.search.toLowerCase()), data.cyioNotes.edges)
       : [];
     return (
       <List>
@@ -179,8 +179,13 @@ CyioAddNotesLinesContainer.propTypes = {
 };
 
 export const cyioAddNotesLinesQuery = graphql`
-  query CyioAddNotesLinesQuery {
+  query CyioAddNotesLinesQuery(
+    $search: String
+  ) {
     ...CyioAddNotesLines_data
+    @arguments(
+      search: $search
+    )
   }
 `;
 
@@ -188,8 +193,11 @@ const CyioAddNotesLines = createFragmentContainer(
   CyioAddNotesLinesContainer,
   {
     data: graphql`
-      fragment CyioAddNotesLines_data on Query {
-        cyioNotes{
+      fragment CyioAddNotesLines_data on Query 
+      @argumentDefinitions(
+        search: { type: "String" }
+      ){
+        cyioNotes(search: $search){
           edges {
             node {
               __typename

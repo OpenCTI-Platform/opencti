@@ -11,8 +11,10 @@ import SelectField from '../../../../components/SelectField';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
 const TaskTypeQuery = graphql`
-  query TaskTypeQuery {
-    __type(name: "OscalTaskType") {
+  query TaskTypeQuery(
+    $type: String!
+  ) {
+    __type(name: $type) {
       name
       description
       enumValues {
@@ -32,7 +34,9 @@ class TaskType extends Component {
   }
 
   componentDidMount() {
-    fetchDarklightQuery(TaskTypeQuery)
+    fetchDarklightQuery(TaskTypeQuery, {
+      type: this.props.taskType,
+    })
       .toPromise()
       .then((data) => {
         const TaskTypeEntities = R.pipe(

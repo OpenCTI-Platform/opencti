@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -114,13 +112,12 @@ class NetworkCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          style= {{ background:  (selectAll || node.id in (selectedElements || {})) && '#075AD3'}}
+          style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           to={`/defender HQ/assets/network/${node.id}`}
         >
           {/* <CardHeader
@@ -179,11 +176,11 @@ class NetworkCardComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                    {t('Network Name')}
+                  {t('Network Name')}
                 </Typography>
                 <Typography>
-                    {/* {t('KK-HWELL-011')} */}
-                    {node.network_name && t(node.network_name)}
+                  {/* {t('KK-HWELL-011')} */}
+                  {node.network_name && t(node.network_name)}
                 </Typography>
               </div>
               <div>
@@ -198,9 +195,9 @@ class NetworkCardComponent extends Component {
             <Grid xs={12} container={true} >
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 gutterBottom ={true}>
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}>
                   {t('Asset ID')}
                 </Typography>
                 <Typography>
@@ -209,23 +206,22 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('Network ID')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                   {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 gutterBottom ={true}>
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}>
                   {t('Network ID')}
                 </Typography>
                 <Typography>
@@ -233,24 +229,25 @@ class NetworkCardComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('Network Range')}
                 </Typography>
                 <Typography>
-                    {/* {t('Lorem Ipsum')} */}
-                    {node.network_id && t(node.network_id)}
+                {node.network_address_range && `${node.network_address_range.starting_ip_address
+                  && node.network_address_range.starting_ip_address.ip_address_value} - ${node.network_address_range.starting_ip_address
+                  && node.network_address_range.starting_ip_address.ip_address_value}`}
                 </Typography>
               </Grid>
             </Grid>
             <div className={classes.objectLabel}>
               <Typography
-               variant="h3"
-               color="textSecondary"
-               gutterBottom ={true}>
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}>
                 {t('Label')}
               </Typography>
               <CyioCoreObjectLabels
@@ -320,6 +317,18 @@ const NetworkCardFragment = createFragmentContainer(
         asset_type
         asset_id
         network_id
+        network_address_range {
+          ending_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+          starting_ip_address{
+            ... on IpV4Address {
+              ip_address_value
+            }
+          }
+        }
         labels {
           __typename
           id

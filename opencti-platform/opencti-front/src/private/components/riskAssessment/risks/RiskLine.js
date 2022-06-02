@@ -313,7 +313,7 @@ class RiskLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk_response.width }}
+                style={{ width: dataColumns.response_type.width }}
               >
                 <Skeleton
                   animation="wave"

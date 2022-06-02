@@ -34,7 +34,7 @@ class RolesEntities extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-data',
+      'view-roles',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -57,7 +57,7 @@ class RolesEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-data',
+      'view-roles',
       this.state,
     );
   }
@@ -277,7 +277,7 @@ class RolesEntities extends Component {
     const dataColumns = {
       type: {
         label: 'Type',
-        width: '17%',
+        width: '14%',
         isSortable: true,
       },
       name: {
@@ -292,17 +292,17 @@ class RolesEntities extends Component {
       },
       labels: {
         label: 'Labels',
-        width: '16%',
+        width: '20%',
         isSortable: true,
       },
       creation_date: {
         label: 'Creation Date',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       marking: {
         label: 'Marking',
-        width: '13%',
+        width: '12%',
         isSortable: true,
       },
     };
@@ -377,8 +377,7 @@ class RolesEntities extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      // orderedBy: sortBy,
-      orderedBy: 'created',
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
