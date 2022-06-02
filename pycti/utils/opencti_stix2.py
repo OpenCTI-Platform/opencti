@@ -1483,7 +1483,8 @@ class OpenCTIStix2:
                 # Map types
                 if entity_object["entity_type"] == "StixFile":
                     entity_object["entity_type"] = "File"
-                elif IdentityTypes.has_value(entity_object["entity_type"]):
+
+                if IdentityTypes.has_value(entity_object["entity_type"]):
                     entity_object["entity_type"] = "Identity"
                 elif LocationTypes.has_value(entity_object["entity_type"]):
                     entity_object["entity_type"] = "Location"
