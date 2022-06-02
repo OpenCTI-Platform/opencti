@@ -8,7 +8,6 @@ import {
   selectPOAMQuery,
   selectAllPOAMs,
   deletePOAMQuery,
-  selectPOAMItemByIriQuery,
   attachToPOAMQuery,
   detachFromPOAMQuery,
   selectAllPOAMItems,
@@ -25,15 +24,9 @@ import {
   getReducer as getAssessmentReducer,
   selectAllObservations,
   selectAllRisks,
-  selectObservationByIriQuery,
-  selectRiskByIriQuery,
 } from '../../assessment-common/resolvers/sparql-query.js';
 import {
-  selectLocationByIriQuery,
-  selectPartyByIriQuery,  
-  selectResponsiblePartyByIriQuery,
   insertRolesQuery,
-  selectRoleByIriQuery,
   getReducer as getCommonReducer,
   selectAllLocations,
   selectAllParties,
@@ -1091,127 +1084,6 @@ const poamResolvers = {
         },
         edges: edges,
       }
-
-      // if (parent.risks_iri === undefined) return null;
-      // let iriArray = parent.risks_iri;
-      // if (Array.isArray(iriArray) && iriArray.length > 0) {
-      //   const edges = [];
-      //   const reducer = getAssessmentReducer("RISK");
-      //   let filterCount, resultCount, risk, limit, offset, limitSize, offsetSize;
-      //   limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
-      //   offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
-      //   filterCount = 0;
-      //   if (offset > iriArray.length) return null;
-      //   for (let iri of iriArray) {
-      //     if (iri === undefined || !iri.includes('Risk')) continue ;
-      //     // skip down past the offset
-      //     if (offset) {
-      //       offset--
-      //       continue
-      //     }
-      //     let sparqlQuery = selectRiskByIriQuery(iri, selectMap.getNode("node"));
-      //     let response;
-      //     try {
-      //       response = await dataSources.Stardog.queryById({
-      //         dbName,
-      //         sparqlQuery,
-      //         queryId: "Select Risk",
-      //         singularizeSchema
-      //       });
-      //     } catch (e) {
-      //       console.log(e)
-      //       throw e
-      //     }
-      //     if (response === undefined || (Array.isArray(response) && response.length === 0)) {
-      //       console.error(`[CYIO] NON-EXISTENT: (${dbName}) '${iri}'; skipping entity`);              
-      //       continue;
-      //     }
-
-      //     // Handle reporting Stardog Error
-      //     if (typeof (response) === 'object' && 'body' in response) {
-      //       throw new UserInputError(response.statusText, {
-      //         error_details: (response.body.message ? response.body.message : response.body),
-      //         error_code: (response.body.code ? response.body.code : 'N/A')
-      //       });
-      //     }
-
-      //     if (Array.isArray(response) && response.length > 0) risk = response[0];
-
-      //     risk.risk_level = 'unknown';
-      //     if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
-      //       // calculate the risk level
-      //       const {riskLevel, riskScore} = calculateRiskLevel(risk);
-      //       risk.risk_score = riskScore;
-      //       risk.risk_level = riskLevel;
-
-      //       // clean up
-      //       delete risk.cvss2_base_score;
-      //       delete risk.cvss2_temporal_score;
-      //       delete risk.cvss3_base_score
-      //       delete risk.cvss3_temporal_score;
-      //       delete risk.available_exploit;
-      //       delete risk.exploitability_ease;
-      //     }
-
-      //     // retrieve most recent remediation state
-      //     if (risk.remediation_type !== undefined) {
-      //       const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
-      //       if (responseType !== undefined) risk.response_type = responseType;
-      //       if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
-      //       // clean up
-      //       delete risk.remediation_response_date;
-      //       delete risk.remediation_type;
-      //       delete risk.remediation_lifecycle;
-      //     }
-
-      //     // calculate the occurrence count
-      //     if (risk.related_observations) {
-      //       risk.occurrences = risk.related_observations.length;
-      //     }
-
-      //     // fix up deviation values
-      //     if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-      //       console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
-      //       risk.risk_status = risk.risk_status.replace('_', '-');
-      //     }
-
-      //     if ( limit ) {
-      //       let edge = {
-      //         cursor: iri,
-      //         node: reducer(risk),
-      //       }
-      //       edges.push(edge);
-      //       limit--;
-      //       if (limit === 0) break;
-      //     }
-      //   }
-      //   // check if there is data to be returned
-      //   if (edges.length === 0 ) return null;
-      //   let hasNextPage = false, hasPreviousPage = false;
-      //   resultCount = iriArray.length;
-      //   if (edges.length < resultCount) {
-      //     if (edges.length === limitSize && filterCount <= limitSize ) {
-      //       hasNextPage = true;
-      //       if (offsetSize > 0) hasPreviousPage = true;
-      //     }
-      //     if (edges.length <= limitSize) {
-      //       if (filterCount !== edges.length) hasNextPage = true;
-      //       if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
-      //     }
-      //   }
-      //   return {
-      //     pageInfo: {
-      //       startCursor: edges[0].cursor,
-      //       endCursor: edges[edges.length-1].cursor,
-      //       hasNextPage: (hasNextPage ),
-      //       hasPreviousPage: (hasPreviousPage),
-      //       globalCount: resultCount,
-      //     },
-      //     edges: edges,
-      //   }
-      // } else {
-      //   return null;
-      // }
     },
     poam_items: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.poam_items_iri === undefined) return null;
