@@ -13,8 +13,9 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197
         oscal:parties <http://csrc.nist.gov/ns/oscal/common#Party-7f9fa876-0a43-5199-a7be-3b11bc25578b>,
                       <http://csrc.nist.gov/ns/oscal/common#Party-75e44e79-b456-5406-838a-de094cd5d1d8>,
                       <http://csrc.nist.gov/ns/oscal/common#Party-ba43670c-fc4b-504f-8915-75433eccac54>,
-                      <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9>;
-        oscal:locations <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4>;
+                      <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
+        oscal:locations <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4> ;
+        oscal:responsible_party <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f> ;
     .
 }
 # -----------------------
@@ -154,3 +155,22 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-7f68e205-eaca-58c2-8
         oscal:phone_number "+19991234567" ;
     .
 }
+# -------------------------
+# Responsible Parties
+# -------------------------
+GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f> {
+    <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f>
+        a <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty> ;
+        a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "e1cfca7e-4fba-5c28-8a13-886c3639dd0f" ;
+        common:object_type "oscal-responsible-party" ;
+        oscal:role <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c723ce> ;
+        oscal:parties <http://csrc.nist.gov/ns/oscal/common#Party-ba43670c-fc4b-504f-8915-75433eccac54>,
+                      <http://csrc.nist.gov/ns/oscal/common#Party-7f9fa876-0a43-5199-a7be-3b11bc25578b>,
+                      <http://csrc.nist.gov/ns/oscal/common#Party-75e44e79-b456-5406-838a-de094cd5d1d8> ;
+        oscal:name "DarkLight Leadership Team"@en-US ;
+        oscal:description "Represents the DarkLight Leadership team"@en-US ;
+    .
+}
+
