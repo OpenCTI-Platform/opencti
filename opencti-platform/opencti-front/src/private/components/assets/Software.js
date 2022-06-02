@@ -283,15 +283,15 @@ class Software extends Component {
         width: '10%',
         isSortable: false,
       },
-      cpeId: {
+      cpe_identifier: {
         label: 'CPE ID',
         width: '19%',
-        isSortable: false,
+        isSortable: true,
       },
-      swId: {
+      software_identifier: {
         label: 'SWID',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       label_name: {
         label: 'Labels',
