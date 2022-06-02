@@ -34,7 +34,8 @@ import {
   riskPredicateMap, attachToRiskQuery, detachFromRiskQuery,
   riskLogPredicateMap, attachToRiskLogEntryQuery, detachFromRiskLogEntryQuery,
   riskResponsePredicateMap, attachToRiskResponseQuery, detachFromRiskResponseQuery,
-  subjectPredicateMap, attachToSubjectQuery, detachFromSubjectQuery,
+  subjectPredicateMap, attachToSubjectQuery, detachFromSubjectQuery, 
+  assessmentAssetPredicateMap, attachToAssessmentAssetQuery, detachFromAssessmentAssetQuery,
  } from '../risk-assessments/assessment-common/resolvers/sparql-query.js';
 // import {
 
@@ -55,7 +56,7 @@ import {
 import {
   poamPredicateMap, attachToPOAMQuery, detachFromPOAMQuery,
   poamItemPredicateMap, attachToPOAMItemQuery, detachFromPOAMItemQuery,
-  poamLocalDefinitionPredicateMap, 
+  poamLocalDefinitionPredicateMap, attachToPOAMLocalDefinitionQuery, detachFromPOAMLocalDefinitionQuery,
 } from '../risk-assessments/poam/resolvers/sparql-query.js';
 
 
@@ -183,6 +184,13 @@ export const objectMap = {
     graphQLType: "ApplicationSoftwareAsset",
     parent: "software",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
+  },
+  "assessment-asset": {
+    predicateMap: assessmentAssetPredicateMap,
+    attachQuery: attachToAssessmentAssetQuery,
+    detachQuery: detachFromAssessmentAssetQuery,
+    graphQLType: "AssessmentAsset",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset"
   },
   "assessment-platform": {
     predicateMap: assessmentPlatformPredicateMap,
@@ -384,8 +392,8 @@ export const objectMap = {
   },
   "poam-local-definition": {
     predicateMap: poamLocalDefinitionPredicateMap,
-    // attachQuery: attachToPOAMLocalDefinitionQuery,
-    // detachQuery: detachFromPOAMLocalDefinitionQuery,
+    attachQuery: attachToPOAMLocalDefinitionQuery,
+    detachQuery: detachFromPOAMLocalDefinitionQuery,
     graphQLType: "POAMLocalDefinition",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/poam#LocalDefinition"
   },

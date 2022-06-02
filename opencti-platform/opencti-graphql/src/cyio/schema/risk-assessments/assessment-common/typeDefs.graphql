@@ -33,6 +33,12 @@
       filterMode: FilterMode
       search: String
     ): AssessmentLogEntryConnection
+    # AssessmentAsset
+    assessmentAsset(id: ID!): AssessmentAsset
+    assessmentAssets(
+      first: Int
+      offset: Int
+    ): AssessmentAssetConnection
     # AssessmentPlatform
     assessmentPlatform(id: ID!): AssessmentPlatform
     assessmentPlatforms( 
@@ -442,6 +448,26 @@
     cursor: String!
     node: Actor!
   }
+
+## Assessment Assets
+"Defines identifying information about assets used in performing the assessment. "
+type AssessmentAsset {
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the type of the Object."
+  entity_type: String!
+  components(first: Int, offset: Int): ComponentConnection
+  assessment_platforms(first: Int, offset: Int): AssessmentPlatformConnection
+}
+# Pagination Types
+type AssessmentAssetConnection {
+  pageInfo: PageInfo!
+  edges: [AssessmentAssetEdge]
+}
+type AssessmentAssetEdge {
+  cursor: String!
+  node: AssessmentAsset!
+}
 
 ## AssessmentPlatform
 "Defines the identifying information about the toolset used to perform aspects of the assessment."

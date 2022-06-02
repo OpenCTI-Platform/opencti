@@ -729,7 +729,20 @@ const subjectResolvers = {
       if( parent.subject_ref_iri.length > 1) {
         console.log(`[CYIO] CONSTRAINT-VIOLATION: ${parent.iri} 'subject_ref' violates maxCount constraint; dropping extras`);
       }
+
+      let reducer = getCommonReducer(parent.subject_type.toUpperCase());
       let iri = parent.subject_ref_iri[0];
+
+      // If all the necessary pieces are here, just build the subject and return it
+      if ( parent.hasOwnProperty('subject_id') && parent.hasOwnProperty('subject_name')) {
+        return {
+          iri: `${iri}`,
+          id: `${parent.subject_id}`,
+          entity_type: `${parent.subject_type}`,
+          name: (parent.subject_version !== undefined) ? `${parent.subject_name} ${parent.subject_version}` : `${parent.subject_name}`
+        }
+      }
+
       let select = selectMap.getNode("subject_ref");
       if (select === undefined) {
         select = ['iri','id','name','object_type'];
@@ -767,7 +780,6 @@ const subjectResolvers = {
       }
       if (response === undefined || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
-        let reducer = getCommonReducer(parent.subject_type.toUpperCase());
         return (reducer(response[0]))
       }
       else {
@@ -868,87 +880,73 @@ const subjectResolvers = {
     },    
     include_subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.include_subjects_iri === undefined) return [];
-      let iriArray = parent.include_subjects_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("SUBJECT");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Subject')) {
-            continue;
-          }
-          const sparqlQuery = selectSubjectByIriQuery(iri, selectMap.getNode("include_subjects"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Subject",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("SUBJECT");
+      let sparqlQuery = selectAllSubjects(selectMap.getNode('include_subjects'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Subjects to be included",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let subject of response) {
+        results.push(reducer(subject));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
     exclude_subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.exclude_subjects_iri === undefined) return [];
-      let iriArray = parent.exclude_subjects_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("SUBJECT");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Subject')) {
-            continue;
-          }
-          const sparqlQuery = selectSubjectByIriQuery(iri, selectMap.getNode("include_subjects"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Subject",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("SUBJECT");
+      let sparqlQuery = selectAllSubjects(selectMap.getNode('exclude_subjects'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Subjects to be excluded",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let subject of response) {
+        results.push(reducer(subject));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
   },
   SubjectTarget: {

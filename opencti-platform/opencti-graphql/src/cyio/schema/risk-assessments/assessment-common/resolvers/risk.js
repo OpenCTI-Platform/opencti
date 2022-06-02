@@ -22,11 +22,14 @@ import {
   riskPredicateMap,
   selectCharacterizationByIriQuery,
   selectMitigatingFactorByIriQuery,
+  selectAllObservations,
   selectObservationByIriQuery,
   selectRiskResponseByIriQuery,
   selectRiskLogEntryByIriQuery,
   deleteOriginByIriQuery,
+  selectAllOrigins,
   selectOriginByIriQuery,
+  selectAllRiskLogEntries,
 } from './sparql-query.js';
 
 
@@ -597,45 +600,38 @@ const riskResolvers = {
     },
     origins: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
-      let iriArray = parent.origins_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("ORIGIN");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Origin')) {
-            continue;
-          }
-          const sparqlQuery = selectOriginByIriQuery(iri, selectMap.getNode("origins"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Origin",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("ORIGIN");
+      let sparqlQuery = selectAllOrigins(selectMap.getNode('origins'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Origins",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let origin of response) {
+        results.push(reducer(origin));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
     threats: async (parent, _, ) => {
       if (parent.threats_iri === undefined) return [];
@@ -684,7 +680,7 @@ const riskResolvers = {
         return [];
       }
     },
-    mitigating_factors: async (parent, _, {dbName, dataSources, }) => {
+    mitigating_factors: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.mitigating_factors_iri === undefined) return [];
       let iriArray = parent.mitigating_factors_iri;
       const results = [];
@@ -694,7 +690,7 @@ const riskResolvers = {
           if (iri === undefined || !iri.includes('MitigatingFactor')) {
             continue;
           }
-          const sparqlQuery = selectMitigatingFactorByIriQuery(iri, null);
+          const sparqlQuery = selectMitigatingFactorByIriQuery(iri, selectMap.getNode('mitigating_factors'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -768,162 +764,210 @@ const riskResolvers = {
         return [];
       }
     },
-    risk_log: async (parent, args, {dbName, dataSources, }) => {
+    risk_log: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.risk_log_iri === undefined) return null;
-      let iriArray = parent.risk_log_iri;
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const edges = [];
-        const reducer = getReducer("RISK-LOG-ENTRY");
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
-        filterCount = 0;
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('RiskLogEntry')) continue ;
-          const sparqlQuery = selectRiskLogEntryByIriQuery(iri, null);
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Risk Log Entry",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return null;
-          if (Array.isArray(response) && response.length > 0) {
-            //TODO: WORKAROUND data issues
-            if (response[0].hasOwnProperty('entry_type')) {
-              for (let entry in response[0].entry_type) {
-                response[0].entry_type[entry] = response[0].entry_type[entry].replace(/_/g,'-');
-              }
-            }
-            //END WORKAROUND
+      const edges = [];
+      const reducer = getReducer("RISK-LOG-ENTRY");
+      let sparqlQuery = selectAllRiskLogEntries(selectMap.getNode('node'), args, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced RiskLog Entries",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined || response.length === 0) return null;
 
-            if ( limit ) {
-              let edge = {
-                cursor: iri,
-                node: reducer(response[0]),
-              }
-              edges.push(edge);
-              limit--;
-              if (limit === 0) break;
-            }
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        // check if there is data to be returned
-        if (edges.length === 0 ) return null;
-        let hasNextPage = false, hasPreviousPage = false;
-        resultCount = iriArray.length;
-        if (edges.length < resultCount) {
-          if (edges.length === limitSize && filterCount <= limitSize ) {
-            hasNextPage = true;
-            if (offsetSize > 0) hasPreviousPage = true;
-          }
-          if (edges.length <= limitSize) {
-            if (filterCount !== edges.length) hasNextPage = true;
-            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
-          }
-        }
-        return {
-          pageInfo: {
-            startCursor: edges[0].cursor,
-            endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (hasNextPage ),
-            hasPreviousPage: (hasPreviousPage),
-            globalCount: resultCount,
-          },
-          edges: edges,
-        }
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+      limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+      offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+      filterCount = 0;
+      let entryList ;
+      if (args.orderedBy !== undefined ) {
+        entryList = response.sort(compareValues(args.orderedBy, args.orderMode ));
       } else {
-        return null;
+        entryList = response;
+      }
+
+      if (offset > entryList.length) return null;
+      resultCount = entryList.length;
+      for (let entry of entryList) {
+        if (offset) {
+          offset--;
+          continue;
+        }
+
+        // filter out non-matching entries if a filter is to be applied
+        if ('filters' in args && args.filters != null && args.filters.length > 0) {
+          if (!filterValues(entry, args.filters, args.filterMode) ) {
+            continue
+          }
+          filterCount++;
+        }
+        // if haven't reached limit to be returned
+        if (limit) {
+          let edge = {
+            cursor: entry.iri,
+            node: reducer(entry),
+          }
+          edges.push(edge)
+          limit--;
+          if (limit === 0) break;
+        }
+      }
+
+      // check if there is data to be returned
+      if (edges.length === 0 ) return null;
+      let hasNextPage = false, hasPreviousPage = false;
+      if (edges.length < resultCount) {
+        if (edges.length === limitSize && filterCount <= limitSize ) {
+          hasNextPage = true;
+          if (offsetSize > 0) hasPreviousPage = true;
+        }
+        if (edges.length <= limitSize) {
+          if (filterCount !== edges.length) hasNextPage = true;
+          if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+        }
+      }
+      return {
+        pageInfo: {
+          startCursor: edges[0].cursor,
+          endCursor: edges[edges.length-1].cursor,
+          hasNextPage: (hasNextPage ),
+          hasPreviousPage: (hasPreviousPage),
+          globalCount: resultCount,
+        },
+        edges: edges,
       }
     },
     related_observations: async (parent, args, {dbName, dataSources,selectMap}) => {
       if (parent.related_observations_iri === undefined) return null;
-      let iriArray = parent.related_observations_iri;
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const edges = [];
-        const reducer = getReducer("OBSERVATION");
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
-        filterCount = 0;
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Observation')) continue ;
-          const sparqlQuery = selectObservationByIriQuery(iri, selectMap.getNode("node"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Observation",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return null;
-          if (Array.isArray(response) && response.length > 0) {
-            if ( limit ) {
+      const edges = [];
+      let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+      filterCount = 0;
+      
+      // if only returning the id, then use the values already collected in the parent
+      if (selectMap.getNode('node').length === 1 && selectMap.getNode('node').includes('id')) {
+        if (parent.related_observation_ids !== undefined && parent.related_observation_ids.length > 0) {
+          limitSize = limit = (args.first === undefined ? parent.related_observations_iri.length : args.first) ;
+          offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+          resultCount = parent.related_observations_iri.length;
+          for (let i = 0; i < parent.related_observations_iri.length; i++) {
+            let relObservation = {
+              iri: parent.related_observations_iri[i],
+              id: parent.related_observation_ids[i],
+              entity_type: 'observation'
+            };
+
+            if (limit) {
               let edge = {
-                cursor: iri,
-                node: reducer(response[0]),
+                cursor: parent.related_observations_iri[i],
+                node: relObservation,
               }
-              edges.push(edge);
+              edges.push(edge)
               limit--;
               if (limit === 0) break;
             }
           }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        // check if there is data to be returned
-        if (edges.length === 0 ) return null;
-        let hasNextPage = false, hasPreviousPage = false;
-        resultCount = iriArray.length;
-        if (edges.length < resultCount) {
-          if (edges.length === limitSize && filterCount <= limitSize ) {
-            hasNextPage = true;
-            if (offsetSize > 0) hasPreviousPage = true;
-          }
-          if (edges.length <= limitSize) {
-            if (filterCount !== edges.length) hasNextPage = true;
-            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
-          }
-        }
-        return {
-          pageInfo: {
-            startCursor: edges[0].cursor,
-            endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (hasNextPage ),
-            hasPreviousPage: (hasPreviousPage),
-            globalCount: resultCount,
-          },
-          edges: edges,
         }
       } else {
-        return null;
+        // Perform a query as more info that just the uuid is to be returned
+        const reducer = getReducer("OBSERVATION");
+        let sparqlQuery = selectAllObservations(selectMap.getNode('node'), args, parent );
+        let response;
+        try {
+          response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select Related Observations",
+            singularizeSchema
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+        if (response === undefined || response.length === 0) return null;
+
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        }
+
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let observationList ;
+        if (args.orderedBy !== undefined ) {
+          observationList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+        } else {
+          observationList = response;
+        }
+
+        if (offset > observationList.length) return null;
+        resultCount = observationList.length;
+        for (let observation of observationList) {
+          if (offset) {
+            offset--;
+            continue;
+          }
+
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters != null && args.filters.length > 0) {
+            if (!filterValues(observation, args.filters, args.filterMode) ) {
+              continue
+            }
+            filterCount++;
+          }
+          // if haven't reached limit to be returned
+          if (limit) {
+            let edge = {
+              cursor: observation.iri,
+              node: reducer(observation),
+            }
+            edges.push(edge)
+            limit--;
+            if (limit === 0) break;
+          }
+        }
+      }
+
+      // check if there is data to be returned
+      if (edges.length === 0 ) return null;
+      let hasNextPage = false, hasPreviousPage = false;
+      if (edges.length < resultCount) {
+        if (edges.length === limitSize && filterCount <= limitSize ) {
+          hasNextPage = true;
+          if (offsetSize > 0) hasPreviousPage = true;
+        }
+        if (edges.length <= limitSize) {
+          if (filterCount !== edges.length) hasNextPage = true;
+          if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+        }
+      }
+      return {
+        pageInfo: {
+          startCursor: edges[0].cursor,
+          endCursor: edges[edges.length-1].cursor,
+          hasNextPage: (hasNextPage ),
+          hasPreviousPage: (hasPreviousPage),
+          globalCount: resultCount,
+        },
+        edges: edges,
       }
     },
     occurrences: async (parent, _, {dbName, dataSources, }) => {
