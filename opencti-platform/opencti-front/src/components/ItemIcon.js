@@ -57,7 +57,9 @@ import networkIcon from '../resources/images/assets/networkIcon.svg';
 import softwareIcon from '../resources/images/assets/softwareIcon.svg';
 import deviceIcon from '../resources/images/assets/deviceIcon.svg';
 import linuxIcon from '../resources/images/assets/linuxIcon.svg';
-import componentsIcon from '../resources/images/assets/componentsIcon.svg';
+import appendeciesIcon from '../resources/images/entities/appendeciesIcon.svg';
+import collectIcon from '../resources/images/entities/collectIcon.svg';
+import poamIcon from '../resources/images/entities/poamIcon.svg';
 import userPersonIcon from '../resources/images/assets/userPersonIcon.svg';
 import partiesIcon from '../resources/images/assets/partiesIcon.svg';
 import locationsIcon from '../resources/images/assets/locationsIcon.svg';
@@ -123,6 +125,12 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <img src={networkIcon} style={style} alt="network-icon" />;
     case 'software':
       return <img src={softwareIcon} style={style} alt="software-icon" />;
+    case 'appendecies':
+      return <img src={appendeciesIcon} style={style} alt="appendecies-icon" />;
+    case 'collected':
+      return <img src={collectIcon} style={style} alt="collected-icon" />;
+    case 'poam':
+      return <img src={poamIcon} style={style} alt="poam-icon" />;
     case 'switch':
       return <Scanner style={style} fontSize={fontSize} role="img" />;
     case 'storage_array':
