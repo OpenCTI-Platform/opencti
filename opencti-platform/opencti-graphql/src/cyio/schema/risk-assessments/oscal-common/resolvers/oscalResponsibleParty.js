@@ -171,11 +171,9 @@ const responsiblePartyResolvers = {
       let parties, role;
       if (input.parties !== undefined) {
         parties = input.parties;
-        delete input.parties;
       }
       if (input.role !== undefined) {
         role = input.role;
-        delete input.role;
       }
 
       // create the Responsible Party

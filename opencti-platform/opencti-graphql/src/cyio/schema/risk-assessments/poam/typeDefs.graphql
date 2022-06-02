@@ -96,7 +96,7 @@
     "Identifies the identification system from which the provided identifier was assigned."
     system_identifier_type: String!
     "Identifies components and inventory-items to be defined within the POA&M for circumstances where no OSCAL-based SSP exists, or is not delivered with the POA&M."
-    local_definitions: POAMLocalDefinition
+    local_definitions: POAMLocalDefinitions
     "Identifies one or more individual observations."
     observations(first: Int, offset: Int): ObservationConnection
     "Identifies one or more individual observations."
@@ -328,9 +328,10 @@
 
 ## POAM Local Definition
 #
-  type POAMLocalDefinition {
+  type POAMLocalDefinitions {
     components(first: Int, offset: Int): ComponentConnection
     inventory_items(first: Int, offset: Int): InventoryItemConnection
+    assessment_assets: AssessmentAsset
     remarks: [CyioNote]
   }
 

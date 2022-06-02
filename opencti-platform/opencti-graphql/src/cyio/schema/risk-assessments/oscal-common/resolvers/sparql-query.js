@@ -421,7 +421,8 @@ export const selectLocationByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllLocations = (select, args) => {
+export const selectAllLocations = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -439,12 +440,32 @@ export const selectAllLocations = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/common#locations>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/common#Location> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -560,7 +581,8 @@ export const selectPartyByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllParties = (select, args) => {
+export const selectAllParties = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -578,12 +600,32 @@ export const selectAllParties = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(partyPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/common#parties>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+  
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/common#Party> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -650,8 +692,16 @@ export const detachFromPartyQuery = (id, field, itemIris) => {
 
 // Responsible Party support functions
 export const insertResponsiblePartyQuery = (propValues) => {
-  const id = generateId( );
+  const id_material = {
+    ...(propValues.role && {"role": propValues.role}),
+  } ;
+  const id = generateId( id_material, OSCAL_NS );
   const iri = `<http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-${id}>`;
+
+  // remove role and parties so predicates don't get generated
+  if ('role' in propValues) delete propValues.role;
+  if ('parties' in propValues) delete propValues.parties;
+
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => responsiblePartyPredicateMap.hasOwnProperty(propPair[0]))
       .map((propPair) => responsiblePartyPredicateMap[propPair[0]].binding(iri, propPair[1]))
@@ -687,7 +737,8 @@ export const selectResponsiblePartyByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllResponsibleParties = (select, args) => {
+export const selectAllResponsibleParties = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(responsiblePartyPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -705,12 +756,32 @@ export const selectAllResponsibleParties = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(responsiblePartyPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/common#responsible_parties>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -871,7 +942,8 @@ export const selectRoleByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllRoles = (select, args) => {
+export const selectAllRoles = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(rolePredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -889,12 +961,32 @@ export const selectAllRoles = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(rolePredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/common#roles>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/common#Role> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
