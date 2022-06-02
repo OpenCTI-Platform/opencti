@@ -23,7 +23,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197
         oscal-poam:system_identifier_type "https://ietf.org/rfc/rfc4122" ;
         oscal:name "Default POAM for an Organization"@en-US ;
         oscal:version "1.0" ;
-        oscal:oscal_version: "1.0.1" ;
+        oscal:oscal_version "1.0.4" ;
         oscal:roles <http://csrc.nist.gov/ns/oscal/common#Role-a9a8e3ab-eb7d-56cb-840f-31aef93d39e6>,
                     <http://csrc.nist.gov/ns/oscal/common#Role-620b6804-1469-5aa7-b8a5-e569548acd09>,
                     <http://csrc.nist.gov/ns/oscal/common#Role-0884f6b4-0861-5f41-8f35-7291bdf2b343>,
