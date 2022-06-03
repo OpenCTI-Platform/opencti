@@ -120,7 +120,7 @@ export const header = (
             * {
                 font-family: 'Arial';
             }
-            body
+            body {
                 margin: 0;
                 padding: 0;
                 background-color: #f6f6f6;
@@ -167,7 +167,6 @@ export const header = (
                       </tr>
                       <tr>
                           <td valign="top" style="height:5px;margin:0;padding:0;line-height:0;font-size:2px;"></td>
-                      </tr>
                       </tr>
                       <tr>
                           <td valign="bottom" style="height:5px;margin:0;padding:20px 0 0 0;line-height:0;font-size:2px;"></td>
