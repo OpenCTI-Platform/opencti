@@ -1781,7 +1781,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
       const message = generateUpdateMessage(updatedInputs);
-      const commit = opts.commitMessage ? { message: opts.commitMessage, references: opts.references } : undefined;
+      const commit = opts.references ? { message: opts.commitMessage, references: opts.references } : undefined;
       const event = await storeUpdateEvent(user, initial, updatedInstance, message, { commit });
       return { element: updatedInstance, event };
     }
@@ -3039,7 +3039,7 @@ const deleteElements = async (user, elements, opts = {}) => {
   const deletedIds = [];
   for (let index = 0; index < elements.length; index += 1) {
     const element = elements[index];
-    const deletedId = await deleteElementById(user, element.internal_id, opts);
+    const deletedId = await deleteElementById(user, element.internal_id, element.entity_type, opts);
     deletedIds.push(deletedId);
   }
   return deletedIds;
