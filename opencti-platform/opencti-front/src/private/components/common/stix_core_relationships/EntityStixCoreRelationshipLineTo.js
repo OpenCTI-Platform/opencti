@@ -67,7 +67,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.from.entity_type} />
+          <ItemIcon type={!restricted ? node.from.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
           primary={
