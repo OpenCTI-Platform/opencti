@@ -89,6 +89,7 @@ export const externalIdentifierReducer = (item) => {
     item.object_type = 'external-identifier';
   }
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -103,6 +104,7 @@ export const oscalLocationReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -131,6 +133,7 @@ export const oscalPartyReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -162,6 +165,7 @@ export const oscalResponsiblePartyReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -184,6 +188,7 @@ export const oscalRoleReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -266,7 +271,7 @@ export const selectExternalIdentifierByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(externalIdentifierPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(externalIdentifierPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -412,7 +417,7 @@ export const selectLocationByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -572,7 +577,7 @@ export const selectPartyByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(partyPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -728,7 +733,7 @@ export const selectResponsiblePartyByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(responsiblePartyPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(responsiblePartyPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -933,7 +938,7 @@ export const selectRoleByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(rolePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(rolePredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
