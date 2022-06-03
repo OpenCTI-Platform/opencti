@@ -71,32 +71,36 @@ node {
   }
 
   stage('Test') {
-    try {
-      configFileProvider([
-        configFile(fileId: "graphql-env", replaceTokens: true, targetLocation: "opencti-platform/opencti-graphql/.env")
-      ]) {
-        docker.image('node:16.6.0-alpine3.14').inside("-u root:root") {
-          sh label: 'test front', script: '''
-            cd opencti-platform/opencti-front
-            yarn test || true
-          '''
+    if (commitMessage.contains('ci:test')) {
+      try {
+        configFileProvider([
+          configFile(fileId: "graphql-env", replaceTokens: true, targetLocation: "opencti-platform/opencti-graphql/.env")
+        ]) {
+          docker.image('node:16.6.0-alpine3.14').inside("-u root:root") {
+            sh label: 'test front', script: '''
+              cd opencti-platform/opencti-front
+              yarn test || true
+            '''
 
-          sh label: 'test graphql', script: '''
-            cd opencti-platform/opencti-graphql
-            yarn test || true
-          '''
+            sh label: 'test graphql', script: '''
+              cd opencti-platform/opencti-graphql
+              yarn test || true
+            '''
 
-          sh label: 'cleanup', script: '''
-            rm -rf opencti-platform/opencti-front/node_modules
-            rm -rf opencti-platform/opencti-graphql/node_modules
-            chown -R 997:997 .
-          '''
+            sh label: 'cleanup', script: '''
+              rm -rf opencti-platform/opencti-front/node_modules
+              rm -rf opencti-platform/opencti-graphql/node_modules
+              chown -R 997:997 .
+            '''
+          }
         }
+      } catch (Exception e) {
+        // NO-OP
+      } finally {
+        junit 'opencti-platform/opencti-graphql/test-results/jest/results.xml'
       }
-    } catch (Exception e) {
-      // NO-OP
-    } finally {
-      junit 'opencti-platform/opencti-graphql/test-results/jest/results.xml'
+    } else {
+      echo "Skipping tests"
     }
   }
 
