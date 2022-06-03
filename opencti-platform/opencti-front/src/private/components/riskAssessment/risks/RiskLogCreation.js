@@ -151,7 +151,7 @@ class RiskLogCreation extends Component {
   }
 
   handleOpenCancelButton() {
-    this.setState({ displayCancel: true, open: false });
+    this.setState({ displayCancel: true });
   }
 
   handleCancelButton() {
@@ -351,7 +351,7 @@ class RiskLogCreation extends Component {
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.onResetContextual.bind(this)}
+          onClose={this.handleOpenCancelButton.bind(this)}
           //keepMounted={true}
           fullWidth={true}
           maxWidth='sm'
