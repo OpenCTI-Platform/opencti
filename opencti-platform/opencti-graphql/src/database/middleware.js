@@ -1781,7 +1781,8 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
       const message = generateUpdateMessage(updatedInputs);
-      const commit = opts.references ? { message: opts.commitMessage, references: opts.references } : undefined;
+      const isContainCommitReferences = opts.references && opts.references.length > 0;
+      const commit = isContainCommitReferences ? { message: opts.commitMessage, references: opts.references } : undefined;
       const event = await storeUpdateEvent(user, initial, updatedInstance, message, { commit });
       return { element: updatedInstance, event };
     }
