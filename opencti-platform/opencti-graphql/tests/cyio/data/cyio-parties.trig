@@ -15,7 +15,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197
                       <http://csrc.nist.gov/ns/oscal/common#Party-ba43670c-fc4b-504f-8915-75433eccac54>,
                       <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
         oscal:locations <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4> ;
-        oscal:responsible_party <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f> ;
+        oscal:responsible_parties <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f> ;
     .
 }
 # -----------------------
@@ -93,7 +93,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab767
         common:object_type "oscal-party" ;
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
-        oscal:party_type "orginization" ;
+        oscal:party_type "organization" ;
         oscal:name "DarkLight, Inc." ;
         oscal:short_name "DarkLight" ;
         oscal:description "Cybersecurity AI software tht uses sensor data and client context with industry best practices to prioritize actions and resource."@en-US ;
