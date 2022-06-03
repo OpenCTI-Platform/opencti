@@ -69,7 +69,7 @@ ARG GID=10001
 ARG USERNAME="_opencti"
 
 ENV PYTHONUNBUFFERED=1
-ENV NODE_OPTIONS=--max_old_space_size=8192
+ENV NODE_OPTIONS=--max_old_space_size=12288
 ENV NODE_ENV=production
 
 RUN set -ex \
