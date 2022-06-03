@@ -121,7 +121,7 @@
     ): OscalRelationshipConnection
     # Component
     "Indicates the type of the component"
-    component_type: ComponentType!
+    component_type: ComponentType
     "Identifies a human-readable name for the component"
     name: String!
     "Identifies a description of the component, including information about its function."
@@ -133,7 +133,7 @@
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
     asset_tag: String
     "Indicates the asset's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies the  model of the component."
     model: String
     "Identifies the name of the company or organization"
@@ -313,7 +313,7 @@
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
     asset_tag: String
     "Indicates the asset's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies the  model of the component."
     model: String
     "Identifies the name of the company or organization"
@@ -507,7 +507,7 @@
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
     asset_tag: String
     "Indicates the asset's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies the  model of the component."
     model: String
     "Identifies the name of the company or organization"
@@ -708,7 +708,7 @@
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
     asset_tag: String
     "Indicates the asset's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies the  model of the component."
     model: String
     "Identifies the name of the company or organization"
@@ -898,7 +898,7 @@
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
     asset_tag: String
     "Indicates the asset's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies the  model of the component."
     model: String
     "Identifies the name of the company or organization"
@@ -1103,7 +1103,7 @@
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
     asset_tag: String
     "Indicates the asset's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies the  model of the component."
     model: String
     "Identifies the name of the company or organization"
