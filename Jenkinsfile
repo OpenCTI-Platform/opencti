@@ -50,7 +50,14 @@ node {
           default:
             break
         }
-        echo "version: ${version}"
+
+        // Send message to Teams that the build is starting
+        office365ConnectorSend(
+          webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+          message: "Build started",
+          factDefinitions: [[name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
+                            [name: "Version", template: "${version}"]]
+        )
 
         if (fileExists('config/schema/compiled.graphql')) {
           sh 'rm config/schema/compiled.graphql'
@@ -109,15 +116,6 @@ node {
     //   - commit says: 'ci:skip' then skip build
     //   - commit says: 'ci:build' then build regardless of branch
     if (((branch.equals('master') || branch.equals('prod') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
-      office365ConnectorSend(
-        // status: 'Build Started',
-        // color: '00FF00',
-        webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-        message: "Build started",
-        factDefinitions: [[name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
-                          [name: "Version", template: "${version}"]]
-      )
-
       dir('opencti-platform') {
         String buildArgs = '--no-cache --progress=plain .'
         docker_steps(registry, product, tag, buildArgs)
