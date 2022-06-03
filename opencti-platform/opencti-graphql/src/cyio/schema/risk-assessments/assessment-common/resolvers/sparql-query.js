@@ -508,6 +508,11 @@ const subjectReducer = (item) => {
     ...(item.subject_id && {subject_id: item.subject_id}),
     ...(item.subject_name && {subject_name: item.subject_name}),
     ...(item.subject_version && {subject_version: item.subject_version}),
+    ...(item.subject_asset_type && {subject_asset_type: item.subject_asset_type}),
+    ...(item.subject_component_type && {subject_component_type: item.subject_component_type}),
+    ...(item.subject_party_type && {subject_party_type: item.subject_party_type}),
+    ...(item.subject_location_type && {subject_location_type: item.subject_location_type}),
+    ...(item.subject_user_type && {subject_user_type: item.subject_user_type}),
   }
 }
 const taskReducer = (item) => {
@@ -2453,6 +2458,10 @@ export const selectAllObservations = (select, args, parent) => {
     }
     if (parent.entity_type === 'poam-item') {
       classTypeIri = '<http://csrc.nist.gov/ns/oscal/poam#Item>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>';
+    }
+    if (parent.entity_type === 'risk') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Risk>' ;
       predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>';
     }
     if (parent.entity_type === 'result') {

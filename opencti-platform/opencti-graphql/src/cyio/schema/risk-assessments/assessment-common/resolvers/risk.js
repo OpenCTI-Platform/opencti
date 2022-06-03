@@ -863,7 +863,7 @@ const riskResolvers = {
       if (selectMap.getNode('node').length === 1 && selectMap.getNode('node').includes('id')) {
         if (parent.related_observation_ids !== undefined && parent.related_observation_ids.length > 0) {
           limitSize = limit = (args.first === undefined ? parent.related_observations_iri.length : args.first) ;
-          offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+          offsetSize = (args.offset === undefined ? 0 : args.offset) ;
           resultCount = parent.related_observations_iri.length;
           for (let i = 0; i < parent.related_observations_iri.length; i++) {
             let relObservation = {

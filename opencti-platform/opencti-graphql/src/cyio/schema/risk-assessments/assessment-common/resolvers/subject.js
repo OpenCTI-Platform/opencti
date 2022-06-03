@@ -734,6 +734,7 @@ const subjectResolvers = {
       let iri = parent.subject_ref_iri[0];
 
       // If all the necessary pieces are here, just build the subject and return it
+      let select = selectMap.getNode("subject_ref");
       if ( parent.hasOwnProperty('subject_id') && parent.hasOwnProperty('subject_name')) {
         return {
           iri: `${iri}`,
@@ -743,7 +744,6 @@ const subjectResolvers = {
         }
       }
 
-      let select = selectMap.getNode("subject_ref");
       if (select === undefined) {
         select = ['iri','id','name','object_type'];
         switch(parent.subject_type) {

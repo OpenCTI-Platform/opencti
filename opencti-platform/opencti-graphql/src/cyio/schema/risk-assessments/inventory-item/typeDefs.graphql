@@ -57,7 +57,7 @@
     ): OscalRelationshipConnection
     # Inventory Item
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
@@ -239,7 +239,7 @@
     ): OscalRelationshipConnection
     # Inventory Item
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
@@ -423,7 +423,7 @@
     ): OscalRelationshipConnection
     # Inventory Item
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
@@ -603,7 +603,7 @@
     ): OscalRelationshipConnection
     # Inventory Item
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
@@ -693,7 +693,7 @@
     ): OscalRelationshipConnection
     # Inventory Item
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
@@ -783,7 +783,7 @@
     ): OscalRelationshipConnection
     # Inventory Item
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
-    asset_type: AssetType!
+    asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible invenotry item."
