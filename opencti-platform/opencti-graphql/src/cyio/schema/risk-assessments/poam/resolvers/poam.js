@@ -24,6 +24,7 @@ import {
   getReducer as getAssessmentReducer,
   selectAllObservations,
   selectAllRisks,
+  selectAssessmentAssetByIriQuery,
 } from '../../assessment-common/resolvers/sparql-query.js';
 import {
   insertRolesQuery,
@@ -36,10 +37,12 @@ import {
 import {
   getReducer as getComponentReducer,
   selectAllComponents,
+  convertAssetToComponent,
 } from './../../component/resolvers/sparql-query.js';
 import {
   getReducer as getInventoryItemReducer,
   selectAllInventoryItems,
+  convertAssetToInventoryItem
 } from './../../inventory-item/resolvers/sparql-query.js';
 
 
@@ -747,7 +750,7 @@ const poamResolvers = {
       }
     },
     responsible_parties: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.resp_parties_iri === undefined) return null;
+      if (parent.responsible_parties_iri === undefined) return null;
       const reducer = getCommonReducer("RESPONSIBLE-PARTY");
       const edges = [];
       let sparqlQuery = selectAllResponsibleParties(selectMap.getNode('node'), args, parent );
@@ -1179,11 +1182,11 @@ const poamResolvers = {
     },
   },
   POAMLocalDefinitions: {
-    components: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.components_iri === undefined) return null;
+    components: async (parent, args, {dbName, dataSources, selectMap}) => {
+      // if (parent.components_iri === undefined) return null;
       const edges = [];
       const reducer = getComponentReducer("COMPONENT");
-      let sparqlQuery = selectAllComponents(selectMap.getNode("node"), args);
+      let sparqlQuery = selectAllComponents(selectMap.getNode("node"));
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -1226,6 +1229,11 @@ const poamResolvers = {
           continue;
         }
 
+        if (!component.hasOwnProperty('operational_status')) {
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${component.iri} missing field 'operational_status'; fixing`);
+          component.operational_status = 'operational';
+        }
+
         // filter out non-matching entries if a filter is to be applied
         if ('filters' in args && args.filters != null && args.filters.length > 0) {
           if (!filterValues(component, args.filters, args.filterMode) ) {
@@ -1233,11 +1241,16 @@ const poamResolvers = {
           }
           filterCount++;
         }
+
+        // convert the asset into a component
+        component = convertAssetToComponent(component);
+
         // if haven't reached limit to be returned
         if (limit) {
           let edge = {
             cursor: component.iri,
-            node: reducer(component),
+            node: component,
+            // node: reducer(component),
           }
           edges.push(edge)
           limit--;
@@ -1269,8 +1282,8 @@ const poamResolvers = {
         edges: edges,
       }
     },
-    inventory_items: async(parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.inventory_items_iri === undefined) return null;
+    inventory_items: async(parent, args, {dbName, dataSources, selectMap}) => {
+      // if (parent.inventory_items_iri === undefined) return null;
       const edges = [];
       const reducer = getInventoryItemReducer("INVENTORY-ITEM");
       let sparqlQuery = selectAllInventoryItems(selectMap.getNode("node"), args);
@@ -1324,11 +1337,16 @@ const poamResolvers = {
           }
           filterCount++;
         }
+
+        // convert the asset into a component
+        invItem = convertAssetToInventoryItem(invItem);
+
         // if haven't reached limit to be returned
         if (limit) {
           let edge = {
             cursor: invItem.iri,
-            node: reducer(invItem),
+            node: invItem,
+            // node: reducer(invItem),
           }
           edges.push(edge)
           limit--;
@@ -1362,6 +1380,35 @@ const poamResolvers = {
     },
     assessment_assets: async(parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.assessment_assets_iri === undefined) return null;
+      let iri = parent.assessment_assets_iri[0];
+      const reducer = getAssessmentReducer("ASSESSMENT-ASSET");
+      const sparqlQuery = selectAssessmentAssetByIriQuery(iri, selectMap.getNode('assessment_assets'));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Assessment Asset",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined || (Array.isArray(response) && response.length === 0)) {
+        console.error(`[CYIO] NON-EXISTENT: (${dbName}) '${iri}'; skipping entity`);              
+        return null;
+      }
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+      
+      return ( reducer(response[0]));
     },
   },
 }

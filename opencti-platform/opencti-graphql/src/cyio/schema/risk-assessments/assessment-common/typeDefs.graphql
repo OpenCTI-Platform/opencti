@@ -2129,7 +2129,7 @@ type OscalTaskEdge {
 #
   # union StatementOrObjects = ControlStatement | ControlObjective
   union ActorTarget = OscalParty | AssessmentPlatform | Component
-  union PartyOrComponent = OscalParty | HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent
+  union PartyOrComponent = OscalParty | Component | HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent
   union SubjectTarget = Component | InventoryItem | OscalLocation | OscalParty | OscalUser | OscalResource | SoftwareAsset | HardwareAsset
 
 ## Enumerations

@@ -17,128 +17,128 @@ import {
 
 const assessmentAssetResolvers = {
   Query: {
-      assessmentAssets: async (_, args, {dbName, dataSources, selectMap}) => {
-        const edges = [];
-        const reducer = getReducer("ASSESSMENT-ASSET");
-        let sparqlQuery = selectAllAssessmentAssets(selectMap.getNode('node'), args);
-        let response;
-        try {
-          response = await dataSources.Stardog.queryById({
-            dbName,
-            sparqlQuery,
-            queryId: "Select All Assessment Assets",
-            singularizeSchema
-          });
-        } catch (e) {
-          console.log(e)
-          throw e
+    assessmentAssets: async (_, args, {dbName, dataSources, selectMap}) => {
+      const edges = [];
+      const reducer = getReducer("ASSESSMENT-ASSET");
+      let sparqlQuery = selectAllAssessmentAssets(selectMap.getNode('node'), args);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select All Assessment Assets",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+      limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+      offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+      filterCount = 0;
+      let assetList ;
+      if (args.orderedBy !== undefined ) {
+        assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+      } else {
+        assetList = response;
+      }
+
+      if (offset > assetList.length) return null;
+      resultCount = observationList.length;
+      for (let asset of assetList) {
+        if (offset) {
+          offset--;
+          continue;
         }
-        if (response === undefined || response.length === 0) return null;
-  
-        // Handle reporting Stardog Error
-        if (typeof (response) === 'object' && 'body' in response) {
-          throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : response.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
-          });
-        }
-  
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
-        filterCount = 0;
-        let assetList ;
-        if (args.orderedBy !== undefined ) {
-          assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
-        } else {
-          assetList = response;
-        }
-  
-        if (offset > assetList.length) return null;
-        for (let asset of assetList) {
-          if (offset) {
-            offset--;
-            continue;
+
+        // filter out non-matching entries if a filter is to be applied
+        if ('filters' in args && args.filters != null && args.filters.length > 0) {
+          if (!filterValues(asset, args.filters, args.filterMode) ) {
+            continue
           }
-  
-          // filter out non-matching entries if a filter is to be applied
-          if ('filters' in args && args.filters != null && args.filters.length > 0) {
-            if (!filterValues(asset, args.filters, args.filterMode) ) {
-              continue
-            }
-            filterCount++;
+          filterCount++;
+        }
+        // if haven't reached limit to be returned
+        if (limit) {
+          let edge = {
+            cursor: asset.iri,
+            node: reducer(asset),
           }
-          // if haven't reached limit to be returned
-          if (limit) {
-            let edge = {
-              cursor: asset.iri,
-              node: reducer(asset),
-            }
-            edges.push(edge)
-            limit--;
-            if (limit === 0) break;
-          }
+          edges.push(edge)
+          limit--;
+          if (limit === 0) break;
         }
-  
-        // check if there is data to be returned
-        if (edges.length === 0 ) return null;
-        let hasNextPage = false, hasPreviousPage = false;
-        resultCount = observationList.length;
-        if (edges.length < resultCount) {
-          if (edges.length === limitSize && filterCount <= limitSize ) {
-            hasNextPage = true;
-            if (offsetSize > 0) hasPreviousPage = true;
-          }
-          if (edges.length <= limitSize) {
-            if (filterCount !== edges.length) hasNextPage = true;
-            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
-          }
+      }
+
+      // check if there is data to be returned
+      if (edges.length === 0 ) return null;
+      let hasNextPage = false, hasPreviousPage = false;
+      if (edges.length < resultCount) {
+        if (edges.length === limitSize && filterCount <= limitSize ) {
+          hasNextPage = true;
+          if (offsetSize > 0) hasPreviousPage = true;
         }
-        return {
-          pageInfo: {
-            startCursor: edges[0].cursor,
-            endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (hasNextPage ),
-            hasPreviousPage: (hasPreviousPage),
-            globalCount: resultCount,
-          },
-          edges: edges,
+        if (edges.length <= limitSize) {
+          if (filterCount !== edges.length) hasNextPage = true;
+          if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
         }
-      },
-      assessmentAsset: async (_, {id}, {dbName, dataSources, selectMap}) => {
-        const sparqlQuery = selectAssessmentAssetQuery(id, selectMap.getNode("assessmentAsset"));
-        let response;
-        try {
-          response = await dataSources.Stardog.queryById({
-            dbName,
-            sparqlQuery,
-            queryId: "Select Assessment Asset",
-            singularizeSchema
-          });
-        } catch (e) {
-          console.log(e)
-          throw e
-        }
-  
-        if (response === undefined || response.length === 0) return null;
-  
-        // Handle reporting Stardog Error
-        if (typeof (response) === 'object' && 'body' in response) {
-          throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : response.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
-          });
-        }
-  
-        const reducer = getReducer("ASSESSMENT-ASSET");
-        return reducer(response[0]);  
-      },
+      }
+      return {
+        pageInfo: {
+          startCursor: edges[0].cursor,
+          endCursor: edges[edges.length-1].cursor,
+          hasNextPage: (hasNextPage ),
+          hasPreviousPage: (hasPreviousPage),
+          globalCount: resultCount,
+        },
+        edges: edges,
+      }
+    },
+    assessmentAsset: async (_, {id}, {dbName, dataSources, selectMap}) => {
+      const sparqlQuery = selectAssessmentAssetQuery(id, selectMap.getNode("assessmentAsset"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Assessment Asset",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      const reducer = getReducer("ASSESSMENT-ASSET");
+      return reducer(response[0]);  
+    },
   },
   Mutation: {
 
   },
   AssessmentAsset: {
-    components: async (parent, _, {dbName, dataSources, selectMap}) => {
+    components: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.components_iri === undefined) return null;
       const edges = [];
       const reducer = getComponentReducer("COMPONENT");
@@ -228,7 +228,7 @@ const assessmentAssetResolvers = {
         edges: edges,
       }
     },
-    assessment_platforms: async (parent, _, {dbName, dataSources, selectMap}) => {
+    assessment_platforms: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.assessment_platforms_iri === undefined) return null;
       const edges = [];
       const reducer = getAssessmentPlatformReducer("ASSESSMENT-PLATFORM");

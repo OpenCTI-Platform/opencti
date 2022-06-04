@@ -39,7 +39,7 @@ const poamReducer = (item) => {
     ...(item.roles && {roles_iri: item.roles}),
     ...(item.locations && {locations_iri: item.locations}),
     ...(item.parties && {parties_iri: item.parties}),
-    ...(item.responsible_parties && {resp_parties_iri: item.responsible_parties}),
+    ...(item.responsible_parties && {responsible_parties_iri: item.responsible_parties}),
     ...(item.labels && {labels_iri: item.labels}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
@@ -100,7 +100,7 @@ const poamLocalDefReducer = (item) => {
     // Local Definition
     ...(item.components && {components_iri: item.components}),
     ...(item.inventory_items && {inventory_items_iri: item.inventory_items}),
-    ...(item.assessment_platforms && {assessment_platforms_iri: item.assessment_platforms}),
+    ...(item.assessment_assets && {assessment_assets_iri: item.assessment_assets}),
     ...(item.remarks && {remarks_iri: item.remarks}),
   }
 }

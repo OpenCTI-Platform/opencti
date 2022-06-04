@@ -128,6 +128,9 @@
     description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+    props: [Property]
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -158,17 +161,17 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
+    # -- end props ---
     "Indicates the operational status of the system component."
     operational_status: OperationalStatus!
     "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
-    responsible_roles: [OscalResponsibleParty]
-    "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
-    physical_location: [OscalLocation]
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
+    responsible_roles: [OscalResponsibleRole]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocol]
   }
   # Mutation Type
   input ComponentAddInput {
@@ -181,6 +184,9 @@
     description: String!
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+    props: [PropertyAddInput]
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -211,13 +217,17 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
+    # -- end props ---
     "Indicates the operational status of the system component."
     operational_status: OperationalStatus!
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRoleAddInput]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocolAddInput]
   }
   # Ordering types
   enum ComponentsOrdering {
@@ -338,25 +348,24 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
-    "Indicates the operational status of the system component."
-    operational_status: OperationalStatus!
-    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
-    responsible_roles: [OscalResponsibleParty]
     "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    #
-    # Hardware
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
     "Identifies the identifier for the installation"
     installation_id: String
+    # -- end props ---
+    "Indicates the operational status of the system component."
+    operational_status: OperationalStatus!
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRole]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocol]
   }
-
   input HardwareComponentAddInput {
     # Component
     "Indicates the type of the component"
@@ -367,6 +376,7 @@
     description: String!
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # --- props -----
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -397,20 +407,22 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
-    "Indicates the operational status of the system component."
-    operational_status: OperationalStatus!
     # TODO: Need to model OSCAL Link with @rel value != reference as Relationships
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    #
-    # Hardware
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
     "Identifies the identifier for the installation"
     installation_id: String
+    # -- end props ---
+    "Indicates the operational status of the system component."
+    operational_status: OperationalStatus!
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRoleAddInput]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocolAddInput]
   }
 
   # Pagination Types
@@ -502,6 +514,7 @@
     description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -516,8 +529,6 @@
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
     release_date: Timestamp
-    "Indicates the operational status of the system component."
-    operational_status: OperationalStatus!
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -534,22 +545,24 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
-    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
-    responsible_roles: [OscalResponsibleParty]
     "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    # NetworkComponent
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
     "Indicates the name assigned to the network"
     network_name: String!
     "Indicate the IP address range of the network"
     network_address_range: IpAddressRange
+    # -- end props ---
+    "Indicates the operational status of the system component."
+    operational_status: OperationalStatus!
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRole]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocol]
   }
-
   input NetworkComponentAddInput {
     # Component
     "Indicates the type of the component"
@@ -560,6 +573,7 @@
     description: String!
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -590,33 +604,33 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
-    "Indicates the operational status of the system component."
-    operational_status: OperationalStatus!
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    # NetworkComponent
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
     "Indicates the name assigned to the network"
     network_name: String!
     "Indicates the IPv4 address range of the network"
     network_ipv4_address_range: IpV4AddressRangeAddInput
     "Indicates the IPv6 address range of the network"
     network_ipv6_address_range: IpV6AddressRangeAddInput
+    # -- end props ---
+    "Indicates the operational status of the system component."
+    operational_status: OperationalStatus!
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRoleAddInput]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocolAddInput]
   }
-
   # Pagination Types
   type NetworkComponentConnection {
     pageInfo: PageInfo!
     edges: [NetworkComponentEdge]
   }
-
   type NetworkComponentEdge {
     cursor: String!
     node: NetworkComponent!
   }
-
   # Filtering Types
   input NetworkComponentsFiltering {
     key: NetworkComponentsFilter!
@@ -624,7 +638,6 @@
     operator: String
     filterMode: FilterMode
   }
-
   enum NetworkComponentsOrdering {
     "Component Type"
     component_type
@@ -641,7 +654,6 @@
     "Network ID"
     network_id
   }
-
   enum NetworkComponentsFilter {
     "Component Type"
     component_type
@@ -661,7 +673,7 @@
 
 #####   Service Component 
 ##
-"Defines identifying information about a Service Component"
+  "Defines identifying information about a Service Component"
   type ServiceComponent implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
@@ -703,6 +715,7 @@
     description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -733,23 +746,20 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
+    "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
+    # -- end props ---
     "Indicates the operational status of the system component."
     operational_status: OperationalStatus!
     "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
-    responsible_roles: [OscalResponsibleParty]
-    "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
-    physical_location: [OscalLocation]
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    #
-    # ServiceComponent
+    responsible_roles: [OscalResponsibleRole]
     "Identifies information about the protocol used to provide a service."
-    ports: [PortInfo]
+    protocols: [ServiceProtocol]
   }
-
   input ServiceComponentAddInput {
     # Component
     "Indicates the type of the component"
@@ -760,6 +770,7 @@
     description: String!
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -790,19 +801,18 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
+    # -- end props ---
     "Indicates the operational status of the system component."
     operational_status: OperationalStatus!
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    #
-    # ServiceComponent
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRoleAddInput]
     "Identifies information about the protocol used to provide a service."
-    ports: [PortInfoAddInput]
+    protocols: [ServiceProtocolAddInput]
   }
-
   # Pagination Types
   type ServiceComponentConnection {
     pageInfo: PageInfo!
@@ -893,6 +903,7 @@
     description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # ---- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -923,19 +934,12 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
-    "Indicates the operational status of the system component."
-    operational_status: OperationalStatus!
-    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
-    responsible_roles: [OscalResponsibleParty]
     "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    #
-    # SoftwareComponent
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
     cpe_identifier: String
     "Identifies the Software Identifier (SwID)"
     software_identifier: String
@@ -945,6 +949,13 @@
     installation_id: String
     "Identifies the license key"
     license_key: String
+    # -- end props ---
+    "Indicates the operational status of the system component."
+    operational_status: OperationalStatus!
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRole]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocol]
   }
 
   input SoftwareComponentAddInput {
@@ -957,6 +968,7 @@
     description: String!
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -987,15 +999,10 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
-    "Indicates the operational status of the system component."
-    operational_status: OperationalStatus!
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    #
-    # SoftwareComponent
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
     "Identifies the CPE identifier"
     cpe_identifier: String
     "Identifies the Software Identifier (SwID)"
@@ -1006,6 +1013,13 @@
     installation_id: String
     "Identifies the license key"
     license_key: String
+    # -- end props ---
+    "Indicates the operational status of the system component."
+    operational_status: OperationalStatus!
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRoleAddInput]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocolAddInput]
   }
 
   # Pagination Types
@@ -1056,7 +1070,7 @@
 
 #####   System Component 
 ##
-"Defines identifying information about a System Component"
+  "Defines identifying information about a System Component"
   type SystemComponent implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
@@ -1098,6 +1112,7 @@
     description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -1128,19 +1143,19 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
+    "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
+    physical_location: [OscalLocation]
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
+    # -- end props ---
     "Indicates the operational status of the system component."
     operational_status: OperationalStatus!
     "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
-    responsible_roles: [OscalResponsibleParty]
-    "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
-    physical_location: [OscalLocation]
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    #
-    # SystemComponent
+    responsible_roles: [OscalResponsibleRole]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocol]
   }
 
   input SystemComponentAddInput {
@@ -1153,6 +1168,7 @@
     description: String!
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
+    # --- props ---
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
     asset_id: String
     "Identifies an asset tag assigned by the organization responsible for maintaining the logical or tangible item."
@@ -1183,28 +1199,27 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
+    "Identifies the related leveraged-authorization assembly in this SSP."
+    leveraged_authorization: String
+    "Identifies the component as it was assigned in the leveraged system's SSP."
+    inherited_identifier: String
+    # -- end props ---
     "Indicates the operational status of the system component."
     operational_status: OperationalStatus!
-    # TODO:  These SHOULD be references to the entities, not just their UUID/identifier
-    # "Identifies the related leveraged-authorization assembly in this SSP."
-    # leveraged_authorization: String
-    # "Identifies the component as it was assigned in the leveraged system's SSP."
-    # inherited_identifier: String
-    #
-    # SystemComponent
+    "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_roles: [OscalResponsibleRoleAddInput]
+    "Identifies information about the protocol used to provide a service."
+    protocols: [ServiceProtocolAddInput]
   }
-
   # Pagination Types
   type SystemComponentConnection {
     pageInfo: PageInfo!
     edges: [SystemComponentEdge]
   }
-
   type SystemComponentEdge {
     cursor: String!
     node: SystemComponent!
   }
-
   # Filtering Types
   input SystemComponentsFiltering {
     key: SystemComponentsFilter!
@@ -1212,7 +1227,6 @@
     operator: String
     filterMode: FilterMode
   }
-
   enum SystemComponentsOrdering {
     "Component Type"
     component_type
@@ -1223,7 +1237,6 @@
     "Label"
     labels
   }
-
   enum SystemComponentsFilter {
     "Component Type"
     component_type
@@ -1233,6 +1246,65 @@
     modified
     "Label"
     label_name
+  }
+
+##### OSCAL ServiceProtocol
+##
+  "Defines information about the protocol used to provide a service."
+  type ServiceProtocol implements ComplexDatatype {
+    # ComplexDatatype
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    # OSCAL ServiceProtocol
+    "Defines the common name of the protocol, which should be the appropriate 'service name' from the IANA Service Name and Transport Protocol Port Number Registry."
+    protocol_name: NetworkAssetProtocol!
+    "Identifies a human-readable name for the protocol."
+    name: String
+    "Identifies the IPv4 port range on which the service operations."
+    port_ranges: [ServicePortRange]
+  }
+  input ServiceProtocolAddInput {
+    # OSCAL ServiceProtocol
+    "Defines the common name of the protocol, which should be the appropriate 'service name' from the IANA Service Name and Transport Protocol Port Number Registry."
+    protocol_name: NetworkAssetProtocol!
+    "Identifies a human-readable name for the protocol."
+    name: String
+    "Identifies the IPv4 port range on which the service operations."
+    port_ranges: [ServicePortRangeAddInput]
+  }
+
+##### OSCAL ServicePortRange
+##
+  type ServicePortRange implements ComplexDatatype {
+    # ComplexDatatype
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    # OSCAL Port-range
+    "Indicates the starting port number in a port range."
+    start: Int
+    "Indicates the ending port number in a port range."
+    end: Int
+    "Indicates the transport type."
+    transport: TransportType
+  }
+  input ServicePortRangeAddInput {
+    "Indicates the starting port number in a port range."
+    start: Int
+    "Indicates the ending port number in a port range."
+    end: Int
+    "Indicates the transport type."
+    transport: TransportType
+  }
+  "Defines the types of transports"
+  enum TransportType {
+    "Transmission Control Protocol"
+    TCP
+    "User Datagram Protocol"
+    UDP
   }
 
   union ComponentTypes = HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent

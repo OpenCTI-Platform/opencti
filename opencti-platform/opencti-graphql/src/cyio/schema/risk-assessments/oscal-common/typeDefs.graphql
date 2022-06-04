@@ -56,6 +56,17 @@
       filterMode: FilterMode
       search: String
     ): OscalResponsiblePartyConnection
+    # OSCAL Responsible Role
+    oscalResponsibleRole(id: ID!): OscalResponsibleRole
+    oscalResponsibleRoles(
+      first: Int
+      offset: Int
+      orderedBy: OscalResponsibleRoleOrdering
+      orderMode: OrderingMode
+      filters: [OscalResponsibleRoleFiltering]
+      filterMode: FilterMode
+      search: String
+    ): OscalResponsibleRoleConnection
     # OSCAL Role
     oscalRole(id: ID!): OscalRole
     oscalRoles(
@@ -110,6 +121,10 @@
     createOscalResponsibleParty(input: OscalResponsiblePartyAddInput): OscalResponsibleParty
     deleteOscalResponsibleParty(id: ID!): String!
     editOscalResponsibleParty( id: ID!, input: [EditInput]!, commitMessage: String): OscalResponsibleParty
+    # OSCAL Responsible Role
+    createOscalResponsibleRole(input: OscalResponsibleRoleAddInput): OscalResponsibleRole
+    deleteOscalResponsibleRole(id: ID!): String!
+    editOscalResponsibleRole( id: ID!, input: [EditInput]!, commitMessage: String): OscalResponsibleRole
     # OSCAL Role
     createOscalRole(input: OscalRoleAddInput): OscalRole
     deleteOscalRole(id: ID!): String!
@@ -128,168 +143,8 @@
       options: [RiskReportOption]): ID
   }
 
-  "Defines the types of OSCAL Models"
-  enum OscalModelType {
-    "OSCAL Assessment Plan"
-    ap
-    "OSCAL Assessment Results"
-    ar
-    "OSCAL Catalog"
-    catalog
-    "OSCAL Component Definition"
-    component_definition
-    "OSCAL Plan of Action and Milestones"
-    poam
-    "OSCAL Profile"
-    profile
-    "OSCAL System Security Plan"
-    ssp
-  }
-
-  "Defines the media types for OSCAL export"
-  enum OscalMediaType {
-    "application/oscal+json"
-    application_oscal_json
-    "application/oscal+xml"
-    application_oscal_xml
-    "application/oscal+yaml"
-    application_oscal_yaml
-    "application/oscal+csv"
-    application_oscal_csv
-  }
-
-  "Defines an risk reporting option"
-  input RiskReportOption {
-    "Identifies the name of the option"
-    name: ReportOptionType!
-    "Identifies the value(s) for the option"
-    values: [String!]
-  }
-
-  "Defines the types of Risk Reports"
-  enum RiskReportType {
-    "Security Assessment Report (SAR)"
-    sar
-    "Vulnerability Assessment Report (VAR)"
-    var
-    "Asset Inventory Report (AIR)"
-    air
-    "Cybersecurity Risk Assessment Report (CRA)"
-    cra
-    "Threat Assessment Report (TAR)"
-    tar
-  } 
-
-  "Defines the Options for Reports"
-  enum ReportOptionType {
-    "Appendices"
-    appendices
-    "Description"
-    description
-    "Purpose"
-    purpose
-    "Max Items"
-    max_items
-    "Sections"
-    sections
-    "Title"
-    title
-  }
-
-  "Defines the media types for Reports"
-  enum ReportMediaType {
-    "text/markdown"
-    markdown
-    "application/pdf"
-    pdf
-    "text/html"
-    html
-  }
-
-## Report-specifics
-  "Defines the sections in a Security Assessment Report"
-  enum SarSections {
-    "Risk Tracking Details"
-    tracking
-    "Collected During Testing"
-    collected_during_testing
-    "Mitigating Factors"
-    mitigating_factor  }
-
-  "Appendices of a Security Assessment Report"
-  enum SarAppendices {
-    "Database Scan"
-    db_scan
-    "Web Scan"
-    web_scan
-    "Penetration Testing"
-    pen_test
-    "Manual Test"
-    manual_test
-  }
-
-
-
-
-  "Defines identifying information about a system privilege held by the user."
-  type AuthorizedPrivilege {
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies a human readable name for the privilege."
-    name: String!
-    "Identifies a summary of the privilege's purpose within the system."
-    description: String
-    "Identifies one or more functions performed for a given authorized privilege by this user class."
-    functions_performed: [String!]
-  }
-  input AuthorizedPrivilegeAddInput {
-    "Identifies a human readable name for the privilege."
-    name: String!
-    "Identifies a summary of the privilege's purpose within the system."
-    description: String
-    "Identifies one or more functions performed for a given authorized privilege by this user class."
-    functions_performed: [String!]
-  }
-
-  "Defines identifying information about Base64 Content"
-  type Base64Content {
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded."
-    filename: String
-    "Identifies the media type as defined by the Internet Assigned Numbers Authority (IANA)."
-    media_type: String
-    "Identifies the content that is base64 encoded."
-    value: String
-  }
-  input Base64ContentAddInput {
-    filename: String
-    media_type: String
-    value: String
-  }
-
-  "Defines identifying information about a citation."
-  type Citation {
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies a line of citation text."
-    text: String!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-  }
-  input CitationAddInput {
-    "Identifies a line of citation text."
-    text: String!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReferenceAddInput]
-  }
-
+##### OSCAL Model
+##
   "Defines identifying information about an OSCAL Model."
   interface Model {
     # BasicObject
@@ -350,6 +205,8 @@
     resources(first: Int, offset: Int): OscalResourceConnection
   }
 
+##### OSCAL Object
+##
   "Defines the identifying information about an OSCAL object."
   interface OscalObject {
     # OscalObject
@@ -371,6 +228,8 @@
     ): OscalRelationshipConnection
   }
 
+##### OSCAL Location
+##
   "Defines identifying information about a location."
   type OscalLocation implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
@@ -486,7 +345,8 @@
     alternate
   }
 
-
+##### OSCAL Party
+##
   "Defines identifying information about a Party in OSCAL"
   type OscalParty {
     # BasicObject
@@ -628,6 +488,8 @@
     organization
   }
 
+##### OSCAL Relationship
+##
   "Defines identifying information about a relationship in OSCAL"
   type OscalRelationship {
     # BasicObject
@@ -728,7 +590,8 @@
     node: OscalRelationship!
   }
 
-
+##### OSCAL Resource
+##
   "Defines identifying information about a resource in OSCAL"
   type OscalResource implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
@@ -900,8 +763,45 @@
     "Indicates the resource is a formal agreement between two or more parties"
     agreement
   }
+  "Defines identifying information about Base64 Content"
+  type Base64Content {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded."
+    filename: String
+    "Identifies the media type as defined by the Internet Assigned Numbers Authority (IANA)."
+    media_type: String
+    "Identifies the content that is base64 encoded."
+    value: String
+  }
+  input Base64ContentAddInput {
+    filename: String
+    media_type: String
+    value: String
+  }
+  "Defines identifying information about a citation."
+  type Citation {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies a line of citation text."
+    text: String!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+  }
+  input CitationAddInput {
+    "Identifies a line of citation text."
+    text: String!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReferenceAddInput]
+  }
 
 
+##### OSCAL Responsible Party
+##
   "Defines identifying information about a Responsible Party in OSCAL"
   type OscalResponsibleParty {
     # BasicObject
@@ -943,20 +843,6 @@
     "Identifies a summary of the reponsible party's purpose and associated responsibilities."
     description: String
   }
-
-  "Defines identifying information about a Responsible Role in OSCAL"
-  input OscalResponsibleRoleAddInput {
-    # ResponsibleRole
-    "Identifies a reference to the role that the party is responsible for."
-    role: ID!
-    "Identifies one or more references to the parties that are responsible for performing the associated role."
-    parties: [ID]
-    # DarkLight extensions
-    "Identifies a name given to the responsible role to make it friendlier."
-    name: String
-    "Identifies a summary of the reponsible role's purpose and associated responsibilities."
-    description: String
-  }
   # Ordering
   enum OscalResponsiblePartyOrdering {
     "Label"
@@ -988,7 +874,84 @@
     cursor: String!
     node: OscalResponsibleParty!
   }
+##### OSCAL Responsible Role
+##
+  "Defines identifying information about a role with responsibility for performing a function relative to the containing object."
+  type OscalResponsibleRole {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+    # ResponsibleParty
+    "Identifies a reference to the role that the party is responsible for."
+    role: OscalRole!
+    "Identifies one or more references to the parties that are responsible for performing the associated role."
+    parties: [OscalParty]
+    # DarkLight extensions
+    "Identifies a name given to the responsible party to make it friendlier."
+    name: String
+    "Identifies a summary of the reponsible party's purpose and associated responsibilities."
+    description: String
+  }
+  "Defines identifying information about a Responsible Role in OSCAL"
+  input OscalResponsibleRoleAddInput {
+    # ResponsibleRole
+    "Identifies a reference to the role that the party is responsible for."
+    role: ID!
+    "Identifies one or more references to the parties that are responsible for performing the associated role."
+    parties: [ID]
+    # DarkLight extensions
+    "Identifies a name given to the responsible role to make it friendlier."
+    name: String
+    "Identifies a summary of the reponsible role's purpose and associated responsibilities."
+    description: String
+  }
+  # Ordering
+  enum OscalResponsibleRoleOrdering {
+    "Label"
+    label_name
+    "Name"
+    name
+  }
+  # Filtering
+  input OscalResponsibleRoleFiltering {
+    key: OscalResponsibleRoleFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+  }
+  enum OscalResponsibleRoleFilter {
+    "Label"
+    label_name
+    "Role Identifier"
+    role_identifier
+    "Name"
+    name
+  }
+  # Pagination
+  type OscalResponsibleRoleConnection {
+    pageInfo: PageInfo!
+    edges: [OscalResponsibleRoleEdge]
+  }
+  type OscalResponsibleRoleEdge {
+    cursor: String!
+    node: OscalResponsibleRole!
+  }
 
+##### OSCAL Role
+##
   "Defines identifying information about a function assumed or expected to be assumed by a party in a specific situation."
   type OscalRole implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
@@ -1142,6 +1105,8 @@
   }
 
 
+##### OSCAL User
+##
   "Defines identifying information about a type of user that interacts with the system based on an associated role."
   type OscalUser implements BasicObject & LifecycleObject  & OscalObject {
     # BasicObject
@@ -1270,8 +1235,31 @@
     "This role has no access to the system, such as a manager who approves access as part of a process."
     no_logical_access
   }
+  "Defines identifying information about a system privilege held by the user."
+  type AuthorizedPrivilege {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies a human readable name for the privilege."
+    name: String!
+    "Identifies a summary of the privilege's purpose within the system."
+    description: String
+    "Identifies one or more functions performed for a given authorized privilege by this user class."
+    functions_performed: [String!]
+  }
+  input AuthorizedPrivilegeAddInput {
+    "Identifies a human readable name for the privilege."
+    name: String!
+    "Identifies a summary of the privilege's purpose within the system."
+    description: String
+    "Identifies one or more functions performed for a given authorized privilege by this user class."
+    functions_performed: [String!]
+  }
 
 
+##### OSCAL Revision
+##
   "Defines identifying information about a Revision"
   type Revision {
     "Uniquely identifies this object."
@@ -1314,6 +1302,8 @@
     oscal_version: String
   }
 
+##### OSCAL ExternalIdentifier
+##
   "Defines an external identifier associated with a party"
   type ExternalIdentifier {
     "Uniquely identifies this object."
@@ -1331,4 +1321,136 @@
     "Identifies the external identifier within a specified scheme."
     identifier: String!
   }
-  
+##### Risk Reports
+##
+  "Defines the types of OSCAL Models"
+  enum OscalModelType {
+    "OSCAL Assessment Plan"
+    ap
+    "OSCAL Assessment Results"
+    ar
+    "OSCAL Catalog"
+    catalog
+    "OSCAL Component Definition"
+    component_definition
+    "OSCAL Plan of Action and Milestones"
+    poam
+    "OSCAL Profile"
+    profile
+    "OSCAL System Security Plan"
+    ssp
+  }
+
+  "Defines the media types for OSCAL export"
+  enum OscalMediaType {
+    "application/oscal+json"
+    application_oscal_json
+    "application/oscal+xml"
+    application_oscal_xml
+    "application/oscal+yaml"
+    application_oscal_yaml
+    "application/oscal+csv"
+    application_oscal_csv
+  }
+
+  "Defines an risk reporting option"
+  input RiskReportOption {
+    "Identifies the name of the option"
+    name: ReportOptionType!
+    "Identifies the value(s) for the option"
+    values: [String!]
+  }
+
+  "Defines the types of Risk Reports"
+  enum RiskReportType {
+    "Security Assessment Report (SAR)"
+    sar
+    "Vulnerability Assessment Report (VAR)"
+    var
+    "Asset Inventory Report (AIR)"
+    air
+    "Cybersecurity Risk Assessment Report (CRA)"
+    cra
+    "Threat Assessment Report (TAR)"
+    tar
+  } 
+
+  "Defines the Options for Reports"
+  enum ReportOptionType {
+    "Appendices"
+    appendices
+    "Description"
+    description
+    "Purpose"
+    purpose
+    "Max Items"
+    max_items
+    "Sections"
+    sections
+    "Title"
+    title
+  }
+
+  "Defines the media types for Reports"
+  enum ReportMediaType {
+    "text/markdown"
+    markdown
+    "application/pdf"
+    pdf
+    "text/html"
+    html
+  }
+
+##### SAR Report-Specifics
+##
+  "Defines the sections in a Security Assessment Report"
+  enum SarSections {
+    "Risk Tracking Details"
+    tracking
+    "Collected During Testing"
+    collected_during_testing
+    "Mitigating Factors"
+    mitigating_factor  }
+
+  "Appendices of a Security Assessment Report"
+  enum SarAppendices {
+    "Database Scan"
+    db_scan
+    "Web Scan"
+    web_scan
+    "Penetration Testing"
+    pen_test
+    "Manual Test"
+    manual_test
+  }
+
+##### OSCAL Property
+##
+  "Defines an attribute, characteristic, or quality of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  type Property implements ComplexDatatype {
+    # ComplexDatatype
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    # OSCAL Property
+    "Identifies a textual label that uniquely identifies a specific attribute, characteristic, or quality of the property's containing object."
+    prop_name: String!
+    "Identifies a namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name."
+    ns: URL
+    "Indicates the value of the attribute, characteristic, or quality."
+    value: [String!]
+    "Identifies a textual label that provides a sub-type or characterization of the property's name. This can be used to further distinguish or discriminate between the semantics of multiple properties of the same object with the same name and ns."
+    class: String
+  }
+    input PropertyAddInput {
+    # OSCAL Property
+    "Identifies a textual label that uniquely identifies a specific attribute, characteristic, or quality of the property's containing object."
+    prop_name: String!
+    "Identifies a namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name."
+    ns: URL
+    "Indicates the value of the attribute, characteristic, or quality."
+    value: [String!]
+    "Identifies a textual label that provides a sub-type or characterization of the property's name. This can be used to further distinguish or discriminate between the semantics of multiple properties of the same object with the same name and ns."
+    class: String
+  }

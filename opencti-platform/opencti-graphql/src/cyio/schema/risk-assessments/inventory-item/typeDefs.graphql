@@ -56,6 +56,13 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
+    "Identifies the name of the inventory item."
+    name: String!
+    "Identifies a description of the Inventory Item, including information about its function."
+    description: String
+    "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+    props: [Property]
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
@@ -64,10 +71,6 @@
     asset_tag: String
     "Indicates the serial number for the inventory item."
     serial_number: String
-    "Identifies the name of the inventory item."
-    name: String!
-    "Identifies a description of the Inventory Item, including information about its function."
-    description: String
     "Identifies the model of the Inventory Item."
     model: String
     "Identifies the name of the company or organization that manufactured the inventory item"
@@ -100,18 +103,22 @@
     baseline_configuration_name: String
     "Identifies the function provided by the inventory item for the system."
     function: String
-    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties: [OscalResponsibleParty]
     "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    "Identifies the set of components that are implemented in a given system inventory item."
-    implemented_components: [Component]
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
   }
   # Mutation Types
   input InventoryItemAddInput {
     # Inventory Item
+    "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+    props: [PropertyAddInput]
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType!
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the inventory item."
@@ -156,10 +163,13 @@
     baseline_configuration_name: String
     "Identifies the function provided by the inventory item for the system."
     function: String
-    "Identifies the set of components that are implemented in a given system inventory item."
-    implemented_components: [ID]
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsiblePartyAddInput]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [ComponentAddInput]
 }
   # Ordering Types
   enum InventoryItemsOrdering {
@@ -238,6 +248,7 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
@@ -286,12 +297,13 @@
     function: String
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
-    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties: [OscalResponsibleParty]
     "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
     "Identifies the identifier for the installation"
     installation_id: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsibleParty]
     "Identifies the set of components that are implemented in a given system inventory item."
     implemented_components: [Component]
   }
@@ -332,6 +344,7 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType!
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
@@ -376,14 +389,15 @@
     baseline_configuration_name: String
     "Identifies the function provided by the inventory item for the system."
     function: String
-    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties: [OscalResponsibleParty]
     "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    "Identifies the set of components that are implemented in a given system inventory item."
-    implemented_components: [Component]
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
   }
 
 #####   Firewall
@@ -422,6 +436,7 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
@@ -466,16 +481,16 @@
     baseline_configuration_name: String
     "Identifies the function provided by the inventory item for the system."
     function: String
-    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties: [OscalResponsibleParty]
     "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    "Identifies the set of components that are implemented in a given system inventory item."
-    implemented_components: [Component]
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
 }
-
 #####   Hardware
 ##
   "Defines identifying information about an Hardware"
@@ -512,6 +527,7 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType!
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
@@ -556,14 +572,15 @@
     baseline_configuration_name: String
     "Identifies the function provided by the inventory item for the system."
     function: String
-    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties: [OscalResponsibleParty]
     "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    "Identifies the set of components that are implemented in a given system inventory item."
-    implemented_components: [Component]
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
   }
 
 #####   Network Device
@@ -602,6 +619,7 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
@@ -646,14 +664,15 @@
     baseline_configuration_name: String
     "Identifies the function provided by the inventory item for the system."
     function: String
-    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties: [OscalResponsibleParty]
     "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    "Identifies the set of components that are implemented in a given system inventory item."
-    implemented_components: [Component]
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
   }
 
 #####   Router
@@ -692,6 +711,7 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
@@ -736,14 +756,15 @@
     baseline_configuration_name: String
     "Identifies the function provided by the inventory item for the system."
     function: String
-    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties: [OscalResponsibleParty]
     "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    "Identifies the set of components that are implemented in a given system inventory item."
-    implemented_components: [Component]
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
   }
 
 #####   Switch
@@ -782,6 +803,7 @@
       search: String 
     ): OscalRelationshipConnection
     # Inventory Item
+    # --- props ---
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the invenotry item."
@@ -826,14 +848,15 @@
     baseline_configuration_name: String
     "Identifies the function provided by the inventory item for the system."
     function: String
-    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties: [OscalResponsibleParty]
     "Indicates the physical location of the inventory item's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
     physical_location: [OscalLocation]
-    "Identifies the set of components that are implemented in a given system inventory item."
-    implemented_components: [Component]
     "Identifies the CPE identifier for a hardware device"
     cpe_identifier: String
+    # -- end props
+    "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+    responsible_parties: [OscalResponsibleParty]
+    "Identifies the set of components that are implemented in a given system inventory item."
+    implemented_components: [Component]
   }
 
   union InventoryItemTypes = Hardware 
