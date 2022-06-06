@@ -3004,6 +3004,9 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
 
+  // fetch the uuid of each related_observation and related_risk as these are commonly used
+  if (select.includes('related_observations')) select.push('related_observation_ids');
+
   // Update select to collect additional predicates if looking to calculate risk level
   if (select.includes('risk_level')) {
     if (!select.includes('cvss2_base_score')) select.push('cvss2_base_score');

@@ -10,7 +10,8 @@ import {
     deleteComponentQuery,
     deleteComponentByIriQuery,
     attachToComponentQuery,
-    detachFromComponentQuery
+    detachFromComponentQuery,
+    convertAssetToComponent,
 } from './sparql-query.js';
 
 const componentResolvers = {
@@ -49,6 +50,17 @@ const componentResolvers = {
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         filterCount = 0;
 
+        // compose name to include version and patch level
+        for (let component of response) {
+          let name = component.name;
+          if (component.hasOwnProperty('vendor_name')) {
+            if (!component.name.startsWith(component.vendor_name)) name = `${component.vendor_name} ${component.name}`;
+          }
+          if (component.hasOwnProperty('version')) name = `${name} ${component.version}`; 
+          if (component.hasOwnProperty('patch_level')) name = `$${name} ${component.patch_level}`;
+          component.name = name;
+        }
+
         let componentList ;
         if (args.orderedBy !== undefined ) {
           componentList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -79,11 +91,15 @@ const componentResolvers = {
             filterCount++;
           }
 
+          // convert the asset into a component
+          component = convertAssetToComponent(component);
+
           // if haven't reached limit to be returned
           if (limit) {
             let edge = {
               cursor: component.iri,
-              node: reducer(component),
+              node: component,
+              // node: reducer(component),
             }
             edges.push(edge)
             limit--;
@@ -141,8 +157,11 @@ const componentResolvers = {
       }
 
       if (Array.isArray(response) && response.length > 0) {
-        const reducer = getReducer("COMPONENT");
-        return reducer(response[0]);  
+        // convert the asset into a component
+        let component = convertAssetToComponent(response[0]);
+        return component;
+        // const reducer = getReducer("COMPONENT");
+        // return reducer(response[0]);  
       }
     },
   },

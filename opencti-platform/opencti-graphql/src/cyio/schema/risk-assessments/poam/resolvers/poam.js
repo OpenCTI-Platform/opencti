@@ -1185,7 +1185,6 @@ const poamResolvers = {
     components: async (parent, args, {dbName, dataSources, selectMap}) => {
       // if (parent.components_iri === undefined) return null;
       const edges = [];
-      const reducer = getComponentReducer("COMPONENT");
       let sparqlQuery = selectAllComponents(selectMap.getNode("node"));
       let response;
       try {
@@ -1210,10 +1209,23 @@ const poamResolvers = {
           error_code: (response.body.code ? response.body.code : 'N/A')
         });
       }
+      
       let filterCount, resultCount, limit, offset, limitSize, offsetSize;
       limitSize = limit = (args.first === undefined ? response.length : args.first) ;
       offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
       filterCount = 0;
+
+      // compose name to include version and patch level
+      for (let component of response) {
+        let name = component.name;
+        if (component.hasOwnProperty('vendor_name')) {
+          if (!component.name.startsWith(component.vendor_name)) name = `${component.vendor_name} ${component.name}`;
+        }
+        if (component.hasOwnProperty('version')) name = `${name} ${component.version}`; 
+        if (component.hasOwnProperty('patch_level')) name = `$${name} ${component.patch_level}`;
+        component.name = name;
+      }
+
       let componentList ;
       if (args.orderedBy !== undefined ) {
         componentList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -1250,7 +1262,6 @@ const poamResolvers = {
           let edge = {
             cursor: component.iri,
             node: component,
-            // node: reducer(component),
           }
           edges.push(edge)
           limit--;
@@ -1285,7 +1296,6 @@ const poamResolvers = {
     inventory_items: async(parent, args, {dbName, dataSources, selectMap}) => {
       // if (parent.inventory_items_iri === undefined) return null;
       const edges = [];
-      const reducer = getInventoryItemReducer("INVENTORY-ITEM");
       let sparqlQuery = selectAllInventoryItems(selectMap.getNode("node"), args);
       let response;
       try {
@@ -1315,16 +1325,16 @@ const poamResolvers = {
       limitSize = limit = (args.first === undefined ? response.length : args.first) ;
       offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
       filterCount = 0;
-      let invItemList ;
+      let inventoryItemList ;
       if (args.orderedBy !== undefined ) {
-        invItemList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+        inventoryItemList = response.sort(compareValues(args.orderedBy, args.orderMode ));
       } else {
-        invItemList = response;
+        inventoryItemList = response;
       }
 
-      if (offset > invItemList.length) return null;
-      resultCount = invItemList.length;
-      for (let invItem of invItemList) {
+      if (offset > inventoryItemList.length) return null;
+      resultCount = inventoryItemList.length;
+      for (let inventoryItem of inventoryItemList) {
         if (offset) {
           offset--;
           continue;
@@ -1332,21 +1342,20 @@ const poamResolvers = {
 
         // filter out non-matching entries if a filter is to be applied
         if ('filters' in args && args.filters != null && args.filters.length > 0) {
-          if (!filterValues(invItem, args.filters, args.filterMode) ) {
+          if (!filterValues(inventoryItem, args.filters, args.filterMode) ) {
             continue
           }
           filterCount++;
         }
 
         // convert the asset into a component
-        invItem = convertAssetToInventoryItem(invItem);
+        inventoryItem = convertAssetToInventoryItem(inventoryItem);
 
         // if haven't reached limit to be returned
         if (limit) {
           let edge = {
-            cursor: invItem.iri,
-            node: invItem,
-            // node: reducer(invItem),
+            cursor: inventoryItem.iri,
+            node: inventoryItem,
           }
           edges.push(edge)
           limit--;

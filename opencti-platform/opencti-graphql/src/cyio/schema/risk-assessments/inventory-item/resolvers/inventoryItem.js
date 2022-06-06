@@ -10,7 +10,8 @@ import {
     deleteInventoryItemQuery,
     deleteInventoryItemByIriQuery,
     attachToInventoryItemQuery,
-    detachFromInventoryItemQuery
+    detachFromInventoryItemQuery,
+    convertAssetToInventoryItem,
 } from './sparql-query.js';
 
 const inventoryItemResolvers = {
@@ -43,7 +44,7 @@ const inventoryItemResolvers = {
 
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
-        const reducer = getReducer("INVENTORY-ITEM");
+        // const reducer = getReducer("INVENTORY-ITEM");
         let filterCount, resultCount, limit, offset, limitSize, offsetSize;
         limitSize = limit = (args.first === undefined ? response.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
@@ -74,11 +75,15 @@ const inventoryItemResolvers = {
             filterCount++;
           }
 
+          // convert the asset into a component
+          inventoryItem = convertAssetToInventoryItem(inventoryItem);
+
           // if haven't reached limit to be returned
           if (limit) {
             let edge = {
               cursor: inventoryItem.iri,
-              node: reducer(inventoryItem),
+              node: inventoryItem,
+              // node: reducer(inventoryItem),
             }
             edges.push(edge)
             limit--;
@@ -136,8 +141,8 @@ const inventoryItemResolvers = {
       }
 
       if (Array.isArray(response) && response.length > 0) {
-        const reducer = getReducer("INVENTORY-ITEM");
-        return reducer(response[0]);  
+        // convert the asset into a component
+        return convertAssetToInventoryItem(response[0]);
       }
     },
   },
@@ -306,6 +311,7 @@ const inventoryItemResolvers = {
       return results;
     },
     implemented_components: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.implemented_components !== undefined) return parent.implemented_components;
       if (parent.implemented_components_iri === undefined) return []; 
     },
   },

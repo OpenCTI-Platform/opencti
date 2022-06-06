@@ -170,6 +170,18 @@ const assessmentAssetResolvers = {
       limitSize = limit = (args.first === undefined ? response.length : args.first) ;
       offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
       filterCount = 0;
+
+      // compose name to include version and patch level
+      for (let component of response) {
+        let name = component.name;
+        if (component.hasOwnProperty('vendor_name')) {
+          if (!component.name.startsWith(component.vendor_name)) name = `${component.vendor_name} ${component.name}`;
+        }
+        if (component.hasOwnProperty('version')) name = `${name} ${component.version}`; 
+        if (component.hasOwnProperty('patch_level')) name = `$${name} ${component.patch_level}`;
+        component.name = name;
+      }
+
       let componentList ;
       if (args.orderedBy !== undefined ) {
         componentList = response.sort(compareValues(args.orderedBy, args.orderMode ));

@@ -5,6 +5,7 @@ import {
     generateId, 
     OSCAL_NS
   } from "../../../utils.js";
+import { selectOscalTaskByIriQuery } from "../../assessment-common/resolvers/sparql-query.js";
     
 // Utility functions
 export function getReducer( type ) {
@@ -138,7 +139,16 @@ export const selectInventoryItemByIriQuery = (iri, select) => {
 }
 export const selectAllInventoryItems = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(inventoryItemPredicateMap);
-  if (select.includes('props')) select = Object.keys(inventoryItemPredicateMap);
+  if (select.includes('props')) {
+    select = Object.keys(inventoryItemPredicateMap);
+    if (select.includes('label_name')) select = select.filter(i => i !== 'label_name');
+    if (select.includes('locations')) select = select.filter(i => i !== 'locations');
+    if (select.includes('installed_operating_system')) select = select.filter(i => i !== 'installed_operating_system');
+    if (select.includes('installed_software')) select = select.filter(i => i !== 'installed_software');
+    if (select.includes('ip_address')) select = select.filter(i => i !== 'ip_address');
+    if (select.includes('mac_address')) select = select.filter(i => i !== 'mac_address');
+    // if (select.includes('implemented_components')) delete select.implemented_components;
+  }
   if (!select.includes('id')) select.push('id');
   if (!select.includes('asset_type')) select.push('asset_type');
 
@@ -342,54 +352,59 @@ export const inventoryItemPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "version");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  release_date: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#release_date>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "release_date");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  implementation_point: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#implementation_point>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "implementation_point");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  operational_status: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#operational_status>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "operational_status");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
+  // release_date: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#release_date>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "release_date");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
+  // implementation_point: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#implementation_point>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "implementation_point");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
+  // operational_status: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#operational_status>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "operational_status");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
   function: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#function>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "function");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  cpe_identifier: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#cpe_identifier>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "cpe_identifier");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
+  // cpe_identifier: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#cpe_identifier>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "cpe_identifier");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
   model: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#model>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "model")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
-  motherboard_id: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#motherboard_id>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "motherboard_id")},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  },
-  installation_id: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#installation_id>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installation_id");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  },
-  installed_hardware: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#installed_hardware>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_hardware");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
+  // motherboard_id: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#motherboard_id>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "motherboard_id")},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
+  // },
+  // installation_id: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#installation_id>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installation_id");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
+  // },
+  // installed_hardware: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#installed_hardware>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_hardware");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
   installed_operating_system: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#installed_operating_system>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_operating_system");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  installed_os_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#installed_operating_system>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_os_id");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   installed_os_name: {
@@ -417,21 +432,21 @@ export const inventoryItemPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "last_scanned");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  bios_id: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#bios_id>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "bios_id")},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  },
+  // bios_id: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#bios_id>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "bios_id")},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
+  // },
   fqdn: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#fqdn>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "fqdn")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
-  hostname: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#hostname>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "hostname")},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  },
+  // hostname: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#hostname>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "hostname")},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
+  // },
   netbios_name: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#netbios_name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "netbios_name")},
@@ -442,11 +457,11 @@ export const inventoryItemPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "network_id")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
-  default_gateway: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#default_gateway>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "default_gateway")},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  },
+  // default_gateway: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#default_gateway>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "default_gateway")},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
+  // },
   vlan_id: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#vlan_id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "vlan_id")},
@@ -460,6 +475,11 @@ export const inventoryItemPredicateMap = {
   installed_software: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#installed_software>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_software");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  installed_software_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#installed_software>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_software_id");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   installed_software_name: {
@@ -477,16 +497,16 @@ export const inventoryItemPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip_address_value");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  ipv4_address: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>", // this should really be ipv4_address in ontology
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip4_address");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  ipv6_address: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip6_address");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
+  // ipv4_address: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>", // this should really be ipv4_address in ontology
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip4_address");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
+  // ipv6_address: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip6_address");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
   mac_address: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#mac_address>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "mac_address");},
@@ -497,16 +517,16 @@ export const inventoryItemPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "mac_address_value");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  ports: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#ports>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ports");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  connected_to_network: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#connected_to_network>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "connected_to_network");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
+  // ports: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#ports>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ports");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
+  // connected_to_network: {
+  //   predicate: "<http://scap.nist.gov/ns/asset-identification#connected_to_network>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "connected_to_network");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
   baseline_configuration_name: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#baseline_configuration_name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "baseline_configuration_name")},
@@ -517,6 +537,7 @@ export const inventoryItemPredicateMap = {
 // Function to convert an Asset to a Component
 export function convertAssetToInventoryItem(asset) {
   let propList = [];
+  let implementedComponents = [];
   
   // Convert the each key/value pair of asset into an individual OSCAL Property objects
   for (let [key, value] of Object.entries(asset)) {
@@ -537,11 +558,8 @@ export function convertAssetToInventoryItem(asset) {
       case 'responsible_parties':
       case 'implemented_components':
       case 'connected_to_network':
-      case 'ip_address_value':
-      case 'installed_os_name':
-      case 'mac_address_value':
-      case 'installed_software_name':
-      case 'location_name':
+      // case 'installed_os_id':
+      // case 'installed_software_id':
           continue;
       case 'is_scanned':
       case 'allows_authenticated_scans':
@@ -555,15 +573,25 @@ export function convertAssetToInventoryItem(asset) {
         key = 'virtual';
         value = (value === true ? 'yes' : 'no');
         break;
-      case 'ip_address':                  // ip_address_value
+      // case 'ip_address':
+      case 'ip_address_value':
         key = (asset.ip_address_value.includes(':') ? 'ipv6-address' : 'ipv4-address');
         value = asset.ip_address_value;
         break;
-      case 'installed_operating_system':  // installed_os_name
+      // case 'installed_operating_system':
+      case 'installed_os_name':
         key = 'os-name';
         value = asset.installed_os_name;
         break;
-      case 'mac_address':                 // mac_address_value
+      case 'installed_os_id':
+        let implementedComponent = {
+          id: generateId(),
+          entity_type: 'implemented-component',
+          component_uuid: asset.installed_os_id[0],
+        }
+        implementedComponents.push(implementedComponent)
+        continue;
+      case 'mac_address_value':
         key = 'mac-address';
         if (!asset.mac_address_value.includes(':')) {
           value = asset.mac_address_value.replace(/([A-F0-9]{2})(?=[A-F0-9])/g, '$1:');
@@ -571,11 +599,25 @@ export function convertAssetToInventoryItem(asset) {
           value = asset.mac_address_value;
         }
         break;
-      case 'installed_software':          // installed_software_name
-        key = 'software-name';
-        value = asset.installed_software_name;
+      case 'installed_software_name':
+        if ('installed_software_name' in asset) {
+          key = 'software-name';
+          value = asset.installed_software_name;  
+        }
         break;
-      case 'location':
+      case 'installed_software_id':
+        // TODO: Should this be actually represented as 'implemented_components'?
+        //       Why not have the name, version, asset_type as a prop
+        for (let swId of asset.installed_software_id) {
+          let implementedComponent = {
+            id: generateId(),
+            entity_type: 'implemented-component',
+            component_uuid: swId,
+          }
+          implementedComponents.push(implementedComponent)
+        }
+        continue;
+      case 'location_name':
         key = 'physical-location';
         value = asset.location_name;
         break;
@@ -612,6 +654,7 @@ export function convertAssetToInventoryItem(asset) {
     props: propList,
     ...(asset.links && {links_iri: asset.links}),
     ...(asset.responsible_parties && {responsible_parties_iri: asset.responsible_parties}),
+    ...(implementedComponents.length > 0 && {implemented_components: implementedComponents}),
     ...(asset.implemented_components && {implemented_components_iri: asset.implemented_components}),
     ...(asset.remarks && {remarks_iri: asset.remarks}),
   };
