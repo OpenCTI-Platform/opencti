@@ -119,6 +119,7 @@ class CyioAddExternalReferences extends Component {
       totalExternalReference: [],
       removeIcon: false,
     };
+    this.timeout = null;
   }
 
   toggleExternalReference(createExternalRef) {
@@ -210,7 +211,14 @@ class CyioAddExternalReferences extends Component {
 
   handleSearch(event) {
     const keyword = event.target.value;
-    this.setState({ search: keyword, expanded: keyword ? true : false });
+    if (this.timeout) clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => {
+      if (keyword.length === 0) {
+        this.setState({ expanded: false });
+      } else {
+        this.setState({ search: keyword, expanded: true });
+      }
+    }, 1500);
   }
 
   render() {
@@ -273,7 +281,7 @@ class CyioAddExternalReferences extends Component {
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <TextField
                   style={{ width: 495 }}
-                  onChange={this.handleSearch.bind(this)}
+                  onChange={(event) => this.handleSearch(event)}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end" >
@@ -326,45 +334,11 @@ class CyioAddExternalReferences extends Component {
                           handleDataCollect={this.handleDataCollect.bind(this)}
                           paginationOptions={paginationOptions}
                           open={this.state.open}
-                          search={this.state.search}
+                          search={this.state.search.toLowerCase()}
                         />
                       );
                     }
-                    return (
-                      <List>
-                        {Array.from(Array(20), (e, i) => (
-                          <ListItem key={i} divider={true} button={false}>
-                            <ListItemIcon>
-                              <Skeleton
-                                animation="wave"
-                                variant="circle"
-                                width={30}
-                                height={30}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <Skeleton
-                                  animation="wave"
-                                  variant="rect"
-                                  width="90%"
-                                  height={15}
-                                  style={{ marginBottom: 10 }}
-                                />
-                              }
-                              secondary={
-                                <Skeleton
-                                  animation="wave"
-                                  variant="rect"
-                                  width="90%"
-                                  height={15}
-                                />
-                              }
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    );
+                    return <></>;
                   }}
                 />
               </div>

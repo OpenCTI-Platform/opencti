@@ -17,6 +17,7 @@ import {
   attachToRiskResponseQuery,
   detachFromRiskResponseQuery,
   insertSubjectsQuery,
+  selectAllSubjects,
   selectSubjectByIriQuery,
   deleteSubjectByIriQuery,
   requiredAssetPredicateMap,
@@ -541,68 +542,38 @@ const requiredAssetResolvers = {
     },
     subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
-      let iriArray = parent.subjects_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("SUBJECT");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Subject')) {
-            continue;
-          }
-          const sparqlQuery = selectSubjectByIriQuery(iri, selectMap.getNode("subjects"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Subject",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            if (response[0].subject_ref[0].includes('OperatingSystem')) {
-              console.error(`[CYIO] INVALID-IRI: ${response[0].iri} 'subject_ref' contains an IRI ${response[0].subject_ref[0]} which is invalid; skipping`);
-              continue;
-            }
-
-            // determine the actual IRI of the object referenced
-            let result;
-            let sparqlQuery = selectObjectByIriQuery(response[0].subject_ref[0], response[0].subject_type, ['id'] );
-            try {
-              result = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Obtaining Subject IRI",
-              singularizeSchema
-              });
-            } catch (e) {
-                console.log(e)
-                throw e
-            }
-            if (result === undefined || result.length === 0) {
-              console.error(`[CYIO] NON-EXISTENT: (${dbName}) '${response[0].subject_ref[0]}'; skipping Subject '${response[0].iri}`);              
-              continue;
-            }
-            results.push(reducer(response[0]));
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("SUBJECT");
+      let sparqlQuery = selectAllSubjects(selectMap.getNode('subjects'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Subjects",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let subject of response) {
+        results.push(reducer(subject));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
   }
 }

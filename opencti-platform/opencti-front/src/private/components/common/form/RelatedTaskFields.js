@@ -141,7 +141,7 @@ class RelatedTaskFields extends Component {
     }
     if(this.props.name === "responsible_roles"){
       fetchDarklightQuery(RelatedTaskFieldsResponsiblePartiesQuery, {
-        orderedBy: 'labels',
+        orderedBy: 'label_name',
         orderMode: 'asc',
       })
       .toPromise()

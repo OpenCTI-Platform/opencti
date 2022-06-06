@@ -17,7 +17,7 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import RoleEntityEditionContainer from './LocationEntityEditionContainer';
+import LocationEntityEditionContainer from './LocationEntityEditionContainer';
 import EntitiesLocationsCreation from './EntitiesLocationsCreation';
 
 const styles = () => ({
@@ -106,9 +106,10 @@ class EmtityLocationComponent extends Component {
           handleLocationCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
         />
-        <RoleEntityEditionContainer
+        <LocationEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
+          location={location}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>

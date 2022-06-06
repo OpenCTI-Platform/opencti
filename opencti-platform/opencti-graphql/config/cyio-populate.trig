@@ -9,11 +9,11 @@
 
 # Plan of Action and Milestone Model
 GRAPH <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> {
-    <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> 
+    <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc>
+        a <http://csrc.nist.gov/ns/oscal/common#POAM> ; 
         a <http://csrc.nist.gov/ns/oscal/common#Model> ;
         a <http://csrc.nist.gov/ns/oscal/common#Object> ; 
         a <http://darklight.ai/ns/common#Object> ;
-        a <http://csrc.nist.gov/ns/oscal/common#POAM> ;
         common:id "22f2ad37-4f07-5182-bf4e-59ea197a73dc" ;
         common:object_type "poam" ;
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
@@ -23,36 +23,70 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197
         oscal-poam:system_identifier_type "https://ietf.org/rfc/rfc4122" ;
         oscal:name "Default POAM for an Organization"@en-US ;
         oscal:version "1.0" ;
-        oscal:oscal_version: "1.0.1" ;
-        oscal:roles <http://csrc.nist.gov/ns/oscal/common#Role-a9a8e3ab-eb7d-56cb-840f-31aef93d39e6>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-620b6804-1469-5aa7-b8a5-e569548acd09>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-0884f6b4-0861-5f41-8f35-7291bdf2b343>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-e78722d3-b8e8-537d-9856-4dd831963201>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-57848ae3-fe3e-525e-9687-0d06fc25ac06>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-d932a527-3bf2-57f4-bd7a-5c2360a6fe8d>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-4d8083fe-6ea8-5766-b7ef-275f9b449860>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-3d5472ce-ff72-5f0a-837a-30e67f90346a>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-a5b866c6-fb51-5adf-947e-c46a5d6c2cc9>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-c4831b78-89ec-5ff7-a007-89479e39e9ed>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-261eee7c-48e8-50cf-8ae0-0c2003744012>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-e709913b-e363-552a-b283-8d9d3d603940>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-6f03828d-b4c9-5222-b866-cccfd0c85180>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-f2a802f0-164a-52aa-ba66-9d625b756d6f>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-f3675394-a3b4-50f0-8949-c8e94e7164e9>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-0a7b09da-3f02-52da-b95f-7262a2e76c02>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-20ddc873-263e-5457-88ff-a7575210e5ce>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-fa315278-017f-5e5e-b666-edeb1ea08fdf>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-609156af-16ca-55e1-9c32-0f602daae834>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-49a1d640-dc1c-5526-96d2-b881eaf9e5cc>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-9324ccc1-eb19-572f-a5a7-18dc1f976fba>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-dae14e93-4a98-57fb-9437-d921b078f0b3>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-7cc4668b-1794-5258-941d-5c4c1f2bd1a8>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c723ce>,
-                    <http://csrc.nist.gov/ns/oscal/common#Role-51a67c39-6a4a-5600-93f5-b490c034dfdd>,
+        oscal:oscal_version "1.0.4" ;
+        oscal:roles <http://csrc.nist.gov/ns/oscal/common#Role-a9a8e3ab-eb7d-56cb-840f-31aef93d39e6> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-620b6804-1469-5aa7-b8a5-e569548acd09> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-0884f6b4-0861-5f41-8f35-7291bdf2b343> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-e78722d3-b8e8-537d-9856-4dd831963201> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-57848ae3-fe3e-525e-9687-0d06fc25ac06> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-d932a527-3bf2-57f4-bd7a-5c2360a6fe8d> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-4d8083fe-6ea8-5766-b7ef-275f9b449860> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-3d5472ce-ff72-5f0a-837a-30e67f90346a> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-a5b866c6-fb51-5adf-947e-c46a5d6c2cc9> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-c4831b78-89ec-5ff7-a007-89479e39e9ed> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-261eee7c-48e8-50cf-8ae0-0c2003744012> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-e709913b-e363-552a-b283-8d9d3d603940> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-6f03828d-b4c9-5222-b866-cccfd0c85180> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-f2a802f0-164a-52aa-ba66-9d625b756d6f> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-f3675394-a3b4-50f0-8949-c8e94e7164e9> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-0a7b09da-3f02-52da-b95f-7262a2e76c02> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-20ddc873-263e-5457-88ff-a7575210e5ce> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-fa315278-017f-5e5e-b666-edeb1ea08fdf> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-609156af-16ca-55e1-9c32-0f602daae834> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-49a1d640-dc1c-5526-96d2-b881eaf9e5cc> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-9324ccc1-eb19-572f-a5a7-18dc1f976fba> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-dae14e93-4a98-57fb-9437-d921b078f0b3> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-7cc4668b-1794-5258-941d-5c4c1f2bd1a8> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c723ce> ,
+                    <http://csrc.nist.gov/ns/oscal/common#Role-51a67c39-6a4a-5600-93f5-b490c034dfdd> ,
                     <http://csrc.nist.gov/ns/oscal/common#Role-f444fef7-39b8-53d0-9983-9b5516a11abf> ;
+        oscal-poam:local_definitions <http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-22f2ad37-4f07-5182-bf4e-59ea197a73dc> ;
     .
 }
-# Asset Administrator
+# -----------------------
+# POAM Local Definitions
+# -----------------------
+GRAPH <http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-22f2ad37-4f07-5182-bf4e-59ea197a73dc> {
+    <http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-22f2ad37-4f07-5182-bf4e-59ea197a73dc>
+        a <http://csrc.nist.gov/ns/oscal/poam#LocalDefinition> ;
+        a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "22f2ad37-4f07-5182-bf4e-59ea197a73dc" ;
+        common:object_type "poam-local-definition" ;
+        # oscal:components
+        # oscal:inventory_items
+        oscal-assess:assessment_assets <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-22f2ad37-4f07-5182-bf4e-59ea197a73dc> ;
+    .
+}
+# -----------------------
+# Assessment Assets
+# -----------------------
+GRAPH <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-22f2ad37-4f07-5182-bf4e-59ea197a73dc> {
+    <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-22f2ad37-4f07-5182-bf4e-59ea197a73dc>
+        a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> ;
+        a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "22f2ad37-4f07-5182-bf4e-59ea197a73dc" ;
+        common:object_type "assessment-asset" ;
+        # oscal:components
+        oscal-assess:assessment_platforms <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-57853743-fc7d-5967-a1b6-f09a4fc73b15> ,
+                                          <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-828a147d-92ac-5f4a-acc6-b71966d6962c> ;
+    .
+}
+# -----------------------
+#  Roles 
+# -----------------------
+# Role:  Asset Administrator
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-a9a8e3ab-eb7d-56cb-840f-31aef93d39e6> {
     <http://csrc.nist.gov/ns/oscal/common#Role-a9a8e3ab-eb7d-56cb-840f-31aef93d39e6> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -68,7 +102,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-a9a8e3ab-eb7d-56cb-840f-31aef93
         oscal:description "Responsible for administering a set of assets."@en-US ;
     .
 }
-# Asset Owner
+# Role:  Asset Owner
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-620b6804-1469-5aa7-b8a5-e569548acd09> {
     <http://csrc.nist.gov/ns/oscal/common#Role-620b6804-1469-5aa7-b8a5-e569548acd09> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -84,7 +118,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-620b6804-1469-5aa7-b8a5-e569548
         oscal:description "Accountable for ensuring the asset is managed in accordance with organizational policies and procedures."@en-US ;
     .
 }
-# Authorizing Official
+# Role:  Authorizing Official
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-0884f6b4-0861-5f41-8f35-7291bdf2b343> {
     <http://csrc.nist.gov/ns/oscal/common#Role-0884f6b4-0861-5f41-8f35-7291bdf2b343> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -100,7 +134,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-0884f6b4-0861-5f41-8f35-7291bdf
         oscal:description "The authorizing official for this system."@en-US ;
     .
 }
-# Authorizing Official POC
+# Role:  Authorizing Official POC
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-e78722d3-b8e8-537d-9856-4dd831963201> {
     <http://csrc.nist.gov/ns/oscal/common#Role-e78722d3-b8e8-537d-9856-4dd831963201> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -116,7 +150,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-e78722d3-b8e8-537d-9856-4dd8319
         oscal:description "The authorizing official's designated point of contact (POC) for this system."@en-US ;
     .
 }
-# Configuration Management
+# Role:  Configuration Management
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-57848ae3-fe3e-525e-9687-0d06fc25ac06> {
     <http://csrc.nist.gov/ns/oscal/common#Role-57848ae3-fe3e-525e-9687-0d06fc25ac06> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -132,7 +166,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-57848ae3-fe3e-525e-9687-0d06fc2
         oscal:description "Responsible for the configuration management processes governing changes to the asset."@en-US ;
     .
 }
-# Contact
+# Role:  Contact
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-d932a527-3bf2-57f4-bd7a-5c2360a6fe8d> {
     <http://csrc.nist.gov/ns/oscal/common#Role-d932a527-3bf2-57f4-bd7a-5c2360a6fe8d> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -148,7 +182,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-d932a527-3bf2-57f4-bd7a-5c2360a
         oscal:description "Indicates the organization to contact for questions or support related to this content."@en-US ;
     .
 }
-# Content Approver
+# Role:  Content Approver
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-4d8083fe-6ea8-5766-b7ef-275f9b449860> {
     <http://csrc.nist.gov/ns/oscal/common#Role-4d8083fe-6ea8-5766-b7ef-275f9b449860> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -164,7 +198,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-4d8083fe-6ea8-5766-b7ef-275f9b4
         oscal:description "Indicates the organization responsible for all content represented in the 'document'."@en-US ;
     .
 }
-# Creator
+# Role:  Creator
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-3d5472ce-ff72-5f0a-837a-30e67f90346a> {
     <http://csrc.nist.gov/ns/oscal/common#Role-3d5472ce-ff72-5f0a-837a-30e67f90346a> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -180,7 +214,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-3d5472ce-ff72-5f0a-837a-30e67f9
         oscal:description "Indicates the organization that created this content."@en-US ;
     .
 }
-# Help Desk
+# Role:  Help Desk
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-a5b866c6-fb51-5adf-947e-c46a5d6c2cc9> {
     <http://csrc.nist.gov/ns/oscal/common#Role-a5b866c6-fb51-5adf-947e-c46a5d6c2cc9> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -196,7 +230,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-a5b866c6-fb51-5adf-947e-c46a5d6
         oscal:description "Responsible for providing information and support to users."@en-US ;
     .
 }
-# Incident Response
+# Role:  Incident Response
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-c4831b78-89ec-5ff7-a007-89479e39e9ed> {
     <http://csrc.nist.gov/ns/oscal/common#Role-c4831b78-89ec-5ff7-a007-89479e39e9ed> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -212,7 +246,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-c4831b78-89ec-5ff7-a007-89479e3
         oscal:description "Responsible for responding to an event that could lead to loss of, or disruption to, an organization's operations, services or functions."@en-US ;
     .
 }
-# Information System Security Officer
+# Role:  Information System Security Officer
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-261eee7c-48e8-50cf-8ae0-0c2003744012> {
     <http://csrc.nist.gov/ns/oscal/common#Role-261eee7c-48e8-50cf-8ae0-0c2003744012> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -228,7 +262,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-261eee7c-48e8-50cf-8ae0-0c20037
         oscal:description "The primary role responsible for ensuring the organization operates the system securely."@en-US ;
     .
 }
-# ISA Authorizing Offical - Local
+# Role:  ISA Authorizing Offical - Local
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-e709913b-e363-552a-b283-8d9d3d603940> {
     <http://csrc.nist.gov/ns/oscal/common#Role-e709913b-e363-552a-b283-8d9d3d603940> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -244,7 +278,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-e709913b-e363-552a-b283-8d9d3d6
         oscal:description "Interconnection Security Agreement (ISA) authorizing official for this system."@en-US ;
     .
 }
-# ISA Authorizing Offical Remote
+# Role:  ISA Authorizing Offical Remote
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-6f03828d-b4c9-5222-b866-cccfd0c85180> {
     <http://csrc.nist.gov/ns/oscal/common#Role-6f03828d-b4c9-5222-b866-cccfd0c85180> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -260,7 +294,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-6f03828d-b4c9-5222-b866-cccfd0c
         oscal:description "Interconnection Security Agreement (ISA) authorizing official for the remote interconnected system."@en-US ;
     .
 }
-# ISA POC Local
+# Role:  ISA POC Local
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f2a802f0-164a-52aa-ba66-9d625b756d6f> {
     <http://csrc.nist.gov/ns/oscal/common#Role-f2a802f0-164a-52aa-ba66-9d625b756d6f> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -276,7 +310,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f2a802f0-164a-52aa-ba66-9d625b7
         oscal:description "Interconnection Security Agreement (ISA) point of contact (POC) for this system."@en-US ;
     .
 }
-# ISA POC Remote
+# Role:  ISA POC Remote
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f3675394-a3b4-50f0-8949-c8e94e7164e9> {
     <http://csrc.nist.gov/ns/oscal/common#Role-f3675394-a3b4-50f0-8949-c8e94e7164e9> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -292,7 +326,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f3675394-a3b4-50f0-8949-c8e94e7
         oscal:description "Interconnection Security Agreement (ISA) point of contact (POC) for the remote interconnected system."@en-US ;
     .
 }
-# Maintainer
+# Role:  Maintainer
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-0a7b09da-3f02-52da-b95f-7262a2e76c02> {
     <http://csrc.nist.gov/ns/oscal/common#Role-0a7b09da-3f02-52da-b95f-7262a2e76c02> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -308,7 +342,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-0a7b09da-3f02-52da-b95f-7262a2e
         oscal:description  "Responsible for the creation and maintenance of a component."@en-US ;
     .
 }
-# Network Operations
+# Role:  Network Operations
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-20ddc873-263e-5457-88ff-a7575210e5ce> {
     <http://csrc.nist.gov/ns/oscal/common#Role-20ddc873-263e-5457-88ff-a7575210e5ce> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -324,7 +358,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-20ddc873-263e-5457-88ff-a757521
         oscal:description "Member of the network operations center (NOC)."@en-US ;
     .
 }
-# Prepared By
+# Role:  Prepared By
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-fa315278-017f-5e5e-b666-edeb1ea08fdf> {
     <http://csrc.nist.gov/ns/oscal/common#Role-fa315278-017f-5e5e-b666-edeb1ea08fdf> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -340,7 +374,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-fa315278-017f-5e5e-b666-edeb1ea
         oscal:description "Indicates the organization that prepared this content."@en-US ;
     .
 }
-# Prepared For
+# Role:  Prepared For
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-609156af-16ca-55e1-9c32-0f602daae834> {
     <http://csrc.nist.gov/ns/oscal/common#Role-609156af-16ca-55e1-9c32-0f602daae834> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -356,7 +390,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-609156af-16ca-55e1-9c32-0f602da
         oscal:description "Indicates the organization for which this content was created."@en-US ;
     .
 }
-# Privacy POC
+# Role:  Privacy POC
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-49a1d640-dc1c-5526-96d2-b881eaf9e5cc> {
     <http://csrc.nist.gov/ns/oscal/common#Role-49a1d640-dc1c-5526-96d2-b881eaf9e5cc> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -372,7 +406,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-49a1d640-dc1c-5526-96d2-b881eaf
         oscal:description  "The point of contact (POC) responsible for identifying privacy information within the system, and ensuring its protection if present."@en-US ;
     .
 }
-# Provider
+# Role:  Provider
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-9324ccc1-eb19-572f-a5a7-18dc1f976fba> {
     <http://csrc.nist.gov/ns/oscal/common#Role-9324ccc1-eb19-572f-a5a7-18dc1f976fba> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -388,7 +422,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-9324ccc1-eb19-572f-a5a7-18dc1f9
         oscal:description "Organization responsible for providing the component, if this is different from the 'maintainer' (e.g., a reseller)."@en-US ;
     .
 }
-# Security Operations
+# Role:  Security Operations
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-dae14e93-4a98-57fb-9437-d921b078f0b3> {
     <http://csrc.nist.gov/ns/oscal/common#Role-dae14e93-4a98-57fb-9437-d921b078f0b3> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -404,7 +438,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-dae14e93-4a98-57fb-9437-d921b07
         oscal:description  "Member of the security operations center (SOC)."@en-US ;
     .
 }
-# System Owner
+# Role:  System Owner
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-7cc4668b-1794-5258-941d-5c4c1f2bd1a8> {
     <http://csrc.nist.gov/ns/oscal/common#Role-7cc4668b-1794-5258-941d-5c4c1f2bd1a8> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -420,7 +454,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-7cc4668b-1794-5258-941d-5c4c1f2
         oscal:description "The executive ultimately accountable for the system."@en-US ;
     .
 }
-# System POC - Management
+# Role:  System POC - Management
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c723ce> {
     <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c723ce> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -436,7 +470,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c
         oscal:description "The primary management-level point of contact (POC) for the system."@en-US ;
     .
 }
-# System POC - Other
+# Role:  System POC - Other
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-51a67c39-6a4a-5600-93f5-b490c034dfdd> {
     <http://csrc.nist.gov/ns/oscal/common#Role-51a67c39-6a4a-5600-93f5-b490c034dfdd> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -452,7 +486,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-51a67c39-6a4a-5600-93f5-b490c03
         oscal:description "Other point of contact (POC) for the system that is not the management or technical POC."@en-US ;
     .
 }
-# System POC - Technical
+# Role:  System POC - Technical
 GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f444fef7-39b8-53d0-9983-9b5516a11abf> {
     <http://csrc.nist.gov/ns/oscal/common#Role-f444fef7-39b8-53d0-9983-9b5516a11abf> 
         a <http://csrc.nist.gov/ns/oscal/common#Role> ;
@@ -468,7 +502,10 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f444fef7-39b8-53d0-9983-9b5516a
         oscal:description "The primary technical point of contact (POC) for the system."@en-US ;
     .
 }
-# Tenable Nessus Assessment Platform
+# -----------------------
+# Assessment Platforms
+# -----------------------
+# Assessment Platform:  Tenable Nessus
 GRAPH <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-57853743-fc7d-5967-a1b6-f09a4fc73b15> {
     <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-57853743-fc7d-5967-a1b6-f09a4fc73b15> 
         a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform> ;
@@ -479,10 +516,10 @@ GRAPH <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-578537
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         oscal:name "Tenable"@en-US;
-        oscal:description "Tenable's Nessus vulnerability scanner platform."
+        oscal:description "Tenable's Nessus vulnerability scanner platform."@en-US;
     .
 }
-# Rapid7 Nexpose Assessment Platform
+# Assessment Platform:  Rapid7 Nexpose
 GRAPH <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-828a147d-92ac-5f4a-acc6-b71966d6962c> {
     <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-828a147d-92ac-5f4a-acc6-b71966d6962c> 
         a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform> ;
@@ -493,10 +530,13 @@ GRAPH <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-828a14
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         oscal:name "Rapid7"@en-US;
-        oscal:description "Rapid7's Nexpose vulnerability scanner platform."
+        oscal:description "Rapid7's Nexpose vulnerability scanner platform."@en-US;
     .
 }
-# Label - COMPANY-OWNED
+# -----------------------
+#  Labels 
+# -----------------------
+# Label: COMPANY-OWNED
 GRAPH <http://darklight.ai/ns/common#Label-418499a6-45fb-596c-a984-ac1a1c39447d> {
     <http://darklight.ai/ns/common#Label-418499a6-45fb-596c-a984-ac1a1c39447d> 
         a <http://darklight.ai/ns/common#Label> ;
@@ -511,7 +551,7 @@ GRAPH <http://darklight.ai/ns/common#Label-418499a6-45fb-596c-a984-ac1a1c39447d>
         common:description "This label is to be used to indicate that asset if owned by the company.";
     .
 }
-# Label - EMPLOYEE-OWNED
+# Label: EMPLOYEE-OWNED
 GRAPH <http://darklight.ai/ns/common#Label-5c2a76cf-d9e5-52b7-803f-2d2539047b9a> {
     <http://darklight.ai/ns/common#Label-5c2a76cf-d9e5-52b7-803f-2d2539047b9a> 
         a <http://darklight.ai/ns/common#Label> ;
@@ -526,7 +566,7 @@ GRAPH <http://darklight.ai/ns/common#Label-5c2a76cf-d9e5-52b7-803f-2d2539047b9a>
         common:description "This label is to be used to indicate that asset is owned by an employee."
     .
 }
-# Label - INDIVIDUAL-OWNED
+# Label: INDIVIDUAL-OWNED
 GRAPH <http://darklight.ai/ns/common#Label-4e0fc443-78de-559f-97d3-6f9019666cec> {
     <http://darklight.ai/ns/common#Label-4e0fc443-78de-559f-97d3-6f9019666cec> 
         a <http://darklight.ai/ns/common#Label> ;

@@ -1,12 +1,12 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
 import { UserInputError } from "apollo-server-express";
 import { compareValues, filterValues, generateId, DARKLIGHT_NS, updateQuery } from '../../utils.js';
-import { addToInventoryQuery } from "../assetUtil.js";
+import { addToInventoryQuery, removeFromInventoryQuery } from "../assetUtil.js";
 import {
-  getSelectSparqlQuery,
   getReducer,
   insertQuery,
   deleteNetworkAssetQuery,
+  selectAllNetworks,
   selectNetworkQuery,
   networkPredicateMap,
 } from './sparql-query.js';
@@ -28,8 +28,8 @@ import {
 const networkResolvers = {
   Query: {
     networkAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args);
-      var reducer = getReducer('NETWORK')
+      const sparqlQuery = selectAllNetworks(selectMap.getNode("node"), args);
+      let reducer = getReducer('NETWORK')
       const response = await dataSources.Stardog.queryAll({
           dbName,
           sparqlQuery,
@@ -114,9 +114,8 @@ const networkResolvers = {
         }
       }
     },
-    networkAsset: async (_, args, {dbName, dataSources, selectMap}) => {
-      const selectList = selectMap.getNode("networkAsset")
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectList, args.id);
+    networkAsset: async (_, {id}, {dbName, dataSources, selectMap}) => {
+      const sparqlQuery = selectNetworkQuery(id, selectMap.getNode("networkAsset"));
       var reducer = getReducer('NETWORK')
       const response = await dataSources.Stardog.queryById({
         dbName,
@@ -255,15 +254,15 @@ const networkResolvers = {
       const reducer = getReducer("NETWORK");
       return reducer(response[0]);
     },
-    deleteNetworkAsset: async (_, args, {dbName, dataSources}) => {
-      const sparqlQuery = getSelectSparqlQuery("NETWORK", ["id", "network_address_range"], args.id);
+    deleteNetworkAsset: async (_, {id}, {dbName, dataSources}) => {
+      const sparqlQuery = selectNetworkQuery(id, ["id", "network_address_range"]);
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
         queryId: "Select Network Asset",
         singularizeSchema
       });
-      if (response.length === 0) throw new UserInputError(`Entity does not exists with ID ${args.id}`);
+      if (response.length === 0) throw new UserInputError(`Entity does not exists with ID ${id}`);
       const reducer = getReducer("NETWORK");
       const asset = reducer(response[0]);
       if (asset.netaddr_range_iri) {
@@ -274,29 +273,40 @@ const networkResolvers = {
           queryId: "Select IP Range from Network Asset"
         });
         if (ipRange.length === 1) {
-          const start = ipRange[0].starting_ip_address;
-          const end = ipRange[0].ending_ip_address;
-          let ipQuery = deleteIpQuery(`<${start}>`);
+          const rangeId = (Array.isArray(ipRange[0].id) ? ipRange[0].id[0] : ipRange[0].id);
+          const start = (Array.isArray(ipRange[0].starting_ip_address) ? ipRange[0].starting_ip_address[0] : ipRange[0].starting_ip_address);
+          const end = (Array.isArray(ipRange[0].ending_ip_address) ? ipRange[0].ending_ip_address[0] : ipRange[0].ending_ip_address);
+          if (start.includes('IpV4') || start.includes('IpV6')) {
+            let ipQuery = deleteIpQuery(`<${start}>`);
+            await dataSources.Stardog.delete({
+              dbName,
+              sparqlQuery: ipQuery,
+              queryId: "Delete Start IP"
+            });  
+          }
+          if (end.includes('IpV4') || end.includes('IpV6')) {
+            let ipQuery = deleteIpQuery(`<${end}>`);
+            await dataSources.Stardog.delete({
+              dbName,
+              sparqlQuery: ipQuery,
+              queryId: "Delete End IP"
+            });
+          }
+          const deleteIpRange = deleteIpAddressRange(`<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${rangeId}>`);
           await dataSources.Stardog.delete({
             dbName,
-            sparqlQuery: ipQuery,
-            queryId: "Delete Start IP"
-          });
-          ipQuery = deleteIpQuery(`<${end}>`);
-          await dataSources.Stardog.delete({
-            dbName,
-            sparqlQuery: ipQuery,
-            queryId: "Delete End IP"
+            sparqlQuery: deleteIpRange,
+            queryId: "Delete IP Range"
           });
         }
-        const deleteIpRange = deleteIpAddressRange(`<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${args.id}>`);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: deleteIpRange,
-          queryId: "Delete IP Range"
-        });
       }
-      const deleteQuery = deleteNetworkAssetQuery(args.id);
+      const relationshipQuery = removeFromInventoryQuery(id);
+      await dataSources.Stardog.delete({
+        dbName,
+        sparqlQuery: relationshipQuery,
+        queryId: "Delete Network Asset from Inventory"
+      })
+      const deleteQuery = deleteNetworkAssetQuery(id);
       await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: deleteQuery,

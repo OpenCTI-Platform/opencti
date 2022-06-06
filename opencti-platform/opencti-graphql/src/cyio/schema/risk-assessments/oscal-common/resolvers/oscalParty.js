@@ -416,10 +416,9 @@ const oscalPartyResolvers = {
 
       // determine the appropriate ontology class type
       if (!party.hasOwnProperty('party_type')) throw new UserInputError(`Unknown type of party with ID ${id}`);   
-      let iriType = party.party_type.charAt(0).toUppercase();
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/common#Party-${id}`,
-        `http://csrc.nist.gov/ns/oscal/common#${iriType}`,
+        `http://csrc.nist.gov/ns/oscal/common#Party`,
         input,
         partyPredicateMap
       )

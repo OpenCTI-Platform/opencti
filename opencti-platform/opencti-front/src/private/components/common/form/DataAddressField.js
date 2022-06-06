@@ -8,15 +8,10 @@ import { withStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import ApartmentOutlined from '@material-ui/icons/ApartmentOutlined';
-import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
-import CallIcon from '@material-ui/icons/Call';
 import Typography from '@material-ui/core/Typography';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import TextField from '@material-ui/core/TextField';
-import { truncate } from '../../../../utils/String';
 import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
@@ -24,8 +19,8 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import { Dialog, DialogContent, DialogActions } from '@material-ui/core';
-import NewTextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -95,10 +90,10 @@ class DataAddressField extends Component {
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
-    if (this.state.ipAddress.every((value) => value.name !== this.state.value)) {
-      this.state.ipAddress.push({ 'name': this.state.value, 'type': this.state.selectedMode });
+    if (this.state.ipAddress.every((value) => value.phone_number !== this.state.value)) {
+      this.state.ipAddress.push({ 'phone_number': this.state.value, 'usage_type': this.state.selectedMode });
     }
-    this.setState({ value: '', open: false, selectedMode: '' });
+    this.setState({ value: '', open: false, selectedMode: '' }, this.handleSubmit());
   }
 
   handleEditAddress() {
@@ -108,23 +103,25 @@ class DataAddressField extends Component {
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
-    if (this.state.ipAddress.every((value) => value.name !== this.state.value)) {
-      this.state.ipAddress[this.state.editValueKey].name = this.state.value;
-      this.state.ipAddress[this.state.editValueKey].type = this.state.selectedMode;
+    if (this.state.ipAddress.every((value) => value.phone_number !== this.state.value)) {
+      this.state.ipAddress[this.state.editValueKey].phone_number = this.state.value;
+      this.state.ipAddress[this.state.editValueKey].usage_type = this.state.selectedMode;
     }
-    this.setState({ value: '', editOpen: false, selectedMode: '' });
+    this.setState({ value: '', editOpen: false, selectedMode: '' }, this.handleSubmit());
   }
 
   handleSubmit() {
-    this.setState({ open: false, value: '' }, () => (
-      this.props.setFieldValue(this.props.name, this.state.ipAddress)
-    ));
+    this.props.setFieldValue(this.props.name, this.state.ipAddress);
   }
 
   handleEditionAddress(key) {
     const editValue = this.state.ipAddress.filter((v, i) => i === key)[0];
-    this.setState({ selectedMode: editValue.type, value: editValue.name })
-    this.setState({ editValueKey: key, editOpen: true });
+    this.setState({
+      selectedMode: editValue.usage_type,
+      value: editValue.phone_number,
+      editValueKey: key,
+      editOpen: true,
+    })
   }
 
   handleChangeMode(event) {
@@ -132,7 +129,12 @@ class DataAddressField extends Component {
   }
 
   handleDeleteAddress(key) {
-    this.setState({ ipAddress: this.state.ipAddress.filter((value, i) => i !== key) });
+    this.setState({ ipAddress: this.state.ipAddress.filter((value, i) => i !== key) }, this.handleSubmit());
+  }
+
+  handleReset(){
+    this.props.setFieldValue(this.props.name, []);
+    this.setState({ ipAddress: [...this.props.addressValues] });
   }
 
   render() {
@@ -163,13 +165,9 @@ class DataAddressField extends Component {
               {this.state.ipAddress.map((address, key) => (
                 <div key={key} style={{ display: 'grid', gridTemplateColumns: '75% 1fr' }}>
                   <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    {address.type === 'office'
-                      ? <ApartmentOutlined fontSize='small' />
-                      : address.type === 'mobile'
-                        ? <HomeOutlinedIcon fontSize='small' />
-                        : <CallIcon fontSize='small' />}
+                    <ItemIcon type={address.usage_type} />
                     <Typography>
-                      {(address.name && t(address.name.substr(0, 15).concat('...')))}
+                      {(address.phone_number && t(address.phone_number.substr(0, 15).concat('...')))}
                     </Typography>
                   </div>
                   <div style={{ display: 'flex' }}>
@@ -215,9 +213,9 @@ class DataAddressField extends Component {
                   onChange={this.handleChangeMode.bind(this)}
                   className={classes.dataSelect}
                 >
-                  <MenuItem value='office'><ApartmentOutlined />{t('Office')}</MenuItem>
-                  <MenuItem value='mobile'><HomeOutlinedIcon />{t('Mobile')}</MenuItem>
-                  <MenuItem value='home'><CallIcon />{t('Home')}</MenuItem>
+                  <MenuItem value='office'> <ItemIcon type='office' />{t('Office')}</MenuItem>
+                  <MenuItem value='mobile'> <ItemIcon type='mobile' />{t('Mobile')}</MenuItem>
+                  <MenuItem value='home'> <ItemIcon type='home' />{t('Home')}</MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -270,9 +268,9 @@ class DataAddressField extends Component {
                   onChange={this.handleChangeMode.bind(this)}
                   className={classes.dataSelect}
                 >
-                  <MenuItem value='office'><ApartmentOutlined />{t('Office')}</MenuItem>
-                  <MenuItem value='mobile'><HomeOutlinedIcon />{t('Mobile')}</MenuItem>
-                  <MenuItem value='home'><CallIcon />{t('Home')}</MenuItem>
+                  <MenuItem value='office'><ItemIcon type='office' />{t('Office')}</MenuItem>
+                  <MenuItem value='mobile'><ItemIcon type='mobile' />{t('Mobile')}</MenuItem>
+                  <MenuItem value='home'><ItemIcon type='home' />{t('Home')}</MenuItem>
                 </Select>
               </FormControl>
             </div>

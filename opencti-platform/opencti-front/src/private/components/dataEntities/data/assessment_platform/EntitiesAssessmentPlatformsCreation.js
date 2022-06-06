@@ -164,7 +164,6 @@ class EntitiesAssessmentPlatformsCreation extends Component {
           open={openDataCreation}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => handleAssessPlatformCreation()}
         >
           <Formik
             enableReinitialize={true}

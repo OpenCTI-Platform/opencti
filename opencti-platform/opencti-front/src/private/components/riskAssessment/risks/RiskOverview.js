@@ -12,6 +12,9 @@ import Badge from '@material-ui/core/Badge';
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { InformationOutline, Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
@@ -175,7 +178,13 @@ class RiskOverviewComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {risk.description && t(risk.description)}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {risk.description && t(risk.description)}
+                    </Markdown>
                   </div>
                 </div>
               </div>

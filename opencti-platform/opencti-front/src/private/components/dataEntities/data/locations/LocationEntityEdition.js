@@ -95,6 +95,7 @@ class LocationEntityEdition extends Component {
                 <LocationEntityEditionContainer
                   displayEdit={displayEdit}
                   history={history}
+                  location={props.oscalLocation}
                   handleDisplayEdit={handleDisplayEdit}
                 />
               );

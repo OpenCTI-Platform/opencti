@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { compose, evolve } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -28,7 +27,9 @@ import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import NewAddressField from '../../../common/form/NewAddressField';
+import TaskType from '../../../common/form/TaskType';
 import DataAddressField from '../../../common/form/DataAddressField';
+import EmailAddressField from '../../../common/form/EmailAddressField';
 import { telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
 
 const styles = (theme) => ({
@@ -71,7 +72,7 @@ const entitiesLocationsCreationMutation = graphql`
   }
 `;
 
-const riskValidation = (t) => Yup.object().shape({
+const LocationCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
 });
 const Transition = React.forwardRef((props, ref) => (
@@ -102,7 +103,8 @@ class EntitiesLocationsCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
-      R.assoc('name', values.name),
+      R.dissoc('created'),
+      R.dissoc('modified'),
     )(values);
     CM(environmentDarkLight, {
       mutation: entitiesLocationsCreationMutation,
@@ -113,7 +115,8 @@ class EntitiesLocationsCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        this.props.handleLocationCreation();
+        this.props.history.push('/data/entities/locations');
       },
       onError: (err) => {
         console.error(err);
@@ -149,7 +152,7 @@ class EntitiesLocationsCreation extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleLocationCreation();
   }
 
   render() {
@@ -167,7 +170,6 @@ class EntitiesLocationsCreation extends Component {
           open={openDataCreation}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => handleLocationCreation()}
         >
           <Formik
             enableReinitialize={true}
@@ -175,11 +177,14 @@ class EntitiesLocationsCreation extends Component {
               name: '',
               created: null,
               modified: null,
+              description: '',
               address: [],
-              email_address: [],
+              location_type: '',
+              location_class: '',
+              email_addresses: [],
               telephone_numbers: [],
             }}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={LocationCreationValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -349,11 +354,11 @@ class EntitiesLocationsCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="marking"
+                      <TaskType
+                        name='location_type'
+                        taskType='OscalLocationType'
                         fullWidth={true}
+                        variant='outlined'
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
                       />
@@ -373,11 +378,11 @@ class EntitiesLocationsCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="marking"
+                      <TaskType
+                        name='location_class'
+                        taskType='OscalLocationClass'
                         fullWidth={true}
+                        variant='outlined'
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
                       />
@@ -399,7 +404,7 @@ class EntitiesLocationsCreation extends Component {
                         title='Telephone numbers'
                         name='telephone_numbers'
                         validation={telephoneFormatRegex}
-                        helperText='Please enter a valid Telephone Number. Example: +1 999 999-9999'
+                        helperText='Please enter a valid Telephone Number. Example: +17895551234 (10-15 digits)'
                       />
                       <div style={{ marginTop: '10px' }}>
                         <Typography
@@ -427,12 +432,12 @@ class EntitiesLocationsCreation extends Component {
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <DataAddressField
+                      <EmailAddressField
                         setFieldValue={setFieldValue}
                         values={values}
-                        addressValues={values.email_address}
+                        addressValues={values.email_addresses}
                         title='Email Address'
-                        name='email_address'
+                        name='email_addresses'
                         validation={emailAddressRegex}
                         helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                       />
@@ -474,7 +479,7 @@ EntitiesLocationsCreation.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(EntitiesLocationsCreation);

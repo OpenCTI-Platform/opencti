@@ -13,8 +13,9 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197
         oscal:parties <http://csrc.nist.gov/ns/oscal/common#Party-7f9fa876-0a43-5199-a7be-3b11bc25578b>,
                       <http://csrc.nist.gov/ns/oscal/common#Party-75e44e79-b456-5406-838a-de094cd5d1d8>,
                       <http://csrc.nist.gov/ns/oscal/common#Party-ba43670c-fc4b-504f-8915-75433eccac54>,
-                      <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9>;
-        oscal:locations:<http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4>;
+                      <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
+        oscal:locations <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4> ;
+        oscal:responsible_parties <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f> ;
     .
 }
 # -----------------------
@@ -33,7 +34,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Party-7f9fa876-0a43-5199-a7be-3b11bc
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
         oscal:name "Paul Patrick" ;
         oscal:short_name "Paul" ;
-        oscal:description ""@en-US ;
+        oscal:description "EVP of Engineering/acting Chief Product Officer"@en-US ;
         oscal:party_type "person" ;
         oscal:email_addresses "ppatrick@darklight.ai", "paul.patrick.sr@gmail.com" ;
         oscal:job_title "Executive VP of Engineering"@en-US ;
@@ -52,7 +53,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Party-75e44e79-b456-5406-838a-de094c
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
         oscal:name "Beth Ellis" ;
         oscal:short_name "Beth" ;
-        oscal:description ""@en-US ;
+        oscal:description "Director of Operations/Program Manager"@en-US ;
         oscal:party_type "person" ;
         oscal:email_addresses "bellis@darklight.ai" ;
         oscal:job_title "Director of Operations"@en-US ;
@@ -71,11 +72,11 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Party-ba43670c-fc4b-504f-8915-75433e
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
         oscal:name "Dan Wachtler" ;
         oscal:short_name "Dan" ;
-        oscal:description ""@en-US ;
+        oscal:description "Chief Executive Officer and head of sales"@en-US ;
         oscal:party_type "person" ;
         oscal:email_addresses "dan@darklight.ai" ;
         oscal:job_title "Chief Executive Officer"@en-US ;
-        oscal:locations: <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4> ;
+        oscal:locations <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4> ;
     .
 }
 # -----------------------
@@ -92,14 +93,14 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab767
         common:object_type "oscal-party" ;
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
-        oscal:party_type "orginization" ;
+        oscal:party_type "organization" ;
         oscal:name "DarkLight, Inc." ;
         oscal:short_name "DarkLight" ;
         oscal:description "Cybersecurity AI software tht uses sensor data and client context with industry best practices to prioritize actions and resource."@en-US ;
         oscal:email_addresses "info@darklight.ai", 
                               "support@darklight.ai" ;
         oscal:telephone_numbers <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-7f68e205-eaca-58c2-898c-ecb8782e08cd> ;
-        oscal:locations: <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4> ;
+        oscal:locations <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4> ;
     .
 }
 #  Engineering
@@ -135,7 +136,7 @@ GRAPH  <http://csrc.nist.gov/ns/oscal/common#Address-6a08aaac-06ad-5cc5-9937-cda
         a <http://darklight.ai/ns/common#ComplexDatatype> ;
         common:id "6a08aaac-06ad-5cc5-9937-cda3625cc058" ;
         common:object_type "address" ;
-        oscal:address_type: "office" ;
+        oscal:address_type "office" ;
         common:street_address "8201 164th Ave NE" ;
         common:city "Redmond" ;
         common:administrative_area "WA" ;
@@ -154,3 +155,22 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-7f68e205-eaca-58c2-8
         oscal:phone_number "+19991234567" ;
     .
 }
+# -------------------------
+# Responsible Parties
+# -------------------------
+GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f> {
+    <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f>
+        a <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty> ;
+        a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "e1cfca7e-4fba-5c28-8a13-886c3639dd0f" ;
+        common:object_type "oscal-responsible-party" ;
+        oscal:role <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c723ce> ;
+        oscal:parties <http://csrc.nist.gov/ns/oscal/common#Party-ba43670c-fc4b-504f-8915-75433eccac54>,
+                      <http://csrc.nist.gov/ns/oscal/common#Party-7f9fa876-0a43-5199-a7be-3b11bc25578b>,
+                      <http://csrc.nist.gov/ns/oscal/common#Party-75e44e79-b456-5406-838a-de094cd5d1d8> ;
+        oscal:name "DarkLight Leadership Team"@en-US ;
+        oscal:description "Represents the DarkLight Leadership team"@en-US ;
+    .
+}
+

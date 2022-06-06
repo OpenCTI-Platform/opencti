@@ -191,7 +191,6 @@ class RemediationDetailsPopover extends Component {
         'response_type',
       ]),
     )(remediation);
-    console.log('remediation', remediation);
     return (
       <>
         <Dialog
@@ -323,7 +322,7 @@ class RemediationDetailsPopover extends Component {
                       </div>
                       <div className="clearfix" />
                       <Field
-                        component={TextField}
+                        component={MarkDownField}
                         name="description"
                         fullWidth={true}
                         multiline={true}

@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import * as Yup from 'yup';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -40,7 +41,9 @@ import Source from '../../../common/form/Source';
 import { toastGenericError } from "../../../../../utils/bakedToast";
 import NewAddressField from '../../../common/form/NewAddressField';
 import DataAddressField from '../../../common/form/DataAddressField';
-import { telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network'; 
+import EmailAddressField from '../../../common/form/EmailAddressField';
+import { telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
+import TaskType from '../../../common/form/TaskType';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -85,6 +88,15 @@ const locationEntityEditionContainerMutation = graphql`
   }
 `;
 
+const LocationEditionValidation = (t) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
+});
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 class LocationEntityEditionContainer extends Component {
   constructor(props) {
     super(props);
@@ -118,24 +130,24 @@ class LocationEntityEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = R.evolve(
-      {
-        modified: () => values.modified === null ? null : parse(values.modified).format(),
-        created: () => values.created === null ? null : parse(values.created).format(),
-      },
-      values,
-    );
+    // const adaptedValues = R.evolve(
+    //   {
+    //     modified: () => values.modified === null ? null : parse(values.modified).format(),
+    //     created: () => values.created === null ? null : parse(values.created).format(),
+    //   },
+    //   values,
+    // );
     const finalValues = R.pipe(
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
       })),
-    )(adaptedValues);
+    )(values);
     CM(environmentDarkLight, {
       mutation: locationEntityEditionContainerMutation,
       variables: {
-        id: this.props.cyioCoreRelationshipId,
+        id: this.props.location.id,
         input: finalValues,
       },
       setSubmitting,
@@ -143,6 +155,7 @@ class LocationEntityEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        this.props.history.push(`/data/entities/locations/${this.props.location.id}`);
       },
       onError: (err) => {
         console.error(err);
@@ -158,24 +171,30 @@ class LocationEntityEditionContainer extends Component {
       t,
       disabled,
       remediation,
+      location,
     } = this.props;
     const initialValues = R.pipe(
-      R.assoc('name', ''),
-      R.assoc('description', ''),
-      R.assoc('address', []),
-      R.assoc('telephone_numbers', []),
-      R.assoc('email_address', []),
+      R.assoc('id', location?.id),
+      R.assoc('name', location?.name || ''),
+      R.assoc('description', location?.description || ''),
+      R.assoc('address', location?.address || []),
+      R.assoc('telephone_numbers', location?.telephone_numbers || []),
+      R.assoc('email_addresses', location?.email_addresses || []),
+      R.assoc('created', location?.created || null),
+      R.assoc('modified', location?.modified || null),
+      R.assoc('location_class', location?.location_class || ''),
+      R.assoc('location_type', location?.location_type || ''),
       R.pick([
+        'id',
         'name',
         'address',
         'description',
-        'email_address',
+        'email_addresses',
         'telephone_numbers',
-        'source',
-        'modified',
         'created',
-        'lifecycle',
-        'response_type',
+        'modified',
+        'location_class',
+        'location_type',
       ]),
     )(remediation);
     return (
@@ -184,12 +203,11 @@ class LocationEntityEditionContainer extends Component {
           open={this.props.displayEdit}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={LocationEditionValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -359,10 +377,11 @@ class LocationEntityEditionContainer extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
+                      <TaskType
                         component={SelectField}
                         variant='outlined'
-                        name="marking"
+                        name="location_type"
+                        taskType='OscalLocationType'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
@@ -383,10 +402,11 @@ class LocationEntityEditionContainer extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
+                      <TaskType
                         component={SelectField}
                         variant='outlined'
-                        name="marking"
+                        name="location_class"
+                        taskType='OscalLocationClass'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
@@ -437,12 +457,12 @@ class LocationEntityEditionContainer extends Component {
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <DataAddressField
+                      <EmailAddressField
                         setFieldValue={setFieldValue}
                         values={values}
-                        addressValues={values.email_address}
+                        addressValues={values.email_addresses}
                         title='Email Address'
-                        name='email_address'
+                        name='email_addresses'
                         validation={emailAddressRegex}
                         helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                       />
@@ -487,6 +507,7 @@ LocationEntityEditionContainer.propTypes = {
   t: PropTypes.func,
   connectionKey: PropTypes.string,
   enableReferences: PropTypes.bool,
+  location: PropTypes.object,
 };
 
 export default compose(

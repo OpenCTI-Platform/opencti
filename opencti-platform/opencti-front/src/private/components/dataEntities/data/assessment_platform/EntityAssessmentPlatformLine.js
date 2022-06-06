@@ -94,7 +94,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: '14.5%' }}
               >
                 {node.name && t(node.name)}
               </div>
@@ -106,7 +106,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: '21.7%' }}
               >
                 <CyioCoreObjectLabels
                   variant="inList"
@@ -116,7 +116,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 {node.created && fd(node.created)}
               </div>
@@ -247,7 +247,7 @@ class EntityAssessmentPlatformLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.label_name.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -258,7 +258,7 @@ class EntityAssessmentPlatformLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 <Skeleton
                   animation="wave"

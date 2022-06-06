@@ -77,11 +77,22 @@ const oscalCommonResolvers = {
     external: 'external',
     general_public: 'general-public',
   },
-  PartyOrComponent: {
-    __resolveType: (item) => {
-      return objectMap[item.entity_type].graphQLType;
-    }
-  }
+  OscalMediaType: {
+    application_oscal_json: 'application/oscal+json',
+    application_oscal_xml: 'application/oscal+xml',
+    application_oscal_yaml: 'application/oscal+yaml',
+    application_oscal_csv: 'application/oscal+csv',
+  },
+  ReportMediaType: {
+    markdown: 'text/markdown',
+    html: 'text/html',
+    pdf: 'application/pdf',
+  },
+  // PartyOrComponent: {
+  //   __resolveType: (item) => {
+  //     return objectMap[item.entity_type].graphQLType;
+  //   }
+  // }
 };
 
 export default oscalCommonResolvers;

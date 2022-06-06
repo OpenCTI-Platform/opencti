@@ -118,13 +118,13 @@ class SoftwareLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.cpeId.width }}
+                style={{ width: dataColumns.cpe_identifier.width }}
               >
                 {node.cpe_identifier && node.cpe_identifier}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.swId.width }}
+                style={{ width: dataColumns.software_identifier.width }}
               >
                 {node.software_identifier && node.software_identifier}
               </div>
@@ -286,7 +286,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.cpeId.width }}
+                style={{ width: dataColumns.cpe_identifier.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -297,7 +297,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.swId.width }}
+                style={{ width: dataColumns.software_identifier.width }}
               >
                 <Skeleton
                   animation="wave"

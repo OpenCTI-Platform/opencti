@@ -277,7 +277,7 @@ class TasksEntities extends Component {
     const dataColumns = {
       type: {
         label: 'Type',
-        width: '17%',
+        width: '14%',
         isSortable: true,
       },
       name: {
@@ -292,17 +292,17 @@ class TasksEntities extends Component {
       },
       labels: {
         label: 'Labels',
-        width: '16%',
+        width: '20%',
         isSortable: true,
       },
       creation_date: {
         label: 'Creation Date',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       marking: {
         label: 'Marking',
-        width: '13%',
+        width: '12%',
         isSortable: true,
       },
     };

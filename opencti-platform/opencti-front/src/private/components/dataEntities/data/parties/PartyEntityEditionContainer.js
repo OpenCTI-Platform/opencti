@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import * as Yup from 'yup';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -38,10 +39,12 @@ import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import ResponseType from '../../../common/form/ResponseType';
+import TaskType from '../../../common/form/TaskType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import DataAddressField from '../../../common/form/DataAddressField';
+import EmailAddressField from '../../../common/form/EmailAddressField';
 import NewAddressField from '../../../common/form/NewAddressField';
 import LocationField from '../../../common/form/LocationField';
 import { ipv6AddrRegex, telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
@@ -94,6 +97,16 @@ const partyEntityEditionContainerMutation = graphql`
   }
 `;
 
+const EntitiesPartiesEditionValidation = (t) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
+  party_type: Yup.string().required(t('This field is required')),
+});
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 class PartyEntityEditionContainer extends Component {
   constructor(props) {
     super(props);
@@ -132,20 +145,24 @@ class PartyEntityEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = R.evolve(
-      {
-        modified: () => values.modified === null ? null : parse(values.modified).format(),
-        created: () => values.created === null ? null : parse(values.created).format(),
-      },
-      values,
-    );
+    // const adaptedValues = R.evolve(
+    //   {
+    //     modified: () => values.modified === null ? null : parse(values.modified).format(),
+    //     created: () => values.created === null ? null : parse(values.created).format(),
+    //   },
+    //   values,
+    // );
     const finalValues = R.pipe(
+      R.dissoc('created'),
+      R.dissoc('modified'),
+      R.dissoc('marking'),
+      R.dissoc('external_identifiers'),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
       })),
-    )(adaptedValues);
+    )(values);
     CM(environmentDarkLight, {
       mutation: partyEntityEditionContainerMutation,
       variables: {
@@ -157,6 +174,7 @@ class PartyEntityEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        this.props.history.push(`/data/entities/parties/${this.props.party.id}`);
       },
       onError: (err) => {
         console.error(err);
@@ -174,31 +192,35 @@ class PartyEntityEditionContainer extends Component {
       party,
     } = this.props;
     const initialValues = R.pipe(
+      R.assoc('id', party?.id),
       R.assoc('name', party?.name || ''),
       R.assoc('description', party?.description || ''),
-      R.assoc('telephone_numbers', []),
-      R.assoc('email_address', []),
-      R.assoc('address', []),
-      R.assoc('locations', []),
-      R.assoc('created', null),
-      R.assoc('modified', null),
-      R.assoc('short_name', ''),
-      R.assoc('party_type', ''),
+      R.assoc('telephone_numbers', party?.telephone_numbers || []),
+      R.assoc('email_addresses', party?.email_addresses || []),
+      R.assoc('addresses', party?.addresses || []),
+      R.assoc('locations', party?.locations || []),
+      R.assoc('created', party?.created || null),
+      R.assoc('modified', party?.modified || null),
+      R.assoc('short_name', party?.short_name || ''),
+      R.assoc('party_type', party?.party_type || ''),
+      R.assoc('member_of_organizations', party?.member_of_organizations?.map((value) => value?.name) || ''),
+      R.assoc('job_title', party?.job_title || ''),
       R.pick([
+        'id',
         'name',
         'created',
         'modified',
         'short_name',
         'party_type',
-        'member_of',
+        'member_of_organizations',
         'mail_stop',
         'job_title',
         'office',
         'marking',
         'description',
-        'address',
+        'addresses',
         'locations',
-        'email_address',
+        'email_addresses',
         'telephone_numbers',
         'external_identifiers',
       ]),
@@ -209,12 +231,11 @@ class PartyEntityEditionContainer extends Component {
           open={this.props.displayEdit}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={EntitiesPartiesEditionValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -413,10 +434,11 @@ class PartyEntityEditionContainer extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
+                        <TaskType
                           component={SelectField}
                           variant='outlined'
-                          name="party_type"
+                          name='party_type'
+                          taskType='PartyType'
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -440,7 +462,7 @@ class PartyEntityEditionContainer extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="member_of"
+                          name="member_of_organizations"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -499,11 +521,11 @@ class PartyEntityEditionContainer extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={SelectField}
+                          component={TextField}
                           variant='outlined'
                           name="job_title"
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
+                          size="small"
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
@@ -556,12 +578,12 @@ class PartyEntityEditionContainer extends Component {
                         />
                       </div>
                       <div style={{ marginTop: '10px' }}>
-                        <DataAddressField
+                        <EmailAddressField
                           setFieldValue={setFieldValue}
                           values={values}
-                          addressValues={values.email_address}
+                          addressValues={values.email_addresses}
                           title='Email Address'
-                          name='email_address'
+                          name='email_addresses'
                           validation={emailAddressRegex}
                           helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                         />
@@ -586,9 +608,9 @@ class PartyEntityEditionContainer extends Component {
                         <NewAddressField
                           setFieldValue={setFieldValue}
                           values={values}
-                          addressValues={values.address}
+                          addressValues={values.addresses}
                           title='Address(es)'
-                          name='address'
+                          name='addresses'
                           // validation={emailAddressRegex}
                           helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                         />

@@ -277,32 +277,32 @@ class LocationsEntities extends Component {
     const dataColumns = {
       type: {
         label: 'Type',
-        width: '17%',
-        isSortable: true,
+        width: '14%',
+        isSortable: false,
       },
       name: {
         label: 'Name',
         width: '16%',
-        isSortable: false,
+        isSortable: true,
       },
       author: {
         label: 'Author',
         width: '16%',
-        isSortable: true,
+        isSortable: false,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
-        width: '16%',
+        width: '20%',
         isSortable: true,
       },
-      creation_date: {
+      created: {
         label: 'Creation Date',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       marking: {
         label: 'Marking',
-        width: '13%',
+        width: '12%',
         isSortable: true,
       },
     };
