@@ -520,7 +520,7 @@ export const stixLoadById = async (user, id, opts = {}) => {
   return undefined;
 };
 export const stixLoadByIdStringify = async (user, id) => {
-  const data = await stixLoadById(user, id, { withFiles: true });
+  const data = await stixLoadById(user, id);
   return data ? JSON.stringify(data) : '';
 };
 // endregion

@@ -159,7 +159,7 @@ const createSeeMiddleware = () => {
       missingElements.push(...missingIds);
       // Resolve every missing element
       const uniqueIds = R.uniq(missingIds);
-      const elementResolver = (id) => stixLoadById(req.session.user, id, { withFiles: true });
+      const elementResolver = (id) => stixLoadById(req.session.user, id,);
       const resolvedElements = await Promise.map(uniqueIds, elementResolver, { concurrency: ES_MAX_CONCURRENCY });
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
@@ -278,8 +278,10 @@ const createSeeMiddleware = () => {
   };
   const isFullVisibleElement = (instance) => {
     const isMissingRelation = instance.base_type === BASE_TYPE_RELATION;
-    const isFullVisibleRelation = isMissingRelation && instance.from && instance.to;
-    return isFullVisibleRelation || !isMissingRelation;
+    if (isMissingRelation) {
+      return instance.from && instance.to;
+    }
+    return true;
   };
   const filterCacheResolver = async (values, filterCache) => {
     const filterIds = values.map((v) => v.id);
@@ -601,30 +603,32 @@ const createSeeMiddleware = () => {
         // noinspection UnnecessaryLocalVariableJS
         const queryCallback = async (elements) => {
           for (let index = 0; index < elements.length; index += 1) {
-            const { internal_id: elemId } = elements[index];
-            const instance = await storeLoadByIdWithRefs(user, elemId, { withFiles: true });
-            if (isFullVisibleElement(instance)) {
-              const stixData = convertStoreToStix(instance);
-              const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
-              const eventId = utcDate(stixUpdatedAt).toDate().getTime();
-              if (channel.connected()) {
-                // publish missing dependencies if needed
-                await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stixData);
-                // publish element
-                if (!cache.has(stixData.id)) {
-                  const message = generateCreateMessage(instance);
-                  const origin = { referer: EVENT_TYPE_INIT };
-                  const eventData = { data: stixData, message, origin, version: STREAM_EVENT_VERSION };
-                  channel.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
-                  cache.set(stixData.id);
-                  await wait(channel.delay);
+            const { internal_id: elemId, standard_id: standardId } = elements[index];
+            if (!cache.has(standardId)) { // With dependency resolving, id can be added in a previous iteration
+              const instance = await storeLoadByIdWithRefs(user, elemId);
+              if (isFullVisibleElement(instance)) {
+                const stixData = convertStoreToStix(instance);
+                const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
+                const eventId = utcDate(stixUpdatedAt).toDate().getTime();
+                if (channel.connected()) {
+                  // publish missing dependencies if needed
+                  await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stixData);
+                  // publish element
+                  if (!cache.has(stixData.id)) {
+                    const message = generateCreateMessage(instance);
+                    const origin = { referer: EVENT_TYPE_INIT };
+                    const eventData = { data: stixData, message, origin, version: STREAM_EVENT_VERSION };
+                    channel.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                    cache.set(stixData.id);
+                    await wait(channel.delay);
+                  }
+                } else {
+                  return channel.connected();
                 }
-              } else {
-                return channel.connected();
               }
             }
           }
-          await wait(500);
+          await wait(50);
           return channel.connected();
         };
         const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startFrom, before: recoverTo });

@@ -98,7 +98,7 @@ const collectionQuery = async (user, collectionId, args) => {
 };
 export const restCollectionStix = async (user, id, args) => {
   const { edges, pageInfo } = await collectionQuery(user, id, args);
-  const objects = await Promise.map(edges, (e) => stixLoadById(user, e.node.internal_id, { withFiles: true }), {
+  const objects = await Promise.map(edges, (e) => stixLoadById(user, e.node.internal_id), {
     concurrency: ES_MAX_CONCURRENCY,
   });
   return {
