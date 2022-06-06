@@ -1,8 +1,8 @@
 Authors
 -------
 
-* Samuel Hassine <samuel.hassine@luatix.org> (project co-founder, product manager)
-* Julien Richard <julien.richard@luatix.org> (project co-founder, lead developer)
+* Samuel Hassine <samuel.hassine@filigran.io> (project co-founder, product manager)
+* Julien Richard <julien.richard@filigran.io> (project co-founder, lead developer)
 * Manon Viallet <manon.viallet@ssi.gouv.fr> (ANSSI project manager)
 * Frederic Garnier <garnifr@cert.europa.eu> (CERT-EU project manager)
 * Maert Vohni <maert.vohni@cert.europa.eu> (developer)
@@ -10,10 +10,10 @@ Authors
 Contributors
 ------------
 
+* Filigran
 * ANSSI
 * CERT-EU
 
-Copyright (C) 2018-2020 Samuel Hassine
-Copyright (C) 2018-2020 Julien Richard
+Copyright (C) 2021-2022 Filigran
+Copyright (C) 2018-2021 CERT-EU
 Copyright (C) 2018-2020 ANSSI
-Copyright (C) 2018-2020 CERT-EU
