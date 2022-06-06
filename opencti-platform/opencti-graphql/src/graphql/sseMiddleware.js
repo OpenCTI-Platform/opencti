@@ -404,24 +404,20 @@ const createSeeMiddleware = () => {
     }
     return true;
   };
-  const addInCache = (cache, stixData) => {
-    const updatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
-    cache.set(stixData.id);
-    cache.set(`${stixData.id}-${updatedAt}`);
-  };
   const resolveAndPublishMissingRefs = async (cache, channel, req, streamFilters, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
     const missingElements = await resolveMissingReferences(req, streamFilters, refs, cache);
     for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
       const missingRef = missingElements[missingIndex];
       const missingInstance = await storeLoadByIdWithRefs(req.session.user, missingRef);
+      // missingElements is already cache filtered
       if (isFullVisibleElement(missingInstance)) {
         const missingData = convertStoreToStix(missingInstance);
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: STREAM_EVENT_VERSION };
         channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-        addInCache(cache, missingData);
+        cache.set(missingData.id);
         await wait(channel.delay);
       }
     }
@@ -432,8 +428,9 @@ const createSeeMiddleware = () => {
       await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stix);
       // Resolving CORE RELATIONS
       const allRelCallback = async (relations) => {
-        for (let relIndex = 0; relIndex < relations.length; relIndex += 1) {
-          const relation = relations[relIndex];
+        const notCachedRelations = relations.filter((m) => !cache.has(m.standard_id));
+        for (let relIndex = 0; relIndex < notCachedRelations.length; relIndex += 1) {
+          const relation = notCachedRelations[relIndex];
           const missingRelation = await storeLoadByIdWithRefs(req.session.user, relation.id);
           if (isFullVisibleElement(missingRelation)) {
             const stixRelation = convertStoreToStix(missingRelation);
@@ -444,7 +441,7 @@ const createSeeMiddleware = () => {
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
             const content = { data: stixRelation, message, origin, version: STREAM_EVENT_VERSION };
             channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-            addInCache(cache, stixRelation);
+            cache.set(stixRelation.id);
             await wait(channel.delay);
           }
         }
@@ -614,12 +611,12 @@ const createSeeMiddleware = () => {
                 // publish missing dependencies if needed
                 await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stixData);
                 // publish element
-                if (!cache.has(`${stixData.id}-${stixUpdatedAt}`)) {
+                if (!cache.has(stixData.id)) {
                   const message = generateCreateMessage(instance);
                   const origin = { referer: EVENT_TYPE_INIT };
                   const eventData = { data: stixData, message, origin, version: STREAM_EVENT_VERSION };
                   channel.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
-                  addInCache(cache, stixData);
+                  cache.set(stixData.id);
                   await wait(channel.delay);
                 }
               } else {
