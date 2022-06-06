@@ -88,7 +88,7 @@ class EntityPartyLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.party_type.width }}
               >
                 {node.party_type && t(node.party_type)}
               </div>
@@ -116,7 +116,7 @@ class EntityPartyLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 {node.created && fd(node.created)}
               </div>
@@ -256,7 +256,7 @@ class EntityPartyLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 <Skeleton
                   animation="wave"

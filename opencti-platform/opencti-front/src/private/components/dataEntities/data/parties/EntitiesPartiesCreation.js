@@ -199,7 +199,6 @@ class EntitiesPartiesCreation extends Component {
           open={openDataCreation}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => handlePartyCreation()}
         >
           <Formik
             enableReinitialize={true}
