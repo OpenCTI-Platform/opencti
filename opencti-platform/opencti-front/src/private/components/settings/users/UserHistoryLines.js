@@ -4,8 +4,12 @@ import { compose, pathOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql, createRefetchContainer } from 'react-relay';
 import Paper from '@mui/material/Paper';
+import { interval } from 'rxjs';
 import inject18n from '../../../../components/i18n';
 import UserHistoryLine from './UserHistoryLine';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+
+const interval$ = interval(FIVE_SECONDS);
 
 const styles = () => ({
   paperHistory: {
@@ -17,6 +21,16 @@ const styles = () => ({
 });
 
 class UserHistoryLinesComponent extends Component {
+  componentDidMount() {
+    this.subscription = interval$.subscribe(() => {
+      this.props.relay.refetch();
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
   render() {
     const { t, classes, data, isRelationLog } = this.props;
     const logs = pathOr([], ['logs', 'edges'], data);
