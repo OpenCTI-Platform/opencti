@@ -116,7 +116,7 @@ export const getSubjectIriByIdQuery = (id, subjectType) => {
 const activityReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
-    item.object_type = 'activity';
+    item.object_type = 'oscal-activity';
   }
 
   return {
@@ -608,7 +608,7 @@ export const insertActivityQuery = (propValues) => {
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#Object> .
       ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
-      ${iri} <http://darklight.ai/ns/common#object_type> "activity" . 
+      ${iri} <http://darklight.ai/ns/common#object_type> "oscal-activity" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
       ${insertPredicates}
@@ -1106,7 +1106,8 @@ export const selectAssessmentPlatformByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllAssessmentPlatforms = (select, args) => {
+export const selectAllAssessmentPlatforms = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(assessmentPlatformPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -1124,12 +1125,32 @@ export const selectAllAssessmentPlatforms = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(assessmentPlatformPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'assessment-asset') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_platforms>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -2982,6 +3003,9 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
+
+  // fetch the uuid of each related_observation and related_risk as these are commonly used
+  if (select.includes('related_observations')) select.push('related_observation_ids');
 
   // Update select to collect additional predicates if looking to calculate risk level
   if (select.includes('risk_level')) {

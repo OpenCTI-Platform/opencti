@@ -88,11 +88,11 @@ const oscalCommonResolvers = {
     html: 'text/html',
     pdf: 'application/pdf',
   },
-  PartyOrComponent: {
-    __resolveType: (item) => {
-      return objectMap[item.entity_type].graphQLType;
-    }
-  }
+  // PartyOrComponent: {
+  //   __resolveType: (item) => {
+  //     return objectMap[item.entity_type].graphQLType;
+  //   }
+  // }
 };
 
 export default oscalCommonResolvers;

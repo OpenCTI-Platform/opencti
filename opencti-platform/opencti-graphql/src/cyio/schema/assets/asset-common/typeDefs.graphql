@@ -142,42 +142,47 @@
     workstation
   }
 
-  "Defines network protocols"
+  "Defines common name of the protocol, which should be the appropriate 'service name' from the IANA Service Name and Transport Protocol Port Number Registry."
   enum NetworkAssetProtocol {
-      TCP
-      UDP
-      ICMP
-      TLS
-      SSL
-      DHCP
-      DNS
-      HTTP
-      HTTPS
-      NFS
-      POP3
-      SMTP
-      SNMP
-      FTP
-      NTP
-      IRC
-      Telnet
-      SSH
-      TFTP
-      IMAP
-      ARP
-      NetBIOS
-      SOAP
-      IP
-      IPSEC
-      IPX
-      NAT
-      OSPF
-      RDP
-      RIP
-      RPC
-      SPX
-      SMB
-      SOCKS
+    ""
+    TCP
+    UDP
+    "Internet Control Message Protocol"
+    ICMP
+    "Transport Layer Security"
+    TLS
+    "Secure Socket Layer"
+    SSL
+    DHCP
+    DNS
+    HTTP
+    HTTPS
+    NFS
+    POP3
+    SMTP
+    SNMP
+    FTP
+    NTP
+    IRC
+    Telnet
+    SSH
+    TFTP
+    "Interactive Mail Access Protocol"
+    IMAP
+    ARP
+    NetBIOS
+    SOAP
+    IP
+    IPSEC
+    IPX
+    NAT
+    OSPF
+    RDP
+    RIP
+    RPC
+    SPX
+    SMB
+    SOCKS
   }
 
 #####  AssetLocation 

@@ -10,7 +10,8 @@ import {
     deleteInventoryItemQuery,
     deleteInventoryItemByIriQuery,
     attachToInventoryItemQuery,
-    detachFromInventoryItemQuery
+    detachFromInventoryItemQuery,
+    convertAssetToInventoryItem,
 } from './sparql-query.js';
 
 const inventoryItemResolvers = {
@@ -43,7 +44,7 @@ const inventoryItemResolvers = {
 
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
-        const reducer = getReducer("INVENTORY-ITEM");
+        // const reducer = getReducer("INVENTORY-ITEM");
         let filterCount, resultCount, limit, offset, limitSize, offsetSize;
         limitSize = limit = (args.first === undefined ? response.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
@@ -74,11 +75,15 @@ const inventoryItemResolvers = {
             filterCount++;
           }
 
+          // convert the asset into a component
+          inventoryItem = convertAssetToInventoryItem(inventoryItem);
+
           // if haven't reached limit to be returned
           if (limit) {
             let edge = {
               cursor: inventoryItem.iri,
-              node: reducer(inventoryItem),
+              node: inventoryItem,
+              // node: reducer(inventoryItem),
             }
             edges.push(edge)
             limit--;
@@ -136,8 +141,8 @@ const inventoryItemResolvers = {
       }
 
       if (Array.isArray(response) && response.length > 0) {
-        const reducer = getReducer("INVENTORY-ITEM");
-        return reducer(response[0]);  
+        // convert the asset into a component
+        return convertAssetToInventoryItem(response[0]);
       }
     },
   },
@@ -270,7 +275,48 @@ const inventoryItemResolvers = {
         return [];
       }
     },
+    responsible_parties: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.responsible_parties_iri === undefined) return []; 
+      const reducer = getCommonReducer("RESPONSIBLE-PARTY");
+      const results = [];
+      let sparqlQuery = selectAllResponsibleParties(selectMap.getNode('node'), args, parent );
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Responsible Parties",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let item of response) {
+        results.push(reducer(item));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
+    },
+    implemented_components: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.implemented_components !== undefined) return parent.implemented_components;
+      if (parent.implemented_components_iri === undefined) return []; 
+    },
   },
 } ;
+
+
 
 export default inventoryItemResolvers ;

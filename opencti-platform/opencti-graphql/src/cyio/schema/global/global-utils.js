@@ -51,7 +51,9 @@ import {
   locationPredicateMap as oscalLocationPredicateMap, attachToLocationQuery, detachFromLocationQuery,
   partyPredicateMap, attachToPartyQuery, detachFromPartyQuery,
   responsiblePartyPredicateMap, attachToResponsiblePartyQuery, detachFromResponsiblePartyQuery,
-  rolePredicateMap, attachToRoleQuery, detachFromRoleQuery,
+  attachToResponsibleRoleQuery, detachFromResponsibleRoleQuery,
+  attachToRoleQuery, detachFromRoleQuery,
+  rolePredicateMap, 
 } from '../risk-assessments/oscal-common/resolvers/sparql-query.js';
 import {
   poamPredicateMap, attachToPOAMQuery, detachFromPOAMQuery,
@@ -359,6 +361,14 @@ export const objectMap = {
     alternateKey: "responsible-party",
     graphQLType: "OscalResponsibleParty",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#ResponsibleParty"
+  },
+  "oscal-responsible-role": {
+    predicateMap: responsiblePartyPredicateMap,
+    attachQuery: attachToResponsibleRoleQuery,
+    detachQuery: detachFromResponsibleRoleQuery,
+    alternateKey: "responsible-role",
+    graphQLType: "OscalResponsibleRole",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#ResponsibleRole"
   },
   "oscal-role": {
     predicateMap: rolePredicateMap,

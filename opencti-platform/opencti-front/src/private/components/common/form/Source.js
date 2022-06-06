@@ -46,7 +46,7 @@ const ComponentListQuery = graphql`
   query SourceComponentListQuery{
     componentList(filters: [
     {
-      key: asset_type,
+      key: component_type,
       values: "software"
     }
     ]){
@@ -146,7 +146,7 @@ class Source extends Component {
             filterBy = {
               filters: [
                 {
-                  key: 'asset_type',
+                  key: 'component_type',
                   values: 'software',
                 },
               ],

@@ -250,6 +250,7 @@ export const riskTypeMapping = {
   "oscal-role": "OscalRole",
   "oscal-resource": "OscalResource",
   "oscal-responsible-party": "OscalResponsibleParty",
+  "oscal-responsible-role": "OscalResponsibleRole",
   "oscal-revision": "Revision",
   "oscal-task": "OscalTask",
   "oscal-user": "OscalUser",
