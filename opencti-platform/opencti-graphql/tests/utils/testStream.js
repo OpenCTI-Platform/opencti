@@ -13,7 +13,7 @@ export const fetchStreamEvents = (uri, { from } = {}) => {
     headers: { authorization: generateBasicAuth(), 'last-event-id': from },
   };
   return new Promise((resolve, reject) => {
-    let lastEventTime = null;
+    let eventNumber = 0;
     const events = [];
     const es = new EventSource(uri, opts);
     const closeEventSource = () => {
@@ -22,13 +22,12 @@ export const fetchStreamEvents = (uri, { from } = {}) => {
     };
     const handleEvent = (event) => {
       const { type, data, lastEventId, origin } = event;
-      const [time] = lastEventId.split('-');
-      const currentTime = parseInt(time, 10);
-      lastEventTime = currentTime;
+      eventNumber += 1;
+      const currentEventNumber = eventNumber;
       events.push({ type, data: JSON.parse(data), lastEventId, origin });
       // If no new event for 5 secs, stop the processing
       setTimeout(() => {
-        if (lastEventTime === currentTime) {
+        if (currentEventNumber === eventNumber) {
           closeEventSource();
         }
       }, 5000);
