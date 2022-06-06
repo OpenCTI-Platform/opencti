@@ -173,6 +173,7 @@ const buildOCTIExtensions = (instance: StoreBase): S.StixOpenctiExtension => {
     id: instance.internal_id,
     type: instance.entity_type,
     created_at: instance.created_at,
+    updated_at: instance.updated_at,
     aliases: instance.x_opencti_aliases ?? [],
     files: (instance.x_opencti_files ?? []).map((file) => ({
       name: file.name,

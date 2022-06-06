@@ -38,6 +38,7 @@ interface StixOpenctiExtension {
   stix_ids: Array<StixId>;
   type: string;
   created_at: Date;
+  updated_at: Date;
   is_inferred: boolean;
   workflow_id: string | undefined;
 }
