@@ -2,8 +2,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
-import * as R from 'ramda';
-import { compose, evolve } from 'ramda';
+import {
+  compose,
+  pipe,
+  dissoc,
+  assoc,
+} from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -79,9 +83,12 @@ const entitiesTasksCreationMutation = graphql`
   }
 `;
 
-const riskValidation = (t) => Yup.object().shape({
+const taskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  description: Yup.string().required(t('This field is required')),
+  task_type: Yup.string().required(t('This field is required')),
 });
+
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
@@ -137,15 +144,15 @@ class EntitiesTasksCreation extends Component {
           within_date_range: {
             start_date: values.start_date === null ? null : parse(values.start_date),
             end_date: values.end_date === null ? null : parse(values.end_date),
-          }
+          },
         },
-      })
+      });
     }
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
       dissoc('resource_type'),
-      dissoc('resource'),
+      dissoc('y'),
       assoc('timing', this.state.timing),
       assoc('responsible_roles', this.state.responsible_roles),
     )(values);
@@ -213,7 +220,6 @@ class EntitiesTasksCreation extends Component {
           open={openDataCreation}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => handleTaskCreation()}
         >
           <Formik
             enableReinitialize={true}
@@ -229,11 +235,11 @@ class EntitiesTasksCreation extends Component {
               start_date: null,
               end_date: null,
               resource_type: [],
-              resource_name: [],
+              y: [],
               responsible_parties: [],
-              dependencies: []
+              dependencies: [],
             }}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={taskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -245,7 +251,7 @@ class EntitiesTasksCreation extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Task')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -265,7 +271,7 @@ class EntitiesTasksCreation extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name="id"
+                        name="name"
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
@@ -290,6 +296,7 @@ class EntitiesTasksCreation extends Component {
                       <Field
                         component={TextField}
                         name="id"
+                        disabled={true}
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
@@ -312,12 +319,12 @@ class EntitiesTasksCreation extends Component {
                       </div>
                       <div className="clearfix" />
                       <TaskType
-                          name="task_type"
-                          taskType='OscalTaskType'
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
+                        name="task_type"
+                        taskType='OscalTaskType'
+                        fullWidth={true}
+                        variant='outlined'
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid xs={12} item={true}>
@@ -383,10 +390,10 @@ class EntitiesTasksCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Resource Type')}
+                          {t('y Type')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Resource Type')} >
+                          <Tooltip title={t('y Type')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -486,16 +493,16 @@ class EntitiesTasksCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Resource Name')}
+                          {t('y Name')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Resource Name')} >
+                          <Tooltip title={t('y Name')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
                         <ResourceNameField
-                          name='resource'
+                          name='y'
                           resourceTypename={this.state.resourceName}
                           fullWidth={true}
                           variant='outlined'
@@ -562,7 +569,7 @@ class EntitiesTasksCreation extends Component {
                             fieldName='links'
                             disableAdd={true}
                             cyioCoreObjectId={task?.id}
-                            // refreshQuery={refreshQuery}
+                          // refreshQuery={refreshQuery}
                           />
                         </Grid>
                         <Grid item={true} xs={12}>

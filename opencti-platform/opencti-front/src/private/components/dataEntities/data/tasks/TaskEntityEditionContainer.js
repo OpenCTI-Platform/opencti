@@ -185,7 +185,6 @@ class TaskEntityEditionContainer extends Component {
           open={this.props.displayEdit}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
@@ -222,7 +221,7 @@ class TaskEntityEditionContainer extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name="id"
+                        name="name"
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
@@ -247,6 +246,7 @@ class TaskEntityEditionContainer extends Component {
                       <Field
                         component={TextField}
                         name="id"
+                        disabled={true}
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
