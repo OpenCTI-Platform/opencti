@@ -1,0 +1,146 @@
+{
+  "app": {
+    "port": 4000,
+    "base_path": "",
+    "base_url": "http://localhost:4000/",
+    "enabled": true,
+    "https_cert": {
+      "ca": [],
+      "key": null,
+      "crt": null,
+      "reject_unauthorized": true,
+      "cookie_secure": false
+    },
+    "app_logs": {
+      "logs_level": "info",
+      "logs_files": true,
+      "logs_console": true,
+      "logs_max_files": 7,
+      "logs_directory": "./logs"
+    },
+    "audit_logs": {
+      "logs_files": true,
+      "logs_console": true,
+      "logs_max_files": 7,
+      "logs_directory": "./logs"
+    },
+    "telemetry": {
+      "prometheus": {
+        "enabled": false,
+        "metrics_path": "/prometheus/metrics"
+      }
+    },
+    "request_timeout": 1200000,
+    "session_timeout": 1200000,
+    "session_manager": "shared",
+    "rate_protection": {
+      "time_window": 1,
+      "max_requests": 10000
+    },
+    "concurrency": {
+      "retry_count": 100,
+      "retry_delay": 250,
+      "retry_jitter": 100,
+      "max_ttl": 60000,
+      "extension_threshold": 5000
+    },
+    "live_stream": {
+      "cache_max_size": 5000,
+      "cache_max_time": 2
+    },
+    "performance_logger": false,
+    "map_tile_server_dark": "https://map.opencti.io/styles/luatix-dark/{z}/{x}/{y}.png",
+    "map_tile_server_light": "https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png",
+    "enforce_references": [],
+    "reference_attachment": false,
+    "admin": {
+      "email": "admin@opencti.io",
+      "password": "changeme",
+      "token": "00000000-0000-0000-0000-000000000000"
+    }
+  },
+  "rule_engine": {
+    "enabled": true,
+    "lock_key": "rule_engine_lock",
+    "status_writing_delay": 2000
+  },
+  "history_manager": {
+    "enabled": true,
+    "lock_key": "history_manager_lock"
+  },
+  "task_scheduler": {
+    "enabled": true,
+    "lock_key": "task_manager_lock",
+    "interval": 10000
+  },
+  "expiration_scheduler": {
+    "enabled": true,
+    "lock_key": "expired_manager_lock",
+    "interval": 300000
+  },
+  "subscription_scheduler": {
+    "enabled": false,
+    "lock_key": "subscription_manager_lock",
+    "interval": 10000
+  },
+  "sync_manager": {
+    "enabled": true,
+    "lock_key": "sync_manager_lock",
+    "interval": 10000
+  },
+  "retention_manager": {
+    "enabled": true,
+    "lock_key": "retention_manager_lock",
+    "interval": 60000
+  },
+  "redis": {
+    "namespace": "",
+    "hostname": "redis",
+    "use_ssl": false,
+    "ca": [],
+    "port": 6379,
+    "trimming": 0,
+    "include_inferences": false,
+    "use_as_cache": false
+  },
+  "elasticsearch": {
+    "index_prefix": "opencti",
+    "url": "http://elasticsearch:9200",
+    "index_creation_pattern": "-000001",
+    "search_ignore_throttled": false,
+    "max_pagination_result": 5000,
+    "max_concurrency": 2
+  },
+  "minio": {
+    "bucket_name": "opencti-bucket",
+    "endpoint": "minio",
+    "port": 9000,
+    "use_ssl": false,
+    "access_key": "opencti",
+    "secret_key": "changeme"
+  },
+  "rabbitmq": {
+    "hostname": "rabbitmq",
+    "use_ssl": false,
+    "ca": [],
+    "port": 5672,
+    "port_management": 15672,
+    "management_ssl": false,
+    "username": "opencti",
+    "password": "changeme"
+  },
+  "smtp": {
+    "hostname": "postfix",
+    "use_ssl": false,
+    "reject_unauthorized": false,
+    "port": 25,
+    "username": "",
+    "password": "",
+    "from_email": "notifications@opencti.io"
+  },
+  "providers": {
+    "local": {
+      "strategy": "LocalStrategy"
+    }
+  }
+}
