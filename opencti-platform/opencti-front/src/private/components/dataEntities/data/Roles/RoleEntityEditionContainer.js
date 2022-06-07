@@ -183,7 +183,6 @@ class RoleEntityEditionContainer extends Component {
           open={this.props.displayEdit}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
@@ -222,6 +221,7 @@ class RoleEntityEditionContainer extends Component {
                         <Field
                           component={TextField}
                           name="id"
+                          disabled={true}
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -250,6 +250,7 @@ class RoleEntityEditionContainer extends Component {
                         <Field
                           component={DatePickerField}
                           name="created"
+                          disabled={true}
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -280,6 +281,7 @@ class RoleEntityEditionContainer extends Component {
                         <Field
                           component={DatePickerField}
                           name="modified"
+                          disabled={true}
                           fullWidth={true}
                           size="small"
                           variant='outlined'

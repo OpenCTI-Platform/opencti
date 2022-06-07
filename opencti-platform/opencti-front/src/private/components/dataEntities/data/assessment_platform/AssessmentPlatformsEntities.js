@@ -280,25 +280,25 @@ class AssessmentPlatformsEntities extends Component {
     const dataColumns = {
       type: {
         label: 'Type',
-        width: '17%',
-        isSortable: true,
+        width: '14%',
+        isSortable: false,
       },
       name: {
         label: 'Name',
-        width: '16%',
-        isSortable: false,
+        width: '14%',
+        isSortable: true,
       },
       author: {
         label: 'Author',
-        width: '16%',
-        isSortable: true,
+        width: '14%',
+        isSortable: false,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
-        width: '16%',
+        width: '21%',
         isSortable: true,
       },
-      creation_date: {
+      created: {
         label: 'Creation Date',
         width: '15%',
         isSortable: true,
@@ -306,7 +306,7 @@ class AssessmentPlatformsEntities extends Component {
       marking: {
         label: 'Marking',
         width: '13%',
-        isSortable: true,
+        isSortable: false,
       },
     };
     return (

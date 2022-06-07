@@ -170,7 +170,6 @@ class EntitiesLocationsCreation extends Component {
           open={openDataCreation}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => handleLocationCreation()}
         >
           <Formik
             enableReinitialize={true}
