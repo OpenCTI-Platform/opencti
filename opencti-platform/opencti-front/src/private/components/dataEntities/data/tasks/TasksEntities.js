@@ -303,7 +303,7 @@ class TasksEntities extends Component {
       marking: {
         label: 'Marking',
         width: '12%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (

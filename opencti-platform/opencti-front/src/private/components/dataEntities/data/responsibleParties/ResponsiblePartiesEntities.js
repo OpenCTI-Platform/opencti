@@ -303,7 +303,7 @@ class ResponsiblePartiesEntities extends Component {
       created: {
         label: 'Creation Date',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
       marking: {
         label: 'Marking',
