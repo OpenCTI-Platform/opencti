@@ -164,6 +164,7 @@ export const booleanAttributes = [
   'platform_enable_references',
   'auto_new_marking',
   'listen_deletion',
+  'no_dependencies',
   'ssl_verify',
   'include_header',
 ];

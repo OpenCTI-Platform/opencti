@@ -4,7 +4,7 @@ import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
 import conf, { basePath, booleanConf, logApp } from '../config/conf';
 import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
-import { createStreamProcessor } from '../database/redis';
+import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { findById, streamCollectionGroups } from '../domain/stream';
 import {
@@ -46,7 +46,6 @@ const broadcastClients = {};
 
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
 const DEFAULT_LIVE_STREAM = 'live';
-const STREAM_EVENT_VERSION = 3;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
 const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
@@ -417,7 +416,7 @@ const createSeeMiddleware = () => {
         const missingData = convertStoreToStix(missingInstance);
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
-        const content = { data: missingData, message, origin, version: STREAM_EVENT_VERSION };
+        const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
         channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
         cache.set(missingData.id);
         await wait(channel.delay);
@@ -441,7 +440,7 @@ const createSeeMiddleware = () => {
             // Publish relations
             const message = generateCreateMessage(missingRelation);
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
-            const content = { data: stixRelation, message, origin, version: STREAM_EVENT_VERSION };
+            const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
             channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
             cache.set(stixRelation.id);
             await wait(channel.delay);
@@ -460,13 +459,18 @@ const createSeeMiddleware = () => {
     const fromId = stix.type === 'relationship' ? stix.source_ref : stix.sighting_of_ref;
     const toId = stix.type === 'relationship' ? stix.target_ref : stix.where_sighted_refs[0];
     const [fromStix, toStix] = await Promise.all([stixLoadById(user, fromId), stixLoadById(user, toId)]);
-    const isFromVisible = await isInstanceMatchFilters(fromStix, streamFilters, filterCache);
-    const isToVisible = await isInstanceMatchFilters(toStix, streamFilters, filterCache);
-    if (isFromVisible || isToVisible) {
-      await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stix);
-      // From or to are visible, consider it as a dependency
-      const content = { data: stix, message, origin: { referer: EVENT_TYPE_DEPENDENCIES }, version: STREAM_EVENT_VERSION };
-      channel.sendEvent(eventId, type, content);
+    if (fromStix && toStix) {
+      // As we resolved at now, data can be deleted now.
+      // We are force to resolve because stream cannot contain all dependencies on each event.
+      const isFromVisible = await isInstanceMatchFilters(fromStix, streamFilters, filterCache);
+      const isToVisible = await isInstanceMatchFilters(toStix, streamFilters, filterCache);
+      if (isFromVisible || isToVisible) {
+        await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stix);
+        // From or to are visible, consider it as a dependency
+        const origin = { referer: EVENT_TYPE_DEPENDENCIES };
+        const content = { data: stix, message, origin, version: EVENT_CURRENT_VERSION };
+        channel.sendEvent(eventId, type, content);
+      }
     }
   };
   const liveStreamHandler = async (req, res) => {
@@ -617,7 +621,7 @@ const createSeeMiddleware = () => {
                   if (!cache.has(stixData.id)) {
                     const message = generateCreateMessage(instance);
                     const origin = { referer: EVENT_TYPE_INIT };
-                    const eventData = { data: stixData, message, origin, version: STREAM_EVENT_VERSION };
+                    const eventData = { data: stixData, message, origin, version: EVENT_CURRENT_VERSION };
                     channel.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
                     cache.set(stixData.id);
                     await wait(channel.delay);

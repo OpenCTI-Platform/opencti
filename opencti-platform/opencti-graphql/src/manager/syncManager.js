@@ -83,7 +83,7 @@ import { addVulnerability } from '../domain/vulnerability';
 import Queue from '../utils/queue';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
-import { EVENT_VERSION_V4, lockResource } from '../database/redis';
+import { EVENT_CURRENT_VERSION, lockResource } from '../database/redis';
 import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { rawFilesListing } from '../database/minio';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
@@ -108,7 +108,7 @@ const syncManagerInstance = (syncId) => {
   const handleEvent = (event) => {
     const { type, data, lastEventId } = event;
     const { data: stixData, context, version } = JSON.parse(data);
-    if (version === EVENT_VERSION_V4) {
+    if (version === EVENT_CURRENT_VERSION) {
       eventsQueue.enqueue({ id: lastEventId, type, data: stixData, context });
     }
   };
@@ -293,6 +293,8 @@ const syncManagerInstance = (syncId) => {
           try {
             currentDelay = manageBackPressure(sync, currentDelay);
             const { type: eventType, data, context } = event;
+            const { id, type } = data.extensions[STIX_EXT_OCTI];
+            logApp.info(`[OPENCTI] Sync received ${type} - ${id}`);
             if (eventType === 'delete') {
               await handleDeleteEvent(user, data);
             }

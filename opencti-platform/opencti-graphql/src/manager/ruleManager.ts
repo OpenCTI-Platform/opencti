@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { createStreamProcessor, EVENT_VERSION_V4, lockResource, StreamProcessor } from '../database/redis';
+import { createStreamProcessor, EVENT_CURRENT_VERSION, lockResource, StreamProcessor } from '../database/redis';
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
@@ -55,7 +55,7 @@ export const getManagerInfo = async (user: AuthUser): Promise<RuleManager> => {
 
 export const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
   return {
-    version: EVENT_VERSION_V4,
+    version: EVENT_CURRENT_VERSION,
     type,
     message: 'rule internal event',
     origin: RULE_MANAGER_USER,
@@ -183,7 +183,7 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
   }
   const rules = forRules.length > 0 ? forRules : await getActivatedRules();
   // Keep only compatible events
-  const compatibleEvents = events.filter((e) => e.version === EVENT_VERSION_V4);
+  const compatibleEvents = events.filter((e) => e.version === EVENT_CURRENT_VERSION);
   // Execute the events
   for (let index = 0; index < compatibleEvents.length; index += 1) {
     const event = compatibleEvents[index];

@@ -242,6 +242,7 @@ export const internalObjectsAttributes = {
     'running',
     'current_state',
     'listen_deletion',
+    'no_dependencies',
   ],
 };
 

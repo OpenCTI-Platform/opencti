@@ -73,13 +73,13 @@ export const findAllSync = async (user, opts = {}) => {
 };
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
 export const createSyncHttpUri = (sync, testMode) => {
-  const { uri, stream_id: stream, current_state: state, listen_deletion: del } = sync;
+  const { uri, stream_id: stream, current_state: state, no_dependencies: dep, listen_deletion: del } = sync;
   if (testMode) {
     logApp.debug(`[OPENCTI] Testing sync url with ${httpBase(uri)}stream/${stream}`);
     return `${httpBase(uri)}stream/${stream}`;
   }
   const from = isEmptyField(state) ? '0-0' : state;
-  return `${httpBase(uri)}stream/${stream}?from=${from}&listen-delete=${del}`;
+  return `${httpBase(uri)}stream/${stream}?from=${from}&listen-delete=${del}&no-dependencies=${dep}`;
 };
 export const testSync = async (user, sync) => {
   const eventSourceUri = createSyncHttpUri(sync, true);

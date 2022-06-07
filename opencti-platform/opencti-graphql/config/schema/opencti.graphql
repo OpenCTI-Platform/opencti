@@ -603,6 +603,7 @@ type Synchronizer {
   running: Boolean!
   current_state: String
   listen_deletion: Boolean!
+  no_dependencies: Boolean!
   ssl_verify: Boolean
 }
 
@@ -624,6 +625,7 @@ input SynchronizerAddInput {
   user_id: String
   current_state: DateTime
   listen_deletion: Boolean!
+  no_dependencies: Boolean!
   ssl_verify: Boolean
 }
 

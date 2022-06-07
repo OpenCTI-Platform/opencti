@@ -44,7 +44,7 @@ const REDIS_CA = conf.get('redis:ca').map((path: string) => readFileSync(path));
 const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 
-export const EVENT_VERSION_V4 = '4';
+export const EVENT_CURRENT_VERSION = '4';
 const BASE_DATABASE = 0; // works key for tracking / stream
 const CONTEXT_DATABASE = 1; // locks / user context
 const REDIS_EXPIRE_TIME = 90;
@@ -400,7 +400,7 @@ const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreO
   const previousStix = convertStoreToStix(previous) as StixCoreObject;
   const currentStix = convertStoreToStix(instance) as StixCoreObject;
   return {
-    version: EVENT_VERSION_V4,
+    version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_MERGE,
     message,
     origin: user.origin,
@@ -437,7 +437,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
     throw UnsupportedError('Update event must contains more operation than just modified/updated_at value');
   }
   return {
-    version: EVENT_VERSION_V4,
+    version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_UPDATE,
     message,
     origin: user.origin,
@@ -467,7 +467,7 @@ export const storeUpdateEvent = async (user: AuthUser, previous: StoreObject, in
 const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): Event => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
-    version: EVENT_VERSION_V4,
+    version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_CREATE,
     message,
     origin: user.origin,
@@ -509,7 +509,7 @@ export const storeCreateEntityEvent = async (user: AuthUser, instance: StoreObje
 const buildDeleteEvent = async (user: AuthUser, instance: StoreObject, message: string, deletions: Array<StoreObject>): Promise<DeleteEvent> => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
-    version: EVENT_VERSION_V4,
+    version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_DELETE,
     message,
     origin: user.origin,

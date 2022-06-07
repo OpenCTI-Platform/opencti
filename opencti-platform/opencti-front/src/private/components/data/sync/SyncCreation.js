@@ -85,6 +85,7 @@ const syncCreationValidation = (t) => Yup.object().shape({
   stream_id: Yup.string().required(t('This field is required')),
   current_state: Yup.date().nullable().typeError(t('The value must be a date (YYYY-MM-DD)')),
   listen_deletion: Yup.bool(),
+  no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
 });
 
@@ -196,7 +197,8 @@ const SyncCreation = (props) => {
               token: '',
               current_state: null,
               stream_id: 'live',
-              listen_deletion: false,
+              no_dependencies: false,
+              listen_deletion: true,
               ssl_verify: false,
             }}
             validationSchema={syncCreationValidation(t)}
@@ -252,16 +254,19 @@ const SyncCreation = (props) => {
                 <Field
                   component={SwitchField}
                   type="checkbox"
-                  name="ssl_verify"
-                  label={t('Verify SSL certificate')}
-                  containerstyle={{ marginTop: 20 }}
-                />
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
                   name="listen_deletion"
-                  label={t('Take deletions into account')}
-                />
+                  containerstyle={{ marginTop: 20 }}
+                  label={t('Take deletions into account')}/>
+                <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="no_dependencies"
+                    label={t('Avoid dependencies resolution')}/>
+                <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="ssl_verify"
+                    label={t('Verify SSL certificate')}/>
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"

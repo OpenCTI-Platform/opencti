@@ -69,13 +69,14 @@ const syncValidation = (t) => Yup.object().shape({
   stream_id: Yup.string().required(t('This field is required')),
   current_state: Yup.date().nullable().typeError(t('The value must be a date (YYYY-MM-DD)')),
   listen_deletion: Yup.bool(),
+  no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
 });
 
 const SyncEditionContainer = (props) => {
   const { t, classes, handleClose, synchronizer } = props;
   const initialValues = R.pickAll(
-    ['name', 'uri', 'token', 'stream_id', 'listen_deletion', 'current_state', 'ssl_verify'],
+    ['name', 'uri', 'token', 'stream_id', 'listen_deletion', 'no_dependencies', 'current_state', 'ssl_verify'],
     synchronizer,
   );
   const handleVerify = (values) => {
@@ -179,18 +180,22 @@ const SyncEditionContainer = (props) => {
               <Field
                 component={SwitchField}
                 type="checkbox"
-                name="ssl_verify"
-                label={t('Verify SSL certificate')}
-                containerstyle={{ marginTop: 20 }}
-                onChange={handleSubmitField}
-              />
-              <Field
-                component={SwitchField}
-                type="checkbox"
                 name="listen_deletion"
+                containerstyle={{ marginTop: 20 }}
                 label={t('Take deletions into account')}
-                onChange={handleSubmitField}
-              />
+                onChange={handleSubmitField}/>
+              <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="no_dependencies"
+                  label={t('Avoid dependencies resolution')}
+                  onChange={handleSubmitField}/>
+              <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="ssl_verify"
+                  label={t('Verify SSL certificate')}
+                  onChange={handleSubmitField}/>
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
@@ -226,6 +231,7 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       token
       stream_id
       listen_deletion
+      no_dependencies
       current_state
       ssl_verify
     }

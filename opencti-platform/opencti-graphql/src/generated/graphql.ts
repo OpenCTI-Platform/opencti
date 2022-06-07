@@ -13144,6 +13144,7 @@ export type Synchronizer = {
   id: Scalars['ID'];
   listen_deletion: Scalars['Boolean'];
   name: Scalars['String'];
+  no_dependencies: Scalars['Boolean'];
   running: Scalars['Boolean'];
   ssl_verify?: Maybe<Scalars['Boolean']>;
   stream_id: Scalars['String'];
@@ -13156,6 +13157,7 @@ export type SynchronizerAddInput = {
   current_state?: InputMaybe<Scalars['DateTime']>;
   listen_deletion: Scalars['Boolean'];
   name: Scalars['String'];
+  no_dependencies: Scalars['Boolean'];
   ssl_verify?: InputMaybe<Scalars['Boolean']>;
   stream_id: Scalars['String'];
   token: Scalars['String'];
@@ -20756,6 +20758,7 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  no_dependencies?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

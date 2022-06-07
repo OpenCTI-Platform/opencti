@@ -59,6 +59,7 @@ const syncPopoverStartMutation = graphql`
       token
       stream_id
       listen_deletion
+      no_dependencies
       ssl_verify
     }
   }
@@ -73,6 +74,7 @@ const syncPopoverStopMutation = graphql`
       token
       stream_id
       listen_deletion
+      no_dependencies
       ssl_verify
     }
   }
@@ -87,7 +89,9 @@ const syncEditionQuery = graphql`
       token
       stream_id
       listen_deletion
+      no_dependencies
       ssl_verify
+      current_state
     }
   }
 `;
