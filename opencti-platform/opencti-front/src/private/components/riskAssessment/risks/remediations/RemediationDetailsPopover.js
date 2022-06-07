@@ -88,6 +88,11 @@ const styles = (theme) => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 const remediationEditionMutation = graphql`
   mutation RemediationDetailsPopoverMutation(
     $id: ID!,
@@ -125,6 +130,10 @@ class RemediationDetailsPopover extends Component {
 
   onReset() {
     this.handleClose();
+  }
+
+  handleCancelOpenClick() {
+    this.setState({ close: true });
   }
 
   handleCancelCloseClick() {
@@ -196,12 +205,12 @@ class RemediationDetailsPopover extends Component {
         <Dialog
           open={this.props.displayEdit}
           keepMounted={true}
-          onClose={() => this.props.handleDisplayEdit()}
+          onClose={this.handleCancelOpenClick.bind(this)}
         >
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-          // validationSchema={RelatedTaskValidation(t)}
+            // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -419,10 +428,7 @@ class RemediationDetailsPopover extends Component {
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
-                    onClick={() => {
-                      this.props.handleDisplayEdit();
-                      this.setState({ close: true });
-                    }}
+                    onClick={this.handleCancelOpenClick.bind(this)}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -445,7 +451,7 @@ class RemediationDetailsPopover extends Component {
         <Dialog
           open={this.state.close}
           keepMounted={true}
-          // TransitionComponent={Transition}
+          TransitionComponent={Transition}
           onClose={this.handleCancelCloseClick.bind(this)}
         >
           <DialogContent>
@@ -469,8 +475,8 @@ class RemediationDetailsPopover extends Component {
               {t('Go Back')}
             </Button>
             <Button
-                    onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
-                    color='secondary'
+              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+              color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
               variant='contained'
@@ -487,7 +493,6 @@ class RemediationDetailsPopover extends Component {
 
 RemediationDetailsPopover.propTypes = {
   cyioCoreRelationshipId: PropTypes.string,
-  handleDisplayEdit: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
   disabled: PropTypes.bool,

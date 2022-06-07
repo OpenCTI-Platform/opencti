@@ -135,7 +135,7 @@ class RiskTrackingPopover extends Component {
   }
 
   handleCloseUpdate() {
-    this.setState({ displayUpdate: false, displayCancel: true });
+    this.setState({ displayCancel: true });
   }
 
   handleOpenDelete() {
