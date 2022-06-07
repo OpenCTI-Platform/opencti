@@ -133,7 +133,6 @@ class RemediationEntities extends Component {
           query={remediationEntitiesQuery}
           variables={{ id: entityId }}
           render={({ props }) => {
-            console.log('RemediationEntitiesData', props);
             if (props) {
               return (
                 <RemediationEntitiesLines

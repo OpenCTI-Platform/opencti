@@ -151,7 +151,7 @@ class RiskLogCreation extends Component {
   }
 
   handleOpenCancelButton() {
-    this.setState({ displayCancel: true, open: false });
+    this.setState({ displayCancel: true });
   }
 
   handleCancelButton() {

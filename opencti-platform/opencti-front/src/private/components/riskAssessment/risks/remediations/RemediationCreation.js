@@ -92,6 +92,11 @@ const styles = (theme) => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 const remediationCreationMutation = graphql`
   mutation RemediationCreationMutation($input: RiskResponseAddInput) {
     createRiskResponse(input: $input) {
@@ -137,6 +142,10 @@ class RemediationCreation extends Component {
 
   onReset() {
     this.handleClose();
+  }
+
+  handleCancelOpenClick() {
+    this.setState({ close: true });
   }
 
   handleCancelCloseClick() {
@@ -424,13 +433,7 @@ class RemediationCreation extends Component {
                   <Button
                     variant='outlined'
                     // onClick={handleReset}
-                    onClick={() => {
-                      this.props.handleOpenCreation();
-                      this.setState({ close: true });
-                      {
-                        handleReset;
-                      }
-                    }}
+                    onClick={this.handleCancelOpenClick.bind(this)}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >

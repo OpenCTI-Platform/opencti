@@ -275,29 +275,34 @@ class ResponsiblePartiesEntities extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     const dataColumns = {
-      type: {
-        label: 'Type',
-        width: '14%',
+      name: {
+        label: 'Name',
+        width: '13%',
         isSortable: true,
       },
-      role: {
-        label: 'Role',
-        width: '16%',
+      type: {
+        label: 'Type',
+        width: '11%',
         isSortable: false,
+      },
+      role_identifier: {
+        label: 'Role',
+        width: '15%',
+        isSortable: true,
       },
       parties: {
         label: 'Parties',
-        width: '16%',
-        isSortable: true,
+        width: '15%',
+        isSortable: false,
       },
       label_name: {
         label: 'Labels',
         width: '20%',
         isSortable: true,
       },
-      creation_date: {
+      created: {
         label: 'Creation Date',
-        width: '12%',
+        width: '10%',
         isSortable: true,
       },
       marking: {
