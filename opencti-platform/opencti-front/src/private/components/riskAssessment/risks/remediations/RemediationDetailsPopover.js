@@ -125,6 +125,7 @@ class RemediationDetailsPopover extends Component {
 
   onReset() {
     this.handleClose();
+    this.props.handleDisplayEdit();
   }
 
   handleCancelCloseClick() {
@@ -196,7 +197,6 @@ class RemediationDetailsPopover extends Component {
         <Dialog
           open={this.props.displayEdit}
           keepMounted={true}
-          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
@@ -446,7 +446,6 @@ class RemediationDetailsPopover extends Component {
           open={this.state.close}
           keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>

@@ -209,7 +209,6 @@ class RiskCreation extends Component {
       R.dissoc('vendor_dependency'),
       R.dissoc('impacted_control_id'),
     )(adaptedValues);
-    console.log('RiskCreationFinal', finalValues);
     CM(environmentDarkLight, {
       mutation: riskCreationMutation,
       variables: {
@@ -222,7 +221,7 @@ class RiskCreation extends Component {
         this.handleClose();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('RiskCreationDarkLightMutationError', err),
+      onError: (err) => console.error(err),
     });
     // commitMutation({
     //   mutation: riskCreationMutation,
@@ -386,7 +385,6 @@ class RiskCreation extends Component {
         <Dialog
           open={this.state.displayCancel}
           TransitionComponent={Transition}
-          onClose={this.handleCancelButton.bind(this)}
         >
           <DialogContent>
             <Typography style={{

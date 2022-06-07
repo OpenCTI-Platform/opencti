@@ -306,7 +306,7 @@ class RelatedTaskCreation extends Component {
   }
 
   onResetContextual() {
-    this.handleClose();
+    this.handleCancelClick();
   }
 
   renderClassic() {
@@ -428,7 +428,6 @@ class RelatedTaskCreation extends Component {
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleClose.bind(this)}
           fullWidth={true}
           maxWidth='sm'
         >
@@ -828,8 +827,7 @@ class RelatedTaskCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    onClick={this.handleCancelClick.bind(this)}
+                    onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -853,7 +851,6 @@ class RelatedTaskCreation extends Component {
           open={this.state.close}
           keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >

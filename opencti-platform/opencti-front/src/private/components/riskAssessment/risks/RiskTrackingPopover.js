@@ -245,6 +245,10 @@ class RiskTrackingPopover extends Component {
     // });
   }
 
+  onReset() {
+    this.handleCloseUpdate();
+  }
+
   render() {
     const {
       classes,
@@ -323,7 +327,6 @@ class RiskTrackingPopover extends Component {
           fullWidth={true}
           maxWidth='sm'
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleCloseUpdate.bind(this)}
         >
           {/* <QR
             environment={environmentDarkLight}
@@ -362,6 +365,7 @@ class RiskTrackingPopover extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
             // validationSchema={riskValidation(t)}
+            onReset={this.onReset.bind(this)}
             onSubmit={this.onSubmit.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -612,7 +616,7 @@ class RiskTrackingPopover extends Component {
                   <Button
                     variant="outlined"
                     classes={{ root: classes.buttonPopover }}
-                    onClick={this.handleCloseUpdate.bind(this)}
+                    onClick={handleReset}
                   // disabled={isSubmitting}
                   >
                     {t('Cancel')}
@@ -634,7 +638,6 @@ class RiskTrackingPopover extends Component {
         <Dialog
           open={this.state.displayCancel}
           TransitionComponent={Transition}
-          onClose={this.handleCancelButton.bind(this)}
         >
           <DialogContent>
             <Typography style={{
@@ -676,7 +679,6 @@ class RiskTrackingPopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >

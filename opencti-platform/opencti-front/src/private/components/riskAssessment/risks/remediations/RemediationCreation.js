@@ -192,7 +192,6 @@ class RemediationCreation extends Component {
         <Dialog
           open={this.props.openCreation}
           keepMounted={true}
-          onClose={this.handleClose.bind(this)}
         >
           <Formik
             enableReinitialize={true}
@@ -455,7 +454,6 @@ class RemediationCreation extends Component {
           open={this.state.close}
           keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>

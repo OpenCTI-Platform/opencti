@@ -208,7 +208,6 @@ class RemediationPopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >

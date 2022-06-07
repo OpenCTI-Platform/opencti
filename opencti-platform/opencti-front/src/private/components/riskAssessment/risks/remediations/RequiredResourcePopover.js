@@ -271,6 +271,10 @@ class RequiredResourcePopover extends Component {
     // });
   }
 
+  onReset() {
+    this.handleCloseUpdate();
+  }
+
   render() {
     const {
       classes,
@@ -347,7 +351,6 @@ class RequiredResourcePopover extends Component {
           open={this.state.displayUpdate}
           keepMounted={true}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
           fullWidth={true}
           maxWidth='sm'
         >
@@ -389,7 +392,7 @@ class RequiredResourcePopover extends Component {
             initialValues={initialValues}
             // validationSchema={RequiredAssetValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
-          // onReset={this.onResetContextual.bind(this)}
+            onReset={this.onReset.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
@@ -553,9 +556,7 @@ class RequiredResourcePopover extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    disabled={isSubmitting}
-                    onClick={this.handleCloseUpdate.bind(this)}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -578,7 +579,6 @@ class RequiredResourcePopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >

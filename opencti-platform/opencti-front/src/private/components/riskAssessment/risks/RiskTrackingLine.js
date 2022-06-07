@@ -93,6 +93,9 @@ const styles = (theme) => ({
     display: 'flex',
     alignItems: 'center',
   },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
   avatarIconColor: {
     color: 'white',
   },
@@ -421,30 +424,35 @@ class RiskTrackingLineContainer extends Component {
           open={this.state.displayDialog}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
-            <DialogContentText>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
               {t('Do you want to remove this risk log?')}
-            </DialogContentText>
+            </Typography>
           </DialogContent>
           <DialogActions className={classes.dialogActions}>
             <Button
-              onClick={this.handleCloseDialog.bind(this)}
-              disabled={this.state.removing}
-              variant="outlined"
               size="small"
+              variant="outlined"
+              disabled={this.state.removing}
+              classes={{ root: classes.buttonPopover }}
+              onClick={this.handleCloseDialog.bind(this)}
             >
               {t('Cancel')}
             </Button>
             <Button
-              onClick={this.handleRemoval.bind(this)}
-              color="primary"
-              disabled={this.state.removing}
-              variant="contained"
               size="small"
+              color="secondary"
+              variant="contained"
+              disabled={this.state.removing}
+              onClick={this.handleRemoval.bind(this)}
+              classes={{ root: classes.buttonPopover }}
             >
-              {t('Delete')}
+              {t('Remove')}
             </Button>
           </DialogActions>
         </Dialog>

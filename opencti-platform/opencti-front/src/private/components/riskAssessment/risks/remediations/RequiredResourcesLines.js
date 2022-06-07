@@ -237,7 +237,6 @@ class RequiredResourcesLinesContainer extends Component {
           open={this.state.displayDialog}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
@@ -268,7 +267,6 @@ class RequiredResourcesLinesContainer extends Component {
           open={this.state.displayExternalLink}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
