@@ -393,7 +393,6 @@ class RequiredResourceCreation extends Component {
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleClose.bind(this)}
           fullWidth={true}
           maxWidth='sm'
         >
@@ -569,7 +568,6 @@ class RequiredResourceCreation extends Component {
           open={this.state.close}
           keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>

@@ -270,7 +270,6 @@ class RiskAssessmentPopover extends Component {
           open={this.state.displayPoamId}
           TransitionComponent={Transition}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleClosePoam.bind(this)}
         >
           <Formik
             enableReinitialize={true}
@@ -305,7 +304,7 @@ class RiskAssessmentPopover extends Component {
                 </DialogContent>
                 <DialogActions className={classes.dialogActions}>
                   <Button
-                    onClick={this.handleClosePoam.bind(this)}
+                    onClick={handleReset}
                     disabled={this.state.deleting}
                     classes={{ root: classes.buttonPopover }}
                     variant='outlined'
@@ -331,7 +330,6 @@ class RiskAssessmentPopover extends Component {
           fullWidth={true}
           open={this.state.displayRiskLevel}
           TransitionComponent={Transition}
-          onClose={this.handleCloseRiskLevel.bind(this)}
         >
           <Formik
             enableReinitialize={true}
@@ -364,7 +362,7 @@ class RiskAssessmentPopover extends Component {
                   </DialogContent>
                   <DialogActions style={{ marginTop: '6px' }} className={classes.dialogRiskLevelAction}>
                     <Button
-                      onClick={this.handleCloseRiskLevel.bind(this)}
+                      onClick={handleReset}
                       disabled={this.state.deleting}
                       classes={{ root: classes.buttonPopover }}
                       variant='outlined'
