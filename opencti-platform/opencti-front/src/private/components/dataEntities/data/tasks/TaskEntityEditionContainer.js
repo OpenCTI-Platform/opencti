@@ -110,6 +110,7 @@ class TaskEntityEditionContainer extends Component {
 
   onReset() {
     this.handleClose();
+    this.props.handleDisplayEdit();
   }
 
   handleCancelCloseClick() {
@@ -142,6 +143,7 @@ class TaskEntityEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        this.props.history.push('/data/entities/tasks');
       },
       onError: (err) => {
         console.error(err);
@@ -536,8 +538,7 @@ class TaskEntityEditionContainer extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    onClick={() => this.props.handleDisplayEdit()}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}

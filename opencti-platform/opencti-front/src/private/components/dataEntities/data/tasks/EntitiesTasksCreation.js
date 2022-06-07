@@ -61,8 +61,7 @@ const styles = (theme) => ({
   },
   dialogContent: {
     padding: '0 24px',
-    marginBottom: '24px',
-    overflow: 'hidden',
+    overflow: 'scroll',
     height: '650px',
   },
   buttonPopover: {
@@ -87,6 +86,17 @@ const taskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().required(t('This field is required')),
   task_type: Yup.string().required(t('This field is required')),
+  resource: Yup.array().when('resource_type', {
+    is: (resource_type) => resource_type.length > 0,
+    then: Yup.array().nullable().min(1, 'This field is required'),
+  }),
+  end_date: Yup.date()
+  .when("start_date", {
+    is: (start_date) => start_date === null,
+    then: Yup.date().nullable().min(
+      Yup.ref('start_date'),
+      "End date can't be before start date")
+  }),
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -152,7 +162,7 @@ class EntitiesTasksCreation extends Component {
       dissoc('start_date'),
       dissoc('end_date'),
       dissoc('resource_type'),
-      dissoc('y'),
+      dissoc('resource'),
       assoc('timing', this.state.timing),
       assoc('responsible_roles', this.state.responsible_roles),
     )(values);
@@ -166,6 +176,7 @@ class EntitiesTasksCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        this.props.history.push('/data/entities/tasks');
       },
       onError: (err) => {
         console.error(err);
@@ -202,6 +213,7 @@ class EntitiesTasksCreation extends Component {
 
   onReset() {
     this.handleClose();
+    this.props.handleTaskCreation();
   }
 
   render() {
@@ -227,17 +239,15 @@ class EntitiesTasksCreation extends Component {
               name: '',
               description: '',
               task_type: '',
-              created: null,
-              modified: null,
               associated_activities: [],
               related_tasks: [],
               subjects: [],
               start_date: null,
               end_date: null,
               resource_type: [],
-              y: [],
-              responsible_parties: [],
-              dependencies: [],
+              resource: [],
+              responsible_roles: [],
+              task_dependencies: [],
             }}
             validationSchema={taskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -390,10 +400,10 @@ class EntitiesTasksCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('y Type')}
+                          {t('Resource Type')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('y Type')} >
+                          <Tooltip title={t('Resource Type')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -493,16 +503,16 @@ class EntitiesTasksCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('y Name')}
+                          {t('Resource Name')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('y Name')} >
+                          <Tooltip title={t('Resource Name')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
                         <ResourceNameField
-                          name='y'
+                          name='resource'
                           resourceTypename={this.state.resourceName}
                           fullWidth={true}
                           variant='outlined'
@@ -590,7 +600,7 @@ class EntitiesTasksCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    onClick={() => handleTaskCreation()}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
