@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { compose } from 'ramda';
+import {
+  compose,
+  map,
+  pipe,
+  pathOr,
+} from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
@@ -59,9 +64,6 @@ const styles = (theme) => ({
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    marginBottom: '13px',
-  },
-  body: {
     marginBottom: '13px',
   },
   content: {
@@ -132,6 +134,12 @@ class EntityResponsiblePartyCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
+    const partyData = pipe(
+      pathOr([], ['parties']),
+      map((value) => ({
+        name: value.name,
+      })),
+    )(node);
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -183,7 +191,7 @@ class EntityResponsiblePartyCardComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <Typography>
-                  {node.parties.length > 0 && node.parties.map((party) => (party.name))}
+                  {node.name && node.name}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -199,8 +207,32 @@ class EntityResponsiblePartyCardComponent extends Component {
                   {/* {node.created && fsd(node.created)} */}
                 </Typography>
               </Grid>
-            </Grid>
-            <Grid container={true} >
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
+                >
+                  {t('Role')}
+                </Typography>
+                <Typography>
+                  {node.role && t(node.role.role_identifier)}
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
+                >
+                  {t('Parties')}
+                </Typography>
+                <Typography>
+                  {partyData.length > 0 && partyData.map((value) => t(value.name)).join(', ')}
+                </Typography>
+              </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
                   variant="h3"
@@ -269,6 +301,7 @@ const EntityResponsiblePartyCardFragment = createFragmentContainer(
       fragment EntityResponsiblePartyCard_node on OscalResponsibleParty {
         __typename
         id
+        name
         entity_type
         role {
           id
