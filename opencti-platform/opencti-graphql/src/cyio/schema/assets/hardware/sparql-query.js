@@ -645,6 +645,11 @@ export const hardwarePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_software");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  installed_software_name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#installed_software>/<http://scap.nist.gov/ns/asset-identification#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_software_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   ip_address: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>", // this should really be ipv4_address in ontology
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip_address");},

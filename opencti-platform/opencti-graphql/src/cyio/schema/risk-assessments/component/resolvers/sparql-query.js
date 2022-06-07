@@ -155,8 +155,10 @@ export const selectComponentByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllComponents = (select, args) => {
+export const selectAllComponents = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(componentPredicateMap);
+  if (select.includes('props')) select = Object.keys(componentPredicateMap);
   if (!select.includes('id')) select.push('id');
   if (!select.includes('component_type')) select.push('component_type');
   if (!select.includes('asset_type')) select.push('asset_type');
@@ -176,14 +178,44 @@ export const selectAllComponents = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(componentPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'assessment-asset') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#components>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  } else {
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+                <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/common#Component> . 
     ${predicates}
+    ${constraintClause}
   }
-  `
+  `;
 }
 export const deleteComponentQuery = (id) => {
   const iri = `http://csrc.nist.gov/ns/oscal/common#Component-${id}`;
@@ -439,4 +471,72 @@ export const componentPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "validation_reference")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
+}
+
+// Function to convert an Asset to a Component
+export function convertAssetToComponent(asset) {
+  let propList = [];
+
+  // Convert the each key/value pair of asset into an individual OSCAL Property objects
+  for (let [key, value] of Object.entries(asset)) {
+    let namespace = 'http://csrc.nist.gov/ns/oscal';
+    switch(key) {
+      case 'iri':
+      case 'id':
+      case 'object_type':
+      case 'entity_type':
+      case 'standard_id':
+      case 'created':
+      case 'modified':
+      case 'links':
+      case 'labels':
+      case 'remarks':
+      case 'component_type':
+      case 'name':
+      case 'description':
+      case 'purpose':
+      case 'operational_status':
+      case 'links':
+      case 'responsible_roles':
+      case 'protocols':
+        continue;
+      case 'cpe_identifier':
+        key = 'software-identifier';
+        break;
+      default:
+        break;
+    }
+
+    if (value === null || value === 'null') continue;
+    // replace '_' with'-'
+    if (key.includes('_')) key = key.replace(/_/g, '-');
+    // generate id based on the name and the namespace
+    let id_material = { "name":`${key}`,"ns":`${namespace}`};
+    let id = generateId(id_material, OSCAL_NS);
+    let prop = { 
+      id: `${id}`,
+      entity_type: 'property',
+      prop_name: `${key}`,
+      ns: `${namespace}`,
+      value: [`${value}`],
+      // class: `${},
+    }
+    propList.push(prop)
+  }
+
+  return {
+    id: asset.id,
+    entity_type: 'component',
+    ...(asset.iri && {iri: asset.iri}),
+    ...(asset.component_type && {component_type: asset.component_type}),
+    ...(asset.name && {name: asset.name}),
+    ...(asset.description && {description: asset.description}),
+    ...(asset.purpose && {purpose: asset.purpose}),
+    props: propList,
+    ...(asset.operational_status && {operational_status: asset.operational_status}),
+    ...(asset.links && {links_iri: asset.links}),
+    ...(asset.responsible_roles && {responsible_roles_iri: asset.responsible_roles}),
+    ...(asset.protocols && {protocols_iri: asset.protocols}),
+    ...(asset.remarks && {remarks_iri: asset.remarks}),
+  };
 }

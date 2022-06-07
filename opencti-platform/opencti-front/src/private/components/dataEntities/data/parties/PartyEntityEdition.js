@@ -59,8 +59,61 @@ const partyEntityEditionQuery = graphql`
   query PartyEntityEditionQuery($id: ID!) {
     oscalParty(id: $id) {
       id
-      party_type
       name
+      office
+      created
+      modified
+      job_title
+      mail_stop
+      short_name
+      party_type
+      entity_type
+      description
+      email_addresses
+      telephone_numbers {
+        __typename
+        id
+        entity_type
+        usage_type
+        phone_number
+      }
+      external_identifiers {
+        __typename
+        id
+        entity_type
+        scheme
+        identifier
+      }
+      addresses {
+        __typename
+        id
+        entity_type
+        address_type
+        street_address
+        city
+        administrative_area
+        country_code
+        postal_code
+      }
+      locations {
+        id
+        name
+        location_type
+        location_class
+        address {
+          id
+          address_type
+          street_address
+          city
+          administrative_area
+          country_code
+          postal_code
+        }
+      }
+      member_of_organizations {
+        id
+        name
+      }
     }
   }
 `;
