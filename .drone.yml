@@ -32,8 +32,7 @@ steps:
       - yarn lint
       - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - sleep 60
-      - export NODE_OPTIONS=--max_old_space_size=12288
-      - yarn test
+      - NODE_OPTIONS=--max_old_space_size=12288 yarn test
 
   - name: api-coverage
     image: plugins/codecov
@@ -49,8 +48,7 @@ steps:
       - yarn install
       - yarn build
       - yarn lint
-      - export NODE_OPTIONS=--max_old_space_size=12288
-      - yarn test
+      - NODE_OPTIONS=--max_old_space_size=12288 yarn test
 
   - name: build-circleci
     image: curlimages/curl
