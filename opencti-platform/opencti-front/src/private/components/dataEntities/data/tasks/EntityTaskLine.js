@@ -117,7 +117,7 @@ class EntityTaskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 {node.created && fd(node.created)}
               </div>
@@ -258,7 +258,7 @@ class EntityTaskLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 <Skeleton
                   animation="wave"

@@ -278,24 +278,24 @@ class TasksEntities extends Component {
       type: {
         label: 'Type',
         width: '14%',
-        isSortable: true,
+        isSortable: false,
       },
       name: {
         label: 'Name',
         width: '16%',
-        isSortable: false,
+        isSortable: true,
       },
       author: {
         label: 'Author',
         width: '16%',
-        isSortable: true,
+        isSortable: false,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
         width: '20%',
         isSortable: true,
       },
-      creation_date: {
+      created: {
         label: 'Creation Date',
         width: '12%',
         isSortable: true,
@@ -303,7 +303,7 @@ class TasksEntities extends Component {
       marking: {
         label: 'Marking',
         width: '12%',
-        isSortable: true,
+        isSortable: false,
       },
     };
     return (
