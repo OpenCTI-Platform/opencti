@@ -88,7 +88,7 @@ class EntityRoleLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.role_identifier.width }}
               >
                 {node.role_identifier && t(node.role_identifier)}
               </div>
@@ -116,7 +116,7 @@ class EntityRoleLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 {node.created && fd(node.created)}
               </div>
@@ -260,7 +260,7 @@ class EntityRoleLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 <Skeleton
                   animation="wave"

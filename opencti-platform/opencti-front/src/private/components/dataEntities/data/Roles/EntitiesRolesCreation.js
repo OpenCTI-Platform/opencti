@@ -164,7 +164,6 @@ class EntitiesRolesCreation extends Component {
           open={openDataCreation}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => handleRoleCreation()}
         >
           <Formik
             enableReinitialize={true}
@@ -207,6 +206,7 @@ class EntitiesRolesCreation extends Component {
                         <Field
                           component={TextField}
                           name="id"
+                          disabled={true}
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -235,6 +235,7 @@ class EntitiesRolesCreation extends Component {
                         <Field
                           component={DatePickerField}
                           name="created"
+                          disabled={true}
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -265,6 +266,7 @@ class EntitiesRolesCreation extends Component {
                         <Field
                           component={DatePickerField}
                           name="modified"
+                          disabled={true}
                           fullWidth={true}
                           size="small"
                           variant='outlined'
