@@ -449,15 +449,13 @@ class OpenCTIStix2:
                 )
                 if generated_ref_id is None:
                     continue
-                if external_id in self.mapping_cache:
-                    external_reference_id = self.mapping_cache[external_id]
+                if generated_ref_id in self.mapping_cache:
+                    external_reference_id = self.mapping_cache[generated_ref_id]
                 else:
                     external_reference_id = self.opencti.external_reference.create(
                         source_name=source_name,
                         url=url,
-                        external_id=external_id
-                        if "external_id" in external_reference
-                        else None,
+                        external_id=external_id,
                         description=external_reference["description"]
                         if "description" in external_reference
                         else None,
