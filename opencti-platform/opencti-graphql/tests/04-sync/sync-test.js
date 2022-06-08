@@ -200,8 +200,8 @@ describe('Database sync testing', () => {
       // Start the sync
       const syncId = synchronizer.synchronizerAdd.id;
       await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
-      // Wait 1 min sync to consume all the stream
-      await sleep(60000);
+      // Wait 2 min sync to consume all the stream
+      await sleep(120000);
       // Stop and check
       await shutdownModules();
       // Post check
