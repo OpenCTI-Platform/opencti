@@ -130,7 +130,6 @@ class RemediationDetailsPopover extends Component {
 
   onReset() {
     this.handleClose();
-    this.props.handleDisplayEdit();
   }
 
   handleCancelOpenClick() {
@@ -142,6 +141,8 @@ class RemediationDetailsPopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const sourceValues = R.pickAll(['actor_ref', 'actor_ref'], values);
+
     const adaptedValues = R.evolve(
       {
         modified: () => values.modified === null ? null : parse(values.modified).format(),
@@ -150,6 +151,9 @@ class RemediationDetailsPopover extends Component {
       values,
     );
     const finalValues = R.pipe(
+      R.dissoc('actor_type'),
+      R.dissoc('actor_ref'),
+      R.assoc('origins', { origin_actors: [sourceValues] }),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
@@ -182,22 +186,29 @@ class RemediationDetailsPopover extends Component {
       risk,
       remediation,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
+    const SourceOfDetection = R.pipe(
+      R.pathOr([], ['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(remediation);
     const initialValues = R.pipe(
       R.assoc('name', remediation?.name || ''),
       R.assoc('description', remediation?.description || ''),
-      R.assoc('source', remediationOriginData?.name || []),
+      R.assoc('actor_type', SourceOfDetection.actor_type || ''),
+      R.assoc('actor_ref', SourceOfDetection.actor_ref?.id || ''),
       R.assoc('modified', dateFormat(remediation?.modified)),
       R.assoc('created', dateFormat(remediation?.created)),
       R.assoc('lifecycle', remediation?.lifecycle || []),
       R.assoc('response_type', remediation?.response_type || ''),
       R.pick([
         'name',
-        'description',
-        'source',
-        'modified',
         'created',
+        'modified',
+        'actor_ref',
         'lifecycle',
+        'actor_type',
+        'description',
         'response_type',
       ]),
     )(remediation);
