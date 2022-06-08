@@ -14,8 +14,7 @@
     "build": "yarn install:python && yarn build:prod",
     "start": "yarn build:types && node builder/dev/dev.js",
     "serv": "node build/index.js",
-    "test:local": "jest --bail --testSequencer ./tests/utils/testSequencer.js --verbose --runInBand --forceExit --coverage --e test",
-    "test": "node --expose-gc ./node_modules/.bin/jest --bail --testSequencer ./tests/utils/testSequencer.js --logHeapUsage --verbose --runInBand --forceExit --coverage --e test"
+    "test": "jest --expose-gc --bail --testSequencer ./tests/utils/testSequencer.js --logHeapUsage --verbose --runInBand --forceExit --coverage --e test",
   },
   "pkg": {
     "scripts": "dist/**/*.js",
