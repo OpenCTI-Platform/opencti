@@ -188,7 +188,6 @@ class RiskLogCreation extends Component {
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
-        resetForm();
         this.handleClose();
         this.props.refreshQuery();
       },

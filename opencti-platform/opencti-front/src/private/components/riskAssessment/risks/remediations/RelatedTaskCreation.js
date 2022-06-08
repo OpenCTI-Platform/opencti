@@ -173,6 +173,7 @@ class RelatedTaskCreation extends Component {
     super(props);
     this.state = {
       open: false,
+      close: false,
       resourceName: '',
       associated_activities: [],
       timing: {},
@@ -227,7 +228,6 @@ class RelatedTaskCreation extends Component {
       onCompleted: (response) => {
         this.handleAddReferenceMutation(response.createOscalTask);
         setSubmitting(false);
-        resetForm();
         this.handleClose();
       },
       onError: (err) => {
@@ -283,14 +283,14 @@ class RelatedTaskCreation extends Component {
 
   handleCancelClick() {
     this.setState({
-      open: false,
+      close: true,
       resourceName: '',
       fieldName: '',
     });
   }
 
   handleCancelCloseClick() {
-    this.setState({ resourceName: '', fieldName: '' });
+    this.setState({ close: false, resourceName: '', fieldName: '' });
   }
 
   onResetContextual() {
@@ -833,6 +833,43 @@ class RelatedTaskCreation extends Component {
               </Form>
             )}
           </Formik>
+          <Dialog
+            open={this.state.close}
+            keepMounted={true}
+          // TransitionComponent={Transition}
+          >
+            <DialogContent>
+              <Typography className={classes.popoverDialog} >
+                {t('Are you sure you’d like to cancel?')}
+              </Typography>
+              <Typography align='left'>
+                {t('Your progress will not be saved')}
+              </Typography>
+            </DialogContent>
+            <DialogActions className={classes.dialogActions}>
+              <Button
+                // onClick={this.handleCloseDelete.bind(this)}
+                // disabled={this.state.deleting}
+                // onClick={handleReset}
+                onClick={this.handleCancelCloseClick.bind(this)}
+                classes={{ root: classes.buttonPopover }}
+                variant="outlined"
+                size="small"
+              >
+                {t('Go Back')}
+              </Button>
+              <Button
+                onClick={() => this.props.history.goBack()}
+                color="secondary"
+                // disabled={this.state.deleting}
+                classes={{ root: classes.buttonPopover }}
+                variant="contained"
+                size="small"
+              >
+                {t('Yes, Cancel')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Dialog>
       </div>
     );

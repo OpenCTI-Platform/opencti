@@ -174,7 +174,6 @@ class RiskTrackingPopover extends Component {
       setSubmitting,
       onCompleted: (data) => {
         setSubmitting(false);
-        resetForm();
         this.handleCloseEditUpdate();
         this.props.refreshQuery();
       },

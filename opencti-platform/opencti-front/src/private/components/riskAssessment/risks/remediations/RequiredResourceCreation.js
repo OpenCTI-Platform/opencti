@@ -157,6 +157,7 @@ class RequiredResourceCreation extends Component {
     super(props);
     this.state = {
       open: false,
+      close: false,
       resourceName: '',
       subjects: [
         {
@@ -182,13 +183,13 @@ class RequiredResourceCreation extends Component {
 
   handleCancelClick() {
     this.setState({
-      open: false,
+      close: true,
       resourceName: '',
     });
   }
 
   handleCancelCloseClick() {
-    this.setState({ resourceName: '' });
+    this.setState({ close: false, resourceName: '' });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -224,7 +225,6 @@ class RequiredResourceCreation extends Component {
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
-        resetForm();
         this.handleClose();
         this.props.refreshQuery();
         if (this.props.onCreate) {
@@ -264,7 +264,7 @@ class RequiredResourceCreation extends Component {
   }
 
   onResetContextual() {
-    this.handleClose();
+    this.handleCancelClick();
   }
 
   renderClassic() {
@@ -541,8 +541,7 @@ class RequiredResourceCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant='outlined'
-                    // onClick={handleReset}
-                    onClick={this.handleCancelClick.bind(this)}
+                    onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -561,6 +560,43 @@ class RequiredResourceCreation extends Component {
               </Form>
             )}
           </Formik>
+          <Dialog
+            open={this.state.close}
+            keepMounted={true}
+          // TransitionComponent={Transition}
+          >
+            <DialogContent>
+              <Typography className={classes.popoverDialog}>
+                {t('Are you sure you’d like to cancel?')}
+              </Typography>
+              <Typography align='left'>
+                {t('Your progress will not be saved')}
+              </Typography>
+            </DialogContent>
+            <DialogActions className={classes.dialogActions}>
+              <Button
+                // onClick={this.handleCloseDelete.bind(this)}
+                // disabled={this.state.deleting}
+                // onClick={handleReset}
+                onClick={this.handleCancelCloseClick.bind(this)}
+                classes={{ root: classes.buttonPopover }}
+                variant='outlined'
+                size='small'
+              >
+                {t('Go Back')}
+              </Button>
+              <Button
+                onClick={() => this.props.history.goBack()}
+                color='secondary'
+                // disabled={this.state.deleting}
+                classes={{ root: classes.buttonPopover }}
+                variant='contained'
+                size='small'
+              >
+                {t('Yes, Cancel')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Dialog>
       </div>
     );
