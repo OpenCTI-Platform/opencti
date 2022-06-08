@@ -373,6 +373,18 @@ const RelatedTasksLines = createFragmentContainer(
               id
               name
             }
+            responsible_roles {
+              parties {
+                id
+                party_type
+                name
+              }
+              role {
+                id
+                name
+                role_identifier
+              }
+            }
             associated_activities {
               __typename
               id
@@ -380,20 +392,6 @@ const RelatedTasksLines = createFragmentContainer(
                 __typename
                 id
                 name
-              }
-              responsible_roles {
-                __typename
-                role {
-                  __typename
-                  id
-                  role_identifier
-                  name
-                }
-                parties {
-                  id
-                  party_type
-                  name
-                }
               }
             }
             links {
