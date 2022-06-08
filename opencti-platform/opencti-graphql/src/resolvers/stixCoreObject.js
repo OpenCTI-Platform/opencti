@@ -56,7 +56,7 @@ const stixCoreObjectResolvers = {
       return 'Unknown';
     },
     toStix: (stixCoreObject, _, { user }) => stixLoadByIdStringify(user, stixCoreObject.id),
-    creator: (stixCoreObject, _, { user }) => creator(user, stixCoreObject.id),
+    creator: (stixCoreObject, _, { user }) => creator(user, stixCoreObject.id, ABSTRACT_STIX_CORE_OBJECT),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     stixCoreRelationships: (stixCoreObject, args, { user }) => stixCoreRelationships(user, stixCoreObject.id, args),
     createdBy: (stixCoreObject, _, { user }) => createdByLoader.load(stixCoreObject.id, user),

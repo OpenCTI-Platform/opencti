@@ -61,7 +61,7 @@ const stixCoreRelationshipResolvers = {
     from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
     to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
     toStix: (rel, _, { user }) => stixLoadByIdStringify(user, rel.id),
-    creator: (rel, _, { user }) => creator(user, rel.id),
+    creator: (rel, _, { user }) => creator(user, rel.id, ABSTRACT_STIX_CORE_RELATIONSHIP),
     createdBy: (rel, _, { user }) => createdByLoader.load(rel.id, user),
     objectMarking: (rel, _, { user }) => markingDefinitionsLoader.load(rel.id, user),
     objectLabel: (rel, _, { user }) => labelsLoader.load(rel.id, user),
@@ -73,7 +73,7 @@ const stixCoreRelationshipResolvers = {
     editContext: (rel) => fetchEditContext(rel.id),
     status: (entity, _, { user }) => (entity.x_opencti_workflow_id ? findStatusById(user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (entity, _, { user }) => {
-      const statusesEdges = await getTypeStatuses(user, entity.entity_type);
+      const statusesEdges = await getTypeStatuses(user, ABSTRACT_STIX_CORE_RELATIONSHIP);
       return statusesEdges.edges.length > 0;
     },
   },

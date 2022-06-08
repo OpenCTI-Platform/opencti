@@ -135,4 +135,5 @@ export const stixCoreRelationshipsAttributes = [
   'i_inference_weight',
   'x_opencti_workflow_id',
 ];
+schemaTypes.registerAttributes(ABSTRACT_STIX_CORE_RELATIONSHIP, stixCoreRelationshipsAttributes);
 R.map((type) => schemaTypes.registerAttributes(type, stixCoreRelationshipsAttributes), STIX_CORE_RELATIONSHIPS);

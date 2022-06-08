@@ -24,6 +24,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -120,6 +122,7 @@ const individualValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   contact_information: Yup.string().nullable(),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class IndividualEditionOverviewComponent extends Component {
@@ -141,7 +144,7 @@ class IndividualEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -169,6 +172,10 @@ class IndividualEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
       individualValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -178,7 +185,7 @@ class IndividualEditionOverviewComponent extends Component {
               id: this.props.individual.id,
               input: {
                 key: name,
-                value: value || '',
+                value: finalValue ?? '',
               },
             },
           });
@@ -239,28 +246,20 @@ class IndividualEditionOverviewComponent extends Component {
   render() {
     const { t, individual, context, enableReferences } = this.props;
     const external = individual.external === true;
-    const createdBy = pathOr(null, ['createdBy', 'name'], individual) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], individual),
-        value: pathOr(null, ['createdBy', 'id'], individual),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(individual);
+    const createdBy = convertCreatedBy(individual);
+    const objectMarking = convertMarkings(individual);
+    const status = convertStatus(t, individual);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
+      assoc('x_opencti_workflow_id', status),
       pick([
         'name',
         'description',
         'contact_information',
         'createdBy',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(individual);
     return (
@@ -323,6 +322,22 @@ class IndividualEditionOverviewComponent extends Component {
                 />
               }
             />
+            {individual.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="Individual"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -393,6 +408,15 @@ const IndividualEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

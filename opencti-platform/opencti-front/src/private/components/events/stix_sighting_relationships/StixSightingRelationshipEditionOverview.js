@@ -38,6 +38,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   header: {
@@ -259,38 +260,9 @@ const StixSightingRelationshipEditionContainer = ({
       })
       .catch(() => false);
   };
-  const createdBy = pathOr(null, ['createdBy', 'name'], stixSightingRelationship) === null
-    ? ''
-    : {
-      label: pathOr(null, ['createdBy', 'name'], stixSightingRelationship),
-      value: pathOr(null, ['createdBy', 'id'], stixSightingRelationship),
-    };
-  const status = pathOr(null, ['status', 'template', 'name'], stixSightingRelationship)
-    === null
-    ? ''
-    : {
-      label: t(
-        `status_${pathOr(
-          null,
-          ['status', 'template', 'name'],
-          stixSightingRelationship,
-        )}`,
-      ),
-      color: pathOr(
-        null,
-        ['status', 'template', 'color'],
-        stixSightingRelationship,
-      ),
-      value: pathOr(null, ['status', 'id'], stixSightingRelationship),
-      order: pathOr(null, ['status', 'order'], stixSightingRelationship),
-    };
-  const objectMarking = pipe(
-    pathOr([], ['objectMarking', 'edges']),
-    map((n) => ({
-      label: n.node.definition,
-      value: n.node.id,
-    })),
-  )(stixSightingRelationship);
+  const createdBy = convertCreatedBy(stixSightingRelationship);
+  const objectMarking = convertMarkings(stixSightingRelationship);
+  const status = convertStatus(t, stixSightingRelationship);
   const initialValues = pipe(
     assoc('first_seen', dateFormat(stixSightingRelationship.first_seen)),
     assoc('last_seen', dateFormat(stixSightingRelationship.last_seen)),

@@ -15,6 +15,8 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -133,6 +135,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -146,8 +149,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
       variables: {
         id: this.props.intrusionSet.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -160,6 +162,10 @@ class IntrusionSetEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
       intrusionSetValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -167,7 +173,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
             mutation: intrusionSetMutationFieldPatch,
             variables: {
               id: this.props.intrusionSet.id,
-              input: { key: name, value: value || '' },
+              input: { key: name, value: finalValue ?? '' },
             },
           });
         })
@@ -228,12 +234,9 @@ class IntrusionSetEditionOverviewComponent extends Component {
 
   render() {
     const { t, intrusionSet, context, enableReferences } = this.props;
-    const createdBy = R.pathOr(null, ['createdBy', 'name'], intrusionSet) === null
-      ? ''
-      : {
-        label: R.pathOr(null, ['createdBy', 'name'], intrusionSet),
-        value: R.pathOr(null, ['createdBy', 'id'], intrusionSet),
-      };
+    const createdBy = convertCreatedBy(intrusionSet);
+    const objectMarking = convertMarkings(intrusionSet);
+    const status = convertStatus(t, intrusionSet);
     const killChainPhases = R.pipe(
       R.pathOr([], ['killChainPhases', 'edges']),
       R.map((n) => ({
@@ -241,16 +244,10 @@ class IntrusionSetEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(intrusionSet);
-    const objectMarking = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(intrusionSet);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
+      R.assoc('x_opencti_workflow_id', status),
       R.assoc('objectMarking', objectMarking),
       R.pick([
         'name',
@@ -259,6 +256,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(intrusionSet);
     return (
@@ -312,6 +310,22 @@ class IntrusionSetEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
+            {intrusionSet.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="Intrusion-Set"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}

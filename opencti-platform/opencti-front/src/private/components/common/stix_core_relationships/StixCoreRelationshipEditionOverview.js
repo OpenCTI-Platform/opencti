@@ -40,6 +40,8 @@ import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../form/StatusField';
 
 const styles = (theme) => ({
   header: {
@@ -70,6 +72,13 @@ const styles = (theme) => ({
   },
   button: {
     float: 'right',
+    backgroundColor: '#f44336',
+    borderColor: '#f44336',
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: '#c62828',
+      borderColor: '#c62828',
+    },
   },
   buttonLeft: {
     float: 'left',
@@ -163,6 +172,7 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
     .nullable(),
   description: Yup.string().nullable(),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 const StixCoreRelationshipEditionContainer = ({
@@ -222,7 +232,7 @@ const StixCoreRelationshipEditionContainer = ({
       }
     }
   };
-  const handleChangeobjectMarking = (name, values) => {
+  const handleChangeObjectMarking = (name, values) => {
     if (!enableReferences) {
       const currentobjectMarking = pipe(
         pathOr([], ['objectMarking', 'edges']),
@@ -284,6 +294,10 @@ const StixCoreRelationshipEditionContainer = ({
   };
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
       stixCoreRelationshipValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -293,7 +307,7 @@ const StixCoreRelationshipEditionContainer = ({
               id: stixCoreRelationship.id,
               input: {
                 key: name,
-                value: value || '',
+                value: finalValue ?? '',
               },
             },
           });
@@ -307,23 +321,19 @@ const StixCoreRelationshipEditionContainer = ({
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
     commitMutation({
       mutation: stixCoreRelationshipMutationFieldPatch,
       variables: {
         id: stixCoreRelationship.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -333,23 +343,13 @@ const StixCoreRelationshipEditionContainer = ({
       },
     });
   };
-  const createdBy = pathOr(null, ['createdBy', 'name'], stixCoreRelationship) === null
-    ? ''
-    : {
-      label: pathOr(null, ['createdBy', 'name'], stixCoreRelationship),
-      value: pathOr(null, ['createdBy', 'id'], stixCoreRelationship),
-    };
+  const createdBy = convertCreatedBy(stixCoreRelationship);
+  const objectMarking = convertMarkings(stixCoreRelationship);
+  const status = convertStatus(t, stixCoreRelationship);
   const killChainPhases = pipe(
     pathOr([], ['killChainPhases', 'edges']),
     map((n) => ({
       label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-      value: n.node.id,
-    })),
-  )(stixCoreRelationship);
-  const objectMarking = pipe(
-    pathOr([], ['objectMarking', 'edges']),
-    map((n) => ({
-      label: n.node.definition,
       value: n.node.id,
     })),
   )(stixCoreRelationship);
@@ -359,6 +359,7 @@ const StixCoreRelationshipEditionContainer = ({
     assoc('createdBy', createdBy),
     assoc('killChainPhases', killChainPhases),
     assoc('objectMarking', objectMarking),
+    assoc('x_opencti_workflow_id', status),
     pick([
       'confidence',
       'start_time',
@@ -367,6 +368,7 @@ const StixCoreRelationshipEditionContainer = ({
       'killChainPhases',
       'createdBy',
       'objectMarking',
+      'x_opencti_workflow_id',
     ]),
   )(stixCoreRelationship);
   const link = stixDomainObject
@@ -483,6 +485,22 @@ const StixCoreRelationshipEditionContainer = ({
                 }
                 onChange={handleChangeKillChainPhases}
               />
+              {stixCoreRelationship.workflowEnabled && (
+                  <StatusField
+                      name="x_opencti_workflow_id"
+                      type="stix-core-relationship"
+                      onFocus={handleChangeFocus}
+                      onChange={handleSubmitField}
+                      setFieldValue={setFieldValue}
+                      style={{ marginTop: 20 }}
+                      helpertext={
+                        <SubscriptionFocus
+                            context={editContext}
+                            fieldName="x_opencti_workflow_id"
+                        />
+                      }
+                  />
+              )}
               <CreatedByField
                 name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
@@ -504,32 +522,8 @@ const StixCoreRelationshipEditionContainer = ({
                     fieldname="objectMarking"
                   />
                 }
-                onChange={handleChangeobjectMarking}
+                onChange={handleChangeObjectMarking}
               />
-              {stixDomainObject && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  component={Link}
-                  to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixCoreRelationship.id}`}
-                  classes={{ root: classes.buttonLeft }}
-                >
-                  {t('Details')}
-                </Button>
-              )}
-              {typeof handleDelete === 'function' && (
-                <Button
-                  variant="contained"
-                  onClick={() => handleDelete()}
-                  classes={{
-                    root: enableReferences
-                      ? classes.buttonRight
-                      : classes.button,
-                  }}
-                >
-                  {t('Delete')}
-                </Button>
-              )}
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
@@ -544,6 +538,25 @@ const StixCoreRelationshipEditionContainer = ({
             </Form>
           )}
         </Formik>
+        {stixDomainObject && (
+            <Button
+                variant="contained"
+                color="primary"
+                component={Link}
+                to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixCoreRelationship.id}`}
+                classes={{ root: classes.buttonLeft }}
+            >
+              {t('Details')}
+            </Button>
+        )}
+        {typeof handleDelete === 'function' && (
+            <Button
+                variant="contained"
+                onClick={() => handleDelete()}
+                classes={{ root: classes.button }}>
+              {t('Delete')}
+            </Button>
+        )}
       </div>
     </div>
   );
@@ -572,6 +585,15 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
         description
         relationship_type
         is_inferred
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
         createdBy {
           ... on Identity {
             id

@@ -151,6 +151,15 @@ const Organization = createFragmentContainer(OrganizationComponent, {
       }
       name
       x_opencti_aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...OrganizationDetails_organization
     }
   `,

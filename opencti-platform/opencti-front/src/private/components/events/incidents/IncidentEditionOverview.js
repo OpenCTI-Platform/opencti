@@ -16,6 +16,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -133,7 +134,7 @@ class IncidentEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -230,37 +231,13 @@ class IncidentEditionOverviewComponent extends Component {
   render() {
     const { t, incident, context, enableReferences } = this.props;
     const isInferred = incident.is_inferred;
-    const createdBy = R.pathOr(null, ['createdBy', 'name'], incident) === null
-      ? ''
-      : {
-        label: R.pathOr(null, ['createdBy', 'name'], incident),
-        value: R.pathOr(null, ['createdBy', 'id'], incident),
-      };
-    const status = R.pathOr(null, ['status', 'template', 'name'], incident) === null
-      ? ''
-      : {
-        label: t(
-          `status_${R.pathOr(
-            null,
-            ['status', 'template', 'name'],
-            incident,
-          )}`,
-        ),
-        color: R.pathOr(null, ['status', 'template', 'color'], incident),
-        value: R.pathOr(null, ['status', 'id'], incident),
-        order: R.pathOr(null, ['status', 'order'], incident),
-      };
+    const createdBy = convertCreatedBy(incident);
+    const objectMarking = convertMarkings(incident);
+    const status = convertStatus(t, incident);
     const killChainPhases = R.pipe(
       R.pathOr([], ['killChainPhases', 'edges']),
       R.map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(incident);
-    const objectMarking = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
         value: n.node.id,
       })),
     )(incident);

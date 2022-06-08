@@ -141,6 +141,15 @@ const Tool = createFragmentContainer(ToolComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...ToolDetails_tool
     }
   `,

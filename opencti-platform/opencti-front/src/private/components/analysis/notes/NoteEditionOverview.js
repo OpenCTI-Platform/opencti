@@ -23,6 +23,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -108,6 +110,7 @@ const noteValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (mm/dd/yyyy)'))
     .required(t('This field is required')),
   confidence: Yup.number(),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class NoteEditionOverviewComponent extends Component {
@@ -124,12 +127,16 @@ class NoteEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'x_opencti_workflow_id') {
+      finalValue = value.value;
+    }
     noteValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: noteMutationFieldPatch,
-          variables: { id: this.props.note.id, input: { key: name, value } },
+          variables: { id: this.props.note.id, input: { key: name, value: finalValue ?? '' } },
         });
       })
       .catch(() => false);
@@ -185,22 +192,13 @@ class NoteEditionOverviewComponent extends Component {
 
   render() {
     const { t, note, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], note) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], note),
-        value: pathOr(null, ['createdBy', 'id'], note),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(note);
+    const createdBy = convertCreatedBy(note);
+    const objectMarking = convertMarkings(note);
+    const status = convertStatus(t, note);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
+      assoc('x_opencti_workflow_id', status),
       pick([
         'attribute_abstract',
         'created',
@@ -208,6 +206,7 @@ class NoteEditionOverviewComponent extends Component {
         'confidence',
         'createdBy',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(note);
     return (
@@ -274,6 +273,22 @@ class NoteEditionOverviewComponent extends Component {
                 editContext={context}
                 variant="edit"
               />
+              {note.workflowEnabled && (
+                  <StatusField
+                      name="x_opencti_workflow_id"
+                      type="Note"
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onChange={this.handleSubmitField.bind(this)}
+                      setFieldValue={setFieldValue}
+                      style={{ marginTop: 20 }}
+                      helpertext={
+                        <SubscriptionFocus
+                            context={context}
+                            fieldName="x_opencti_workflow_id"
+                        />
+                      }
+                  />
+              )}
               <CreatedByField
                 name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
@@ -336,6 +351,15 @@ const NoteEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

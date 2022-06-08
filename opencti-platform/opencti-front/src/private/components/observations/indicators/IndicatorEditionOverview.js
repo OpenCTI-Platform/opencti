@@ -32,6 +32,8 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -136,6 +138,7 @@ const indicatorValidation = (t) => Yup.object().shape({
   x_mitre_platforms: Yup.array(),
   indicator_types: Yup.array(),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class IndicatorEditionOverviewComponent extends Component {
@@ -157,7 +160,7 @@ class IndicatorEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -171,8 +174,7 @@ class IndicatorEditionOverviewComponent extends Component {
       variables: {
         id: this.props.indicator.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -185,6 +187,10 @@ class IndicatorEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
       indicatorValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -194,7 +200,7 @@ class IndicatorEditionOverviewComponent extends Component {
               id: this.props.indicator.id,
               input: {
                 key: name,
-                value: value || '',
+                value: finalValue ?? '',
               },
             },
           });
@@ -298,23 +304,14 @@ class IndicatorEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(indicator);
-    const createdBy = pathOr(null, ['createdBy', 'name'], indicator) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], indicator),
-        value: pathOr(null, ['createdBy', 'id'], indicator),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(indicator);
+    const createdBy = convertCreatedBy(indicator);
+    const objectMarking = convertMarkings(indicator);
+    const status = convertStatus(t, indicator);
     const initialValues = pipe(
       assoc('killChainPhases', killChainPhases),
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
+      assoc('x_opencti_workflow_id', status),
       assoc('x_mitre_platforms', propOr([], 'x_mitre_platforms', indicator)),
       assoc('indicator_types', propOr([], 'indicator_types', indicator)),
       pick([
@@ -332,6 +329,7 @@ class IndicatorEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(indicator);
     return (
@@ -497,6 +495,22 @@ class IndicatorEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
+            {indicator.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="Indicator"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -599,6 +613,15 @@ const IndicatorEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

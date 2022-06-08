@@ -40,6 +40,8 @@ import StixCoreRelationshipExternalReferences from '../../analysis/external_refe
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import { defaultValue } from '../../../../utils/Graph';
+import ItemStatus from '../../../../components/ItemStatus';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = (theme) => ({
   container: {
@@ -189,7 +191,7 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   render() {
-    const { t, nsdt, classes, theme, stixCoreRelationship, paddingRight } = this.props;
+    const { t, fldt, nsdt, classes, theme, stixCoreRelationship, paddingRight } = this.props;
     const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
@@ -338,57 +340,88 @@ class StixCoreRelationshipContainer extends Component {
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Information')}
+              {t('Basic information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Marking')}
-              </Typography>
-              {stixCoreRelationship.objectMarking.edges.length > 0
-                && R.map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      label={markingDefinition.node.definition}
-                      color={markingDefinition.node.x_opencti_color}
-                    />
-                  ),
-                  stixCoreRelationship.objectMarking.edges,
-                )}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Creation date')}
-              </Typography>
-              {nsdt(stixCoreRelationship.created_at)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Modification date')}
-              </Typography>
-              {nsdt(stixCoreRelationship.updated_at)}
-              {stixCoreRelationship.x_opencti_inferences === null && (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Author')}
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Marking')}
                   </Typography>
-                  <ItemAuthor
-                    createdBy={R.propOr(
-                      null,
-                      'createdBy',
-                      stixCoreRelationship,
+                  {stixCoreRelationship.objectMarking.edges.length > 0
+                    && R.map(
+                      (markingDefinition) => (
+                        <ItemMarking
+                          key={markingDefinition.node.id}
+                          label={markingDefinition.node.definition}
+                          color={markingDefinition.node.x_opencti_color}
+                        />
+                      ),
+                      stixCoreRelationship.objectMarking.edges,
                     )}
+                  {stixCoreRelationship.x_opencti_inferences === null && (
+                      <div>
+                        <Typography
+                            variant="h3"
+                            gutterBottom={true}
+                            style={{ marginTop: 20 }}>
+                          {t('Author')}
+                        </Typography>
+                        <ItemAuthor
+                            createdBy={R.propOr(
+                              null,
+                              'createdBy',
+                              stixCoreRelationship,
+                            )}
+                        />
+                      </div>
+                  )}
+                  <Typography variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}>
+                    {t('Creation date')}
+                  </Typography>
+                  {nsdt(stixCoreRelationship.created)}
+                  <Typography variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}>
+                    {t('Modification date')}
+                  </Typography>
+                  {nsdt(stixCoreRelationship.updated_at)}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Processing status')}
+                  </Typography>
+                  <ItemStatus
+                      status={stixCoreRelationship.status}
+                      disabled={!stixCoreRelationship.workflowEnabled}
                   />
-                </div>
-              )}
+                  <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                  >
+                    {t('Confidence level')}
+                  </Typography>
+                  <ItemConfidence confidence={stixCoreRelationship.confidence} />
+                  <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}>
+                    {t('Creation date (in this platform)')}
+                  </Typography>
+                  {fldt(stixCoreRelationship.created_at)}
+                  <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                  >
+                    {t('Creator')}
+                  </Typography>
+                  <ItemCreator creator={stixCoreRelationship.creator} />
+                </Grid>
+              </Grid>
             </Paper>
           </Grid>
           <Grid item={true} xs={6}>
@@ -397,39 +430,23 @@ class StixCoreRelationshipContainer extends Component {
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Typography variant="h3" gutterBottom={true}>
-                {t('Confidence level')}
-              </Typography>
-              <ItemConfidence confidence={stixCoreRelationship.confidence} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
                 {t('Start time')}
               </Typography>
               {nsdt(stixCoreRelationship.start_time)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
+              <Typography variant="h3" style={{ marginTop: 20 }} gutterBottom={true}>
                 {t('Stop time')}
               </Typography>
               {nsdt(stixCoreRelationship.stop_time)}
               {stixCoreRelationship.x_opencti_inferences === null && (
                 <div>
-                  <Typography
-                    variant="h3"
+                  <Typography variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
+                    style={{ marginTop: 20 }}>
                     {t('Description')}
                   </Typography>
-                  <Markdown
-                    remarkPlugins={[remarkGfm, remarkParse]}
+                  <Markdown remarkPlugins={[remarkGfm, remarkParse]}
                     parserOptions={{ commonmark: true }}
-                    className="markdown"
-                  >
+                    className="markdown">
                     {stixCoreRelationship.description}
                   </Markdown>
                 </div>
@@ -559,6 +576,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         parent_types
         relationship_type
         confidence
+        created
         start_time
         stop_time
         description
@@ -567,6 +585,19 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         created_at
         updated_at
         is_inferred
+        creator {
+          id
+          name
+        }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
         x_opencti_inferences {
           rule {
             id

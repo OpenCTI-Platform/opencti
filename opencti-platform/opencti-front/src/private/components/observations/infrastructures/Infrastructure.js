@@ -141,6 +141,15 @@ const Infrastructure = createFragmentContainer(InfrastructureComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...InfrastructureDetails_infrastructure
     }
   `,

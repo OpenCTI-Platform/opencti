@@ -149,6 +149,15 @@ const System = createFragmentContainer(SystemComponent, {
       }
       name
       x_opencti_aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...SystemDetails_system
     }
   `,

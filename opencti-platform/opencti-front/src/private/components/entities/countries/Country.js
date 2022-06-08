@@ -150,6 +150,15 @@ const Country = createFragmentContainer(CountryComponent, {
       latitude
       longitude
       x_opencti_aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
     }
   `,
 });

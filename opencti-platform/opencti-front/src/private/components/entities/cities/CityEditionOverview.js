@@ -14,6 +14,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import StatusField from '../../common/form/StatusField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -107,6 +109,7 @@ const cityValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   latitude: Yup.number().typeError(t('This field must be a number')),
   longitude: Yup.number().typeError(t('This field must be a number')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class CityEditionOverviewComponent extends Component {
@@ -128,7 +131,7 @@ class CityEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -142,8 +145,7 @@ class CityEditionOverviewComponent extends Component {
       variables: {
         id: this.props.city.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -156,6 +158,10 @@ class CityEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
       cityValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -163,10 +169,7 @@ class CityEditionOverviewComponent extends Component {
             mutation: cityMutationFieldPatch,
             variables: {
               id: this.props.city.id,
-              input: {
-                key: name,
-                value,
-              },
+              input: { key: name, value: finalValue ?? '' },
             },
           });
         })
@@ -225,22 +228,13 @@ class CityEditionOverviewComponent extends Component {
 
   render() {
     const { t, city, context, enableReferences } = this.props;
-    const createdBy = R.pathOr(null, ['createdBy', 'name'], city) === null
-      ? ''
-      : {
-        label: R.pathOr(null, ['createdBy', 'name'], city),
-        value: R.pathOr(null, ['createdBy', 'id'], city),
-      };
-    const objectMarking = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(city);
+    const createdBy = convertCreatedBy(city);
+    const objectMarking = convertMarkings(city);
+    const status = convertStatus(t, city);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'name',
         'description',
@@ -248,6 +242,7 @@ class CityEditionOverviewComponent extends Component {
         'longitude',
         'createdBy',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(city);
     return (
@@ -317,6 +312,22 @@ class CityEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="longitude" />
               }
             />
+            {city.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="City"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -388,6 +399,15 @@ const CityEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

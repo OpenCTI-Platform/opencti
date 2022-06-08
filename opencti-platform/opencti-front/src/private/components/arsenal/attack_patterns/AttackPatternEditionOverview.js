@@ -14,6 +14,7 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -22,6 +23,8 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import StatusField from '../../common/form/StatusField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -111,6 +114,7 @@ const attackPatternValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class AttackPatternEditionOverviewComponent extends Component {
@@ -127,6 +131,10 @@ class AttackPatternEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'x_opencti_workflow_id') {
+      finalValue = value.value;
+    }
     attackPatternValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -134,7 +142,7 @@ class AttackPatternEditionOverviewComponent extends Component {
           mutation: attackPatternMutationFieldPatch,
           variables: {
             id: this.props.attackPattern.id,
-            input: { key: name, value: value || '' },
+            input: { key: name, value: finalValue ?? '' },
           },
         });
       })
@@ -231,12 +239,9 @@ class AttackPatternEditionOverviewComponent extends Component {
 
   render() {
     const { t, attackPattern, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], attackPattern) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], attackPattern),
-        value: pathOr(null, ['createdBy', 'id'], attackPattern),
-      };
+    const createdBy = convertCreatedBy(attackPattern);
+    const objectMarking = convertMarkings(attackPattern);
+    const status = convertStatus(t, attackPattern);
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -244,23 +249,18 @@ class AttackPatternEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(attackPattern);
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(attackPattern);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
+      R.assoc('x_opencti_workflow_id', status),
       pick([
         'name',
         'description',
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(attackPattern);
     return (
@@ -310,6 +310,22 @@ class AttackPatternEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
+            {attackPattern.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="Attack-Pattern"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -379,6 +395,15 @@ const AttackPatternEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

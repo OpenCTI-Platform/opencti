@@ -21,6 +21,8 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -105,6 +107,7 @@ const regionValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class RegionEditionOverviewComponent extends Component {
@@ -121,12 +124,16 @@ class RegionEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'x_opencti_workflow_id') {
+      finalValue = value.value;
+    }
     regionValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: regionMutationFieldPatch,
-          variables: { id: this.props.region.id, input: { key: name, value } },
+          variables: { id: this.props.region.id, input: { key: name, value: finalValue ?? '' } },
         });
       })
       .catch(() => false);
@@ -184,23 +191,14 @@ class RegionEditionOverviewComponent extends Component {
 
   render() {
     const { t, region, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], region) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], region),
-        value: pathOr(null, ['createdBy', 'id'], region),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(region);
+    const createdBy = convertCreatedBy(region);
+    const objectMarking = convertMarkings(region);
+    const status = convertStatus(t, region);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
-      pick(['name', 'description', 'createdBy', 'objectMarking']),
+      assoc('x_opencti_workflow_id', status),
+      pick(['name', 'description', 'createdBy', 'objectMarking', 'x_opencti_workflow_id']),
     )(region);
     return (
       <div>
@@ -241,6 +239,22 @@ class RegionEditionOverviewComponent extends Component {
                   />
                 }
               />
+              {region.workflowEnabled && (
+                  <StatusField
+                      name="x_opencti_workflow_id"
+                      type="Region"
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onChange={this.handleSubmitField.bind(this)}
+                      setFieldValue={setFieldValue}
+                      style={{ marginTop: 20 }}
+                      helpertext={
+                        <SubscriptionFocus
+                            context={context}
+                            fieldName="x_opencti_workflow_id"
+                        />
+                      }
+                  />
+              )}
               <CreatedByField
                 name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
@@ -301,6 +315,15 @@ const RegionEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

@@ -13,6 +13,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -95,6 +97,7 @@ const opinionValidation = (t) => Yup.object().shape({
   opinion: Yup.string().required(t('This field is required')),
   explanation: Yup.string().nullable(),
   confidence: Yup.number(),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class OpinionEditionOverviewComponent extends Component {
@@ -111,12 +114,16 @@ class OpinionEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'x_opencti_workflow_id') {
+      finalValue = value.value;
+    }
     opinionValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: opinionMutationFieldPatch,
-          variables: { id: this.props.opinion.id, input: { key: name, value } },
+          variables: { id: this.props.opinion.id, input: { key: name, value: finalValue ?? '' } },
         });
       })
       .catch(() => false);
@@ -172,28 +179,20 @@ class OpinionEditionOverviewComponent extends Component {
 
   render() {
     const { t, opinion, context } = this.props;
-    const createdBy = R.pathOr(null, ['createdBy', 'name'], opinion) === null
-      ? ''
-      : {
-        label: R.pathOr(null, ['createdBy', 'name'], opinion),
-        value: R.pathOr(null, ['createdBy', 'id'], opinion),
-      };
-    const objectMarking = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(opinion);
+    const createdBy = convertCreatedBy(opinion);
+    const objectMarking = convertMarkings(opinion);
+    const status = convertStatus(t, opinion);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'attribute_abstract',
         'content',
         'confidence',
         'createdBy',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(opinion);
     return (
@@ -241,6 +240,22 @@ class OpinionEditionOverviewComponent extends Component {
                 editContext={context}
                 variant="edit"
               />
+              {opinion.workflowEnabled && (
+                  <StatusField
+                      name="x_opencti_workflow_id"
+                      type="Opinion"
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onChange={this.handleSubmitField.bind(this)}
+                      setFieldValue={setFieldValue}
+                      style={{ marginTop: 20 }}
+                      helpertext={
+                        <SubscriptionFocus
+                            context={context}
+                            fieldName="x_opencti_workflow_id"
+                        />
+                      }
+                  />
+              )}
               <CreatedByField
                 name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
@@ -302,6 +317,15 @@ const OpinionEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

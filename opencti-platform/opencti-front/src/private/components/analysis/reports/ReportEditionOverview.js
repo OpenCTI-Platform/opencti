@@ -24,6 +24,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
 import AutocompleteField from '../../../../components/AutocompleteField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   createButton: {
@@ -157,8 +158,7 @@ class ReportEditionOverviewComponent extends Component {
       variables: {
         id: this.props.report.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -247,29 +247,9 @@ class ReportEditionOverviewComponent extends Component {
 
   render() {
     const { t, report, context, enableReferences, classes } = this.props;
-    const createdBy = R.pathOr(null, ['createdBy', 'name'], report) === null
-      ? ''
-      : {
-        label: R.pathOr(null, ['createdBy', 'name'], report),
-        value: R.pathOr(null, ['createdBy', 'id'], report),
-      };
-    const objectMarking = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(report);
-    const status = R.pathOr(null, ['status', 'template', 'name'], report) === null
-      ? ''
-      : {
-        label: t(
-          `status_${R.pathOr(null, ['status', 'template', 'name'], report)}`,
-        ),
-        color: R.pathOr(null, ['status', 'template', 'color'], report),
-        value: R.pathOr(null, ['status', 'id'], report),
-        order: R.pathOr(null, ['status', 'order'], report),
-      };
+    const createdBy = convertCreatedBy(report);
+    const objectMarking = convertMarkings(report);
+    const status = convertStatus(t, report);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),

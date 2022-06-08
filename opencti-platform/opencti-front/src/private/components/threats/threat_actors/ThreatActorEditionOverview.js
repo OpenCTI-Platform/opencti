@@ -18,6 +18,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -136,22 +137,18 @@ class ThreatActorEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
     commitMutation({
       mutation: threatActorMutationFieldPatch,
       variables: {
         id: this.props.threatActor.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -175,7 +172,7 @@ class ThreatActorEditionOverviewComponent extends Component {
             mutation: threatActorMutationFieldPatch,
             variables: {
               id: this.props.threatActor.id,
-              input: { key: name, value: finalValue || '' },
+              input: { key: name, value: finalValue ?? '' },
             },
           });
         })
@@ -234,12 +231,9 @@ class ThreatActorEditionOverviewComponent extends Component {
 
   render() {
     const { t, threatActor, context, enableReferences } = this.props;
-    const createdBy = R.pathOr(null, ['createdBy', 'name'], threatActor) === null
-      ? ''
-      : {
-        label: R.pathOr(null, ['createdBy', 'name'], threatActor),
-        value: R.pathOr(null, ['createdBy', 'id'], threatActor),
-      };
+    const createdBy = convertCreatedBy(threatActor);
+    const objectMarking = convertMarkings(threatActor);
+    const status = convertStatus(t, threatActor);
     const killChainPhases = R.pipe(
       R.pathOr([], ['killChainPhases', 'edges']),
       R.map((n) => ({
@@ -247,36 +241,12 @@ class ThreatActorEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(threatActor);
-    const objectMarking = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(threatActor);
-    const status = R.pathOr(null, ['status', 'template', 'name'], threatActor) === null
-      ? ''
-      : {
-        label: t(
-          `status_${R.pathOr(
-            null,
-            ['status', 'template', 'name'],
-            threatActor,
-          )}`,
-        ),
-        color: R.pathOr(null, ['status', 'template', 'color'], threatActor),
-        value: R.pathOr(null, ['status', 'id'], threatActor),
-        order: R.pathOr(null, ['status', 'order'], threatActor),
-      };
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
       R.assoc('x_opencti_workflow_id', status),
-      R.assoc(
-        'threat_actor_types',
-        threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
-      ),
+      R.assoc('threat_actor_types', threatActor.threat_actor_types ? threatActor.threat_actor_types : []),
       R.pick([
         'name',
         'threat_actor_types',
@@ -466,7 +436,6 @@ const ThreatActorEditionOverview = createFragmentContainer(
         threat_actor_types
         confidence
         description
-        workflowEnabled
         createdBy {
           ... on Identity {
             id

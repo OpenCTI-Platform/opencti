@@ -26,6 +26,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -125,6 +127,7 @@ const organizationValidation = (t) => Yup.object().shape({
   ),
   x_opencti_reliability: Yup.string().required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class OrganizationEditionOverviewComponent extends Component {
@@ -146,22 +149,18 @@ class OrganizationEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
     commitMutation({
       mutation: organizationMutationFieldPatch,
       variables: {
         id: this.props.organization.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -174,6 +173,10 @@ class OrganizationEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
       organizationValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -183,7 +186,7 @@ class OrganizationEditionOverviewComponent extends Component {
               id: this.props.organization.id,
               input: {
                 key: name,
-                value: value || '',
+                value: finalValue ?? '',
               },
             },
           });
@@ -243,22 +246,13 @@ class OrganizationEditionOverviewComponent extends Component {
 
   render() {
     const { t, organization, context, enableReferences } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], organization) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], organization),
-        value: pathOr(null, ['createdBy', 'id'], organization),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(organization);
+    const createdBy = convertCreatedBy(organization);
+    const objectMarking = convertMarkings(organization);
+    const status = convertStatus(t, organization);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
+      assoc('x_opencti_workflow_id', status),
       pick([
         'name',
         'description',
@@ -267,6 +261,7 @@ class OrganizationEditionOverviewComponent extends Component {
         'x_opencti_reliability',
         'createdBy',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(organization);
     return (
@@ -381,6 +376,22 @@ class OrganizationEditionOverviewComponent extends Component {
               <MenuItem value="E">{t('reliability_E')}</MenuItem>
               <MenuItem value="F">{t('reliability_F')}</MenuItem>
             </Field>
+            {organization.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="Organization"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -453,6 +464,15 @@ const OrganizationEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

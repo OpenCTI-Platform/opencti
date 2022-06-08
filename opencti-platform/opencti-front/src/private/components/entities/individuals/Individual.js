@@ -151,6 +151,15 @@ const Individual = createFragmentContainer(IndividualComponent, {
       }
       name
       x_opencti_aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...IndividualDetails_individual
     }
   `,

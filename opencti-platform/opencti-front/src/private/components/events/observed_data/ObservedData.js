@@ -130,6 +130,15 @@ const ObservedData = createFragmentContainer(ObservedDataComponent, {
           }
         }
       }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...ObservedDataDetails_observedData
       ...ContainerHeader_container
     }

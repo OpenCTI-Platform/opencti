@@ -10,22 +10,20 @@ import {
   pick,
   difference,
   head,
-  union,
-  filter,
 } from 'ramda';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
-import { now } from '../../../../utils/Time';
-import { sectorsSearchQuery } from '../Sectors';
+import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
@@ -93,31 +91,13 @@ const sectorValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class SectorEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { subSectors: [] };
-  }
-
-  searchSubsector(event) {
-    fetchQuery(sectorsSearchQuery, {
-      search: event && event.target.value !== 0 ? event.target.value : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const subSectors = pipe(
-          pathOr([], ['sectors', 'edges']),
-          map((n) => ({ label: n.node.name, value: n.node.id })),
-        )(data);
-        this.setState({
-          subSectors: union(
-            this.state.subSectors,
-            filter((n) => n.value !== this.props.sector.id, subSectors),
-          ),
-        });
-      });
   }
 
   handleChangeFocus(name) {
@@ -138,22 +118,18 @@ class SectorEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
     commitMutation({
       mutation: sectorMutationFieldPatch,
       variables: {
         id: this.props.sector.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -166,6 +142,10 @@ class SectorEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
       sectorValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -173,10 +153,7 @@ class SectorEditionOverviewComponent extends Component {
             mutation: sectorMutationFieldPatch,
             variables: {
               id: this.props.sector.id,
-              input: {
-                key: name,
-                value,
-              },
+              input: { key: name, value: finalValue ?? '' },
             },
           });
         })
@@ -233,65 +210,16 @@ class SectorEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeSubsectors(name, values) {
-    const { sector } = this.props;
-    const currentSubsectors = pipe(
-      pathOr([], ['subSectors', 'edges']),
-      map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(sector);
-
-    const added = difference(values, currentSubsectors);
-    const removed = difference(currentSubsectors, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: sectorMutationRelationAdd,
-        variables: {
-          id: head(added).value,
-          input: {
-            toId: this.props.sector.id,
-            relationship_type: 'part-of',
-            first_seen: now(),
-            last_seen: now(),
-            weight: 4,
-            stix_id_key: 'create',
-          },
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: sectorMutationRelationDelete,
-        variables: {
-          id: this.props.sector.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
-    }
-  }
-
   render() {
     const { t, sector, context, enableReferences } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], sector) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], sector),
-        value: pathOr(null, ['createdBy', 'id'], sector),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(sector);
+    const createdBy = convertCreatedBy(sector);
+    const objectMarking = convertMarkings(sector);
+    const status = convertStatus(t, sector);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
-      pick(['name', 'description', 'createdBy', 'objectMarking']),
+      assoc('x_opencti_workflow_id', status),
+      pick(['name', 'description', 'createdBy', 'objectMarking', 'x_opencti_workflow_id']),
     )(sector);
     return (
       <Formik
@@ -334,6 +262,22 @@ class SectorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
+            {sector.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="Sector"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -404,6 +348,15 @@ const SectorEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

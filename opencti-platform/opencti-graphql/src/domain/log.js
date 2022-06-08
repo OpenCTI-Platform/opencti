@@ -4,7 +4,6 @@ import { elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById } from './user';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { storeLoadById, timeSeriesEntities } from '../database/middleware';
 import { READ_INDEX_HISTORY, INDEX_HISTORY } from '../database/utils';
 import { SYSTEM_USER } from '../utils/access';
@@ -18,8 +17,8 @@ export const findAll = (user, args) => {
   return elPaginate(user, READ_INDEX_HISTORY, finalArgs);
 };
 
-export const creator = async (user, entityId) => {
-  const entity = await storeLoadById(user, entityId, ABSTRACT_STIX_CORE_OBJECT);
+export const creator = async (user, entityId, type) => {
+  const entity = await storeLoadById(user, entityId, type);
   return elPaginate(user, READ_INDEX_HISTORY, {
     orderBy: 'timestamp',
     orderMode: 'asc',

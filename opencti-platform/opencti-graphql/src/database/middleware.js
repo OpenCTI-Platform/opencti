@@ -244,10 +244,7 @@ export const batchLoader = (loader) => {
 export const querySubType = async (subTypeId) => {
   const attributes = schemaTypes.getAttributes(subTypeId);
   if (attributes.length > 0) {
-    return {
-      id: subTypeId,
-      label: subTypeId,
-    };
+    return { id: subTypeId, label: subTypeId };
   }
   return null;
 };

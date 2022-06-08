@@ -142,6 +142,15 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
       }
       name
       x_opencti_aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...CourseOfActionDetails_courseOfAction
     }
   `,

@@ -25,6 +25,8 @@ import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -121,6 +123,7 @@ const infrastructureValidation = (t) => Yup.object().shape({
     .nullable()
     .typeError(t('The value must be a date (YYYY-MM-DD)')),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class InfrastructureEditionOverviewComponent extends Component {
@@ -137,6 +140,10 @@ class InfrastructureEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'x_opencti_workflow_id') {
+      finalValue = value.value;
+    }
     infrastructureValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -144,7 +151,7 @@ class InfrastructureEditionOverviewComponent extends Component {
           mutation: infrastructureMutationFieldPatch,
           variables: {
             id: this.props.infrastructure.id,
-            input: { key: name, value: value || '' },
+            input: { key: name, value: finalValue ?? '' },
           },
         });
       })
@@ -242,12 +249,9 @@ class InfrastructureEditionOverviewComponent extends Component {
 
   render() {
     const { t, infrastructure, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], infrastructure) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], infrastructure),
-        value: pathOr(null, ['createdBy', 'id'], infrastructure),
-      };
+    const createdBy = convertCreatedBy(infrastructure);
+    const objectMarking = convertMarkings(infrastructure);
+    const status = convertStatus(t, infrastructure);
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -255,17 +259,11 @@ class InfrastructureEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(infrastructure);
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(infrastructure);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
+      assoc('x_opencti_workflow_id', status),
       assoc(
         'infrastructure_types',
         infrastructure.infrastructure_types
@@ -281,6 +279,7 @@ class InfrastructureEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(infrastructure);
     return (
@@ -377,6 +376,22 @@ class InfrastructureEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
+            {infrastructure.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="Infrastructure"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -449,6 +464,15 @@ const InfrastructureEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

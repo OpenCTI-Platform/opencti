@@ -160,6 +160,15 @@ const Region = createFragmentContainer(RegionComponent, {
       longitude
       x_opencti_aliases
       isSubRegion
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
     }
   `,
 });

@@ -17,6 +17,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import StatusField from '../../common/form/StatusField';
 import { parse } from '../../../../utils/Time';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -110,6 +111,7 @@ const observedDataValidation = (t) => Yup.object().shape({
   number_observed: Yup.number().required(t('This field is required')),
   confidence: Yup.number(),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class ObservedDataEditionOverviewComponent extends Component {
@@ -133,22 +135,18 @@ class ObservedDataEditionOverviewComponent extends Component {
       R.dissoc('references'),
       R.assoc('first_observed', parse(values.first_observed).format()),
       R.assoc('last_observed', parse(values.last_observed).format()),
-      R.assoc('x_opencti_workflow_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
     commitMutation({
       mutation: observedDataMutationFieldPatch,
       variables: {
         id: this.props.observedData.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -161,6 +159,10 @@ class ObservedDataEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
       observedDataValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -170,7 +172,7 @@ class ObservedDataEditionOverviewComponent extends Component {
               id: this.props.observedData.id,
               input: {
                 key: name,
-                value: value || '',
+                value: finalValue ?? '',
               },
             },
           });
@@ -230,22 +232,13 @@ class ObservedDataEditionOverviewComponent extends Component {
 
   render() {
     const { t, observedData, context, enableReferences } = this.props;
-    const createdBy = R.pathOr(null, ['createdBy', 'name'], observedData) === null
-      ? ''
-      : {
-        label: R.pathOr(null, ['createdBy', 'name'], observedData),
-        value: R.pathOr(null, ['createdBy', 'id'], observedData),
-      };
-    const objectMarking = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(observedData);
+    const createdBy = convertCreatedBy(observedData);
+    const objectMarking = convertMarkings(observedData);
+    const status = convertStatus(t, observedData);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'first_observed',
         'last_observed',
@@ -253,6 +246,7 @@ class ObservedDataEditionOverviewComponent extends Component {
         'confidence',
         'createdBy',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(observedData);
     return (
@@ -421,8 +415,16 @@ const ObservedDataEditionOverview = createFragmentContainer(
             }
           }
         }
-        workflowEnabled
         is_inferred
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

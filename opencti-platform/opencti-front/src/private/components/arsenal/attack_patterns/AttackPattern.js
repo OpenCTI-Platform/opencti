@@ -142,6 +142,15 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...AttackPatternDetails_attackPattern
     }
   `,

@@ -140,6 +140,15 @@ const Sector = createFragmentContainer(SectorComponent, {
       }
       name
       x_opencti_aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...SectorDetails_sector
     }
   `,

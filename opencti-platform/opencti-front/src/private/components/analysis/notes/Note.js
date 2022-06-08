@@ -112,6 +112,15 @@ const Note = createFragmentContainer(NoteComponent, {
           }
         }
       }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...NoteDetails_note
       ...ContainerHeader_container
       ...ContainerStixObjectsOrStixRelationships_container

@@ -21,6 +21,8 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -107,6 +109,7 @@ const systemValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   contact_information: Yup.string().nullable(),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class SystemEditionOverviewComponent extends Component {
@@ -123,6 +126,10 @@ class SystemEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'x_opencti_workflow_id') {
+      finalValue = value.value;
+    }
     systemValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -130,7 +137,7 @@ class SystemEditionOverviewComponent extends Component {
           mutation: systemMutationFieldPatch,
           variables: {
             id: this.props.system.id,
-            input: { key: name, value: value || '' },
+            input: { key: name, value: finalValue ?? '' },
           },
         });
       })
@@ -190,28 +197,20 @@ class SystemEditionOverviewComponent extends Component {
   render() {
     const { t, system, context } = this.props;
     const external = system.external === true;
-    const createdBy = pathOr(null, ['createdBy', 'name'], system) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], system),
-        value: pathOr(null, ['createdBy', 'id'], system),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(system);
+    const createdBy = convertCreatedBy(system);
+    const objectMarking = convertMarkings(system);
+    const status = convertStatus(t, system);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
+      assoc('x_opencti_workflow_id', status),
       pick([
         'name',
         'description',
         'contact_information',
         'createdBy',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(system);
     return (
@@ -268,6 +267,22 @@ class SystemEditionOverviewComponent extends Component {
                 />
               }
             />
+            {system.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="System"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -328,6 +343,15 @@ const SystemEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

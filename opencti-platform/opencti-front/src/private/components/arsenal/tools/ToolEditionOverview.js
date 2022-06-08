@@ -25,6 +25,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import StatusField from '../../common/form/StatusField';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -117,6 +119,7 @@ const toolValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class ToolEditionOverviewComponent extends Component {
@@ -165,12 +168,16 @@ class ToolEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'x_opencti_workflow_id') {
+      finalValue = value.value;
+    }
     toolValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: toolMutationFieldPatch,
-          variables: { id: this.props.tool.id, input: { key: name, value } },
+          variables: { id: this.props.tool.id, input: { key: name, value: finalValue } },
         });
       })
       .catch(() => false);
@@ -266,12 +273,9 @@ class ToolEditionOverviewComponent extends Component {
 
   render() {
     const { t, tool, context, enableReferences } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], tool) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], tool),
-        value: pathOr(null, ['createdBy', 'id'], tool),
-      };
+    const createdBy = convertCreatedBy(tool);
+    const objectMarking = convertMarkings(tool);
+    const status = convertStatus(t, tool);
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -279,23 +283,18 @@ class ToolEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(tool);
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(tool);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
+      assoc('x_opencti_workflow_id', status),
       pick([
         'name',
         'description',
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'x_opencti_workflow_id',
       ]),
     )(tool);
     return (
@@ -351,6 +350,22 @@ class ToolEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
+            {tool.workflowEnabled && (
+                <StatusField
+                    name="x_opencti_workflow_id"
+                    type="Tool"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    setFieldValue={setFieldValue}
+                    style={{ marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_workflow_id"
+                      />
+                    }
+                />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -429,6 +444,15 @@ const ToolEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

@@ -115,6 +115,15 @@ const Opinion = createFragmentContainer(OpinionComponent, {
           }
         }
       }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...OpinionDetails_opinion
       ...ContainerHeader_container
       ...ContainerStixObjectsOrStixRelationships_container
