@@ -16,8 +16,9 @@ export const API_URI = `http://localhost:${conf.get('app:port')}`;
 export const API_TOKEN = conf.get('app:admin:token');
 export const API_EMAIL = conf.get('app:admin:email');
 export const API_PASSWORD = conf.get('app:admin:password');
-export const ONE_MINUTE = 60 * 1000;
-export const HALF_MINUTE = ONE_MINUTE / 2;
+const ONE_SECOND = 1000;
+export const ONE_MINUTE = 60 * ONE_SECOND;
+export const TEN_SECONDS = 10 * ONE_SECOND;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
 export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
 

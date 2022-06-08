@@ -3,7 +3,7 @@
 // '`targets` **identity B**.';
 
 import * as R from 'ramda';
-import { FIVE_MINUTES, HALF_MINUTE, sleep } from '../utils/testQuery';
+import { FIVE_MINUTES, TEN_SECONDS, sleep } from '../utils/testQuery';
 import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences } from '../utils/rule-utils';
 import { internalLoadById, patchAttribute } from '../../src/database/middleware';
@@ -19,7 +19,7 @@ const ONE_CLAP = 'indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752'; // indicator
 
 describe('Sighting incident rule', () => {
   const assertInferencesSize = async (type, expected) => {
-    await sleep(HALF_MINUTE); // let some time to rule manager to create the elements
+    await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
     const inferences = await getInferences(type);
     expect(inferences.length).toBe(expected);
     return inferences;

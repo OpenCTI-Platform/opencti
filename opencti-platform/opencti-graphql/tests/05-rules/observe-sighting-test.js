@@ -1,7 +1,7 @@
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
 // 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
 
-import { FIVE_MINUTES, sleep, HALF_MINUTE } from '../utils/testQuery';
+import { FIVE_MINUTES, sleep, TEN_SECONDS } from '../utils/testQuery';
 import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSightingRule';
 import { RULE_PREFIX } from '../../src/schema/general';
 import { shutdownModules, startModules } from '../../src/modules';
@@ -22,7 +22,7 @@ const CBRICKSDOC = 'indicator--c5c0c0f9-dfa1-5b7d-a12a-ea95072d3e45'; // indicat
 
 describe('Observed sighting rule', () => {
   const assertInferencesSize = async (expected) => {
-    await sleep(HALF_MINUTE); // let some time to rule manager to create the elements
+    await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
     const inferences = await getInferences(STIX_SIGHTING_RELATIONSHIP);
     expect(inferences.length).toBe(expected);
     return inferences;

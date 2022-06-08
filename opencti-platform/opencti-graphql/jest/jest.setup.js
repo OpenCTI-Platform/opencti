@@ -1,8 +1,5 @@
 import cacheManager from "../src/manager/cacheManager";
 
-// Default timeout
-jest.setTimeout(1200000);
-
 // Mock the migrations
 jest.mock("../src/database/migration", () => ({
     applyMigration: () => Promise.resolve(),
@@ -11,6 +8,8 @@ jest.mock("../src/database/migration", () => ({
 
 // Setup and close cache Manager for each test
 global.beforeAll(async () => {
+    // Default timeout
+    jest.setTimeout(1200000);
     await cacheManager.start();
 });
 global.afterAll(async () => {
