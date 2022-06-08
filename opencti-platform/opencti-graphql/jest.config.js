@@ -1,5 +1,6 @@
 module.exports = {
   testEnvironment: 'node',
+  testTimeout: 1200000,
   setupFilesAfterEnv: ['./jest/jest.setup.js'],
   testRegex: ['src/.*\\.test\\.(js|ts)$', 'tests/.*-test\\.(js|ts)$'],
   transform: {
