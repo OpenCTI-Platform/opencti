@@ -173,7 +173,7 @@ class ExternalReference:
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
-        if source_name is not None and url is not None:
+        if source_name is not None or url is not None:
             self.opencti.log(
                 "info", "Creating External Reference {" + source_name + "}."
             )

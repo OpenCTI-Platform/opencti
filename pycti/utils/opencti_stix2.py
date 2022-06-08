@@ -433,18 +433,29 @@ class OpenCTIStix2:
         external_references_ids = []
         if "external_references" in stix_object:
             for external_reference in stix_object["external_references"]:
-                if "url" in external_reference and "source_name" in external_reference:
-                    url = external_reference["url"]
-                    source_name = external_reference["source_name"]
-                else:
+                url = external_reference["url"] if "url" in external_reference else None
+                source_name = (
+                    external_reference["source_name"]
+                    if "source_name" in external_reference
+                    else None
+                )
+                external_id = (
+                    external_reference["external_id"]
+                    if "external_id" in external_reference
+                    else None
+                )
+                generated_ref_id = self.opencti.external_reference.generate_id(
+                    url, source_name, external_id
+                )
+                if generated_ref_id is None:
                     continue
-                if url in self.mapping_cache:
-                    external_reference_id = self.mapping_cache[url]["id"]
+                if external_id in self.mapping_cache:
+                    external_reference_id = self.mapping_cache[external_id]
                 else:
                     external_reference_id = self.opencti.external_reference.create(
                         source_name=source_name,
                         url=url,
-                        external_id=external_reference["external_id"]
+                        external_id=external_id
                         if "external_id" in external_reference
                         else None,
                         description=external_reference["description"]
@@ -472,7 +483,7 @@ class OpenCTIStix2:
                             data=base64.b64decode(file["data"]),
                             mime_type=file["mime_type"],
                         )
-                self.mapping_cache[url] = {"id": external_reference_id}
+                self.mapping_cache[generated_ref_id] = generated_ref_id
                 external_references_ids.append(external_reference_id)
                 if stix_object["type"] in [
                     "threat-actor",
