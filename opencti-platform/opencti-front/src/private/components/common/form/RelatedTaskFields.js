@@ -126,7 +126,7 @@ class RelatedTaskFields extends Component {
         const RelatedTaskFieldsEntities = R.pipe(
           R.pathOr([], ['associatedActivities', 'edges']),
           R.map((n) => ({
-            id: n.node.id,
+            id: n.node.activity_id.id,
             label: n.node.activity_id.description,
             value: n.node.activity_id.name,
           }))
@@ -141,18 +141,20 @@ class RelatedTaskFields extends Component {
     }
     if(this.props.name === "responsible_roles"){
       fetchDarklightQuery(RelatedTaskFieldsResponsiblePartiesQuery, {
-        orderedBy: 'label_name',
+        orderedBy: 'name',
         orderMode: 'asc',
       })
       .toPromise()
       .then((data) => {
         const RelatedTaskFieldsEntities = R.pipe(
           R.pathOr([], ['oscalResponsibleParties', 'edges']),
+          R.mergeAll,
+          R.pathOr([], ['node', 'parties']),
           R.map((n) => ({
-            id: n.node.role.id,
-            label: n.node.role.description,
-            value: n.node.role.name,
-          }))
+            id: n.id,
+            label: n.description,
+            value: n.name,
+          })),
         )(data);
         this.setState({
           RelatedTaskFieldsList: {
@@ -216,6 +218,7 @@ class RelatedTaskFields extends Component {
           name={name}
           label={label}
           fullWidth={true}
+          multiple={multiple}
           containerstyle={containerstyle}
           variant={variant}
           disabled={disabled || false}
