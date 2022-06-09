@@ -400,7 +400,6 @@ class ViewCharts extends Component {
                         <Checkbox
                           edge="end"
                           onChange={(e) => {
-                            console.log("changed")
                             handleToggle(e.target.checked, analysis.id)
                           }}
                           checked={activeChecked().includes(analysis.id)}
@@ -432,7 +431,6 @@ class ViewCharts extends Component {
                   value: parseInt(item.value),
                 };
               });
-
               return (
                 <Grid item={true}>
                   <Typography variant="h4" gutterBottom={true}>
@@ -450,59 +448,60 @@ class ViewCharts extends Component {
                   >
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart width={600} height={600}>
-                      {array &&
-                        <Pie
-                          data={array}
-                          nameKey="name"
-                          dataKey="value"
-                          cx={500}
-                          cy={200}
-                          innerRadius={90}
-                          outerRadius={150}
-                          fill="#82ca9d"
-                          label={({
-                            cx,
-                            cy,
-                            midAngle,
-                            innerRadius,
-                            outerRadius,
-                            value,
-                            index,
-                          }) => {
-                            const RADIAN = Math.PI / 180;
-                            // eslint-disable-next-line
-                            const radius =
-                              25 + innerRadius + (outerRadius - innerRadius);
-                            // eslint-disable-next-line
-                            const x =
-                              cx + radius * Math.cos(-midAngle * RADIAN);
-                            // eslint-disable-next-line
-                            const y =
-                              cy + radius * Math.sin(-midAngle * RADIAN);
+                        {array &&
+                          <Pie
+                            cx={500}
+                            cy={200}
+                            data={array}
+                            nameKey="name"
+                            fill="#82ca9d"
+                            dataKey="value"
+                            innerRadius={90}
+                            outerRadius={150}
+                            isAnimationActive={false}
+                            label={({
+                              cx,
+                              cy,
+                              value,
+                              index,
+                              midAngle,
+                              innerRadius,
+                              outerRadius,
+                            }) => {
+                              const RADIAN = Math.PI / 180;
+                              // eslint-disable-next-line
+                              const radius =
+                                25 + innerRadius + (outerRadius - innerRadius);
+                              // eslint-disable-next-line
+                              const x =
+                                cx + radius * Math.cos(-midAngle * RADIAN);
+                              // eslint-disable-next-line
+                              const y =
+                                cy + radius * Math.sin(-midAngle * RADIAN);
 
-                            return (
-                              <text
-                                x={x}
-                                y={y}
-                                fill={COLORS[array[index].name]}
-                                textAnchor={x > cx ? 'start' : 'end'}
-                                dominantBaseline="central"
-                                style={{ fontSize: '15px' }}
-                              >
-                                {array[index].name} ({value})
-                              </text>
-                            );
-                          }}
-                        >
-                          {array.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[entry.name]}
-                            />
-                          ))}
-                          <Tooltip />
-                        </Pie>
-                      }
+                              return (
+                                <text
+                                  x={x}
+                                  y={y}
+                                  fill={COLORS[array[index].name]}
+                                  textAnchor={x > cx ? 'start' : 'end'}
+                                  dominantBaseline="central"
+                                  style={{ fontSize: '15px' }}
+                                >
+                                  {array[index].name} ({value})
+                                </text>
+                              );
+                            }}
+                          >
+                            {array.map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={COLORS[entry.name]}
+                              />
+                            ))}
+                            <Tooltip />
+                          </Pie>
+                        }
                       </PieChart>
                     </ResponsiveContainer>
                   </Paper>
