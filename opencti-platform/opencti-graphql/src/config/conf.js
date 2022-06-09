@@ -5,6 +5,7 @@ import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'node:path';
+import { serializeError } from 'serialize-error';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -228,7 +229,25 @@ if (environment === 'test') {
   });
 }
 const LOG_APP = 'APP';
-const addBasicMetaInformation = (category, meta) => ({ ...meta, category, version: PLATFORM_VERSION });
+const addBasicMetaInformation = (category, meta) => {
+  const logInformation = { ...meta, category, version: PLATFORM_VERSION };
+  const infoEntries = Object.entries(logInformation);
+  const logMeta = {};
+  for (let entry = 0; entry < infoEntries.length; entry += 1) {
+    const [k, v] = infoEntries[entry];
+    if (v instanceof Error) {
+      const basicError = serializeError(v);
+      if (v._error) { // Apollo error
+        logMeta[k] = { name: v.name, message: v.message, stack: basicError.stack, context: v.data };
+      } else { // Standard error
+        logMeta[k] = { ...basicError, context: {} };
+      }
+    } else {
+      logMeta[k] = v;
+    }
+  }
+  return logMeta;
+};
 export const logApp = {
   _log: (level, message, meta = {}) => {
     if (appLogTransports.length > 0) {

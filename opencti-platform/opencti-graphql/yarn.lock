@@ -10778,6 +10778,7 @@ __metadata:
     redlock: 5.0.0-beta.2
     sanitize-filename: 1.6.3
     semver: 7.3.7
+    serialize-error: 11.0.0
     set-interval-async: 2.0.3
     showdown: 2.1.0
     source-map-support: 0.5.21
@@ -12252,6 +12253,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"serialize-error@npm:11.0.0":
+  version: 11.0.0
+  resolution: "serialize-error@npm:11.0.0"
+  dependencies:
+    type-fest: ^2.12.2
+  checksum: 858113a142298f6d4be6cf6d3de4aae2601ba265de334fac984e9c625fcc72995cb86a075cb79e677d66dc3d70545f870747bb283906525b52571159dd7a991a
+  languageName: node
+  linkType: hard
+
 "serve-static@npm:1.15.0":
   version: 1.15.0
   resolution: "serve-static@npm:1.15.0"
@@ -13342,6 +13352,13 @@ __metadata:
   version: 0.21.3
   resolution: "type-fest@npm:0.21.3"
   checksum: e6b32a3b3877f04339bae01c193b273c62ba7bfc9e325b8703c4ee1b32dc8fe4ef5dfa54bf78265e069f7667d058e360ae0f37be5af9f153b22382cd55a9afe0
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^2.12.2":
+  version: 2.13.0
+  resolution: "type-fest@npm:2.13.0"
+  checksum: 3492384f759fdeaec7eaa07e79f70e777bf825cf8892690642fa9350818df4a8c50fd697fd1239ae7026064af4dd94e4d5eca27e781e0952ff302af0708a2e69
   languageName: node
   linkType: hard
 
