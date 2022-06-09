@@ -1820,8 +1820,10 @@ class OpenCTIStix2:
                     stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
                     self.opencti.external_reference.create(
                         stix_id=item["id"],
-                        source_name=item["source_name"],
-                        url=item["url"],
+                        source_name=item["source_name"]
+                        if "source_name" in item
+                        else None,
+                        url=item["url"] if "url" in item else None,
                         external_id=item["external_id"]
                         if "external_id" in item
                         else None,
