@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { FIVE_MINUTES } from '../../utils/testQuery';
+import { FIVE_MINUTES, RAW_EVENTS_SIZE } from '../../utils/testQuery';
 import { shutdownModules, startModules } from '../../../src/modules';
 import {
   checkStreamData,
@@ -28,7 +28,7 @@ describe('Raw streams tests', () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       // Check the number of events
-      expect(events.length).toBe(432);
+      expect(events.length).toBe(RAW_EVENTS_SIZE);
       // 01 - CHECK CREATE EVENTS
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
       expect(createEvents.length).toBe(300);
