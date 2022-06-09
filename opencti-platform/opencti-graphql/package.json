@@ -92,7 +92,6 @@
     "redlock": "5.0.0-beta.2",
     "sanitize-filename": "1.6.3",
     "semver": "7.3.7",
-    "serialize-error": "11.0.0",
     "set-interval-async": "2.0.3",
     "showdown": "2.1.0",
     "source-map-support": "0.5.21",

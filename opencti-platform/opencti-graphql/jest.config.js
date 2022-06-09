@@ -4,7 +4,7 @@ module.exports = {
   setupFilesAfterEnv: ['./jest/jest.setup.js'],
   testRegex: ['src/.*\\.test\\.(js|ts)$', 'tests/.*-test\\.(js|ts)$'],
   transform: {
-    '\\.(js|ts)$': 'esbuild-jest',
+    '\\.(js|ts)$': ['esbuild-jest', { sourcemap: true }],
     '\\.graphql$': 'jest-transform-graphql',
   },
   reporters: ['default', ['jest-junit', { outputDirectory: './test-results/jest/', outputName: 'results.xml' }]],
