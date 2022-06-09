@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
   - name: api-tests
-    image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
+    image: nikolaik/python-nodejs:python3.10-nodejs14-alpine
     environment:
       APP__BASE_URL: http://api-tests:4000/
       APP__ADMIN__PASSWORD: admin
