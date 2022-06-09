@@ -659,7 +659,7 @@ const inputResolveRefs = async (user, input, type) => {
       return { [k]: isMultiple ? val : R.head(val) };
     }
     if (!isMultiple) {
-      throw UnsupportedError('Resolve to multiple');
+      throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val });
     }
     return { [k]: val };
   });
