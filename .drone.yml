@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
   - name: api-tests
-    image: nikolaik/python-nodejs:python3.10-nodejs14-alpine
+    image: node:16.10.0-alpine
     environment:
       APP__BASE_URL: http://api-tests:4000/
       APP__ADMIN__PASSWORD: admin
@@ -23,8 +23,12 @@ steps:
       SMTP__PORT: 587
       SMTP__USERNAME: jennyfer.mraz@ethereal.email
       SMTP__PASSWORD: frhJ2mSPTfaEutpbug
+      PYTHONUNBUFFERED: 1
     commands:
-      - apk add build-base git libffi-dev
+      - apk add build-base git libffi-dev python3
+      - ln -sf python3 /usr/bin/python
+      - python3 -m ensurepip
+      - pip3 install --no-cache --upgrade pip setuptools
       - git clone https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
       - cd opencti-platform/opencti-graphql
       - yarn install
