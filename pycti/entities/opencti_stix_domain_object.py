@@ -1221,7 +1221,7 @@ class StixDomainObject:
         Get the reports about a Stix-Domain-Object object
 
         :param id: the id of the Stix-Domain-Object
-        :return Stix-Domain-Object object
+        :return List of reports
     """
 
     def reports(self, **kwargs):
@@ -1241,7 +1241,6 @@ class StixDomainObject:
                                     standard_id
                                     entity_type
                                     spec_version
-
                                     name
                                     alias
                                     description
@@ -1366,7 +1365,7 @@ class StixDomainObject:
              """
             result = self.opencti.query(query, {"id": id})
             processed_result = self.opencti.process_multiple_fields(
-                result["data"]["Stix-Domain-Object"]
+                result["data"]["stixDomainObject"]
             )
             if processed_result:
                 return processed_result["reports"]
@@ -1380,7 +1379,7 @@ class StixDomainObject:
         Get the notes about a Stix-Domain-Object object
 
         :param id: the id of the Stix-Domain-Object
-        :return Stix-Domain-Object object
+        :return List of notes
     """
 
     def notes(self, **kwargs):
@@ -1522,10 +1521,247 @@ class StixDomainObject:
              """
             result = self.opencti.query(query, {"id": id})
             processed_result = self.opencti.process_multiple_fields(
-                result["data"]["Stix-Domain-Object"]
+                result["data"]["stixDomainObject"]
             )
             if processed_result:
                 return processed_result["notes"]
+            else:
+                return []
+        else:
+            self.opencti.log("error", "Missing parameters: id")
+            return None
+
+    """
+        Get the observed data of a Stix-Domain-Object object
+
+        :param id: the id of the Stix-Domain-Object
+        :return List of observed data
+    """
+
+    def observed_data(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log(
+                "info",
+                "Getting Observed-Data of the Stix-Domain-Object {" + id + "}.",
+            )
+            query = """
+                    query StixDomainObject($id: String!) {
+                        stixDomainObject(id: $id) {
+                            observedData {
+                                edges {
+                                    node {
+                                        id
+                                        standard_id
+                                        entity_type
+                                        parent_types
+                                        spec_version
+                                        created_at
+                                        updated_at
+                                        createdBy {
+                                            ... on Identity {
+                                                id
+                                                standard_id
+                                                entity_type
+                                                parent_types
+                                                spec_version
+                                                identity_class
+                                                name
+                                                description
+                                                roles
+                                                contact_information
+                                                x_opencti_aliases
+                                                created
+                                                modified
+                                                objectLabel {
+                                                    edges {
+                                                        node {
+                                                            id
+                                                            value
+                                                            color
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            ... on Organization {
+                                                x_opencti_organization_type
+                                                x_opencti_reliability
+                                            }
+                                            ... on Individual {
+                                                x_opencti_firstname
+                                                x_opencti_lastname
+                                            }
+                                        }
+                                        objectMarking {
+                                            edges {
+                                                node {
+                                                    id
+                                                    standard_id
+                                                    entity_type
+                                                    definition_type
+                                                    definition
+                                                    created
+                                                    modified
+                                                    x_opencti_order
+                                                    x_opencti_color
+                                                }
+                                            }
+                                        }
+                                        objectLabel {
+                                            edges {
+                                                node {
+                                                    id
+                                                    value
+                                                    color
+                                                }
+                                            }
+                                        }
+                                        externalReferences {
+                                            edges {
+                                                node {
+                                                    id
+                                                    standard_id
+                                                    entity_type
+                                                    source_name
+                                                    description
+                                                    url
+                                                    hash
+                                                    external_id
+                                                    created
+                                                    modified
+                                                    importFiles {
+                                                        edges {
+                                                            node {
+                                                                id
+                                                                name
+                                                                size
+                                                                metaData {
+                                                                    mimetype
+                                                                    version
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        revoked
+                                        confidence
+                                        created
+                                        modified
+                                        first_observed
+                                        last_observed
+                                        number_observed
+                                        objects {
+                                            edges {
+                                                node {
+                                                    ... on BasicObject {
+                                                        id
+                                                        entity_type
+                                                        parent_types
+                                                    }
+                                                    ... on BasicRelationship {
+                                                        id
+                                                        entity_type
+                                                        parent_types
+                                                    }
+                                                    ... on StixObject {
+                                                        standard_id
+                                                        spec_version
+                                                        created_at
+                                                        updated_at
+                                                    }
+                                                    ... on AttackPattern {
+                                                        name
+                                                    }
+                                                    ... on Campaign {
+                                                        name
+                                                    }
+                                                    ... on CourseOfAction {
+                                                        name
+                                                    }
+                                                    ... on Individual {
+                                                        name
+                                                    }
+                                                    ... on Organization {
+                                                        name
+                                                    }
+                                                    ... on Sector {
+                                                        name
+                                                    }
+                                                    ... on System {
+                                                        name
+                                                    }
+                                                    ... on Indicator {
+                                                        name
+                                                    }
+                                                    ... on Infrastructure {
+                                                        name
+                                                    }
+                                                    ... on IntrusionSet {
+                                                        name
+                                                    }
+                                                    ... on Position {
+                                                        name
+                                                    }
+                                                    ... on City {
+                                                        name
+                                                    }
+                                                    ... on Country {
+                                                        name
+                                                    }
+                                                    ... on Region {
+                                                        name
+                                                    }
+                                                    ... on Malware {
+                                                        name
+                                                    }
+                                                    ... on ThreatActor {
+                                                        name
+                                                    }
+                                                    ... on Tool {
+                                                        name
+                                                    }
+                                                    ... on Vulnerability {
+                                                        name
+                                                    }
+                                                    ... on Incident {
+                                                        name
+                                                    }
+                                                    ... on StixCoreRelationship {
+                                                        standard_id
+                                                        spec_version
+                                                        created_at
+                                                        updated_at
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        importFiles {
+                                            edges {
+                                                node {
+                                                    id
+                                                    name
+                                                    size
+                                                    metaData {
+                                                        mimetype
+                                                        version
+                                                    }
+                                                }
+                                            }
+                                        }    
+                                    }
+                                }
+                            }
+                        }
+                    }
+                 """
+            result = self.opencti.query(query, {"id": id})
+            processed_result = self.opencti.process_multiple_fields(
+                result["data"]["stixDomainObject"]
+            )
+            if processed_result:
+                return processed_result["observedData"]
             else:
                 return []
         else:

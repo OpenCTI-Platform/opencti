@@ -518,6 +518,9 @@ class OpenCTIApiClient:
         if "opinions" in data:
             data["opinions"] = self.process_multiple(data["opinions"])
             data["opinionsIds"] = self.process_multiple_ids(data["opinions"])
+        if "observedData" in data:
+            data["observedData"] = self.process_multiple(data["observedData"])
+            data["observedDataIds"] = self.process_multiple_ids(data["observedData"])
         if "killChainPhases" in data:
             data["killChainPhases"] = self.process_multiple(data["killChainPhases"])
             data["killChainPhasesIds"] = self.process_multiple_ids(
