@@ -12,7 +12,6 @@ import {
 import {
   componentReducer,
 } from "../../component/resolvers/sparql-query.js";
-
 import {
   selectObjectIriByIdQuery,
 } from "../../../global/global-utils.js";
@@ -27,6 +26,8 @@ export function getReducer( type ) {
       return activityReducer;
     case 'TOOL':
       return componentReducer;
+    case 'ASSESSMENT-ASSET':
+      return assessmentAssetReducer;
     case 'ASSESSMENT-PLATFORM':
       return assessmentPlatformReducer;
     case 'ASSESSMENT-SUBJECT':
@@ -115,7 +116,7 @@ export const getSubjectIriByIdQuery = (id, subjectType) => {
 const activityReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
-    item.object_type = 'activity';
+    item.object_type = 'oscal-activity';
   }
 
   return {
@@ -152,6 +153,20 @@ const actorReducer = (item) => {
     ...(item.actor_type && {actor_type: item.actor_type} ),
     ...(item.actor_ref && {actor_ref_iri: item.actor_ref}),
     ...(item.role_ref && {role_ref_iri: item.role_ref}),
+  }
+}
+const assessmentAssetReducer = (item) => {
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined ) {
+    item.object_type = 'assessment-asset';
+  }
+  return {
+    iri: item.iri,
+    id: item.id,
+    standard_id: item.id,
+    ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.components && {components_iri: item.components}),
+    ...(item.assessment_platforms && {assessment_platforms_iri: item.assessment_platforms}),
   }
 }
 const assessmentPlatformReducer = (item) => {
@@ -402,6 +417,7 @@ const riskReducer = (item) => {
     ...(item.remediations && {remediations_iri: item.remediations}),
     ...(item.risk_log && {risk_log_iri: item.risk_log}),
     ...(item.related_observations && {related_observations_iri: item.related_observations}),
+    ...(item.related_observation_ids && {related_observation_ids: item.related_observation_ids}),
     ...(item.false_positive && {false_positive: item.false_positive}),
     ...(item.accepted && {accepted: item.accepted}),
     ...(item.risk_adjusted && {risk_adjusted: item.risk_adjusted}),
@@ -489,8 +505,14 @@ const subjectReducer = (item) => {
     ...(item.subject_type && {subject_type: item.subject_type}),
     ...(item.subject_ref && {subject_ref_iri: item.subject_ref}),
     ...(item.subject_context && {subject_context: item.subject_context}),
+    ...(item.subject_id && {subject_id: item.subject_id}),
     ...(item.subject_name && {subject_name: item.subject_name}),
     ...(item.subject_version && {subject_version: item.subject_version}),
+    ...(item.subject_asset_type && {subject_asset_type: item.subject_asset_type}),
+    ...(item.subject_component_type && {subject_component_type: item.subject_component_type}),
+    ...(item.subject_party_type && {subject_party_type: item.subject_party_type}),
+    ...(item.subject_location_type && {subject_location_type: item.subject_location_type}),
+    ...(item.subject_user_type && {subject_user_type: item.subject_user_type}),
   }
 }
 const taskReducer = (item) => {
@@ -586,7 +608,7 @@ export const insertActivityQuery = (propValues) => {
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#Object> .
       ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
-      ${iri} <http://darklight.ai/ns/common#object_type> "activity" . 
+      ${iri} <http://darklight.ai/ns/common#object_type> "oscal-activity" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
       ${insertPredicates}
@@ -867,6 +889,162 @@ export const detachFromActorQuery = (id, field, itemIris) => {
   `
 }
 
+// AssessmentAsset support functions
+export const insertAssessmentAssetQuery = (propValues) => {
+  const id = propValues.id;
+  const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}>`;
+  const insertPredicates = Object.entries(propValues)
+      .filter((propPair) => actorPredicateMap.hasOwnProperty(propPair[0]))
+      .map((propPair) => actorPredicateMap[propPair[0]].binding(iri, propPair[1]))
+      .join('. \n      ');
+  const query = `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${iri} a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
+      ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
+      ${iri} <http://darklight.ai/ns/common#id> "${id}" .
+      ${iri} <http://darklight.ai/ns/common#object_type> "assessment-asset" . 
+      ${insertPredicates}
+    }
+  }
+  `;
+  return {iri, id, query}  
+}
+export const selectAssessmentAssetQuery = (id, select) => {
+  return selectAssessmentAssetByIriQuery(`http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}`, select);
+}
+export const selectAssessmentAssetByIriQuery = (iri, select) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === undefined || select === null) select = Object.keys(assessmentAssetPredicateMap);
+  if (!select.includes('id')) select.push('id');
+  const { selectionClause, predicates } = buildSelectVariables(assessmentAssetPredicateMap, select);
+  return `
+  SELECT ?iri ${selectionClause}
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    BIND(${iri} AS ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> .
+    ${predicates}
+  }
+  `
+}
+export const selectAllAssessmentAssets = (select, args, parent) => {
+  let constraintClause = '';
+  if (select === undefined || select === null) select = Object.keys(assessmentAssetPredicateMap);
+  if (!select.includes('id')) select.push('id');
+
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
+  }
+
+  const { selectionClause, predicates } = buildSelectVariables(assessmentAssetPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam-local-definitions') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_assets>';
+    }
+    if (parent.entity_type === 'result-local-definitions') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#LocalDefinition>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_assets>';
+    }
+    if (parent.entity_type === 'assessment-plan') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#AssessmentPlan>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_assets>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+  return `
+  SELECT DISTINCT ?iri ${selectionClause} 
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> . 
+    ${predicates}
+    ${constraintClause}
+  }
+  `
+}
+export const deleteAssessmentAssetQuery = (id) => {
+  const iri = `http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}`;
+  return deleteAssessmentAssetByIriQuery(iri);
+}
+export const deleteAssessmentAssetByIriQuery = (iri) => {
+  return `
+  DELETE {
+    GRAPH <${iri}> {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH <${iri}> {
+      ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> .
+      ?iri ?p ?o
+    }
+  }
+  `
+}
+export const attachToAssessmentAssetQuery = (id, field, itemIris) => {
+  const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}>`;
+  if (!assessmentAssetPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = assessmentAssetPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `
+}
+export const detachFromAssessmentAssetQuery = (id, field, itemIris) => {
+  const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}>`;
+  if (!assessmentAssetPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = assessmentAssetPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  DELETE DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `  
+}
+
 // AssessmentPlatform support functions
 export const insertAssessmentPlatformQuery = (propValues) => {
   let id;
@@ -928,7 +1106,8 @@ export const selectAssessmentPlatformByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllAssessmentPlatforms = (select, args) => {
+export const selectAllAssessmentPlatforms = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(assessmentPlatformPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -946,12 +1125,32 @@ export const selectAllAssessmentPlatforms = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(assessmentPlatformPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'assessment-asset') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_platforms>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -1579,6 +1778,7 @@ export const selectEvidenceQuery = (id, select) => {
 export const selectEvidenceByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(evidencePredicateMap);
+
   const { selectionClause, predicates } = buildSelectVariables(evidencePredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -1590,7 +1790,8 @@ export const selectEvidenceByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllEvidence = (select, args) => {
+export const selectAllEvidence = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(evidencePredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -1608,12 +1809,27 @@ export const selectAllEvidence = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(evidencePredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified object
+  if (parent !== undefined && parent.iri !== undefined) {
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a <http://csrc.nist.gov/ns/oscal/assessment/common#Observation> ;
+            <http://csrc.nist.gov/ns/oscal/assessment/common#relevant_evidence> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Evidence> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -2235,7 +2451,8 @@ export const selectObservationByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllObservations = (select, args) => {
+export const selectAllObservations = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(observationPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -2253,12 +2470,48 @@ export const selectAllObservations = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(observationPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/poam#observations>';
+    }
+    if (parent.entity_type === 'poam-item') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/poam#Item>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>';
+    }
+    if (parent.entity_type === 'risk') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Risk>' ;
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>';
+    }
+    if (parent.entity_type === 'result') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Result>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#observations>';
+    }
+    if (parent.entity_type === 'finding') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Finding>'
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Observation> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -2383,7 +2636,8 @@ export const selectOriginByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllOrigins = (select, args) => {
+export const selectAllOrigins = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(originPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -2401,14 +2655,42 @@ export const selectAllOrigins = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(originPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified object
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri;
+    if (parent.entity_type === 'characterization') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Characterization>';
+    }
+    if (parent.entity_type === 'observation') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Observation>';
+    }
+    if (parent.entity_type === 'risk') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Risk>';
+    }
+    if (parent.entity_type === 'risk-response') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            <http://csrc.nist.gov/ns/oscal/assessment/common#origins> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Origin> . 
     ${predicates}
+    ${constraintClause}
   }
-  `
+  `;
 }
 export const deleteOriginQuery = (id) => {
   const iri = `http://csrc.nist.gov/ns/oscal/assessment/common#Origin-${id}`;
@@ -2722,19 +3004,22 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
 
+  // fetch the uuid of each related_observation and related_risk as these are commonly used
+  if (select.includes('related_observations')) select.push('related_observation_ids');
+
   // Update select to collect additional predicates if looking to calculate risk level
   if (select.includes('risk_level')) {
-    select.push('cvss2_base_score');
-    select.push('cvss2_temporal_score');
-    select.push('cvss3_base_score');
-    select.push('cvss3_temporal_score');
-    select.push('available_exploit');
-    select.push('exploitability_ease');
+    if (!select.includes('cvss2_base_score')) select.push('cvss2_base_score');
+    if (!select.includes('cvss2_temporal_score')) select.push('cvss2_temporal_score');
+    if (!select.includes('cvss3_base_score')) select.push('cvss3_base_score');
+    if (!select.includes('cvss3_temporal_score')) select.push('cvss3_temporal_score');
+    if (!select.includes('available_exploit')) select.push('available_exploit');
+    if (!select.includes('exploitability_ease')) select.push('exploitability_ease');
   }
   // Update select to collect additional predicates if looking for response type
   if (select.includes('response_type')|| select.includes('lifecycle')) {
-    select.push('remediation_type');
-    select.push('remediation_lifecycle')
+    if (!select.includes('remediation_type')) select.push('remediation_type');
+    if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
   }
 
   // build selectionClause and predicate list
@@ -2801,25 +3086,28 @@ export const selectRiskByIriQuery = (iri, select) => {
   ${groupByClause.join("\n")}
   `
 }
-export const selectAllRisks = (select, args) => {
+export const selectAllRisks = (select, args, parent) => {
   const insertSelections = [], groupByClause = [];
-  let occurrences = '', occurrenceQuery = '';
+  let occurrences = '', occurrenceQuery = '', constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
 
+  // fetch the uuid of each related_observation and related_risk as these are commonly used
+  if (select.includes('related_observations')) select.push('related_observation_ids');
+
   // Update select to impact what predicates get retrieved if looking to calculate risk level
   if (select.includes('risk_level')) {
-    select.push('cvss2_base_score');
-    select.push('cvss2_temporal_score');
-    select.push('cvss3_base_score');
-    select.push('cvss3_temporal_score');
-    select.push('available_exploit');
-    select.push('exploitability_ease');
+    if (!select.includes('cvss2_base_score')) select.push('cvss2_base_score');
+    if (!select.includes('cvss2_temporal_score')) select.push('cvss2_temporal_score');
+    if (!select.includes('cvss3_base_score')) select.push('cvss3_base_score');
+    if (!select.includes('cvss3_temporal_score')) select.push('cvss3_temporal_score');
+    if (!select.includes('available_exploit')) select.push('available_exploit');
+    if (!select.includes('exploitability_ease')) select.push('exploitability_ease');
   }
   // Update select to collect additional predicates if looking for response type
   if (select.includes('response_type')|| select.includes('lifecycle')) {
-    select.push('remediation_type');
-    select.push('remediation_lifecycle')
+    if (!select.includes('remediation_type')) select.push('remediation_type');
+    if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
   }
 
   if (args !== undefined ) {
@@ -2838,6 +3126,37 @@ export const selectAllRisks = (select, args) => {
 
   // build selectionClause and predicate list
   let { selectionClause, predicates } = buildSelectVariables(riskPredicateMap, select);
+
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/poam#risks>';
+    }
+    if (parent.entity_type === 'poam-item') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/poam#Item>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>';
+    }
+    if (parent.entity_type === 'result') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Result>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#risks>';
+    }
+    if (parent.entity_type === 'finding') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Finding>'
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_riskss>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
 
   // remove any select items pushed from selectionClause to reduce what is not returned
   if (select.includes('risk_level')) {
@@ -2895,6 +3214,7 @@ export const selectAllRisks = (select, args) => {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> . 
     ${predicates}
     ${occurrenceQuery}
+    ${constraintClause}
   }
   ${groupByClause.join("\n")}
   `
@@ -3031,7 +3351,8 @@ export const selectRiskLogEntryByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllRiskLogEntries = (select, args) => {
+export const selectAllRiskLogEntries = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(riskLogPredicateMap);
   if (!select.includes('id')) select.push('id');
 
@@ -3049,12 +3370,27 @@ export const selectAllRiskLogEntries = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(riskLogPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> ;
+          <http://csrc.nist.gov/ns/oscal/assessment/common#risk_log> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -3361,6 +3697,7 @@ export const selectSubjectByIriQuery = (iri, select) => {
   if (!select.includes('subject_type')) cloneSelect.push('subject_type');
   // get the references name and version, if name is asked for
   if (select.includes('name')) {
+    cloneSelect.push('subject_id');
     cloneSelect.push('subject_name');
     cloneSelect.push('subject_version');
   }
@@ -3375,13 +3712,15 @@ export const selectSubjectByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllSubjects = (select, args) => {
+export const selectAllSubjects = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
   if (!select.includes('id')) select.push('id');
   // defensive code to protect against query not supplying subject type
   if (!select.includes('subject_type')) select.push('subject_type');
   // get the references name and version, if name is asked for
   if (select.includes('name')) {
+    select.push('subject_id');
     select.push('subject_name');
     select.push('subject_version');
   }
@@ -3400,12 +3739,39 @@ export const selectAllSubjects = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'observation') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Observation>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
+    }
+    if (parent.entity_type === 'mitigating-factor') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
+    }
+    if (parent.entity_type === 'requested-asset') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Subject> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -3740,6 +4106,28 @@ export const actorPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
+export const assessmentAssetPredicateMap = {
+  id: {
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  object_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  components: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#components>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "components");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  assessment_platforms: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_platforms>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "assessment_platforms");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+}
 export const assessmentPlatformPredicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
@@ -3961,7 +4349,7 @@ export const evidencePredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#description>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
@@ -4185,7 +4573,7 @@ export const observationPredicateMap = {
   },
   relevant_evidence: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#relevant_evidence>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "relative_evidence");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "relevant_evidence");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   collected: {
@@ -4494,6 +4882,11 @@ export const riskPredicateMap = {
   related_observations: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_observations");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  related_observation_ids: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_observation_ids");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   false_positive: {
@@ -4808,6 +5201,11 @@ export const subjectPredicateMap = {
   subject_context: {
     predicate: "<http://darklight.ai/ns/oscal/assessment/common#subject_context>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_context");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_id: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_id");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_name: {

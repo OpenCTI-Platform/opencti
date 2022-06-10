@@ -203,7 +203,7 @@ class PartyEntityEditionContainer extends Component {
       R.assoc('modified', party?.modified || null),
       R.assoc('short_name', party?.short_name || ''),
       R.assoc('party_type', party?.party_type || ''),
-      R.assoc('member_of_organizations', party?.member_of_organizations || ''),
+      R.assoc('member_of_organizations', party?.member_of_organizations?.map((value) => value?.name) || ''),
       R.assoc('job_title', party?.job_title || ''),
       R.pick([
         'id',
@@ -231,7 +231,6 @@ class PartyEntityEditionContainer extends Component {
           open={this.props.displayEdit}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}

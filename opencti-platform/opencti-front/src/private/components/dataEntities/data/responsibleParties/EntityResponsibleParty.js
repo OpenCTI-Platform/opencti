@@ -140,6 +140,7 @@ const EntityRole = createFragmentContainer(EmtityResponsiblePartyComponent, {
     fragment EntityResponsibleParty_responsibleParty on OscalResponsibleParty {
       __typename
       id
+      name
       labels {
         __typename
         id

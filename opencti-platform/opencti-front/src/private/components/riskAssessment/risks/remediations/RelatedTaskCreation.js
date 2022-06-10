@@ -160,12 +160,12 @@ const RelatedTaskValidation = (t) => Yup.object().shape({
   description: Yup.string().required(t('This field is required')),
   start_date: Yup.date().required('This field is required'),
   end_date: Yup.date()
-  .when("start_date", {
-    is: Yup.date,
-    then: Yup.date().nullable().min(
-      Yup.ref('start_date'),
-      "End date can't be before start date")
-  })
+    .when("start_date", {
+      is: Yup.date,
+      then: Yup.date().nullable().min(
+        Yup.ref('start_date'),
+        "End date can't be before start date")
+    })
 });
 
 class RelatedTaskCreation extends Component {
@@ -175,12 +175,10 @@ class RelatedTaskCreation extends Component {
       open: false,
       close: false,
       resourceName: '',
-      responsible_roles: [],
       associated_activities: [],
       timing: {},
       start_date: '',
       end_date: null,
-
     };
   }
 
@@ -197,13 +195,6 @@ class RelatedTaskCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    if (values.responsible_roles.length > 0) {
-      this.setState({
-        responsible_roles: values.responsible_roles.map((value) => (
-          { role: value }
-        )),
-      });
-    }
     if (values.associated_activities.length > 0) {
       this.setState({
         associated_activities: values.associated_activities.map((value) => (
@@ -227,7 +218,6 @@ class RelatedTaskCreation extends Component {
       dissoc('resource_type'),
       dissoc('resource'),
       assoc('timing', this.state.timing),
-      assoc('responsible_roles', this.state.responsible_roles),
     )(values);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
@@ -238,7 +228,6 @@ class RelatedTaskCreation extends Component {
       onCompleted: (response) => {
         this.handleAddReferenceMutation(response.createOscalTask);
         setSubmitting(false);
-        resetForm();
         this.handleClose();
       },
       onError: (err) => {
@@ -294,7 +283,6 @@ class RelatedTaskCreation extends Component {
 
   handleCancelClick() {
     this.setState({
-      open: false,
       close: true,
       resourceName: '',
       fieldName: '',
@@ -306,7 +294,7 @@ class RelatedTaskCreation extends Component {
   }
 
   onResetContextual() {
-    this.handleClose();
+    this.handleCancelClick();
   }
 
   renderClassic() {
@@ -428,7 +416,6 @@ class RelatedTaskCreation extends Component {
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleClose.bind(this)}
           fullWidth={true}
           maxWidth='sm'
         >
@@ -599,7 +586,7 @@ class RelatedTaskCreation extends Component {
                             'The value must be a date (YYYY-MM-DD)',
                           )}
                           style={{ height: '38.09px' }}
-                          onChange={(_, date) => this.setState({ startDate: dateFormat(date,"YYYY-MM-DD") })}
+                          onChange={(_, date) => this.setState({ startDate: dateFormat(date, "YYYY-MM-DD") })}
                         />
                       </div>
                     </Grid>
@@ -631,7 +618,7 @@ class RelatedTaskCreation extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                           minDate={this.state.startDate}
-                          onChange={(_, date) => this.setState({ endDate: dateFormat(date,"YYYY-MM-DD") })}
+                          onChange={(_, date) => this.setState({ endDate: dateFormat(date, "YYYY-MM-DD") })}
                         />
                       </div>
                     </Grid>
@@ -828,9 +815,7 @@ class RelatedTaskCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    onClick={this.handleCancelClick.bind(this)}
-                    disabled={isSubmitting}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -848,44 +833,43 @@ class RelatedTaskCreation extends Component {
               </Form>
             )}
           </Formik>
-        </Dialog>
-        <Dialog
-          open={this.state.close}
-          keepMounted={true}
+          <Dialog
+            open={this.state.close}
+            keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
-        >
-          <DialogContent>
-            <Typography className={classes.popoverDialog} >
-              {t('Are you sure you’d like to cancel?')}
-            </Typography>
-            <Typography align='left'>
-              {t('Your progress will not be saved')}
-            </Typography>
-          </DialogContent>
-          <DialogActions className={classes.dialogActions}>
-            <Button
-              // onClick={this.handleCloseDelete.bind(this)}
-              // disabled={this.state.deleting}
-              // onClick={handleReset}
-              onClick={this.handleCancelCloseClick.bind(this)}
-              classes={{ root: classes.buttonPopover }}
-              variant="outlined"
-              size="small"
-            >
-              {t('Go Back')}
-            </Button>
-            <Button
-              onClick={() => this.props.history.goBack()}
-              color="secondary"
-              // disabled={this.state.deleting}
-              classes={{ root: classes.buttonPopover }}
-              variant="contained"
-              size="small"
-            >
-              {t('Yes, Cancel')}
-            </Button>
-          </DialogActions>
+          >
+            <DialogContent>
+              <Typography className={classes.popoverDialog} >
+                {t('Are you sure you’d like to cancel?')}
+              </Typography>
+              <Typography align='left'>
+                {t('Your progress will not be saved')}
+              </Typography>
+            </DialogContent>
+            <DialogActions className={classes.dialogActions}>
+              <Button
+                // onClick={this.handleCloseDelete.bind(this)}
+                // disabled={this.state.deleting}
+                // onClick={handleReset}
+                onClick={this.handleCancelCloseClick.bind(this)}
+                classes={{ root: classes.buttonPopover }}
+                variant="outlined"
+                size="small"
+              >
+                {t('Go Back')}
+              </Button>
+              <Button
+                onClick={() => this.props.history.goBack()}
+                color="secondary"
+                // disabled={this.state.deleting}
+                classes={{ root: classes.buttonPopover }}
+                variant="contained"
+                size="small"
+              >
+                {t('Yes, Cancel')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Dialog>
       </div>
     );

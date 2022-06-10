@@ -209,7 +209,6 @@ class RiskObservationLineContainer extends Component {
             open={this.state.displayDetails}
             keepMounted={true}
             classes={{ paper: classes.drawerPaper }}
-            onClose={this.handleCloseUpdate.bind(this)}
           >
             <QR
               environment={environmentDarkLight}

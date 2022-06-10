@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  compose,
+  pipe,
+  pathOr,
+  map,
+} from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -62,6 +67,12 @@ class EntityResponsiblePartyLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
+    const partyData = pipe(
+      pathOr([], ['parties']),
+      map((value) => ({
+        name: value.name,
+      })),
+    )(node);
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -88,25 +99,31 @@ class EntityResponsiblePartyLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name && t(node.name)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: '11.5%' }}
               >
                 {node.entity_type && t(node.entity_type)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.role.width }}
+                style={{ width: dataColumns.role_identifier.width }}
               >
-                {node.parties.length > 0 && node.parties.map((party) => (party.name))}
+                {node.role && t(node.role.role_identifier)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.5%' }}
+                style={{ width: '15.5%' }}
               >
-                {/* {node.entity_type && node.entity_type} */}
+                {partyData.length > 0 && partyData.map((value) => t(value.name)).join(', ')}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '21%' }}
+                style={{ width: '20.5%' }}
               >
                 <CyioCoreObjectLabels
                   variant="inList"
@@ -116,7 +133,7 @@ class EntityResponsiblePartyLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 {/* {node.created && fd(node.created)} */}
               </div>
@@ -158,6 +175,7 @@ const EntityResponsiblePartyLineFragment = createFragmentContainer(
       fragment EntityResponsiblePartyLine_node on OscalResponsibleParty {
         __typename
         id
+        name
         entity_type
         role {
           id
@@ -220,6 +238,17 @@ class EntityResponsiblePartyLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
+                style={{ width: '10%' }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: '12.5%' }}
               >
                 <Skeleton
@@ -264,7 +293,7 @@ class EntityResponsiblePartyLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creation_date.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 <Skeleton
                   animation="wave"

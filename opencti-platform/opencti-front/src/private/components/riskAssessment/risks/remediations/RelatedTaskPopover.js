@@ -171,16 +171,16 @@ class RelatedTaskPopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-      this.setState({
-        responsible_roles: values.responsible_roles,
-        associated_activities: values.associated_activities,
-        timing: {
-          within_date_range: {
-            start_date: values.start_date === null ? null : parse(values.start_date),
-            end_date: values.end_date === null ? null : parse(values.end_date),
-          }
-        },
-      });
+    this.setState({
+      responsible_roles: values.responsible_roles,
+      associated_activities: values.associated_activities,
+      timing: {
+        within_date_range: {
+          start_date: values.start_date === null ? null : parse(values.start_date),
+          end_date: values.end_date === null ? null : parse(values.end_date),
+        }
+      },
+    });
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
@@ -254,6 +254,10 @@ class RelatedTaskPopover extends Component {
     // });
   }
 
+  onReset() {
+    this.handleCloseUpdate();
+  }
+
   render() {
     const {
       classes,
@@ -281,10 +285,10 @@ class RelatedTaskPopover extends Component {
       R.assoc('task_type', data?.task_type || ''),
       R.assoc('start_date', dateFormat(data.timing?.start_date) || dateFormat(data.timing?.on_date)),
       R.assoc('end_date', dateFormat(data?.timing?.end_date)),
-      R.assoc('related_tasks', ''),
-      R.assoc('associated_activities', ''),
-      R.assoc('dependencies', taskDependency?.name || ''),
-      R.assoc('responsible_parties', responsibleRoles?.role_identifier || ''),
+      R.assoc('related_tasks', []),
+      R.assoc('associated_activities', []),
+      R.assoc('task_dependencies', taskDependency?.name || []),
+      R.assoc('responsible_roles', responsibleRoles?.role_identifier || []),
       R.pick([
         'id',
         'name',
@@ -294,8 +298,8 @@ class RelatedTaskPopover extends Component {
         'task_type',
         'start_date',
         'end_date',
-        'dependencies',
-        'responsible_parties',
+        'task_dependencies',
+        'responsible_roles',
       ]),
     )(data);
     return (
@@ -339,7 +343,6 @@ class RelatedTaskPopover extends Component {
           open={this.state.displayUpdate}
           keepMounted={true}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
         >
           {/* <QR
             environment={environmentDarkLight}
@@ -379,7 +382,7 @@ class RelatedTaskPopover extends Component {
             initialValues={initialValues}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
-          // onReset={this.onResetContextual.bind(this)}
+            onReset={this.onReset.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
@@ -615,7 +618,7 @@ class RelatedTaskPopover extends Component {
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                    <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Typography
@@ -747,8 +750,7 @@ class RelatedTaskPopover extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    onClick={this.handleCloseUpdate.bind(this)}
+                    onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >

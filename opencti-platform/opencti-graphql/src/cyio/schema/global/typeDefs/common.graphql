@@ -71,6 +71,14 @@
     target_id: ID!
   }
 
+  "Defines the identifying information about a complex type"
+  interface ComplexDatatype {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+  }
+  
   "Defines the identifying information about a lifecycle object"
   interface LifecycleObject {
     "Identities the date and time at which the object was originally created."

@@ -95,7 +95,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {partyData.length > 0 && partyData.map((party) => (party.name))}
+                {responsibleParty.name && t(responsibleParty.name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -179,7 +179,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
-                      {responsibleParty?.description && t(responsibleParty?.description)}
+                      {responsibleParty.description && t(responsibleParty.description)}
                     </Markdown>
                   </div>
                 </div>
@@ -233,6 +233,8 @@ const EntityResponsiblePartyDetails = createFragmentContainer(
       fragment EntityResponsiblePartyDetails_responsibleParty on OscalResponsibleParty {
         __typename
         id
+        name
+        description
         entity_type
         role {
           id

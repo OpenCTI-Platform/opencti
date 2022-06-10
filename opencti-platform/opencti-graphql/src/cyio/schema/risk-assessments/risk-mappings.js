@@ -1,3 +1,4 @@
+
 export const riskSingularizeSchema = { 
   singularizeVariables: {
     "": false, // so there is an object as the root instead of an array
@@ -119,6 +120,7 @@ export const riskSingularizeSchema = {
     "entry_type": false,
     "event_end": true,
     "event_start": true,
+    "evidence_description": true,
     "expires": true,
     "exploitability": true,
     "exploit_available": true,
@@ -195,6 +197,7 @@ export const riskSingularizeSchema = {
     "statement": true,
     "status_change": true,
     "subject_context": true,
+    "subject_id": true,
     "subject_name": true,
     "subject_type": true,
     "subject_version": true,
@@ -227,6 +230,7 @@ export const riskTypeMapping = {
   // object-type: GraphQL-Type
   "activity": "Activity",
   "actor": "Actor",
+  "assessment-asset": "AssessmentAsset",
   "assessment-log-entry": "AssessmentLogEntry",
   "assessment-platform": "AssessmentPlatform",
   "assessment-subject": "AssessmentSubject",
@@ -246,6 +250,7 @@ export const riskTypeMapping = {
   "oscal-role": "OscalRole",
   "oscal-resource": "OscalResource",
   "oscal-responsible-party": "OscalResponsibleParty",
+  "oscal-responsible-role": "OscalResponsibleRole",
   "oscal-revision": "Revision",
   "oscal-task": "OscalTask",
   "oscal-user": "OscalUser",

@@ -57,7 +57,7 @@ Transition.displayName = 'TransitionSlide';
 
 const assessmentPlatformEntityEditionQuery = graphql`
   query AssessmentPlatformEntityEditionQuery($id: ID!) {
-    oscalRole(id: $id) {
+    assessmentPlatform(id: $id) {
       id
       created
       modified

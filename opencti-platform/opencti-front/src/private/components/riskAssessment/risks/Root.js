@@ -108,9 +108,7 @@ class RootRisk extends Component {
           query={riskQuery}
           variables={{ id: riskId }}
           render={({ error, props, retry }) => {
-            console.log('riskError', error);
             if (props) {
-              console.log('RiskData', props);
               if (props.risk) {
                 return (
                   <Switch>
