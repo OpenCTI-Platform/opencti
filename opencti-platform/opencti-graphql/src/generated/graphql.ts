@@ -95,6 +95,7 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   payload_bin?: Maybe<Scalars['String']>;
@@ -146,6 +147,11 @@ export type ArtifactJobsArgs = {
 
 
 export type ArtifactNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ArtifactObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -251,6 +257,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parentAttackPatterns?: Maybe<AttackPatternConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -301,6 +308,11 @@ export type AttackPatternJobsArgs = {
 
 
 export type AttackPatternNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type AttackPatternObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -501,6 +513,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -550,6 +563,11 @@ export type AutonomousSystemJobsArgs = {
 
 
 export type AutonomousSystemNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type AutonomousSystemObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -669,6 +687,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objective?: Maybe<Scalars['String']>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -713,6 +732,11 @@ export type CampaignJobsArgs = {
 
 
 export type CampaignNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CampaignObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -963,6 +987,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -1009,6 +1034,11 @@ export type CityJobsArgs = {
 
 
 export type CityNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CityObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1177,6 +1207,7 @@ export type Container = {
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   relatedContainers?: Maybe<ContainerConnection>;
@@ -1213,6 +1244,11 @@ export type ContainerObjectsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type ContainerObservedDataArgs = {
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -1408,6 +1444,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -1455,6 +1492,11 @@ export type CountryJobsArgs = {
 
 
 export type CountryNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CountryObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1589,6 +1631,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -1637,6 +1680,11 @@ export type CourseOfActionJobsArgs = {
 
 
 export type CourseOfActionNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CourseOfActionObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1796,6 +1844,7 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -1845,6 +1894,11 @@ export type CryptocurrencyWalletJobsArgs = {
 
 
 export type CryptocurrencyWalletNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1936,6 +1990,7 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -1985,6 +2040,11 @@ export type CryptographicKeyJobsArgs = {
 
 
 export type CryptographicKeyNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2086,6 +2146,7 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   path: Scalars['String'];
@@ -2136,6 +2197,11 @@ export type DirectoryJobsArgs = {
 
 
 export type DirectoryNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type DirectoryObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2243,6 +2309,7 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -2292,6 +2359,11 @@ export type DomainNameJobsArgs = {
 
 
 export type DomainNameNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type DomainNameObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2414,6 +2486,7 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -2463,6 +2536,11 @@ export type EmailAddrJobsArgs = {
 
 
 export type EmailAddrNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailAddrObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2560,6 +2638,7 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -2610,6 +2689,11 @@ export type EmailMessageJobsArgs = {
 
 
 export type EmailMessageNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailMessageObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2710,6 +2794,7 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -2758,6 +2843,11 @@ export type EmailMimePartTypeJobsArgs = {
 
 
 export type EmailMimePartTypeNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailMimePartTypeObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3197,6 +3287,7 @@ export type HashedObservable = {
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -3244,6 +3335,11 @@ export type HashedObservableJobsArgs = {
 
 
 export type HashedObservableNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HashedObservableObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3331,6 +3427,7 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -3380,6 +3477,11 @@ export type HostnameJobsArgs = {
 
 
 export type HostnameNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3471,6 +3573,7 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -3520,6 +3623,11 @@ export type IPv4AddrJobsArgs = {
 
 
 export type IPv4AddrNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IPv4AddrObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3613,6 +3721,7 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -3662,6 +3771,11 @@ export type IPv6AddrJobsArgs = {
 
 
 export type IPv6AddrNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IPv6AddrObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3791,6 +3905,7 @@ export type Identity = {
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -3836,6 +3951,11 @@ export type IdentityJobsArgs = {
 
 
 export type IdentityNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IdentityObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3980,6 +4100,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objective?: Maybe<Scalars['String']>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -4024,6 +4145,11 @@ export type IncidentJobsArgs = {
 
 
 export type IncidentNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IncidentObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4197,6 +4323,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observables?: Maybe<StixCyberObservableConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pattern?: Maybe<Scalars['String']>;
@@ -4255,6 +4382,11 @@ export type IndicatorNotesArgs = {
 
 
 export type IndicatorObservablesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IndicatorObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4448,6 +4580,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   organizations?: Maybe<OrganizationConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -4497,6 +4630,11 @@ export type IndividualJobsArgs = {
 
 
 export type IndividualNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IndividualObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4680,6 +4818,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -4724,6 +4863,11 @@ export type InfrastructureJobsArgs = {
 
 
 export type InfrastructureNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type InfrastructureObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4924,6 +5068,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -4971,6 +5116,11 @@ export type IntrusionSetJobsArgs = {
 
 
 export type IntrusionSetNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IntrusionSetObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5337,6 +5487,7 @@ export type Location = {
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -5382,6 +5533,11 @@ export type LocationJobsArgs = {
 
 
 export type LocationNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type LocationObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5606,6 +5762,7 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -5655,6 +5812,11 @@ export type MacAddrJobsArgs = {
 
 
 export type MacAddrNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MacAddrObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5759,6 +5921,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -5803,6 +5966,11 @@ export type MalwareJobsArgs = {
 
 
 export type MalwareNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MalwareObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -6955,6 +7123,7 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -7003,6 +7172,11 @@ export type MutexJobsArgs = {
 
 
 export type MutexNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MutexObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7100,6 +7274,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -7153,6 +7328,11 @@ export type NetworkTrafficJobsArgs = {
 
 
 export type NetworkTrafficNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type NetworkTrafficObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7259,6 +7439,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -7318,6 +7499,11 @@ export type NoteObjectsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type NoteObservedDataArgs = {
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -7511,6 +7697,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -7570,6 +7757,11 @@ export type ObservedDataObjectsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type ObservedDataObservedDataArgs = {
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -7750,6 +7942,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinion: Scalars['String'];
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -7810,6 +8003,11 @@ export type OpinionObjectsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type OpinionObservedDataArgs = {
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -7994,6 +8192,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -8043,6 +8242,11 @@ export type OrganizationJobsArgs = {
 
 
 export type OrganizationNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type OrganizationObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8240,6 +8444,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -8288,6 +8493,11 @@ export type PositionJobsArgs = {
 
 
 export type PositionNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type PositionObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8455,6 +8665,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -8504,6 +8715,11 @@ export type ProcessJobsArgs = {
 
 
 export type ProcessNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ProcessObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -10287,6 +10503,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parentRegions?: Maybe<RegionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -10335,6 +10552,11 @@ export type RegionJobsArgs = {
 
 
 export type RegionNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type RegionObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -10505,6 +10727,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -10566,6 +10789,11 @@ export type ReportObjectsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type ReportObservedDataArgs = {
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -10906,6 +11134,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parentSectors?: Maybe<SectorConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -10955,6 +11184,11 @@ export type SectorJobsArgs = {
 
 
 export type SectorNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type SectorObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11186,6 +11420,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -11237,6 +11472,11 @@ export type SoftwareJobsArgs = {
 
 
 export type SoftwareNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type SoftwareObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11408,6 +11648,7 @@ export type StixCoreObject = {
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -11447,6 +11688,11 @@ export type StixCoreObjectJobsArgs = {
 
 
 export type StixCoreObjectNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixCoreObjectObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11819,6 +12065,7 @@ export type StixCyberObservable = {
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -11866,6 +12113,11 @@ export type StixCyberObservableJobsArgs = {
 
 
 export type StixCyberObservableNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixCyberObservableObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -12183,6 +12435,7 @@ export type StixDomainObject = {
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -12226,6 +12479,11 @@ export type StixDomainObjectJobsArgs = {
 
 
 export type StixDomainObjectNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixDomainObjectObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -12451,6 +12709,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -12501,6 +12760,11 @@ export type StixFileJobsArgs = {
 
 
 export type StixFileNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixFileObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -13222,6 +13486,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   organizations?: Maybe<OrganizationConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -13271,6 +13536,11 @@ export type SystemJobsArgs = {
 
 
 export type SystemNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type SystemObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -13572,6 +13842,7 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -13621,6 +13892,11 @@ export type TextJobsArgs = {
 
 
 export type TextNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -13721,6 +13997,7 @@ export type ThreatActor = BasicObject & StixCoreObject & StixDomainObject & Stix
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -13772,6 +14049,11 @@ export type ThreatActorJobsArgs = {
 
 
 export type ThreatActorNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -13949,6 +14231,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -13995,6 +14278,11 @@ export type ToolJobsArgs = {
 
 
 export type ToolNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ToolObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14152,6 +14440,7 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -14201,6 +14490,11 @@ export type UrlJobsArgs = {
 
 
 export type UrlNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UrlObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14338,6 +14632,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -14387,6 +14682,11 @@ export type UserAccountJobsArgs = {
 
 
 export type UserAccountNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAccountObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14503,6 +14803,7 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -14552,6 +14853,11 @@ export type UserAgentJobsArgs = {
 
 
 export type UserAgentNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14809,6 +15115,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -14860,6 +15167,11 @@ export type VulnerabilityJobsArgs = {
 
 
 export type VulnerabilityNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type VulnerabilityObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14995,6 +15307,7 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -15043,6 +15356,11 @@ export type WindowsRegistryKeyJobsArgs = {
 
 
 export type WindowsRegistryKeyNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type WindowsRegistryKeyObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15139,6 +15457,7 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -15187,6 +15506,11 @@ export type WindowsRegistryValueTypeJobsArgs = {
 
 
 export type WindowsRegistryValueTypeNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type WindowsRegistryValueTypeObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15504,6 +15828,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
+  observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
@@ -15568,6 +15893,11 @@ export type X509CertificateJobsArgs = {
 
 
 export type X509CertificateNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type X509CertificateObservedDataArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16844,6 +17174,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ArtifactObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ArtifactOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   payload_bin?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -16890,6 +17221,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AttackPatternNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<AttackPatternObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<AttackPatternOpinionsArgs>>;
   parentAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -16981,6 +17313,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<AutonomousSystemObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<AutonomousSystemOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AutonomousSystemPendingFilesArgs>>;
@@ -17045,6 +17378,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objective?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CampaignObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CampaignOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CampaignPendingFilesArgs>>;
@@ -17136,6 +17470,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CityNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CityObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CityOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CityPendingFilesArgs>>;
@@ -17232,6 +17567,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ContainerObjectsArgs>>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ContainerObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ContainerOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ContainerRelatedContainersArgs>>;
@@ -17304,6 +17640,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CountryNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CountryObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CountryOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CountryPendingFilesArgs>>;
@@ -17370,6 +17707,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CourseOfActionNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CourseOfActionObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CourseOfActionOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CourseOfActionPendingFilesArgs>>;
@@ -17432,6 +17770,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletPendingFilesArgs>>;
@@ -17468,6 +17807,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CryptographicKeyObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CryptographicKeyOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyPendingFilesArgs>>;
@@ -17517,6 +17857,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<DirectoryObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<DirectoryOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -17566,6 +17907,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<DomainNameObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<DomainNameOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DomainNamePendingFilesArgs>>;
@@ -17617,6 +17959,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<EmailAddrObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<EmailAddrOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailAddrPendingFilesArgs>>;
@@ -17658,6 +18001,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<EmailMessageObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<EmailMessageOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMessagePendingFilesArgs>>;
@@ -17698,6 +18042,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMimePartTypePendingFilesArgs>>;
@@ -17910,6 +18255,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<HashedObservableObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<HashedObservableOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HashedObservablePendingFilesArgs>>;
@@ -17943,6 +18289,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<HostnameObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<HostnameOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnamePendingFilesArgs>>;
@@ -17979,6 +18326,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IPv4AddrObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IPv4AddrOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv4AddrPendingFilesArgs>>;
@@ -18015,6 +18363,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IPv6AddrObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IPv6AddrOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv6AddrPendingFilesArgs>>;
@@ -18058,6 +18407,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IdentityNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IdentityObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IdentityOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IdentityPendingFilesArgs>>;
@@ -18124,6 +18474,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objective?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IncidentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IncidentOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentPendingFilesArgs>>;
@@ -18195,6 +18546,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<IndicatorObservablesArgs>>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IndicatorObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IndicatorOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pattern?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -18268,6 +18620,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IndividualNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IndividualObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IndividualOpinionsArgs>>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -18353,6 +18706,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<InfrastructureNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<InfrastructureObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<InfrastructureOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<InfrastructurePendingFilesArgs>>;
@@ -18440,6 +18794,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IntrusionSetNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IntrusionSetObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IntrusionSetOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetPendingFilesArgs>>;
@@ -18605,6 +18960,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<LocationNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<LocationObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<LocationOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LocationPendingFilesArgs>>;
@@ -18696,6 +19052,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MacAddrObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MacAddrOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MacAddrPendingFilesArgs>>;
@@ -18745,6 +19102,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MalwareNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MalwareObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MalwareOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwarePendingFilesArgs>>;
@@ -18994,6 +19352,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MutexObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MutexOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MutexPendingFilesArgs>>;
@@ -19035,6 +19394,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<NetworkTrafficObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NetworkTrafficOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NetworkTrafficPendingFilesArgs>>;
@@ -19081,6 +19441,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<NoteObjectsArgs>>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<NoteObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NoteOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NotePendingFilesArgs>>;
@@ -19160,6 +19521,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ObservedDataObjectsArgs>>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ObservedDataObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ObservedDataOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataPendingFilesArgs>>;
@@ -19224,6 +19586,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<OpinionObjectsArgs>>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<OpinionObservedDataArgs>>;
   opinion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<OpinionOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -19290,6 +19653,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OrganizationNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<OrganizationObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<OrganizationOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OrganizationPendingFilesArgs>>;
@@ -19381,6 +19745,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PositionNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<PositionObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<PositionOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PositionPendingFilesArgs>>;
@@ -19449,6 +19814,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ProcessObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ProcessOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessPendingFilesArgs>>;
@@ -19738,6 +20104,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<RegionNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<RegionObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<RegionOpinionsArgs>>;
   parentRegions?: Resolver<Maybe<ResolversTypes['RegionConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -19805,6 +20172,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ReportObjectsArgs>>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ReportObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ReportOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportPendingFilesArgs>>;
@@ -19985,6 +20353,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SectorNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SectorObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SectorOpinionsArgs>>;
   parentSectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -20107,6 +20476,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SoftwareObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SoftwareOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SoftwarePendingFilesArgs>>;
@@ -20185,6 +20555,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCoreObjectNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixCoreObjectObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixCoreObjectOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCoreObjectPendingFilesArgs>>;
@@ -20308,6 +20679,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixCyberObservableObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixCyberObservableOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservablePendingFilesArgs>>;
@@ -20418,6 +20790,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixDomainObjectNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixDomainObjectObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixDomainObjectOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixDomainObjectPendingFilesArgs>>;
@@ -20493,6 +20866,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixFileObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixFileOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixFilePendingFilesArgs>>;
@@ -20810,6 +21184,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SystemNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SystemObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SystemOpinionsArgs>>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -20945,6 +21320,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<TextObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<TextOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextPendingFilesArgs>>;
@@ -20990,6 +21366,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ThreatActorObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorPendingFilesArgs>>;
@@ -21067,6 +21444,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ToolNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ToolObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ToolOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ToolPendingFilesArgs>>;
@@ -21131,6 +21509,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<UrlObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<UrlOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UrlPendingFilesArgs>>;
@@ -21208,6 +21587,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<UserAccountObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<UserAccountOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAccountPendingFilesArgs>>;
@@ -21244,6 +21624,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<UserAgentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<UserAgentOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentPendingFilesArgs>>;
@@ -21345,6 +21726,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<VulnerabilityNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<VulnerabilityObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<VulnerabilityOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<VulnerabilityPendingFilesArgs>>;
@@ -21413,6 +21795,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyPendingFilesArgs>>;
@@ -21451,6 +21834,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypePendingFilesArgs>>;
@@ -21593,6 +21977,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<X509CertificateObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<X509CertificateOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509CertificatePendingFilesArgs>>;

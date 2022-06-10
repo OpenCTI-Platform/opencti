@@ -30,9 +30,9 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
-  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_REPORT
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
@@ -77,6 +77,10 @@ export const batchNotes = (user, stixCoreObjectIds, args = {}) => {
 
 export const batchOpinions = (user, stixCoreObjectIds, args = {}) => {
   return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, args);
+};
+
+export const batchObservedData = (user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, args);
 };
 
 export const batchLabels = (user, stixCoreObjectIds) => {

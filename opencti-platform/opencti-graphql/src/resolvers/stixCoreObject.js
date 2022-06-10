@@ -14,6 +14,7 @@ import {
   batchExternalReferences,
   batchNotes,
   batchOpinions,
+  batchObservedData,
   batchReports,
   stixCoreObjectAskEnrichment,
   stixCoreObjectExportAsk,
@@ -39,6 +40,7 @@ const externalReferencesLoader = batchLoader(batchExternalReferences);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
+const observedDataLoader = batchLoader(batchObservedData);
 
 const stixCoreObjectResolvers = {
   Query: {
@@ -66,6 +68,7 @@ const stixCoreObjectResolvers = {
     reports: (stixCoreObject, args, { user }) => reportsLoader.load(stixCoreObject.id, user, args),
     notes: (stixCoreObject, _, { user }) => notesLoader.load(stixCoreObject.id, user),
     opinions: (stixCoreObject, _, { user }) => opinionsLoader.load(stixCoreObject.id, user),
+    observedData: (stixCoreObject, _, { user }) => observedDataLoader.load(stixCoreObject.id, user),
     jobs: (stixCoreObject, args, { user }) => worksForSource(user, stixCoreObject.id, args),
     connectors: (stixCoreObject, { onlyAlive = false }, { user }) => connectorsForEnrichment(user, stixCoreObject.entity_type, onlyAlive),
     importFiles: (stixCoreObject, { first }, { user }) => filesListing(user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`),
