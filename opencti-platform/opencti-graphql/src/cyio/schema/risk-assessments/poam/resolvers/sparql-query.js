@@ -80,6 +80,7 @@ const poamItemReducer = (item) => {
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationship_iri: item.relationships}),
     // POAM Item
+    ...(item.props && {props: item.props}),
     ...(item.poam_id && {poam_id: item.poam_id}),
     ...(item.accepted_risk !== undefined && {accepted_risk: item.accepted_risk}),
     ...(item.related_observation_ids && {related_observation_ids: item.related_observation_ids}),
@@ -428,6 +429,7 @@ export const selectPOAMByIriQuery = (iri, select) => {
 }
 export const selectAllPOAMs = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(poamPredicateMap);
+  // if (select.includes('props')) select = Object.keys(poamPredicateMap);
   if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
@@ -577,6 +579,7 @@ export const selectPOAMItemQuery = (id, select) => {
 export const selectPOAMItemByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
+  if (select.includes('props') && !select.includes('poam_id')) select.push('poam_id');
   const { selectionClause, predicates } = buildSelectVariables(poamItemPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -591,6 +594,7 @@ export const selectPOAMItemByIriQuery = (iri, select) => {
 export const selectAllPOAMItems = (select, args, parent) => {
   let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
+  if (select.includes('props')) select = Object.keys(poamItemPredicateMap);
   if (!select.includes('id')) select.push('id');
 
   // fetch the uuid of each related_observation and related_risk as these are commonly used

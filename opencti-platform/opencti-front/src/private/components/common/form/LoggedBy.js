@@ -39,9 +39,9 @@ class RelatedResponse extends Component {
         const loggedByEntities = R.pipe(
           R.pathOr([], ['oscalParties', 'edges']),
           R.map((n) => ({
-            id: n.node.id,
-            party_type: n.node.party_type,
-            name: n.node.name,
+            id: n?.node?.id,
+            party_type: n?.node?.party_type,
+            name: n?.node?.name,
           })),
         )(data);
         this.setState({

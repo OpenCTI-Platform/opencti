@@ -92,6 +92,11 @@ const styles = (theme) => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 const remediationCreationMutation = graphql`
   mutation RemediationCreationMutation($input: RiskResponseAddInput) {
     createRiskResponse(input: $input) {
@@ -137,6 +142,10 @@ class RemediationCreation extends Component {
 
   onReset() {
     this.handleClose();
+  }
+
+  handleCancelOpenClick() {
+    this.setState({ close: true });
   }
 
   handleCancelCloseClick() {
@@ -192,7 +201,6 @@ class RemediationCreation extends Component {
         <Dialog
           open={this.props.openCreation}
           keepMounted={true}
-          onClose={this.handleClose.bind(this)}
         >
           <Formik
             enableReinitialize={true}
@@ -425,13 +433,7 @@ class RemediationCreation extends Component {
                   <Button
                     variant='outlined'
                     // onClick={handleReset}
-                    onClick={() => {
-                      this.props.handleOpenCreation();
-                      this.setState({ close: true });
-                      {
-                        handleReset;
-                      }
-                    }}
+                    onClick={this.handleCancelOpenClick.bind(this)}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -455,7 +457,6 @@ class RemediationCreation extends Component {
           open={this.state.close}
           keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>

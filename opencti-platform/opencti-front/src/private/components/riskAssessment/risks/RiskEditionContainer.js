@@ -453,7 +453,6 @@ class RiskEditionContainer extends Component {
               <Dialog
                 open={this.state.displayCancel}
                 TransitionComponent={Transition}
-                onClose={this.handleCancelButton.bind(this)}
               >
                 <DialogContent>
                   <Typography style={{
