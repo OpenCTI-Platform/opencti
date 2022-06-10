@@ -729,6 +729,8 @@ const i18n = {
       'Export to image (png)': 'Exporter en image (png)',
       'Export to document (pdf)': 'Exporter en document (pdf)',
       'Generate an export': 'Générer un export',
+      'Expand elements': 'Etendre les éléments',
+      Expand: 'Etendre',
       'No export connector available to generate an export':
         "Aucun connecteur d'export disponible pour générer un export",
       'Simple export (just the entity)': "Export simple (seulement l'entité)",

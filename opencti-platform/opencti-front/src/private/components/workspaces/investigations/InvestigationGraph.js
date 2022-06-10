@@ -40,6 +40,7 @@ import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import WorkspaceHeader from '../WorkspaceHeader';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
+import SwitchField from '../../../../components/SwitchField';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -988,7 +989,7 @@ class InvestigationGraphComponent extends Component {
     }
   }
 
-  resetAllFilters() {
+  resetAllFilters(onlyRefresh = false) {
     return new Promise((resolve) => {
       const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
       const sortByDefinition = R.sortBy(
@@ -1020,21 +1021,35 @@ class InvestigationGraphComponent extends Component {
         R.uniqBy(R.prop('id')),
         sortByName,
       )(R.union(this.graphData.nodes, this.graphData.links));
-      this.setState(
-        {
-          allStixCoreObjectsTypes,
-          allMarkedBy,
-          allCreatedBy,
-          stixCoreObjectsTypes: allStixCoreObjectsTypes,
-          markedBy: allMarkedBy.map((n) => n.id),
-          createdBy: allCreatedBy.map((n) => n.id),
-          keyword: '',
-        },
-        () => {
-          this.saveParameters(false);
-          resolve(true);
-        },
-      );
+      if (onlyRefresh) {
+        this.setState(
+          {
+            allStixCoreObjectsTypes,
+            allMarkedBy,
+            allCreatedBy,
+          },
+          () => {
+            this.saveParameters(false);
+            resolve(true);
+          },
+        );
+      } else {
+        this.setState(
+          {
+            allStixCoreObjectsTypes,
+            allMarkedBy,
+            allCreatedBy,
+            stixCoreObjectsTypes: allStixCoreObjectsTypes,
+            markedBy: allMarkedBy.map((n) => n.id),
+            createdBy: allCreatedBy.map((n) => n.id),
+            keyword: '',
+          },
+          () => {
+            this.saveParameters(false);
+            resolve(true);
+          },
+        );
+      }
     });
   }
 
@@ -1456,6 +1471,11 @@ class InvestigationGraphComponent extends Component {
     const selectedTimeRangeInterval = computeTimeRangeInterval(
       this.graphObjects,
     );
+    if (filters.reset_filters) {
+      await this.resetAllFilters();
+    } else {
+      await this.resetAllFilters(true);
+    }
     this.setState(
       {
         selectedTimeRangeInterval,
@@ -1601,6 +1621,7 @@ class InvestigationGraphComponent extends Component {
               entity_type: 'All',
               relationship_type: 'All',
               limit: 100,
+              reset_filters: true,
             }}
             onSubmit={this.onSubmitExpandElements.bind(this)}
             onReset={this.onResetExpandElements.bind(this)}
@@ -1687,6 +1708,13 @@ class InvestigationGraphComponent extends Component {
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="reset_filters"
+                    label={t('Reset filters')}
+                    containerstyle={{ marginTop: 20 }}
+                  />
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
@@ -1697,7 +1725,7 @@ class InvestigationGraphComponent extends Component {
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >
-                    {t('Expand elements')}
+                    {t('Expand')}
                   </Button>
                 </DialogActions>
               </Form>
