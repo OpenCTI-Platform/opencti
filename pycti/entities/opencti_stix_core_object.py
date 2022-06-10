@@ -83,3 +83,143 @@ class StixCoreObject:
         result = self.opencti.query(query, {"id": id})
         entity = self.opencti.process_multiple_fields(result["data"]["stixCoreObject"])
         return entity["importFiles"]
+
+    """
+        Get the reports about a Stix-Core-Object object
+
+        :param id: the id of the Stix-Core-Object
+        :return List of reports
+    """
+
+    def reports(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log(
+                "info",
+                "Getting reports of the Stix-Core-Object {" + id + "}.",
+            )
+            query = """
+                query StixCoreObject($id: String!) {
+                    stixCoreObject(id: $id) {
+                        reports {
+                            edges {
+                                node {
+                                    id
+                                    standard_id
+                                    entity_type
+                                    parent_types
+                                    spec_version
+                                    created_at
+                                    updated_at
+                                    createdBy {
+                                        ... on Identity {
+                                            id
+                                            standard_id
+                                            entity_type
+                                            parent_types
+                                            spec_version
+                                            identity_class
+                                            name
+                                            description
+                                            roles
+                                            contact_information
+                                            x_opencti_aliases
+                                            created
+                                            modified
+                                            objectLabel {
+                                                edges {
+                                                    node {
+                                                        id
+                                                        value
+                                                        color
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        ... on Organization {
+                                            x_opencti_organization_type
+                                            x_opencti_reliability
+                                        }
+                                        ... on Individual {
+                                            x_opencti_firstname
+                                            x_opencti_lastname
+                                        }
+                                    }
+                                    objectMarking {
+                                        edges {
+                                            node {
+                                                id
+                                                standard_id
+                                                entity_type
+                                                definition_type
+                                                definition
+                                                created
+                                                modified
+                                                x_opencti_order
+                                                x_opencti_color
+                                            }
+                                        }
+                                    }
+                                    objectLabel {
+                                        edges {
+                                            node {
+                                                id
+                                                value
+                                                color
+                                            }
+                                        }
+                                    }
+                                    externalReferences {
+                                        edges {
+                                            node {
+                                                id
+                                                standard_id
+                                                entity_type
+                                                source_name
+                                                description
+                                                url
+                                                hash
+                                                external_id
+                                                created
+                                                modified
+                                                importFiles {
+                                                    edges {
+                                                        node {
+                                                            id
+                                                            name
+                                                            size
+                                                            metaData {
+                                                                mimetype
+                                                                version
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    revoked
+                                    confidence
+                                    created
+                                    modified
+                                    name
+                                    description
+                                    report_types
+                                    published                             
+                                }
+                            }
+                        }
+                    }
+                }
+             """
+            result = self.opencti.query(query, {"id": id})
+            processed_result = self.opencti.process_multiple_fields(
+                result["data"]["stixCoreObject"]
+            )
+            if processed_result:
+                return processed_result["reports"]
+            else:
+                return []
+        else:
+            self.opencti.log("error", "Missing parameters: id")
+            return None
