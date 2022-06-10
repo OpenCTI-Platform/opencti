@@ -22,16 +22,14 @@ const AppThemeProvider = (props) => {
     props,
   );
   const platformFavicon = R.pathOr(
-    null,
+    `/${window.BASE_PATH ? `${window.BASE_PATH}/` : ''}static/favicon.png`,
     ['settings', 'platform_favicon'],
     props,
   );
   useEffect(() => {
     document.title = platformTitle;
-    if (platformFavicon) {
-      const favicon = getFaviconEl();
-      favicon.href = platformFavicon;
-    }
+    const favicon = getFaviconEl();
+    favicon.href = platformFavicon;
   }, []);
   const platformThemeSettings = R.pathOr(
     null,

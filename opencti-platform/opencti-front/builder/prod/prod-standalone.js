@@ -53,10 +53,10 @@ esbuild
         <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <link rel="shortcut icon" href="%BASE_PATH%/static/favicon.png">
         <script>window.BASE_PATH = "%BASE_PATH%"</script>
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>OpenCTI - Cyber Threat Intelligence Platform</title>
+        <title></title>
+        <link id="favicon" rel="shortcut icon" href="">
         ${jsImport}
         ${cssImport}
         </head>
