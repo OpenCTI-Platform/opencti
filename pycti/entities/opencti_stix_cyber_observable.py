@@ -1828,62 +1828,65 @@ class StixCyberObservable:
                                     id
                                     standard_id
                                     entity_type
+                                    parent_types
                                     spec_version
-                                    name
-                                    alias
-                                    description
-                                    report_class
-                                    published
-                                    source_confidence_level
-                                    graph_data
-                                    created
-                                    modified
                                     created_at
                                     updated_at
                                     createdBy {
-                                        node {
+                                        ... on Identity {
                                             id
+                                            standard_id
                                             entity_type
-                                            stix_id
-                                            stix_label
+                                            parent_types
+                                            spec_version
+                                            identity_class
                                             name
-                                            alias
                                             description
+                                            roles
+                                            contact_information
+                                            x_opencti_aliases
                                             created
                                             modified
+                                            objectLabel {
+                                                edges {
+                                                    node {
+                                                        id
+                                                        value
+                                                        color
+                                                    }
+                                                }
+                                            }
                                         }
-                                        relation {
-                                            id
+                                        ... on Organization {
+                                            x_opencti_organization_type
+                                            x_opencti_reliability
+                                        }
+                                        ... on Individual {
+                                            x_opencti_firstname
+                                            x_opencti_lastname
                                         }
                                     }
-                                    markingDefinitions {
+                                    objectMarking {
                                         edges {
                                             node {
                                                 id
+                                                standard_id
                                                 entity_type
-                                                stix_id
                                                 definition_type
                                                 definition
-                                                level
-                                                color
                                                 created
                                                 modified
-                                            }
-                                            relation {
-                                                id
+                                                x_opencti_order
+                                                x_opencti_color
                                             }
                                         }
                                     }
-                                    labels {
+                                    objectLabel {
                                         edges {
                                             node {
                                                 id
-                                                label_type
                                                 value
                                                 color
-                                            }
-                                            relation {
-                                                id
                                             }
                                         }
                                     }
@@ -1891,8 +1894,8 @@ class StixCyberObservable:
                                         edges {
                                             node {
                                                 id
+                                                standard_id
                                                 entity_type
-                                                stix_id
                                                 source_name
                                                 description
                                                 url
@@ -1900,51 +1903,30 @@ class StixCyberObservable:
                                                 external_id
                                                 created
                                                 modified
-                                            }
-                                            relation {
-                                                id
-                                            }
-                                        }
-                                    }
-                                    objectRefs {
-                                        edges {
-                                            node {
-                                                id
-                                                stix_id
-                                                entity_type
-                                            }
-                                            relation {
-                                                id
+                                                importFiles {
+                                                    edges {
+                                                        node {
+                                                            id
+                                                            name
+                                                            size
+                                                            metaData {
+                                                                mimetype
+                                                                version
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
-                                    observableRefs {
-                                        edges {
-                                            node {
-                                                id
-                                                stix_id
-                                                entity_type
-                                                observable_value
-                                            }
-                                            relation {
-                                                id
-                                            }
-                                        }
-                                    }
-                                    relationRefs {
-                                        edges {
-                                            node {
-                                                id
-                                                stix_id
-                                            }
-                                            relation {
-                                                id
-                                            }
-                                        }
-                                    }
-                                }
-                                relation {
-                                    id
+                                    revoked
+                                    confidence
+                                    created
+                                    modified
+                                    name
+                                    description
+                                    report_types
+                                    published                                    
                                 }
                             }
                         }
@@ -1984,62 +1966,67 @@ class StixCyberObservable:
                             edges {
                                 node {
                                     id
-                                    stix_id
+                                    standard_id
                                     entity_type
-                                    stix_label
-                                    name
-                                    alias
-                                    description
-                                    content
-                                    graph_data
-                                    created
-                                    modified
+                                    parent_types
+                                    spec_version
                                     created_at
                                     updated_at
                                     createdBy {
-                                        node {
+                                        ... on Identity {
                                             id
+                                            standard_id
                                             entity_type
-                                            stix_id
-                                            stix_label
+                                            parent_types
+                                            spec_version
+                                            identity_class
                                             name
-                                            alias
                                             description
+                                            roles
+                                            contact_information
+                                            x_opencti_aliases
                                             created
                                             modified
+                                            objectLabel {
+                                                edges {
+                                                    node {
+                                                        id
+                                                        value
+                                                        color
+                                                    }
+                                                }
+                                            }
                                         }
-                                        relation {
-                                            id
+                                        ... on Organization {
+                                            x_opencti_organization_type
+                                            x_opencti_reliability
+                                        }
+                                        ... on Individual {
+                                            x_opencti_firstname
+                                            x_opencti_lastname
                                         }
                                     }
-                                    markingDefinitions {
+                                    objectMarking {
                                         edges {
                                             node {
                                                 id
+                                                standard_id
                                                 entity_type
-                                                stix_id
                                                 definition_type
                                                 definition
-                                                level
-                                                color
                                                 created
                                                 modified
-                                            }
-                                            relation {
-                                                id
+                                                x_opencti_order
+                                                x_opencti_color
                                             }
                                         }
                                     }
-                                    labels {
+                                    objectLabel {
                                         edges {
                                             node {
                                                 id
-                                                label_type
                                                 value
                                                 color
-                                            }
-                                            relation {
-                                                id
                                             }
                                         }
                                     }
@@ -2047,8 +2034,8 @@ class StixCyberObservable:
                                         edges {
                                             node {
                                                 id
+                                                standard_id
                                                 entity_type
-                                                stix_id
                                                 source_name
                                                 description
                                                 url
@@ -2056,51 +2043,29 @@ class StixCyberObservable:
                                                 external_id
                                                 created
                                                 modified
-                                            }
-                                            relation {
-                                                id
-                                            }
-                                        }
-                                    }
-                                    objectRefs {
-                                        edges {
-                                            node {
-                                                id
-                                                stix_id
-                                                entity_type
-                                            }
-                                            relation {
-                                                id
+                                                importFiles {
+                                                    edges {
+                                                        node {
+                                                            id
+                                                            name
+                                                            size
+                                                            metaData {
+                                                                mimetype
+                                                                version
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
-                                    observableRefs {
-                                        edges {
-                                            node {
-                                                id
-                                                stix_id
-                                                entity_type
-                                                observable_value
-                                            }
-                                            relation {
-                                                id
-                                            }
-                                        }
-                                    }
-                                    relationRefs {
-                                        edges {
-                                            node {
-                                                id
-                                                stix_id
-                                            }
-                                            relation {
-                                                id
-                                            }
-                                        }
-                                    }
-                                }
-                                relation {
-                                    id
+                                    revoked
+                                    confidence
+                                    created
+                                    modified
+                                    attribute_abstract
+                                    content
+                                    authors                                
                                 }
                             }
                         }
@@ -2240,91 +2205,6 @@ class StixCyberObservable:
                                         first_observed
                                         last_observed
                                         number_observed
-                                        objects {
-                                            edges {
-                                                node {
-                                                    ... on BasicObject {
-                                                        id
-                                                        entity_type
-                                                        parent_types
-                                                    }
-                                                    ... on BasicRelationship {
-                                                        id
-                                                        entity_type
-                                                        parent_types
-                                                    }
-                                                    ... on StixObject {
-                                                        standard_id
-                                                        spec_version
-                                                        created_at
-                                                        updated_at
-                                                    }
-                                                    ... on AttackPattern {
-                                                        name
-                                                    }
-                                                    ... on Campaign {
-                                                        name
-                                                    }
-                                                    ... on CourseOfAction {
-                                                        name
-                                                    }
-                                                    ... on Individual {
-                                                        name
-                                                    }
-                                                    ... on Organization {
-                                                        name
-                                                    }
-                                                    ... on Sector {
-                                                        name
-                                                    }
-                                                    ... on System {
-                                                        name
-                                                    }
-                                                    ... on Indicator {
-                                                        name
-                                                    }
-                                                    ... on Infrastructure {
-                                                        name
-                                                    }
-                                                    ... on IntrusionSet {
-                                                        name
-                                                    }
-                                                    ... on Position {
-                                                        name
-                                                    }
-                                                    ... on City {
-                                                        name
-                                                    }
-                                                    ... on Country {
-                                                        name
-                                                    }
-                                                    ... on Region {
-                                                        name
-                                                    }
-                                                    ... on Malware {
-                                                        name
-                                                    }
-                                                    ... on ThreatActor {
-                                                        name
-                                                    }
-                                                    ... on Tool {
-                                                        name
-                                                    }
-                                                    ... on Vulnerability {
-                                                        name
-                                                    }
-                                                    ... on Incident {
-                                                        name
-                                                    }
-                                                    ... on StixCoreRelationship {
-                                                        standard_id
-                                                        spec_version
-                                                        created_at
-                                                        updated_at
-                                                    }
-                                                }
-                                            }
-                                        }
                                         importFiles {
                                             edges {
                                                 node {
