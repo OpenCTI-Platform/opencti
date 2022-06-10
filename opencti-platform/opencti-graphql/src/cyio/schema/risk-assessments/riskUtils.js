@@ -1,9 +1,17 @@
 
 export const calculateRiskLevel = (risk) => {
   // calculate the risk level
-  let riskLevel = 'unknown', riskScore;
+  let riskLevel = 'unknown', riskScore, baseScore, temporalScore;
   if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
-    riskScore = risk.cvssV3Base_score !== undefined ? parseFloat(risk.cvssV3Base_score) : parseFloat(risk.cvssV2Base_score) ;
+    baseScore = risk.cvssV3Base_score !== undefined ? parseFloat(risk.cvssV3Base_score) : parseFloat(risk.cvssV2Base_score) ;
+  }
+  if (risk.cvssV2Temporal_score !== undefined || risk.cvssV3Temporal_score !== undefined) {
+    temporalScore = risk.cvssV3Temporal_score !== undefined ? parseFloat(risk.cvssV3Temporal_score) : parseFloat(risk.cvssV2Temporal_score) ;
+  }
+  if (baseScore !== undefined) riskScore = baseScore;
+  if (temporalScore !== undefined) riskScore = temporalScore;
+  
+  if (riskScore !== undefined) {
     if (riskScore <= 10 && riskScore >= 9.0) riskLevel = 'very-high';
     if (riskScore <= 8.9 && riskScore >= 7.0) riskLevel = 'high';
     if (riskScore <= 6.9 && riskScore >= 4.0) riskLevel = 'moderate';
