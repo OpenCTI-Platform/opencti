@@ -88,7 +88,7 @@ const userResolvers = {
       // We need to iterate on each provider to find one that validated the credentials
       const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
       if (formProviders.length === 0) {
-        logApp.error('[AUTH] Cant authenticate without any form providers');
+        logApp.warn('[AUTH] Cant authenticate without any form providers');
       }
       let loggedUser;
       for (let index = 0; index < formProviders.length; index += 1) {

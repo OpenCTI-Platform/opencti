@@ -15,7 +15,7 @@ export const boot = async () => {
     // Init the modules
     await startModules();
   } catch (e) {
-    logApp.error(e.message, e);
+    logApp.error('[OPENCTI] Platform start fail', { error: e });
     process.exit(1);
   }
 };

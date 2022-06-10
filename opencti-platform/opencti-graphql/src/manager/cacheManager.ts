@@ -54,6 +54,7 @@ const initCacheManager = () => {
   let subscribeIdentifier: number;
   return {
     start: async () => {
+      logApp.info('[OPENCTI-MODULE] Initializing cache manager');
       // Load initial data used for cache
       cache[ENTITY_TYPE_STATUS] = await workflowStatuses();
       cache[ENTITY_TYPE_CONNECTOR] = await platformConnectors();
