@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {compareValues, updateQuery, filterValues, generateId, OSCAL_NS} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
 import {
@@ -1131,6 +1131,20 @@ const poamResolvers = {
         if (offset) {
           offset--;
           continue;
+        }
+
+        // if props were requested
+        if (selectMap.getNode('node').includes('props') && poamItem.hasOwnProperty('poam_id')) {
+          let id_material = {"name":"POAM-ID","ns":"http://fedramp.gov/ns/oscal","value":[`${poamItem.poam_id}`]};
+          let id = generateId(id_material, OSCAL_NS);
+          let prop = {
+            id: `${id}`,
+            entity_type: 'property',
+            prop_name: 'POAM-ID',
+            ns: 'http://fedramp.gov/ns/oscal',
+            value: [`${poamItem.poam_id}`],
+          };
+          poamItem.props = [prop];
         }
 
         // filter out non-matching entries if a filter is to be applied
