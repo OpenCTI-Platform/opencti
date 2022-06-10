@@ -452,12 +452,35 @@ const createSeeMiddleware = () => {
       await listAllRelations(req.session.user, relationTypes, allRelOptions);
     }
   };
+  const isFiltersEntityTypeMatch = (filters, type) => {
+    let match = false;
+    const fromAllTypes = [type, ...getParentTypes(type)];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const filter of filters.entity_type.values) {
+      if (fromAllTypes.includes(filter.id)) {
+        match = true;
+      }
+    }
+    return match;
+  };
   const publishRelationDependencies = async (cache, filterCache, channel, req, streamFilters, element) => {
     const { user } = req.session;
     const { id: eventId, data: eventData } = element;
     const { type, data: stix, message } = eventData;
-    const fromId = stix.type === 'relationship' ? stix.source_ref : stix.sighting_of_ref;
-    const toId = stix.type === 'relationship' ? stix.target_ref : stix.where_sighted_refs[0];
+    const isRel = stix.type === 'relationship';
+    const fromId = isRel ? stix.source_ref : stix.sighting_of_ref;
+    const toId = isRel ? stix.target_ref : stix.where_sighted_refs[0];
+    // Pre-filter by type to prevent resolutions as much as possible.
+    const filters = adaptFiltersFrontendFormat(streamFilters);
+    if (filters.entity_type && filters.entity_type.values.length > 0) {
+      const fromType = isRel ? stix.extensions[STIX_EXT_OCTI].source_type : stix.extensions[STIX_EXT_OCTI].sighting_of_type;
+      const matchingFrom = isFiltersEntityTypeMatch(filters, fromType);
+      const toType = isRel ? stix.extensions[STIX_EXT_OCTI].target_type : stix.extensions[STIX_EXT_OCTI].where_sighted_types[0];
+      const matchingTo = isFiltersEntityTypeMatch(filters, toType);
+      if (!matchingFrom && !matchingTo) {
+        return;
+      }
+    }
     const [fromStix, toStix] = await Promise.all([stixLoadById(user, fromId), stixLoadById(user, toId)]);
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
