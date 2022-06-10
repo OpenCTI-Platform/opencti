@@ -62,21 +62,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const EntitiesResponsiblePartiesDeletionMutation = graphql`
-  mutation EntitiesResponsiblePartiesDeletionMutation($id: ID!) {
+const EntitiesNotesDeletionMutation = graphql`
+  mutation EntitiesNotesDeletionMutation($id: ID!) {
     threatActorEdit(id: $id) {
       delete
     }
   }
 `;
 
-const EntitiesResponsiblePartiesDeletionDarkLightMutation = graphql`
-  mutation EntitiesResponsiblePartiesDeletionDarkLightMutation($id: ID!) {
+const EntitiesNotesDeletionDarkLightMutation = graphql`
+  mutation EntitiesNotesDeletionDarkLightMutation($id: ID!) {
     deleteOscalResponsibleParty(id: $id)
 }
 `;
 
-class EntitiesResponsiblePartiesDeletion extends Component {
+class EntitiesNotesDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,7 +116,7 @@ class EntitiesResponsiblePartiesDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: EntitiesResponsiblePartiesDeletionDarkLightMutation,
+      mutation: EntitiesNotesDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
@@ -130,7 +130,7 @@ class EntitiesResponsiblePartiesDeletion extends Component {
       },
     });
     // commitMutation({
-    //   mutation: EntitiesResponsiblePartiesDeletionDarkLightMutation,
+    //   mutation: EntitiesNotesDeletionDarkLightMutation,
     //   variables: {
     //     id: this.props.id,
     //   },
@@ -216,7 +216,7 @@ class EntitiesResponsiblePartiesDeletion extends Component {
   }
 }
 
-EntitiesResponsiblePartiesDeletion.propTypes = {
+EntitiesNotesDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -228,4 +228,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(EntitiesResponsiblePartiesDeletion);
+)(EntitiesNotesDeletion);
