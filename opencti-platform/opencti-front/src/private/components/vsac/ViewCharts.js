@@ -339,6 +339,28 @@ class ViewCharts extends Component {
       }
     };
 
+   const CustomTooltip = ({ active, payload, label }) => {
+      if (active) {
+        return (
+          <div
+            className='custom-tooltip'
+            style={{
+              color: 'black',
+              backgroundColor: '#ffff',
+              padding: '10px',
+              border: '1px solid #cccc',
+              fontSize: 12,
+              fontWeight: 600,
+              borderRadius: 10,
+            }}
+          >
+            <label>{`${payload[0].name} (${payload[0].value})`}</label>
+          </div>
+        );
+      }
+      return null;
+    };
+
     return (
       <div>
         <Button
@@ -453,12 +475,14 @@ class ViewCharts extends Component {
                             cx={500}
                             cy={200}
                             data={array}
-                            nameKey="name"
                             fill="#82ca9d"
+                            nameKey="name"
                             dataKey="value"
                             innerRadius={90}
                             outerRadius={150}
+                            labelLine={false}
                             isAnimationActive={false}
+                            isUpdateAnimationActive={true}
                             label={({
                               cx,
                               cy,
@@ -478,7 +502,9 @@ class ViewCharts extends Component {
                               // eslint-disable-next-line
                               const y =
                                 cy + radius * Math.sin(-midAngle * RADIAN);
-
+                              if(value < 25) {
+                                return null;
+                              }
                               return (
                                 <text
                                   x={x}
@@ -499,9 +525,9 @@ class ViewCharts extends Component {
                                 fill={COLORS[entry.name]}
                               />
                             ))}
-                            <Tooltip />
                           </Pie>
                         }
+                        <Tooltip content={<CustomTooltip />} />
                       </PieChart>
                     </ResponsiveContainer>
                   </Paper>
