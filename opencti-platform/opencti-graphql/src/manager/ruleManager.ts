@@ -79,10 +79,13 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
     for (let index = 0; index < shifts.length; index += 1) {
       const shift = shifts[index];
       const shiftedElement = await stixLoadById(RULE_MANAGER_USER, shift) as StixCoreObject;
-      // We need to cleanup the element associated with this relation and then rescan it
-      events.push(buildInternalEvent(EVENT_TYPE_DELETE, shiftedElement));
-      // Then we need to generate event for redo rule on shifted relations
-      events.push(buildInternalEvent(EVENT_TYPE_CREATE, shiftedElement));
+      // In past reprocess the shift element can already have been deleted.
+      if (shiftedElement) {
+        // We need to cleanup the element associated with this relation and then rescan it
+        events.push(buildInternalEvent(EVENT_TYPE_DELETE, shiftedElement));
+        // Then we need to generate event for redo rule on shifted relations
+        events.push(buildInternalEvent(EVENT_TYPE_CREATE, shiftedElement));
+      }
     }
   }
   // endregion
@@ -181,11 +184,9 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
     return;
   }
   const rules = forRules.length > 0 ? forRules : await getActivatedRules();
-  // Keep only compatible events
-  const compatibleEvents = events.filter((e) => e.version === EVENT_CURRENT_VERSION);
   // Execute the events
-  for (let index = 0; index < compatibleEvents.length; index += 1) {
-    const event = compatibleEvents[index];
+  for (let index = 0; index < events.length; index += 1) {
+    const event = events[index];
     const { type, data } = event;
     const internalId = data.extensions[STIX_EXT_OCTI].id;
     try {
@@ -304,7 +305,7 @@ const initRuleManager = () => {
     try {
       // Lock the manager
       lock = await lockResource([RULE_ENGINE_KEY]);
-      logApp.info('[OPENCTI-MODULE] Running rule manager');
+      logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId}`);
       // Start the stream listening
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
       await streamProcessor.start(lastEventId);
