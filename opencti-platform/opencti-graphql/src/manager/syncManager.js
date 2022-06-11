@@ -94,7 +94,6 @@ const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock
 const WAIT_TIME_ACTION = 2000;
 
 const syncManagerInstance = (syncId) => {
-  const STATE_UPDATE_SIZE = 100;
   const MIN_QUEUE_SIZE = 100;
   const MAX_QUEUE_SIZE = 500;
   const lDelay = 10;
@@ -121,6 +120,9 @@ const syncManagerInstance = (syncId) => {
     eventSource = new EventSource(eventSourceUri, {
       rejectUnauthorized: ssl,
       headers: { authorization: `Bearer ${token}` },
+    });
+    eventSource.on('heartbeat', ({ lastEventId, type }) => {
+      eventsQueue.enqueue({ id: lastEventId, type });
     });
     eventSource.on('create', (d) => handleEvent(d));
     eventSource.on('update', (d) => handleEvent(d));
@@ -286,22 +288,22 @@ const syncManagerInstance = (syncId) => {
       const sync = await startStreamListening();
       const user = sync.user_id ? await internalLoadById(SYSTEM_USER, sync.user_id) : SYSTEM_USER;
       let currentDelay = lDelay;
-      let eventCount = 0;
       while (run) {
         const event = eventsQueue.dequeue();
         if (event) {
           try {
             currentDelay = manageBackPressure(sync, currentDelay);
-            const { type: eventType, data, context } = event;
-            const { id, type } = data.extensions[STIX_EXT_OCTI];
-            logApp.info(`[OPENCTI] Sync received ${type} - ${id}`);
-            if (eventType === 'delete') {
+            const { id: eventId, type: eventType, data, context } = event;
+            if (eventType === 'heartbeat') {
+              const [time] = eventId.split('-');
+              const eventDate = utcDate(parseInt(time, 10)).toISOString();
+              logApp.info(`[OPENCTI] Sync ${sync.name}: saving state to ${eventDate}`);
+              await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
+            } else if (eventType === 'delete') {
               await handleDeleteEvent(user, data);
-            }
-            if (eventType === 'create') {
+            } else if (eventType === 'create') {
               await handleCreateEvent(user, data);
-            }
-            if (eventType === 'update' || eventType === 'merge') {
+            } else if (eventType === 'update' || eventType === 'merge') {
               // In case of update, if the standard id is impacted
               // we need to apply modification on the previous id
               // standard id will be regenerated according to the other changes
@@ -317,14 +319,6 @@ const syncManagerInstance = (syncId) => {
                 await handleCreateEvent(user, processingData);
               }
             }
-            // Update the current state
-            if (eventCount > STATE_UPDATE_SIZE) {
-              const [time] = event.id.split('-');
-              const eventDate = utcDate(parseInt(time, 10)).toISOString();
-              await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
-              eventCount = 0;
-            }
-            eventCount += 1;
           } catch (e) {
             logApp.error('[OPENCTI] Sync error processing event', { error: e });
           }

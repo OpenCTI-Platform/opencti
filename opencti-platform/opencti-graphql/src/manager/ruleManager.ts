@@ -37,7 +37,6 @@ const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 // let activatedRules: Array<RuleRuntime> = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
-const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 500;
 const SCHEDULE_TIME = 10000;
 
 // region rules registration
@@ -252,7 +251,7 @@ export const rulesCleanHandler = async (instances: Array<BasicStoreCommon>, rule
       const isElementCleanable = isNotEmptyField(instance[`${RULE_PREFIX}${rule.id}`]);
       if (isElementCleanable) {
         const processingElement: StixCoreObject = await storeLoadByIdWithRefs(RULE_MANAGER_USER, instance.internal_id);
-        // In case of inference of inference, element can be recursively cleanup by the deletion system
+        // In case of "inference of inference", element can be recursively cleanup by the deletion system
         if (processingElement) {
           const derivedEvents = await rule.clean(processingElement, deletedDependencies);
           await rulesApplyHandler(derivedEvents);
@@ -262,8 +261,7 @@ export const rulesCleanHandler = async (instances: Array<BasicStoreCommon>, rule
   }
 };
 
-let streamEventProcessedCount = 0;
-const ruleStreamHandler = async (streamEvents: Array<StreamEvent>) => {
+const ruleStreamHandler = async (streamEvents: Array<StreamEvent>, lastEventId: string) => {
   // Create list of events to process
   // Events must be in a compatible version and not inferences events
   // Inferences directly handle recursively by the manager
@@ -279,16 +277,10 @@ const ruleStreamHandler = async (streamEvents: Array<StreamEvent>) => {
     const ruleEvents: Array<Event> = compatibleEvents.map((e) => e.data);
     // Execute the events
     await rulesApplyHandler(ruleEvents);
-    // Save the last processed event
-    if (streamEventProcessedCount > STATUS_WRITE_RANGE) {
-      const lastEvent = R.last(compatibleEvents);
-      const patch = { lastEventId: lastEvent?.id };
-      await patchAttribute(RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, patch);
-      streamEventProcessedCount = 0;
-    } else {
-      streamEventProcessedCount += compatibleEvents.length;
-    }
   }
+  // Save the last processed event
+  logApp.debug(`[OPENCTI] Rule manager saving state to ${lastEventId}`);
+  await patchAttribute(RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, { lastEventId });
 };
 
 const getInitRuleManager = async (): Promise<BasicStoreEntity> => {
@@ -326,8 +318,8 @@ const initRuleManager = () => {
         logApp.error('[OPENCTI-MODULE] Rule engine failed to start', { error: e });
       }
     } finally {
-      if (lock) await lock.unlock();
       if (streamProcessor) await streamProcessor.shutdown();
+      if (lock) await lock.unlock();
     }
   };
   return {

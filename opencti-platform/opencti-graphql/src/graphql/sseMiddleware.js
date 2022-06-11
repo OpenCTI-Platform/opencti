@@ -41,12 +41,9 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { listAllRelations } from '../database/middleware-loader';
 
-let heartbeat;
 const broadcastClients = {};
-
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
 const DEFAULT_LIVE_STREAM = 'live';
-const KEEP_ALIVE_INTERVAL_MS = 20000;
 const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
@@ -89,29 +86,13 @@ const createBroadcastClient = (channel) => {
         channel.sendEvent(eventId, topic, event);
       }
     },
-    sendHeartbeat: () => {
-      channel.sendEvent(undefined, 'heartbeat', new Date());
+    sendHeartbeat: (eventId) => {
+      channel.sendEvent(eventId, 'heartbeat', new Date());
     },
     sendConnected: (streamInfo) => {
       channel.sendEvent(undefined, 'connected', streamInfo);
     },
   };
-};
-
-const createHeartbeatProcessor = () => {
-  // Setup the heart beat
-  heartbeat = setInterval(() => {
-    const now = Date.now() / 1000;
-    // Close expired sessions
-    Object.values(broadcastClients)
-      .filter((c) => now >= c.expirationTime)
-      .forEach((c) => c.close());
-    // Send heartbeat to alive sessions
-    Object.values(broadcastClients)
-      // Filter is required as the close is asynchronous
-      .filter((c) => now < c.expirationTime)
-      .forEach((c) => c.sendHeartbeat());
-  }, KEEP_ALIVE_INTERVAL_MS);
 };
 
 const authenticate = async (req, res, next) => {
@@ -134,7 +115,6 @@ const authenticate = async (req, res, next) => {
 };
 
 const createSeeMiddleware = () => {
-  createHeartbeatProcessor();
   const wait = (ms) => {
     return new Promise((resolve) => setTimeout(() => resolve(), ms));
   };
@@ -200,7 +180,7 @@ const createSeeMiddleware = () => {
       connected: () => !req.finished,
       sendEvent: (eventId, topic, data) => {
         if (req.finished) {
-          logApp.warn('[STREAM] Write on an already terminated response', { id: channel.userId });
+          // Write on an already terminated response
           return;
         }
         let message = '';
@@ -239,14 +219,21 @@ const createSeeMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res);
-      const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
+      const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements, lastEventId) => {
+        // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
           client.sendEvent(eventId, event, data);
         }
+        // Send the Heartbeat with last event id
+        client.sendHeartbeat(lastEventId);
       });
       await initBroadcasting(req, res, client, processor);
-      const lastEventId = req.query.from || req.headers['last-event-id'];
+      let lastEventId = req.query.from || req.headers['last-event-id'];
+      if (lastEventId && lastEventId.includes('T')) {
+        const startDate = utcDate(lastEventId);
+        lastEventId = `${startDate.toDate().getTime()}-0`;
+      }
       await processor.start(lastEventId);
     } catch (err) {
       res.statusMessage = `Error in stream: ${err.message}`;
@@ -574,7 +561,8 @@ const createSeeMiddleware = () => {
       // Init stream and broadcasting
       const userEmail = user.user_email;
       const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
-      const processor = createStreamProcessor(user, userEmail, async (elements) => {
+      const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
+        // Process the stream elements
         for (let index = 0; index < elements.length; index += 1) {
           const element = elements[index];
           const { id: eventId, event, data: eventData } = element;
@@ -623,6 +611,8 @@ const createSeeMiddleware = () => {
             filterCache.delete(stix.extensions[STIX_EXT_OCTI].id);
           }
         }
+        // Send the Heartbeat with last event id
+        client.sendHeartbeat(lastEventId);
       });
       await initBroadcasting(req, res, client, processor);
       // Start recovery if needed
@@ -676,7 +666,6 @@ const createSeeMiddleware = () => {
   };
   return {
     shutdown: () => {
-      clearInterval(heartbeat);
       Object.values(broadcastClients).forEach((c) => c.close());
     },
     applyMiddleware: ({ app }) => {

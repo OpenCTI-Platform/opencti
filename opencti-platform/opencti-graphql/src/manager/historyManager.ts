@@ -136,8 +136,8 @@ const initHistoryManager = () => {
         logApp.error('[OPENCTI-MODULE] history manager failed to start', { error: e });
       }
     } finally {
-      if (lock) await lock.unlock();
       if (streamProcessor) await streamProcessor.shutdown();
+      if (lock) await lock.unlock();
     }
   };
   return {

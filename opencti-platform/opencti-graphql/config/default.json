@@ -61,8 +61,7 @@
   },
   "rule_engine": {
     "enabled": true,
-    "lock_key": "rule_engine_lock",
-    "status_writing_delay": 2000
+    "lock_key": "rule_engine_lock"
   },
   "history_manager": {
     "enabled": true,

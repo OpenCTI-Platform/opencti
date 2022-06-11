@@ -313,7 +313,7 @@ export const lockResource = async (resources: Array<string>, automaticExtension 
           await lock.release();
         }
       } catch (e) {
-        logApp.warn('[REDIS] Failed to unlock resource', { locks });
+        logApp.warn('[REDIS] Failed to unlock resource', { error: e, locks });
       }
     },
   };
@@ -555,6 +555,7 @@ export const fetchStreamInfo = async () => {
 
 const processStreamResult = async (user: AuthUser, results: Array<any>, callback: any) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
+  const lastEventId = results.length > 0 ? R.last(streamData)?.id : `${new Date().getTime()}-0`;
   // Filter data with user markings
   const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
   if (!isBypass) {
@@ -564,16 +565,16 @@ const processStreamResult = async (user: AuthUser, results: Array<any>, callback
       if (dataMarkings.length === 0) return true;
       return dataMarkings.some((r) => userMarkings.includes(r));
     });
-    await callback(filteredEvents);
-    return R.last(filteredEvents)?.id;
+    await callback(filteredEvents, lastEventId);
+    return lastEventId;
   }
   // User can bypass any right
-  await callback(streamData);
-  return R.last(streamData)?.id;
+  await callback(streamData, lastEventId);
+  return lastEventId;
 };
 
-const WAIT_TIME = 1000;
-const MAX_RANGE_MESSAGES = 500;
+const WAIT_TIME = 15000;
+const MAX_RANGE_MESSAGES = 100;
 
 export interface StreamProcessor {
   info: () => Promise<object>;
@@ -601,6 +602,8 @@ export const createStreamProcessor = (user: AuthUser, provider: string, callback
         const [, results] = streamResult[0];
         const lastElementId = await processStreamResult(user, results, callback);
         startEventId = lastElementId || startEventId;
+      } else {
+        await processStreamResult(user, [], callback);
       }
     } catch (err) {
       logApp.error(`Error in redis streams read for ${provider}`, { error: err });
