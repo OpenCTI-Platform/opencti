@@ -127,6 +127,7 @@ const activityReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -149,6 +150,7 @@ const actorReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.actor_type && {actor_type: item.actor_type} ),
     ...(item.actor_ref && {actor_ref_iri: item.actor_ref}),
@@ -182,6 +184,7 @@ const assessmentPlatformReducer = (item) => {
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.name && {name: item.name}),
@@ -200,6 +203,7 @@ const assessmentSubjectReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.subject_type && {subject_type: item.subject_type}),
@@ -220,6 +224,7 @@ const associatedActivityReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.activity_id && {activity_id_iri: item.activity_id} ),
@@ -240,6 +245,7 @@ const characterizationReducer = (item) => {
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.origins && {origins_iri: item.origins}),
@@ -259,6 +265,7 @@ const evidenceReducer = (item) => {
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.href && {href: item.href}),
@@ -276,6 +283,7 @@ const facetReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.risk_state && {risk_state: item.risk_state}),
@@ -313,6 +321,7 @@ const mitigatingFactorReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -339,6 +348,7 @@ const observationReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -364,6 +374,8 @@ const originReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
+    ...(item.links && {links_iri: item.links}),
     ...(item.origin_actors && {origin_actors_iri: item.origin_actors}),
     ...(item.related_tasks && {related_tasks_iri: item.related_tasks}),
   }
@@ -380,6 +392,7 @@ const requiredAssetReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.subjects && {subjects_iri: item.subjects}),
@@ -401,6 +414,7 @@ const riskReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -444,6 +458,7 @@ const riskLogReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -471,6 +486,7 @@ const riskResponseReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -499,6 +515,7 @@ const subjectReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.name && {name: item.name}),
@@ -529,6 +546,7 @@ const taskReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -3525,6 +3543,12 @@ export const selectRiskResponseQuery = (id, select) => {
 export const selectRiskResponseByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
+
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('response_type')) select.push('response_type');
+  }
+  
   const { selectionClause, predicates } = buildSelectVariables(riskResponsePredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -3540,6 +3564,11 @@ export const selectAllRiskResponses = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
   if (!select.includes('id')) select.push('id');
 
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('response_type')) select.push('response_type');
+  }
+  
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
@@ -5140,6 +5169,7 @@ export const riskResponsePredicateMap = {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "response_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'type',
   },
   lifecycle: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",

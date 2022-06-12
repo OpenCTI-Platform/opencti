@@ -1,7 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues, generateId, OSCAL_NS} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
-import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
+import { calculateRiskLevel, getLatestRemediationInfo, convertToProperties } from '../../riskUtils.js';
 import {
   getReducer, 
   insertPOAMQuery,
@@ -33,6 +33,7 @@ import {
   selectAllParties,
   selectAllRoles,
   selectAllResponsibleParties,
+  partyPredicateMap,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
   getReducer as getComponentReducer,
@@ -704,6 +705,12 @@ const poamResolvers = {
         if (offset) {
           offset--;
           continue;
+        }
+
+        // if props were requested
+        if (selectMap.getNode('node').includes('props')) {
+          let props = convertToProperties(party, partyPredicateMap);
+          if (props !== undefined) party.props = props;
         }
 
         // filter out non-matching entries if a filter is to be applied

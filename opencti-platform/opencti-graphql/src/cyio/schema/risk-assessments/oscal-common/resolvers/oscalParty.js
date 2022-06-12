@@ -1,5 +1,6 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import { compareValues, updateQuery, filterValues } from '../../../utils.js';
+import {convertToProperties} from '../../riskUtils.js'
 import { UserInputError } from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -25,7 +26,7 @@ import {
   partyPredicateMap,
   selectLocationByIriQuery,
   insertExternalIdentifiersQuery,  
-  selectExternalIdentifierByIriQuery
+  selectExternalIdentifierByIriQuery,
 } from './sparql-query.js';
 import {
   getReducer as getCommonReducer,
@@ -77,6 +78,12 @@ const oscalPartyResolvers = {
           if (party.id === undefined || party.id == null) {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${party.iri} missing field 'id'; skipping`);
             continue;
+          }
+
+          // if props were requested
+          if (selectMap.getNode('node').includes('props')) {
+            let props = convertToProperties(party, partyPredicateMap);
+            if (props !== null) party.props = props;
           }
 
           // filter out non-matching entries if a filter is to be applied
@@ -151,8 +158,16 @@ const oscalPartyResolvers = {
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
-          const reducer = getReducer("PARTY");
-          return reducer(response[0]);
+        let party = response[0];
+
+        // if props were requested
+        if (selectMap.getNode('oscalParty').includes('props')) {
+          let props = convertToProperties(party, partyPredicateMap);
+          if (props !== null) party.props = props;
+        }
+
+        const reducer = getReducer("PARTY");
+        return reducer(party);
       } else {
         // Handle reporting Stardog Error
         if (typeof (response) === 'object' && 'body' in response) {

@@ -1,3 +1,5 @@
+import {generateId, OSCAL_NS} from '../utils.js';
+
 
 export const calculateRiskLevel = (risk) => {
   // calculate the risk level
@@ -44,3 +46,27 @@ export const getLatestRemediationInfo = (risk) => {
   return {responseType, lifeCycle};
 }
 
+export function convertToProperties(item, predicateMap, customProperties) {
+  let propList = [];
+  let id, id_material, token;
+
+  for (let [key,value] of Object.entries(predicateMap)) {
+    if (value.extension_property === undefined) continue;
+    if (!item.hasOwnProperty(key)) continue;
+    token = value.extension_property;
+    id_material = {"name":token,"ns":"http://csrc.nist.gov/ns/oscal","value":[`${item[key]}`]};
+ 
+    id = generateId(id_material, OSCAL_NS);
+    let property = {
+      id: `${id}`,
+      entity_type: 'property',
+      prop_name: token,
+      ns: 'http://csrc.nist.gov/ns/oscal',
+      value: [`${item[key]}`],
+    };
+
+    propList.push(property);
+  }
+  if (propList.length > 0) return propList;
+  return null;
+}

@@ -166,7 +166,7 @@ extend type Mutation {
   deleteOscalUser(id: ID!): String!
   editOscalUser(id: ID!, input: [EditInput]!, commitMessage: String): OscalUser
   # Export OSCAL Model
-  exportOscal(model: OscalModelType, id: ID, media_type: OscalMediaType): ID
+  exportOscal(model: OscalModelType!, id: ID, media_type: OscalMediaType): ID
   # Generate Report
   generateRiskReport(
     report: RiskReportType!
@@ -421,6 +421,8 @@ type OscalParty {
   "Identifies a brief description of the Party."
   description: String
   # OscalParty
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
   "Identifies the kind of party the object describes."
   party_type: PartyType!
   "Identifies a short common name, abbreviation, or acronym for the party."
