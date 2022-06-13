@@ -82,23 +82,6 @@ class EmtityResponsiblePartyComponent extends Component {
             classes={{ container: classes.gridContainer }}
             style={{ marginTop: 25 }}
           >
-            <Grid item={true} xs={6}>
-              <CyioCoreObjectExternalReferences
-                typename={responsibleParty.__typename}
-                externalReferences={responsibleParty.links}
-                fieldName='links'
-                cyioCoreObjectId={responsibleParty?.id}
-                refreshQuery={refreshQuery}
-              />
-            </Grid>
-            <Grid item={true} xs={6}>
-              <RelatedTasks
-                toType='OscalTask'
-                fromType= 'OscalResponsibleParty'
-                history={history}
-                remediationId={responsibleParty.id}
-              />
-            </Grid>
             <Grid item={true} xs={12}>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={responsibleParty.__typename}
@@ -148,18 +131,6 @@ const EntityRole = createFragmentContainer(EmtityResponsiblePartyComponent, {
         color
         entity_type
         description
-      }
-      links {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
       }
       remarks {
         __typename
