@@ -75,9 +75,6 @@ class EntityNoteDetailsComponent extends Component {
       fldt,
       history,
     } = this.props;
-    const partyData = pipe(
-      pathOr([], ['parties']),
-    )(note);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -95,7 +92,7 @@ class EntityNoteDetailsComponent extends Component {
                   {t('Abstract')}
                 </Typography>
                 <div className="clearfix" />
-                {note.name && t(note.name)}
+                {note.abstract && t(note.abstract)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -106,7 +103,7 @@ class EntityNoteDetailsComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {note?.created && fldt(note?.created)}
+                {note.created && fldt(note.created)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -130,7 +127,7 @@ class EntityNoteDetailsComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {note?.modified && fldt(note?.modified)}
+                {note.modified && fldt(note.modified)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -150,7 +147,7 @@ class EntityNoteDetailsComponent extends Component {
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
-                      {note.description && t(note.description)}
+                      {note.content && t(note.content)}
                     </Markdown>
                   </div>
                 </div>
@@ -175,22 +172,16 @@ const EntityNoteDetails = createFragmentContainer(
   EntityNoteDetailsComponent,
   {
     note: graphql`
-      fragment EntityNoteDetails_note on OscalResponsibleParty {
+      fragment EntityNoteDetails_note on CyioNote {
         __typename
         id
-        name
-        description
+        content
+        created
+        authors
+        abstract
+        modified
+        standard_id
         entity_type
-        role {
-          id
-          entity_type
-          role_identifier
-        }
-        parties {
-          id
-          entity_type
-          name
-        }
         labels {
           __typename
           id

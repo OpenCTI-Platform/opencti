@@ -14,28 +14,17 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import AddIcon from '@material-ui/icons/Add';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
-import { dayStartDate, parse } from '../../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
-import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
-import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
-import LoggedBy from '../../../common/form/LoggedBy';
-import RolesField from '../../../common/form/RolesField';
 
 const styles = (theme) => ({
-  dialogMain: {
-    overflow: 'hidden',
-  },
   dialogClosebutton: {
     float: 'left',
     marginLeft: '15px',
@@ -50,11 +39,11 @@ const styles = (theme) => ({
   },
   dialogContent: {
     padding: '0 24px',
+    overflow: 'hidden',
     marginBottom: '24px',
-    overflowY: 'scroll',
-    height: '650px',
   },
   buttonPopover: {
+    margin: '20px 0 20px 10px',
     textTransform: 'capitalize',
   },
   popoverDialog: {
@@ -62,11 +51,17 @@ const styles = (theme) => ({
     lineHeight: '24px',
     color: theme.palette.header.text,
   },
+  dialogAction: {
+    display: 'flex',
+    textAlign: 'end',
+    padding: '0 24px',
+    justifyContent: 'space-between',
+  },
 });
 
 const entitiesNotesCreationMutation = graphql`
-  mutation EntitiesNotesCreationMutation($input: OscalResponsiblePartyAddInput) {
-    createOscalResponsibleParty (input: $input) {
+  mutation EntitiesNotesCreationMutation($input: CyioNoteAddInput) {
+    createCyioNote (input: $input) {
       id
     }
   }
@@ -103,9 +98,7 @@ class EntitiesNotesCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
-      R.dissoc('created'),
-      R.dissoc('modified'),
-      R.dissoc('marking'),
+      R.assoc('authors', values.authors),
     )(values);
     CM(environmentDarkLight, {
       mutation: entitiesNotesCreationMutation,
@@ -120,7 +113,7 @@ class EntitiesNotesCreation extends Component {
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to create responsible party');
+        toastGenericError('Failed to create new note');
       },
     });
     // commitMutation({
@@ -162,24 +155,29 @@ class EntitiesNotesCreation extends Component {
       openDataCreation,
       handleNoteCreation,
       open,
+      me,
       history,
     } = this.props;
     return (
       <>
         <Dialog
-          open={openDataCreation}
+          maxWidth='md'
+          fullWidth={true}
           keepMounted={true}
-          className={classes.dialogMain}
+          open={openDataCreation}
+          PaperProps={{
+            style: {
+              overflow: 'hidden',
+            },
+          }}
         >
           <Formik
             enableReinitialize={true}
+            style={{ overflow: 'hidden' }}
             initialValues={{
-              name: '',
-              created: null,
-              modified: null,
-              role: '',
-              parties: [],
-              marking: [],
+              abstract: '',
+              content: '',
+              authors: me.name,
             }}
             validationSchema={NoteValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -203,89 +201,6 @@ class EntitiesNotesCreation extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Id')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Uniquely identifies this object.')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="id"
-                        fullWidth={true}
-                        disabled={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Created Date')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Created')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={DatePickerField}
-                        name="created"
-                        fullWidth={true}
-                        disabled={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        style={{ height: '38.09px' }}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Modified Date')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Last Modified')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={DatePickerField}
-                        name="modified"
-                        fullWidth={true}
-                        disabled={true}
-                        size="small"
-                        variant='outlined'
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
                         {t('Abstract')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
@@ -296,85 +211,63 @@ class EntitiesNotesCreation extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name="name"
+                        name="abstract"
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
-                        variant='outlined'
                       />
                     </Grid>
                     <Grid xs={12} item={true}>
+                      <Field
+                        component={MarkDownField}
+                        name='content'
+                        fullWidth={true}
+                        multiline={true}
+                        rows='4'
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+                <DialogActions>
+                  <Grid container={true} spacing={3} className={classes.dialogAction}>
+                    <Grid item={true} xs={6}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Description')}
+                        {t('Author')}
                       </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t(`Identifies a summary of the reponsible party's purpose and associated responsibilities.`)}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
                       <div className="clearfix" />
                       <Field
-                        component={MarkDownField}
-                        name='description'
+                        component={TextField}
+                        name="authors"
                         fullWidth={true}
-                        multiline={true}
-                        rows='3'
-                        variant='outlined'
+                        size="small"
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginTop: '20px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Marking')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Marking')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
-                          fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
+                    <Grid item={true} xs={4}>
+                      <Button
+                        variant="outlined"
+                        onClick={handleReset}
+                        classes={{ root: classes.buttonPopover }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.buttonPopover }}
+                      >
+                        {t('Submit')}
+                      </Button>
                     </Grid>
                   </Grid>
-                </DialogContent>
-                <DialogActions classes={{ root: classes.dialogClosebutton }}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleReset}
-                    classes={{ root: classes.buttonPopover }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.buttonPopover }}
-                  >
-                    {t('Submit')}
-                  </Button>
                 </DialogActions>
               </Form>
             )}
@@ -391,6 +284,7 @@ EntitiesNotesCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  me: PropTypes.object,
 };
 
 export default compose(

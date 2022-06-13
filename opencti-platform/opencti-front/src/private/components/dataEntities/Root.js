@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import RootRole from './data/Roles/Root';
+import RootRole from './data/roles/Root';
 import RootTask from './data/tasks/Root';
 import RootNote from './data/notes/Root';
 import RootParty from './data/parties/Root';
@@ -12,14 +12,14 @@ import RootAssessmentPlatform from './data/assessment_platform/Root';
 import Entities from './Entities';
 import NotesEntities from './data/notes/NotesEntities';
 import TasksEntities from './data/tasks/TasksEntities';
-import RolesEntities from './data/Roles/RolesEntities';
+import RolesEntities from './data/roles/RolesEntities';
 import PartiesEntities from './data/parties/PartiesEntities';
 import LocationsEntities from './data/locations/LocationsEntities';
 import ResponsiblePartiesEntities from './data/responsibleParties/ResponsiblePartiesEntities';
 import AssessmentPlatformsEntities from './data/assessment_platform/AssessmentPlatformsEntities';
 import DataSources from './DataSources';
 import NotesDataSource from './data/notes/NotesDataSource';
-import RolesDataSource from './data/Roles/RolesDataSource';
+import RolesDataSource from './data/roles/RolesDataSource';
 import TasksDataSource from './data/tasks/TasksDataSource';
 import PartiesDataSource from './data/parties/PartiesDataSource';
 import LocationsDataSource from './data/locations/LocationsDataSource';
@@ -41,6 +41,7 @@ class Root extends Component {
           exact
           path="/data/entities"
           component={Entities}
+          // render={(routeProps) => <RootConnector {...routeProps} />}
         />
         <BoundaryRoute
           exact
@@ -55,7 +56,7 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/data/entities/notes"
-          component={NotesEntities}
+          render={(routeProps) => <NotesEntities {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

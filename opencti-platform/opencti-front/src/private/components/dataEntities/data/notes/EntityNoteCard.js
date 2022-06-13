@@ -134,12 +134,6 @@ class EntityNoteCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    const partyData = pipe(
-      pathOr([], ['parties']),
-      map((value) => ({
-        name: value.name,
-      })),
-    )(node);
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -191,7 +185,7 @@ class EntityNoteCardComponent extends Component {
                   {t('Abstract')}
                 </Typography>
                 <Typography>
-                  {node.name && node.name}
+                  {node.abstract && node.abstract}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -204,7 +198,7 @@ class EntityNoteCardComponent extends Component {
                   {t('Creation Date')}
                 </Typography>
                 <Typography>
-                  {/* {node.created && fsd(node.created)} */}
+                  {node.created && fsd(node.created)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -217,7 +211,7 @@ class EntityNoteCardComponent extends Component {
                   {t('Author')}
                 </Typography>
                 <Typography>
-                  {/* {t('Lorem Ipsum')} */}
+                {node.authors && node.authors.map((v) => t(v))}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -272,21 +266,16 @@ const EntityNoteCardFragment = createFragmentContainer(
   EntityNoteCardComponent,
   {
     node: graphql`
-      fragment EntityNoteCard_node on OscalResponsibleParty {
+      fragment EntityNoteCard_node on CyioNote {
         __typename
         id
-        name
+        content
+        created
+        authors
+        abstract
+        modified
+        standard_id
         entity_type
-        role {
-          id
-          entity_type
-          role_identifier
-        }
-        parties {
-          id
-          entity_type
-          name
-        }
         labels {
           __typename
           id
@@ -294,26 +283,6 @@ const EntityNoteCardFragment = createFragmentContainer(
           color
           entity_type
           description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
         }
       }
     `,

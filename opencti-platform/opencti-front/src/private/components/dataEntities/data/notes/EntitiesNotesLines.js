@@ -21,7 +21,7 @@ class EntitiesNotesLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'oscalResponsibleParties',
+      'cyioNotes',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -51,10 +51,10 @@ class EntitiesNotesLines extends Component {
         handleOffsetChange={this.handleOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['oscalResponsibleParties', 'edges'], this.props.data)}
+        dataList={pathOr([], ['cyioNotes', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['oscalResponsibleParties', 'pageInfo', 'globalCount'],
+          ['cyioNotes', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         offset={this.state.offset}
@@ -90,9 +90,9 @@ export const entitiesNotesLinesQuery = graphql`
     $first: Int!
     $offset: Int!
     $cursor: ID
-    $orderedBy: OscalResponsiblePartyOrdering
+    $orderedBy: CyioNotesOrdering
     $orderMode: OrderingMode
-    $filters: [OscalResponsiblePartyFiltering]
+    $filters: [CyioNotesFiltering]
     $filterMode: FilterMode
   ) {
     ...EntitiesNotesLines_data
@@ -119,12 +119,12 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "OscalResponsiblePartyOrdering", defaultValue: label_name }
+        orderedBy: { type: "CyioNotesOrdering", defaultValue: author_name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[OscalResponsiblePartyFiltering]" }
+        filters: { type: "[CyioNotesFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {
-        oscalResponsibleParties(
+        cyioNotes(
           search: $search
           first: $first
           offset: $offset
@@ -132,7 +132,7 @@ export default createPaginationContainer(
           orderMode: $orderMode
           filters: $filters
           filterMode: $filterMode
-        ) @connection(key: "Pagination_oscalResponsibleParties") {
+        ) @connection(key: "Pagination_cyioNotes") {
           edges {
             node {
               id
@@ -151,7 +151,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.oscalResponsibleParties;
+      return props.data && props.data.cyioNotes;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

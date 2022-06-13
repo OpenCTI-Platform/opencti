@@ -52,19 +52,21 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
-    overflowY: 'scroll',
-    height: '650px',
+    overflowY: 'hidden',
   },
   dialogClosebutton: {
     float: 'left',
     marginLeft: '15px',
     marginBottom: '20px',
   },
-  dialogActions: {
-    justifyContent: 'flex-start',
-    padding: '10px 0 20px 22px',
+  dialogAction: {
+    display: 'flex',
+    textAlign: 'end',
+    padding: '0 24px',
+    justifyContent: 'space-between',
   },
   buttonPopover: {
+    margin: '20px 0 20px 10px',
     textTransform: 'capitalize',
   },
   popoverDialog: {
@@ -79,7 +81,7 @@ const NoteEditionContainerMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editOscalResponsibleParty(id: $id, input: $input) {
+    editCyioNote(id: $id, input: $input) {
       id
     }
   }
@@ -151,39 +153,33 @@ class NoteEntityEditionContainer extends Component {
 
   render() {
     const {
-      classes,
       t,
-      disabled,
       note,
-      risk,
-      remediation,
+      classes,
     } = this.props;
-    const responsibleParties = R.pathOr([], ['parties'])(note);
-    const responsibleRoles = R.pathOr([], ['role'])(note);
-    const responsibleMarking = R.pathOr([], ['marking'])(note);
-
     const initialValues = R.pipe(
-      R.assoc('description', responsibleParties?.description || ''),
-      R.assoc('parties', responsibleParties?.name || []),
-      R.assoc('created', responsibleParties?.created || null),
-      R.assoc('modified', responsibleParties?.modified || null),
-      R.assoc('role', responsibleRoles?.name || ''),
-      R.assoc('marking', responsibleMarking?.name),
+      R.assoc('abstract', note?.abstract || ''),
+      R.assoc('content', note?.content || ''),
+      R.assoc('authors', note?.authors || ''),
       R.pick([
-        'parties',
-        'role',
-        'created',
-        'modified',
-        'marking',
-        'description',
+        'abstract',
+        'content',
+        'authors',
       ]),
     )(note);
     return (
       <>
         <Dialog
-          open={this.props.displayEdit}
+          maxWidth='md'
+          fullWidth={true}
           keepMounted={true}
+          open={this.props.displayEdit}
           className={classes.dialogMain}
+          PaperProps={{
+            style: {
+              overflow: 'hidden',
+            },
+          }}
         >
           <Formik
             enableReinitialize={true}
@@ -210,89 +206,6 @@ class NoteEntityEditionContainer extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Id')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Uniquely identifies this object.')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="id"
-                        fullWidth={true}
-                        disabled={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Created Date')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Created')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={DatePickerField}
-                        name="created"
-                        fullWidth={true}
-                        disabled={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        style={{ height: '38.09px' }}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Modified Date')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Last Modified')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={DatePickerField}
-                        name="modified"
-                        fullWidth={true}
-                        disabled={true}
-                        size="small"
-                        variant='outlined'
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
                         {t('Abstract')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
@@ -303,85 +216,63 @@ class NoteEntityEditionContainer extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name="name"
+                        name='abstract'
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
-                        variant='outlined'
                       />
                     </Grid>
                     <Grid xs={12} item={true}>
+                      <Field
+                        component={MarkDownField}
+                        name='content'
+                        fullWidth={true}
+                        multiline={true}
+                        rows='4'
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+                <DialogActions>
+                  <Grid container={true} spacing={3} className={classes.dialogAction}>
+                    <Grid item={true} xs={6}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Description')}
+                        {t('Author')}
                       </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t(`Identifies a summary of the reponsible party's purpose and associated responsibilities.`)}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
                       <div className="clearfix" />
                       <Field
-                        component={MarkDownField}
-                        name='description'
+                        component={TextField}
+                        name="authors"
                         fullWidth={true}
-                        multiline={true}
-                        rows='3'
-                        variant='outlined'
+                        size="small"
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginTop: '20px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Marking')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Marking')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
-                          fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
+                    <Grid item={true} xs={4}>
+                      <Button
+                        variant="outlined"
+                        onClick={handleReset}
+                        classes={{ root: classes.buttonPopover }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.buttonPopover }}
+                      >
+                        {t('Submit')}
+                      </Button>
                     </Grid>
                   </Grid>
-                </DialogContent>
-                <DialogActions classes={{ root: classes.dialogClosebutton }}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleReset}
-                    classes={{ root: classes.buttonPopover }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.buttonPopover }}
-                  >
-                    {t('Submit')}
-                  </Button>
                 </DialogActions>
               </Form>
             )}

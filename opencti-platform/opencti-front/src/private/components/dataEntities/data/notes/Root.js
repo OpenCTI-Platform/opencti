@@ -35,7 +35,7 @@ const subscription = graphql`
 
 const NotesQuery = graphql`
   query RootNoteDataQuery($id: ID!) {
-    oscalResponsibleParty(id: $id) {
+    cyioNote(id: $id) {
       id
       ...EntityNote_note
     }
@@ -98,10 +98,10 @@ class Notes extends Component {
           render={({ error, props, retry }) => {
             if (error) {
               console.error(error);
-              toastGenericError('Failed to get Notedata');
+              toastGenericError('Failed to get Note data');
             }
             if (props) {
-              if (props.oscalResponsibleParty) {
+              if (props.cyioNote) {
                 return (
                   <Switch>
                     <Route
@@ -110,8 +110,9 @@ class Notes extends Component {
                       render={(routeProps) => (
                         <EntityNote
                           {...routeProps}
+                          me={me}
                           refreshQuery={retry}
-                          note={props.oscalResponsibleParty}
+                          note={props.cyioNote}
                         />
                       )}
                     />

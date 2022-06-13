@@ -57,8 +57,13 @@ Transition.displayName = 'TransitionSlide';
 
 const noteEntityEditionQuery = graphql`
   query NoteEntityEditionQuery($id: ID!) {
-    oscalResponsibleParty(id: $id) {
+    cyioNote(id: $id) {
       id
+      content
+      created
+      authors
+      abstract
+      modified
     }
   }
 `;

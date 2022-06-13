@@ -37,7 +37,7 @@ class ResponsiblePartiesEntities extends Component {
       'view-notes',
     );
     this.state = {
-      sortBy: R.propOr('label_name', 'sortBy', params),
+      sortBy: R.propOr('author_name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -278,7 +278,7 @@ class ResponsiblePartiesEntities extends Component {
       type: {
         label: 'Type',
         width: '15%',
-        isSortable: true,
+        isSortable: false,
       },
       abstract: {
         label: 'Abstract',
@@ -298,12 +298,12 @@ class ResponsiblePartiesEntities extends Component {
       created: {
         label: 'Creation Date',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       marking: {
         label: 'Marking',
         width: '12%',
-        isSortable: true,
+        isSortable: false,
       },
     };
     return (
@@ -383,6 +383,7 @@ class ResponsiblePartiesEntities extends Component {
       filterMode: 'and',
     };
     const { location } = this.props;
+    const { me } = this.props.me;
     return (
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
@@ -391,6 +392,7 @@ class ResponsiblePartiesEntities extends Component {
           openDataCreation={openDataCreation}
           handleNoteCreation={this.handleNoteCreation.bind(this)}
           history={this.props.history}
+          me={me}
         />
         <NoteEntityEdition
           displayEdit={this.state.displayEdit}
@@ -406,6 +408,7 @@ class ResponsiblePartiesEntities extends Component {
 ResponsiblePartiesEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
+  me: PropTypes.object,
   location: PropTypes.object,
 };
 

@@ -49,12 +49,13 @@ class EmtityNoteComponent extends Component {
 
   render() {
     const {
-      classes,
       note,
+      classes,
       history,
-      refreshQuery,
       location,
+      refreshQuery,
     } = this.props;
+    const { me } = this.props.me;
     return (
       <>
         <div className={classes.container}>
@@ -81,6 +82,7 @@ class EmtityNoteComponent extends Component {
           openDataCreation={this.state.openDataCreation}
           handleNoteCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
+          me={me}
         />
         <NoteEntityEditionContainer
           displayEdit={this.state.displayEdit}
@@ -103,10 +105,14 @@ EmtityNoteComponent.propTypes = {
 
 const EntityNote = createFragmentContainer(EmtityNoteComponent, {
   note: graphql`
-    fragment EntityNote_note on OscalResponsibleParty {
+    fragment EntityNote_note on CyioNote {
       __typename
       id
-      name
+      content
+      created
+      authors
+      abstract
+      modified
       labels {
         __typename
         id
@@ -114,26 +120,6 @@ const EntityNote = createFragmentContainer(EmtityNoteComponent, {
         color
         entity_type
         description
-      }
-      links {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
-      }
-      remarks {
-        __typename
-        id
-        entity_type
-        abstract
-        content
-        authors
       }
       ...EntityNoteDetails_note
     }

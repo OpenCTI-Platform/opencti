@@ -58,7 +58,7 @@ class EntityNoteLineComponent extends Component {
   render() {
     const {
       t,
-      fd,
+      fsd,
       classes,
       node,
       selectAll,
@@ -67,12 +67,6 @@ class EntityNoteLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const partyData = pipe(
-      pathOr([], ['parties']),
-      map((value) => ({
-        name: value.name,
-      })),
-    )(node);
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -107,13 +101,13 @@ class EntityNoteLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.abstract.width }}
               >
-                {node.entity_type && t(node.entity_type)}
+                {node.abstract && t(node.abstract)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.author.width }}
               >
-                {node.role && t(node.role.role_identifier)}
+                {node.authors && node.authors.map((v) => t(v))}
               </div>
               <div
                 className={classes.bodyItem}
@@ -129,7 +123,7 @@ class EntityNoteLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                {/* {node.created && fd(node.created)} */}
+                {node.created && fsd(node.created)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -157,7 +151,7 @@ EntityNoteLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
-  fd: PropTypes.func,
+  fsd: PropTypes.func,
   t: PropTypes.func,
   onLabelClick: PropTypes.func,
 };
@@ -166,21 +160,16 @@ const EntityNoteLineFragment = createFragmentContainer(
   EntityNoteLineComponent,
   {
     node: graphql`
-      fragment EntityNoteLine_node on OscalResponsibleParty {
+      fragment EntityNoteLine_node on CyioNote {
         __typename
         id
-        name
+        content
+        created
+        authors
+        abstract
+        modified
+        standard_id
         entity_type
-        role {
-          id
-          entity_type
-          role_identifier
-        }
-        parties {
-          id
-          entity_type
-          name
-        }
         labels {
           __typename
           id
@@ -188,26 +177,6 @@ const EntityNoteLineFragment = createFragmentContainer(
           color
           entity_type
           description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
         }
       }
     `,

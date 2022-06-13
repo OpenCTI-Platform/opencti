@@ -72,7 +72,7 @@ const EntitiesNotesDeletionMutation = graphql`
 
 const EntitiesNotesDeletionDarkLightMutation = graphql`
   mutation EntitiesNotesDeletionDarkLightMutation($id: ID!) {
-    deleteOscalResponsibleParty(id: $id)
+    deleteCyioNote(id: $id)
 }
 `;
 
@@ -126,7 +126,7 @@ class EntitiesNotesDeletion extends Component {
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to delete responsible party');
+        toastGenericError('Failed to delete Note');
       },
     });
     // commitMutation({
