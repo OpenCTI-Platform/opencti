@@ -9,16 +9,16 @@ import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../../components/i18n';
-import EntityLocationDetails from './EntityLocationDetails';
-import EntitiesLocationsPopover from './EntitiesLocationsPopover';
-import EntitiesLocationsDeletion from './EntitiesLocationsDeletion';
+import EntityExternalReferenceDetails from './EntityExternalReferenceDetails';
+import EntitiesExternalReferencesPopover from './EntitiesExternalReferencesPopover';
+import EntitiesExternalReferencesDeletion from './EntitiesExternalReferencesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import LocationEntityEditionContainer from './LocationEntityEditionContainer';
-import EntitiesLocationsCreation from './EntitiesLocationsCreation';
+import ExternalReferenceEntityEditionContainer from './ExternalReferenceEntityEditionContainer';
+import EntitiesExternalReferencesCreation from './EntitiesExternalReferencesCreation';
 
 const styles = () => ({
   container: {
@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EntityLocationComponent extends Component {
+class EntityExternalReferenceComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -49,20 +49,21 @@ class EntityLocationComponent extends Component {
   render() {
     const {
       classes,
-      location,
+      externalReference,
       history,
       refreshQuery,
+      location,
     } = this.props;
     return (
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={location}
+            cyioDomainObject={externalReference}
             history={history}
-            PopoverComponent={<EntitiesLocationsPopover />}
+            PopoverComponent={<EntitiesExternalReferencesPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesLocationsDeletion />}
+            OperationsComponent={<EntitiesExternalReferencesDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -71,7 +72,7 @@ class EntityLocationComponent extends Component {
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={12}>
-              <EntityLocationDetails location={location} history={history} refreshQuery={refreshQuery} />
+              <EntityExternalReferenceDetails externalReference={externalReference} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
           <Grid
@@ -82,34 +83,33 @@ class EntityLocationComponent extends Component {
           >
             <Grid item={true} xs={6}>
               <CyioCoreObjectExternalReferences
-                typename={location.__typename}
-                externalReferences={location.links}
+                typename={externalReference.__typename}
+                externalReferences={externalReference.links}
                 fieldName='links'
-                cyioCoreObjectId={location?.id}
+                cyioCoreObjectId={externalReference?.id}
                 refreshQuery={refreshQuery}
               />
             </Grid>
             <Grid item={true} xs={6}>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
-                typename={location.__typename}
-                notes={location.remarks}
+                typename={externalReference.__typename}
+                notes={externalReference.remarks}
                 refreshQuery={refreshQuery}
                 fieldName='remarks'
                 marginTop='0px'
-                cyioCoreObjectOrCyioCoreRelationshipId={location?.id}
+                cyioCoreObjectOrCyioCoreRelationshipId={externalReference?.id}
               />
             </Grid>
           </Grid>
         </div>
-        <EntitiesLocationsCreation
+        <EntitiesExternalReferencesCreation
           openDataCreation={this.state.openDataCreation}
-          handleLocationCreation={this.handleOpenNewCreation.bind(this)}
+          handleRoleCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
         />
-        <LocationEntityEditionContainer
+        <ExternalReferenceEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
-          location={location}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>
@@ -117,21 +117,24 @@ class EntityLocationComponent extends Component {
   }
 }
 
-EntityLocationComponent.propTypes = {
-  location: PropTypes.object,
+EntityExternalReferenceComponent.propTypes = {
+  externalReference: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityLocation = createFragmentContainer(EntityLocationComponent, {
-  location: graphql`
-    fragment EntityLocation_location on OscalLocation {
+const EntityExternalReference = createFragmentContainer(EntityExternalReferenceComponent, {
+  externalReference: graphql`
+    fragment EntityExternalReference_externalReference on OscalRole {
       __typename
       id
+      entity_type
       created
       modified
+      role_identifier
       name
+      short_name
       description
       labels {
         __typename
@@ -161,9 +164,9 @@ const EntityLocation = createFragmentContainer(EntityLocationComponent, {
         content
         authors
       }
-      ...EntityLocationDetails_location
+      ...EntityExternalReferenceDetails_externalReference
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(EntityLocation);
+export default compose(inject18n, withStyles(styles))(EntityExternalReference);

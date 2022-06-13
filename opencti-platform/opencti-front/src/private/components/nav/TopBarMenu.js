@@ -49,6 +49,7 @@ import TopMenuDataEntities from './TopMenuDataEntities';
 import TopMenuDataRolesEntities from './TopMenuDataRolesEntities';
 import TopMenuDataAssessmentPlatformsEntities from './TopMenuDataAssessmentPlatformsEntities';
 import TopMenuDataResponsiblePartiesEntities from './TopMenuDataResponsiblePartiesEntities';
+import TopMenuDataExternalReferenceEntities from './TopMenuDataExternalReferenceEntities';
 import TopMenuDataPartiesEntities from './TopMenuDataPartiesEntities';
 import TopMenuDataTasksEntities from './TopMenuDataTasksEntities';
 import TopMenuDataLocationsEntities from './TopMenuDataLocationsEntities';
@@ -277,6 +278,10 @@ const TopBarMenu = ({
           {(location.pathname === '/data/entities/responsible_parties'
             || location.pathname === '/data/data source/responsible_parties') && (
               <TopMenuDataResponsiblePartiesEntities />
+          )}
+          {(location.pathname === '/data/entities/external_references'
+            || location.pathname === '/data/data source/external_references') && (
+              <TopMenuDataExternalReferenceEntities />
           )}
           {location.pathname.includes('/defender HQ/assets/devices/') && (
             <TopMenuDevice />

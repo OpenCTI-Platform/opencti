@@ -425,6 +425,14 @@ class CyioListLines extends Component {
                     <img src={assessmentPlatform} className={classes.icon} alt="" />
                     {t('Assessment Platform')}
                   </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/external_references'
+                    value='external_references'
+                  >
+                    <img src={assessmentPlatform} className={classes.icon} alt="" />
+                    {t('External References')}
+                  </MenuItem>
                 </Select>
               </FormControl>
             )}

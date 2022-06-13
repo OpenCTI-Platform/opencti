@@ -30,7 +30,7 @@ const styles = () => ({
   },
 });
 
-class EmtityResponsiblePartyComponent extends Component {
+class EntityResponsiblePartyComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -128,14 +128,14 @@ class EmtityResponsiblePartyComponent extends Component {
   }
 }
 
-EmtityResponsiblePartyComponent.propTypes = {
+EntityResponsiblePartyComponent.propTypes = {
   responsibleParty: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityRole = createFragmentContainer(EmtityResponsiblePartyComponent, {
+const EntityRole = createFragmentContainer(EntityResponsiblePartyComponent, {
   responsibleParty: graphql`
     fragment EntityResponsibleParty_responsibleParty on OscalResponsibleParty {
       __typename

@@ -8,14 +8,17 @@ import AssessmentPlatformsEntities from './data/assessment_platform/AssessmentPl
 import LocationsEntities from './data/locations/LocationsEntities';
 import TasksEntities from './data/tasks/TasksEntities';
 import PartiesEntities from './data/parties/PartiesEntities';
+import ExternalReferencesEntities from './data/external_references/ExternalReferencesEntities';
 import RootParty from './data/parties/Root';
 import RolesDataSource from './data/Roles/RolesDataSource';
+import ExternalReferencesDataSource from './data/external_references/ExternalReferencesDataSource';
 import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
 import RootAssessmentPlatform from './data/assessment_platform/Root';
 import TasksDataSource from './data/tasks/TasksDataSource';
 import LocationsDataSource from './data/locations/LocationsDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
+import RootExternalReferences from './data/external_references/Root';
 import RootTask from './data/tasks/Root';
 import RootLocation from './data/locations/Root';
 import PartiesDataSource from './data/parties/PartiesDataSource';
@@ -66,6 +69,11 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
+          path="/data/entities/external_references"
+          component={ExternalReferencesEntities}
+        />
+        <BoundaryRoute
+          exact
           path="/data/entities/responsible_parties"
           component={ResponsiblePartiesEntities}
         />
@@ -106,6 +114,11 @@ class Root extends Component {
           path="/data/data source/responsible_parties"
           component={ResponsiblePartiesDataSource}
         />
+        <BoundaryRoute
+          exact
+          path="/data/data source/external_references"
+          component={ExternalReferencesDataSource}
+        />
 
         {/* Entities Root Path Section */}
 
@@ -131,6 +144,10 @@ class Root extends Component {
         <BoundaryRoute
           path="/data/entities/responsible_parties/:respPartyId"
           render={(routeProps) => <RootResponsibleParty {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          path="/data/entities/external_references/:externalReferenceId"
+          render={(routeProps) => <RootExternalReferences {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
