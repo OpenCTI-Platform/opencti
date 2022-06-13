@@ -12,11 +12,11 @@ const buildHeaders = () => {
   return headers;
 };
 
-export default async function submitOperation(operation, res) {
+export default async function submitOperation(operation, vars, res) {
   return new Promise((resolve) => {
     const data = JSON.stringify({
       query: operation,
-      variables: {},
+      variables: vars,
     });
     const config = {
       method: 'post',

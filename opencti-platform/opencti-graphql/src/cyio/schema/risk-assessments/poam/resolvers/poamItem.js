@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {compareValues, updateQuery, filterValues, generateId, OSCAL_NS} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
 import {
@@ -66,6 +66,20 @@ const poamItemResolvers = {
             continue
           }
 
+          // if props were requested
+          if (selectMap.getNode('node').includes('props') && item.hasOwnProperty('poam_id')) {
+            let id_material = {"name":"POAM-ID","ns":"http://fedramp.gov/ns/oscal","value":[`${item.poam_id}`]};
+            let id = generateId(id_material, OSCAL_NS);
+            let prop = {
+              id: `${id}`,
+              entity_type: 'property',
+              prop_name: 'POAM-ID',
+              ns: 'http://fedramp.gov/ns/oscal',
+              value: [`${item.poam_id}`],
+            };
+            item.props = [prop];
+          }
+
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(item, args.filters, args.filterMode) ) {
@@ -122,7 +136,7 @@ const poamItemResolvers = {
       }
     },
     poamItem: async (_, {id}, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectPOAMItemQuery(id, selectMap.getNode("poam"));
+      const sparqlQuery = selectPOAMItemQuery(id, selectMap.getNode("poamItem"));
       let response;
       try {
         response = await dataSources.Stardog.queryById({
@@ -138,8 +152,23 @@ const poamItemResolvers = {
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
+        let poamItem = response[0];
+        // if props were requested
+        if (selectMap.getNode('poamItem').includes('props') && poamItem.hasOwnProperty('poam_id')) {
+          let id_material = {"name":"POAM-ID","ns":"http://fedramp.gov/ns/oscal","value":[`${poamItem.poam_id}`]};
+          let id = generateId(id_material, OSCAL_NS);
+          let prop = {
+            id: `${id}`,
+            entity_type: 'property',
+            prop_name: 'POAM-ID',
+            ns: 'https://fedramp.gov/ns/oscal',
+            value: [`${poamItem.poam_id}`],
+          };
+          poamItem.props = [prop];
+        }
+
         const reducer = getReducer("POAM-ITEM");
-        return reducer(response[0]);  
+        return reducer(poamItem);  
       } else {
         // Handle reporting Stardog Error
         if (typeof (response) === 'object' && 'body' in response) {
