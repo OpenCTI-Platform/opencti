@@ -113,7 +113,6 @@ type POAM implements BasicObject & LifecycleObject & OscalObject & Model {
   "Identifies one or more Resources that are associated with this POAM."
   resources(first: Int, offset: Int): OscalResourceConnection
 }
-
 input POAMAddInput {
   # Metadata
   "Identifies the name given to the document."
@@ -143,7 +142,6 @@ input POAMAddInput {
   "Identifies the identification system from which the provided identifier was assigned."
   system_identifier_type: String!
 }
-
 # Pagination Types
 type POAMConnection {
   pageInfo: PageInfo!
@@ -160,7 +158,6 @@ input POAMFiltering {
   operator: String
   filterMode: FilterMode
 }
-
 enum POAMOrdering {
   "Created"
   created
@@ -181,7 +178,6 @@ enum POAMOrdering {
   "Marking"
   marking
 }
-
 enum POAMFilter {
   "Created"
   created
@@ -250,6 +246,8 @@ type POAMItem implements BasicObject & LifecycleObject & OscalObject {
   "Relates the item to a set of referenced risks that were used to determine the finding."
   related_risks(first: Int, offset: Int): RiskConnection
   # POAM Item
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
   "Indicates a CSP-assigned unique POA&M ID to allow for compliance with FedRAMP."
   poam_id: String
   # DarkLight extension to optimize ability to check to see if a specific risk has been accepted
@@ -265,6 +263,8 @@ input POAMItemAddInput {
   "Identifies a human-readable description of the POA&M item."
   description: String
   # POAM Item
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [PropertyAddInput]
   "Indicates a CSP-assigned unique POA&M ID to allow for compliance with FedRAMP."
   poam_id: String
   # DarkLight extension to optimize ability to check to see if a specific risk has been accepted

@@ -153,7 +153,6 @@ class RemediationEditionContainer extends Component {
         'value': adaptFieldValue(n[1])
       }))
     )(adaptedValues);
-    console.log('RemediationEntitiesEdition', finalValues);
     // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
     CM(environmentDarkLight, {
       // mutation: remediationEditionMutation,
@@ -166,10 +165,9 @@ class RemediationEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('RiskEditionDarkLightMutationData', data);
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('RiskEditionDarkLightMutationError', err),
+      onError: (err) => console.error(err),
     });
     // commitMutation({
     //   mutation: riskCreationOverviewMutation,
@@ -234,7 +232,6 @@ class RemediationEditionContainer extends Component {
         'response_type',
       ]),
     )(risk);
-    console.log('RiskEditionPropsData', risk);
     // const { editContext } = risk;
     return (
       <div className={classes.container}>
@@ -364,7 +361,6 @@ class RemediationEditionContainer extends Component {
               <Dialog
                 open={this.state.displayCancel}
                 TransitionComponent={Transition}
-                onClose={this.handleCancelButton.bind(this)}
               >
                 <DialogContent>
                   <Typography style={{

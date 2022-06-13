@@ -113,6 +113,7 @@ export const oscalLocationReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationship_iri: item.relationships}),
@@ -142,6 +143,7 @@ export const oscalPartyReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationship_iri: item.relationships}),
@@ -172,6 +174,7 @@ export const oscalResponsiblePartyReducer = (item) => {
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationship_iri: item.relationships}),
@@ -195,6 +198,7 @@ export const oscalResponsibleRoleReducer = (item) => {
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationship_iri: item.relationships}),
@@ -220,10 +224,11 @@ export const oscalRoleReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationship_iri: item.relationships}),
-    // Oscal hasRole
+    // Oscal Role
     ...(item.role_identifier &&  {role_identifier: item.role_identifier}),
     ...(item.name && {name: item.name}),
     ...(item.short_name && {short_name: item.short_name}),
@@ -600,6 +605,14 @@ export const selectPartyQuery = (id, select) => {
 export const selectPartyByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
+  
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('mail_stop')) select.push('mail_stop');
+    if (!select.includes('office')) select.push('office');
+    if (!select.includes('job_title')) select.push('job_title');
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(partyPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -615,6 +628,13 @@ export const selectAllParties = (select, args, parent) => {
   let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
   if (!select.includes('id')) select.push('id');
+
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('mail_stop')) select.push('mail_stop');
+    if (!select.includes('office')) select.push('office');
+    if (!select.includes('job_title')) select.push('job_title');
+  }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1456,16 +1476,19 @@ export const partyPredicateMap = {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#mail_stop>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "mail_stop");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: "mail-stop",
   },
   office: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#office>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "office");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: "office",
   },
   job_title: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#job_title>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "job_title");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: "job-title",
   },
 }
 export const responsiblePartyPredicateMap = {
@@ -1592,4 +1615,3 @@ export const rolePredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
-

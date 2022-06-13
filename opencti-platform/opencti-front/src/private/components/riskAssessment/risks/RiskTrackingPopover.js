@@ -135,7 +135,7 @@ class RiskTrackingPopover extends Component {
   }
 
   handleCloseUpdate() {
-    this.setState({ displayUpdate: false, displayCancel: true });
+    this.setState({ displayCancel: true });
   }
 
   handleOpenDelete() {
@@ -174,7 +174,6 @@ class RiskTrackingPopover extends Component {
       setSubmitting,
       onCompleted: (data) => {
         setSubmitting(false);
-        resetForm();
         this.handleCloseEditUpdate();
         this.props.refreshQuery();
       },
@@ -243,6 +242,10 @@ class RiskTrackingPopover extends Component {
     //     this.handleCloseDelete();
     //   },
     // });
+  }
+
+  onReset() {
+    this.handleCloseUpdate();
   }
 
   render() {
@@ -323,7 +326,6 @@ class RiskTrackingPopover extends Component {
           fullWidth={true}
           maxWidth='sm'
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleCloseUpdate.bind(this)}
         >
           {/* <QR
             environment={environmentDarkLight}
@@ -362,6 +364,7 @@ class RiskTrackingPopover extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
             // validationSchema={riskValidation(t)}
+            onReset={this.onReset.bind(this)}
             onSubmit={this.onSubmit.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -612,7 +615,7 @@ class RiskTrackingPopover extends Component {
                   <Button
                     variant="outlined"
                     classes={{ root: classes.buttonPopover }}
-                    onClick={this.handleCloseUpdate.bind(this)}
+                    onClick={handleReset}
                   // disabled={isSubmitting}
                   >
                     {t('Cancel')}
@@ -634,7 +637,6 @@ class RiskTrackingPopover extends Component {
         <Dialog
           open={this.state.displayCancel}
           TransitionComponent={Transition}
-          onClose={this.handleCancelButton.bind(this)}
         >
           <DialogContent>
             <Typography style={{
@@ -676,7 +678,6 @@ class RiskTrackingPopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >

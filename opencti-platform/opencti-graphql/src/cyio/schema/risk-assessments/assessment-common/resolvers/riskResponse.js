@@ -1,5 +1,6 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {convertToProperties} from '../../riskUtils.js'
 import {selectObjectIriByIdQuery} from '../../../global/global-utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
@@ -77,6 +78,12 @@ const riskResponseResolvers = {
             continue;
           }
 
+          // if props were requested
+          if (selectMap.getNode('node').includes('props')) {
+            let props = convertToProperties(riskResponse, riskResponsePredicateMap);
+            if (props !== null) riskResponse.props = props;
+          }
+
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(riskResponse, args.filters, args.filterMode) ) {
@@ -149,8 +156,16 @@ const riskResponseResolvers = {
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
+        let riskResponse = response[0];
+
+        // if props were requested
+        if (selectMap.getNode('riskResponse').includes('props')) {
+          let props = convertToProperties(riskResponse, riskResponsePredicateMap);
+          if (props !== null) riskResponse.props = props;
+        }
+
         const reducer = getReducer("RISK-RESPONSE");
-        return reducer(response[0]);  
+        return reducer(riskResponse);  
       } else {
         // Handle reporting Stardog Error
         if (typeof (response) === 'object' && 'body' in response) {

@@ -44,7 +44,7 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
-import {toastGenericError} from "../../../../utils/bakedToast";
+import { toastGenericError } from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -126,8 +126,8 @@ const RiskLogValidation = (t) => Yup.object().shape({
   description: Yup.string().required(t('This field is required')),
   event_start: Yup.date().required(t('The value must be a date (YYYY-MM-DD)')),
   event_end: Yup.date()
-  .nullable()
-  .typeError(t('The value must be a date (YYYY-MM-DDss)')),
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DDss)')),
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -151,7 +151,7 @@ class RiskLogCreation extends Component {
   }
 
   handleOpenCancelButton() {
-    this.setState({ displayCancel: true, open: false });
+    this.setState({ displayCancel: true });
   }
 
   handleCancelButton() {
@@ -163,9 +163,9 @@ class RiskLogCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    if(values.logged_by.length > 0){
+    if (values.logged_by.length > 0) {
       this.setState({
-        logged_by: [{'party': values.logged_by}],
+        logged_by: [{ 'party': values.logged_by }],
       })
     }
     const adaptedValues = evolve(
@@ -176,7 +176,7 @@ class RiskLogCreation extends Component {
       },
       values,
     );
-  
+
     const finalValues = R.pipe(
       R.assoc('logged_by', this.state.logged_by),
     )(adaptedValues)
@@ -188,7 +188,6 @@ class RiskLogCreation extends Component {
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
-        resetForm();
         this.handleClose();
         this.props.refreshQuery();
       },
@@ -226,12 +225,12 @@ class RiskLogCreation extends Component {
   }
 
   onResetContextual() {
-    this.handleClose();
+    this.handleOpenCancelButton();
   }
 
   renderClassic() {
     const { t, classes, data } = this.props;
-    
+
     return (
       <div>
         <Fab
@@ -270,8 +269,8 @@ class RiskLogCreation extends Component {
                 event_start: null,
                 event_end: null,
               }}
-               validationSchema={RiskLogValidation(t)}
-              
+              validationSchema={RiskLogValidation(t)}
+
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -351,7 +350,6 @@ class RiskLogCreation extends Component {
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.onResetContextual.bind(this)}
           //keepMounted={true}
           fullWidth={true}
           maxWidth='sm'
@@ -374,7 +372,7 @@ class RiskLogCreation extends Component {
               status_change: null,
               related_responses: [],
             }}
-             validationSchema={RiskLogValidation(t)}
+            validationSchema={RiskLogValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -609,7 +607,7 @@ class RiskLogCreation extends Component {
                 <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>
                   <Button
                     variant="outlined"
-                    onClick={this.handleOpenCancelButton.bind(this)}
+                    onClick={handleReset}
                     // disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >

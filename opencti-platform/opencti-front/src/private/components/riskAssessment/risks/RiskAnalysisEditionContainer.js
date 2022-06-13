@@ -149,7 +149,6 @@ class RiskAnalysisEditionContainer extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(adaptedValues);
-    console.log('riskAnalysisEditionFinalValues', finalValues);
     // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
     CM(environmentDarkLight, {
       mutation: riskAnalysisEditionMutation,
@@ -162,10 +161,9 @@ class RiskAnalysisEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('RiskAnalysisEditionDarkLightMutationData', data);
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('RiskAnalysisEditionDarkLightMutationError', err),
+      onError: (err) => console.error(err),
     });
     // commitMutation({
     //   mutation: riskCreationOverviewMutation,
@@ -208,7 +206,6 @@ class RiskAnalysisEditionContainer extends Component {
       handleClose,
       risk,
     } = this.props;
-    console.log('RiskAnalysisEditionPropsData', risk);
     const initialValues = R.pipe(
       R.assoc('id', risk?.id || ''),
       R.assoc('item_id', risk?.item_id || ''),
@@ -374,7 +371,6 @@ class RiskAnalysisEditionContainer extends Component {
               <Dialog
                 open={this.state.displayCancel}
                 TransitionComponent={Transition}
-                onClose={this.handleCancelButton.bind(this)}
               >
                 <DialogContent>
                   <Typography style={{

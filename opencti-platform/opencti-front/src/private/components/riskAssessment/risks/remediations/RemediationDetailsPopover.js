@@ -88,6 +88,11 @@ const styles = (theme) => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 const remediationEditionMutation = graphql`
   mutation RemediationDetailsPopoverMutation(
     $id: ID!,
@@ -127,11 +132,17 @@ class RemediationDetailsPopover extends Component {
     this.handleClose();
   }
 
+  handleCancelOpenClick() {
+    this.setState({ close: true });
+  }
+
   handleCancelCloseClick() {
     this.setState({ close: false });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const sourceValues = R.pickAll(['actor_ref', 'actor_ref'], values);
+
     const adaptedValues = R.evolve(
       {
         modified: () => values.modified === null ? null : parse(values.modified).format(),
@@ -140,6 +151,9 @@ class RemediationDetailsPopover extends Component {
       values,
     );
     const finalValues = R.pipe(
+      R.dissoc('actor_type'),
+      R.dissoc('actor_ref'),
+      R.assoc('origins', { origin_actors: [sourceValues] }),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
@@ -172,22 +186,29 @@ class RemediationDetailsPopover extends Component {
       risk,
       remediation,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
+    const SourceOfDetection = R.pipe(
+      R.pathOr([], ['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(remediation);
     const initialValues = R.pipe(
       R.assoc('name', remediation?.name || ''),
       R.assoc('description', remediation?.description || ''),
-      R.assoc('source', remediationOriginData?.name || []),
+      R.assoc('actor_type', SourceOfDetection.actor_type || ''),
+      R.assoc('actor_ref', SourceOfDetection.actor_ref?.id || ''),
       R.assoc('modified', dateFormat(remediation?.modified)),
       R.assoc('created', dateFormat(remediation?.created)),
       R.assoc('lifecycle', remediation?.lifecycle || []),
       R.assoc('response_type', remediation?.response_type || ''),
       R.pick([
         'name',
-        'description',
-        'source',
-        'modified',
         'created',
+        'modified',
+        'actor_ref',
         'lifecycle',
+        'actor_type',
+        'description',
         'response_type',
       ]),
     )(remediation);
@@ -196,12 +217,11 @@ class RemediationDetailsPopover extends Component {
         <Dialog
           open={this.props.displayEdit}
           keepMounted={true}
-          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-          // validationSchema={RelatedTaskValidation(t)}
+            // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -419,10 +439,7 @@ class RemediationDetailsPopover extends Component {
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
-                    onClick={() => {
-                      this.props.handleDisplayEdit();
-                      this.setState({ close: true });
-                    }}
+                    onClick={this.handleCancelOpenClick.bind(this)}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -446,7 +463,6 @@ class RemediationDetailsPopover extends Component {
           open={this.state.close}
           keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>
@@ -469,8 +485,8 @@ class RemediationDetailsPopover extends Component {
               {t('Go Back')}
             </Button>
             <Button
-                    onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
-                    color='secondary'
+              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+              color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
               variant='contained'
@@ -487,7 +503,6 @@ class RemediationDetailsPopover extends Component {
 
 RemediationDetailsPopover.propTypes = {
   cyioCoreRelationshipId: PropTypes.string,
-  handleDisplayEdit: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
   disabled: PropTypes.bool,

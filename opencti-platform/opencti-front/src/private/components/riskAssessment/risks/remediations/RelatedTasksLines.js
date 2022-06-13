@@ -266,7 +266,6 @@ class RelatedTasksLinesContainer extends Component {
           open={this.state.displayDialog}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
@@ -297,7 +296,6 @@ class RelatedTasksLinesContainer extends Component {
           open={this.state.displayExternalLink}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
@@ -375,6 +373,18 @@ const RelatedTasksLines = createFragmentContainer(
               id
               name
             }
+            responsible_roles {
+              parties {
+                id
+                party_type
+                name
+              }
+              role {
+                id
+                name
+                role_identifier
+              }
+            }
             associated_activities {
               __typename
               id
@@ -382,20 +392,6 @@ const RelatedTasksLines = createFragmentContainer(
                 __typename
                 id
                 name
-              }
-              responsible_roles {
-                __typename
-                role {
-                  __typename
-                  id
-                  role_identifier
-                  name
-                }
-                parties {
-                  id
-                  party_type
-                  name
-                }
               }
             }
             links {

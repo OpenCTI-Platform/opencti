@@ -1,7 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
-import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
+import { calculateRiskLevel, getLatestRemediationInfo, convertToProperties } from '../../riskUtils.js';
 import { findParentIriQuery, objectMap } from '../../../global/global-utils.js';
 import {
   selectLabelByIriQuery,
@@ -25,6 +25,7 @@ import {
   selectAllObservations,
   selectObservationByIriQuery,
   selectRiskResponseByIriQuery,
+  riskResponsePredicateMap,
   selectRiskLogEntryByIriQuery,
   deleteOriginByIriQuery,
   selectAllOrigins,
@@ -722,7 +723,7 @@ const riskResolvers = {
         return [];
       }
     },
-    remediations: async (parent, _, {dbName, dataSources, }) => {
+    remediations: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.remediations_iri === undefined) return [];
       let iriArray = parent.remediations_iri;
       const results = [];
@@ -747,7 +748,15 @@ const riskResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
+            let riskResponse = response[0];
+
+            // if props were requested
+            if (selectMap.getNode('remediations').includes('props')) {
+              let props = convertToProperties(riskResponse, riskResponsePredicateMap);
+              if (props !== null) riskResponse.props = props;
+            }
+            
+            results.push(reducer(riskResponse))
           }
           else {
             // Handle reporting Stardog Error

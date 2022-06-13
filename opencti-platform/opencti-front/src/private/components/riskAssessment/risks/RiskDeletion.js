@@ -149,7 +149,7 @@ class RiskDeletion extends Component {
         this.handleClose();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('RiskDeletionDarkLightMutationError', err),
+      onError: (err) => console.error(err),
     });
     // commitMutation({
     //   mutation: RiskDeletionDarkLightMutation,
@@ -197,7 +197,6 @@ class RiskDeletion extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
             <DialogContent>
               <Typography style={{
