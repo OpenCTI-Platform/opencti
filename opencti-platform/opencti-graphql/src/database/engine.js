@@ -1594,13 +1594,17 @@ export const elPaginate = async (user, indexName, options = {}) => {
       /* istanbul ignore next */ (err) => {
         // Because we create the mapping at element creation
         // We log the error only if its not a mapping not found error
-        const numberOfCauses = err.meta.body.error.root_cause.length;
-        const invalidMappingCauses = R.pipe(
-          R.map((r) => r.reason),
-          R.filter((r) => R.includes('No mapping found for', r) || R.includes('no such index', r))
-        )(err.meta.body.error.root_cause);
+        let isTechnicalError = true;
+        if (isNotEmptyField(err.meta.body)) {
+          const numberOfCauses = err.meta.body.error.root_cause.length;
+          const invalidMappingCauses = R.pipe(
+            R.map((r) => r.reason ?? ''),
+            R.filter((r) => R.includes('No mapping found for', r) || R.includes('no such index', r))
+          )(err.meta.body.error.root_cause);
+          isTechnicalError = numberOfCauses > invalidMappingCauses.length;
+        }
         // If uncontrolled error, log and propagate
-        if (numberOfCauses > invalidMappingCauses.length) {
+        if (isTechnicalError) {
           logApp.error('[SEARCH ENGINE] Paginate fail', { error: err, query });
           throw err;
         } else {

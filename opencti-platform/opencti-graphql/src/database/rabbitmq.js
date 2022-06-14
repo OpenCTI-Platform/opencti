@@ -3,7 +3,7 @@ import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';
 import conf, { booleanConf, configureCA } from '../config/conf';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, UnknownError } from '../config/errors';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
@@ -41,51 +41,28 @@ export const config = () => {
   };
 };
 
-const amqpExecute = (execute) => {
-  return new Promise((resolve, reject) => {
-    amqp
-      .connect(amqpUri(), USE_SSL ? {
-        ...amqpCred(),
-        tls: {
-          ...configureCA(RABBITMQ_CA),
-          servername: conf.get('rabbitmq:hostname'),
-        }
-      } : amqpCred())
-      .then((connection) => {
-        return connection
-          .createConfirmChannel()
-          .then((channel) => {
-            const commandExecution = execute(channel);
-            return commandExecution
-              .then((response) => {
-                channel.close();
-                connection.close();
-                resolve(response);
-                return true;
-              })
-              .catch(/* istanbul ignore next */ (e) => reject(e));
-          })
-          .catch(/* istanbul ignore next */ (e) => reject(e));
-      })
-      .catch(/* istanbul ignore next */ (e) => reject(e));
-  });
+const amqpExecute = async (execute) => {
+  try {
+    const amqpConnection = await amqp.connect(amqpUri(), USE_SSL ? {
+      ...amqpCred(),
+      tls: {
+        ...configureCA(RABBITMQ_CA),
+        servername: conf.get('rabbitmq:hostname'),
+      }
+    } : amqpCred());
+    const channel = await amqpConnection.createConfirmChannel();
+    const response = await execute(channel);
+    await channel.close();
+    await amqpConnection.close();
+    return response;
+  } catch (err) {
+    throw UnknownError('Error in amqp command execution', { error: err });
+  }
 };
 
+// { deliveryMode: 2 } = persistent message
 export const send = (exchangeName, routingKey, message) => {
-  return amqpExecute(
-    (channel) => new Promise((resolve, reject) => {
-      channel.publish(
-        exchangeName,
-        routingKey,
-        Buffer.from(message),
-        { deliveryMode: 2 }, // Make message persistent
-        (err, ok) => {
-          if (err) reject(err);
-          resolve(ok);
-        }
-      );
-    })
-  );
+  return amqpExecute((channel) => channel.publish(exchangeName, routingKey, Buffer.from(message), { deliveryMode: 2 }));
 };
 
 export const metrics = async () => {
@@ -137,35 +114,31 @@ export const listenRouting = (connectorId) => `listen_routing_${connectorId}`;
 export const pushRouting = (connectorId) => `push_routing_${connectorId}`;
 
 export const registerConnectorQueues = async (id, name, type, scope) => {
-  // 01. Ensure exchange exists
-  await amqpExecute((channel) => channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true }));
-  await amqpExecute((channel) => channel.assertExchange(WORKER_EXCHANGE, 'direct', { durable: true }));
-  // 02. Ensure listen queue exists
   const listenQueue = `listen_${id}`;
-  await amqpExecute((channel) => channel.assertQueue(listenQueue, {
-    exclusive: false,
-    durable: true,
-    autoDelete: false,
-    arguments: {
-      name,
-      config: { id, type, scope },
-    },
-  }));
-  // 03. bind queue for the each connector scope
-  await amqpExecute((c) => c.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id)));
-  // 04. Create stix push queue
   const pushQueue = `push_${id}`;
-  await amqpExecute((channel) => channel.assertQueue(pushQueue, {
-    exclusive: false,
-    durable: true,
-    autoDelete: false,
-    arguments: {
-      name,
-      config: { id, type, scope },
-    },
-  }));
-  // 05. Bind push queue to direct default exchange
-  await amqpExecute((channel) => channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id)));
+  await amqpExecute(async (channel) => {
+    // 01. Ensure exchange exists
+    await channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
+    await channel.assertExchange(WORKER_EXCHANGE, 'direct', { durable: true });
+    // 02. Ensure listen queue exists
+    await channel.assertQueue(listenQueue, {
+      exclusive: false,
+      durable: true,
+      autoDelete: false,
+      arguments: { name, config: { id, type, scope } },
+    });
+    // 03. bind queue for each connector scope
+    await channel.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id));
+    // 04. Create stix push queue
+    await channel.assertQueue(pushQueue, {
+      exclusive: false,
+      durable: true,
+      autoDelete: false,
+      arguments: { name, config: { id, type, scope } },
+    });
+    // 05. Bind push queue to direct default exchange
+    await channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id));
+  });
   return connectorConfig(id);
 };
 

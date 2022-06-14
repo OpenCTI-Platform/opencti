@@ -44,6 +44,10 @@ export const pingConnector = async (user, id, state) => {
   if (!connector) {
     throw FunctionalError('No connector found with the specified ID', { id });
   }
+  // Ensure queue are correctly setup
+  const scopes = connector.connector_scope ? connector.connector_scope.split(',') : [];
+  await registerConnectorQueues(connector.id, connector.name, connector.connector_type, scopes);
+  // Patch the updated_at and the state if needed
   if (connector.connector_state_reset === true) {
     const statePatch = { connector_state_reset: false };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, statePatch);

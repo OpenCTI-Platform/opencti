@@ -93,10 +93,6 @@ export default {
           } else {
             // Every other uses cases are logged with error level
             logApp.error(API_CALL_MESSAGE, { ...callMetaData, error });
-            if (DEV_MODE) {
-              // eslint-disable-next-line no-console
-              console.error(stack);
-            }
           }
         } else if (perfLog) {
           logApp.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });
