@@ -1,9 +1,19 @@
+import {generateId, OSCAL_NS} from '../utils.js';
+
 
 export const calculateRiskLevel = (risk) => {
   // calculate the risk level
-  let riskLevel = 'unknown', riskScore;
+  let riskLevel = 'unknown', riskScore, baseScore, temporalScore;
   if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
-    riskScore = risk.cvssV3Base_score !== undefined ? parseFloat(risk.cvssV3Base_score) : parseFloat(risk.cvssV2Base_score) ;
+    baseScore = risk.cvssV3Base_score !== undefined ? parseFloat(risk.cvssV3Base_score) : parseFloat(risk.cvssV2Base_score) ;
+  }
+  if (risk.cvssV2Temporal_score !== undefined || risk.cvssV3Temporal_score !== undefined) {
+    temporalScore = risk.cvssV3Temporal_score !== undefined ? parseFloat(risk.cvssV3Temporal_score) : parseFloat(risk.cvssV2Temporal_score) ;
+  }
+  if (baseScore !== undefined) riskScore = baseScore;
+  if (temporalScore !== undefined) riskScore = temporalScore;
+  
+  if (riskScore !== undefined) {
     if (riskScore <= 10 && riskScore >= 9.0) riskLevel = 'very-high';
     if (riskScore <= 8.9 && riskScore >= 7.0) riskLevel = 'high';
     if (riskScore <= 6.9 && riskScore >= 4.0) riskLevel = 'moderate';
@@ -36,3 +46,27 @@ export const getLatestRemediationInfo = (risk) => {
   return {responseType, lifeCycle};
 }
 
+export function convertToProperties(item, predicateMap, customProperties) {
+  let propList = [];
+  let id, id_material, token;
+
+  for (let [key,value] of Object.entries(predicateMap)) {
+    if (value.extension_property === undefined) continue;
+    if (!item.hasOwnProperty(key)) continue;
+    token = value.extension_property;
+    id_material = {"name":token,"ns":"http://csrc.nist.gov/ns/oscal","value":[`${item[key]}`]};
+ 
+    id = generateId(id_material, OSCAL_NS);
+    let property = {
+      id: `${id}`,
+      entity_type: 'property',
+      prop_name: token,
+      ns: 'http://csrc.nist.gov/ns/oscal',
+      value: [`${item[key]}`],
+    };
+
+    propList.push(property);
+  }
+  if (propList.length > 0) return propList;
+  return null;
+}
