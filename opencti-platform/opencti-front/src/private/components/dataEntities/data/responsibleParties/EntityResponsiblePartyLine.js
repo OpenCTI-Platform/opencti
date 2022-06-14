@@ -195,18 +195,6 @@ const EntityResponsiblePartyLineFragment = createFragmentContainer(
           entity_type
           description
         }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
         remarks {
           __typename
           id
