@@ -21,7 +21,7 @@ class EntitiesExternalReferencesLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'oscalRoles',
+      'cyioExternalReferences',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -51,10 +51,10 @@ class EntitiesExternalReferencesLines extends Component {
         handleOffsetChange={this.handleOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['oscalRoles', 'edges'], this.props.data)}
+        dataList={pathOr([], ['cyioExternalReferences', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['oscalRoles', 'pageInfo', 'globalCount'],
+          ['cyioExternalReferences', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         offset={this.state.offset}
@@ -86,18 +86,18 @@ EntitiesExternalReferencesLines.propTypes = {
 
 export const entitiesExternalReferencesLinesQuery = graphql`
   query EntitiesExternalReferencesLinesLinesPaginationQuery(
-    $search: String
+    # $search: String
     $first: Int!
     $offset: Int!
     $cursor: ID
-    $orderedBy: OscalRolesOrdering
+    $orderedBy: CyioExternalReferencesOrdering
     $orderMode: OrderingMode
-    $filters: [OscalRolesFiltering]
+    $filters: [CyioExternalReferencesFiltering]
     $filterMode: FilterMode
   ) {
     ...EntitiesExternalReferencesLines_data
       @arguments(
-        search: $search
+        # search: $search
         first: $first
         offset: $offset
         cursor: $cursor
@@ -115,28 +115,28 @@ export default createPaginationContainer(
     data: graphql`
       fragment EntitiesExternalReferencesLines_data on Query
       @argumentDefinitions(
-        search: { type: "String" }
+        # search: { type: "String" }
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "OscalRolesOrdering", defaultValue: created }
+        orderedBy: { type: "CyioExternalReferencesOrdering", defaultValue: created }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[OscalRolesFiltering]" }
+        filters: { type: "[CyioExternalReferencesFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {
-        oscalRoles(
-          search: $search
+        cyioExternalReferences(
+          # search: $search
           first: $first
           offset: $offset
           orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
           filterMode: $filterMode
-        ) @connection(key: "Pagination_oscalRoles") {
+        ) @connection(key: "Pagination_cyioExternalReferences") {
           edges {
             node {
               id
-              name
+              source_name
               description
               ...EntityExternalReferenceLine_node
             }
@@ -153,7 +153,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.oscalRoles;
+      return props.data && props.data.cyioExternalReferences;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -163,7 +163,7 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        search: fragmentVariables.search,
+        // search: fragmentVariables.search,
         first: fragmentVariables.first,
         offset: fragmentVariables.offset,
         count,

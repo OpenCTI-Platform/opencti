@@ -72,7 +72,7 @@ const EntitiesExternalReferencesDeletionMutation = graphql`
 
 const EntitiesExternalReferencesDeletionDarkLightMutation = graphql`
   mutation EntitiesExternalReferencesDeletionDarkLightMutation($id: ID!) {
-  deleteOscalRole(id: $id)
+  deleteCyioExternalReference(id: $id)
 }
 `;
 
@@ -183,7 +183,7 @@ class EntitiesExternalReferencesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Role?')}
+                {t('Are you sure you’d like to delete this External Reference?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}

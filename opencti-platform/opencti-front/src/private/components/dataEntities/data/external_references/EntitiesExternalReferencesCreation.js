@@ -48,7 +48,6 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflow: 'hidden',
-    height: '650px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -61,15 +60,15 @@ const styles = (theme) => ({
 });
 
 const entitiesExternalReferencesCreationMutation = graphql`
-  mutation EntitiesExternalReferencesCreationMutation($input: OscalRoleAddInput) {
-    createOscalRole (input: $input) {
+  mutation EntitiesExternalReferencesCreationMutation($input: CyioExternalReferenceAddInput) {
+    createCyioExternalReference (input: $input) {
       id
     }
   }
 `;
 
-const riskValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+const ExternalReferenceValidation = (t) => Yup.object().shape({
+  source_name: Yup.string().required(t('This field is required')),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -98,19 +97,16 @@ class EntitiesExternalReferencesCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = R.pipe(
-      R.assoc('name', values.name),
-    )(values);
     CM(environmentDarkLight, {
       mutation: entitiesExternalReferencesCreationMutation,
       variables: {
-        input: finalValues,
+        input: values,
       },
       setSubmitting,
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        this.props.history.push('/data/entities/external_references');
       },
       onError: (err) => {
         console.error(err);
@@ -146,7 +142,7 @@ class EntitiesExternalReferencesCreation extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleExternalReferenceCreation();
   }
 
   render() {
@@ -154,7 +150,6 @@ class EntitiesExternalReferencesCreation extends Component {
       t,
       classes,
       openDataCreation,
-      handleExternalReferenceCreation,
       open,
       history,
     } = this.props;
@@ -168,11 +163,12 @@ class EntitiesExternalReferencesCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              name: '',
-              created: null,
-              modified: null,
+              source_name: '',
+              external_id: '',
+              url: '',
+              description: '',
             }}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={ExternalReferenceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -184,239 +180,50 @@ class EntitiesExternalReferencesCreation extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('External Reference')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Create an external reference')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Id')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Id')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={TextField}
-                          name="id"
-                          disabled={true}
-                          fullWidth={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                        />
-                      </div>
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '12px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Created Date')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Created')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={DatePickerField}
-                          name="created"
-                          disabled={true}
-                          fullWidth={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
-                          style={{ height: '38.09px' }}
-                        />
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Modified Date')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Last Modified')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={DatePickerField}
-                          name="modified"
-                          disabled={true}
-                          fullWidth={true}
-                          size="small"
-                          variant='outlined'
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Role Identifier')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Role Identifier')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="role_identifier"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Name')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Name')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="name"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Short Name')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Short Name')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="short_name"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Marking')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Marking')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="marking"
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid xs={12} item={true}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Description')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Description')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={MarkDownField}
-                        name='description'
-                        fullWidth={true}
-                        multiline={true}
-                        rows='3'
-                        variant='outlined'
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                  </Grid>
+                  <Field
+                    component={TextField}
+                    name="source_name"
+                    label={t('Source name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
+                    name="external_id"
+                    label={t('External ID')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    name="url"
+                    label={t('URL')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={MarkDownField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    onClick={() => handleExternalReferenceCreation()}
+                    size='small'
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
+                    size='small'
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}

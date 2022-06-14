@@ -57,14 +57,11 @@ Transition.displayName = 'TransitionSlide';
 
 const externalReferenceEntityEditionQuery = graphql`
   query ExternalReferenceEntityEditionQuery($id: ID!) {
-    oscalRole(id: $id) {
+    cyioExternalReference(id: $id) {
       id
-      entity_type
-      created
-      modified
-      role_identifier
-      name
-      short_name
+      url
+      external_id
+      source_name
       description
     }
   }
@@ -99,6 +96,7 @@ class ExternalReferenceEntityEdition extends Component {
                   displayEdit={displayEdit}
                   history={history}
                   handleDisplayEdit={handleDisplayEdit}
+                  externalReference={props.cyioExternalReference}
                 />
               );
             }

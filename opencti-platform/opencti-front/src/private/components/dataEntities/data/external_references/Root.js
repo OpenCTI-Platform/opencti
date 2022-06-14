@@ -35,9 +35,9 @@ const subscription = graphql`
 
 const externalReferenceQuery = graphql`
   query RootExternalReferenceQuery($id: ID!) {
-    oscalRole(id: $id) {
+    cyioExternalReference(id: $id) {
       id
-      name
+      source_name
       ...EntityExternalReference_externalReference
     }
   }
@@ -102,7 +102,7 @@ class RootExternalReference extends Component {
               toastGenericError('Failed to get external reference data');
             }
             if (props) {
-              if (props.oscalRole) {
+              if (props.cyioExternalReference) {
                 return (
                   <Switch>
                     <Route
@@ -112,7 +112,7 @@ class RootExternalReference extends Component {
                         <EntityExternalReference
                           {...routeProps}
                           refreshQuery={retry}
-                          externalReference={props.oscalRole}
+                          externalReference={props.cyioExternalReference}
                         />
                       )}
                     />

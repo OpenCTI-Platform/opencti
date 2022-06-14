@@ -75,41 +75,16 @@ class EntityExternalReferenceComponent extends Component {
               <EntityExternalReferenceDetails externalReference={externalReference} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
-          <Grid
-            container={true}
-            spacing={3}
-            classes={{ container: classes.gridContainer }}
-            style={{ marginTop: 25 }}
-          >
-            <Grid item={true} xs={6}>
-              <CyioCoreObjectExternalReferences
-                typename={externalReference.__typename}
-                externalReferences={externalReference.links}
-                fieldName='links'
-                cyioCoreObjectId={externalReference?.id}
-                refreshQuery={refreshQuery}
-              />
-            </Grid>
-            <Grid item={true} xs={6}>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes
-                typename={externalReference.__typename}
-                notes={externalReference.remarks}
-                refreshQuery={refreshQuery}
-                fieldName='remarks'
-                marginTop='0px'
-                cyioCoreObjectOrCyioCoreRelationshipId={externalReference?.id}
-              />
-            </Grid>
-          </Grid>
         </div>
         <EntitiesExternalReferencesCreation
           openDataCreation={this.state.openDataCreation}
-          handleRoleCreation={this.handleOpenNewCreation.bind(this)}
+          handleExternalReferenceCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
         />
         <ExternalReferenceEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
+          externalReference={externalReference}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>
@@ -126,44 +101,13 @@ EntityExternalReferenceComponent.propTypes = {
 
 const EntityExternalReference = createFragmentContainer(EntityExternalReferenceComponent, {
   externalReference: graphql`
-    fragment EntityExternalReference_externalReference on OscalRole {
+    fragment EntityExternalReference_externalReference on CyioExternalReference {
       __typename
       id
-      entity_type
-      created
-      modified
-      role_identifier
-      name
-      short_name
+      url
+      source_name
+      external_id
       description
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
-      links {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
-      }
-      remarks {
-        __typename
-        id
-        entity_type
-        abstract
-        content
-        authors
-      }
       ...EntityExternalReferenceDetails_externalReference
     }
   `,

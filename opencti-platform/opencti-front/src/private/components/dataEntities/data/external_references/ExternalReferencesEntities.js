@@ -185,14 +185,14 @@ class ExternalReferencesEntities extends Component {
       type: {
         label: 'Type',
       },
-      name: {
-        label: 'Name',
+      source_name: {
+        label: 'Source Name',
       },
-      author: {
-        label: 'Author',
+      media_type: {
+        label: 'Media Type',
       },
-      labels: {
-        label: 'Labels',
+      url: {
+        label: 'URL',
       },
       creation_date: {
         label: 'Creation Date',
@@ -278,23 +278,23 @@ class ExternalReferencesEntities extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     const dataColumns = {
-      role_identifier: {
+      type: {
         label: 'Type',
         width: '14%',
         isSortable: true,
       },
-      name: {
-        label: 'Name',
+      source_name: {
+        label: 'Source Name',
         width: '16%',
         isSortable: true,
       },
-      author: {
-        label: 'Author',
+      media_type: {
+        label: 'Media Type',
         width: '16%',
         isSortable: false,
       },
-      label_name: {
-        label: 'Labels',
+      url: {
+        label: 'URL',
         width: '20%',
         isSortable: true,
       },

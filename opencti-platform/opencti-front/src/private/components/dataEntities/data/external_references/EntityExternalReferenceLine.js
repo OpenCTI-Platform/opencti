@@ -88,31 +88,27 @@ class EntityExternalReferenceLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.role_identifier.width }}
+                style={{ width: dataColumns.type.width }}
               >
-                {node.role_identifier && t(node.role_identifier)}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: dataColumns.source_name.width }}
               >
-                {node.name && node.name}
+                {node.source_name && t(node.source_name)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: '16.5%' }}
               >
-                {/* {node.entity_type && node.entity_type} */}
+                {node.media_type && t(node.media_type)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: '21%' }}
               >
-                <CyioCoreObjectLabels
-                  variant="inList"
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                />
+                {node.url && t(node.url)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -124,7 +120,7 @@ class EntityExternalReferenceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.marking.width }}
               >
-                {node?.parent_types && t(node.parent_types)}
+                {/* {node?.parent_types && t(node.parent_types)} */}
               </div>
             </div>
           }
@@ -155,44 +151,14 @@ const EntityExternalReferenceLineFragment = createFragmentContainer(
   EntityExternalReferenceLineComponent,
   {
     node: graphql`
-      fragment EntityExternalReferenceLine_node on OscalRole {
+      fragment EntityExternalReferenceLine_node on CyioExternalReference {
         __typename
         id
-        description
-        short_name
-        name
-        role_identifier
-        entity_type
+        url
         created
-        modified
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
+        media_type
+        source_name
+        entity_type
       }
     `,
   },

@@ -155,7 +155,7 @@ class EntityExternalReferenceCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {node.entity_type && node.entity_type}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <Grid
                 item={true}
@@ -181,10 +181,10 @@ class EntityExternalReferenceCardComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}>
-                  {t('Name')}
+                  {t('Source Name')}
                 </Typography>
                 <Typography>
-                  {node?.name && node?.name}
+                  {node.source_name && t(node.source_name)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -212,8 +212,8 @@ class EntityExternalReferenceCardComponent extends Component {
                   {t('Marking')}
                 </Typography>
                 <Typography>
-                  {node?.parent_types
-                    && (node?.parent_types)}
+                  {/* {node?.parent_types
+                    && (node?.parent_types)} */}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -223,12 +223,11 @@ class EntityExternalReferenceCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Author')}
+                  {t('Media Type')}
                 </Typography>
-                {/* TODO: Get Author Name for Display */}
-                {/* <Typography>
-                  {t(node?.name)}
-                </Typography> */}
+                <Typography>
+                  {node.media_type && t(node.media_type)}
+                </Typography>
               </Grid>
             </Grid>
             <Grid container={true} >
@@ -239,12 +238,11 @@ class EntityExternalReferenceCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Labels')}
+                  {t('URL')}
                 </Typography>
-                <CyioCoreObjectLabels
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                />
+                <Typography>
+                  {node.url && t(node.url)}
+                </Typography>
               </Grid>
             </Grid>
           </CardContent>
@@ -268,44 +266,14 @@ const EntityExternalReferenceCardFragment = createFragmentContainer(
   EntityExternalReferenceCardComponent,
   {
     node: graphql`
-      fragment EntityExternalReferenceCard_node on OscalRole {
+      fragment EntityExternalReferenceCard_node on CyioExternalReference {
         __typename
         id
-        description
-        short_name
-        name
-        role_identifier
-        entity_type
+        url
         created
-        modified
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
+        media_type
+        source_name
+        entity_type
       }
     `,
   },

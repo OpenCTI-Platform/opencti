@@ -89,10 +89,10 @@ class EntityExternalReferenceDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Name')}
+                  {t('Source Name')}
                 </Typography>
                 <div className="clearfix" />
-                {externalReference.name && t(externalReference.name)}
+                {externalReference.source_name && t(externalReference.source_name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -111,21 +111,10 @@ class EntityExternalReferenceDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Short Name')}
+                  {t('External Id')}
                 </Typography>
                 <div className="clearfix" />
-                {externalReference.short_name && t(externalReference.short_name)}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Role Identifier')}
-                </Typography>
-                <div className="clearfix" />
-                {externalReference.role_identifier && t(externalReference.role_identifier)}
+                {externalReference.external_id && t(externalReference.external_id)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -151,6 +140,17 @@ class EntityExternalReferenceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {externalReference.modified && fldt(externalReference.modified)}
               </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('URL')}
+                </Typography>
+                <div className="clearfix" />
+                {externalReference.url && fldt(externalReference.url)}
+              </div>
             </Grid>
             <Grid item={true} xs={4}>
               <Typography
@@ -169,37 +169,11 @@ class EntityExternalReferenceDetailsComponent extends Component {
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
-                      {externalReference?.description && t(externalReference?.description)}
+                      {externalReference.description && t(externalReference.description)}
                     </Markdown>
                   </div>
                 </div>
               </div>
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={3}>
-              <CyioCoreObjectLabelsView
-                labels={externalReference.labels}
-                marginTop={0}
-                refreshQuery={refreshQuery}
-                id={externalReference.id}
-                typename={externalReference.__typename}
-              />
-            </Grid>
-            <Grid item={true} xs={4}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-              >
-                {t('Markings')}
-              </Typography>
-              <div className="clearfix" />
-              {externalReference?.markings && (
-                <p className={classes.markingText}>
-                  {t(externalReference?.markings)}
-                </p>
-              )}
             </Grid>
           </Grid>
         </Paper>
@@ -220,24 +194,16 @@ const EntityExternalReferenceDetails = createFragmentContainer(
   EntityExternalReferenceDetailsComponent,
   {
     externalReference: graphql`
-      fragment EntityExternalReferenceDetails_externalReference on OscalRole {
+      fragment EntityExternalReferenceDetails_externalReference on CyioExternalReference {
         __typename
         id
-        entity_type
+        url
         created
         modified
-        role_identifier
-        name
-        short_name
+        external_id
+        source_name
+        entity_type
         description
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
       }
     `,
   },
