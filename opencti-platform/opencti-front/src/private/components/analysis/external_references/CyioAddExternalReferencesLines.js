@@ -209,7 +209,7 @@ const CyioAddExternalReferencesLines = createFragmentContainer(
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 4 }
       ) {
-        cyioExternalReferences(limit: $count) {
+        cyioExternalReferences(first: $count) {
           edges {
             cursor
             node {

@@ -9,16 +9,16 @@ import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../../components/i18n';
-import EntityResponsiblePartyDetails from './EntityResponsiblePartyDetails';
-import EntitiesResponsiblePartiesPopover from './EntitiesResponsiblePartiesPopover';
-import EntitiesResponsiblePartiesDeletion from './EntitiesResponsiblePartiesDeletion';
+import EntityNoteDetails from './EntityNoteDetails';
+import EntitiesNotesPopover from './EntitiesNotesPopover';
+import EntitiesNotesDeletion from './EntitiesNotesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import ResponsiblePartyEntityEditionContainer from './ResponsiblePartyEntityEditionContainer';
-import EntitiesResponsiblePartiesCreation from './EntitiesResponsiblePartiesCreation';
+import NoteEntityEditionContainer from './NoteEntityEditionContainer';
+import EntitiesNotesCreation from './EntitiesNotesCreation';
 import RelatedTasks from '../../../riskAssessment/risks/remediations/RelatedTasks';
 
 const styles = () => ({
@@ -30,7 +30,7 @@ const styles = () => ({
   },
 });
 
-class EmtityResponsiblePartyComponent extends Component {
+class EmtityNoteComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -49,22 +49,23 @@ class EmtityResponsiblePartyComponent extends Component {
 
   render() {
     const {
+      note,
       classes,
-      responsibleParty,
       history,
-      refreshQuery,
       location,
+      refreshQuery,
     } = this.props;
+    const { me } = this.props.me;
     return (
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={responsibleParty}
+            cyioDomainObject={note}
             history={history}
-            PopoverComponent={<EntitiesResponsiblePartiesPopover />}
+            PopoverComponent={<EntitiesNotesPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
+            OperationsComponent={<EntitiesNotesDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -73,37 +74,21 @@ class EmtityResponsiblePartyComponent extends Component {
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={12}>
-              <EntityResponsiblePartyDetails responsibleParty={responsibleParty} history={history} refreshQuery={refreshQuery} />
-            </Grid>
-          </Grid>
-          <Grid
-            container={true}
-            spacing={3}
-            classes={{ container: classes.gridContainer }}
-            style={{ marginTop: 25 }}
-          >
-            <Grid item={true} xs={12}>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes
-                typename={responsibleParty.__typename}
-                notes={responsibleParty.remarks}
-                refreshQuery={refreshQuery}
-                fieldName='remarks'
-                marginTop={30}
-                cyioCoreObjectOrCyioCoreRelationshipId={responsibleParty?.id}
-              />
+              <EntityNoteDetails note={note} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
         </div>
-        <EntitiesResponsiblePartiesCreation
+        <EntitiesNotesCreation
           openDataCreation={this.state.openDataCreation}
-          handleResponsiblePartyCreation={this.handleOpenNewCreation.bind(this)}
+          handleNoteCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
+          me={me}
         />
-        <ResponsiblePartyEntityEditionContainer
+        <NoteEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
           refreshQuery={refreshQuery}
-          responsibleParty={responsibleParty}
+          note={note}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>
@@ -111,19 +96,23 @@ class EmtityResponsiblePartyComponent extends Component {
   }
 }
 
-EmtityResponsiblePartyComponent.propTypes = {
-  responsibleParty: PropTypes.object,
+EmtityNoteComponent.propTypes = {
+  note: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityRole = createFragmentContainer(EmtityResponsiblePartyComponent, {
-  responsibleParty: graphql`
-    fragment EntityResponsibleParty_responsibleParty on OscalResponsibleParty {
+const EntityNote = createFragmentContainer(EmtityNoteComponent, {
+  note: graphql`
+    fragment EntityNote_note on CyioNote {
       __typename
       id
-      name
+      content
+      created
+      authors
+      abstract
+      modified
       labels {
         __typename
         id
@@ -132,17 +121,9 @@ const EntityRole = createFragmentContainer(EmtityResponsiblePartyComponent, {
         entity_type
         description
       }
-      remarks {
-        __typename
-        id
-        entity_type
-        abstract
-        content
-        authors
-      }
-      ...EntityResponsiblePartyDetails_responsibleParty
+      ...EntityNoteDetails_note
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(EntityRole);
+export default compose(inject18n, withStyles(styles))(EntityNote);
