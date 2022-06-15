@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, head, pathOr } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
@@ -106,140 +106,132 @@ const inlineStyles = {
   },
 };
 
-class ReportDetailsComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      expanded: false,
-    };
-  }
-
-  handleToggleExpand() {
-    this.setState({ expanded: !this.state.expanded });
-  }
-
-  render() {
-    const { t, fldt, fsd, classes, report } = this.props;
-    const { expanded } = this.state;
-    const expandable = report.relatedContainers.edges.length > 5;
-    return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Entity details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
-              </Typography>
-              <ExpandableMarkdown source={report.description} limit={400} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Report types')}
-              </Typography>
-              {report.report_types?.map((reportType) => (
-                <Chip
-                  key={reportType}
-                  classes={{ root: classes.chip }}
-                  label={reportType}
-                />
-              ))}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Publication date')}
-              </Typography>
-              {fldt(report.published)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <EntityStixCoreRelationshipsHorizontalBars
-                title={t('Entities distribution')}
-                variant="inEntity"
-                stixCoreObjectId={report.id}
-                toTypes={['Stix-Core-Object']}
-                relationshipType="object"
-                field="entity_type"
-                seriesName={t('Number of entities')}
-              />
-            </Grid>
-          </Grid>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Related reports')}
-          </Typography>
-          <List>
-            {R.take(expanded ? 200 : 5, report.relatedContainers.edges)
-              .filter(
-                (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
-              )
-              .map((relatedContainerEdge) => {
-                const relatedContainer = relatedContainerEdge.node;
-                const markingDefinition = head(
-                  pathOr([], ['objectMarking', 'edges'], relatedContainer),
-                );
-                return (
-                  <ListItem
-                    key={report.id}
-                    dense={true}
-                    button={true}
-                    classes={{ root: classes.item }}
-                    divider={true}
-                    component={Link}
-                    to={`/dashboard/analysis/reports/${relatedContainer.id}`}
-                  >
-                    <ListItemIcon>
-                      <DescriptionOutlined color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div className={classes.itemText}>
-                          {relatedContainer.name}
-                        </div>
-                      }
-                    />
-                    <div style={inlineStyles.itemAuthor}>
-                      {pathOr('', ['createdBy', 'name'], relatedContainer)}
-                    </div>
-                    <div style={inlineStyles.itemDate}>
-                      {fsd(relatedContainer.published)}
-                    </div>
-                    <div style={{ width: 110, paddingRight: 20 }}>
-                      {markingDefinition && (
-                        <ItemMarking
-                          key={markingDefinition.node.id}
-                          label={markingDefinition.node.definition}
-                          variant="inList"
-                        />
-                      )}
-                    </div>
-                  </ListItem>
-                );
-              })}
-          </List>
-          {expandable && (
-            <Button
-              variant="contained"
-              size="small"
-              onClick={this.handleToggleExpand.bind(this)}
-              classes={{ root: classes.buttonExpand }}
+const ReportDetailsComponent = (props) => {
+  const { t, fldt, fsd, classes, report } = props;
+  const [expanded, setExpanded] = useState(false);
+  const [height, setHeight] = useState(0);
+  const ref = useRef(null);
+  useEffect(() => {
+    setHeight(ref.current.clientHeight);
+  });
+  const expandable = report.relatedContainers.edges.length > 5;
+  return (
+    <div style={{ height: '100%' }}>
+      <Typography variant="h4" gutterBottom={true}>
+        {t('Entity details')}
+      </Typography>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+          <Grid item={true} xs={6} ref={ref}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Description')}
+            </Typography>
+            <ExpandableMarkdown source={report.description} limit={400} />
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
             >
-              {expanded ? (
-                <ExpandLessOutlined fontSize="small" />
-              ) : (
-                <ExpandMoreOutlined fontSize="small" />
-              )}
-            </Button>
-          )}
-        </Paper>
-      </div>
-    );
-  }
-}
+              {t('Report types')}
+            </Typography>
+            {report.report_types?.map((reportType) => (
+              <Chip
+                key={reportType}
+                classes={{ root: classes.chip }}
+                label={reportType}
+              />
+            ))}
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Publication date')}
+            </Typography>
+            {fldt(report.published)}
+          </Grid>
+          <Grid item={true} xs={6} style={{ maxHeight: height }}>
+            <EntityStixCoreRelationshipsHorizontalBars
+              title={t('Entities distribution')}
+              variant="inEntity"
+              stixCoreObjectId={report.id}
+              toTypes={['Stix-Core-Object']}
+              relationshipType="object"
+              field="entity_type"
+              seriesName={t('Number of entities')}
+            />
+          </Grid>
+        </Grid>
+        <Typography variant="h3" gutterBottom={true}>
+          {t('Related reports')}
+        </Typography>
+        <List>
+          {R.take(expanded ? 200 : 5, report.relatedContainers.edges)
+            .filter(
+              (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
+            )
+            .map((relatedContainerEdge) => {
+              const relatedContainer = relatedContainerEdge.node;
+              const markingDefinition = head(
+                pathOr([], ['objectMarking', 'edges'], relatedContainer),
+              );
+              return (
+                <ListItem
+                  key={report.id}
+                  dense={true}
+                  button={true}
+                  classes={{ root: classes.item }}
+                  divider={true}
+                  component={Link}
+                  to={`/dashboard/analysis/reports/${relatedContainer.id}`}
+                >
+                  <ListItemIcon>
+                    <DescriptionOutlined color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div className={classes.itemText}>
+                        {relatedContainer.name}
+                      </div>
+                    }
+                  />
+                  <div style={inlineStyles.itemAuthor}>
+                    {pathOr('', ['createdBy', 'name'], relatedContainer)}
+                  </div>
+                  <div style={inlineStyles.itemDate}>
+                    {fsd(relatedContainer.published)}
+                  </div>
+                  <div style={{ width: 110, paddingRight: 20 }}>
+                    {markingDefinition && (
+                      <ItemMarking
+                        key={markingDefinition.node.id}
+                        label={markingDefinition.node.definition}
+                        variant="inList"
+                      />
+                    )}
+                  </div>
+                </ListItem>
+              );
+            })}
+        </List>
+        {expandable && (
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => setExpanded(!expanded)}
+            classes={{ root: classes.buttonExpand }}
+          >
+            {expanded ? (
+              <ExpandLessOutlined fontSize="small" />
+            ) : (
+              <ExpandMoreOutlined fontSize="small" />
+            )}
+          </Button>
+        )}
+      </Paper>
+    </div>
+  );
+};
 
 ReportDetailsComponent.propTypes = {
   report: PropTypes.object,

@@ -2112,7 +2112,7 @@ const buildRelationTimeFilter = (input) => {
 
 const upsertElementRaw = async (user, element, type, updatePatch) => {
   // Upsert relation
-  const forceUpdate = updatePatch.update === true || updatePatch.confidence > element.confidence;
+  const forceUpdate = updatePatch.confidence > element.confidence;
   const patchInputs = []; // Sourced inputs for event stream
   const impactedInputs = []; // All inputs impacted by modifications (+inner)
   const rawRelations = [];
