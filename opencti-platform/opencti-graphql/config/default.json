@@ -127,7 +127,8 @@
     "port_management": 15672,
     "management_ssl": false,
     "username": "guest",
-    "password": "guest"
+    "password": "guest",
+    "queue_type": "classic"
   },
   "smtp": {
     "hostname": "localhost",

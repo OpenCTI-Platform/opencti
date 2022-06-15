@@ -17,6 +17,7 @@ export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
 const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
+const QUEUE_TYPE = conf.get('rabbitmq:queue_type');
 const RABBITMQ_CA = conf.get('rabbitmq:ca').map((path) => readFileSync(path));
 
 const amqpUri = () => {
@@ -125,7 +126,7 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
       exclusive: false,
       durable: true,
       autoDelete: false,
-      arguments: { name, config: { id, type, scope } },
+      arguments: { name, config: { id, type, scope }, 'x-queue-type': QUEUE_TYPE },
     });
     // 03. bind queue for each connector scope
     await channel.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id));
@@ -134,7 +135,7 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
       exclusive: false,
       durable: true,
       autoDelete: false,
-      arguments: { name, config: { id, type, scope } },
+      arguments: { name, config: { id, type, scope }, 'x-queue-type': QUEUE_TYPE },
     });
     // 05. Bind push queue to direct default exchange
     await channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id));
