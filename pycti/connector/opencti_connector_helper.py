@@ -66,6 +66,9 @@ def get_config_variable(
     if isNumber:
         return int(result)
 
+    if isinstance(result, str) and len(result) == 0:
+        return default
+
     return result
 
 
