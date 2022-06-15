@@ -36,10 +36,16 @@ const addAattackPatternsLinesMutationRelationAdd = graphql`
 `;
 
 export const addAttackPatternsLinesMutationRelationDelete = graphql`
-  mutation AddAttackPatternsLinesRelationDeleteMutation($id: ID!) {
-    stixCoreRelationshipEdit(id: $id) {
-      delete
-    }
+  mutation AddAttackPatternsLinesRelationDeleteMutation(
+    $fromId: String!
+    $toId: String!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+    )
   }
 `;
 
@@ -53,7 +59,7 @@ class AddAttackPatternsLinesContainer extends Component {
     const alreadyAdded = entityCoursesOfActionIds.includes(attackPattern.id);
 
     if (alreadyAdded) {
-      const existingCourseOfAction = head(
+      const existingAttackPattern = head(
         filter(
           (n) => n.node.id === attackPattern.id,
           courseOfActionAttackPatterns,
@@ -62,7 +68,9 @@ class AddAttackPatternsLinesContainer extends Component {
       commitMutation({
         mutation: addAttackPatternsLinesMutationRelationDelete,
         variables: {
-          id: existingCourseOfAction.relation.id,
+          fromId: courseOfActionId,
+          toId: existingAttackPattern.node.id,
+          relationship_type: 'mitigates',
         },
         updater: (store) => {
           const node = store.get(this.props.courseOfActionId);
@@ -70,7 +78,7 @@ class AddAttackPatternsLinesContainer extends Component {
           const edges = attackPatterns.getLinkedRecords('edges');
           const newEdges = filter(
             (n) => n.getLinkedRecord('node').getValue('id')
-              !== existingCourseOfAction.node.id,
+              !== existingAttackPattern.node.id,
             edges,
           );
           attackPatterns.setLinkedRecords(newEdges, 'edges');

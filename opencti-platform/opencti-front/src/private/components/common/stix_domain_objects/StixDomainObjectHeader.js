@@ -308,16 +308,15 @@ class StixDomainObjectHeader extends Component {
               (label) => label.length > 0 && (
                   <Security
                     needs={[KNOWLEDGE_KNUPDATE]}
+                    key={label}
                     placeholder={
                       <Chip
-                        key={label}
                         classes={{ root: classes.alias }}
                         label={label}
                       />
                     }
                   >
                     <Chip
-                      key={label}
                       classes={{ root: classes.alias }}
                       label={label}
                       onDelete={
