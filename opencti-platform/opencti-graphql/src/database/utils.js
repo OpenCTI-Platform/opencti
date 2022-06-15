@@ -293,6 +293,10 @@ export const generateDeleteMessage = (instance) => {
 export const generateUpdateMessage = (inputs) => {
   const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
   const patchElements = Object.entries(inputsByOperations);
+  if (patchElements.length === 0) {
+    throw UnsupportedError('[OPENCTI] Error generating update message with empty inputs');
+  }
+  // noinspection UnnecessaryLocalVariableJS
   const generatedMessage = patchElements.map(([type, operations]) => {
     return `${type}s ${operations.map(({ key, value }) => {
       let message = 'nothing';
@@ -321,10 +325,7 @@ export const generateUpdateMessage = (inputs) => {
       return `\`${message}\` in \`${convertedKey}\``;
     }).join(' - ')}`;
   }).join(' | ');
-  if (isEmptyField(generatedMessage) || generatedMessage.includes('``')
-      || generatedMessage.includes('undefined') || generatedMessage.includes('[object Object]')) {
-    throw UnsupportedError('[OPENCTI] Error generating update message', { inputs, message: generatedMessage });
-  }
+  // Return generated update message
   return generatedMessage;
 };
 
