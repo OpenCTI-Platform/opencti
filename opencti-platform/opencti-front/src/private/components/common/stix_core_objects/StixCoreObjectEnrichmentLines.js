@@ -255,14 +255,16 @@ const StixCoreObjectEnrichment = (props) => {
                           )}
                         </ListItemIcon>
                         <ListItemText primary={nsdt(work.timestamp)} />
-                        <ListItemSecondaryAction style={{ right: 0 }}>
-                          <IconButton
-                            onClick={() => deleteWork(work.id)}
-                            size="large"
-                          >
-                            <Delete />
-                          </IconButton>
-                        </ListItemSecondaryAction>
+                        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                          <ListItemSecondaryAction style={{ right: 0 }}>
+                            <IconButton
+                              onClick={() => deleteWork(work.id)}
+                              size="large"
+                            >
+                              <Delete />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </Security>
                       </ListItem>
                     </Tooltip>
                   );

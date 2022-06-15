@@ -640,40 +640,42 @@ class ContainerHeaderComponent extends Component {
                 const appliedSuggestions = localStorage.getItem(`suggestions-${container.id}`) || [];
                 return (
                   <div className={classes.suggestions}>
-                    <ToggleButtonGroup
-                      size="small"
-                      color="secondary"
-                      exclusive={true}
-                    >
-                      <Tooltip title={t('Open suggestions')}>
-                        <ToggleButton
-                          onClick={this.handleOpenSuggestions.bind(this)}
-                          disabled={suggestions.length === 0}
-                        >
-                          <Badge
-                            badgeContent={
-                              suggestions.filter(
-                                (n) => !appliedSuggestions.includes(n.type),
-                              ).length
-                            }
-                            color="secondary"
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <ToggleButtonGroup
+                        size="small"
+                        color="secondary"
+                        exclusive={true}
+                      >
+                        <Tooltip title={t('Open suggestions')}>
+                          <ToggleButton
+                            onClick={this.handleOpenSuggestions.bind(this)}
+                            disabled={suggestions.length === 0}
                           >
-                            <AssistantOutlined
-                              fontSize="small"
-                              disabled={suggestions.length === 0}
-                              color={
-                                // eslint-disable-next-line no-nested-ternary
-                                suggestions.length === 0
-                                  ? 'disabled'
-                                  : displaySuggestions
-                                    ? 'secondary'
-                                    : 'primary'
+                            <Badge
+                              badgeContent={
+                                suggestions.filter(
+                                  (n) => !appliedSuggestions.includes(n.type),
+                                ).length
                               }
-                            />
-                          </Badge>
-                        </ToggleButton>
-                      </Tooltip>
-                    </ToggleButtonGroup>
+                              color="secondary"
+                            >
+                              <AssistantOutlined
+                                fontSize="small"
+                                disabled={suggestions.length === 0}
+                                color={
+                                  // eslint-disable-next-line no-nested-ternary
+                                  suggestions.length === 0
+                                    ? 'disabled'
+                                    : displaySuggestions
+                                      ? 'secondary'
+                                      : 'primary'
+                                }
+                              />
+                            </Badge>
+                          </ToggleButton>
+                        </Tooltip>
+                      </ToggleButtonGroup>
+                    </Security>
                     <Dialog
                       PaperProps={{ elevation: 1 }}
                       open={displaySuggestions}

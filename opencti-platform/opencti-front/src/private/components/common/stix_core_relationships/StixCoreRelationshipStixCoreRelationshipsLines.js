@@ -19,6 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreRelationshipCreationFromRelation from './StixCoreRelationshipCreationFromRelation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   paper: {
@@ -55,12 +56,17 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Linked entities')}
         </Typography>
-        <StixCoreRelationshipCreationFromRelation
-          entityId={entityId}
-          paddingRight={220}
-          variant="inLine"
-          paginationOptions={paginationOptions}
-        />
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 29 }} />}
+        >
+          <StixCoreRelationshipCreationFromRelation
+            entityId={entityId}
+            paddingRight={220}
+            variant="inLine"
+            paginationOptions={paginationOptions}
+          />
+        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <List classes={{ root: classes.list }}>

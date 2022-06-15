@@ -23,6 +23,7 @@ import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
 import Filters, { isUniqFilter } from '../lists/Filters';
 import { truncate } from '../../../../utils/String';
+import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -447,19 +448,21 @@ class StixDomainObjectsList extends Component {
             {title || t('Reports list')}
           </Typography>
           {onConfigChange && (
-            <div style={{ marginTop: -4, float: 'left' }}>
-              <Filters
-                availableFilterKeys={[
-                  'markedBy',
-                  'createdBy',
-                  'labelledBy',
-                  'confidence_gt',
-                ]}
-                handleAddFilter={this.handleAddFilter.bind(this)}
-                handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-                size="small"
-              />
-            </div>
+            <Security needs={[EXPLORE_EXUPDATE]}>
+              <div style={{ marginTop: -4, float: 'left' }}>
+                <Filters
+                  availableFilterKeys={[
+                    'markedBy',
+                    'createdBy',
+                    'labelledBy',
+                    'confidence_gt',
+                  ]}
+                  handleAddFilter={this.handleAddFilter.bind(this)}
+                  handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+                  size="small"
+                />
+              </div>
+            </Security>
           )}
           <div className={classes.filters}>
             {R.map((currentFilter) => {
@@ -490,19 +493,34 @@ class StixDomainObjectsList extends Component {
                   }
                 >
                   <span>
-                    <Chip
-                      key={currentFilter[0]}
-                      label={
-                        <div>
-                          <strong>{label}</strong>: {values}
-                        </div>
+                    <Security
+                      needs={[EXPLORE_EXUPDATE]}
+                      placeholder={
+                        <Chip
+                          key={currentFilter[0]}
+                          label={
+                            <div>
+                              <strong>{label}</strong>: {values}
+                            </div>
+                          }
+                          size="small"
+                        />
                       }
-                      onDelete={this.handleRemoveFilter.bind(
-                        this,
-                        currentFilter[0],
-                      )}
-                      size="small"
-                    />
+                    >
+                      <Chip
+                        key={currentFilter[0]}
+                        label={
+                          <div>
+                            <strong>{label}</strong>: {values}
+                          </div>
+                        }
+                        onDelete={this.handleRemoveFilter.bind(
+                          this,
+                          currentFilter[0],
+                        )}
+                        size="small"
+                      />
+                    </Security>
                     {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
                       <Chip
                         size="small"

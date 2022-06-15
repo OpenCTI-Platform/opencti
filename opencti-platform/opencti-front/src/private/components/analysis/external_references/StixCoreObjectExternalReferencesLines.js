@@ -186,7 +186,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         </Typography>
         <Security
           needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 28 }} />}
+          placeholder={<div style={{ height: 29 }} />}
         >
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}

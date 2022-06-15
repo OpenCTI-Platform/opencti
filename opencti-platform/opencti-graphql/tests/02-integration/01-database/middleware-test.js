@@ -784,7 +784,7 @@ describe('Upsert and merge entities', () => {
       description: 'MALWARE_TEST NEW',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
       aliases: ['NEW MALWARE ALIAS'],
-      update: true,
+      confidence: 90,
     };
     upsertedMalware = await addMalware(ADMIN_USER, upMalware);
     expect(upsertedMalware.name).toEqual('NEW NAME');

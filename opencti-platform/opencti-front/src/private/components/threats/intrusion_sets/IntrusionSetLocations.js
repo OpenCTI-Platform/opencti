@@ -18,6 +18,7 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   avatar: {
@@ -65,10 +66,15 @@ class IntrusionSetLocationsComponent extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Originates from')}
         </Typography>
-        <AddLocations
-          intrusionSetId={intrusionSet.id}
-          intrusionSetLocations={intrusionSet.locations.edges}
-        />
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ marginTop: 20, height: 29 }} />}
+        >
+          <AddLocations
+            intrusionSetId={intrusionSet.id}
+            intrusionSetLocations={intrusionSet.locations.edges}
+          />
+        </Security>
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
           {intrusionSet.locations.edges.map((locationEdge) => {
@@ -89,15 +95,17 @@ class IntrusionSetLocationsComponent extends Component {
                   </ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    aria-label="Remove"
-                    onClick={this.removeLocation.bind(this, locationEdge)}
-                    size="large"
-                  >
-                    <LinkOff />
-                  </IconButton>
-                </ListItemSecondaryAction>
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={this.removeLocation.bind(this, locationEdge)}
+                      size="large"
+                    >
+                      <LinkOff />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </Security>
               </ListItem>
             );
           })}

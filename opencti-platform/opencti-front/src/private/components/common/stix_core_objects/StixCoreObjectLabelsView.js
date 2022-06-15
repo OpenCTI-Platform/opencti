@@ -212,28 +212,47 @@ const StixCoreObjectLabelsView = (props) => {
       <div className={classes.objectLabel}>
         {map(
           (label) => (
-            <Tooltip title={label.value}>
-              <Chip
-                key={label.id}
-                variant="outlined"
-                classes={{ root: classes.label }}
-                label={truncate(label.value, 25)}
-                style={{
-                  color: label.color,
-                  borderColor: label.color,
-                  backgroundColor: hexToRGB(label.color),
-                }}
-                onDelete={() => handleRemoveLabel(label.id)}
-                deleteIcon={
-                  <CancelOutlined
-                    className={classes.deleteIcon}
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE]}
+              placeholder={
+                <Tooltip title={label.value}>
+                  <Chip
+                    key={label.id}
+                    variant="outlined"
+                    classes={{ root: classes.label }}
+                    label={truncate(label.value, 25)}
                     style={{
                       color: label.color,
+                      borderColor: label.color,
+                      backgroundColor: hexToRGB(label.color),
                     }}
                   />
-                }
-              />
-            </Tooltip>
+                </Tooltip>
+              }
+            >
+              <Tooltip title={label.value}>
+                <Chip
+                  key={label.id}
+                  variant="outlined"
+                  classes={{ root: classes.label }}
+                  label={truncate(label.value, 25)}
+                  style={{
+                    color: label.color,
+                    borderColor: label.color,
+                    backgroundColor: hexToRGB(label.color),
+                  }}
+                  onDelete={() => handleRemoveLabel(label.id)}
+                  deleteIcon={
+                    <CancelOutlined
+                      className={classes.deleteIcon}
+                      style={{
+                        color: label.color,
+                      }}
+                    />
+                  }
+                />
+              </Tooltip>
+            </Security>
           ),
           labelsNodes,
         )}

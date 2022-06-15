@@ -131,7 +131,10 @@ class StixCoreObjectNotesCardsContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes about this entity')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 29 }} />}
+        >
           <IconButton
             color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
@@ -156,95 +159,97 @@ class StixCoreObjectNotesCardsContainer extends Component {
             />
           );
         })}
-        <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
-          expanded={open}
-          onChange={this.handleToggleWrite.bind(this)}
-          variant="outlined"
-        >
-          <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-            <Typography className={classes.heading}>
-              <RateReviewOutlined />
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails style={{ width: '100%' }}>
-            <Formik
-              initialValues={{
-                attribute_abstract: '',
-                content: '',
-                createdBy: '',
-                objectMarking: [],
-                objectLabel: [],
-              }}
-              validationSchema={noteValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({
-                submitForm,
-                handleReset,
-                setFieldValue,
-                values,
-                isSubmitting,
-              }) => (
-                <Form style={{ width: '100%' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="attribute_abstract"
-                    label={t('Abstract')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="content"
-                    label={t('Content')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </AccordionDetails>
-        </Accordion>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Accordion
+            style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
+            expanded={open}
+            onChange={this.handleToggleWrite.bind(this)}
+            variant="outlined"
+          >
+            <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+              <Typography className={classes.heading}>
+                <RateReviewOutlined />
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails style={{ width: '100%' }}>
+              <Formik
+                initialValues={{
+                  attribute_abstract: '',
+                  content: '',
+                  createdBy: '',
+                  objectMarking: [],
+                  objectLabel: [],
+                }}
+                validationSchema={noteValidation(t)}
+                onSubmit={this.onSubmit.bind(this)}
+                onReset={this.onReset.bind(this)}
+              >
+                {({
+                  submitForm,
+                  handleReset,
+                  setFieldValue,
+                  values,
+                  isSubmitting,
+                }) => (
+                  <Form style={{ width: '100%' }}>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="attribute_abstract"
+                      label={t('Abstract')}
+                      fullWidth={true}
+                    />
+                    <Field
+                      component={MarkDownField}
+                      name="content"
+                      label={t('Content')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <CreatedByField
+                      name="createdBy"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                    />
+                    <ObjectLabelField
+                      name="objectLabel"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.objectLabel}
+                    />
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                    <div className={classes.buttons}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </AccordionDetails>
+          </Accordion>
+        </Security>
         <div style={{ marginTop: 100 }} />
         <div ref={this.bottomRef} />
       </div>

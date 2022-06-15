@@ -31,6 +31,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import ItemStatus from '../../../../components/ItemStatus';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -118,20 +119,22 @@ class StixDomainObjectOverview extends Component {
                   <InformationOutline fontSize="small" color="primary" />
                 </Tooltip>
               </div>
-              <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
-                <IconButton
-                  aria-label="Close"
-                  disableRipple={true}
-                  size="small"
-                  disabled={stixIds.length === 0}
-                  onClick={this.handleToggleOpenStixIds.bind(this)}
-                >
-                  <BrushOutlined
-                    fontSize="small"
-                    color={stixIds.length === 0 ? 'inherit' : 'secondary'}
-                  />
-                </IconButton>
-              </div>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
+                  <IconButton
+                    aria-label="Close"
+                    disableRipple={true}
+                    size="small"
+                    disabled={stixIds.length === 0}
+                    onClick={this.handleToggleOpenStixIds.bind(this)}
+                  >
+                    <BrushOutlined
+                      fontSize="small"
+                      color={stixIds.length === 0 ? 'inherit' : 'secondary'}
+                    />
+                  </IconButton>
+                </div>
+              </Security>
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
             </Grid>
