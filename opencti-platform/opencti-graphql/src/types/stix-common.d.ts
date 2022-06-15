@@ -35,6 +35,7 @@ interface StixOpenctiExtension {
   id: v4 | undefined;
   files: Array<StixFileExtension>;
   aliases: Array<string>;
+  linked_to_refs: Array<StixId>;
   stix_ids: Array<StixId>;
   type: string;
   created_at: Date;
@@ -91,7 +92,6 @@ interface CyberObjectExtension {
   description: string;
   score: number;
   created_by_ref: StixId | undefined;
-  linked_to_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
 }
 

@@ -63,6 +63,7 @@ interface StoreBase {
   x_opencti_aliases?: Array<string>;
   x_opencti_stix_ids?: Array<StixId>;
   x_opencti_workflow_id?: string;
+  [INPUT_LINKED]?: Array<BasicStoreObject>;
 }
 
 interface StoreMarkingDefinition extends StoreBase {
@@ -423,7 +424,6 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
 }
 interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_CREATED_BY]: BasicStoreEntity;
-  [INPUT_LINKED]: Array<BasicStoreObject>;
   [INPUT_CONTAINS]: Array<BasicStoreObject>;
   [INPUT_BODY_MULTIPART]: Array<BasicStoreEntity>;
   [INPUT_PARENT_DIRECTORY]: BasicStoreObject;

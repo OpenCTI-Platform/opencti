@@ -182,8 +182,9 @@ const buildOCTIExtensions = (instance: StoreBase): S.StixOpenctiExtension => {
       mime_type: file.mime_type,
     })),
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
-    is_inferred: instance._index ? isInferredIndex(instance._index) : undefined,
+    is_inferred: instance._index ? isInferredIndex(instance._index) : undefined, // TODO Use case for empty _index?
     workflow_id: instance.x_opencti_workflow_id,
+    linked_to_refs: (instance[INPUT_LINKED] ?? []).map((m) => m.standard_id),
   };
   return cleanObject(octiExtensions);
 };
@@ -297,7 +298,6 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
         description: instance.x_opencti_description,
         score: instance.x_opencti_score,
         created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
-        linked_to_refs: (instance[INPUT_LINKED] ?? []).map((m) => m.standard_id),
         external_references: buildExternalReferences(instance)
       })
     }
