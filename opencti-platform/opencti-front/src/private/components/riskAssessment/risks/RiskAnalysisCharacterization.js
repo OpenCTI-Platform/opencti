@@ -47,7 +47,7 @@ const styles = (theme) => ({
   },
   tableText: {
     padding: '20px 0 20px 16px',
-    textTransform: 'capitalize',
+    textTransform: 'none',
   },
 });
 

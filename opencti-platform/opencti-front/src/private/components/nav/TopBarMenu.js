@@ -47,6 +47,7 @@ import TopMenuVSAC from './TopMenuVSAC';
 import TopMenuAssets from './TopMenuAssets';
 import TopMenuDataEntities from './TopMenuDataEntities';
 import TopMenuDataRolesEntities from './TopMenuDataRolesEntities';
+import TopMenuDataNotesEntities from './TopMenuDataNotesEntities';
 import TopMenuDataAssessmentPlatformsEntities from './TopMenuDataAssessmentPlatformsEntities';
 import TopMenuDataResponsiblePartiesEntities from './TopMenuDataResponsiblePartiesEntities';
 import TopMenuDataPartiesEntities from './TopMenuDataPartiesEntities';
@@ -257,6 +258,10 @@ const TopBarMenu = ({
           {(location.pathname === '/data/entities/roles'
             || location.pathname === '/data/data source/roles') && (
               <TopMenuDataRolesEntities />
+          )}
+          {(location.pathname === '/data/entities/notes'
+            || location.pathname === '/data/data source/notes') && (
+              <TopMenuDataNotesEntities />
           )}
           {(location.pathname === '/data/entities/parties'
             || location.pathname === '/data/data source/parties') && (

@@ -13,6 +13,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
+import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
+import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
@@ -62,21 +64,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const EntitiesResponsiblePartiesDeletionMutation = graphql`
-  mutation EntitiesResponsiblePartiesDeletionMutation($id: ID!) {
+const DataSourceNotesDeletionMutation = graphql`
+  mutation DataSourceNotesDeletionMutation($id: ID!) {
     threatActorEdit(id: $id) {
       delete
     }
   }
 `;
 
-const EntitiesResponsiblePartiesDeletionDarkLightMutation = graphql`
-  mutation EntitiesResponsiblePartiesDeletionDarkLightMutation($id: ID!) {
-    deleteOscalResponsibleParty(id: $id)
+const DataSourceNotesDeletionDarkLightMutation = graphql`
+  mutation DataSourceNotesDeletionDarkLightMutation($id: ID!) {
+  deleteOscalResponsibleParty(id: $id)
 }
 `;
 
-class EntitiesResponsiblePartiesDeletion extends Component {
+class DataSourceNotesDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,21 +118,22 @@ class EntitiesResponsiblePartiesDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: EntitiesResponsiblePartiesDeletionDarkLightMutation,
+      mutation: DataSourceNotesDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
+        // this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to delete responsible party');
+        toastGenericError('Failed to delete Note');
       },
     });
     // commitMutation({
-    //   mutation: EntitiesResponsiblePartiesDeletionDarkLightMutation,
+    //   mutation: DataSourceNotesDeletionDarkLightMutation,
     //   variables: {
     //     id: this.props.id,
     //   },
@@ -163,7 +166,7 @@ class EntitiesResponsiblePartiesDeletion extends Component {
               variant="contained"
               onClick={this.handleOpenDelete.bind(this)}
               className={classes.iconButton}
-              disabled={(Boolean(!id) && Boolean(!isAllselected))}
+              disabled={(Boolean(!id) && Boolean(!isAllselected)) || true}
               color="primary"
               size="large"
             >
@@ -183,7 +186,7 @@ class EntitiesResponsiblePartiesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Role?')}
+                {t('Are you sure you’d like to delete this Responsible Party?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
@@ -216,7 +219,7 @@ class EntitiesResponsiblePartiesDeletion extends Component {
   }
 }
 
-EntitiesResponsiblePartiesDeletion.propTypes = {
+DataSourceNotesDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -228,4 +231,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(EntitiesResponsiblePartiesDeletion);
+)(DataSourceNotesDeletion);

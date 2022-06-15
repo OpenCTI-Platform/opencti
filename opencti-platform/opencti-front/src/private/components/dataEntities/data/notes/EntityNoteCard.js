@@ -35,7 +35,7 @@ import {
 } from '../../../common/stix_domain_objects/StixDomainObjectBookmark';
 import { truncate } from '../../../../../utils/String';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
-import EntitiesRolesPopover from './EntitiesResponsiblePartiesPopover';
+import EntitiesNotesPopover from './EntitiesNotesPopover';
 
 const styles = (theme) => ({
   card: {
@@ -109,7 +109,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityResponsiblePartyCardComponent extends Component {
+class EntityNoteCardComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -134,12 +134,6 @@ class EntityResponsiblePartyCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    const partyData = pipe(
-      pathOr([], ['parties']),
-      map((value) => ({
-        name: value.name,
-      })),
-    )(node);
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -147,7 +141,7 @@ class EntityResponsiblePartyCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           TouchRippleProps={this.state.openMenu && { classes: { root: classes.buttonRipple } }}
-          to={`/data/entities/responsible_parties/${node?.id}`}
+          to={`/data/entities/notes/${node?.id}`}
         >
           <CardContent className={classes.content}>
             <Grid
@@ -169,7 +163,7 @@ class EntityResponsiblePartyCardComponent extends Component {
                 onClick={(event) => event.preventDefault()}
                 style={{ display: 'flex' }}
               >
-                <EntitiesRolesPopover
+                <EntitiesNotesPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
                   history={history}
                   node={node}
@@ -188,10 +182,10 @@ class EntityResponsiblePartyCardComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}>
-                  {t('Name')}
+                  {t('Abstract')}
                 </Typography>
                 <Typography>
-                  {node.name && node.name}
+                  {node.abstract && node.abstract}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -204,7 +198,7 @@ class EntityResponsiblePartyCardComponent extends Component {
                   {t('Creation Date')}
                 </Typography>
                 <Typography>
-                  {/* {node.created && fsd(node.created)} */}
+                  {node.created && fsd(node.created)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -214,23 +208,10 @@ class EntityResponsiblePartyCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Role')}
+                  {t('Author')}
                 </Typography>
                 <Typography>
-                  {node.role && t(node.role.role_identifier)}
-                </Typography>
-              </Grid>
-              <Grid item={true} xs={6} className={classes.body}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  style={{ marginTop: '13px' }}
-                  gutterBottom={true}
-                >
-                  {t('Parties')}
-                </Typography>
-                <Typography>
-                  {partyData.length > 0 && partyData.map((value) => t(value.name)).join(', ')}
+                {node.authors && node.authors.map((v) => t(v))}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -245,19 +226,6 @@ class EntityResponsiblePartyCardComponent extends Component {
                 <Typography>
                   {/* {node?.parent_types
                     && (node?.parent_types)} */}
-                </Typography>
-              </Grid>
-              <Grid item={true} xs={6} className={classes.body}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  style={{ marginTop: '13px' }}
-                  gutterBottom={true}
-                >
-                  {t('Author')}
-                </Typography>
-                <Typography>
-                  {/* {t('Lorem Ipsum')} */}
                 </Typography>
               </Grid>
             </Grid>
@@ -284,7 +252,7 @@ class EntityResponsiblePartyCardComponent extends Component {
   }
 }
 
-EntityResponsiblePartyCardComponent.propTypes = {
+EntityNoteCardComponent.propTypes = {
   node: PropTypes.object,
   bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
@@ -294,25 +262,20 @@ EntityResponsiblePartyCardComponent.propTypes = {
   onBookmarkClick: PropTypes.func,
 };
 
-const EntityResponsiblePartyCardFragment = createFragmentContainer(
-  EntityResponsiblePartyCardComponent,
+const EntityNoteCardFragment = createFragmentContainer(
+  EntityNoteCardComponent,
   {
     node: graphql`
-      fragment EntityResponsiblePartyCard_node on OscalResponsibleParty {
+      fragment EntityNoteCard_node on CyioNote {
         __typename
         id
-        name
+        content
+        created
+        authors
+        abstract
+        modified
+        standard_id
         entity_type
-        role {
-          id
-          entity_type
-          role_identifier
-        }
-        parties {
-          id
-          entity_type
-          name
-        }
         labels {
           __typename
           id
@@ -321,25 +284,17 @@ const EntityResponsiblePartyCardFragment = createFragmentContainer(
           entity_type
           description
         }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
       }
     `,
   },
 );
 
-export const EntityResponsiblePartyCard = compose(
+export const EntityNoteCard = compose(
   inject18n,
   withStyles(styles),
-)(EntityResponsiblePartyCardFragment);
+)(EntityNoteCardFragment);
 
-class EntityResponsiblePartyCardDummyComponent extends Component {
+class EntityNoteCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
@@ -404,11 +359,11 @@ class EntityResponsiblePartyCardDummyComponent extends Component {
   }
 }
 
-EntityResponsiblePartyCardDummyComponent.propTypes = {
+EntityNoteCardDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const EntityResponsiblePartyCardDummy = compose(
+export const EntityNoteCardDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityResponsiblePartyCardDummyComponent);
+)(EntityNoteCardDummyComponent);

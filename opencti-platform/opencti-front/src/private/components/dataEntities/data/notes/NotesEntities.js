@@ -14,19 +14,19 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesResponsiblePartiesCards, {
-  entitiesResponsiblePartiesCardsQuery,
-} from './EntitiesResponsiblePartiesCards';
-import EntitiesResponsiblePartiesLines, {
-  entitiesResponsiblePartiesLinesQuery,
-} from './EntitiesResponsiblePartiesLines';
-import EntitiesResponsiblePartiesCreation from './EntitiesResponsiblePartiesCreation';
+import EntitiesNotesCards, {
+  entitiesNotesCardsQuery,
+} from './EntitiesNotesCards';
+import EntitiesNotesLines, {
+  entitiesNotesLinesQuery,
+} from './EntitiesNotesLines';
+import EntitiesNotesCreation from './EntitiesNotesCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
-import EntitiesResponsiblePartiesDeletion from './EntitiesResponsiblePartiesDeletion';
+import EntitiesNotesDeletion from './EntitiesNotesDeletion';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
-import RoleEntityEdition from './ResponsiblePartyEntityEdition';
+import NoteEntityEdition from './NoteEntityEdition';
 
 class ResponsiblePartiesEntities extends Component {
   constructor(props) {
@@ -34,10 +34,10 @@ class ResponsiblePartiesEntities extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-responsibleParties',
+      'view-notes',
     );
     this.state = {
-      sortBy: R.propOr('label_name', 'sortBy', params),
+      sortBy: R.propOr('author_name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -48,7 +48,7 @@ class ResponsiblePartiesEntities extends Component {
       selectAll: false,
       openDataCreation: false,
       displayEdit: false,
-      selectedRespPartyId: '',
+      selectedNoteId: '',
     };
   }
 
@@ -57,7 +57,7 @@ class ResponsiblePartiesEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-responsibleParties',
+      'view-notes',
       this.state,
     );
   }
@@ -86,20 +86,20 @@ class ResponsiblePartiesEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleResponsiblePartyCreation() {
+  handleNoteCreation() {
     this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/responsible_parties');
+    this.props.history.push('/data/entities/notes');
   }
 
   handleDisplayEdit(selectedElements) {
-    let respPartyId = '';
+    let noteId = '';
     if (selectedElements) {
-      respPartyId = (Object.entries(selectedElements)[0][1])?.id;
+      noteId = (Object.entries(selectedElements)[0][1])?.id;
     }
-    this.setState({ displayEdit: !this.state.displayEdit, selectedRespPartyId: respPartyId });
+    this.setState({ displayEdit: !this.state.displayEdit, selectedNoteId: noteId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -182,11 +182,8 @@ class ResponsiblePartiesEntities extends Component {
       type: {
         label: 'Type',
       },
-      name: {
-        label: 'Name',
-      },
-      role_identifier: {
-        label: 'Role Identifier',
+      role: {
+        label: 'Role',
       },
       parties: {
         label: 'Parties',
@@ -212,15 +209,15 @@ class ResponsiblePartiesEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleResponsiblePartyCreation.bind(this)}
+        handleNewCreation={this.handleNoteCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<EntitiesResponsiblePartiesCreation />}
-        OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
+        CreateItemComponent={<EntitiesNotesCreation />}
+        OperationsComponent={<EntitiesNotesDeletion />}
         openExports={openExports}
         filterEntityType="Entities"
-        selectedDataEntity='responsible_parties'
+        selectedDataEntity='notes'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -233,7 +230,7 @@ class ResponsiblePartiesEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesResponsiblePartiesCardsQuery}
+          query={entitiesNotesCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -241,7 +238,7 @@ class ResponsiblePartiesEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesResponsiblePartiesCards
+              <EntitiesNotesCards
                 data={props}
                 extra={props}
                 selectAll={selectAll}
@@ -280,23 +277,18 @@ class ResponsiblePartiesEntities extends Component {
     const dataColumns = {
       type: {
         label: 'Type',
-        width: '13%',
-        isSortable: false,
-      },
-      name: {
-        label: 'Name',
-        width: '11%',
-        isSortable: true,
-      },
-      role_identifier: {
-        label: 'Role',
-        width: '15%',
-        isSortable: true,
-      },
-      parties: {
-        label: 'Parties',
         width: '15%',
         isSortable: false,
+      },
+      abstract: {
+        label: 'Abstract',
+        width: '15%',
+        isSortable: false,
+      },
+      author: {
+        label: 'Author',
+        width: '15%',
+        isSortable: true,
       },
       label_name: {
         label: 'Labels',
@@ -305,13 +297,13 @@ class ResponsiblePartiesEntities extends Component {
       },
       created: {
         label: 'Creation Date',
-        width: '10%',
-        isSortable: false,
+        width: '15%',
+        isSortable: true,
       },
       marking: {
         label: 'Marking',
         width: '12%',
-        isSortable: true,
+        isSortable: false,
       },
     };
     return (
@@ -326,15 +318,15 @@ class ResponsiblePartiesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleResponsiblePartyCreation.bind(this)}
+        handleNewCreation={this.handleNoteCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<EntitiesResponsiblePartiesCreation />}
-        OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
+        CreateItemComponent={<EntitiesNotesCreation />}
+        OperationsComponent={<EntitiesNotesDeletion />}
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='Entities'
-        selectedDataEntity='responsible_parties'
+        selectedDataEntity='notes'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -347,7 +339,7 @@ class ResponsiblePartiesEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesResponsiblePartiesLinesQuery}
+          query={entitiesNotesLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -355,7 +347,7 @@ class ResponsiblePartiesEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesResponsiblePartiesLines
+              <EntitiesNotesLines
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
@@ -391,19 +383,21 @@ class ResponsiblePartiesEntities extends Component {
       filterMode: 'and',
     };
     const { location } = this.props;
+    const { me } = this.props.me;
     return (
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
         {view === 'lines' && this.renderLines(paginationOptions)}
-        <EntitiesResponsiblePartiesCreation
+        <EntitiesNotesCreation
           openDataCreation={openDataCreation}
-          handleResponsiblePartyCreation={this.handleResponsiblePartyCreation.bind(this)}
+          handleNoteCreation={this.handleNoteCreation.bind(this)}
           history={this.props.history}
+          me={me}
         />
-        <RoleEntityEdition
+        <NoteEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}
-          respPartyId={this.state.selectedRespPartyId}
+          noteId={this.state.selectedNoteId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </div>
@@ -414,6 +408,7 @@ class ResponsiblePartiesEntities extends Component {
 ResponsiblePartiesEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
+  me: PropTypes.object,
   location: PropTypes.object,
 };
 
