@@ -15,6 +15,7 @@ import { ExpandMore } from '@mui/icons-material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   container: {
@@ -147,6 +148,11 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                             100,
                           )}
                         />
+                        <StixCoreObjectLabels
+                          variant="inList"
+                          labels={stixDomainObject.objectLabel}
+                          revoked={stixDomainObject.revoked}
+                        />
                       </ListItem>
                     ))}
                   </List>
@@ -220,6 +226,16 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
                 id
                 entity_type
                 parent_types
+                revoked
+                objectLabel {
+                  edges {
+                    node {
+                      id
+                      value
+                      color
+                    }
+                  }
+                }
                 ... on AttackPattern {
                   name
                   description

@@ -44,7 +44,7 @@ const styles = () => ({
 
 class StixCoreObjectLabels extends Component {
   render() {
-    const { classes, labels, t, onClick, variant, theme } = this.props;
+    const { classes, labels, t, onClick, variant, theme, revoked } = this.props;
     let style = classes.label;
     if (variant === 'inList') {
       style = classes.labelInList;
@@ -58,49 +58,73 @@ class StixCoreObjectLabels extends Component {
     )(labels.edges);
     return (
       <div className={classes.objectLabel}>
-        {labelsNodes.length > 0 ? (
-          map(
-            (label) => (
-              <Tooltip key={label.id} title={label.value}>
-                <Chip
-                  variant="outlined"
-                  classes={{ root: style }}
-                  label={truncate(label.value, 25)}
-                  style={{
-                    color: label.color,
-                    borderColor: label.color,
-                    backgroundColor: hexToRGB(label.color),
-                  }}
-                  onClick={
-                    typeof onClick === 'function'
-                      ? onClick.bind(this, 'labelledBy', label.id, label.value)
-                      : null
-                  }
-                />
-              </Tooltip>
-            ),
-            take(3, labelsNodes),
-          )
-        ) : (
-          <Chip
-            classes={{ root: style }}
-            variant="outlined"
-            label={t('No label')}
-            style={{
-              color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-              borderColor:
-                theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-              backgroundColor: hexToRGB(
-                theme.palette.mode === 'dark' ? '#ffffff' : 'transparent',
+        {
+          /* eslint-disable-next-line no-nested-ternary */
+          !revoked && labelsNodes.length > 0 ? (
+            map(
+              (label) => (
+                <Tooltip key={label.id} title={label.value}>
+                  <Chip
+                    variant="outlined"
+                    classes={{ root: style }}
+                    label={truncate(label.value, 25)}
+                    style={{
+                      color: label.color,
+                      borderColor: label.color,
+                      backgroundColor: hexToRGB(label.color),
+                    }}
+                    onClick={
+                      typeof onClick === 'function'
+                        ? onClick.bind(
+                          this,
+                          'labelledBy',
+                          label.id,
+                          label.value,
+                        )
+                        : null
+                    }
+                  />
+                </Tooltip>
               ),
-            }}
-            onClick={
-              typeof onClick === 'function'
-                ? onClick.bind(this, 'labelledBy', null, null)
-                : null
-            }
-          />
-        )}
+              take(3, labelsNodes),
+            )
+          ) : revoked ? (
+            <Chip
+              classes={{ root: style }}
+              variant="outlined"
+              label={t('Revoked')}
+              style={{
+                color: '#d32f2f',
+                borderColor: '#d32f2f',
+                backgroundColor: 'rgba(211, 47, 47, .1)',
+              }}
+              onClick={
+                typeof onClick === 'function'
+                  ? onClick.bind(this, 'labelledBy', null, null)
+                  : null
+              }
+            />
+          ) : (
+            <Chip
+              classes={{ root: style }}
+              variant="outlined"
+              label={t('No label')}
+              style={{
+                color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+                borderColor:
+                  theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+                backgroundColor: hexToRGB(
+                  theme.palette.mode === 'dark' ? '#ffffff' : 'transparent',
+                ),
+              }}
+              onClick={
+                typeof onClick === 'function'
+                  ? onClick.bind(this, 'labelledBy', null, null)
+                  : null
+              }
+            />
+          )
+        }
       </div>
     );
   }
