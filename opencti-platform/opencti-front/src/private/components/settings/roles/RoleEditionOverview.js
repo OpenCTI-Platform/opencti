@@ -219,7 +219,8 @@ const RoleEditionOverviewComponent = ({ t, role, context }) => {
                         )(role.capabilities);
                         const matchingCapabilities = R.filter(
                           (r) => capability.name !== r.name
-                            && R.includes(capability.name, r.name),
+                            && R.includes(capability.name, r.name)
+                            && capability.name !== 'BYPASS',
                           role.capabilities,
                         );
                         const isDisabled = matchingCapabilities.length > 0;
