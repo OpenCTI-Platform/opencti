@@ -35,6 +35,7 @@ import tasksIcon from '../../resources/images/entities/tasks.svg';
 import locations from '../../resources/images/entities/locations.svg';
 import roles from '../../resources/images/entities/roles.svg';
 import notesImage from '../../resources/images/entities/notes.svg';
+import labels from '../../resources/images/entities/labelsImage.svg';
 import parties from '../../resources/images/entities/parties.svg';
 import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
 import SearchInput from '../SearchInput';
@@ -433,6 +434,14 @@ class CyioListLines extends Component {
                   >
                     <img src={notesImage} className={classes.icon} alt="" />
                     {t('Notes')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/labels'
+                    value='labels'
+                  >
+                    <img src={labels} className={classes.icon} alt="" />
+                    {t('Labels')}
                   </MenuItem>
                 </Select>
               </FormControl>

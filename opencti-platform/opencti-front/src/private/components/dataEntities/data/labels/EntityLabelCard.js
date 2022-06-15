@@ -385,7 +385,7 @@ EntityLabelCardDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const EntityLabelsCardDummy = compose(
+export const EntityLabelCardDummy = compose(
   inject18n,
   withStyles(styles),
 )(EntityLabelCardDummyComponent);

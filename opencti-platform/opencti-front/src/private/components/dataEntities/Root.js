@@ -6,6 +6,7 @@ import RootRole from './data/roles/Root';
 import RootTask from './data/tasks/Root';
 import RootNote from './data/notes/Root';
 import RootParty from './data/parties/Root';
+import RootLabel from './data/labels/Root';
 import RootLocation from './data/locations/Root';
 import RootResponsibleParty from './data/responsibleParties/Root';
 import RootAssessmentPlatform from './data/assessment_platform/Root';
@@ -13,6 +14,7 @@ import Entities from './Entities';
 import RolesEntities from './data/roles/RolesEntities';
 import NotesEntities from './data/notes/NotesEntities';
 import TasksEntities from './data/tasks/TasksEntities';
+import LabelsEntities from './data/labels/LabelsEntities';
 import PartiesEntities from './data/parties/PartiesEntities';
 import LocationsEntities from './data/locations/LocationsEntities';
 import ResponsiblePartiesEntities from './data/responsibleParties/ResponsiblePartiesEntities';
@@ -21,8 +23,9 @@ import DataSources from './DataSources';
 import NotesDataSource from './data/notes/NotesDataSource';
 import RolesDataSource from './data/roles/RolesDataSource';
 import TasksDataSource from './data/tasks/TasksDataSource';
-import PartiesDataSource from './data/parties/PartiesDataSource';
+import LabelsDataSource from './data/labels/LabelsDataSource';
 import LocationsDataSource from './data/locations/LocationsDataSource';
+import PartiesDataSource from './data/parties/PartiesDataSource';
 import ResponsiblePartiesDataSource from './data/responsibleParties/ResponsiblePartyDataSource';
 import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
 
@@ -65,6 +68,11 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
+          path="/data/entities/labels"
+          component={LabelsEntities}
+        />
+        <BoundaryRoute
+          exact
           path="/data/entities/locations"
           component={LocationsEntities}
         />
@@ -99,6 +107,11 @@ class Root extends Component {
           exact
           path="/data/data source/tasks"
           component={TasksDataSource}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/data source/labels"
+          component={LabelsDataSource}
         />
         <BoundaryRoute
           exact
@@ -146,6 +159,10 @@ class Root extends Component {
         <BoundaryRoute
           path="/data/entities/locations/:locationId"
           render={(routeProps) => <RootLocation {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          path="/data/entities/labels/:labelId"
+          render={(routeProps) => <RootLabel {...routeProps} me={me} />}
         />
         <BoundaryRoute
           path="/data/entities/responsible_parties/:respPartyId"

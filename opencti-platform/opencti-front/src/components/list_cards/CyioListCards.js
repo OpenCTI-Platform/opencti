@@ -27,6 +27,7 @@ import locations from '../../resources/images/entities/locations.svg';
 import roles from '../../resources/images/entities/roles.svg';
 import parties from '../../resources/images/entities/parties.svg';
 import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
+import labels from '../../resources/images/entities/labelsImage.svg';
 import notesImage from '../../resources/images/entities/notes.svg';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -309,6 +310,14 @@ class CyioListCards extends Component {
                   >
                     <img src={notesImage} className={classes.icon} alt="" />
                     {t('Notes')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/labels'
+                    value='labels'
+                  >
+                    <img src={labels} className={classes.icon} alt="" />
+                    {t('Labels')}
                   </MenuItem>
                 </Select>
               </FormControl>
