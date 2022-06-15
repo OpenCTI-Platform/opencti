@@ -123,7 +123,7 @@ class ReportLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.status_id.width }}
+                style={{ width: dataColumns.x_opencti_workflow_id.width }}
               >
                 <ItemStatus
                   status={node.status}
@@ -288,7 +288,7 @@ class ReportLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.status_id.width }}
+                style={{ width: dataColumns.x_opencti_workflow_id.width }}
               >
                 <Skeleton
                   animation="wave"

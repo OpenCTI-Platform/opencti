@@ -204,7 +204,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
         width: '10%',
         isSortable: true,
       },
-      status_id: {
+      x_opencti_workflow_id: {
         label: 'Status',
         width: '10%',
         isSortable: true,

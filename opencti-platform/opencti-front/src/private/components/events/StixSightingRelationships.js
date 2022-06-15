@@ -144,7 +144,7 @@ class StixSightingRelationships extends Component {
         label: 'Confidence',
         isSortable: true,
       },
-      status_id: {
+      x_opencti_workflow_id: {
         label: 'Status',
         isSortable: true,
       },

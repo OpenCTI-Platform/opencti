@@ -193,7 +193,7 @@ class Incidents extends Component {
         width: '13%',
         isSortable: true,
       },
-      status: {
+      x_opencti_workflow_id: {
         label: 'Status',
         width: '10%',
         isSortable: true,

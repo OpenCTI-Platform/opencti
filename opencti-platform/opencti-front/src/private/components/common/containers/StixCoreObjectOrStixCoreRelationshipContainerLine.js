@@ -95,7 +95,7 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Compone
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.status_id.width }}
+                style={{ width: dataColumns.x_opencti_workflow_id.width }}
               >
                 <ItemStatus
                   status={node.status}
