@@ -2,26 +2,29 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import Entities from './Entities';
-import RolesEntities from './data/roles/RolesEntities';
-import AssessmentPlatformsEntities from './data/assessment_platform/AssessmentPlatformsEntities';
-import LocationsEntities from './data/locations/LocationsEntities';
-import TasksEntities from './data/tasks/TasksEntities';
-import PartiesEntities from './data/parties/PartiesEntities';
-import RootParty from './data/parties/Root';
-import RolesDataSource from './data/roles/RolesDataSource';
-import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
-import RootAssessmentPlatform from './data/assessment_platform/Root';
-import TasksDataSource from './data/tasks/TasksDataSource';
-import LocationsDataSource from './data/locations/LocationsDataSource';
-import DataSources from './DataSources';
 import RootRole from './data/roles/Root';
 import RootTask from './data/tasks/Root';
+import RootNote from './data/notes/Root';
+import RootParty from './data/parties/Root';
 import RootLocation from './data/locations/Root';
-import PartiesDataSource from './data/parties/PartiesDataSource';
 import RootResponsibleParty from './data/responsibleParties/Root';
+import RootAssessmentPlatform from './data/assessment_platform/Root';
+import Entities from './Entities';
+import NotesEntities from './data/notes/NotesEntities';
+import TasksEntities from './data/tasks/TasksEntities';
+import RolesEntities from './data/roles/RolesEntities';
+import PartiesEntities from './data/parties/PartiesEntities';
+import LocationsEntities from './data/locations/LocationsEntities';
 import ResponsiblePartiesEntities from './data/responsibleParties/ResponsiblePartiesEntities';
+import AssessmentPlatformsEntities from './data/assessment_platform/AssessmentPlatformsEntities';
+import DataSources from './DataSources';
+import NotesDataSource from './data/notes/NotesDataSource';
+import RolesDataSource from './data/roles/RolesDataSource';
+import TasksDataSource from './data/tasks/TasksDataSource';
+import PartiesDataSource from './data/parties/PartiesDataSource';
+import LocationsDataSource from './data/locations/LocationsDataSource';
 import ResponsiblePartiesDataSource from './data/responsibleParties/ResponsiblePartyDataSource';
+import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
 
 class Root extends Component {
   render() {
@@ -38,6 +41,7 @@ class Root extends Component {
           exact
           path="/data/entities"
           component={Entities}
+          // render={(routeProps) => <RootConnector {...routeProps} />}
         />
         <BoundaryRoute
           exact
@@ -48,6 +52,11 @@ class Root extends Component {
           exact
           path="/data/entities/tasks"
           component={TasksEntities}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/notes"
+          render={(routeProps) => <NotesEntities {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -83,6 +92,11 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
+          path="/data/data source/notes"
+          component={NotesDataSource}
+        />
+        <BoundaryRoute
+          exact
           path="/data/data source/tasks"
           component={TasksDataSource}
         />
@@ -113,6 +127,11 @@ class Root extends Component {
           exact
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/notes/:noteId"
+          render={(routeProps) => <RootNote {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

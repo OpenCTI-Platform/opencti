@@ -33,7 +33,7 @@ const cyioExternalReferenceResolvers = {
         const edges = [];
         const reducer = getReducer("EXTERNAL-REFERENCE");
         let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.limit === undefined ? response.length : args.limit) ;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         filterCount = 0;
         let externalRefList ;
