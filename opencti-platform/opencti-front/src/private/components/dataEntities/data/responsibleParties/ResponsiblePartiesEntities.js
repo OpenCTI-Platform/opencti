@@ -182,8 +182,11 @@ class ResponsiblePartiesEntities extends Component {
       type: {
         label: 'Type',
       },
-      role: {
-        label: 'Role',
+      name: {
+        label: 'Name',
+      },
+      role_identifier: {
+        label: 'Role Identifier',
       },
       parties: {
         label: 'Parties',
@@ -275,15 +278,15 @@ class ResponsiblePartiesEntities extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '13%',
-        isSortable: true,
-      },
       type: {
         label: 'Type',
-        width: '11%',
+        width: '13%',
         isSortable: false,
+      },
+      name: {
+        label: 'Name',
+        width: '11%',
+        isSortable: true,
       },
       role_identifier: {
         label: 'Role',

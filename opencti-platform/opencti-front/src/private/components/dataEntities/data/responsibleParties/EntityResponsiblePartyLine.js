@@ -99,15 +99,15 @@ class EntityResponsiblePartyLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: dataColumns.type.width }}
               >
-                {node.name && t(node.name)}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: '11.5%' }}
               >
-                {node.entity_type && t(node.entity_type)}
+                {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
