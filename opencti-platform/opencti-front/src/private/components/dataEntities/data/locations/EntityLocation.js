@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EmtityLocationComponent extends Component {
+class EntityLocationComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -117,14 +117,14 @@ class EmtityLocationComponent extends Component {
   }
 }
 
-EmtityLocationComponent.propTypes = {
+EntityLocationComponent.propTypes = {
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityLocation = createFragmentContainer(EmtityLocationComponent, {
+const EntityLocation = createFragmentContainer(EntityLocationComponent, {
   location: graphql`
     fragment EntityLocation_location on OscalLocation {
       __typename

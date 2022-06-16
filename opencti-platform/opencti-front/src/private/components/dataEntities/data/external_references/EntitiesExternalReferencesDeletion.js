@@ -62,21 +62,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const EntitiesNotesDeletionMutation = graphql`
-  mutation EntitiesNotesDeletionMutation($id: ID!) {
+const EntitiesExternalReferencesDeletionMutation = graphql`
+  mutation EntitiesExternalReferencesDeletionMutation($id: ID!) {
     threatActorEdit(id: $id) {
       delete
     }
   }
 `;
 
-const EntitiesNotesDeletionDarkLightMutation = graphql`
-  mutation EntitiesNotesDeletionDarkLightMutation($id: ID!) {
-    deleteCyioNote(id: $id)
+const EntitiesExternalReferencesDeletionDarkLightMutation = graphql`
+  mutation EntitiesExternalReferencesDeletionDarkLightMutation($id: ID!) {
+  deleteCyioExternalReference(id: $id)
 }
 `;
 
-class EntitiesNotesDeletion extends Component {
+class EntitiesExternalReferencesDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,22 +116,21 @@ class EntitiesNotesDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: EntitiesNotesDeletionDarkLightMutation,
+      mutation: EntitiesExternalReferencesDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/data/entities/notes');
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to delete Note');
+        toastGenericError('Failed to delete external reference');
       },
     });
     // commitMutation({
-    //   mutation: EntitiesNotesDeletionDarkLightMutation,
+    //   mutation: EntitiesExternalReferencesDeletionDarkLightMutation,
     //   variables: {
     //     id: this.props.id,
     //   },
@@ -184,7 +183,7 @@ class EntitiesNotesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Role?')}
+                {t('Are you sure you’d like to delete this External Reference?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
@@ -217,7 +216,7 @@ class EntitiesNotesDeletion extends Component {
   }
 }
 
-EntitiesNotesDeletion.propTypes = {
+EntitiesExternalReferencesDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -229,4 +228,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(EntitiesNotesDeletion);
+)(EntitiesExternalReferencesDeletion);
