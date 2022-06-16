@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EmtityRoleComponent extends Component {
+class EntityRoleComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -117,14 +117,14 @@ class EmtityRoleComponent extends Component {
   }
 }
 
-EmtityRoleComponent.propTypes = {
+EntityRoleComponent.propTypes = {
   role: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityRole = createFragmentContainer(EmtityRoleComponent, {
+const EntityRole = createFragmentContainer(EntityRoleComponent, {
   role: graphql`
     fragment EntityRole_role on OscalRole {
       __typename

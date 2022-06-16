@@ -14,30 +14,30 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesNotesCards, {
-  entitiesNotesCardsQuery,
-} from './EntitiesNotesCards';
-import EntitiesNotesLines, {
-  entitiesNotesLinesQuery,
-} from './EntitiesNotesLines';
-import EntitiesNotesCreation from './EntitiesNotesCreation';
+import EntitiesExternalReferencesCards, {
+  entitiesExternalReferencesCardsQuery,
+} from './EntitiesExternalReferencesCards';
+import EntitiesExternalReferencesLines, {
+  entitiesExternalReferencesLinesQuery,
+} from './EntitiesExternalReferencesLines';
+import EntitiesExternalReferencesCreation from './EntitiesExternalReferencesCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
-import EntitiesNotesDeletion from './EntitiesNotesDeletion';
+import EntitiesExternalReferencesDeletion from './EntitiesExternalReferencesDeletion';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
-import NoteEntityEdition from './NoteEntityEdition';
+import ExternalReferenceEntityEdition from './ExternalReferenceEntityEdition';
 
-class ResponsiblePartiesEntities extends Component {
+class ExternalReferencesEntities extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-notes',
+      'view-external-reference',
     );
     this.state = {
-      sortBy: R.propOr('author_name', 'sortBy', params),
+      sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -48,7 +48,7 @@ class ResponsiblePartiesEntities extends Component {
       selectAll: false,
       openDataCreation: false,
       displayEdit: false,
-      selectedNoteId: '',
+      selectedExternalReferenceId: '',
     };
   }
 
@@ -57,7 +57,7 @@ class ResponsiblePartiesEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-notes',
+      'view-external-reference',
       this.state,
     );
   }
@@ -86,20 +86,23 @@ class ResponsiblePartiesEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleNoteCreation() {
+  handleExternalReferenceCreation() {
     this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/notes');
+    this.props.history.push('/data/entities/external_references');
   }
 
   handleDisplayEdit(selectedElements) {
-    let noteId = '';
+    let externalReferenceId = '';
     if (selectedElements) {
-      noteId = (Object.entries(selectedElements)[0][1])?.id;
+      externalReferenceId = (Object.entries(selectedElements)[0][1])?.id;
     }
-    this.setState({ displayEdit: !this.state.displayEdit, selectedNoteId: noteId });
+    this.setState({
+      displayEdit: !this.state.displayEdit,
+      selectedExternalReferenceId: externalReferenceId,
+    });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -182,14 +185,14 @@ class ResponsiblePartiesEntities extends Component {
       type: {
         label: 'Type',
       },
-      role: {
-        label: 'Role',
+      source_name: {
+        label: 'Source Name',
       },
-      parties: {
-        label: 'Parties',
+      media_type: {
+        label: 'Media Type',
       },
-      label_name: {
-        label: 'Labels',
+      url: {
+        label: 'URL',
       },
       creation_date: {
         label: 'Creation Date',
@@ -209,15 +212,15 @@ class ResponsiblePartiesEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleNoteCreation.bind(this)}
+        handleNewCreation={this.handleExternalReferenceCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<EntitiesNotesCreation />}
-        OperationsComponent={<EntitiesNotesDeletion />}
+        CreateItemComponent={<EntitiesExternalReferencesCreation />}
+        OperationsComponent={<EntitiesExternalReferencesDeletion />}
         openExports={openExports}
         filterEntityType="Entities"
-        selectedDataEntity='notes'
+        selectedDataEntity='external_references'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -230,7 +233,7 @@ class ResponsiblePartiesEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesNotesCardsQuery}
+          query={entitiesExternalReferencesCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -238,7 +241,7 @@ class ResponsiblePartiesEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesNotesCards
+              <EntitiesExternalReferencesCards
                 data={props}
                 extra={props}
                 selectAll={selectAll}
@@ -277,33 +280,33 @@ class ResponsiblePartiesEntities extends Component {
     const dataColumns = {
       type: {
         label: 'Type',
-        width: '15%',
+        width: '14%',
+        isSortable: true,
+      },
+      source_name: {
+        label: 'Source Name',
+        width: '16%',
+        isSortable: true,
+      },
+      media_type: {
+        label: 'Media Type',
+        width: '16%',
         isSortable: false,
       },
-      abstract: {
-        label: 'Abstract',
-        width: '15%',
-        isSortable: true,
-      },
-      author: {
-        label: 'Author',
-        width: '15%',
-        isSortable: true,
-      },
-      label_name: {
-        label: 'Labels',
+      url: {
+        label: 'URL',
         width: '20%',
         isSortable: true,
       },
       created: {
         label: 'Creation Date',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       marking: {
         label: 'Marking',
         width: '12%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
@@ -318,15 +321,15 @@ class ResponsiblePartiesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleNoteCreation.bind(this)}
+        handleNewCreation={this.handleExternalReferenceCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<EntitiesNotesCreation />}
-        OperationsComponent={<EntitiesNotesDeletion />}
+        CreateItemComponent={<EntitiesExternalReferencesCreation />}
+        OperationsComponent={<EntitiesExternalReferencesDeletion />}
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='Entities'
-        selectedDataEntity='notes'
+        selectedDataEntity='external_references'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -339,7 +342,7 @@ class ResponsiblePartiesEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesNotesLinesQuery}
+          query={entitiesExternalReferencesLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -347,7 +350,7 @@ class ResponsiblePartiesEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesNotesLines
+              <EntitiesExternalReferencesLines
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
@@ -383,21 +386,19 @@ class ResponsiblePartiesEntities extends Component {
       filterMode: 'and',
     };
     const { location } = this.props;
-    const { me } = this.props.me;
     return (
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
         {view === 'lines' && this.renderLines(paginationOptions)}
-        <EntitiesNotesCreation
+        <EntitiesExternalReferencesCreation
           openDataCreation={openDataCreation}
-          handleNoteCreation={this.handleNoteCreation.bind(this)}
+          handleExternalReferenceCreation={this.handleExternalReferenceCreation.bind(this)}
           history={this.props.history}
-          me={me}
         />
-        <NoteEntityEdition
+        <ExternalReferenceEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}
-          noteId={this.state.selectedNoteId}
+          externalReferenceId={this.state.selectedExternalReferenceId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </div>
@@ -405,11 +406,10 @@ class ResponsiblePartiesEntities extends Component {
   }
 }
 
-ResponsiblePartiesEntities.propTypes = {
+ExternalReferencesEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
-  me: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(ResponsiblePartiesEntities);
+export default R.compose(inject18n, withRouter)(ExternalReferencesEntities);

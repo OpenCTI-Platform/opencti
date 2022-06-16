@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EmtityAssessmentPlatformComponent extends Component {
+class EntityAssessmentPlatformComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -117,14 +117,14 @@ class EmtityAssessmentPlatformComponent extends Component {
   }
 }
 
-EmtityAssessmentPlatformComponent.propTypes = {
+EntityAssessmentPlatformComponent.propTypes = {
   assessmentPlatform: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityAssessmentPlatform = createFragmentContainer(EmtityAssessmentPlatformComponent, {
+const EntityAssessmentPlatform = createFragmentContainer(EntityAssessmentPlatformComponent, {
   assessmentPlatform: graphql`
     fragment EntityAssessmentPlatform_assessmentPlatform on AssessmentPlatform {
       __typename

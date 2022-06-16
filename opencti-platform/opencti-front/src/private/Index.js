@@ -74,7 +74,6 @@ const Index = (me) => {
   };
 
   const classes = useStyles();
-  const { user } = me;
   return (
     <div className={classes.root}>
       <TopBarBreadcrumbs />

@@ -14,7 +14,7 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesResponsiblePartiesCards, {
+import EntitiesResponsiblePartiessCards, {
   entitiesResponsiblePartiesCardsQuery,
 } from './EntitiesResponsiblePartiesCards';
 import EntitiesResponsiblePartiesLines, {
@@ -241,7 +241,7 @@ class ResponsiblePartiesEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesResponsiblePartiesCards
+              <EntitiesResponsiblePartiessCards
                 data={props}
                 extra={props}
                 selectAll={selectAll}

@@ -1,11 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  pipe,
-  pathOr,
-  map,
-} from 'ramda';
+import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -19,7 +14,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
-import EntitiesNotesPopover from './EntitiesNotesPopover';
+import EntitiesExternalReferencesPopover from './EntitiesExternalReferencesPopover';
 
 const styles = (theme) => ({
   item: {
@@ -54,11 +49,11 @@ const styles = (theme) => ({
   },
 });
 
-class EntityNoteLineComponent extends Component {
+class EntityExternalReferenceLineComponent extends Component {
   render() {
     const {
       t,
-      fsd,
+      fd,
       classes,
       node,
       selectAll,
@@ -74,7 +69,7 @@ class EntityNoteLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/data/entities/notes/${node.id}`}
+        to={`/data/entities/external_references/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
@@ -93,37 +88,33 @@ class EntityNoteLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '15.3%' }}
+                style={{ width: dataColumns.type.width }}
               >
                 {node.entity_type && t(node.entity_type)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '15.3%' }}
+                style={{ width: dataColumns.source_name.width }}
               >
-                {node.abstract && t(node.abstract)}
+                {node.source_name && t(node.source_name)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.author.width }}
+                style={{ width: '16.5%' }}
               >
-                {node.authors && node.authors.map((v) => t(v))}
+                {node.media_type && t(node.media_type)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '20.7%' }}
+                style={{ width: '21%' }}
               >
-                <CyioCoreObjectLabels
-                  variant="inList"
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                />
+                {node.url && t(node.url)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                {node.created && fsd(node.created)}
+                {node.created && fd(node.created)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -135,7 +126,7 @@ class EntityNoteLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
-          <EntitiesNotesPopover
+          <EntitiesExternalReferencesPopover
             // history={history}
             nodeId={node?.id}
             // riskNode={riskData.node}
@@ -147,48 +138,38 @@ class EntityNoteLineComponent extends Component {
   }
 }
 
-EntityNoteLineComponent.propTypes = {
+EntityExternalReferenceLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
-  fsd: PropTypes.func,
+  fd: PropTypes.func,
   t: PropTypes.func,
   onLabelClick: PropTypes.func,
 };
 
-const EntityNoteLineFragment = createFragmentContainer(
-  EntityNoteLineComponent,
+const EntityExternalReferenceLineFragment = createFragmentContainer(
+  EntityExternalReferenceLineComponent,
   {
     node: graphql`
-      fragment EntityNoteLine_node on CyioNote {
+      fragment EntityExternalReferenceLine_node on CyioExternalReference {
         __typename
         id
-        content
+        url
         created
-        authors
-        abstract
-        modified
-        standard_id
+        media_type
+        source_name
         entity_type
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
       }
     `,
   },
 );
 
-export const EntityNoteLine = compose(
+export const EntityExternalReferenceLine = compose(
   inject18n,
   withStyles(styles),
-)(EntityNoteLineFragment);
+)(EntityExternalReferenceLineFragment);
 
-class EntityNoteLineDummyComponent extends Component {
+class EntityExternalReferenceLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -228,7 +209,7 @@ class EntityNoteLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width='90%'
                   height="100%"
                 />
               </div>
@@ -239,7 +220,7 @@ class EntityNoteLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width='90%'
                   height="100%"
                 />
               </div>
@@ -250,7 +231,7 @@ class EntityNoteLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width='90%'
                   height="100%"
                 />
               </div>
@@ -273,12 +254,12 @@ class EntityNoteLineDummyComponent extends Component {
   }
 }
 
-EntityNoteLineDummyComponent.propTypes = {
+EntityExternalReferenceLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const EntityNoteLineDummy = compose(
+export const EntityExternalReferenceLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityNoteLineDummyComponent);
+)(EntityExternalReferenceLineDummyComponent);
