@@ -57,14 +57,10 @@ Transition.displayName = 'TransitionSlide';
 
 const labelEntityEditionQuery = graphql`
   query LabelEntityEditionQuery($id: ID!) {
-    oscalRole(id: $id) {
+    cyioLabel(id: $id) {
       id
-      entity_type
-      created
-      modified
-      role_identifier
       name
-      short_name
+      color
       description
     }
   }
@@ -98,6 +94,7 @@ class RoleEntityEdition extends Component {
                 <LabelEntityEditionContainer
                   displayEdit={displayEdit}
                   history={history}
+                  label={props.cyioLabel}
                   handleDisplayEdit={handleDisplayEdit}
                 />
               );

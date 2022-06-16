@@ -9,9 +9,12 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
+import Chip from '@material-ui/core/Chip';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
+import { hexToRGB } from '../../../../../utils/Colors';
+import { truncate } from '../../../../../utils/String';
 import ItemIcon from '../../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import EntitiesLabelsPopover from './EntitiesLabelsPopover';
@@ -88,30 +91,29 @@ class EntityLabelLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.role_identifier.width }}
+                style={{ width: dataColumns.type.width }}
               >
-                {node.role_identifier && t(node.role_identifier)}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: '31%' }}
               >
-                {node.name && node.name}
+                {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.5%' }}
+                style={{ width: '14.5%' }}
               >
-                {/* {node.entity_type && node.entity_type} */}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: '21%' }}
-              >
-                <CyioCoreObjectLabels
-                  variant="inList"
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
+                <Chip
+                  variant="outlined"
+                  label={truncate(node.name, 10)}
+                  style={{
+                    height: '20px',
+                    color: node.color,
+                    borderColor: node.color,
+                    backgroundColor: hexToRGB(node.color),
+                  }}
                 />
               </div>
               <div
@@ -124,7 +126,7 @@ class EntityLabelLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.marking.width }}
               >
-                {node?.parent_types && t(node.parent_types)}
+                {/* {node?.parent_types && t(node.parent_types)} */}
               </div>
             </div>
           }
@@ -155,44 +157,16 @@ const EntityLabelLineFragment = createFragmentContainer(
   EntityLabelLineComponent,
   {
     node: graphql`
-      fragment EntityLabelLine_node on OscalRole {
+      fragment EntityLabelLine_node on CyioLabel {
         __typename
         id
-        description
-        short_name
         name
-        role_identifier
-        entity_type
+        color
         created
         modified
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
+        description
+        standard_id
+        entity_type
       }
     `,
   },
@@ -216,7 +190,7 @@ class EntityLabelLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '12.5%' }}
+                style={{ width: '18.5%' }}
               >
                 <Skeleton
                   animation="wave"
@@ -227,7 +201,7 @@ class EntityLabelLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.5%' }}
+                style={{ width: '30.5%' }}
               >
                 <Skeleton
                   animation="wave"
@@ -238,18 +212,7 @@ class EntityLabelLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.5%' }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width='90%'
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: '20%' }}
+                style={{ width: '14.5%' }}
               >
                 <Skeleton
                   animation="wave"

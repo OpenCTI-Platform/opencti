@@ -8,10 +8,12 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { Grid, Switch, Tooltip } from '@material-ui/core';
+import { Grid, Switch, Chip } from '@material-ui/core';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import { hexToRGB } from '../../../../../utils/Colors';
+import { truncate } from '../../../../../utils/String';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
 const styles = (theme) => ({
@@ -111,21 +113,18 @@ class EntityLabelDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Short Name')}
+                  {t('Color')}
                 </Typography>
                 <div className="clearfix" />
-                {label.short_name && t(label.short_name)}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Role Identifier')}
-                </Typography>
-                <div className="clearfix" />
-                {label.role_identifier && t(label.role_identifier)}
+                <Chip
+                  variant="outlined"
+                  label={truncate(label.name, 10)}
+                  style={{
+                    color: label.color,
+                    borderColor: label.color,
+                    backgroundColor: hexToRGB(label.color),
+                  }}
+                />
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -169,37 +168,11 @@ class EntityLabelDetailsComponent extends Component {
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
-                      {label?.description && t(label?.description)}
+                      {label.description && t(label.description)}
                     </Markdown>
                   </div>
                 </div>
               </div>
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={3}>
-              <CyioCoreObjectLabelsView
-                labels={label.labels}
-                marginTop={0}
-                refreshQuery={refreshQuery}
-                id={label.id}
-                typename={label.__typename}
-              />
-            </Grid>
-            <Grid item={true} xs={4}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-              >
-                {t('Markings')}
-              </Typography>
-              <div className="clearfix" />
-              {label?.markings && (
-                <p className={classes.markingText}>
-                  {t(label?.markings)}
-                </p>
-              )}
             </Grid>
           </Grid>
         </Paper>
@@ -220,24 +193,16 @@ const EntityLabelDetails = createFragmentContainer(
   EntityLabelDetailsComponent,
   {
     label: graphql`
-      fragment EntityLabelDetails_label on OscalRole {
+      fragment EntityLabelDetails_label on CyioLabel {
         __typename
         id
-        entity_type
+        name
+        color
         created
         modified
-        role_identifier
-        name
-        short_name
         description
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
+        standard_id
+        entity_type
       }
     `,
   },

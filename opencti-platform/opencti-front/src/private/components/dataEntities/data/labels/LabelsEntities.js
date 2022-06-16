@@ -185,11 +185,8 @@ class RolesEntities extends Component {
       name: {
         label: 'Name',
       },
-      author: {
-        label: 'Author',
-      },
-      labels: {
-        label: 'Labels',
+      color: {
+        label: 'Color',
       },
       creation_date: {
         label: 'Creation Date',
@@ -275,34 +272,29 @@ class RolesEntities extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     const dataColumns = {
-      role_identifier: {
+      type: {
         label: 'Type',
-        width: '14%',
+        width: '18%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '16%',
+        width: '30%',
         isSortable: true,
       },
-      author: {
-        label: 'Author',
-        width: '16%',
+      color: {
+        label: 'Color',
+        width: '14%',
         isSortable: false,
-      },
-      label_name: {
-        label: 'Labels',
-        width: '20%',
-        isSortable: true,
       },
       created: {
         label: 'Creation Date',
-        width: '12%',
+        width: '15%',
         isSortable: true,
       },
       marking: {
         label: 'Marking',
-        width: '12%',
+        width: '15%',
         isSortable: true,
       },
     };

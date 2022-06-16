@@ -21,7 +21,7 @@ class EntitiesLabelsLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'oscalRoles',
+      'cyioLabels',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -51,10 +51,10 @@ class EntitiesLabelsLines extends Component {
         handleOffsetChange={this.handleOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['oscalRoles', 'edges'], this.props.data)}
+        dataList={pathOr([], ['cyioLabels', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['oscalRoles', 'pageInfo', 'globalCount'],
+          ['cyioLabels', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         offset={this.state.offset}
@@ -90,9 +90,9 @@ export const entitiesLabelsLinesQuery = graphql`
     $first: Int!
     $offset: Int!
     $cursor: ID
-    $orderedBy: OscalRolesOrdering
+    $orderBy: CyioLabelsOrdering
     $orderMode: OrderingMode
-    $filters: [OscalRolesFiltering]
+    $filters: [CyioLabelsFiltering]
     $filterMode: FilterMode
   ) {
     ...EntitiesLabelsLines_data
@@ -101,7 +101,7 @@ export const entitiesLabelsLinesQuery = graphql`
         first: $first
         offset: $offset
         cursor: $cursor
-        orderedBy: $orderedBy
+        orderBy: $orderBy
         orderMode: $orderMode
         filters: $filters
         filterMode: $filterMode
@@ -119,26 +119,26 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "OscalRolesOrdering", defaultValue: created }
+        orderBy: { type: "CyioLabelsOrdering", defaultValue: created }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[OscalRolesFiltering]" }
+        filters: { type: "[CyioLabelsFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {
-        oscalRoles(
+        cyioLabels(
           search: $search
           first: $first
           offset: $offset
-          orderedBy: $orderedBy
+          orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
           filterMode: $filterMode
-        ) @connection(key: "Pagination_oscalRoles") {
+        ) @connection(key: "Pagination_cyioLabels") {
           edges {
             node {
               id
               name
               description
-              ...EntityRoleLine_node
+              ...EntityLabelLine_node
             }
           }
           pageInfo {
@@ -153,7 +153,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.oscalRoles;
+      return props.data && props.data.cyioLabels;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -168,7 +168,7 @@ export default createPaginationContainer(
         offset: fragmentVariables.offset,
         count,
         cursor,
-        orderedBy: fragmentVariables.orderedBy,
+        orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
         filterMode: fragmentVariables.filterMode,

@@ -28,6 +28,7 @@ const ColorPickerField = (props) => {
   const internalOnChange = React.useCallback(
     (event) => {
       const { value } = event.target;
+      setColor(value);
       setFieldValue(name, value);
       if (typeof onChange === 'function') {
         onChange(name, value);
@@ -77,8 +78,6 @@ const ColorPickerField = (props) => {
           name="color"
           label='Color'
           fullWidth={true}
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
         />
         <IconButton style={{ position: 'absolute', right: '20px' }} aria-label="open" onClick={() => setOpen(true)}>
           <ColorLens />

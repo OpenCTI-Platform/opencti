@@ -68,48 +68,13 @@ class EntitiesLabelsPopover extends Component {
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
           <MoreVertOutlined />
         </IconButton>
-        <Menu
+        {/* <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem
-            className={classes.menuItem}
-            divider={true}
-          >
-            <CyioAddNotes
-              menuItemName='Add Notes'
-              cyioCoreObjectOrStixCoreRelationshipId={node.id}
-              typename={node.__typename}
-              fieldName='remarks'
-              cyioCoreObjectOrStixCoreRelationshipNotes={node.remarks}
-            />
-          </MenuItem>
-          <MenuItem
-            divider={true}
-            className={classes.menuItem}
-          >
-            <CyioAddExternalReferences
-              menuItemName='Add External Reference'
-              cyioCoreObjectOrCyioCoreRelationshipId={node.id}
-              cyioCoreObjectOrCyioCoreRelationshipReferences={node.links}
-              fieldName='links'
-              typename={node.__typename}
-            />
-          </MenuItem>
-          <MenuItem
-            className={classes.menuItem}
-          >
-            <CyioCoreObjectLabelsView
-              menuItemName='Add Labels'
-              labels={node.labels}
-              marginTop={0}
-              id={node.id}
-              typename={node.__typename}
-            />
-          </MenuItem>
-        </Menu>
+        </Menu> */}
       </div>
     );
   }

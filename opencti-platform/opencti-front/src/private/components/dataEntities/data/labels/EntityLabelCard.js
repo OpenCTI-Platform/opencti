@@ -11,6 +11,7 @@ import {
   Typography,
   Grid,
   Checkbox,
+  Chip,
 } from '@material-ui/core';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -28,8 +29,8 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../../common/stix_domain_objects/StixDomainObjectBookmark';
+import { hexToRGB } from '../../../../../utils/Colors';
 import { truncate } from '../../../../../utils/String';
-import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import EntitiesLabelsPopover from './EntitiesLabelsPopover';
 
 const styles = (theme) => ({
@@ -155,7 +156,7 @@ class EntityLabelCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {node.entity_type && node.entity_type}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <Grid
                 item={true}
@@ -184,7 +185,7 @@ class EntityLabelCardComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <Typography>
-                  {node?.name && node?.name}
+                  {node.name && t(node.name)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -212,8 +213,8 @@ class EntityLabelCardComponent extends Component {
                   {t('Marking')}
                 </Typography>
                 <Typography>
-                  {node?.parent_types
-                    && (node?.parent_types)}
+                  {/* {node?.parent_types
+                    && (node?.parent_types)} */}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -223,28 +224,20 @@ class EntityLabelCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Author')}
+                  {t('Color')}
                 </Typography>
-                {/* TODO: Get Author Name for Display */}
-                {/* <Typography>
-                  {t(node?.name)}
-                </Typography> */}
-              </Grid>
-            </Grid>
-            <Grid container={true} >
-              <Grid item={true} xs={12} className={classes.body}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  style={{ marginTop: '13px' }}
-                  gutterBottom={true}
-                >
-                  {t('Labels')}
+                <Typography>
+                  <Chip
+                    variant="outlined"
+                    label={truncate(node.name, 10)}
+                    style={{
+                      height: '20px',
+                      color: node.color,
+                      borderColor: node.color,
+                      backgroundColor: hexToRGB(node.color),
+                    }}
+                  />
                 </Typography>
-                <CyioCoreObjectLabels
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                />
               </Grid>
             </Grid>
           </CardContent>
@@ -268,44 +261,16 @@ const EntityLabelCardFragment = createFragmentContainer(
   EntityLabelCardComponent,
   {
     node: graphql`
-      fragment EntityLabelCard_node on OscalRole {
+      fragment EntityLabelCard_node on CyioLabel {
         __typename
         id
-        description
-        short_name
         name
-        role_identifier
-        entity_type
+        color
         created
         modified
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
+        description
+        standard_id
+        entity_type
       }
     `,
   },

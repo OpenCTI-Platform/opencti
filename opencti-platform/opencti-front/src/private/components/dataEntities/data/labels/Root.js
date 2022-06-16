@@ -35,10 +35,10 @@ const subscription = graphql`
 
 const labelQuery = graphql`
   query RootLabelQuery($id: ID!) {
-    oscalRole(id: $id) {
+    cyioLabel(id: $id) {
       id
       name
-      ...EntityRole_role
+      ...EntityLabel_label
     }
   }
 `;
@@ -102,7 +102,7 @@ class RootLabel extends Component {
               toastGenericError('Failed to get label data');
             }
             if (props) {
-              if (props.oscalRole) {
+              if (props.cyioLabel) {
                 return (
                   <Switch>
                     <Route
@@ -112,7 +112,7 @@ class RootLabel extends Component {
                         <EntityRole
                           {...routeProps}
                           refreshQuery={retry}
-                          role={props.oscalRole}
+                          label={props.cyioLabel}
                         />
                       )}
                     />

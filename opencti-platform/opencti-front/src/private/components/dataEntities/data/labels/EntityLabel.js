@@ -75,32 +75,6 @@ class EmtityLabelComponent extends Component {
               <EntityLabelDetails label={label} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
-          <Grid
-            container={true}
-            spacing={3}
-            classes={{ container: classes.gridContainer }}
-            style={{ marginTop: 25 }}
-          >
-            <Grid item={true} xs={6}>
-              <CyioCoreObjectExternalReferences
-                typename={label.__typename}
-                externalReferences={label.links}
-                fieldName='links'
-                cyioCoreObjectId={label?.id}
-                refreshQuery={refreshQuery}
-              />
-            </Grid>
-            <Grid item={true} xs={6}>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes
-                typename={label.__typename}
-                notes={label.remarks}
-                refreshQuery={refreshQuery}
-                fieldName='remarks'
-                marginTop='0px'
-                cyioCoreObjectOrCyioCoreRelationshipId={label?.id}
-              />
-            </Grid>
-          </Grid>
         </div>
         <EntitiesLabelsCreation
           openDataCreation={this.state.openDataCreation}
@@ -110,6 +84,7 @@ class EmtityLabelComponent extends Component {
         <LabelEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
+          label={label}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>
@@ -126,44 +101,12 @@ EmtityLabelComponent.propTypes = {
 
 const EntityLabel = createFragmentContainer(EmtityLabelComponent, {
   label: graphql`
-    fragment EntityLabel_label on OscalRole {
+    fragment EntityLabel_label on CyioLabel {
       __typename
       id
-      entity_type
-      created
-      modified
-      role_identifier
       name
-      short_name
+      color
       description
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
-      links {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
-      }
-      remarks {
-        __typename
-        id
-        entity_type
-        abstract
-        content
-        authors
-      }
       ...EntityLabelDetails_label
     }
   `,

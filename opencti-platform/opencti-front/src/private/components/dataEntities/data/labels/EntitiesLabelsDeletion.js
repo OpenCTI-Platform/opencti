@@ -64,7 +64,7 @@ Transition.displayName = 'TransitionSlide';
 
 const EntitiesLabelsDeletionDarkLightMutation = graphql`
   mutation EntitiesLabelsDeletionDarkLightMutation($id: ID!) {
-  deleteOscalRole(id: $id)
+  deleteCyioLabel(id: $id)
 }
 `;
 
@@ -115,6 +115,8 @@ class EntitiesLabelsDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
+        this.handleCloseDelete();
+        this.props.history.push('/data/entities/labels');
       },
       onError: (err) => {
         console.error(err);
