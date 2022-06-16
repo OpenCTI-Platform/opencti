@@ -25,6 +25,7 @@ import responsiblePartiesIcon from '../../resources/images/entities/responsible_
 import tasksIcon from '../../resources/images/entities/tasks.svg';
 import locations from '../../resources/images/entities/locations.svg';
 import roles from '../../resources/images/entities/roles.svg';
+import notes from '../../resources/images/entities/Notes.svg';
 import parties from '../../resources/images/entities/parties.svg';
 import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
 import externalReferenceIcon from '../../resources/images/entities/externalReferenceIcon.svg';
@@ -301,6 +302,14 @@ class CyioListCards extends Component {
                   >
                     <img src={assessmentPlatform} className={classes.icon} alt="" />
                     {t('Assessment Platform')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/notes'
+                    value='notes'
+                  >
+                    <img src={notes} className={classes.icon} alt="" />
+                    {t('Notes')}
                   </MenuItem>
                   <MenuItem
                     component={Link}
