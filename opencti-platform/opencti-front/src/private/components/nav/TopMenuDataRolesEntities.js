@@ -35,15 +35,15 @@ class TopMenuDataRolesEntities extends Component {
       <div>
         <Button
           component={Link}
-          to="/data/entities/roles"
+          to="/data/entities/responsibility"
           variant={
-            location.pathname.includes('/data/entities/roles')
+            location.pathname.includes('/data/entities/responsibility')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/data/entities/roles')
+            location.pathname.includes('/data/entities/responsibility')
               ? 'secondary'
               : 'inherit'
           }
@@ -53,15 +53,15 @@ class TopMenuDataRolesEntities extends Component {
         </Button>
         <Button
           component={Link}
-          to="/data/data source/roles"
+          to="/data/data source/responsibility"
           variant={
-            location.pathname.includes('/data/data source/roles')
+            location.pathname.includes('/data/data source/responsibility')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/data/data source/roles')
+            location.pathname.includes('/data/data source/responsibility')
               ? 'secondary'
               : 'inherit'
           }

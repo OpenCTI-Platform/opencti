@@ -91,15 +91,15 @@ class RolesEntities extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/roles');
+    this.props.history.push('/data/entities/responsibility');
   }
 
   handleDisplayEdit(selectedElements) {
-    let roleId = '';
+    let responsibilityId = '';
     if (selectedElements) {
-      roleId = (Object.entries(selectedElements)[0][1])?.id;
+      responsibilityId = (Object.entries(selectedElements)[0][1])?.id;
     }
-    this.setState({ displayEdit: !this.state.displayEdit, selectedRoleId: roleId });
+    this.setState({ displayEdit: !this.state.displayEdit, selectedRoleId: responsibilityId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -217,7 +217,7 @@ class RolesEntities extends Component {
         OperationsComponent={<EntitiesRolesDeletion />}
         openExports={openExports}
         filterEntityType="Entities"
-        selectedDataEntity='roles'
+        selectedDataEntity='responsibility'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -326,7 +326,7 @@ class RolesEntities extends Component {
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='Entities'
-        selectedDataEntity='roles'
+        selectedDataEntity='responsibility'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -395,7 +395,7 @@ class RolesEntities extends Component {
         <RoleEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}
-          roleId={this.state.selectedRoleId}
+          responsibilityId={this.state.selectedRoleId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </div>

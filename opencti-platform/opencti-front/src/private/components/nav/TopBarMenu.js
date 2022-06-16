@@ -255,8 +255,8 @@ const TopBarMenu = ({
             || location.pathname === '/data/data source') && (
               <TopMenuDataEntities />
           )}
-          {(location.pathname === '/data/entities/roles'
-            || location.pathname === '/data/data source/roles') && (
+          {(location.pathname === '/data/entities/responsibility'
+            || location.pathname === '/data/data source/responsibility') && (
               <TopMenuDataRolesEntities />
           )}
           {(location.pathname === '/data/entities/notes'

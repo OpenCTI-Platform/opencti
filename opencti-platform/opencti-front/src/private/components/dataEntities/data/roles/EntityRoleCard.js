@@ -140,7 +140,7 @@ class EntityRoleCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           TouchRippleProps={this.state.openMenu && { classes: { root: classes.buttonRipple } }}
-          to={`/data/entities/roles/${node?.id}`}
+          to={`/data/entities/responsibility/${node?.id}`}
         >
           <CardContent className={classes.content}>
             <Grid

@@ -82,7 +82,7 @@ class RolesDataSource extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/data/data source/roles');
+    this.props.history.push('/data/data source/responsibility');
   }
 
   handleDisplayEdit(selectedElements) {
@@ -208,7 +208,7 @@ class RolesDataSource extends Component {
         OperationsComponent={<EntitiesDeletion />}
         openExports={openExports}
         filterEntityType='DataSources'
-        selectedDataEntity='roles'
+        selectedDataEntity='responsibility'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -299,7 +299,7 @@ class RolesDataSource extends Component {
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='DataSources'
-        selectedDataEntity='roles'
+        selectedDataEntity='responsibility'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

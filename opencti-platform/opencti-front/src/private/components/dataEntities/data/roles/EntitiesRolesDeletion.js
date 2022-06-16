@@ -126,7 +126,7 @@ class EntitiesRolesDeletion extends Component {
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to delete role');
+        toastGenericError('Failed to delete responsibility');
       },
     });
     // commitMutation({
@@ -175,7 +175,6 @@ class EntitiesRolesDeletion extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
             <DialogContent>
               <Typography style={{
@@ -183,7 +182,7 @@ class EntitiesRolesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Role?')}
+                {t('Are you sure you’d like to delete this Responsibility?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
