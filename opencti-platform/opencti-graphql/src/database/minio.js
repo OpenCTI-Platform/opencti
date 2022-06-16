@@ -3,6 +3,7 @@ import * as He from 'he';
 import * as R from 'ramda';
 import querystring from 'querystring';
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
+import LRU from 'lru-cache';
 import conf, { booleanConf, configureCA, logApp, logAudit } from '../config/conf';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
@@ -13,6 +14,11 @@ import { UPLOAD_ACTION } from '../config/audit';
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
+
+const credentialCache = new LRU({
+  max: 1000,
+  ttl: 21600000 // cache for up to 6 hours
+});
 
 const getMinioClient = async () => {
   const minioConfig = {
@@ -29,16 +35,33 @@ const getMinioClient = async () => {
 
   // Attempt to fetch AWS role for authentication if enabled
   if (booleanConf('minio:use_aws_role', false)) {
-    try {
-      const credentialProvider = fromNodeProviderChain();
-      const awsCredentials = await credentialProvider();
+    let awsCredentials = credentialCache.get('aws_credentials');
 
-      minioConfig.accessKey = awsCredentials.accessKeyId;
-      minioConfig.secretKey = awsCredentials.secretAccessKey;
-      minioConfig.sessionToken = awsCredentials.sessionToken;
-    } catch (e) {
-      logApp.error('[MINIO] Failed to fetch AWS role credentials', { error: e });
+    if (!awsCredentials) {
+      try {
+        const credentialProvider = fromNodeProviderChain();
+        awsCredentials = await credentialProvider();
+
+        // Calculate TTL from expiration date
+        let credentialTtl = credentialCache.ttl;
+        if (awsCredentials.expiration) {
+          credentialTtl = awsCredentials.expiration.getTime() - (new Date()).getTime();
+          if (credentialTtl < 0) {
+            throw new Error('AWS role credentials have expired after fetching');
+          }
+        }
+
+        credentialCache.set('aws_credentials', awsCredentials, {
+          ttl: credentialTtl - 270000 // subtract 4.5 minutes to ensure fresh credentials are used
+        });
+      } catch (e) {
+        logApp.error('[MINIO] Failed to fetch AWS role credentials', { error: e });
+      }
     }
+
+    minioConfig.accessKey = awsCredentials.accessKeyId || null;
+    minioConfig.secretKey = awsCredentials.secretAccessKey || null;
+    minioConfig.sessionToken = awsCredentials.sessionToken || null;
   }
 
   return new Minio.Client(minioConfig);
