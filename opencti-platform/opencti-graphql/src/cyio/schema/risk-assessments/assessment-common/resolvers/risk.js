@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {compareValues, updateQuery, filterValues, generateId, OSCAL_NS} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import { calculateRiskLevel, getLatestRemediationInfo, convertToProperties } from '../../riskUtils.js';
 import { findParentIriQuery, objectMap } from '../../../global/global-utils.js';
@@ -122,6 +122,25 @@ const riskResolvers = {
             continue
           }
 
+          // if props were requested
+          if (selectMap.getNode('node').includes('props')) {
+            let props = convertToProperties(risk, riskPredicateMap);
+            if (risk.hasOwnProperty('risk_level')) {
+              if (props === null) props = [];
+              let id_material = {"name":"risk-level","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_level}`};
+              let propId = generateId(id_material, OSCAL_NS);
+              let property = {
+                id: `${propId}`,
+                entity_type: 'property',
+                prop_name: 'risk-level',
+                ns: 'http://darklight.ai/ns/oscal',
+                value: `${risk.risk_level}`,
+              }
+              props.push(property)
+            }
+            if (props !== null) risk.props = props;
+          }
+          
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && (args.filters != null && args.filters.length > 0) && args.filters[0] !== null) {
             if (!filterValues(risk, args.filters, args.filterMode) ) {
@@ -230,6 +249,26 @@ const riskResolvers = {
           risk.risk_status = risk.risk_status.replace('_', '-');
         }
           // END WORKAROUND
+
+        // if props were requested
+        if (selectMap.getNode('risk').includes('props')) {
+          let props = convertToProperties(risk, riskPredicateMap);
+          if (risk.hasOwnProperty('risk_level')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-level","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_level}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-level',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.risk_level}`,
+            }
+            props.push(property)
+          }
+          if (props !== null) risk.props = props;
+        }
+
         return reducer(risk);  
       } else {
         // Handle reporting Stardog Error

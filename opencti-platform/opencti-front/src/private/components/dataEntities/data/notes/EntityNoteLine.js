@@ -93,13 +93,13 @@ class EntityNoteLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: '15.3%' }}
               >
                 {node.entity_type && t(node.entity_type)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.abstract.width }}
+                style={{ width: '15.3%' }}
               >
                 {node.abstract && t(node.abstract)}
               </div>
@@ -111,7 +111,7 @@ class EntityNoteLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '20.5%' }}
+                style={{ width: '20.7%' }}
               >
                 <CyioCoreObjectLabels
                   variant="inList"

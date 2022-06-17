@@ -1490,7 +1490,7 @@ type Property implements ComplexDatatype {
   "Identifies a namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name."
   ns: URL
   "Indicates the value of the attribute, characteristic, or quality."
-  value: [String!]
+  value: String!
   "Identifies a textual label that provides a sub-type or characterization of the property's name. This can be used to further distinguish or discriminate between the semantics of multiple properties of the same object with the same name and ns."
   class: String
 }
@@ -1501,7 +1501,7 @@ input PropertyAddInput {
   "Identifies a namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name."
   ns: URL
   "Indicates the value of the attribute, characteristic, or quality."
-  value: [String!]
+  value: String!
   "Identifies a textual label that provides a sub-type or characterization of the property's name. This can be used to further distinguish or discriminate between the semantics of multiple properties of the same object with the same name and ns."
   class: String
 }

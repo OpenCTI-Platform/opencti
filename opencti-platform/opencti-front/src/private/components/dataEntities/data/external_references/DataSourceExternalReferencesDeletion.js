@@ -13,6 +13,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
+import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
+import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
@@ -62,21 +64,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const EntitiesNotesDeletionMutation = graphql`
-  mutation EntitiesNotesDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-const EntitiesNotesDeletionDarkLightMutation = graphql`
-  mutation EntitiesNotesDeletionDarkLightMutation($id: ID!) {
-    deleteCyioNote(id: $id)
+const DataSourceExternalReferencesDeletionDarkLightMutation = graphql`
+  mutation DataSourceExternalReferencesDeletionDarkLightMutation($id: ID!) {
+  deleteOscalRole(id: $id)
 }
 `;
 
-class EntitiesNotesDeletion extends Component {
+class DataSourceExternalReferencesDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,22 +110,22 @@ class EntitiesNotesDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: EntitiesNotesDeletionDarkLightMutation,
+      mutation: DataSourceExternalReferencesDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/data/entities/notes');
+        // this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to delete Note');
+        toastGenericError('Failed to delete external reference');
       },
     });
     // commitMutation({
-    //   mutation: EntitiesNotesDeletionDarkLightMutation,
+    //   mutation: DataSourceExternalReferencesDeletionDarkLightMutation,
     //   variables: {
     //     id: this.props.id,
     //   },
@@ -164,7 +158,7 @@ class EntitiesNotesDeletion extends Component {
               variant="contained"
               onClick={this.handleOpenDelete.bind(this)}
               className={classes.iconButton}
-              disabled={(Boolean(!id) && Boolean(!isAllselected))}
+              disabled={(Boolean(!id) && Boolean(!isAllselected)) || true}
               color="primary"
               size="large"
             >
@@ -184,7 +178,7 @@ class EntitiesNotesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Role?')}
+                {t('Are you sure you’d like to delete this External Reference?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
@@ -217,7 +211,7 @@ class EntitiesNotesDeletion extends Component {
   }
 }
 
-EntitiesNotesDeletion.propTypes = {
+DataSourceExternalReferencesDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -229,4 +223,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(EntitiesNotesDeletion);
+)(DataSourceExternalReferencesDeletion);

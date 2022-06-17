@@ -3022,6 +3022,16 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
 
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('risk_level')) select.push('risk_level');
+    if (!select.includes('false_positive')) select.push('false_positive');
+    if (!select.includes('accepted')) select.push('accepted');
+    if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
+    if (!select.includes('priority')) select.push('priority')
+  }
+  
+
   // fetch the uuid of each related_observation and related_risk as these are commonly used
   if (select.includes('related_observations')) select.push('related_observation_ids');
 
@@ -3110,6 +3120,15 @@ export const selectAllRisks = (select, args, parent) => {
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
 
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('risk_level')) select.push('risk_level');
+    if (!select.includes('false_positive')) select.push('false_positive');
+    if (!select.includes('accepted')) select.push('accepted');
+    if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
+    if (!select.includes('priority')) select.push('priority')
+  }
+  
   // fetch the uuid of each related_observation and related_risk as these are commonly used
   if (select.includes('related_observations')) select.push('related_observation_ids');
 
@@ -4922,21 +4941,25 @@ export const riskPredicateMap = {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#false_positive>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "false_positive");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'false-positive',
   },
   accepted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#accepted>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "accepted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'accepted',
   },
   risk_adjusted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_adjusted>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_adjusted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'risk-adjusted',
   },
   priority: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#priority>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:nonNegativeInteger` : null,  this.predicate, "priority");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'priority',
   },
   vendor_dependency: {
     predicate: "<http://fedramp.gov/ns/oscal#vendor_dependency>",
