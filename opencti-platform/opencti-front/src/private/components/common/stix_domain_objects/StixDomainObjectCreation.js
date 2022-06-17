@@ -102,6 +102,16 @@ const stixDomainObjectCreationMutation = graphql`
       id
       entity_type
       parent_types
+      revoked
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
       createdBy {
         ... on Identity {
           id
