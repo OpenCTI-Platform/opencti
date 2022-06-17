@@ -296,8 +296,7 @@ export const configureCA = (certificates) => {
       }
     } catch (err) {
       if (err.code === 'ENOENT') {
-        // eslint-disable-next-line no-continue
-        continue;
+        // For this error, try the next one.
       } else {
         throw err;
       }

@@ -10,28 +10,37 @@ import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError } from '../config/errors';
 import { UPLOAD_ACTION } from '../config/audit';
 
+// Minio configuration
+const clientEndpoint = conf.get('minio:endpoint');
+const clientPort = conf.get('minio:port') || 9000;
+const clientCA = conf.get('minio:ca');
+const clientAccessKey = conf.get('minio:access_key');
+const clientSecretKey = conf.get('minio:secret_key');
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
+const useSslConnection = booleanConf('minio:use_ssl', false);
+const useAwsRole = booleanConf('minio:use_aws_role', false);
 
+// Credential global variable
 const minioCredentials = {
-  accessKey: String(conf.get('minio:access_key')),
-  secretKey: String(conf.get('minio:secret_key')),
+  accessKey: String(clientAccessKey),
+  secretKey: String(clientSecretKey),
   sessionToken: undefined,
   expiration: -1
 };
 
 const getMinioClient = async () => {
   // Attempt to fetch AWS role for authentication if enabled
-  if (booleanConf('minio:use_aws_role', false)) {
+  if (useAwsRole) {
     // Add 5 minutes to the current time so that new credentials are fetched
     const expireDate = new Date((new Date()).getTime() + 300000);
-
-    if (minioCredentials.expiration === -1 || (minioCredentials.expiration && minioCredentials.expiration < expireDate)) {
+    const expirationTime = minioCredentials.expiration;
+    const isCredentialsExpired = expirationTime === -1 || (expirationTime && expirationTime < expireDate);
+    if (isCredentialsExpired) {
       try {
         const credentialProvider = fromNodeProviderChain();
         const awsCredentials = await credentialProvider();
-
         minioCredentials.accessKey = awsCredentials.accessKeyId;
         minioCredentials.secretKey = awsCredentials.secretAccessKey;
         minioCredentials.sessionToken = awsCredentials.sessionToken;
@@ -41,24 +50,23 @@ const getMinioClient = async () => {
       }
     }
   }
-
+  // Return the new client
   return new Minio.Client({
-    endPoint: conf.get('minio:endpoint'),
-    port: conf.get('minio:port') || 9000,
-    useSSL: booleanConf('minio:use_ssl', false),
+    endPoint: clientEndpoint,
+    port: clientPort,
+    useSSL: useSslConnection,
     accessKey: minioCredentials.accessKey,
     secretKey: minioCredentials.secretKey,
     sessionToken: minioCredentials.sessionToken,
     reqOptions: {
-      ...configureCA(conf.get('minio:ca')),
-      servername: conf.get('minio:endpoint'),
+      ...configureCA(clientCA),
+      servername: clientEndpoint,
     },
   });
 };
 
 export const initializeMinioBucket = async () => {
   const minioClient = await getMinioClient();
-
   return new Promise((resolve, reject) => {
     try {
       minioClient.bucketExists(bucketName, (existErr, exists) => {
@@ -86,7 +94,6 @@ export const isStorageAlive = () => {
 
 export const deleteFile = async (user, id) => {
   const minioClient = await getMinioClient();
-
   logApp.debug(`[MINIO] delete file ${id} by ${user.user_email}`);
   await minioClient.removeObject(bucketName, id);
   await deleteWorkForFile(user, id);
@@ -104,7 +111,6 @@ export const deleteFiles = async (user, ids) => {
 
 export const downloadFile = async (id) => {
   const minioClient = await getMinioClient();
-
   try {
     return minioClient.getObject(bucketName, id);
   } catch (err) {
@@ -117,7 +123,6 @@ export const getFileContent = (id) => {
   return new Promise((resolve, reject) => {
     getMinioClient().then((minioClient) => {
       let str = '';
-
       minioClient.getObject(bucketName, id, (err, stream) => {
         stream.on('data', (data) => {
           str += data.toString('utf-8');
@@ -199,7 +204,6 @@ export const rawFilesListing = (user, directory, recursive = false) => {
 
 export const upload = async (user, path, fileUpload, metadata = {}) => {
   const minioClient = await getMinioClient();
-
   const { createReadStream, filename, mimetype, encoding = '', version = now() } = await fileUpload;
   logAudit.info(user, UPLOAD_ACTION, { path, filename, metadata });
   const escapeName = querystring.escape(filename);
