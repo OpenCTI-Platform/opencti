@@ -34,6 +34,7 @@ import responsiblePartiesIcon from '../../resources/images/entities/responsible_
 import tasksIcon from '../../resources/images/entities/tasks.svg';
 import locations from '../../resources/images/entities/locations.svg';
 import roles from '../../resources/images/entities/roles.svg';
+import labels from '../../resources/images/entities/labelsImage.svg';
 import notes from '../../resources/images/entities/Notes.svg';
 import parties from '../../resources/images/entities/parties.svg';
 import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
@@ -224,12 +225,12 @@ class CyioListLines extends Component {
       const orderComponent = orderAsc ? (
         <ArrowDropDown
           classes={{ root: classes.sortIcon }}
-          // style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
+        // style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
         />
       ) : (
         <ArrowDropUp
           classes={{ root: classes.sortIcon }}
-          // style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
+        // style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
         />
       );
       return (
@@ -434,6 +435,14 @@ class CyioListLines extends Component {
                   >
                     <img src={notes} className={classes.icon} alt="" />
                     {t('Notes')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/labels'
+                    value='labels'
+                  >
+                    <img src={labels} className={classes.icon} alt="" />
+                    {t('Labels')}
                   </MenuItem>
                   <MenuItem
                     component={Link}
