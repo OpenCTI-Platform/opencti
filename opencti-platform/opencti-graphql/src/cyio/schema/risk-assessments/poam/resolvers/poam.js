@@ -25,6 +25,7 @@ import {
   selectAllObservations,
   selectAllRisks,
   selectAssessmentAssetByIriQuery,
+  riskPredicateMap,
 } from '../../assessment-common/resolvers/sparql-query.js';
 import {
   insertRolesQuery,
@@ -1049,6 +1050,25 @@ const poamResolvers = {
         if (offset) {
           offset--
           continue
+        }
+
+        // if props were requested
+        if (selectMap.getNode('node').includes('props')) {
+          let props = convertToProperties(risk, riskPredicateMap);
+          if (risk.hasOwnProperty('risk_level')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-level","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_level}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-level',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.risk_level}`,
+            }
+            props.push(property)
+          }
+          if (props !== null) risk.props = props;
         }
 
         // filter out non-matching entries if a filter is to be applied
