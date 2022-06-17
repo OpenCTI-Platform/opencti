@@ -1855,6 +1855,8 @@ type Risk implements BasicObject & LifecycleObject & OscalObject {
     search: String
   ): OscalRelationshipConnection
   # Risk
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
   "Identifies the name for the risk."
   name: String!
   "Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system."

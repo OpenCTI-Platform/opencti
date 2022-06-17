@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EmtityLabelComponent extends Component {
+class EntityLabelComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -92,14 +92,14 @@ class EmtityLabelComponent extends Component {
   }
 }
 
-EmtityLabelComponent.propTypes = {
+EntityLabelComponent.propTypes = {
   label: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityLabel = createFragmentContainer(EmtityLabelComponent, {
+const EntityLabel = createFragmentContainer(EntityLabelComponent, {
   label: graphql`
     fragment EntityLabel_label on CyioLabel {
       __typename

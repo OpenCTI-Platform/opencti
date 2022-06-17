@@ -121,7 +121,7 @@ class CyioDomainObjectAssetHeader extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {cyioDomainObject?.name || cyioDomainObject?.abstract}
+          {cyioDomainObject?.name}
         </Typography>
         <div className={classes.aliases}>
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}

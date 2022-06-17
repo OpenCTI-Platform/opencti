@@ -1,11 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  pipe,
-  pathOr,
-  map,
-} from 'ramda';
+import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -19,7 +14,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
-import EntitiesResponsiblePartiesPopover from './EntitiesResponsiblePartiesPopover';
+import EntitiesExternalReferencesPopover from './EntitiesExternalReferencesPopover';
 
 const styles = (theme) => ({
   item: {
@@ -54,7 +49,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityResponsiblePartyLineComponent extends Component {
+class EntityExternalReferenceLineComponent extends Component {
   render() {
     const {
       t,
@@ -67,12 +62,6 @@ class EntityResponsiblePartyLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const partyData = pipe(
-      pathOr([], ['parties']),
-      map((value) => ({
-        name: value.name,
-      })),
-    )(node);
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -80,7 +69,7 @@ class EntityResponsiblePartyLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/data/entities/responsible_parties/${node.id}`}
+        to={`/data/entities/external_references/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
@@ -105,37 +94,27 @@ class EntityResponsiblePartyLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '11.5%' }}
+                style={{ width: dataColumns.source_name.width }}
               >
-                {node.name && t(node.name)}
+                {node.source_name && t(node.source_name)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.role_identifier.width }}
+                style={{ width: '16.5%' }}
               >
-                {node.role && t(node.role.role_identifier)}
+                {node.media_type && t(node.media_type)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '15.5%' }}
+                style={{ width: '21%' }}
               >
-                {partyData.length > 0 && partyData.map((value) => t(value.name)).join(', ')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: '20.5%' }}
-              >
-                <CyioCoreObjectLabels
-                  variant="inList"
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                />
+                {node.url && t(node.url)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                {/* {node.created && fd(node.created)} */}
+                {node.created && fd(node.created)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -147,7 +126,7 @@ class EntityResponsiblePartyLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
-          <EntitiesResponsiblePartiesPopover
+          <EntitiesExternalReferencesPopover
             // history={history}
             nodeId={node?.id}
             // riskNode={riskData.node}
@@ -159,7 +138,7 @@ class EntityResponsiblePartyLineComponent extends Component {
   }
 }
 
-EntityResponsiblePartyLineComponent.propTypes = {
+EntityExternalReferenceLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -168,52 +147,29 @@ EntityResponsiblePartyLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const EntityResponsiblePartyLineFragment = createFragmentContainer(
-  EntityResponsiblePartyLineComponent,
+const EntityExternalReferenceLineFragment = createFragmentContainer(
+  EntityExternalReferenceLineComponent,
   {
     node: graphql`
-      fragment EntityResponsiblePartyLine_node on OscalResponsibleParty {
+      fragment EntityExternalReferenceLine_node on CyioExternalReference {
         __typename
         id
-        name
+        url
+        created
+        media_type
+        source_name
         entity_type
-        role {
-          id
-          entity_type
-          role_identifier
-        }
-        parties {
-          id
-          entity_type
-          name
-        }
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
       }
     `,
   },
 );
 
-export const EntityResponsiblePartyLine = compose(
+export const EntityExternalReferenceLine = compose(
   inject18n,
   withStyles(styles),
-)(EntityResponsiblePartyLineFragment);
+)(EntityExternalReferenceLineFragment);
 
-class EntityResponsiblePartyLineDummyComponent extends Component {
+class EntityExternalReferenceLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -224,17 +180,6 @@ class EntityResponsiblePartyLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: '10%' }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: '12.5%' }}
@@ -264,7 +209,7 @@ class EntityResponsiblePartyLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width='90%'
                   height="100%"
                 />
               </div>
@@ -275,7 +220,7 @@ class EntityResponsiblePartyLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width='90%'
                   height="100%"
                 />
               </div>
@@ -286,7 +231,7 @@ class EntityResponsiblePartyLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width='90%'
                   height="100%"
                 />
               </div>
@@ -309,12 +254,12 @@ class EntityResponsiblePartyLineDummyComponent extends Component {
   }
 }
 
-EntityResponsiblePartyLineDummyComponent.propTypes = {
+EntityExternalReferenceLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const EntityResponsiblePartyLineDummy = compose(
+export const EntityExternalReferenceLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityResponsiblePartyLineDummyComponent);
+)(EntityExternalReferenceLineDummyComponent);

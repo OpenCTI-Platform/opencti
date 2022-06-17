@@ -62,7 +62,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const EntitiesResponsiblePartiesDeletionMutation = graphql`
+const EntitiesResponsiblePartiessDeletionMutation = graphql`
   mutation EntitiesResponsiblePartiesDeletionMutation($id: ID!) {
     threatActorEdit(id: $id) {
       delete
@@ -76,7 +76,7 @@ const EntitiesResponsiblePartiesDeletionDarkLightMutation = graphql`
 }
 `;
 
-class EntitiesResponsiblePartiesDeletion extends Component {
+class EntitiesResponsiblePartiessDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -216,7 +216,7 @@ class EntitiesResponsiblePartiesDeletion extends Component {
   }
 }
 
-EntitiesResponsiblePartiesDeletion.propTypes = {
+EntitiesResponsiblePartiessDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -228,4 +228,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(EntitiesResponsiblePartiesDeletion);
+)(EntitiesResponsiblePartiessDeletion);

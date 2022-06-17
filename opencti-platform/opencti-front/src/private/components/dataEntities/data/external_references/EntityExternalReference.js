@@ -9,17 +9,16 @@ import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../../components/i18n';
-import EntityNoteDetails from './EntityNoteDetails';
-import EntitiesNotesPopover from './EntitiesNotesPopover';
-import EntitiesNotesDeletion from './EntitiesNotesDeletion';
+import EntityExternalReferenceDetails from './EntityExternalReferenceDetails';
+import EntitiesExternalReferencesPopover from './EntitiesExternalReferencesPopover';
+import EntitiesExternalReferencesDeletion from './EntitiesExternalReferencesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import NoteEntityEditionContainer from './NoteEntityEditionContainer';
-import EntitiesNotesCreation from './EntitiesNotesCreation';
-import RelatedTasks from '../../../riskAssessment/risks/remediations/RelatedTasks';
+import ExternalReferenceEntityEditionContainer from './ExternalReferenceEntityEditionContainer';
+import EntitiesExternalReferencesCreation from './EntitiesExternalReferencesCreation';
 
 const styles = () => ({
   container: {
@@ -30,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EntityNoteComponent extends Component {
+class EntityExternalReferenceComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -49,23 +48,22 @@ class EntityNoteComponent extends Component {
 
   render() {
     const {
-      note,
       classes,
+      externalReference,
       history,
-      location,
       refreshQuery,
+      location,
     } = this.props;
-    const { me } = this.props.me;
     return (
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={note}
+            cyioDomainObject={externalReference}
             history={history}
-            PopoverComponent={<EntitiesNotesPopover />}
+            PopoverComponent={<EntitiesExternalReferencesPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesNotesDeletion />}
+            OperationsComponent={<EntitiesExternalReferencesDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -74,21 +72,19 @@ class EntityNoteComponent extends Component {
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={12}>
-              <EntityNoteDetails note={note} history={history} refreshQuery={refreshQuery} />
+              <EntityExternalReferenceDetails externalReference={externalReference} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
         </div>
-        <EntitiesNotesCreation
+        <EntitiesExternalReferencesCreation
           openDataCreation={this.state.openDataCreation}
-          handleNoteCreation={this.handleOpenNewCreation.bind(this)}
+          handleExternalReferenceCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
-          me={me}
         />
-        <NoteEntityEditionContainer
+        <ExternalReferenceEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
-          refreshQuery={refreshQuery}
-          note={note}
+          externalReference={externalReference}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>
@@ -96,34 +92,25 @@ class EntityNoteComponent extends Component {
   }
 }
 
-EntityNoteComponent.propTypes = {
-  note: PropTypes.object,
+EntityExternalReferenceComponent.propTypes = {
+  externalReference: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityNote = createFragmentContainer(EntityNoteComponent, {
-  note: graphql`
-    fragment EntityNote_note on CyioNote {
+const EntityExternalReference = createFragmentContainer(EntityExternalReferenceComponent, {
+  externalReference: graphql`
+    fragment EntityExternalReference_externalReference on CyioExternalReference {
       __typename
       id
-      content
-      created
-      authors
-      abstract
-      modified
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
-      ...EntityNoteDetails_note
+      url
+      source_name
+      external_id
+      description
+      ...EntityExternalReferenceDetails_externalReference
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(EntityNote);
+export default compose(inject18n, withStyles(styles))(EntityExternalReference);

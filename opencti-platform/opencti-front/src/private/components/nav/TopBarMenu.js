@@ -47,12 +47,13 @@ import TopMenuVSAC from './TopMenuVSAC';
 import TopMenuAssets from './TopMenuAssets';
 import TopMenuDataEntities from './TopMenuDataEntities';
 import TopMenuDataRolesEntities from './TopMenuDataRolesEntities';
-import TopMenuDataNotesEntities from './TopMenuDataNotesEntities';
 import TopMenuDataLabelsEntities from './TopMenuDataLabelsEntities';
 import TopMenuDataAssessmentPlatformsEntities from './TopMenuDataAssessmentPlatformsEntities';
 import TopMenuDataResponsiblePartiesEntities from './TopMenuDataResponsiblePartiesEntities';
+import TopMenuDataExternalReferenceEntities from './TopMenuDataExternalReferenceEntities';
 import TopMenuDataPartiesEntities from './TopMenuDataPartiesEntities';
 import TopMenuDataTasksEntities from './TopMenuDataTasksEntities';
+import TopMenuDataNotesEntities from './TopMenuDataNotesEntities';
 import TopMenuDataLocationsEntities from './TopMenuDataLocationsEntities';
 import TopMenuRiskAssessment from './TopMenuRiskAssessment';
 import TopMenuThreatActor from './TopMenuThreatActor';
@@ -260,10 +261,6 @@ const TopBarMenu = ({
             || location.pathname === '/data/data source/roles') && (
               <TopMenuDataRolesEntities />
           )}
-          {(location.pathname === '/data/entities/notes'
-            || location.pathname === '/data/data source/notes') && (
-              <TopMenuDataNotesEntities />
-          )}
           {(location.pathname === '/data/entities/labels'
             || location.pathname === '/data/data source/labels') && (
               <TopMenuDataLabelsEntities />
@@ -276,6 +273,10 @@ const TopBarMenu = ({
             || location.pathname === '/data/data source/tasks') && (
               <TopMenuDataTasksEntities />
           )}
+          {(location.pathname === '/data/entities/notes'
+            || location.pathname === '/data/data source/notes') && (
+              <TopMenuDataNotesEntities />
+          )}
           {(location.pathname === '/data/entities/locations'
             || location.pathname === '/data/data source/locations') && (
               <TopMenuDataLocationsEntities />
@@ -287,6 +288,10 @@ const TopBarMenu = ({
           {(location.pathname === '/data/entities/responsible_parties'
             || location.pathname === '/data/data source/responsible_parties') && (
               <TopMenuDataResponsiblePartiesEntities />
+          )}
+          {(location.pathname === '/data/entities/external_references'
+            || location.pathname === '/data/data source/external_references') && (
+              <TopMenuDataExternalReferenceEntities />
           )}
           {location.pathname.includes('/defender HQ/assets/devices/') && (
             <TopMenuDevice />

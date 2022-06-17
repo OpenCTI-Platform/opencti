@@ -34,10 +34,11 @@ import responsiblePartiesIcon from '../../resources/images/entities/responsible_
 import tasksIcon from '../../resources/images/entities/tasks.svg';
 import locations from '../../resources/images/entities/locations.svg';
 import roles from '../../resources/images/entities/roles.svg';
-import notesImage from '../../resources/images/entities/notes.svg';
 import labels from '../../resources/images/entities/labelsImage.svg';
+import notes from '../../resources/images/entities/Notes.svg';
 import parties from '../../resources/images/entities/parties.svg';
 import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
+import externalReferenceIcon from '../../resources/images/entities/externalReferenceIcon.svg';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
@@ -432,7 +433,7 @@ class CyioListLines extends Component {
                     to='/data/entities/notes'
                     value='notes'
                   >
-                    <img src={notesImage} className={classes.icon} alt="" />
+                    <img src={notes} className={classes.icon} alt="" />
                     {t('Notes')}
                   </MenuItem>
                   <MenuItem
@@ -442,6 +443,14 @@ class CyioListLines extends Component {
                   >
                     <img src={labels} className={classes.icon} alt="" />
                     {t('Labels')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/external_references'
+                    value='external_references'
+                  >
+                    <img src={externalReferenceIcon} className={classes.icon} alt="" />
+                    {t('External References')}
                   </MenuItem>
                 </Select>
               </FormControl>
