@@ -54,7 +54,7 @@ export function convertToProperties(item, predicateMap, customProperties) {
     if (value.extension_property === undefined) continue;
     if (!item.hasOwnProperty(key)) continue;
     token = value.extension_property;
-    id_material = {"name":token,"ns":"http://csrc.nist.gov/ns/oscal","value":[`${item[key]}`]};
+    id_material = {"name":token,"ns":"http://csrc.nist.gov/ns/oscal","value": (Array.isArray(item[key]) ? item[key].toString() : `${item[key]}`)};
  
     id = generateId(id_material, OSCAL_NS);
     let property = {
@@ -62,7 +62,8 @@ export function convertToProperties(item, predicateMap, customProperties) {
       entity_type: 'property',
       prop_name: token,
       ns: 'http://csrc.nist.gov/ns/oscal',
-      value: [`${item[key]}`],
+      value: (Array.isArray(item[key]) ? item[key].toString() : `${item[key]}`),
+      // value: `${item[key]}`,
     };
 
     propList.push(property);

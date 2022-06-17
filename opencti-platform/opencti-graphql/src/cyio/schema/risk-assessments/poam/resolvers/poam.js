@@ -1142,14 +1142,14 @@ const poamResolvers = {
 
         // if props were requested
         if (selectMap.getNode('node').includes('props') && poamItem.hasOwnProperty('poam_id')) {
-          let id_material = {"name":"POAM-ID","ns":"http://fedramp.gov/ns/oscal","value":[`${poamItem.poam_id}`]};
+          let id_material = {"name":"POAM-ID","ns":"http://fedramp.gov/ns/oscal","value":`${poamItem.poam_id}`};
           let id = generateId(id_material, OSCAL_NS);
           let prop = {
             id: `${id}`,
             entity_type: 'property',
             prop_name: 'POAM-ID',
             ns: 'http://fedramp.gov/ns/oscal',
-            value: [`${poamItem.poam_id}`],
+            value: `${poamItem.poam_id}`,
           };
           poamItem.props = [prop];
         }
