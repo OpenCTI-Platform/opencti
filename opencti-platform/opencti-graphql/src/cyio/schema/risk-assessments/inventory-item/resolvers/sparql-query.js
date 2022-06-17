@@ -631,14 +631,14 @@ export function convertAssetToInventoryItem(asset) {
     // replace '_' with'-'
     if (key.includes('_')) key = key.replace(/_/g, '-');
     // generate id based on the name and the namespace
-    let id_material = { "name":`${key}`,"ns":`${namespace}`};
+    let id_material = { "name":`${key}`,"ns":`${namespace}`,"value": (Array.isArray(value) ? value.toString() : `${value}`)};
     let id = generateId(id_material, OSCAL_NS);
     let prop = { 
       id: `${id}`,
       entity_type: 'property',
       prop_name: `${key}`,
       ns: `${namespace}`,
-      value: (Array.isArray(value) ? value : [`${value}`]),
+      value: (Array.isArray(value) ? value.toString() : `${value}`),
       // class: `${},
     }
     propList.push(prop)
