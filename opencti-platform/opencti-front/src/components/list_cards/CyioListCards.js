@@ -29,7 +29,6 @@ import notes from '../../resources/images/entities/Notes.svg';
 import parties from '../../resources/images/entities/parties.svg';
 import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
 import labels from '../../resources/images/entities/labelsImage.svg';
-import notesImage from '../../resources/images/entities/notes.svg';
 import externalReferenceIcon from '../../resources/images/entities/externalReferenceIcon.svg';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
