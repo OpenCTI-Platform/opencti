@@ -80,18 +80,18 @@ class RoleEntityEdition extends Component {
 
   render() {
     const {
-      classes, t, displayEdit, handleDisplayEdit, history, roleId,
+      classes, t, displayEdit, handleDisplayEdit, history, responsibilityId,
     } = this.props;
     return (
       <div className={classes.container}>
         <QR
           environment={QueryRendererDarkLight}
           query={roleEntityEditionQuery}
-          variables={{ id: roleId }}
+          variables={{ id: responsibilityId }}
           render={({ error, props, retry }) => {
             if (error) {
               console.error(error);
-              toastGenericError('Failed to edit Role');
+              toastGenericError('Failed to edit Responsibility');
             }
             if (props) {
               return (

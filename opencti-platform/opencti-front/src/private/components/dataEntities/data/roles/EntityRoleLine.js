@@ -69,7 +69,7 @@ class EntityRoleLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/data/entities/roles/${node.id}`}
+        to={`/data/entities/responsibility/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}

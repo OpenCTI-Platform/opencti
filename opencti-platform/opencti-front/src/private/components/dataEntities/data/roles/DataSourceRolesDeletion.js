@@ -125,11 +125,11 @@ class DataSourceRolesDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
+        this.props.history.push('/data/entities/responsibility');
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to delete role');
+        toastGenericError('Failed to delete responsibility');
       },
     });
     // commitMutation({
@@ -178,7 +178,6 @@ class DataSourceRolesDeletion extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
             <DialogContent>
               <Typography style={{
@@ -186,7 +185,7 @@ class DataSourceRolesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Risk?')}
+                {t('Are you sure you’d like to delete this Responsibility?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}

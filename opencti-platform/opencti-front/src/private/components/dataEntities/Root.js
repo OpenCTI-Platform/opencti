@@ -50,7 +50,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/data/entities/roles"
+          path="/data/entities/responsibility"
           component={RolesEntities}
         />
         <BoundaryRoute
@@ -102,7 +102,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/data/data source/roles"
+          path="/data/data source/responsibility"
           component={RolesDataSource}
         />
         <BoundaryRoute
@@ -150,7 +150,7 @@ class Root extends Component {
 
         <BoundaryRoute
           exact
-          path="/data/entities/roles/:roleId"
+          path="/data/entities/responsibility/:responsibilityId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
         />
         <BoundaryRoute

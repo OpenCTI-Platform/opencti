@@ -382,11 +382,11 @@ class CyioListLines extends Component {
                 >
                   <MenuItem
                     component={Link}
-                    to='/data/entities/roles'
-                    value='roles'
+                    to='/data/entities/responsibility'
+                    value='responsibility'
                   >
                     <img src={roles} className={classes.icon} alt="" />
-                    {t('Roles')}
+                    {t('Responsibility')}
                   </MenuItem>
                   <MenuItem
                     component={Link}

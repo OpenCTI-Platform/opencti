@@ -48,12 +48,12 @@ class RootRole extends Component {
     super(props);
     const {
       match: {
-        params: { roleId },
+        params: { responsibilityId },
       },
     } = props;
     this.sub = requestSubscription({
       subscription,
-      variables: { id: roleId },
+      variables: { id: responsibilityId },
     });
   }
 
@@ -65,14 +65,14 @@ class RootRole extends Component {
     const {
       me,
       match: {
-        params: { roleId },
+        params: { responsibilityId },
       },
     } = this.props;
-    const link = `/data/entities/roles/${roleId}/knowledge`;
+    const link = `/data/entities/responsibility/${responsibilityId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
-        <Route path="/data/entities/roles/:roleId/knowledge">
+        <Route path="/data/entities/responsibility/:responsibilityId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -95,11 +95,11 @@ class RootRole extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={roleQuery}
-          variables={{ id: roleId }}
+          variables={{ id: responsibilityId }}
           render={({ error, props, retry }) => {
             if (error) {
               console.error(error);
-              toastGenericError('Failed to get role data');
+              toastGenericError('Failed to get responsiblity data');
             }
             if (props) {
               if (props.oscalRole) {
@@ -107,7 +107,7 @@ class RootRole extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/data/entities/roles/:roleId"
+                      path="/data/entities/responsibility/:responsibilityId"
                       render={(routeProps) => (
                         <EntityRole
                           {...routeProps}

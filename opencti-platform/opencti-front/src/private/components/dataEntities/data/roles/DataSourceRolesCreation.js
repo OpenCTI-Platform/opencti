@@ -150,7 +150,7 @@ class DataSourceRolesCreation extends Component {
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to create role');
+        toastGenericError('Failed to create responsibility');
       },
     });
     // commitMutation({
