@@ -117,7 +117,8 @@
     "use_ssl": false,
     "access_key": "ChangeMe",
     "secret_key": "ChangeMe",
-    "excluded_files": [".DS_Store"]
+    "excluded_files": [".DS_Store"],
+    "use_aws_role": false
   },
   "rabbitmq": {
     "hostname": "localhost",
