@@ -251,7 +251,7 @@ const riskResolvers = {
           // END WORKAROUND
 
         // if props were requested
-        if (selectMap.getNode('node').includes('props')) {
+        if (selectMap.getNode('risk').includes('props')) {
           let props = convertToProperties(risk, riskPredicateMap);
           if (risk.hasOwnProperty('risk_level')) {
             if (props === null) props = [];
