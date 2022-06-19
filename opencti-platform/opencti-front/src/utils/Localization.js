@@ -1285,7 +1285,7 @@ const i18n = {
       'relationship_relation-has': 'a',
       relationship_hosts: 'héberge',
       relationship_owns: 'possède',
-      'relationship_authored-by': 'rédigé par',
+      'relationship_authored-by': 'créé par',
       'relationship_beacons-to': 'beacon vers',
       'relationship_exfiltrates-to': 'exfiltre vers',
       relationship_downloads: 'télécharge',

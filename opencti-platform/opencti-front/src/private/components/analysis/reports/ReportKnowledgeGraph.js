@@ -429,7 +429,7 @@ class ReportKnowledgeGraphComponent extends Component {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
-      initialTimeRangeInterval: timeRangeInterval,
+      displayTimeRange: R.propOr(false, 'displayTimeRange', params),
       selectedTimeRangeInterval: timeRangeInterval,
       allStixCoreObjectsTypes,
       allMarkedBy,
@@ -781,6 +781,7 @@ class ReportKnowledgeGraphComponent extends Component {
           this.state.markedBy,
           this.state.createdBy,
           ignoredStixCoreObjectsTypes,
+          selectedTimeRangeInterval,
         ),
       },
       () => {
@@ -819,6 +820,7 @@ class ReportKnowledgeGraphComponent extends Component {
             this.state.markedBy,
             this.state.createdBy,
             ignoredStixCoreObjectsTypes,
+            selectedTimeRangeInterval,
           ),
         });
       },
@@ -1113,7 +1115,6 @@ class ReportKnowledgeGraphComponent extends Component {
       numberOfSelectedNodes,
       numberOfSelectedLinks,
       displayTimeRange,
-      initialTimeRangeInterval,
       selectedTimeRangeInterval,
       width,
       height,
