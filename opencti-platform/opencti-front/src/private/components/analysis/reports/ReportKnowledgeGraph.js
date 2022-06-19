@@ -780,8 +780,7 @@ class ReportKnowledgeGraphComponent extends Component {
           this.state.stixCoreObjectsTypes,
           this.state.markedBy,
           this.state.createdBy,
-          [],
-          selectedTimeRangeInterval,
+          ignoredStixCoreObjectsTypes,
         ),
       },
       () => {
@@ -820,7 +819,6 @@ class ReportKnowledgeGraphComponent extends Component {
             this.state.markedBy,
             this.state.createdBy,
             ignoredStixCoreObjectsTypes,
-            selectedTimeRangeInterval,
           ),
         });
       },
@@ -1123,8 +1121,9 @@ class ReportKnowledgeGraphComponent extends Component {
     const graphWidth = width || window.innerWidth - 210;
     const graphHeight = height || window.innerHeight - 180;
     const displayLabels = graphData.links.length < 200;
+    const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
-      initialTimeRangeInterval,
+      timeRangeInterval,
       this.graphObjects,
     );
     return (
@@ -1179,7 +1178,7 @@ class ReportKnowledgeGraphComponent extends Component {
           handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
             this,
           )}
-          timeRangeInterval={initialTimeRangeInterval}
+          timeRangeInterval={timeRangeInterval}
           selectedTimeRangeInterval={selectedTimeRangeInterval}
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}
