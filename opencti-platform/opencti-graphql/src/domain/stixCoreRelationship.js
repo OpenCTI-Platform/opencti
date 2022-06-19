@@ -132,6 +132,10 @@ export const stixCoreRelationshipsExportAsk = async (user, args) => {
   let newArgsFiltersFilters = argsFilters.filters;
   const initialParams = {};
   if (argsFilters.filters && argsFilters.filters.length > 0) {
+    if (argsFilters.filters.filter((n) => n.key === 'relationship_type').length > 0) {
+      initialParams.relationship_type = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'relationship_type')).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'relationship_type');
+    }
     if (argsFilters.filters.filter((n) => n.key === 'fromId').length > 0) {
       initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'fromId')).values);
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'fromId');
