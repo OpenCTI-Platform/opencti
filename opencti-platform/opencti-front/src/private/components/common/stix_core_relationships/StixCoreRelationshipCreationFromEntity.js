@@ -960,6 +960,8 @@ StixCoreRelationshipCreationFromEntity.propTypes = {
   handleReverseRelation: PropTypes.func,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
+  isEntitiesView: PropTypes.bool,
+  entitiesViewPaginationKey: PropTypes.string,
 };
 
 export default R.compose(

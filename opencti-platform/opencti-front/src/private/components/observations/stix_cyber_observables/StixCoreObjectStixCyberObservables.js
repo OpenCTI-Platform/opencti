@@ -516,6 +516,9 @@ class StixCoreObjectStixCyberObservables extends Component {
           paginationOptions={paginationOptions}
           defaultStartTime={defaultStartTime}
           defaultStopTime={defaultStopTime}
+          connectionKey={
+            view === 'entities' ? 'Pagination_stixCyberObservables' : null
+          }
         />
         {!noRightBar && (
           <StixCyberObservablesRightBar
