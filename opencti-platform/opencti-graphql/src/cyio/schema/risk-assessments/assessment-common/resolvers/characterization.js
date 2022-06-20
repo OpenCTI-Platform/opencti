@@ -764,9 +764,44 @@ const characterizationResolvers = {
             // Process DarkLight custom facets
 
             // Convert the each key/value pair of Vulnerability Facet into an individual OSCAL facet
-            for (const [key, value] of Object.entries(facet)) {
+            for (let [key, value] of Object.entries(facet)) {
               if (key === 'iri' || key === 'id' || key === 'entity_type' || key === 'standard_id' || key === 'risk_state' || key === 'source_system' ) continue;
               if (value === null || value === 'null') continue;
+              if (key.includes('_')) key = key.replace(/_/g, '-');
+              switch(key) {
+                case 'vulnerability-id':
+                  if (value.startsWith('CVE')) {
+                    key = 'cve-id';
+                    facet.source_system = 'http://cve.mitre.org';
+                  } else {
+                    facet.source_system = 'http://darklight.ai/ns/oscal';
+                  }
+                  break;
+                case 'cvss20-base-score':
+                  key = 'cvss2-base-score';
+                  facet.source_system = 'http://www.first.org/cvss/v2.0';
+                  break;
+                case 'cvss20-temporal-score':
+                  key = 'cvss2-temporal-score';
+                  facet.source_system = 'http://www.first.org/cvss/v2.0';
+                  break;
+                case 'cvss20-vector-string':
+                  key = 'cvss2-vector';
+                  facet.source_system = 'http://www.first.org/cvss/v2.0';
+                  break;
+                case 'cvss30-base-score':
+                  key = 'cvss3-base-score';
+                  facet.source_system = 'http://www.first.org/cvss/v3.0';
+                  break;
+                case 'cvss30-temporal-score':
+                  key = 'cvss2-base-score';
+                  facet.source_system = 'http://www.first.org/cvss/v3.0';
+                  break;
+                case 'cvss30-vector-string':
+                  key = 'cvss3-vector';
+                  facet.source_system = 'http://www.first.org/cvss/v3.0';
+                  break;
+              }
               let id = generateId();
               let newFacet = { 
                 id: `${id}`,
