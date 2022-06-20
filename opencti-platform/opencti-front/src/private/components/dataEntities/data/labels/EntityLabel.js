@@ -9,17 +9,16 @@ import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../../components/i18n';
-import EntityNoteDetails from './EntityNoteDetails';
-import EntitiesNotesPopover from './EntitiesNotesPopover';
-import EntitiesNotesDeletion from './EntitiesNotesDeletion';
+import EntityLabelDetails from './EntityLabelDetails';
+import EntitiesLabelsPopover from './EntitiesLabelsPopover';
+import EntitiesLabelsDeletion from './EntitiesLabelsDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import NoteEntityEditionContainer from './NoteEntityEditionContainer';
-import EntitiesNotesCreation from './EntitiesNotesCreation';
-import RelatedTasks from '../../../riskAssessment/risks/remediations/RelatedTasks';
+import LabelEntityEditionContainer from './LabelEntityEditionContainer';
+import EntitiesLabelsCreation from './EntitiesLabelsCreation';
 
 const styles = () => ({
   container: {
@@ -30,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EntityNoteComponent extends Component {
+class EntityLabelComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -49,23 +48,22 @@ class EntityNoteComponent extends Component {
 
   render() {
     const {
-      note,
       classes,
+      label,
       history,
-      location,
       refreshQuery,
+      location,
     } = this.props;
-    const { me } = this.props.me;
     return (
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={note}
+            cyioDomainObject={label}
             history={history}
-            PopoverComponent={<EntitiesNotesPopover />}
+            PopoverComponent={<EntitiesLabelsPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesNotesDeletion />}
+            OperationsComponent={<EntitiesLabelsDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -74,21 +72,19 @@ class EntityNoteComponent extends Component {
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={12}>
-              <EntityNoteDetails note={note} history={history} refreshQuery={refreshQuery} />
+              <EntityLabelDetails label={label} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
         </div>
-        <EntitiesNotesCreation
+        <EntitiesLabelsCreation
           openDataCreation={this.state.openDataCreation}
-          handleNoteCreation={this.handleOpenNewCreation.bind(this)}
+          handleLabelCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
-          me={me}
         />
-        <NoteEntityEditionContainer
+        <LabelEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
-          refreshQuery={refreshQuery}
-          note={note}
+          label={label}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>
@@ -96,34 +92,24 @@ class EntityNoteComponent extends Component {
   }
 }
 
-EntityNoteComponent.propTypes = {
-  note: PropTypes.object,
+EntityLabelComponent.propTypes = {
+  label: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityNote = createFragmentContainer(EntityNoteComponent, {
-  note: graphql`
-    fragment EntityNote_note on CyioNote {
+const EntityLabel = createFragmentContainer(EntityLabelComponent, {
+  label: graphql`
+    fragment EntityLabel_label on CyioLabel {
       __typename
       id
-      content
-      created
-      authors
-      abstract
-      modified
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
-      ...EntityNoteDetails_note
+      name
+      color
+      description
+      ...EntityLabelDetails_label
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(EntityNote);
+export default compose(inject18n, withStyles(styles))(EntityLabel);

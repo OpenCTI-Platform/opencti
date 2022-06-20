@@ -14,27 +14,20 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesRolesCards, {
-  entitiesRolesCardsQuery,
-} from './EntitiesRolesCards';
-import EntitiesRolesLines, {
-  entitiesRolesLinesQuery,
-} from './EntitiesRolesLines';
-import EntitiesRolesCreation from './EntitiesRolesCreation';
+import EntitiesCreation from '../EntitiesCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
-import EntitiesRolesDeletion from './EntitiesRolesDeletion';
+import EntitiesDeletion from '../EntitiesDeletion';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
-import RoleEntityEdition from './RoleEntityEdition';
 
-class RolesEntities extends Component {
+class LabelsDataSource extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-roles',
+      'view-labels',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -47,8 +40,6 @@ class RolesEntities extends Component {
       selectedElements: null,
       selectAll: false,
       openDataCreation: false,
-      displayEdit: false,
-      selectedRoleId: '',
     };
   }
 
@@ -57,7 +48,7 @@ class RolesEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-roles',
+      'view-labels',
       this.state,
     );
   }
@@ -86,20 +77,20 @@ class RolesEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleRoleCreation() {
-    this.setState({ openDataCreation: !this.state.openDataCreation });
+  handleRiskCreation() {
+    this.setState({ openDataCreation: true });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/responsibility');
+    this.props.history.push('/data/data source/labels');
   }
 
   handleDisplayEdit(selectedElements) {
-    let responsibilityId = '';
-    if (selectedElements) {
-      responsibilityId = (Object.entries(selectedElements)[0][1])?.id;
-    }
-    this.setState({ displayEdit: !this.state.displayEdit, selectedRoleId: responsibilityId });
+    const riskId = Object.entries(selectedElements)[0][1].id;
+    this.props.history.push({
+      pathname: `/activities/risk assessment/risks/${riskId}`,
+      openEdit: true,
+    });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -209,15 +200,15 @@ class RolesEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleRoleCreation.bind(this)}
+        handleNewCreation={this.handleRiskCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<EntitiesRolesCreation />}
-        OperationsComponent={<EntitiesRolesDeletion />}
+        CreateItemComponent={<EntitiesCreation />}
+        OperationsComponent={<EntitiesDeletion />}
         openExports={openExports}
-        filterEntityType="Entities"
-        selectedDataEntity='responsibility'
+        filterEntityType='DataSources'
+        selectedDataEntity='labels'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -228,30 +219,12 @@ class RolesEntities extends Component {
           'label_name',
         ]}
       >
-        <QR
-          environment={QueryRendererDarkLight}
-          query={entitiesRolesCardsQuery}
-          variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ error, props }) => {
-            if (error) {
-              console.error(error);
-              toastGenericError('Request Failed');
-            }
-            return (
-              <EntitiesRolesCards
-                data={props}
-                extra={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              />
-            );
-          }}
-        />
+        <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
+            {t('Please choose from the Data Type dropdown above.')}
+          </Typography>
+        </div>
       </CyioListCards>
     );
   }
@@ -275,34 +248,34 @@ class RolesEntities extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     const dataColumns = {
-      role_identifier: {
+      type: {
         label: 'Type',
-        width: '14%',
+        width: '17%',
         isSortable: true,
       },
       name: {
         label: 'Name',
         width: '16%',
-        isSortable: true,
+        isSortable: false,
       },
       author: {
         label: 'Author',
         width: '16%',
-        isSortable: false,
-      },
-      label_name: {
-        label: 'Labels',
-        width: '20%',
         isSortable: true,
       },
-      created: {
+      labels: {
+        label: 'Labels',
+        width: '16%',
+        isSortable: true,
+      },
+      creation_date: {
         label: 'Creation Date',
-        width: '12%',
+        width: '15%',
         isSortable: true,
       },
       marking: {
         label: 'Marking',
-        width: '12%',
+        width: '13%',
         isSortable: true,
       },
     };
@@ -318,15 +291,15 @@ class RolesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleRoleCreation.bind(this)}
+        handleNewCreation={this.handleRiskCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<EntitiesRolesCreation />}
-        OperationsComponent={<EntitiesRolesDeletion />}
+        CreateItemComponent={<EntitiesCreation />}
+        OperationsComponent={<EntitiesDeletion />}
         openExports={openExports}
         selectAll={selectAll}
-        filterEntityType='Entities'
-        selectedDataEntity='responsibility'
+        filterEntityType='DataSources'
+        selectedDataEntity='labels'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -337,30 +310,12 @@ class RolesEntities extends Component {
           'label_name',
         ]}
       >
-        <QR
-          environment={QueryRendererDarkLight}
-          query={entitiesRolesLinesQuery}
-          variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ error, props }) => {
-            if (error) {
-              console.error(error);
-              toastGenericError('Request Failed');
-            }
-            return (
-              <EntitiesRolesLines
-                data={props}
-                selectAll={selectAll}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                paginationOptions={paginationOptions}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
-        />
+        <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
+            {t('Please choose from the Data Type dropdown above.')}
+          </Typography>
+        </div>
       </CyioListLines>
     );
   }
@@ -377,7 +332,8 @@ class RolesEntities extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderedBy: sortBy,
+      // orderedBy: sortBy,
+      orderedBy: 'name',
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
@@ -385,28 +341,22 @@ class RolesEntities extends Component {
     const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && this.renderCards(paginationOptions)}
-        {view === 'lines' && this.renderLines(paginationOptions)}
-        <EntitiesRolesCreation
-          openDataCreation={openDataCreation}
-          handleRoleCreation={this.handleRoleCreation.bind(this)}
-          history={this.props.history}
-        />
-        <RoleEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          responsibilityId={this.state.selectedRoleId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {view === 'cards' && (!openDataCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' && (!openDataCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
+        {((openDataCreation || location.openNewCreation) && (
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <EntitiesCreation paginationOptions={paginationOptions} history={this.props.history} />
+          // </Security>
+        ))}
       </div>
     );
   }
 }
 
-RolesEntities.propTypes = {
+LabelsDataSource.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(RolesEntities);
+export default R.compose(inject18n, withRouter)(LabelsDataSource);

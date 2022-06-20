@@ -64,21 +64,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const DataSourceRolesDeletionMutation = graphql`
-  mutation DataSourceRolesDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-const DataSourceRolesDeletionDarkLightMutation = graphql`
-  mutation DataSourceRolesDeletionDarkLightMutation($id: ID!) {
+const DataSourceLabelsDeletionDarkLightMutation = graphql`
+  mutation DataSourceLabelsDeletionDarkLightMutation($id: ID!) {
   deleteOscalRole(id: $id)
 }
 `;
 
-class DataSourceRolesDeletion extends Component {
+class DataSourceLabelsDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -118,22 +110,22 @@ class DataSourceRolesDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: DataSourceRolesDeletionDarkLightMutation,
+      mutation: DataSourceLabelsDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/data/entities/responsibility');
+        // this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to delete responsibility');
+        toastGenericError('Failed to delete label');
       },
     });
     // commitMutation({
-    //   mutation: DataSourceRolesDeletionDarkLightMutation,
+    //   mutation: DataSourceLabelsDeletionDarkLightMutation,
     //   variables: {
     //     id: this.props.id,
     //   },
@@ -178,6 +170,7 @@ class DataSourceRolesDeletion extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
+          onClose={this.handleCloseDelete.bind(this)}
         >
             <DialogContent>
               <Typography style={{
@@ -185,7 +178,7 @@ class DataSourceRolesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Responsibility?')}
+                {t('Are you sure you’d like to delete this Label?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
@@ -218,7 +211,7 @@ class DataSourceRolesDeletion extends Component {
   }
 }
 
-DataSourceRolesDeletion.propTypes = {
+DataSourceLabelsDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -230,4 +223,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(DataSourceRolesDeletion);
+)(DataSourceLabelsDeletion);

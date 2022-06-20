@@ -11,7 +11,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
-import RoleEntityEditionContainer from './RoleEntityEditionContainer';
+import LabelEntityEditionContainer from './LabelEntityEditionContainer';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
@@ -55,16 +55,12 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const roleEntityEditionQuery = graphql`
-  query RoleEntityEditionQuery($id: ID!) {
-    oscalRole(id: $id) {
+const labelEntityEditionQuery = graphql`
+  query LabelEntityEditionQuery($id: ID!) {
+    cyioLabel(id: $id) {
       id
-      entity_type
-      created
-      modified
-      role_identifier
       name
-      short_name
+      color
       description
     }
   }
@@ -80,24 +76,25 @@ class RoleEntityEdition extends Component {
 
   render() {
     const {
-      classes, t, displayEdit, handleDisplayEdit, history, responsibilityId,
+      classes, t, displayEdit, handleDisplayEdit, history, labelId,
     } = this.props;
     return (
       <div className={classes.container}>
         <QR
           environment={QueryRendererDarkLight}
-          query={roleEntityEditionQuery}
-          variables={{ id: responsibilityId }}
+          query={labelEntityEditionQuery}
+          variables={{ id: labelId }}
           render={({ error, props, retry }) => {
             if (error) {
               console.error(error);
-              toastGenericError('Failed to edit Responsibility');
+              toastGenericError('Failed to edit Label');
             }
             if (props) {
               return (
-                <RoleEntityEditionContainer
+                <LabelEntityEditionContainer
                   displayEdit={displayEdit}
                   history={history}
+                  label={props.cyioLabel}
                   handleDisplayEdit={handleDisplayEdit}
                 />
               );
@@ -111,7 +108,7 @@ class RoleEntityEdition extends Component {
 }
 
 RoleEntityEdition.propTypes = {
-  roldId: PropTypes.string,
+  labelId: PropTypes.string,
   displayEdit: PropTypes.bool,
   handleDisplayEdit: PropTypes.func,
   classes: PropTypes.object,

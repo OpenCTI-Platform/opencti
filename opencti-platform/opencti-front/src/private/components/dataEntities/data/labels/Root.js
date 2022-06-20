@@ -13,14 +13,14 @@ import {
   requestSubscription,
 } from '../../../../../relay/environment';
 import TopBar from '../../../nav/TopBar';
-import EntityRole from './EntityRole';
+import EntityRole from './EntityLabel';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { toastGenericError } from "../../../../../utils/bakedToast";
 
 const subscription = graphql`
-  subscription RootRoleSubscription($id: ID!) {
+  subscription RootLabelsSubscription($id: ID!) {
     stixDomainObject(id: $id) {
       # ... on ThreatActor {
         # ...Device_device
@@ -33,27 +33,27 @@ const subscription = graphql`
   }
 `;
 
-const roleQuery = graphql`
-  query RootRoleQuery($id: ID!) {
-    oscalRole(id: $id) {
+const labelQuery = graphql`
+  query RootLabelQuery($id: ID!) {
+    cyioLabel(id: $id) {
       id
       name
-      ...EntityRole_role
+      ...EntityLabel_label
     }
   }
 `;
 
-class RootRole extends Component {
+class RootLabel extends Component {
   constructor(props) {
     super(props);
     const {
       match: {
-        params: { responsibilityId },
+        params: { labelId },
       },
     } = props;
     this.sub = requestSubscription({
       subscription,
-      variables: { id: responsibilityId },
+      variables: { id: labelId },
     });
   }
 
@@ -65,14 +65,14 @@ class RootRole extends Component {
     const {
       me,
       match: {
-        params: { responsibilityId },
+        params: { labelId },
       },
     } = this.props;
-    const link = `/data/entities/responsibility/${responsibilityId}/knowledge`;
+    const link = `/data/entities/labels/${labelId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
-        <Route path="/data/entities/responsibility/:responsibilityId/knowledge">
+        <Route path="/data/entities/labels/:labelId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -94,25 +94,25 @@ class RootRole extends Component {
         {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
-          query={roleQuery}
-          variables={{ id: responsibilityId }}
+          query={labelQuery}
+          variables={{ id: labelId }}
           render={({ error, props, retry }) => {
             if (error) {
               console.error(error);
-              toastGenericError('Failed to get responsiblity data');
+              toastGenericError('Failed to get label data');
             }
             if (props) {
-              if (props.oscalRole) {
+              if (props.cyioLabel) {
                 return (
                   <Switch>
                     <Route
                       exact
-                      path="/data/entities/responsibility/:responsibilityId"
+                      path="/data/entities/labels/:labelId"
                       render={(routeProps) => (
                         <EntityRole
                           {...routeProps}
                           refreshQuery={retry}
-                          role={props.oscalRole}
+                          label={props.cyioLabel}
                         />
                       )}
                     />
@@ -129,10 +129,10 @@ class RootRole extends Component {
   }
 }
 
-RootRole.propTypes = {
+RootLabel.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
 };
 
-export default withRouter(RootRole);
+export default withRouter(RootLabel);

@@ -11,6 +11,7 @@ import {
   Typography,
   Grid,
   Checkbox,
+  Chip,
 } from '@material-ui/core';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -28,9 +29,9 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../../common/stix_domain_objects/StixDomainObjectBookmark';
+import { hexToRGB } from '../../../../../utils/Colors';
 import { truncate } from '../../../../../utils/String';
-import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
-import EntitiesRolesPopover from './EntitiesRolesPopover';
+import EntitiesLabelsPopover from './EntitiesLabelsPopover';
 
 const styles = (theme) => ({
   card: {
@@ -107,7 +108,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityRoleCardComponent extends Component {
+class EntityLabelCardComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -140,7 +141,7 @@ class EntityRoleCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           TouchRippleProps={this.state.openMenu && { classes: { root: classes.buttonRipple } }}
-          to={`/data/entities/responsibility/${node?.id}`}
+          to={`/data/entities/labels/${node?.id}`}
         >
           <CardContent className={classes.content}>
             <Grid
@@ -155,14 +156,14 @@ class EntityRoleCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {node.entity_type && node.entity_type}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <Grid
                 item={true}
                 onClick={(event) => event.preventDefault()}
                 style={{ display: 'flex' }}
               >
-                <EntitiesRolesPopover
+                <EntitiesLabelsPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
                   history={history}
                   node={node}
@@ -184,7 +185,7 @@ class EntityRoleCardComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <Typography>
-                  {node?.name && node?.name}
+                  {node.name && t(node.name)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -212,8 +213,8 @@ class EntityRoleCardComponent extends Component {
                   {t('Marking')}
                 </Typography>
                 <Typography>
-                  {node?.parent_types
-                    && (node?.parent_types)}
+                  {/* {node?.parent_types
+                    && (node?.parent_types)} */}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -223,28 +224,20 @@ class EntityRoleCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Author')}
+                  {t('Color')}
                 </Typography>
-                {/* TODO: Get Author Name for Display */}
-                {/* <Typography>
-                  {t(node?.name)}
-                </Typography> */}
-              </Grid>
-            </Grid>
-            <Grid container={true} >
-              <Grid item={true} xs={12} className={classes.body}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  style={{ marginTop: '13px' }}
-                  gutterBottom={true}
-                >
-                  {t('Labels')}
+                <Typography>
+                  <Chip
+                    variant="outlined"
+                    label={truncate(node.name, 10)}
+                    style={{
+                      height: '20px',
+                      color: node.color,
+                      borderColor: node.color,
+                      backgroundColor: hexToRGB(node.color),
+                    }}
+                  />
                 </Typography>
-                <CyioCoreObjectLabels
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                />
               </Grid>
             </Grid>
           </CardContent>
@@ -254,7 +247,7 @@ class EntityRoleCardComponent extends Component {
   }
 }
 
-EntityRoleCardComponent.propTypes = {
+EntityLabelCardComponent.propTypes = {
   node: PropTypes.object,
   bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
@@ -264,59 +257,31 @@ EntityRoleCardComponent.propTypes = {
   onBookmarkClick: PropTypes.func,
 };
 
-const EntityRoleCardFragment = createFragmentContainer(
-  EntityRoleCardComponent,
+const EntityLabelCardFragment = createFragmentContainer(
+  EntityLabelCardComponent,
   {
     node: graphql`
-      fragment EntityRoleCard_node on OscalRole {
+      fragment EntityLabelCard_node on CyioLabel {
         __typename
         id
-        description
-        short_name
         name
-        role_identifier
-        entity_type
+        color
         created
         modified
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
+        description
+        standard_id
+        entity_type
       }
     `,
   },
 );
 
-export const EntityRoleCard = compose(
+export const EntityLabelCard = compose(
   inject18n,
   withStyles(styles),
-)(EntityRoleCardFragment);
+)(EntityLabelCardFragment);
 
-class EntityRoleCardDummyComponent extends Component {
+class EntityLabelCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
@@ -381,11 +346,11 @@ class EntityRoleCardDummyComponent extends Component {
   }
 }
 
-EntityRoleCardDummyComponent.propTypes = {
+EntityLabelCardDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const EntityRoleCardDummy = compose(
+export const EntityLabelCardDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityRoleCardDummyComponent);
+)(EntityLabelCardDummyComponent);

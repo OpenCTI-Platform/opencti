@@ -114,7 +114,7 @@ class EntitiesRolesCreation extends Component {
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to create role');
+        toastGenericError('Failed to create responsibility');
       },
     });
     // commitMutation({
@@ -184,7 +184,7 @@ class EntitiesRolesCreation extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Responsibility')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>

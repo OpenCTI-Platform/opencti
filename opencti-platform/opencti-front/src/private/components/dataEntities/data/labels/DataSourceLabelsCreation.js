@@ -89,8 +89,8 @@ const styles = (theme) => ({
   },
 });
 
-const dataSourceRolesCreationMutation = graphql`
-  mutation DataSourceRolesCreationMutation($input: OscalRoleAddInput) {
+const dataSourceLabelsCreationMutation = graphql`
+  mutation DataSourceLabelsCreationMutation($input: OscalRoleAddInput) {
     createOscalRole (input: $input) {
       id
     }
@@ -104,7 +104,7 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-class DataSourceRolesCreation extends Component {
+class DataSourceLabelsCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -137,7 +137,7 @@ class DataSourceRolesCreation extends Component {
       R.assoc('name', values.name),
     )(adaptedValues);
     CM(environmentDarkLight, {
-      mutation: dataSourceRolesCreationMutation,
+      mutation: dataSourceLabelsCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -150,11 +150,11 @@ class DataSourceRolesCreation extends Component {
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to create responsibility');
+        toastGenericError('Failed to create label');
       },
     });
     // commitMutation({
-    //   mutation: dataSourceRolesCreationMutation,
+    //   mutation: dataSourceLabelsCreationMutation,
     //   variables: {
     //     input: values,
     //   },
@@ -310,7 +310,7 @@ class DataSourceRolesCreation extends Component {
   }
 }
 
-DataSourceRolesCreation.propTypes = {
+DataSourceLabelsCreation.propTypes = {
   riskId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -320,4 +320,4 @@ DataSourceRolesCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(DataSourceRolesCreation);
+)(DataSourceLabelsCreation);

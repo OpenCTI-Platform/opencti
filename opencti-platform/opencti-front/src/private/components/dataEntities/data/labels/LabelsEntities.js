@@ -14,19 +14,19 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesRolesCards, {
-  entitiesRolesCardsQuery,
-} from './EntitiesRolesCards';
-import EntitiesRolesLines, {
-  entitiesRolesLinesQuery,
-} from './EntitiesRolesLines';
-import EntitiesRolesCreation from './EntitiesRolesCreation';
+import EntitiesLabelsCards, {
+  entitiesLabelsCardsQuery,
+} from './EntitiesLabelsCards';
+import EntitiesLabelsLines, {
+  entitiesLabelsLinesQuery,
+} from './EntitiesLabelsLines';
+import EntitiesLabelsCreation from './EntitiesLabelsCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
-import EntitiesRolesDeletion from './EntitiesRolesDeletion';
+import EntitiesLabelsDeletion from './EntitiesLabelsDeletion';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
-import RoleEntityEdition from './RoleEntityEdition';
+import LabelEntityEdition from './LabelEntityEdition';
 
 class RolesEntities extends Component {
   constructor(props) {
@@ -34,7 +34,7 @@ class RolesEntities extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-roles',
+      'view-labels',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -48,7 +48,7 @@ class RolesEntities extends Component {
       selectAll: false,
       openDataCreation: false,
       displayEdit: false,
-      selectedRoleId: '',
+      selectedLabelId: '',
     };
   }
 
@@ -57,7 +57,7 @@ class RolesEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-roles',
+      'view-labels',
       this.state,
     );
   }
@@ -86,20 +86,20 @@ class RolesEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleRoleCreation() {
+  handleLabelCreation() {
     this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/responsibility');
+    this.props.history.push('/data/entities/labels');
   }
 
   handleDisplayEdit(selectedElements) {
-    let responsibilityId = '';
+    let labelId = '';
     if (selectedElements) {
-      responsibilityId = (Object.entries(selectedElements)[0][1])?.id;
+      labelId = (Object.entries(selectedElements)[0][1])?.id;
     }
-    this.setState({ displayEdit: !this.state.displayEdit, selectedRoleId: responsibilityId });
+    this.setState({ displayEdit: !this.state.displayEdit, selectedLabelId: labelId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -185,11 +185,8 @@ class RolesEntities extends Component {
       name: {
         label: 'Name',
       },
-      author: {
-        label: 'Author',
-      },
-      labels: {
-        label: 'Labels',
+      color: {
+        label: 'Color',
       },
       creation_date: {
         label: 'Creation Date',
@@ -209,15 +206,15 @@ class RolesEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleRoleCreation.bind(this)}
+        handleNewCreation={this.handleLabelCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<EntitiesRolesCreation />}
-        OperationsComponent={<EntitiesRolesDeletion />}
+        CreateItemComponent={<EntitiesLabelsCreation />}
+        OperationsComponent={<EntitiesLabelsDeletion />}
         openExports={openExports}
         filterEntityType="Entities"
-        selectedDataEntity='responsibility'
+        selectedDataEntity='labels'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -230,7 +227,7 @@ class RolesEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesRolesCardsQuery}
+          query={entitiesLabelsCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -238,7 +235,7 @@ class RolesEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesRolesCards
+              <EntitiesLabelsCards
                 data={props}
                 extra={props}
                 selectAll={selectAll}
@@ -275,34 +272,29 @@ class RolesEntities extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     const dataColumns = {
-      role_identifier: {
+      type: {
         label: 'Type',
-        width: '14%',
+        width: '18%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '16%',
+        width: '30%',
         isSortable: true,
       },
-      author: {
-        label: 'Author',
-        width: '16%',
+      color: {
+        label: 'Color',
+        width: '14%',
         isSortable: false,
-      },
-      label_name: {
-        label: 'Labels',
-        width: '20%',
-        isSortable: true,
       },
       created: {
         label: 'Creation Date',
-        width: '12%',
+        width: '15%',
         isSortable: true,
       },
       marking: {
         label: 'Marking',
-        width: '12%',
+        width: '15%',
         isSortable: true,
       },
     };
@@ -318,15 +310,15 @@ class RolesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleRoleCreation.bind(this)}
+        handleNewCreation={this.handleLabelCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<EntitiesRolesCreation />}
-        OperationsComponent={<EntitiesRolesDeletion />}
+        CreateItemComponent={<EntitiesLabelsCreation />}
+        OperationsComponent={<EntitiesLabelsDeletion />}
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='Entities'
-        selectedDataEntity='responsibility'
+        selectedDataEntity='labels'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -339,7 +331,7 @@ class RolesEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesRolesLinesQuery}
+          query={entitiesLabelsLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -347,7 +339,7 @@ class RolesEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesRolesLines
+              <EntitiesLabelsLines
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
@@ -387,15 +379,15 @@ class RolesEntities extends Component {
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
         {view === 'lines' && this.renderLines(paginationOptions)}
-        <EntitiesRolesCreation
+        <EntitiesLabelsCreation
           openDataCreation={openDataCreation}
-          handleRoleCreation={this.handleRoleCreation.bind(this)}
+          handleLabelCreation={this.handleLabelCreation.bind(this)}
           history={this.props.history}
         />
-        <RoleEntityEdition
+        <LabelEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}
-          responsibilityId={this.state.selectedRoleId}
+          labelId={this.state.selectedLabelId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </div>

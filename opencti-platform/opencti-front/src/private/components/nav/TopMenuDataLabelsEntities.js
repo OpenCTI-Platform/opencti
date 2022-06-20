@@ -28,22 +28,22 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuDataRolesEntities extends Component {
+class TopMenuDataLabelsEntities extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
       <div>
         <Button
           component={Link}
-          to="/data/entities/responsibility"
+          to="/data/entities/labels"
           variant={
-            location.pathname.includes('/data/entities/responsibility')
+            location.pathname.includes('/data/entities/labels')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/data/entities/responsibility')
+            location.pathname.includes('/data/entities/labels')
               ? 'secondary'
               : 'inherit'
           }
@@ -53,15 +53,15 @@ class TopMenuDataRolesEntities extends Component {
         </Button>
         <Button
           component={Link}
-          to="/data/data source/responsibility"
+          to="/data/data source/labels"
           variant={
-            location.pathname.includes('/data/data source/responsibility')
+            location.pathname.includes('/data/data source/labels')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/data/data source/responsibility')
+            location.pathname.includes('/data/data source/labels')
               ? 'secondary'
               : 'inherit'
           }
@@ -74,7 +74,7 @@ class TopMenuDataRolesEntities extends Component {
   }
 }
 
-TopMenuDataRolesEntities.propTypes = {
+TopMenuDataLabelsEntities.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -85,4 +85,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuDataRolesEntities);
+)(TopMenuDataLabelsEntities);

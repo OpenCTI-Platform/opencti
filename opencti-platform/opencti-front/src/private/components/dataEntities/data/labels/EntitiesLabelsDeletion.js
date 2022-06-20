@@ -13,8 +13,6 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
-import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
@@ -64,21 +62,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const DataSourceRolesDeletionMutation = graphql`
-  mutation DataSourceRolesDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-const DataSourceRolesDeletionDarkLightMutation = graphql`
-  mutation DataSourceRolesDeletionDarkLightMutation($id: ID!) {
-  deleteOscalRole(id: $id)
+const EntitiesLabelsDeletionDarkLightMutation = graphql`
+  mutation EntitiesLabelsDeletionDarkLightMutation($id: ID!) {
+  deleteCyioLabel(id: $id)
 }
 `;
 
-class DataSourceRolesDeletion extends Component {
+class EntitiesLabelsDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -118,22 +108,23 @@ class DataSourceRolesDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: DataSourceRolesDeletionDarkLightMutation,
+      mutation: EntitiesLabelsDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/data/entities/responsibility');
+        this.handleCloseDelete();
+        this.props.history.push('/data/entities/labels');
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to delete responsibility');
+        toastGenericError('Failed to delete label');
       },
     });
     // commitMutation({
-    //   mutation: DataSourceRolesDeletionDarkLightMutation,
+    //   mutation: EntitiesLabelsDeletionDarkLightMutation,
     //   variables: {
     //     id: this.props.id,
     //   },
@@ -166,7 +157,7 @@ class DataSourceRolesDeletion extends Component {
               variant="contained"
               onClick={this.handleOpenDelete.bind(this)}
               className={classes.iconButton}
-              disabled={(Boolean(!id) && Boolean(!isAllselected)) || true}
+              disabled={(Boolean(!id) && Boolean(!isAllselected))}
               color="primary"
               size="large"
             >
@@ -178,6 +169,7 @@ class DataSourceRolesDeletion extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
+          onClose={this.handleCloseDelete.bind(this)}
         >
             <DialogContent>
               <Typography style={{
@@ -185,7 +177,7 @@ class DataSourceRolesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Responsibility?')}
+                {t('Are you sure you’d like to delete this Label?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
@@ -218,7 +210,7 @@ class DataSourceRolesDeletion extends Component {
   }
 }
 
-DataSourceRolesDeletion.propTypes = {
+EntitiesLabelsDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -230,4 +222,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(DataSourceRolesDeletion);
+)(EntitiesLabelsDeletion);
