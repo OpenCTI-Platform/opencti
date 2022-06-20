@@ -19,7 +19,6 @@ import {
   handleErrorInForm,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import DatePickerField from '../../../../components/DatePickerField';
 import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -30,6 +29,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -101,6 +101,12 @@ const indicatorValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
+  valid_from: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  valid_until: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   x_opencti_main_observable_type: Yup.string().required(
     t('This field is required'),
   ),
@@ -291,11 +297,8 @@ class IndicatorCreation extends Component {
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   />
                   <Field
-                    component={DatePickerField}
+                    component={DateTimePickerField}
                     name="valid_from"
-                    invalidDateMessage={t(
-                      'The value must be a date (mm/dd/yyyy)',
-                    )}
                     TextFieldProps={{
                       label: t('Valid from'),
                       variant: 'standard',
@@ -304,11 +307,8 @@ class IndicatorCreation extends Component {
                     }}
                   />
                   <Field
-                    component={DatePickerField}
+                    component={DateTimePickerField}
                     name="valid_until"
-                    invalidDateMessage={t(
-                      'The value must be a date (mm/dd/yyyy)',
-                    )}
                     TextFieldProps={{
                       label: t('Valid until'),
                       variant: 'standard',

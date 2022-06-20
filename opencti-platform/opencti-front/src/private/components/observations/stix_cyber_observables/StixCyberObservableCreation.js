@@ -48,10 +48,10 @@ import {
   stixCyberObservablesLinesAttributesQuery,
   stixCyberObservablesLinesSubTypesQuery,
 } from './StixCyberObservablesLines';
-import DatePickerField from '../../../../components/DatePickerField';
 import { parse } from '../../../../utils/Time';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 export const ignoredAttributes = [
   'internal_id',
@@ -597,12 +597,10 @@ class StixCyberObservableCreation extends Component {
                         if (includes(attribute.value, dateAttributes)) {
                           return (
                             <Field
-                              component={DatePickerField}
+                              component={DateTimePickerField}
                               key={attribute.value}
                               name={attribute.value}
-                              invalidDateMessage={t(
-                                'The value must be a date (mm/dd/yyyy)',
-                              )}
+                              withSeconds={true}
                               TextFieldProps={{
                                 label: attribute.value,
                                 variant: 'standard',

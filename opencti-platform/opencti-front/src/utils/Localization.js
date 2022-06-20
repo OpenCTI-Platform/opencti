@@ -274,8 +274,12 @@ const i18n = {
       'The value must be an URL': 'La valeur doit être une URL',
       'Starting synchronization (empty = from start)':
         'Début de synchronisation (vide = début)',
-      'The value must be a date (mm/dd/yyyy)':
+      'The value must be a date (yyyy-MM-dd)':
         'La valeur doit être une date (dd/mm/aaaaa)',
+      'The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)':
+        'La valeur doit être une date et un temps (dd/mm/aaaaa HH:mm)',
+      'The value must be a datetime with seconds (yyyy-MM-dd hh:mm:ss (a|p)m)':
+        'La valeur doit être une date et un temps avec des secondes (dd/mm/aaaaa HH:mm:ss)',
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'No description of this usage': 'Aucune description de cet usage',
@@ -1662,7 +1666,11 @@ const i18n = {
       'The value must be an URL': '该值必须是一个URL',
       'Starting synchronization (empty = from start)':
         '開始同步(空的 = 從一開始)',
-      'The value must be a date (mm/dd/yyyy)': '该值必须是一个日期(mm/dd/yyyy)',
+      'The value must be a date (yyyy-MM-dd)': '该值必须是一个日期(yyyy-MM-dd)',
+      'The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)':
+        '该值必须是一个日期(yyyy-MM-dd hh:mm a)',
+      'The value must be a datetime with seconds (yyyy-MM-dd hh:mm:ss (a|p)m)':
+        '该值必须是一个日期(yyyy-MM-dd hh:mm:ss a)',
       'The values do not match': '该值不匹配',
       'No available options': '没有可用的选项',
       'No description of this usage': '没有关于此用法的描述',

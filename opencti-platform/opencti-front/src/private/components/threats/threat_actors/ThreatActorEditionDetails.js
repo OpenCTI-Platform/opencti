@@ -10,10 +10,10 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { dateFormat, parse } from '../../../../utils/Time';
-import DatePickerField from '../../../../components/DatePickerField';
+import { buildDate, parse } from '../../../../utils/Time';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -75,10 +75,10 @@ const threatActorEditionDetailsFocus = graphql`
 const threatActorValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   last_seen: Yup.date()
     .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   sophistication: Yup.string().nullable(),
   resource_level: Yup.string().nullable(),
   roles: Yup.array().nullable(),
@@ -147,7 +147,7 @@ class ThreatActorEditionDetailsComponent extends Component {
     if (!this.props.enableReferences) {
       let finalValue = value;
       if (name === 'goals') {
-        finalValue = R.split('\n', value);
+        finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
       threatActorValidation(this.props.t)
         .validateAt(name, { [name]: value })
@@ -167,8 +167,8 @@ class ThreatActorEditionDetailsComponent extends Component {
   render() {
     const { t, threatActor, context, enableReferences } = this.props;
     const initialValues = R.pipe(
-      R.assoc('first_seen', dateFormat(threatActor.first_seen)),
-      R.assoc('last_seen', dateFormat(threatActor.last_seen)),
+      R.assoc('first_seen', buildDate(threatActor.first_seen)),
+      R.assoc('last_seen', buildDate(threatActor.last_seen)),
       R.assoc(
         'secondary_motivations',
         threatActor.secondary_motivations
@@ -214,11 +214,8 @@ class ThreatActorEditionDetailsComponent extends Component {
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
-                  component={DatePickerField}
+                  component={DateTimePickerField}
                   name="first_seen"
-                  invalidDateMessage={t(
-                    'The value must be a date (mm/dd/yyyy)',
-                  )}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   TextFieldProps={{
@@ -234,11 +231,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                   }}
                 />
                 <Field
-                  component={DatePickerField}
+                  component={DateTimePickerField}
                   name="last_seen"
-                  invalidDateMessage={t(
-                    'The value must be a date (mm/dd/yyyy)',
-                  )}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   TextFieldProps={{

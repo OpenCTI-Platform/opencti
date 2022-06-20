@@ -15,16 +15,16 @@ import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Close, ArrowRightAlt } from '@mui/icons-material';
 import { fetchQuery, commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import { resolveStixCyberObservableRelationshipsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/SelectField';
-import DatePickerField from '../../../../components/DatePickerField';
 import { truncate } from '../../../../utils/String';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -258,11 +258,11 @@ const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
   start_time: Yup.date()
     .nullable()
     .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   stop_time: Yup.date()
     .nullable()
     .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
 });
 
 class StixCyberObservableRelationshipCreation extends Component {
@@ -382,8 +382,8 @@ class StixCyberObservableRelationshipCreation extends Component {
       ? R.head(relationshipTypes)
       : '';
     const defaultConfidence = confidence || 15;
-    const defaultStartTime = startTime || null;
-    const defaultEndTime = stopTime || null;
+    const defaultStartTime = !isNone(startTime) ? startTime : null;
+    const defaultEndTime = !isNone(stopTime) ? stopTime : null;
     const initialValues = {
       relationship_type: defaultRelationshipType,
       confidence: defaultConfidence,
@@ -545,9 +545,8 @@ class StixCyberObservableRelationshipCreation extends Component {
                 containerstyle={{ marginTop: 20, width: '100%' }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="start_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Start time'),
                   variant: 'standard',
@@ -556,9 +555,8 @@ class StixCyberObservableRelationshipCreation extends Component {
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="stop_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Stop time'),
                   variant: 'standard',

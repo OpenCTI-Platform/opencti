@@ -11,7 +11,10 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import { ignoredAttributes } from './StixCyberObservableCreation';
+import {
+  dateAttributes,
+  ignoredAttributes,
+} from './StixCyberObservableCreation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 
@@ -27,7 +30,7 @@ const styles = () => ({
 
 class StixCyberObservableDetailsComponent extends Component {
   render() {
-    const { t, b, classes, stixCyberObservable } = this.props;
+    const { t, b, fldt, classes, stixCyberObservable } = this.props;
     const observableAttributes = pipe(
       dissoc('id'),
       dissoc('entity_type'),
@@ -87,6 +90,9 @@ class StixCyberObservableDetailsComponent extends Component {
                 ));
               }
               let finalValue = observableAttribute.value;
+              if (includes(observableAttribute.key, dateAttributes)) {
+                finalValue = fldt(finalValue);
+              }
               if (finalValue === true) {
                 finalValue = 'TRUE';
               } else if (finalValue === false) {

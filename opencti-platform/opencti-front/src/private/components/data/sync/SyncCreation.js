@@ -16,7 +16,8 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
-import DatePickerField from '../../../../components/DatePickerField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { dayStartDate } from '../../../../utils/Time';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -83,7 +84,9 @@ const syncCreationValidation = (t) => Yup.object().shape({
   uri: Yup.string().required(t('This field is required')),
   token: Yup.string().required(t('This field is required')),
   stream_id: Yup.string().required(t('This field is required')),
-  current_state: Yup.date().nullable().typeError(t('The value must be a date (YYYY-MM-DD)')),
+  current_state: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   listen_deletion: Yup.bool(),
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
@@ -195,7 +198,7 @@ const SyncCreation = (props) => {
               name: '',
               uri: '',
               token: '',
-              current_state: null,
+              current_state: dayStartDate(),
               stream_id: 'live',
               no_dependencies: false,
               listen_deletion: true,
@@ -239,11 +242,8 @@ const SyncCreation = (props) => {
                   style={{ marginTop: 20 }}
                 />
                 <Field
-                  component={DatePickerField}
+                  component={DateTimePickerField}
                   name="current_state"
-                  invalidDateMessage={t(
-                    'The value must be a date (mm/dd/yyyy)',
-                  )}
                   TextFieldProps={{
                     label: t('Starting synchronization (empty = from start)'),
                     variant: 'standard',
@@ -256,17 +256,20 @@ const SyncCreation = (props) => {
                   type="checkbox"
                   name="listen_deletion"
                   containerstyle={{ marginTop: 20 }}
-                  label={t('Take deletions into account')}/>
+                  label={t('Take deletions into account')}
+                />
                 <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="no_dependencies"
-                    label={t('Avoid dependencies resolution')}/>
+                  component={SwitchField}
+                  type="checkbox"
+                  name="no_dependencies"
+                  label={t('Avoid dependencies resolution')}
+                />
                 <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="ssl_verify"
-                    label={t('Verify SSL certificate')}/>
+                  component={SwitchField}
+                  type="checkbox"
+                  name="ssl_verify"
+                  label={t('Verify SSL certificate')}
+                />
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import DatePicker from '@mui/lab/DatePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Drawer from '@mui/material/Drawer';
 import Grid from '@mui/material/Grid';
 import InputLabel from '@mui/material/InputLabel';

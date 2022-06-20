@@ -37,7 +37,7 @@ const styles = (theme) => ({
 
 class ThreatActorDetailsComponent extends Component {
   render() {
-    const { t, classes, threatActor, fd } = this.props;
+    const { t, classes, threatActor, fldt } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -140,7 +140,7 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('First seen')}
               </Typography>
-              {fd(threatActor.first_seen)}
+              {fldt(threatActor.first_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -148,7 +148,7 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Last seen')}
               </Typography>
-              {fd(threatActor.last_seen)}
+              {fldt(threatActor.last_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}

@@ -41,7 +41,7 @@ const styles = (theme) => ({
 
 class IndicatorDetailsComponent extends Component {
   render() {
-    const { t, fld, classes, indicator } = this.props;
+    const { t, fldt, classes, indicator } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -63,7 +63,7 @@ class IndicatorDetailsComponent extends Component {
               </Typography>
               <Chip
                 classes={{ root: classes.chip }}
-                label={fld(indicator.valid_from)}
+                label={fldt(indicator.valid_from)}
               />
               <Typography
                 variant="h3"
@@ -103,7 +103,7 @@ class IndicatorDetailsComponent extends Component {
               </Typography>
               <Chip
                 classes={{ root: classes.chip }}
-                label={fld(indicator.valid_until)}
+                label={fldt(indicator.valid_until)}
               />
               <Typography
                 variant="h3"

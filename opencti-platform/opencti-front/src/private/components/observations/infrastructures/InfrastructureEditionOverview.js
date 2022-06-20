@@ -3,16 +3,6 @@ import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -25,8 +15,13 @@ import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
+import { buildDate } from '../../../../utils/Time';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -34,7 +29,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -118,10 +112,10 @@ const infrastructureValidation = (t) => Yup.object().shape({
   infrastructure_types: Yup.array().nullable(),
   first_seen: Yup.date()
     .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   last_seen: Yup.date()
     .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   references: Yup.array().required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
 });
@@ -172,35 +166,33 @@ class InfrastructureEditionOverviewComponent extends Component {
 
   handleChangeObjectMarking(name, values) {
     const { infrastructure } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const currentMarkingDefinitions = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(infrastructure);
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
+    const added = R.difference(values, currentMarkingDefinitions);
+    const removed = R.difference(currentMarkingDefinitions, values);
     if (added.length > 0) {
       commitMutation({
         mutation: infrastructureMutationRelationAdd,
         variables: {
           id: this.props.infrastructure.id,
           input: {
-            toId: head(added).value,
+            toId: R.head(added).value,
             relationship_type: 'object-marking',
           },
         },
       });
     }
-
     if (removed.length > 0) {
       commitMutation({
         mutation: infrastructureMutationRelationDelete,
         variables: {
           id: this.props.infrastructure.id,
-          toId: head(removed).value,
+          toId: R.head(removed).value,
           relationship_type: 'object-marking',
         },
       });
@@ -217,10 +209,8 @@ class InfrastructureEditionOverviewComponent extends Component {
           value: n.node.id,
         })),
       )(infrastructure);
-
       const added = R.difference(values, currentKillChainPhases);
       const removed = R.difference(currentKillChainPhases, values);
-
       if (added.length > 0) {
         commitMutation({
           mutation: infrastructureMutationRelationAdd,
@@ -252,25 +242,27 @@ class InfrastructureEditionOverviewComponent extends Component {
     const createdBy = convertCreatedBy(infrastructure);
     const objectMarking = convertMarkings(infrastructure);
     const status = convertStatus(t, infrastructure);
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
+    const killChainPhases = R.pipe(
+      R.pathOr([], ['killChainPhases', 'edges']),
+      R.map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
       })),
     )(infrastructure);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
-      assoc('objectMarking', objectMarking),
-      assoc('x_opencti_workflow_id', status),
-      assoc(
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('killChainPhases', killChainPhases),
+      R.assoc('objectMarking', objectMarking),
+      R.assoc('x_opencti_workflow_id', status),
+      R.assoc('first_seen', buildDate(infrastructure.first_seen)),
+      R.assoc('last_seen', buildDate(infrastructure.last_seen)),
+      R.assoc(
         'infrastructure_types',
         infrastructure.infrastructure_types
           ? infrastructure.infrastructure_types
           : [],
       ),
-      pick([
+      R.pick([
         'name',
         'description',
         'infrastructure_types',
@@ -331,9 +323,6 @@ class InfrastructureEditionOverviewComponent extends Component {
             <Field
               component={DateTimePickerField}
               name="first_seen"
-              invalidDateMessage={t(
-                'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m))',
-              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -349,9 +338,6 @@ class InfrastructureEditionOverviewComponent extends Component {
             <Field
               component={DateTimePickerField}
               name="last_seen"
-              invalidDateMessage={t(
-                'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m)',
-              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -377,20 +363,20 @@ class InfrastructureEditionOverviewComponent extends Component {
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
             {infrastructure.workflowEnabled && (
-                <StatusField
-                    name="x_opencti_workflow_id"
-                    type="Infrastructure"
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onChange={this.handleSubmitField.bind(this)}
-                    setFieldValue={setFieldValue}
-                    style={{ marginTop: 20 }}
-                    helpertext={
-                      <SubscriptionFocus
-                          context={context}
-                          fieldName="x_opencti_workflow_id"
-                      />
-                    }
-                />
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="Infrastructure"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
+                }
+              />
             )}
             <CreatedByField
               name="createdBy"
@@ -478,7 +464,7 @@ const InfrastructureEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(InfrastructureEditionOverview);

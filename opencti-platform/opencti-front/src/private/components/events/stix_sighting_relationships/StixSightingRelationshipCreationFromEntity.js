@@ -25,7 +25,6 @@ import { itemColor } from '../../../../utils/Colors';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
-import DatePickerField from '../../../../components/DatePickerField';
 import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
   stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
 } from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
@@ -40,6 +39,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -266,10 +266,10 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
   first_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   last_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   description: Yup.string().nullable(),
   x_opencti_negative: Yup.boolean(),
@@ -721,9 +721,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                 containerstyle={{ marginTop: 20, width: '100%' }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="first_seen"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('First seen'),
                   variant: 'standard',
@@ -732,9 +731,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="last_seen"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Last seen'),
                   variant: 'standard',

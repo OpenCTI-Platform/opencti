@@ -30,7 +30,6 @@ import {
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
-import DatePickerField from '../../../../components/DatePickerField';
 import StixCoreRelationshipCreationFromRelationStixDomainObjectsLines, {
   stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromRelationStixDomainObjectsLines';
@@ -44,6 +43,7 @@ import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -362,11 +362,11 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   start_time: Yup.date()
     .nullable()
     .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   stop_time: Yup.date()
     .nullable()
     .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   description: Yup.string().nullable(),
 });
 
@@ -789,9 +789,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 containerstyle={{ marginTop: 20, width: '100%' }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="start_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Start time'),
                   variant: 'standard',
@@ -800,9 +799,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="stop_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Stop time'),
                   variant: 'standard',

@@ -3,14 +3,16 @@ import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import { assoc, compose, pick, pipe } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import { dateFormat } from '../../../../utils/Time';
+import { buildDate, parse } from '../../../../utils/Time';
+import { adaptFieldValue } from '../../../../utils/String';
+import CommitMessage from '../../common/form/CommitMessage';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -18,7 +20,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -37,7 +38,7 @@ const styles = (theme) => ({
   },
 });
 
-const IncidentMutationFieldPatch = graphql`
+const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
@@ -50,7 +51,7 @@ const IncidentMutationFieldPatch = graphql`
   }
 `;
 
-const IncidentEditionDetailsFocus = graphql`
+const incidentEditionDetailsFocus = graphql`
   mutation IncidentEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
     incidentEdit(id: $id) {
       contextPatch(input: $input) {
@@ -60,20 +61,20 @@ const IncidentEditionDetailsFocus = graphql`
   }
 `;
 
-const IncidentValidation = (t) => Yup.object().shape({
+const incidentValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   last_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   objective: Yup.string().nullable(),
 });
 
 class IncidentEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: IncidentEditionDetailsFocus,
+      mutation: incidentEditionDetailsFocus,
       variables: {
         id: this.props.incident.id,
         input: {
@@ -83,44 +84,84 @@ class IncidentEditionDetailsComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc(
+        'first_seen',
+        values.first_seen ? parse(values.first_seen).format() : null,
+      ),
+      R.assoc(
+        'last_seen',
+        values.last_seen ? parse(values.last_seen).format() : null,
+      ),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: incidentMutationFieldPatch,
+      variables: {
+        id: this.props.campaign.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    IncidentValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: IncidentMutationFieldPatch,
-          variables: {
-            id: this.props.incident.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+    if (!this.props.enableReferences) {
+      incidentValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: incidentMutationFieldPatch,
+            variables: {
+              id: this.props.incident.id,
+              input: {
+                key: name,
+                value: value || '',
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    }
   }
 
   render() {
-    const { t, incident, context } = this.props;
+    const { t, incident, context, enableReferences } = this.props;
     const isInferred = incident.is_inferred;
-    const initialValues = pipe(
-      assoc('first_seen', dateFormat(incident.first_seen)),
-      assoc('last_seen', dateFormat(incident.last_seen)),
-      pick(['first_seen', 'last_seen', 'objective']),
+    const initialValues = R.pipe(
+      R.assoc('first_seen', buildDate(incident.first_seen)),
+      R.assoc('last_seen', buildDate(incident.last_seen)),
+      R.pick(['first_seen', 'last_seen', 'objective']),
     )(incident);
-
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={IncidentValidation(t)}
-        onSubmit={() => true}
+        validationSchema={incidentValidation(t)}
+        onSubmit={this.onSubmit.bind(this)}
       >
-        {() => (
+        {(submitForm, isSubmitting, validateForm, setFieldValue, values) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
-              component={DatePickerField}
+              component={DateTimePickerField}
               name="first_seen"
               disabled={isInferred}
-              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -133,11 +174,10 @@ class IncidentEditionDetailsComponent extends Component {
               }}
             />
             <Field
-              component={DatePickerField}
+              component={DateTimePickerField}
               name="last_seen"
               label={t('Last seen')}
               disabled={isInferred}
-              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -165,6 +205,16 @@ class IncidentEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="objective" />
               }
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
+                id={incident.id}
+              />
+            )}
           </Form>
         )}
       </Formik>
@@ -195,7 +245,7 @@ const IncidentEditionDetails = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(IncidentEditionDetails);

@@ -22,7 +22,7 @@ const styles = () => ({
 
 class IncidentDetailsComponent extends Component {
   render() {
-    const { fld, t, classes, incident } = this.props;
+    const { fldt, t, classes, incident } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -40,7 +40,7 @@ class IncidentDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('First seen')}
               </Typography>
-              {fld(incident.first_seen)}
+              {fldt(incident.first_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -48,7 +48,7 @@ class IncidentDetailsComponent extends Component {
               >
                 {t('Last seen')}
               </Typography>
-              {fld(incident.last_seen)}
+              {fldt(incident.last_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}

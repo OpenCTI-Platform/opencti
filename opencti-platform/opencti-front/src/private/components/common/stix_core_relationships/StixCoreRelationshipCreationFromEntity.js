@@ -29,7 +29,7 @@ import {
   handleErrorInForm,
   QueryRenderer,
 } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import {
@@ -39,7 +39,6 @@ import {
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
-import DatePickerField from '../../../../components/DatePickerField';
 import StixCoreRelationshipCreationFromEntityStixDomainObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromEntityStixDomainObjectsLines';
@@ -57,6 +56,7 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import ExternalReferencesField from '../form/ExternalReferencesField';
 import { defaultValue } from '../../../../utils/Graph';
 import { isNodeInConnection } from '../../../../utils/Store';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -293,11 +293,11 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   start_time: Yup.date()
     .nullable()
     .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   stop_time: Yup.date()
     .nullable()
     .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   description: Yup.string().nullable(),
 });
 
@@ -638,12 +638,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     const initialValues = {
       relationship_type: defaultRelationshipType,
       confidence: 75,
-      start_time:
-        defaultStartTime && defaultStartTime.length > 0
-          ? defaultStartTime
-          : null,
-      stop_time:
-        defaultStopTime && defaultStopTime.length > 0 ? defaultStopTime : null,
+      start_time: !isNone(defaultStartTime) ? defaultStartTime : null,
+      stop_time: !isNone(defaultStopTime) ? defaultStopTime : null,
       description: '',
       killChainPhases: [],
       externalReferences: [],
@@ -786,9 +782,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 containerstyle={{ marginTop: 20, width: '100%' }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="start_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Start time'),
                   variant: 'standard',
@@ -797,9 +792,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="stop_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Stop time'),
                   variant: 'standard',

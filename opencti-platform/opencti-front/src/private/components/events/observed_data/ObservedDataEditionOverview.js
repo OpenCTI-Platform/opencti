@@ -12,12 +12,16 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import DatePickerField from '../../../../components/DatePickerField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import StatusField from '../../common/form/StatusField';
-import { parse } from '../../../../utils/Time';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import { buildDate, parse } from '../../../../utils/Time';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -106,8 +110,12 @@ const observedDataMutationRelationDelete = graphql`
 `;
 
 const observedDataValidation = (t) => Yup.object().shape({
-  first_observed: Yup.date().required(t('This field is required')),
-  last_observed: Yup.date().required(t('This field is required')),
+  first_observed: Yup.date()
+    .required(t('This field is required'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  last_observed: Yup.date()
+    .required(t('This field is required'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   number_observed: Yup.number().required(t('This field is required')),
   confidence: Yup.number(),
   references: Yup.array().required(t('This field is required')),
@@ -146,7 +154,8 @@ class ObservedDataEditionOverviewComponent extends Component {
       variables: {
         id: this.props.observedData.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -238,6 +247,8 @@ class ObservedDataEditionOverviewComponent extends Component {
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('first_observed', buildDate(observedData.first_observed)),
+      R.assoc('last_observed', buildDate(observedData.last_observed)),
       R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'first_observed',
@@ -266,9 +277,8 @@ class ObservedDataEditionOverviewComponent extends Component {
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="first_observed"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 TextFieldProps={{
@@ -284,9 +294,8 @@ class ObservedDataEditionOverviewComponent extends Component {
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="last_observed"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 TextFieldProps={{

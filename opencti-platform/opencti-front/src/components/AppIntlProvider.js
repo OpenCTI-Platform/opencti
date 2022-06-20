@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import frLocale from 'date-fns/locale/fr';
 import enLocale from 'date-fns/locale/en-US';
 import cnLocale from 'date-fns/locale/zh-CN';
 import moment from 'moment';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
@@ -58,7 +58,7 @@ const AppIntlProvider = (props) => {
     >
       <LocalizationProvider
         dateAdapter={AdapterDateFns}
-        locale={localeMap[lang]}
+        adapterLocale={localeMap[lang]}
       >
         {children}
       </LocalizationProvider>

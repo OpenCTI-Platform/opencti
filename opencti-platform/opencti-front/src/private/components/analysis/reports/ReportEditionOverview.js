@@ -5,12 +5,11 @@ import { Formik, Field, Form } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { dateFormat, parse } from '../../../../utils/Time';
+import { buildDate, parse } from '../../../../utils/Time';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -24,7 +23,12 @@ import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   createButton: {
@@ -115,7 +119,7 @@ const reportMutationRelationDelete = graphql`
 const reportValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   published: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   report_types: Yup.array().required(t('This field is required')),
   description: Yup.string().nullable(),
@@ -158,7 +162,8 @@ class ReportEditionOverviewComponent extends Component {
       variables: {
         id: this.props.report.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -253,7 +258,7 @@ class ReportEditionOverviewComponent extends Component {
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('published', dateFormat(report.published)),
+      R.assoc('published', buildDate(report.published)),
       R.assoc('x_opencti_workflow_id', status),
       R.assoc(
         'report_types',
@@ -405,11 +410,8 @@ class ReportEditionOverviewComponent extends Component {
                           variant="edit"
                         />
                         <Field
-                          component={DatePickerField}
+                          component={DateTimePickerField}
                           name="published"
-                          invalidDateMessage={t(
-                            'The value must be a date (mm/dd/yyyy)',
-                          )}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           TextFieldProps={{

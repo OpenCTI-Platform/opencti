@@ -37,7 +37,7 @@ const styles = (theme) => ({
 
 class IntrusionSetDetailsComponent extends Component {
   render() {
-    const { t, classes, intrusionSet, fd } = this.props;
+    const { t, classes, intrusionSet, fldt } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -93,7 +93,7 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('First seen')}
               </Typography>
-              {fd(intrusionSet.first_seen)}
+              {fldt(intrusionSet.first_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -101,7 +101,7 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('Last seen')}
               </Typography>
-              {fd(intrusionSet.last_seen)}
+              {fldt(intrusionSet.last_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}

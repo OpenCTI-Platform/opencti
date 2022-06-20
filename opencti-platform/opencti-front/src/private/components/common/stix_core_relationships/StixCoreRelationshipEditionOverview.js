@@ -3,16 +3,6 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import {
-  assoc,
-  compose,
-  difference,
-  head,
-  map,
-  pathOr,
-  pick,
-  pipe,
-} from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -20,7 +10,7 @@ import Button from '@mui/material/Button';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { dateFormat } from '../../../../utils/Time';
+import { buildDate, parse } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
@@ -33,15 +23,19 @@ import {
   SubscriptionFocus,
 } from '../../../../components/Subscription';
 import SelectField from '../../../../components/SelectField';
-import DatePickerField from '../../../../components/DatePickerField';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
 import StatusField from '../form/StatusField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   header: {
@@ -165,10 +159,10 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
   start_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
   stop_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
   description: Yup.string().nullable(),
   references: Yup.array().required(t('This field is required')),
@@ -199,22 +193,22 @@ const StixCoreRelationshipEditionContainer = ({
   });
   const handleChangeKillChainPhases = (name, values) => {
     if (!enableReferences) {
-      const currentKillChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        map((n) => ({
+      const currentKillChainPhases = R.pipe(
+        R.pathOr([], ['killChainPhases', 'edges']),
+        R.map((n) => ({
           label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
           value: n.node.id,
         })),
       )(stixCoreRelationship);
-      const added = difference(values, currentKillChainPhases);
-      const removed = difference(currentKillChainPhases, values);
+      const added = R.difference(values, currentKillChainPhases);
+      const removed = R.difference(currentKillChainPhases, values);
       if (added.length > 0) {
         commitMutation({
           mutation: stixCoreRelationshipMutationRelationAdd,
           variables: {
             id: stixCoreRelationship.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'kill-chain-phase',
             },
           },
@@ -225,7 +219,7 @@ const StixCoreRelationshipEditionContainer = ({
           mutation: stixCoreRelationshipMutationRelationDelete,
           variables: {
             id: stixCoreRelationship.id,
-            toId: head(removed).value,
+            toId: R.head(removed).value,
             relationship_type: 'kill-chain-phase',
           },
         });
@@ -234,22 +228,22 @@ const StixCoreRelationshipEditionContainer = ({
   };
   const handleChangeObjectMarking = (name, values) => {
     if (!enableReferences) {
-      const currentobjectMarking = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+      const currentobjectMarking = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(stixCoreRelationship);
-      const added = difference(values, currentobjectMarking);
-      const removed = difference(currentobjectMarking, values);
+      const added = R.difference(values, currentobjectMarking);
+      const removed = R.difference(currentobjectMarking, values);
       if (added.length > 0) {
         commitMutation({
           mutation: stixCoreRelationshipMutationRelationAdd,
           variables: {
             id: stixCoreRelationship.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -260,7 +254,7 @@ const StixCoreRelationshipEditionContainer = ({
           mutation: stixCoreRelationshipMutationRelationDelete,
           variables: {
             id: stixCoreRelationship.id,
-            toId: head(removed).value,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
@@ -321,6 +315,8 @@ const StixCoreRelationshipEditionContainer = ({
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('start_time', parse(values.start_time).format()),
+      R.assoc('stop_time', parse(values.stop_time).format()),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -333,7 +329,8 @@ const StixCoreRelationshipEditionContainer = ({
       variables: {
         id: stixCoreRelationship.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -346,21 +343,21 @@ const StixCoreRelationshipEditionContainer = ({
   const createdBy = convertCreatedBy(stixCoreRelationship);
   const objectMarking = convertMarkings(stixCoreRelationship);
   const status = convertStatus(t, stixCoreRelationship);
-  const killChainPhases = pipe(
-    pathOr([], ['killChainPhases', 'edges']),
-    map((n) => ({
+  const killChainPhases = R.pipe(
+    R.pathOr([], ['killChainPhases', 'edges']),
+    R.map((n) => ({
       label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
       value: n.node.id,
     })),
   )(stixCoreRelationship);
-  const initialValues = pipe(
-    assoc('start_time', dateFormat(stixCoreRelationship.start_time)),
-    assoc('stop_time', dateFormat(stixCoreRelationship.stop_time)),
-    assoc('createdBy', createdBy),
-    assoc('killChainPhases', killChainPhases),
-    assoc('objectMarking', objectMarking),
-    assoc('x_opencti_workflow_id', status),
-    pick([
+  const initialValues = R.pipe(
+    R.assoc('start_time', buildDate(stixCoreRelationship.start_time)),
+    R.assoc('stop_time', buildDate(stixCoreRelationship.stop_time)),
+    R.assoc('createdBy', createdBy),
+    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
       'confidence',
       'start_time',
       'stop_time',
@@ -419,9 +416,8 @@ const StixCoreRelationshipEditionContainer = ({
                 editContext={editContext}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="start_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
@@ -438,9 +434,8 @@ const StixCoreRelationshipEditionContainer = ({
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="stop_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
@@ -486,20 +481,20 @@ const StixCoreRelationshipEditionContainer = ({
                 onChange={handleChangeKillChainPhases}
               />
               {stixCoreRelationship.workflowEnabled && (
-                  <StatusField
-                      name="x_opencti_workflow_id"
-                      type="stix-core-relationship"
-                      onFocus={handleChangeFocus}
-                      onChange={handleSubmitField}
-                      setFieldValue={setFieldValue}
-                      style={{ marginTop: 20 }}
-                      helpertext={
-                        <SubscriptionFocus
-                            context={editContext}
-                            fieldName="x_opencti_workflow_id"
-                        />
-                      }
-                  />
+                <StatusField
+                  name="x_opencti_workflow_id"
+                  type="stix-core-relationship"
+                  onFocus={handleChangeFocus}
+                  onChange={handleSubmitField}
+                  setFieldValue={setFieldValue}
+                  style={{ marginTop: 20 }}
+                  helpertext={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="x_opencti_workflow_id"
+                    />
+                  }
+                />
               )}
               <CreatedByField
                 name="createdBy"
@@ -539,23 +534,24 @@ const StixCoreRelationshipEditionContainer = ({
           )}
         </Formik>
         {stixDomainObject && (
-            <Button
-                variant="contained"
-                color="primary"
-                component={Link}
-                to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixCoreRelationship.id}`}
-                classes={{ root: classes.buttonLeft }}
-            >
-              {t('Details')}
-            </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixCoreRelationship.id}`}
+            classes={{ root: classes.buttonLeft }}
+          >
+            {t('Details')}
+          </Button>
         )}
         {typeof handleDelete === 'function' && (
-            <Button
-                variant="contained"
-                onClick={() => handleDelete()}
-                classes={{ root: classes.button }}>
-              {t('Delete')}
-            </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleDelete()}
+            classes={{ root: classes.button }}
+          >
+            {t('Delete')}
+          </Button>
         )}
       </div>
     </div>
@@ -629,7 +625,7 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(StixCoreRelationshipEditionFragment);

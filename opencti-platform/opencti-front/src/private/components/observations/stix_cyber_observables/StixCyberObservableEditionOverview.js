@@ -31,10 +31,10 @@ import {
   numberAttributes,
   multipleAttributes,
 } from './StixCyberObservableCreation';
-import { dateFormat } from '../../../../utils/Time';
-import DatePickerField from '../../../../components/DatePickerField';
+import { buildDate } from '../../../../utils/Time';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -134,7 +134,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     let finalName = name;
-    let finalValue = value;
+    let finalValue = value || '';
     if (name.includes('hashes')) {
       finalName = name.replace('hashes_', 'hashes.');
     }
@@ -254,7 +254,6 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                 'objectMarking',
               ]),
             )(stixCyberObservable);
-
             const attributes = pipe(
               map((n) => n.node),
               filter(
@@ -267,7 +266,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                 initialValues[attribute.value] = stixCyberObservable[
                   attribute.value
                 ]
-                  ? dateFormat(stixCyberObservable[attribute.value])
+                  ? buildDate(stixCyberObservable[attribute.value])
                   : null;
               } else if (includes(attribute.value, multipleAttributes)) {
                 initialValues[attribute.value] = stixCyberObservable[
@@ -403,12 +402,10 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                       if (includes(attribute.value, dateAttributes)) {
                         return (
                           <Field
-                            component={DatePickerField}
+                            component={DateTimePickerField}
                             key={attribute.value}
                             name={attribute.value}
-                            invalidDateMessage={t(
-                              'The value must be a date (mm/dd/yyyy)',
-                            )}
+                            withSeconds={true}
                             onFocus={this.handleChangeFocus.bind(this)}
                             onSubmit={this.handleSubmitField.bind(this)}
                             TextFieldProps={{

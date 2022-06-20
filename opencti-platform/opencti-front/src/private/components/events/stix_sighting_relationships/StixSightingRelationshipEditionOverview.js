@@ -3,23 +3,14 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import {
-  assoc,
-  compose,
-  difference,
-  head,
-  map,
-  pathOr,
-  pick,
-  pipe,
-} from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { dateFormat } from '../../../../utils/Time';
+import * as R from 'ramda';
+import { buildDate } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
@@ -31,14 +22,18 @@ import {
   SubscriptionAvatars,
   SubscriptionFocus,
 } from '../../../../components/Subscription';
-import DatePickerField from '../../../../components/DatePickerField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   header: {
@@ -155,10 +150,10 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
   first_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   last_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   description: Yup.string().nullable(),
   x_opencti_negative: Yup.boolean(),
@@ -187,36 +182,33 @@ const StixSightingRelationshipEditionContainer = ({
     };
   });
   const handleChangeObjectMarking = (name, values) => {
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const currentMarkingDefinitions = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(stixSightingRelationship);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
+    const added = R.difference(values, currentMarkingDefinitions);
+    const removed = R.difference(currentMarkingDefinitions, values);
     if (added.length > 0) {
       commitMutation({
         mutation: stixSightingRelationshipMutationRelationAdd,
         variables: {
           id: stixSightingRelationship.id,
           input: {
-            toId: head(added).value,
+            toId: R.head(added).value,
             relationship_type: 'object-marking',
           },
         },
       });
     }
-
     if (removed.length > 0) {
       commitMutation({
         mutation: stixSightingRelationshipMutationRelationDelete,
         variables: {
           id: stixSightingRelationship.id,
-          toId: head(removed).value,
+          toId: R.head(removed).value,
           relationship_type: 'object-marking',
         },
       });
@@ -263,13 +255,13 @@ const StixSightingRelationshipEditionContainer = ({
   const createdBy = convertCreatedBy(stixSightingRelationship);
   const objectMarking = convertMarkings(stixSightingRelationship);
   const status = convertStatus(t, stixSightingRelationship);
-  const initialValues = pipe(
-    assoc('first_seen', dateFormat(stixSightingRelationship.first_seen)),
-    assoc('last_seen', dateFormat(stixSightingRelationship.last_seen)),
-    assoc('createdBy', createdBy),
-    assoc('objectMarking', objectMarking),
-    assoc('x_opencti_workflow_id', status),
-    pick([
+  const initialValues = R.pipe(
+    R.assoc('first_seen', buildDate(stixSightingRelationship.first_seen)),
+    R.assoc('last_seen', buildDate(stixSightingRelationship.last_seen)),
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
       'attribute_count',
       'confidence',
       'first_seen',
@@ -337,9 +329,8 @@ const StixSightingRelationshipEditionContainer = ({
                 disabled={inferred}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="first_seen"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}
                 TextFieldProps={{
@@ -357,9 +348,8 @@ const StixSightingRelationshipEditionContainer = ({
                 disabled={inferred}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="last_seen"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}
                 TextFieldProps={{
@@ -538,7 +528,7 @@ const StixSightingRelationshipEditionFragment = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(StixSightingRelationshipEditionFragment);

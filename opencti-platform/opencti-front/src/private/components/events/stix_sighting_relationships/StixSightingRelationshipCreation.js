@@ -14,18 +14,18 @@ import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Close, ArrowRightAlt } from '@mui/icons-material';
 import { fetchQuery, commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkDownField from '../../../../components/MarkDownField';
-import DatePickerField from '../../../../components/DatePickerField';
 import { truncate } from '../../../../utils/String';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { defaultValue } from '../../../../utils/Graph';
 import TextField from '../../../../components/TextField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -281,10 +281,10 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
   first_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   last_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   description: Yup.string().nullable(),
   x_opencti_negative: Yup.boolean(),
@@ -400,8 +400,8 @@ class StixSightingRelationshipCreation extends Component {
       defaultMarkingDefinitions,
     } = this.props;
     const defaultConfidence = confidence || 15;
-    const defaultFirstSeen = firstSeen || null;
-    const defaultLastSeen = lastSeen || null;
+    const defaultFirstSeen = !isNone(firstSeen) ? firstSeen : null;
+    const defaultLastSeen = !isNone(lastSeen) ? lastSeen : null;
     const initialValues = {
       attribute_count: 1,
       confidence: defaultConfidence,
@@ -563,9 +563,8 @@ class StixSightingRelationshipCreation extends Component {
                 containerstyle={{ marginTop: 20, width: '100%' }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="first_seen"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('First seen'),
                   variant: 'standard',
@@ -574,9 +573,8 @@ class StixSightingRelationshipCreation extends Component {
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="last_seen"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Last seen'),
                   variant: 'standard',

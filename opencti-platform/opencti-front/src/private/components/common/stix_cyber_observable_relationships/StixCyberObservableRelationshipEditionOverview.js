@@ -3,22 +3,22 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import { assoc, compose, map, pathOr, pick, pipe } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { dateFormat } from '../../../../utils/Time';
+import * as R from 'ramda';
+import { buildDate } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   requestSubscription,
 } from '../../../../relay/environment';
-import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   header: {
@@ -100,10 +100,10 @@ export const stixCyberObservableRelationshipEditionFocus = graphql`
 
 const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
   start_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   stop_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
 });
 
@@ -156,29 +156,32 @@ class StixCyberObservableRelationshipEditionOverview extends Component {
       stixDomainObject,
     } = this.props;
     const { editContext } = stixCyberObservableRelationship;
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
+    const killChainPhases = R.pipe(
+      R.pathOr([], ['killChainPhases', 'edges']),
+      R.map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
       })),
     )(stixCyberObservableRelationship);
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(stixCyberObservableRelationship);
-    const initialValues = pipe(
-      assoc(
+    const initialValues = R.pipe(
+      R.assoc(
         'start_time',
-        dateFormat(stixCyberObservableRelationship.start_time),
+        buildDate(stixCyberObservableRelationship.start_time),
       ),
-      assoc('stop_time', dateFormat(stixCyberObservableRelationship.stop_time)),
-      assoc('killChainPhases', killChainPhases),
-      assoc('objectMarking', objectMarking),
-      pick(['start_time', 'stop_time', 'killChainPhases', 'objectMarking']),
+      R.assoc(
+        'stop_time',
+        buildDate(stixCyberObservableRelationship.stop_time),
+      ),
+      R.assoc('killChainPhases', killChainPhases),
+      R.assoc('objectMarking', objectMarking),
+      R.pick(['start_time', 'stop_time', 'killChainPhases', 'objectMarking']),
     )(stixCyberObservableRelationship);
     const link = stixDomainObject
       ? resolveLink(stixDomainObject.entity_type)
@@ -208,11 +211,8 @@ class StixCyberObservableRelationshipEditionOverview extends Component {
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
-                  component={DatePickerField}
+                  component={DateTimePickerField}
                   name="start_time"
-                  invalidDateMessage={t(
-                    'The value must be a date (mm/dd/yyyy)',
-                  )}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   TextFieldProps={{
@@ -228,11 +228,8 @@ class StixCyberObservableRelationshipEditionOverview extends Component {
                   }}
                 />
                 <Field
-                  component={DatePickerField}
+                  component={DateTimePickerField}
                   name="stop_time"
-                  invalidDateMessage={t(
-                    'The value must be a date (mm/dd/yyyy)',
-                  )}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   TextFieldProps={{
@@ -298,7 +295,7 @@ const StixCyberObservableRelationshipEditionFragment = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(StixCyberObservableRelationshipEditionFragment);

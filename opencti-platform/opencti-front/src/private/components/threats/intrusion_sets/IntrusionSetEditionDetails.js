@@ -2,18 +2,18 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import { assoc, compose, join, pick, pipe, split } from 'ramda';
+import { assoc, compose, join, pick, pipe } from 'ramda';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
-import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import { dateFormat, parse } from '../../../../utils/Time';
+import { buildDate, parse } from '../../../../utils/Time';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import TextField from '../../../../components/TextField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionDetailsFieldPatchMutation(
@@ -51,10 +51,10 @@ const intrusionSetEditionDetailsFocus = graphql`
 const intrusionSetValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   last_seen: Yup.date()
     .nullable()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   resource_level: Yup.string().nullable(),
   primary_motivation: Yup.string().nullable(),
   secondary_motivations: Yup.array().nullable(),
@@ -120,7 +120,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
     if (!this.props.enableReferences) {
       let finalValue = value;
       if (name === 'goals') {
-        finalValue = split('\n', value);
+        finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
       intrusionSetValidation(this.props.t)
         .validateAt(name, { [name]: value })
@@ -140,8 +140,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
   render() {
     const { t, intrusionSet, context, enableReferences } = this.props;
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(intrusionSet.first_seen)),
-      assoc('last_seen', dateFormat(intrusionSet.last_seen)),
+      R.assoc('first_seen', buildDate(intrusionSet.first_seen)),
+      R.assoc('last_seen', buildDate(intrusionSet.last_seen)),
       assoc(
         'secondary_motivations',
         intrusionSet.secondary_motivations
@@ -174,9 +174,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
-              component={DatePickerField}
+              component={DateTimePickerField}
               name="first_seen"
-              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -189,9 +188,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
               }}
             />
             <Field
-              component={DatePickerField}
+              component={DateTimePickerField}
               name="last_seen"
-              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{

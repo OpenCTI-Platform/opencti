@@ -27,11 +27,11 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import SelectField from '../../../../components/SelectField';
 import { dayStartDate, parse } from '../../../../utils/Time';
-import DatePickerField from '../../../../components/DatePickerField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -87,10 +87,10 @@ const observedDataCreationMutation = graphql`
 const observedDataValidation = (t) => Yup.object().shape({
   objects: Yup.array().required(t('This field is required')),
   first_observed: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   last_observed: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   number_observed: Yup.number().required(t('This field is required')),
   confidence: Yup.number(),
@@ -221,11 +221,8 @@ class ObservedDataCreation extends Component {
                     values={values.objects}
                   />
                   <Field
-                    component={DatePickerField}
+                    component={DateTimePickerField}
                     name="first_observed"
-                    invalidDateMessage={t(
-                      'The value must be a date (mm/dd/yyyy)',
-                    )}
                     TextFieldProps={{
                       label: t('First observed'),
                       variant: 'standard',
@@ -234,11 +231,8 @@ class ObservedDataCreation extends Component {
                     }}
                   />
                   <Field
-                    component={DatePickerField}
+                    component={DateTimePickerField}
                     name="last_observed"
-                    invalidDateMessage={t(
-                      'The value must be a date (mm/dd/yyyy)',
-                    )}
                     TextFieldProps={{
                       label: t('Last observed'),
                       variant: 'standard',

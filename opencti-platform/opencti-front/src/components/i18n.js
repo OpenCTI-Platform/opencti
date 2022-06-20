@@ -14,6 +14,7 @@ export const isDateStringNone = (dateString) => {
 
 export const isNone = (date) => {
   if (!date) return true;
+  if (date.length === 0) return true;
   const parsedDate = moment(date).format();
   return isDateStringNone(parsedDate);
 };

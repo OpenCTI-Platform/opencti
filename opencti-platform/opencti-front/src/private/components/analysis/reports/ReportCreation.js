@@ -16,7 +16,6 @@ import { dayStartDate, parse } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import DatePickerField from '../../../../components/DatePickerField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
@@ -29,6 +28,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -98,7 +98,7 @@ const reportMutation = graphql`
 const reportValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   published: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
   report_types: Yup.array().required(t('This field is required')),
@@ -250,11 +250,8 @@ class ReportCreation extends Component {
                               fullWidth={true}
                             />
                             <Field
-                              component={DatePickerField}
+                              component={DateTimePickerField}
                               name="published"
-                              invalidDateMessage={t(
-                                'The value must be a date (mm/dd/yyyy)',
-                              )}
                               TextFieldProps={{
                                 label: t('Publication date'),
                                 variant: 'standard',

@@ -14,7 +14,8 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import { syncCheckMutation } from './SyncCreation';
-import DatePickerField from '../../../../components/DatePickerField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { buildDate } from '../../../../utils/Time';
 
 const styles = (theme) => ({
   header: {
@@ -67,7 +68,9 @@ const syncValidation = (t) => Yup.object().shape({
   uri: Yup.string().required(t('This field is required')),
   token: Yup.string().required(t('This field is required')),
   stream_id: Yup.string().required(t('This field is required')),
-  current_state: Yup.date().nullable().typeError(t('The value must be a date (YYYY-MM-DD)')),
+  current_state: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   listen_deletion: Yup.bool(),
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
@@ -75,10 +78,19 @@ const syncValidation = (t) => Yup.object().shape({
 
 const SyncEditionContainer = (props) => {
   const { t, classes, handleClose, synchronizer } = props;
-  const initialValues = R.pickAll(
-    ['name', 'uri', 'token', 'stream_id', 'listen_deletion', 'no_dependencies', 'current_state', 'ssl_verify'],
-    synchronizer,
-  );
+  const initialValues = R.pipe(
+    R.assoc('current_state', buildDate(synchronizer.current_state)),
+    R.pick([
+      'name',
+      'uri',
+      'token',
+      'stream_id',
+      'listen_deletion',
+      'no_dependencies',
+      'current_state',
+      'ssl_verify',
+    ]),
+  )(synchronizer);
   const handleVerify = (values) => {
     commitMutation({
       mutation: syncCheckMutation,
@@ -164,11 +176,8 @@ const SyncEditionContainer = (props) => {
                 onSubmit={handleSubmitField}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="current_state"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
                   label: t('Starting synchronization (empty = from start)'),
@@ -183,19 +192,22 @@ const SyncEditionContainer = (props) => {
                 name="listen_deletion"
                 containerstyle={{ marginTop: 20 }}
                 label={t('Take deletions into account')}
-                onChange={handleSubmitField}/>
+                onChange={handleSubmitField}
+              />
               <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="no_dependencies"
-                  label={t('Avoid dependencies resolution')}
-                  onChange={handleSubmitField}/>
+                component={SwitchField}
+                type="checkbox"
+                name="no_dependencies"
+                label={t('Avoid dependencies resolution')}
+                onChange={handleSubmitField}
+              />
               <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="ssl_verify"
-                  label={t('Verify SSL certificate')}
-                  onChange={handleSubmitField}/>
+                component={SwitchField}
+                type="checkbox"
+                name="ssl_verify"
+                label={t('Verify SSL certificate')}
+                onChange={handleSubmitField}
+              />
               <div className={classes.buttons}>
                 <Button
                   variant="contained"

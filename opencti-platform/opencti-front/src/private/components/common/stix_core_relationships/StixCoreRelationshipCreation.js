@@ -15,20 +15,20 @@ import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Close, ArrowRightAlt } from '@mui/icons-material';
 import { fetchQuery, commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
-import DatePickerField from '../../../../components/DatePickerField';
 import { truncate } from '../../../../utils/String';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
 import ExternalReferencesField from '../form/ExternalReferencesField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -138,7 +138,10 @@ const styles = (theme) => ({
 });
 
 export const stixCoreRelationshipCreationQuery = graphql`
-  query StixCoreRelationshipCreationQuery($fromId: [String]!, $toId: [String]!) {
+  query StixCoreRelationshipCreationQuery(
+    $fromId: [String]!
+    $toId: [String]!
+  ) {
     stixCoreRelationships(fromId: $fromId, toId: $toId) {
       edges {
         node {
@@ -277,11 +280,11 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   start_time: Yup.date()
     .nullable()
     .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   stop_time: Yup.date()
     .nullable()
     .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   description: Yup.string().nullable(),
 });
 
@@ -409,8 +412,8 @@ class StixCoreRelationshipCreation extends Component {
         ? 'related-to'
         : '';
     const defaultConfidence = confidence || 15;
-    const defaultStartTime = startTime || null;
-    const defaultEndTime = stopTime || null;
+    const defaultStartTime = !isNone(startTime) ? startTime : null;
+    const defaultEndTime = !isNone(stopTime) ? stopTime : null;
     const initialValues = {
       relationship_type: defaultRelationshipType,
       confidence: defaultConfidence,
@@ -582,9 +585,8 @@ class StixCoreRelationshipCreation extends Component {
                 containerstyle={{ marginTop: 20, width: '100%' }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="start_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Start time'),
                   variant: 'standard',
@@ -593,9 +595,8 @@ class StixCoreRelationshipCreation extends Component {
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="stop_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Stop time'),
                   variant: 'standard',

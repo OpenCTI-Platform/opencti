@@ -44,7 +44,7 @@ const styles = (theme) => ({
 
 class InfrastructureDetailsComponent extends Component {
   render() {
-    const { t, fld, classes, infrastructure } = this.props;
+    const { t, fldt, classes, infrastructure } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -79,13 +79,13 @@ class InfrastructureDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('First seen')}
               </Typography>
-              {fld(infrastructure.first_seen)}
+              {fldt(infrastructure.first_seen)}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Last seen')}
               </Typography>
-              {fld(infrastructure.last_seen)}
+              {fldt(infrastructure.last_seen)}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography

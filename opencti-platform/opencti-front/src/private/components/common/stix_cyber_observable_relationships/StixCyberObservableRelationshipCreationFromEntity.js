@@ -34,7 +34,6 @@ import {
 } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/SelectField';
-import DatePickerField from '../../../../components/DatePickerField';
 import StixCyberObservableRelationCreationFromEntityLines, {
   stixCyberObservableRelationshipCreationFromEntityLinesQuery,
 } from './StixCyberObservableRelationshipCreationFromEntityLines';
@@ -43,6 +42,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import { defaultValue } from '../../../../utils/Graph';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -318,10 +318,10 @@ const stixCyberObservableRelationshipCreationFromEntityMutation = graphql`
 const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
   start_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   stop_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
 });
 
@@ -729,9 +729,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                 )}
               </Field>
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="start_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Start time'),
                   variant: 'standard',
@@ -740,9 +739,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                 }}
               />
               <Field
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="stop_time"
-                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Stop time'),
                   variant: 'standard',
