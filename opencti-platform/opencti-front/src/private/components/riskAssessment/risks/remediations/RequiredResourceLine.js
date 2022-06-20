@@ -34,6 +34,7 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import Button from '@material-ui/core/Button';
 import * as R from 'ramda';
@@ -216,6 +217,7 @@ class RequiredResourceLineComponent extends Component {
                   <Typography align="left" variant="subtitle1">
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
+                      rehypePlugins={[rehypeRaw]}
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
@@ -293,6 +295,7 @@ class RequiredResourceLineComponent extends Component {
                     <div className={classes.scrollObj}>
                       <Markdown
                         remarkPlugins={[remarkGfm, remarkParse]}
+                        rehypeRaw={[rehypeRaw]}
                         parserOptions={{ commonmark: true }}
                         className="markdown"
                       >

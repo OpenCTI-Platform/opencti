@@ -14,6 +14,7 @@ import Accordion from '@material-ui/core/Accordion';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import rehypeRaw from 'rehype-raw';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LinkIcon from '@material-ui/icons/Link';
@@ -229,6 +230,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                   <div >
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
+                      rehypePlugins={[rehypeRaw]}
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >

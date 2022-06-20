@@ -27,6 +27,7 @@ import Slide from '@material-ui/core/Slide';
 import IconButton from '@material-ui/core/IconButton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import rehypeRaw from 'rehype-raw';
 import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
@@ -287,6 +288,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
               >
                 <Markdown
                   remarkPlugins={[remarkGfm, remarkParse]}
+                  rehypePlugins={[rehypeRaw]}
                   parserOptions={{ commonmark: true }}
                   className="markdown"
                 >
@@ -331,6 +333,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
                 <Typography style={{ margin: '0 0 10px 0' }} align="left" variant="body2">
                   <Markdown
                     remarkPlugins={[remarkGfm, remarkParse]}
+                    rehypePlugins={[rehypeRaw]}
                     parserOptions={{ commonmark: true }}
                     className="markdown"
                   >

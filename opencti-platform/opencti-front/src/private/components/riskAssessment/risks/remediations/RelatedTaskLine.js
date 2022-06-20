@@ -39,6 +39,7 @@ import { AutoFix, Information } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import ItemConfidence from '../../../../../components/ItemConfidence';
 import RemediationPopover from './RemediationPopover';
@@ -364,6 +365,7 @@ class RelatedTaskLine extends Component {
                     <div className={classes.scrollObj}>
                       <Markdown
                         remarkPlugins={[remarkGfm, remarkParse]}
+                        rehypePlugins={[rehypeRaw]}
                         parserOptions={{ commonmark: true }}
                         className="markdown"
                       >
