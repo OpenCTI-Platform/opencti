@@ -8,6 +8,10 @@ import {
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
 import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
+import {
   getReducer,
   insertRoleQuery,
   selectRoleQuery,
@@ -152,8 +156,20 @@ const oscalRoleResolvers = {
   },
   Mutation: {
     createOscalRole: async (_, { input }, { dbName, selectMap, dataSources }) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // create the Role
-      const { id, query } = insertRoleQuery(input);
+      const { iri, id, query } = insertRoleQuery(input);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
@@ -161,6 +177,20 @@ const oscalRoleResolvers = {
       });
 
       // add the role to the parent object (if supplied)
+      // TODO: WORKAROUND attach the role to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const attachQuery = attachToPOAMQuery(poamId, 'roles', iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Add Role to POAM",
+          sparqlQuery: attachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
 
       // retrieve information about the newly created Characterization to return to the user
       const select = selectRoleQuery(id, selectMap.getNode("createOscalRole"));
@@ -196,8 +226,26 @@ const oscalRoleResolvers = {
       }
 
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      const reducer = getReducer("ROLE");
+      const role = (reducer(response[0]));
 
       // detach the Role from the parent object (if supplied)
+      // TODO: WORKAROUND attach the location to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const detachQuery = detachFromPOAMQuery(poamId, 'roles', role.iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Detaching Role from POAM",
+          sparqlQuery: detachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
+
+      //TODO: Determine any external attachments that will need to be removed when this object is deleted
 
       // Delete the characterization itself
       const query = deleteRoleQuery(id);

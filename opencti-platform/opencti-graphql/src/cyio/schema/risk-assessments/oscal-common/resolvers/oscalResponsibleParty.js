@@ -8,6 +8,10 @@ import {
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
 import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
+import {
   getReducer,
   insertResponsiblePartyQuery,
   selectResponsiblePartyQuery,
@@ -177,7 +181,8 @@ const responsiblePartyResolvers = {
       }
 
       // create the Responsible Party
-      const { id, query } = insertResponsiblePartyQuery(input);
+      const { iri, id, query } = insertResponsiblePartyQuery(input);
+      console.log("creating ResponsibleParty")
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
@@ -185,6 +190,20 @@ const responsiblePartyResolvers = {
       });
 
       // add the responsible party to the parent object (if supplied)
+      // TODO: WORKAROUND attach the responsible party to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const attachQuery = attachToPOAMQuery(poamId, 'responsible_parties', iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Add Responsible Party to POAM",
+          sparqlQuery: attachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
 
       // attach associated Role
       if (role !== undefined && role !== null) {
@@ -198,7 +217,7 @@ const responsiblePartyResolvers = {
           queryId: "Attach reference to the Role to this Responsible Party"
         });        
       }
-      // attach any Parties
+      // // attach any Parties
       if (parties !== undefined && parties !== null) {
         const partyIris = [];
         for (let partyIri of parties) partyIris.push(`<http://csrc.nist.gov/ns/oscal/common#Party-${partyIri}>`);
@@ -244,8 +263,26 @@ const responsiblePartyResolvers = {
         throw e
       }
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      const reducer = getReducer("RESPONSIBLE-PARTY");
+      const responsibleParty = (reducer(response[0]));
 
-      // detach the Responsible Party from the parent object (if supplied)
+      // detach the Role from the parent object (if supplied)
+      // TODO: WORKAROUND attach the responsible party from the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const detachQuery = detachFromPOAMQuery(poamId, 'responsible_parties', responsibleParty.iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Detaching Responsible Party from POAM",
+          sparqlQuery: detachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
+
+      //TODO: Determine any external attachments that will need to be removed when this object is deleted
 
       // Delete the responsible party itself
       const query = deleteResponsiblePartyQuery(id);
