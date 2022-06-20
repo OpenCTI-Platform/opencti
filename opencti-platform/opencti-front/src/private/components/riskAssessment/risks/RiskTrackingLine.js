@@ -30,6 +30,7 @@ import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -347,6 +348,7 @@ class RiskTrackingLineContainer extends Component {
                         <div className={classes.scrollObj}>
                           <Markdown
                             remarkPlugins={[remarkGfm, remarkParse]}
+                            rehypePlugins={[rehypeRaw]}
                             parserOptions={{ commonmark: true }}
                             className="markdown"
                           >

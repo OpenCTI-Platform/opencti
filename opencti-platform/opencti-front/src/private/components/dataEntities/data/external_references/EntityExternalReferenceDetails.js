@@ -11,6 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import { Grid, Switch, Tooltip } from '@material-ui/core';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
@@ -166,6 +167,7 @@ class EntityExternalReferenceDetailsComponent extends Component {
                   <div className={classes.scrollObj}>
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
+                      rehypePlugins={[rehypeRaw]}
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >

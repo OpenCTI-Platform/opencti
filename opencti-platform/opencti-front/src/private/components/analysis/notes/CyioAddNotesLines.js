@@ -20,6 +20,7 @@ import inject18n from '../../../../components/i18n';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import rehypeRaw from 'rehype-raw';
 import { commitMutation } from '../../../../relay/environment';
 import ItemMarking from '../../../../components/ItemMarking';
 import Typography from '@material-ui/core/Typography';
@@ -135,6 +136,7 @@ class CyioAddNotesLinesContainer extends Component {
                 primary={`${note.abstract} ${noteId}`}
                 secondary={<Markdown
                   remarkPlugins={[remarkGfm, remarkParse]}
+                  rehypePlugins={[rehypeRaw]}
                   parserOptions={{ commonmark: true }}
                   className="markdown">
                   {truncate(note.content, 120)}
