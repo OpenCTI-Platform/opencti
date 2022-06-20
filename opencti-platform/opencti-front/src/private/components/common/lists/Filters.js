@@ -915,6 +915,12 @@ class Filters extends Component {
             'related-to',
             'communicates-with',
             'attributed-to',
+            'based-on',
+            'mitigates',
+            'variant-of',
+            'compromises',
+            'delivers',
+            'belongs-to',
           ],
         );
         if (this.props.allRelationshipTypes) {

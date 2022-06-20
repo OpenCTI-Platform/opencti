@@ -258,7 +258,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             enableGraph={true}
             availableFilterKeys={[
               'report_types',
-              'container_types',
+              'container_type',
               'confidence_gt',
               'x_opencti_workflow_id',
               'labelledBy',

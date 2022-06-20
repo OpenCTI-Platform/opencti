@@ -9,6 +9,9 @@ import { compose, pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import { KeyboardArrowRight } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import * as R from 'ramda';
+import { AutoFix, VectorRadius } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -66,7 +69,18 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
         disabled={link === null}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.entity_type} />
+          {node.is_inferred ? (
+            <Tooltip
+              title={
+                t('Inferred knowledge based on the rule ')
+                + R.head(node.x_opencti_inferences).rule.name
+              }
+            >
+              <AutoFix fontSize="small" />
+            </Tooltip>
+          ) : (
+            <VectorRadius fontSize="small" role="img" />
+          )}
         </ListItemIcon>
         <ListItemText
           primary={
@@ -75,7 +89,10 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.fromType.width, display: 'flex' }}
               >
-                <ItemIcon type={node.from && node.from.entity_type} variant="inline" />
+                <ItemIcon
+                  type={node.from && node.from.entity_type}
+                  variant="inline"
+                />
                 {node.from
                   ? t(`entity_${node.from.entity_type}`)
                   : t('Restricted')}
@@ -98,7 +115,10 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.toType.width, display: 'flex' }}
               >
-                <ItemIcon type={node.to && node.to.entity_type} variant="inline" />
+                <ItemIcon
+                  type={node.to && node.to.entity_type}
+                  variant="inline"
+                />
                 {node.to ? t(`entity_${node.to.entity_type}`) : t('Restricted')}
               </div>
               <div

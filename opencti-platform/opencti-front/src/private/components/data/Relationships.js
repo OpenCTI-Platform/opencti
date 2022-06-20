@@ -176,6 +176,7 @@ class Relationships extends Component {
               paginationOptions={paginationOptions}
               numberOfElements={numberOfElements}
               availableFilterKeys={[
+                'relationship_type',
                 'fromId',
                 'toId',
                 'fromTypes',
