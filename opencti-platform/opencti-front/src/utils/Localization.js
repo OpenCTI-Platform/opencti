@@ -3002,6 +3002,7 @@ const i18n = {
       filter_basedOn: 'Based on an observable',
       filter_sightedBy: 'Sighted by/in',
       filter_entity_type: 'Entity type',
+      filter_relationship_type: 'Relationship type',
       filter_pattern_type: 'Indicator type',
       filter_x_opencti_main_observable_type: 'Observable type',
       filter_labelledBy: 'Label',

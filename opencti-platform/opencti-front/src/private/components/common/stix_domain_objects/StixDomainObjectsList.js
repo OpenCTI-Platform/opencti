@@ -124,6 +124,7 @@ const stixDomainObjectsListQuery = graphql`
     ) {
       edges {
         node {
+          id
           entity_type
           created
           created_at
