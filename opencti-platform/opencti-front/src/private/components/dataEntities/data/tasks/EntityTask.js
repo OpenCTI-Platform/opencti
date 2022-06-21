@@ -58,12 +58,14 @@ class EntityTaskComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={task}
+            name={task.name}
             history={history}
+            cyioDomainObject={task}
+            goBack='/data/entities/tasks'
             PopoverComponent={<EntitiesTasksPopover />}
+            OperationsComponent={<EntitiesTasksDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesTasksDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid

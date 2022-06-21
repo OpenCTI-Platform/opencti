@@ -58,10 +58,12 @@ class EntityAssessmentPlatformComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={assessmentPlatform}
             history={history}
-            PopoverComponent={<EntitiesAssessmentPlatformsPopover />}
+            name={assessmentPlatform.name}
+            cyioDomainObject={assessmentPlatform}
+            goBack='/data/entities/assessment_platform'
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+            PopoverComponent={<EntitiesAssessmentPlatformsPopover />}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
             OperationsComponent={<EntitiesAssessmentPlatformsDeletion />}
           />

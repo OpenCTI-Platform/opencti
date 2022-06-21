@@ -57,12 +57,14 @@ class EntityLocationComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={location}
             history={history}
+            name={location.name}
+            cyioDomainObject={location}
+            goBack='/data/entities/locations'
             PopoverComponent={<EntitiesLocationsPopover />}
+            OperationsComponent={<EntitiesLocationsDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesLocationsDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid

@@ -58,12 +58,14 @@ class EntityRoleComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={role}
+            name={role.name}
             history={history}
+            cyioDomainObject={role}
+            goBack='/data/entities/responsibility'
             PopoverComponent={<EntitiesRolesPopover />}
+            OperationsComponent={<EntitiesRolesDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesRolesDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid

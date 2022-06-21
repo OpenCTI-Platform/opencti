@@ -58,12 +58,14 @@ class EntityExternalReferenceComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={externalReference}
             history={history}
-            PopoverComponent={<EntitiesExternalReferencesPopover />}
+            cyioDomainObject={externalReference}
+            name={externalReference.source_name}
+            goBack='/data/entities/external_references'
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+            PopoverComponent={<EntitiesExternalReferencesPopover />}
             OperationsComponent={<EntitiesExternalReferencesDeletion />}
+            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           />
           <TopBarBreadcrumbs />
           <Grid
