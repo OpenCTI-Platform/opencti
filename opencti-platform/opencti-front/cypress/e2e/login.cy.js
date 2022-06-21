@@ -7,7 +7,8 @@ describe('Authentication', () => {
   });
 
   it('Can access user data', function () {
-    expect(this.user.email).to.equal('rjoyce@darklight.ai');
+    assert.isDefined(this.user.email, 'Can load the user email address');
+    assert.isDefined(this.user.password, 'Can load the user password');
   });
 
   it('Prevents login with incorrect credentials', () => {
