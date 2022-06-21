@@ -239,7 +239,7 @@ const cyioNoteResolvers = {
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("LABEL");
+        const reducer = getReducer("LABEL");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Label')) continue;
           const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode("labels"));
