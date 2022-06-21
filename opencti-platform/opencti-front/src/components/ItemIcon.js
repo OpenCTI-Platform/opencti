@@ -58,10 +58,12 @@ import softwareIcon from '../resources/images/assets/softwareIcon.svg';
 import deviceIcon from '../resources/images/assets/deviceIcon.svg';
 import linuxIcon from '../resources/images/assets/linuxIcon.svg';
 import appendeciesIcon from '../resources/images/entities/appendeciesIcon.svg';
+import operatingSystemIcon from '../resources/images/entities/operating_system.png';
 import collectIcon from '../resources/images/entities/collectIcon.svg';
 import poamIcon from '../resources/images/entities/poamIcon.svg';
 import userPersonIcon from '../resources/images/assets/userPersonIcon.svg';
 import partiesIcon from '../resources/images/assets/partiesIcon.svg';
+import applicationSoftwareIcon from '../resources/images/entities/application_software.png';
 import locationsIcon from '../resources/images/assets/locationsIcon.svg';
 import inventoryItemIcon from '../resources/images/assets/inventoryItem.svg';
 import resourceIcon from '../resources/images/assets/resource.svg';
@@ -115,6 +117,10 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <img src={userPersonIcon} style={style} alt="user-icon" />;
     case 'other':
       return <img src={deviceIcon} style={style} alt="device-icon" />;
+    case 'application_software':
+      return <img src={applicationSoftwareIcon} style={style} alt="applicationSoftware-icon" />;
+    case 'operating_system':
+      return <img src={operatingSystemIcon} style={style} alt="operatingSystem-icon" />;
     case 'physical_device':
       return <Devices style={style} fontSize={fontSize} role="img" />;
     case 'router':

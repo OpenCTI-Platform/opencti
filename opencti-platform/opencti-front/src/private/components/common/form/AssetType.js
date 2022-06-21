@@ -33,7 +33,6 @@ class AssetType extends Component {
     }
   }
   componentDidMount() {
-    // console.log('AssetTypeChange', this.props.assetType);
     fetchDarklightQuery(assetTypeQuery, {
       type: `${this.props.assetType}AssetTypes`,
     })
@@ -47,7 +46,6 @@ class AssetType extends Component {
             type: n.name,
           })),
         )(data);
-        console.log('sdasfdsfasAssetType', assetTypeEntities);
         this.setState({
           assetTypes: {
             ...this.state.entities,
@@ -77,7 +75,6 @@ class AssetType extends Component {
       ['assetTypeEntities'],
       this.state.assetTypes,
     );
-    console.log('AssetTypesData', assetTypes);
     return (
       <Field
         component={SelectField}
