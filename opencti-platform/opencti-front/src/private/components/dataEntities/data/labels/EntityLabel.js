@@ -58,12 +58,14 @@ class EntityLabelComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={label}
             history={history}
+            name={label.name}
+            cyioDomainObject={label}
+            goBack='/data/entities/labels'
             PopoverComponent={<EntitiesLabelsPopover />}
+            OperationsComponent={<EntitiesLabelsDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesLabelsDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid

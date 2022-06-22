@@ -61,12 +61,14 @@ class EntityPartyComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={party}
             history={history}
+            name={party.name}
+            cyioDomainObject={party}
+            goBack='/data/entities/parties'
             PopoverComponent={<EntitiesPartiesPopover />}
+            OperationsComponent={<EntitiesPartiesDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesPartiesDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid

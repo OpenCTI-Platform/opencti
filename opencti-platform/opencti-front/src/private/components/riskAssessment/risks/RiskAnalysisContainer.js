@@ -92,13 +92,15 @@ class RiskAnalysisContainerComponent extends Component {
         {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <CyioDomainObjectHeader
-              cyioDomainObject={risk}
-              history={history}
               disabled={true}
+              name={risk.name}
+              history={history}
+              cyioDomainObject={risk}
               PopoverComponent={<RiskPopover />}
-              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
+              goBack='/activities/risk assessment/risks'
+              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             />
             <TopMenuRisk risk={risk.name} />
             <Grid
