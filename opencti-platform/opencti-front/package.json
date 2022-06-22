@@ -145,5 +145,6 @@
     "bezier-js": "4.0.3",
     "webpack": "4.44.2"
   },
-  "main": "index.js"
+  "main": "index.js",
+  "packageManager": "yarn@3.2.1"
 }
