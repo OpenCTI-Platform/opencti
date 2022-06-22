@@ -14,6 +14,7 @@ import BuildIcon from '@material-ui/icons/Build';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import rehypeRaw from 'rehype-raw';
 import Chip from '@material-ui/core/Chip';
 import { InformationOutline, Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -240,6 +241,7 @@ class RemediationGeneralOverviewComponent extends Component {
                   <div className={classes.scrollObj}>
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
+                      rehypePlugins={[rehypeRaw]}
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >

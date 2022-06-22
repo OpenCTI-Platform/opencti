@@ -60,12 +60,14 @@ class EntityNoteComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={note}
+            name={note.name}
             history={history}
+            cyioDomainObject={note}
+            goBack='/data/entities/notes'
             PopoverComponent={<EntitiesNotesPopover />}
+            OperationsComponent={<EntitiesNotesDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesNotesDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid

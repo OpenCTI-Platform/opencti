@@ -212,6 +212,7 @@ export const attachToInventoryItemQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -233,6 +234,7 @@ export const detachFromInventoryItemQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `

@@ -11,6 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import { Grid, Tooltip } from '@material-ui/core';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
@@ -273,6 +274,7 @@ class EntityPartyDetailsComponent extends Component {
                   <div className={classes.scrollObj}>
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
+                      rehypeRaw={[rehypeRaw]}
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >

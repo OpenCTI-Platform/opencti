@@ -65,12 +65,14 @@ class DeviceComponent extends Component {
         {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <CyioDomainObjectHeader
-              cyioDomainObject={device}
               history={history}
+              name={device.name}
+              cyioDomainObject={device}
               PopoverComponent={<DevicePopover />}
+              OperationsComponent={<DeviceDeletion />}
+              goBack='/defender HQ/assets/devices'
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              OperationsComponent={<DeviceDeletion />}
             />
             <Grid
               container={true}

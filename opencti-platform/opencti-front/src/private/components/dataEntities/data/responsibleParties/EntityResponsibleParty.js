@@ -59,12 +59,14 @@ class EntityResponsiblePartyComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={responsibleParty}
             history={history}
-            PopoverComponent={<EntitiesResponsiblePartiesPopover />}
+            name={responsibleParty.name}
+            cyioDomainObject={responsibleParty}
+            goBack='/data/entities/responsible_parties'
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+            PopoverComponent={<EntitiesResponsiblePartiesPopover />}
             OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
+            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           />
           <TopBarBreadcrumbs />
           <Grid

@@ -67,13 +67,15 @@ class RiskTracking extends Component {
     return (
       <>
         <CyioDomainObjectHeader
-          cyioDomainObject={risk}
-          history={history}
           disabled={true}
+          name={risk.name}
+          history={history}
+          cyioDomainObject={risk}
           PopoverComponent={<RiskPopover />}
-          // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          goBack='/activities/risk assessment/risks'
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
         // OperationsComponent={<RiskDeletion />}
+        // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
         <TopMenuRisk risk={risk.name} />
         <QR

@@ -66,7 +66,7 @@ class DeviceLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+    const operatingSystem = node.installed_operating_system?.vendor_name?.toLowerCase();
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -106,7 +106,7 @@ class DeviceLineComponent extends Component {
                 style={{ width: dataColumns.asset_type.width }}
               >
                 {node.asset_type
-                && <ItemIcon type={node.asset_type}/>}
+                  && <ItemIcon type={node.asset_type} />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -136,8 +136,9 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.installed_os_name.width }}
               >
-                {node?.installed_operating_system?.vendor_name
-                && <ItemIcon variant='inline' type={node.installed_operating_system.vendor_name === 'microsoft' || node.installed_operating_system.vendor_name === 'apple' || node.installed_operating_system.vendor_name === 'linux' ? node.installed_operating_system.vendor_name : 'other'}/>}
+                {node.installed_operating_system?.name &&
+                  node.installed_operating_system?.vendor_name &&
+                  <ItemIcon variant='inline' type={operatingSystem === 'microsoft' || operatingSystem === 'apple' || operatingSystem === 'linux' ? operatingSystem : 'other'} />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -325,7 +326,7 @@ class DeviceLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.installed_os_name.width }}
               >
-               <Skeleton animation="wave" variant="circle" width={30} height={30} />
+                <Skeleton animation="wave" variant="circle" width={30} height={30} />
               </div>
               <div
                 className={classes.bodyItem}
