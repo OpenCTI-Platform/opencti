@@ -114,7 +114,7 @@ class DeviceCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+    const operatingSystem = node.installed_operating_system?.vendor_name?.toLowerCase();
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -265,7 +265,7 @@ class DeviceCardComponent extends Component {
                     {node?.installed_operating_system?.name && node?.installed_operating_system?.vendor_name
                       && <div>
                         <Typography style={{ display: 'flex', alignItems: 'center' }}>
-                          <ItemIcon type={node.installed_operating_system.vendor_name} />&nbsp;&nbsp;
+                        <ItemIcon variant='inline' type={operatingSystem === 'microsoft' || operatingSystem === 'apple' ||  operatingSystem === 'linux' ? operatingSystem : 'other'}/>&nbsp;&nbsp;
                           {t(node.installed_operating_system.name)}
                         </Typography>
                       </div>}
