@@ -8693,9 +8693,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cypress@npm:^9.7.0":
-  version: 9.7.0
-  resolution: "cypress@npm:9.7.0"
+"cypress@npm:10.2.0":
+  version: 10.2.0
+  resolution: "cypress@npm:10.2.0"
   dependencies:
     "@cypress/request": ^2.88.10
     "@cypress/xvfb": ^1.2.4
@@ -8741,7 +8741,7 @@ __metadata:
     yauzl: ^2.10.0
   bin:
     cypress: bin/cypress
-  checksum: 45df7c85bc7ec2e187153ff2b98bf5106d2313d70e2367a5742b5269a9e82d3fdd730d5bbc32ac8da72aeb120a52f9384c2ba4e2fc86b532f68440f22d700fc9
+  checksum: 1fd687658e036b2fd07031bde5a2f40ab61f664ca802ae650e0e15786d8825b38bb9444dffd8528b90a8e539e18241be6d5eaab7d5ae05d941839e2481e09342
   languageName: node
   linkType: hard
 
@@ -16921,7 +16921,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:2.29.1, moment@npm:>= 2.9.0":
+"moment@npm:2.29.3":
+  version: 2.29.3
+  resolution: "moment@npm:2.29.3"
+  checksum: 2e780e36d9a1823c08a1b6313cbb08bd01ecbb2a9062095820a34f42c878991ccba53abaa6abb103fd5c01e763724f295162a8c50b7e95b4f1c992ef0772d3f0
+  languageName: node
+  linkType: hard
+
+"moment@npm:>= 2.9.0":
   version: 2.29.1
   resolution: "moment@npm:2.29.1"
   checksum: 1e14d5f422a2687996be11dd2d50c8de3bd577c4a4ca79ba5d02c397242a933e5b941655de6c8cb90ac18f01cc4127e55b4a12ae3c527a6c0a274e455979345e
@@ -17718,7 +17725,7 @@ __metadata:
     bs-custom-file-input: ^1.3.4
     classnames: 2.3.1
     cross-env: 7.0.3
-    cypress: ^9.7.0
+    cypress: 10.2.0
     eslint-config-airbnb: 18.2.1
     eslint-config-airbnb-base: 14.2.1
     eslint-config-prettier: 8.3.0
@@ -17741,7 +17748,7 @@ __metadata:
     lodash: 4.17.21
     material-ui-dropzone: ^3.5.0
     mdi-material-ui: 6.22.1
-    moment: 2.29.1
+    moment: 2.29.3
     moment-timezone: 0.5.33
     object-hash: 2.2.0
     pdfmake: 0.2.2
