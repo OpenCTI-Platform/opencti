@@ -34,7 +34,7 @@ import Security, {
   EXPLORE,
 } from '../../../utils/Security';
 import Filters from '../common/lists/Filters';
-import Export from '../../../components/Export';
+import ExportPoam from '../../../components/ExportPoam';
 
 const styles = (theme) => ({
   appBar: {
@@ -288,18 +288,19 @@ const TopBarBreadcrumbs = ({
               </IconButton>
             </Tooltip>
             <Tooltip title={t('Data Import')}>
+               <ExportPoam />
+            </Tooltip>
+            <Tooltip
+              title={t('Add Note')}
+            >
               <IconButton
                 disabled={true}
                 component={Link}
                 classes={{ root: classes.button }}
               >
-                <PublishIcon fontSize="default" />
+                <NoteAddIcon fontSize="default" />
               </IconButton>
-            </Tooltip>
-            <Tooltip
-              title={t('Add Note')}
-            >
-              <Export />
+              {/* <Export /> */}
             </Tooltip>
             <IconButton
               size="medium"
