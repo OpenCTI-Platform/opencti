@@ -29,7 +29,7 @@
     "lodash": "4.17.21",
     "material-ui-dropzone": "^3.5.0",
     "mdi-material-ui": "6.22.1",
-    "moment": "2.29.1",
+    "moment": "2.29.3",
     "moment-timezone": "0.5.33",
     "object-hash": "2.2.0",
     "pdfmake": "0.2.2",
