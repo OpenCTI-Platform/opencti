@@ -61,15 +61,18 @@ import softwareIcon from '../resources/images/assets/softwareIcon.svg';
 import deviceIcon from '../resources/images/assets/deviceIcon.svg';
 import linuxIcon from '../resources/images/assets/linuxIcon.svg';
 import appendeciesIcon from '../resources/images/entities/appendeciesIcon.svg';
-import loadBalancerImage from '../resources/images/entities/loadBalancerImage.png';
-import otherImage from '../resources/images/entities/otherImage.png';
-import switchImage from '../resources/images/entities/switchImage.png';
-import operatingSystemIcon from '../resources/images/entities/operating_system.png';
+import otherImage from '../resources/images/entities/otherImage.svg';
+import switchImage from '../resources/images/entities/switchImage.svg';
+import IPAddress from '../resources/images/entities/ip_address.svg';
+import VoipDeviceImage from '../resources/images/entities/voip_device.svg';
+import operatingSystemIcon from '../resources/images/entities/operating_system.svg';
+import loadBalancerImage from '../resources/images/entities/load_balancer.svg';
+import routerImage from '../resources/images/entities/responsible_parties.svg';
 import collectIcon from '../resources/images/entities/collectIcon.svg';
 import poamIcon from '../resources/images/entities/poamIcon.svg';
 import userPersonIcon from '../resources/images/assets/userPersonIcon.svg';
 import partiesIcon from '../resources/images/assets/partiesIcon.svg';
-import applicationSoftwareIcon from '../resources/images/entities/application_software.png';
+import applicationSoftwareIcon from '../resources/images/entities/application_software.svg';
 import locationsIcon from '../resources/images/assets/locationsIcon.svg';
 import inventoryItemIcon from '../resources/images/assets/inventoryItem.svg';
 import resourceIcon from '../resources/images/assets/resource.svg';
@@ -136,7 +139,9 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'physical_device':
       return <Devices style={style} fontSize={fontSize} role="img" />;
     case 'router':
-      return <Router style={style} fontSize={fontSize} role="img" />;
+      return <img src={routerImage} style={style} alt="router-icon" />;
+    case 'ip_address':
+      return <IPAddress style={style} fontSize={fontSize} role="img" />;
     case 'firewall':
       return <Whatshot style={style} fontSize={fontSize} role="img" />;
     case 'embedded':
@@ -160,7 +165,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'server':
       return <ViewColumn style={style} fontSize={fontSize} role="img" />;
     case 'voip_device':
-      return <Mic style={style} fontSize={fontSize} role="img" />;
+      return <img src={VoipDeviceImage} style={style} alt="voip-device-icon" />;
     case 'workstation':
       return <Work style={style} fontSize={fontSize} role="img" />;
     case 'voip_handset':
