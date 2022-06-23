@@ -9,6 +9,7 @@ import {
   HelpOutlined,
   BugReportOutlined,
   DescriptionOutlined,
+  Print,
   MapOutlined,
   CenterFocusStrongOutlined,
   ShortTextOutlined,
@@ -19,10 +20,12 @@ import {
   ApartmentOutlined,
   HomeOutlined,
   Call,
-  Scanner,
   Visibility,
+  DeveloperBoard,
+  Mic,
   PlaceOutlined,
   StorageOutlined,
+  StayCurrentPortrait,
   PersonalVideo,
   SettingsVoice,
   Kitchen,
@@ -58,10 +61,15 @@ import softwareIcon from '../resources/images/assets/softwareIcon.svg';
 import deviceIcon from '../resources/images/assets/deviceIcon.svg';
 import linuxIcon from '../resources/images/assets/linuxIcon.svg';
 import appendeciesIcon from '../resources/images/entities/appendeciesIcon.svg';
+import loadBalancerImage from '../resources/images/entities/loadBalancerImage.png';
+import otherImage from '../resources/images/entities/otherImage.png';
+import switchImage from '../resources/images/entities/switchImage.png';
+import operatingSystemIcon from '../resources/images/entities/operating_system.png';
 import collectIcon from '../resources/images/entities/collectIcon.svg';
 import poamIcon from '../resources/images/entities/poamIcon.svg';
 import userPersonIcon from '../resources/images/assets/userPersonIcon.svg';
 import partiesIcon from '../resources/images/assets/partiesIcon.svg';
+import applicationSoftwareIcon from '../resources/images/entities/application_software.png';
 import locationsIcon from '../resources/images/assets/locationsIcon.svg';
 import inventoryItemIcon from '../resources/images/assets/inventoryItem.svg';
 import resourceIcon from '../resources/images/assets/resource.svg';
@@ -113,14 +121,26 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <img src={partiesIcon} style={style} alt="party-icon" />;
     case 'user':
       return <img src={userPersonIcon} style={style} alt="user-icon" />;
+    case 'laptop':
+      return <img src={deviceIcon} style={style} alt="laptop-icon" />;
+    case 'load_balancer':
+      return <img src={loadBalancerImage} style={style} alt="load-balancer-icon" />;
+    case 'switch':
+      return <img src={switchImage} style={style} alt="switch-icon" />;
     case 'other':
-      return <img src={deviceIcon} style={style} alt="device-icon" />;
+      return <img src={otherImage} style={style} alt="other-icon" />;
+    case 'application_software':
+      return <img src={applicationSoftwareIcon} style={style} alt="applicationSoftware-icon" />;
+    case 'operating_system':
+      return <img src={operatingSystemIcon} style={style} alt="operatingSystem-icon" />;
     case 'physical_device':
       return <Devices style={style} fontSize={fontSize} role="img" />;
     case 'router':
       return <Router style={style} fontSize={fontSize} role="img" />;
     case 'firewall':
       return <Whatshot style={style} fontSize={fontSize} role="img" />;
+    case 'embedded':
+      return <DeveloperBoard style={style} fontSize={fontSize} role="img" />;
     case 'network':
       return <img src={networkIcon} style={style} alt="network-icon" />;
     case 'software':
@@ -131,8 +151,6 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <img src={collectIcon} style={style} alt="collected-icon" />;
     case 'poam':
       return <img src={poamIcon} style={style} alt="poam-icon" />;
-    case 'switch':
-      return <Scanner style={style} fontSize={fontSize} role="img" />;
     case 'storage_array':
       return <Storage style={style} fontSize={fontSize} role="img" />;
     case 'appliance':
@@ -141,10 +159,14 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <Wifi style={style} fontSize={fontSize} role="img" />;
     case 'server':
       return <ViewColumn style={style} fontSize={fontSize} role="img" />;
+    case 'voip_device':
+      return <Mic style={style} fontSize={fontSize} role="img" />;
     case 'workstation':
       return <Work style={style} fontSize={fontSize} role="img" />;
     case 'voip_handset':
       return <Phone style={style} fontSize={fontSize} role="img" />;
+    case 'mobile_device':
+      return <StayCurrentPortrait style={style} fontSize={fontSize} role="img" />;
     case 'office':
       return <ApartmentOutlined style={style} fontSize={fontSize} role="img" />;
     case 'mobile':
@@ -159,6 +181,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <SettingsVoice style={style} fontSize={fontSize} role="img" />;
     case 'External-Reference':
       return <LanguageOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'printer':
+      return <Print style={style} fontSize={fontSize} role="img" />;
     case 'Label':
       return <LabelOutline style={style} fontSize={fontSize} role="img" />;
     case 'Attack-Pattern':

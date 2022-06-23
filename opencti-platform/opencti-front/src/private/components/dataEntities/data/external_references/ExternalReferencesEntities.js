@@ -37,7 +37,7 @@ class ExternalReferencesEntities extends Component {
       'view-external-reference',
     );
     this.state = {
-      sortBy: R.propOr('name', 'sortBy', params),
+      sortBy: R.propOr('source_name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -281,7 +281,7 @@ class ExternalReferencesEntities extends Component {
       type: {
         label: 'Type',
         width: '14%',
-        isSortable: true,
+        isSortable: false,
       },
       source_name: {
         label: 'Source Name',

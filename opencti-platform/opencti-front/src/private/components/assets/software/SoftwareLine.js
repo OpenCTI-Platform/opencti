@@ -102,7 +102,7 @@ class SoftwareLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.asset_type.width }}
               >
-                {node.vendor_name && <ItemIcon type={node.vendor_name === 'apple' || node.vendor_name === 'microsoft' || node.vendor_name === 'linux' ? node.vendor_name : 'other'} />}
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -165,6 +165,7 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
     fragment SoftwareLine_node on SoftwareAsset {
       id
       name
+      asset_type
       labels {
         __typename
         id

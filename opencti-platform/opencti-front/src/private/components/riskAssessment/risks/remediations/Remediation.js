@@ -78,13 +78,15 @@ class RemediationComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={remediation}
             history={history}
             disablePopover={false}
+            name={remediation.name}
+            cyioDomainObject={remediation}
             PopoverComponent={<RiskPopover />}
-            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpen.bind(this)}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             OperationsComponent={<RemediationDeletion riskId={riskId}/>}
+            goBack={`/activities/risk assessment/risks/${risk.id}/remediation`}
           />
           <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
           <Grid

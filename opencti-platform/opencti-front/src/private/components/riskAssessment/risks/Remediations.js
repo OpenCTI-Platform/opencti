@@ -66,11 +66,13 @@ const Remediations = (props) => {
         <>
         </>) : ( */}
           <CyioDomainObjectHeader
-            cyioDomainObject={remediation}
-            history={history}
             disabled={true}
-            // PopoverComponent={<DevicePopover />}
+            history={history}
+            name={remediation.name}
+            cyioDomainObject={remediation}
             handleOpenCreation={handleOpenCreation}
+            goBack='/activities/risk assessment/risks'
+            // PopoverComponent={<DevicePopover />}
             // handleOpenNewCreation={handleOpenNewCreation.bind(this)}
             // OperationsComponent={<RiskDeletion />}
           />
