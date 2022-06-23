@@ -427,7 +427,7 @@ const TopBar = ({
               >
                 {t('Profile')}
               </MenuItem>
-              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+              <MenuItem onClick={handleLogout} data-cy='logout'>{t('Logout')}</MenuItem>
             </Menu>
           </div>
         </div>

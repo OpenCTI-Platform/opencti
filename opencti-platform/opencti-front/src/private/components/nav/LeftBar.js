@@ -156,7 +156,7 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }}/>
                 </ListItemIcon>
-                <ListItemText primary={t('Assets')} />
+                <ListItemText primary={t('Assets')} data-cy='assets' />
               </MenuItem>
               <MenuItem
                disabled="true"
@@ -169,7 +169,7 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Information Systems')} />
+                <ListItemText primary={t('Information Systems')} data-cy='information systems' />
               </MenuItem>
             </MenuList>
           <MenuItem
@@ -194,7 +194,7 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Threats Assessment')} />
+                <ListItemText primary={t('Threats Assessment')} data-cy='threats assessment' />
               </MenuItem>
               <MenuItem
                 component={Link}
@@ -206,7 +206,7 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Vulnerability Assessment')} />
+                <ListItemText primary={t('Vulnerability Assessment')} data-cy='vsac' />
               </MenuItem>
               <FeatureFlag tag={'RISK_ASSESSMENT'}>
                 <MenuItem
@@ -219,7 +219,7 @@ const LeftBar = ({
                   <ListItemIcon style={{ minWidth: 35 }}>
                     <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                   </ListItemIcon>
-                  <ListItemText primary={t('Risk Assessment')} />
+                  <ListItemText primary={t('Risk Assessment')} data-cy='risk assessment' />
                 </MenuItem>
               </FeatureFlag>
             </MenuList>
@@ -238,7 +238,7 @@ const LeftBar = ({
             <ListItemIcon style={{ minWidth: 35 }}>
               <Database />
             </ListItemIcon>
-            <ListItemText primary={t('Data')} />
+            <ListItemText primary={t('Data')} data-cy='data' />
           </MenuItem>
           <MenuItem
             disabled="true"
@@ -251,7 +251,7 @@ const LeftBar = ({
             <ListItemIcon style={{ minWidth: 35 }}>
               <CogOutline />
             </ListItemIcon>
-            <ListItemText primary={t('Settings')} />
+            <ListItemText primary={t('Settings')} data-cy='settings' />
           </MenuItem>
         </MenuList>
         <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
@@ -265,7 +265,7 @@ const LeftBar = ({
             <ListItemIcon style={{ minWidth: 35 }}>
               <PersonIcon />
             </ListItemIcon>
-            <ListItemText primary={t(me.name)} />
+            <ListItemText primary={t(me.name)} data-cy='profile' />
           </MenuItem>
           <MenuItem
             onClick={ () => handleUserPrefOpen() }
@@ -275,7 +275,7 @@ const LeftBar = ({
             <ListItemIcon style={{ minWidth: 35 }}>
               <LocationCityIcon />
             </ListItemIcon>
-            <ListItemText primary={currentOrg} />
+            <ListItemText primary={currentOrg} data-cy='organization' />
           </MenuItem>
         </MenuList>
       </Security>
