@@ -35,6 +35,7 @@ import Security, {
 } from '../../../utils/Security';
 import Filters from '../common/lists/Filters';
 import ExportPoam from '../../../components/ExportPoam';
+import Export from '../../../components/Export';
 
 const styles = (theme) => ({
   appBar: {
@@ -293,14 +294,7 @@ const TopBarBreadcrumbs = ({
             <Tooltip
               title={t('Add Note')}
             >
-              <IconButton
-                disabled={true}
-                component={Link}
-                classes={{ root: classes.button }}
-              >
-                <NoteAddIcon fontSize="default" />
-              </IconButton>
-              {/* <Export /> */}
+              <Export />
             </Tooltip>
             <IconButton
               size="medium"

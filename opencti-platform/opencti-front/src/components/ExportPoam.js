@@ -34,14 +34,15 @@ import environmentDarkLight from '../../../opencti-front/src/relay/environmentDa
 
 const styles = (theme) => ({
   dialogRoot: {
-    padding: '24px',
-    overflowY: 'hidden',
+    overflowY: 'scroll',
+    overflowX: 'hidden',
   },
   button: {
     display: 'table-cell',
     float: 'left',
   },
   buttonPopover: {
+    marginRight: '5px',
     textTransform: 'capitalize',
   },
   dialogContent: {
@@ -54,7 +55,7 @@ const styles = (theme) => ({
   },
   dialogActions: {
     justifyContent: 'flex-start',
-    padding: '10px 0 20px 22px',
+    padding: '0px 0 20px 22px',
   },
 });
 
@@ -123,7 +124,7 @@ class ExportPoam extends Component {
       // assoc('model', this.state.selectedOscalType),
     )(values);
     CM(environmentDarkLight, {
-      mutation: ExportMutation,
+      mutation: ExportPoamMutation,
       variables: {
         model: this.state.selectedOscalType,
         mediaType: values.mediaType,
@@ -164,8 +165,14 @@ class ExportPoam extends Component {
           <Menu
             anchorEl={this.state.anchorEl}
             open={Boolean(this.state.anchorEl)}
+            anchorOrigin={{
+              vertical: "bottom",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
             onClose={this.handleOscalModalClose.bind(this)}
-            style={{ marginTop: 50 }}
             >
               <OscalModalTypeList
                 fullWidth={true}
@@ -264,7 +271,7 @@ class ExportPoam extends Component {
   }
 }
 
-Export.propTypes = {
+ExportPoam.propTypes = {
   keyword: PropTypes.string,
   theme: PropTypes.object,
   classes: PropTypes.object,
