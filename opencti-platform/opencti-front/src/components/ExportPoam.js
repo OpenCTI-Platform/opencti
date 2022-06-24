@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
@@ -7,30 +5,26 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   compose,
   dissoc,
-  assoc,
-  evolve,
   pipe,
 } from 'ramda';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import PublishIcon from '@material-ui/icons/Publish';
-import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from './i18n';
 import SelectField from './SelectField';
 import OscalModalTypeList from '../private/components/common/form/OscalModalTypeList';
 import OscalMediaTypeList from '../private/components/common/form/OscalMediaTypeList';
-import environmentDarkLight from '../../../opencti-front/src/relay/environmentDarkLight';
+import environmentDarkLight from '../relay/environmentDarkLight';
+import { toastGenericError } from '../utils/bakedToast';
 
 const styles = (theme) => ({
   dialogRoot: {
@@ -80,21 +74,21 @@ class ExportPoam extends Component {
     };
   }
 
-  handleClickOpen = () => {
+  handleClickOpen() {
     this.setState({ open: true });
-  };
+  }
 
   handleOscalModalOpen(event) {
     this.setState({ anchorEl: event.currentTarget, oscalModal: true });
   }
 
-  handleOscalModalClose = () => {
+  handleOscalModalClose() {
     this.setState({ anchorEl: null, oscalModal: false });
-  };
+  }
 
-  handleClose = () => {
+  handleClose() {
     this.setState({ open: false });
-  };
+  }
 
   handleCancelClick() {
     this.setState({
@@ -109,15 +103,16 @@ class ExportPoam extends Component {
   }
 
   handleOscalType(selectedOscalType) {
-    this.setState({ selectedOscalType: selectedOscalType });
+    this.setState({ selectedOscalType });
     if (selectedOscalType === 'poam') {
       this.setState({ open: true, anchorEl: null });
     }
   }
-  
+
   onReset() {
     this.handleCancelClick();
   }
+
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
       dissoc('marking'),
@@ -137,9 +132,9 @@ class ExportPoam extends Component {
         this.handleClose();
       },
       onError: (err) => {
-        toastGenericError("Failed to export data")
         console.error(err);
-      }
+        toastGenericError('Failed to export data');
+      },
     });
   }
 
@@ -166,11 +161,11 @@ class ExportPoam extends Component {
             anchorEl={this.state.anchorEl}
             open={Boolean(this.state.anchorEl)}
             anchorOrigin={{
-              vertical: "bottom",
+              vertical: 'bottom',
             }}
             transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
+              vertical: 'top',
+              horizontal: 'right',
             }}
             onClose={this.handleOscalModalClose.bind(this)}
             >

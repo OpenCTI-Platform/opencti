@@ -11,7 +11,6 @@ import {
   ExploreOutlined,
   InsertChartOutlined,
 } from '@material-ui/icons';
-import PublishIcon from '@material-ui/icons/Publish';
 import FindInPageIcon from '@material-ui/icons/FindInPage';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import Menu from '@material-ui/core/Menu';

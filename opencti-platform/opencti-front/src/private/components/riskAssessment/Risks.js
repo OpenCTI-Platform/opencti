@@ -366,8 +366,8 @@ class Risks extends Component {
           query={risksLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`props : ${props} Error : ${error}`);
             if (error) {
+              console.error(error);
               toastGenericError('Request Failed');
             }
             return (

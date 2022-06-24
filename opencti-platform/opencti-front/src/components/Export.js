@@ -137,21 +137,21 @@ class Export extends Component {
       });
   }
 
-  handleClickOpen = () => {
+  handleClickOpen() {
     this.setState({ open: true });
-  };
+  }
 
-  handleClickMenuOpen = (event) => {
+  handleClickMenuOpen(event) {
     this.setState({ menuOpen: { open: true, anchorEl: event.currentTarget } });
-  };
+  }
 
-  handleClickMenuClose = () => {
+  handleClickMenuClose() {
     this.setState({ menuOpen: { open: false } });
-  };
+  }
 
-  handleClose = () => {
+  handleClose() {
     this.setState({ open: false });
-  };
+  }
 
   handleCancelClick() {
     this.setState({
