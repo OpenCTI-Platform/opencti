@@ -6,7 +6,7 @@ describe('Authentication', () => {
     cy.visit('/');
   });
 
-  it('Can access user data', function () {
+  it('Verify that local credentials are defined', function () {
     assert.isDefined(this.user.email, 'Can load the user email address');
     assert.isDefined(this.user.password, 'Can load the user password');
   });
