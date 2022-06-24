@@ -71,8 +71,8 @@ node {
           sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
         }
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
-        sh 'yarn schema-compile'
         sh 'yarn install'
+        sh 'yarn run schema-compile'
       }
     }
   }

@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EmtityLocationComponent extends Component {
+class EntityLocationComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -57,12 +57,14 @@ class EmtityLocationComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={location}
             history={history}
+            name={location.name}
+            cyioDomainObject={location}
+            goBack='/data/entities/locations'
             PopoverComponent={<EntitiesLocationsPopover />}
+            OperationsComponent={<EntitiesLocationsDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesLocationsDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -117,14 +119,14 @@ class EmtityLocationComponent extends Component {
   }
 }
 
-EmtityLocationComponent.propTypes = {
+EntityLocationComponent.propTypes = {
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityLocation = createFragmentContainer(EmtityLocationComponent, {
+const EntityLocation = createFragmentContainer(EntityLocationComponent, {
   location: graphql`
     fragment EntityLocation_location on OscalLocation {
       __typename

@@ -127,6 +127,7 @@ const activityReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -149,6 +150,7 @@ const actorReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.actor_type && {actor_type: item.actor_type} ),
     ...(item.actor_ref && {actor_ref_iri: item.actor_ref}),
@@ -182,6 +184,7 @@ const assessmentPlatformReducer = (item) => {
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.name && {name: item.name}),
@@ -200,6 +203,7 @@ const assessmentSubjectReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.subject_type && {subject_type: item.subject_type}),
@@ -220,6 +224,7 @@ const associatedActivityReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.activity_id && {activity_id_iri: item.activity_id} ),
@@ -240,6 +245,7 @@ const characterizationReducer = (item) => {
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.origins && {origins_iri: item.origins}),
@@ -259,6 +265,7 @@ const evidenceReducer = (item) => {
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.href && {href: item.href}),
@@ -276,6 +283,7 @@ const facetReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.risk_state && {risk_state: item.risk_state}),
@@ -313,6 +321,7 @@ const mitigatingFactorReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -339,6 +348,7 @@ const observationReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -364,6 +374,8 @@ const originReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
+    ...(item.links && {links_iri: item.links}),
     ...(item.origin_actors && {origin_actors_iri: item.origin_actors}),
     ...(item.related_tasks && {related_tasks_iri: item.related_tasks}),
   }
@@ -380,6 +392,7 @@ const requiredAssetReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.subjects && {subjects_iri: item.subjects}),
@@ -401,6 +414,7 @@ const riskReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -444,6 +458,7 @@ const riskLogReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -471,6 +486,7 @@ const riskResponseReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -499,6 +515,7 @@ const subjectReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.name && {name: item.name}),
@@ -529,6 +546,7 @@ const taskReducer = (item) => {
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -691,6 +709,7 @@ export const attachToActivityQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -712,6 +731,7 @@ export const detachFromActivityQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -857,6 +877,7 @@ export const attachToActorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -878,6 +899,7 @@ export const detachFromActorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1013,6 +1035,7 @@ export const attachToAssessmentAssetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1034,6 +1057,7 @@ export const detachFromAssessmentAssetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1183,6 +1207,7 @@ export const attachToAssessmentPlatformQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1204,6 +1229,7 @@ export const detachFromAssessmentPlatformQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1355,6 +1381,7 @@ export const attachToAssessmentSubjectQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1376,6 +1403,7 @@ export const detachFromAssessmentSubjectQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1503,6 +1531,7 @@ export const attachToAssociatedActivityQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1524,6 +1553,7 @@ export const detachFromAssociatedActivityQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1659,6 +1689,7 @@ export const attachToCharacterizationQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1680,6 +1711,7 @@ export const detachFromCharacterizationQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1862,6 +1894,7 @@ export const attachToEvidenceQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1883,6 +1916,7 @@ export const detachFromEvidenceQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2038,6 +2072,7 @@ export const attachToFacetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2059,6 +2094,7 @@ export const detachFromFacetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2204,6 +2240,7 @@ export const attachToLogEntryAuthorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2225,6 +2262,7 @@ export const detachFromLogEntryAuthorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2361,6 +2399,7 @@ export const attachToMitigatingFactorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2382,6 +2421,7 @@ export const detachFromMitigatingFactorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2544,6 +2584,7 @@ export const attachToObservationQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2565,6 +2606,7 @@ export const detachFromObservationQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2721,6 +2763,7 @@ export const attachToOriginQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2742,6 +2785,7 @@ export const detachFromOriginQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2920,6 +2964,7 @@ export const attachToRequiredAssetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2941,6 +2986,7 @@ export const detachFromRequiredAssetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3003,6 +3049,16 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
+
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('risk_level')) select.push('risk_level');
+    if (!select.includes('false_positive')) select.push('false_positive');
+    if (!select.includes('accepted')) select.push('accepted');
+    if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
+    if (!select.includes('priority')) select.push('priority')
+  }
+  
 
   // fetch the uuid of each related_observation and related_risk as these are commonly used
   if (select.includes('related_observations')) select.push('related_observation_ids');
@@ -3092,6 +3148,15 @@ export const selectAllRisks = (select, args, parent) => {
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
 
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('risk_level')) select.push('risk_level');
+    if (!select.includes('false_positive')) select.push('false_positive');
+    if (!select.includes('accepted')) select.push('accepted');
+    if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
+    if (!select.includes('priority')) select.push('priority')
+  }
+  
   // fetch the uuid of each related_observation and related_risk as these are commonly used
   if (select.includes('related_observations')) select.push('related_observation_ids');
 
@@ -3248,6 +3313,7 @@ export const attachToRiskQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3269,6 +3335,7 @@ export const detachFromRiskQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3423,6 +3490,7 @@ export const attachToRiskLogEntryQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3444,6 +3512,7 @@ export const detachFromRiskLogEntryQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3525,6 +3594,12 @@ export const selectRiskResponseQuery = (id, select) => {
 export const selectRiskResponseByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
+
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('response_type')) select.push('response_type');
+  }
+  
   const { selectionClause, predicates } = buildSelectVariables(riskResponsePredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -3540,6 +3615,11 @@ export const selectAllRiskResponses = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
   if (!select.includes('id')) select.push('id');
 
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('response_type')) select.push('response_type');
+  }
+  
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
@@ -3592,6 +3672,7 @@ export const attachToRiskResponseQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3613,6 +3694,7 @@ export const detachFromRiskResponseQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3804,6 +3886,7 @@ export const attachToSubjectQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3825,6 +3908,7 @@ export const detachFromSubjectQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3963,6 +4047,7 @@ export const attachToOscalTaskQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3984,6 +4069,7 @@ export const detachFromOscalTaskQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -4893,21 +4979,25 @@ export const riskPredicateMap = {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#false_positive>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "false_positive");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'false-positive',
   },
   accepted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#accepted>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "accepted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'accepted',
   },
   risk_adjusted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_adjusted>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_adjusted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'risk-adjusted',
   },
   priority: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#priority>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:nonNegativeInteger` : null,  this.predicate, "priority");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'priority',
   },
   vendor_dependency: {
     predicate: "<http://fedramp.gov/ns/oscal#vendor_dependency>",
@@ -5140,6 +5230,7 @@ export const riskResponsePredicateMap = {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "response_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'type',
   },
   lifecycle: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",

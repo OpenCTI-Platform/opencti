@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EmtityPartyComponent extends Component {
+class EntityPartyComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -61,12 +61,14 @@ class EmtityPartyComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={party}
             history={history}
+            name={party.name}
+            cyioDomainObject={party}
+            goBack='/data/entities/parties'
             PopoverComponent={<EntitiesPartiesPopover />}
+            OperationsComponent={<EntitiesPartiesDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesPartiesDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -121,14 +123,14 @@ class EmtityPartyComponent extends Component {
   }
 }
 
-EmtityPartyComponent.propTypes = {
+EntityPartyComponent.propTypes = {
   party: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityParty = createFragmentContainer(EmtityPartyComponent, {
+const EntityParty = createFragmentContainer(EntityPartyComponent, {
   party: graphql`
     fragment EntityParty_party on OscalParty {
       __typename

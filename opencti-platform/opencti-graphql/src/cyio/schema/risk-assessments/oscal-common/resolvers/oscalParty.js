@@ -1,5 +1,6 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import { compareValues, updateQuery, filterValues } from '../../../utils.js';
+import {convertToProperties} from '../../riskUtils.js'
 import { UserInputError } from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -25,11 +26,15 @@ import {
   partyPredicateMap,
   selectLocationByIriQuery,
   insertExternalIdentifiersQuery,  
-  selectExternalIdentifierByIriQuery
+  selectExternalIdentifierByIriQuery,
 } from './sparql-query.js';
 import {
   getReducer as getCommonReducer,
-} from '../../oscal-common/resolvers/sparql-query.js'
+} from '../../oscal-common/resolvers/sparql-query.js';
+import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
 
 
 const oscalPartyResolvers = {
@@ -77,6 +82,12 @@ const oscalPartyResolvers = {
           if (party.id === undefined || party.id == null) {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${party.iri} missing field 'id'; skipping`);
             continue;
+          }
+
+          // if props were requested
+          if (selectMap.getNode('node').includes('props')) {
+            let props = convertToProperties(party, partyPredicateMap);
+            if (props !== null) party.props = props;
           }
 
           // filter out non-matching entries if a filter is to be applied
@@ -151,8 +162,16 @@ const oscalPartyResolvers = {
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
-          const reducer = getReducer("PARTY");
-          return reducer(response[0]);
+        let party = response[0];
+
+        // if props were requested
+        if (selectMap.getNode('oscalParty').includes('props')) {
+          let props = convertToProperties(party, partyPredicateMap);
+          if (props !== null) party.props = props;
+        }
+
+        const reducer = getReducer("PARTY");
+        return reducer(party);
       } else {
         // Handle reporting Stardog Error
         if (typeof (response) === 'object' && 'body' in response) {
@@ -168,6 +187,18 @@ const oscalPartyResolvers = {
   },
   Mutation: {
     createOscalParty: async (_, { input }, { dbName, selectMap, dataSources }) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
       let addresses, phoneNumbers, memberOrgs, locations, externalIds;
       if (input.telephone_numbers !== undefined) {
@@ -191,8 +222,8 @@ const oscalPartyResolvers = {
         delete input.locations;
       }
 
-      // create the Person
-      const { id, query } = insertPartyQuery(input);
+      // create the Party
+      const { iri, id, query } = insertPartyQuery(input);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
@@ -200,6 +231,20 @@ const oscalPartyResolvers = {
       });
 
       // add the Party to the parent object (if supplied)
+      // TODO: WORKAROUND attach the party to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const attachQuery = attachToPOAMQuery(poamId, 'parties', iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Add Party to POAM",
+          sparqlQuery: attachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
 
       // create any address supplied and attach them to the Party
       if (addresses !== undefined && addresses !== null) {
@@ -318,6 +363,24 @@ const oscalPartyResolvers = {
       const reducer = getReducer("PARTY");
       const party = (reducer(response[0]));
 
+      // detach the Party from the parent object (if supplied)
+      // TODO: WORKAROUND attach the party to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const detachQuery = detachFromPOAMQuery(poamId, 'parties', party.iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Detaching Party from POAM",
+          sparqlQuery: detachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
+
+      //TODO: Determine any external attachments that will need to be removed when this object is deleted
+
       // Delete any attached addresses
       if (party.hasOwnProperty('addresses_iri')) {
         for (const addrIri of party.addresses_iri) {
@@ -373,8 +436,6 @@ const oscalPartyResolvers = {
           });
         }
       }
-
-      // detach the Party from the parent object (if supplied)
 
       // Delete the Party itself
       const query = deletePartyQuery(id);

@@ -1,7 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues, generateId, OSCAL_NS} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
-import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
+import { calculateRiskLevel, getLatestRemediationInfo, convertToProperties } from '../../riskUtils.js';
 import {
   getReducer, 
   insertPOAMQuery,
@@ -25,6 +25,7 @@ import {
   selectAllObservations,
   selectAllRisks,
   selectAssessmentAssetByIriQuery,
+  riskPredicateMap,
 } from '../../assessment-common/resolvers/sparql-query.js';
 import {
   insertRolesQuery,
@@ -33,6 +34,7 @@ import {
   selectAllParties,
   selectAllRoles,
   selectAllResponsibleParties,
+  partyPredicateMap,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
   getReducer as getComponentReducer,
@@ -706,6 +708,12 @@ const poamResolvers = {
           continue;
         }
 
+        // if props were requested
+        if (selectMap.getNode('node').includes('props')) {
+          let props = convertToProperties(party, partyPredicateMap);
+          if (props !== undefined) party.props = props;
+        }
+
         // filter out non-matching entries if a filter is to be applied
         if ('filters' in args && args.filters != null && args.filters.length > 0) {
           if (!filterValues(party, args.filters, args.filterMode) ) {
@@ -1044,6 +1052,25 @@ const poamResolvers = {
           continue
         }
 
+        // if props were requested
+        if (selectMap.getNode('node').includes('props')) {
+          let props = convertToProperties(risk, riskPredicateMap);
+          if (risk.hasOwnProperty('risk_level')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-level","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_level}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-level',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.risk_level}`,
+            }
+            props.push(property)
+          }
+          if (props !== null) risk.props = props;
+        }
+
         // filter out non-matching entries if a filter is to be applied
         if ('filters' in args && (args.filters != null && args.filters.length > 0) && args.filters[0] !== null) {
           if (!filterValues(risk, args.filters, args.filterMode) ) {
@@ -1135,14 +1162,14 @@ const poamResolvers = {
 
         // if props were requested
         if (selectMap.getNode('node').includes('props') && poamItem.hasOwnProperty('poam_id')) {
-          let id_material = {"name":"POAM-ID","ns":"http://fedramp.gov/ns/oscal","value":[`${poamItem.poam_id}`]};
+          let id_material = {"name":"POAM-ID","ns":"http://fedramp.gov/ns/oscal","value":`${poamItem.poam_id}`};
           let id = generateId(id_material, OSCAL_NS);
           let prop = {
             id: `${id}`,
             entity_type: 'property',
             prop_name: 'POAM-ID',
             ns: 'http://fedramp.gov/ns/oscal',
-            value: [`${poamItem.poam_id}`],
+            value: `${poamItem.poam_id}`,
           };
           poamItem.props = [prop];
         }

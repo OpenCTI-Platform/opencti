@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EmtityAssessmentPlatformComponent extends Component {
+class EntityAssessmentPlatformComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -58,10 +58,12 @@ class EmtityAssessmentPlatformComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={assessmentPlatform}
             history={history}
-            PopoverComponent={<EntitiesAssessmentPlatformsPopover />}
+            name={assessmentPlatform.name}
+            cyioDomainObject={assessmentPlatform}
+            goBack='/data/entities/assessment_platform'
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+            PopoverComponent={<EntitiesAssessmentPlatformsPopover />}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
             OperationsComponent={<EntitiesAssessmentPlatformsDeletion />}
           />
@@ -117,14 +119,14 @@ class EmtityAssessmentPlatformComponent extends Component {
   }
 }
 
-EmtityAssessmentPlatformComponent.propTypes = {
+EntityAssessmentPlatformComponent.propTypes = {
   assessmentPlatform: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityAssessmentPlatform = createFragmentContainer(EmtityAssessmentPlatformComponent, {
+const EntityAssessmentPlatform = createFragmentContainer(EntityAssessmentPlatformComponent, {
   assessmentPlatform: graphql`
     fragment EntityAssessmentPlatform_assessmentPlatform on AssessmentPlatform {
       __typename

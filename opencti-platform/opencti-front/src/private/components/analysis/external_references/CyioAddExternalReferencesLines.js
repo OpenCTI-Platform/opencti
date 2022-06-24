@@ -16,6 +16,7 @@ import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import rehypeRaw from 'rehype-raw';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
@@ -152,6 +153,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
                   primary={`${externalReference.source_name} ${externalReferenceId}`}
                   secondary={<Markdown
                     remarkPlugins={[remarkGfm, remarkParse]}
+                    rehypePlugins={[rehypeRaw]}
                     parserOptions={{ commonmark: true }}
                     className="markdown">
                     {truncate(
@@ -209,7 +211,7 @@ const CyioAddExternalReferencesLines = createFragmentContainer(
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 4 }
       ) {
-        cyioExternalReferences(limit: $count) {
+        cyioExternalReferences(first: $count) {
           edges {
             cursor
             node {

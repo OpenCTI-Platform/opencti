@@ -33,7 +33,7 @@ const cyioNoteResolvers = {
         const edges = [];
         const reducer = getReducer("NOTE");
         let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.limit === undefined ? response.length : args.limit) ;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         filterCount = 0;
         let noteList ;
@@ -233,6 +233,51 @@ const cyioNoteResolvers = {
       return reducer(result[0]);
     },
   },
+  CyioNote: {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
+      let iriArray = parent.labels_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getReducer("LABEL");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Label')) continue;
+          const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode("labels"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Label",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined || (Array.isArray(response) && response.length === 0)) {
+            console.error(`[CYIO] NON-EXISTENT: (${dbName}) '${iri}'; skipping entity`);              
+            continue;
+          }
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+  }
 };
 
 export default cyioNoteResolvers;

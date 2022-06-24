@@ -14,6 +14,7 @@ import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import { InformationOutline, Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -180,6 +181,7 @@ class RiskOverviewComponent extends Component {
                   <div className={classes.scrollObj}>
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
+                      rehypePlugins={[rehypeRaw]}
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >

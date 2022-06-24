@@ -8,6 +8,10 @@ import {
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
 import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
+import {
   getReducer,
   insertResponsibleRoleQuery,
   selectResponsibleRoleQuery,
@@ -162,7 +166,7 @@ const responsibleRoleResolvers = {
       }
 
       // create the Responsible Party
-      const { id, query } = insertResponsibleRoleQuery(input);
+      const { iri, id, query } = insertResponsibleRoleQuery(input);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
@@ -170,6 +174,20 @@ const responsibleRoleResolvers = {
       });
 
       // add the responsible role to the parent object (if supplied)
+      // TODO: WORKAROUND attach the responsible role to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const attachQuery = attachToPOAMQuery(poamId, 'responsible_parties', iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Add ResponsibleRole to POAM",
+          sparqlQuery: attachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
 
       // attach associated Role
       if (role !== undefined && role !== null) {
@@ -231,8 +249,26 @@ const responsibleRoleResolvers = {
         throw e
       }
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      const reducer = getReducer("RESPONSIBLE-ROLE");
+      const responsibleRole = (reducer(response[0]));
 
       // detach the Responsible Role from the parent object (if supplied)
+      // TODO: WORKAROUND attach the responsible role to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const detachQuery = detachFromPOAMQuery(poamId, 'responsible_parties', responsibleRole.iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Detaching Responsible Role from POAM",
+          sparqlQuery: detachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
+
+      //TODO: Determine any external attachments that will need to be removed when this object is deleted
 
       // Delete the responsible Role itself
       const query = deleteResponsibleRoleQuery(id);

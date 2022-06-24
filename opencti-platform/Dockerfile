@@ -1,5 +1,6 @@
-FROM node:16.6.0-alpine3.14 AS base
+FROM node:16-alpine AS base
 
+RUN corepack enable
 
 FROM base AS graphql-deps-builder
 WORKDIR /opt/opencti-build/opencti-graphql
@@ -18,7 +19,8 @@ RUN yarn schema-compile
 
 FROM base AS front-builder
 WORKDIR /opt/opencti-build/opencti-front
-COPY opencti-front/package.json opencti-front/yarn.lock ./
+COPY opencti-front/package.json opencti-front/yarn.lock opencti-front/.yarnrc.yml ./
+COPY opencti-front/.yarn ./.yarn
 RUN yarn install --network-timeout 300000
 COPY opencti-front /opt/opencti-build/opencti-front
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql

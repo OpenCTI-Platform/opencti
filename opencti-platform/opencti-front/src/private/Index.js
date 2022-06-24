@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
@@ -77,7 +77,7 @@ const Index = (me) => {
   return (
     <div className={classes.root}>
       <TopBarBreadcrumbs />
-      <LeftBar clientId={clientId}/>
+      <LeftBar clientId={clientId} />
       <Message />
       <main className={classes.content} style={{ paddingRight: 24 }}>
         <div className={classes.toolbar} />
@@ -100,7 +100,10 @@ const Index = (me) => {
             path="/dashboard/search/:keyword"
             render={(routeProps) => <Search {...routeProps} me={me} />}
           />
-          <BoundaryRoute path="/data" component={RootDataEntities} />
+          <BoundaryRoute
+            path="/data"
+            render={(routeProps) => <RootDataEntities {...routeProps} me={me} />}
+          />
           <BoundaryRoute path="/activities/vulnerability assessment" component={RootVSAC} />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/events" component={RootEvents} />

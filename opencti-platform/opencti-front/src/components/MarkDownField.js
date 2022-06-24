@@ -6,6 +6,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import rehypeRaw from 'rehype-raw';
 import { isNil } from 'ramda';
 import inject18n from './i18n';
 
@@ -59,6 +60,7 @@ const MarkDownField = (props) => {
         generateMarkdownPreview={(markdown) => Promise.resolve(
             <Markdown
               remarkPlugins={[remarkGfm, remarkParse]}
+              rehypePlugins={[rehypeRaw]}
               parserOptions={{ commonmark: true }}
             >
               {markdown}

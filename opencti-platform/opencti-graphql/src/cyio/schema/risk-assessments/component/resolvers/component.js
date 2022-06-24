@@ -52,6 +52,8 @@ const componentResolvers = {
 
         // compose name to include version and patch level
         for (let component of response) {
+          // filter out network assets
+          if (component.asset_type === 'network') continue;
           let name = component.name;
           if (component.hasOwnProperty('vendor_name')) {
             if (!component.name.startsWith(component.vendor_name)) name = `${component.vendor_name} ${component.name}`;

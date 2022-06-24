@@ -14,6 +14,10 @@ import {
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
 import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
+import {
   getReducer,
   insertLocationQuery,
   selectLocationQuery,
@@ -160,6 +164,18 @@ const oscalLocationResolvers = {
   },
   Mutation: {
     createOscalLocation: async (_, { input }, { dbName, selectMap, dataSources }) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
       let address, phoneNumbers;
       if (input.telephone_numbers !== undefined) {
@@ -180,7 +196,7 @@ const oscalLocationResolvers = {
       }
 
       // create the Location
-      const { id, query } = insertLocationQuery(input);
+      const { iri, id, query } = insertLocationQuery(input);
       let results = await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
@@ -188,6 +204,20 @@ const oscalLocationResolvers = {
       });
 
       // add the Location to the parent object (if supplied)
+      // TODO: WORKAROUND attach the party to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const attachQuery = attachToPOAMQuery(poamId, 'locations', iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Add Location to POAM",
+          sparqlQuery: attachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
 
       // create the address supplied and attach them to the Location
       if (address !== undefined && address !== null) {
@@ -261,6 +291,24 @@ const oscalLocationResolvers = {
       const reducer = getReducer("LOCATION");
       const location = (reducer(response[0]));
 
+      // detach the Location from the parent object (if supplied)
+      // TODO: WORKAROUND attach the location to the default POAM until Metadata object is supported
+      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
+      const detachQuery = detachFromPOAMQuery(poamId, 'locations', location.iri );
+      try {
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Detaching Risk from POAM",
+          sparqlQuery: detachQuery
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      // END WORKAROUND
+
+      //TODO: Determine any external attachments that will need to be removed when this object is deleted
+
       // Delete any attached addresses
       if (location.hasOwnProperty('address_iri')) {
         let addrIris = []
@@ -289,8 +337,6 @@ const oscalLocationResolvers = {
           });
         }
       }
-
-      // detach the Location from the parent object (if supplied)
 
       // Delete the Location itself
       const query = deleteLocationQuery(id);

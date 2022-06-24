@@ -173,7 +173,7 @@ class SoftwareCardComponent extends Component {
                   {t('Type')}
                 </Typography>
                 <div className="clearfix" />
-                {node.vendor_name && <ItemIcon type={node.vendor_name === 'apple' || node.vendor_name === 'microsoft' || node.vendor_name === 'linux' ? node.vendor_name : 'other'} />}
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography

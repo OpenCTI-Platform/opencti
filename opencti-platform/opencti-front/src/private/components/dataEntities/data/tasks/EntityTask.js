@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class EmtityTaskComponent extends Component {
+class EntityTaskComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -58,12 +58,14 @@ class EmtityTaskComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={task}
+            name={task.name}
             history={history}
+            cyioDomainObject={task}
+            goBack='/data/entities/tasks'
             PopoverComponent={<EntitiesTasksPopover />}
+            OperationsComponent={<EntitiesTasksDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<EntitiesTasksDeletion />}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -120,14 +122,14 @@ class EmtityTaskComponent extends Component {
   }
 }
 
-EmtityTaskComponent.propTypes = {
+EntityTaskComponent.propTypes = {
   task: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityTask = createFragmentContainer(EmtityTaskComponent, {
+const EntityTask = createFragmentContainer(EntityTaskComponent, {
   task: graphql`
     fragment EntityTask_task on OscalTask {
       __typename

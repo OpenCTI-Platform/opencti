@@ -30,7 +30,7 @@ const styles = () => ({
   },
 });
 
-class EmtityResponsiblePartyComponent extends Component {
+class EntityResponsiblePartyComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -59,12 +59,14 @@ class EmtityResponsiblePartyComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={responsibleParty}
             history={history}
-            PopoverComponent={<EntitiesResponsiblePartiesPopover />}
+            name={responsibleParty.name}
+            cyioDomainObject={responsibleParty}
+            goBack='/data/entities/responsible_parties'
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+            PopoverComponent={<EntitiesResponsiblePartiesPopover />}
             OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
+            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -82,23 +84,6 @@ class EmtityResponsiblePartyComponent extends Component {
             classes={{ container: classes.gridContainer }}
             style={{ marginTop: 25 }}
           >
-            <Grid item={true} xs={6}>
-              <CyioCoreObjectExternalReferences
-                typename={responsibleParty.__typename}
-                externalReferences={responsibleParty.links}
-                fieldName='links'
-                cyioCoreObjectId={responsibleParty?.id}
-                refreshQuery={refreshQuery}
-              />
-            </Grid>
-            <Grid item={true} xs={6}>
-              <RelatedTasks
-                toType='OscalTask'
-                fromType= 'OscalResponsibleParty'
-                history={history}
-                remediationId={responsibleParty.id}
-              />
-            </Grid>
             <Grid item={true} xs={12}>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={responsibleParty.__typename}
@@ -128,14 +113,14 @@ class EmtityResponsiblePartyComponent extends Component {
   }
 }
 
-EmtityResponsiblePartyComponent.propTypes = {
+EntityResponsiblePartyComponent.propTypes = {
   responsibleParty: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
-const EntityRole = createFragmentContainer(EmtityResponsiblePartyComponent, {
+const EntityRole = createFragmentContainer(EntityResponsiblePartyComponent, {
   responsibleParty: graphql`
     fragment EntityResponsibleParty_responsibleParty on OscalResponsibleParty {
       __typename
@@ -148,18 +133,6 @@ const EntityRole = createFragmentContainer(EmtityResponsiblePartyComponent, {
         color
         entity_type
         description
-      }
-      links {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
       }
       remarks {
         __typename

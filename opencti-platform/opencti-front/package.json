@@ -19,6 +19,7 @@
     "formik-material-ui": "3.0.1",
     "formik-material-ui-pickers": "0.0.12",
     "graphql": "15.5.2",
+    "graphql-tools": "^8.2.13",
     "html-to-image": "1.7.0",
     "html-to-pdfmake": "2.3.4",
     "http-proxy-middleware": "2.0.1",
@@ -29,7 +30,7 @@
     "lodash": "4.17.21",
     "material-ui-dropzone": "^3.5.0",
     "mdi-material-ui": "6.22.1",
-    "moment": "2.29.1",
+    "moment": "2.29.3",
     "moment-timezone": "0.5.33",
     "object-hash": "2.2.0",
     "pdfmake": "0.2.2",
@@ -61,6 +62,7 @@
     "react-toastify": "^8.0.3",
     "react-virtualized": "9.22.3",
     "recharts": "2.1.2",
+    "rehype-raw": "^6.1.1",
     "relay-runtime": "11.0.2",
     "remark-gfm": "2.0.0",
     "remark-parse": "10.0.0",
@@ -85,7 +87,7 @@
     "babel-core": "6.26.3",
     "babel-runtime": "6.26.0",
     "cross-env": "7.0.3",
-    "cypress": "^9.7.0",
+    "cypress": "10.2.0",
     "eslint-config-airbnb": "18.2.1",
     "eslint-config-airbnb-base": "14.2.1",
     "eslint-config-prettier": "8.3.0",
@@ -110,7 +112,7 @@
     "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% REACT_APP_API_URL=https://api-dev.darklight.ai react-scripts build",
     "build": "yarn schema-compile && yarn relay && yarn generate && rm ../opencti-graphql/config/schema/compiled.graphql && node src/setupBuild.js",
     "lint": "eslint .",
-    "cypress:open" : "cypress open",
+    "cypress:open": "cypress open",
     "cypress": "cypress run",
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public",
@@ -144,5 +146,6 @@
     "bezier-js": "4.0.3",
     "webpack": "4.44.2"
   },
-  "main": "index.js"
+  "main": "index.js",
+  "packageManager": "yarn@3.2.1"
 }
