@@ -47,6 +47,7 @@ class TopMenuAssets extends Component {
               : 'inherit'
           }
           classes={{ root: classes.button }}
+          data-cy='asset devices'
         >
           <img src={deviceIcon} className={classes.icon} alt="" />
           {t('Devices')}
@@ -66,6 +67,7 @@ class TopMenuAssets extends Component {
               : 'inherit'
           }
           classes={{ root: classes.button }}
+          data-cy='asset networks'
         >
           <img src={networkIcon} className={classes.icon} alt="" />
           {t('Network')}
@@ -85,6 +87,7 @@ class TopMenuAssets extends Component {
               : 'inherit'
           }
           classes={{ root: classes.button }}
+          data-cy='asset software'
         >
           <img src={softwareIcon} className={classes.icon} alt="" />
           {t('Software')}
