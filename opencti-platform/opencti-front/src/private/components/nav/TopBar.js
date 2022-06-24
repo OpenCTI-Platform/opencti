@@ -67,6 +67,7 @@ import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 import Export from '../../../components/Export';
+import ExportPoam from '../../../components/ExportPoam';
 
 const styles = (theme) => ({
   appBar: {
@@ -392,13 +393,7 @@ const TopBar = ({
               </IconButton>
             </Tooltip>
             <Tooltip title={t('Data Import')}>
-              <IconButton
-                component={Link}
-                disabled={true}
-                classes={{ root: classes.button }}
-              >
-                <PublishIcon fontSize="default" />
-              </IconButton>
+              <ExportPoam />
             </Tooltip>
             <Tooltip title={t('Add Note')}>
               <Export />
