@@ -174,7 +174,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '13.2%' }}
+                style={{ width: '13.5%' }}
               >
                 <Button
                   variant="outlined"
@@ -187,7 +187,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '10.5%' }}
+                style={{ width: '10.3%' }}
               >
                 {node.occurrences && t(node.occurrences)}
               </div>
