@@ -19,3 +19,12 @@ test-results
 logs
 yarn-error.log
 __pycache__
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
