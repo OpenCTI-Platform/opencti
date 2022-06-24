@@ -19,6 +19,7 @@
     "formik-material-ui": "3.0.1",
     "formik-material-ui-pickers": "0.0.12",
     "graphql": "15.5.2",
+    "graphql-tools": "^8.2.13",
     "html-to-image": "1.7.0",
     "html-to-pdfmake": "2.3.4",
     "http-proxy-middleware": "2.0.1",
