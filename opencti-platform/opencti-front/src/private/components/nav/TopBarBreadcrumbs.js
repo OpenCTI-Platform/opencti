@@ -34,6 +34,7 @@ import Security, {
   EXPLORE,
 } from '../../../utils/Security';
 import Filters from '../common/lists/Filters';
+import ExportPoam from '../../../components/ExportPoam';
 import Export from '../../../components/Export';
 
 const styles = (theme) => ({
@@ -288,13 +289,7 @@ const TopBarBreadcrumbs = ({
               </IconButton>
             </Tooltip>
             <Tooltip title={t('Data Import')}>
-              <IconButton
-                disabled={true}
-                component={Link}
-                classes={{ root: classes.button }}
-              >
-                <PublishIcon fontSize="default" />
-              </IconButton>
+               <ExportPoam />
             </Tooltip>
             <Tooltip
               title={t('Add Note')}
