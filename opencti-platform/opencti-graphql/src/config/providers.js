@@ -206,6 +206,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const providerRef = identifier || 'saml';
       const samlOptions = { ...mappedConfig };
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
+        logApp.debug('[SAML] Successfully logged', { profile });
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['Role'];
         const userName = profile[mappedConfig.account_attribute] || '';
         const firstname = profile[mappedConfig.firstname_attribute] || '';
@@ -234,9 +235,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const providerRef = identifier || 'oic';
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
-      OpenIDCustom.setHttpOptionsDefaults({
-        timeout: 0,
-      });
+      OpenIDCustom.setHttpOptionsDefaults({ timeout: 0 });
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
         const client = new Client(config);
