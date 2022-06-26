@@ -3057,6 +3057,7 @@ export const selectRiskByIriQuery = (iri, select) => {
     if (!select.includes('accepted')) select.push('accepted');
     if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
     if (!select.includes('priority')) select.push('priority')
+    if (!select.includes('occurrences')) select.push('occurrences');
   }
   
 
@@ -3155,7 +3156,8 @@ export const selectAllRisks = (select, args, parent) => {
     if (!select.includes('false_positive')) select.push('false_positive');
     if (!select.includes('accepted')) select.push('accepted');
     if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
-    if (!select.includes('priority')) select.push('priority')
+    if (!select.includes('priority')) select.push('priority');
+    if (!select.includes('occurrences')) select.push('occurrences');
   }
   
   // fetch the uuid of each related_observation and related_risk as these are commonly used

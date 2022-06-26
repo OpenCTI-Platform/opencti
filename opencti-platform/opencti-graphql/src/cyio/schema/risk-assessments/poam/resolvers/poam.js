@@ -1068,6 +1068,32 @@ const poamResolvers = {
             }
             props.push(property)
           }
+          if (risk.hasOwnProperty('risk_score')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-score","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_score}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-score',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.risk_score}`,
+            }
+            props.push(property)
+          }
+          if (risk.hasOwnProperty('occurrences')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-occurrences","ns":"http://darklight.ai/ns/oscal","value":`${risk.occurrences}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-occurrences',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.occurrences}`,
+            }
+            props.push(property)
+          }
           if (props !== null) risk.props = props;
         }
 
