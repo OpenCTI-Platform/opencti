@@ -3111,10 +3111,11 @@ export const selectRiskByIriQuery = (iri, select) => {
     occurrenceQuery = `
       OPTIONAL {
         {
-          SELECT DISTINCT ?iri (COUNT(DISTINCT ?related_observations) AS ?count)
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?subjects) AS ?count)
           WHERE {
             ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
-            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects .
+            ?subjects <http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
           }
           GROUP BY ?iri
         }
@@ -3253,11 +3254,12 @@ export const selectAllRisks = (select, args, parent) => {
     occurrenceQuery = `
       OPTIONAL {
         {
-          SELECT DISTINCT ?iri (COUNT(DISTINCT ?related_observations) AS ?count)
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?subjects) AS ?count)
           WHERE {
             ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
-            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
-          }
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects .
+            ?subjects <http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+      }
           GROUP BY ?iri
         }
       }
