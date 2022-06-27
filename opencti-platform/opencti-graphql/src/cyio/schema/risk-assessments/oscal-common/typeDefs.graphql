@@ -1375,32 +1375,34 @@ input ExternalIdentifierAddInput {
 ##
 "Defines the types of OSCAL Models"
 enum OscalModelType {
-  "OSCAL Assessment Plan"
-  ap
-  "OSCAL Assessment Results"
-  ar
-  "OSCAL Catalog"
-  catalog
-  "OSCAL Component Definition"
-  component_definition
   "OSCAL Plan of Action and Milestones"
   poam
-  "OSCAL Profile"
-  profile
-  "OSCAL System Security Plan"
-  ssp
+  # Commented out until supported
+  # "OSCAL Assessment Plan"
+  # ap
+  # "OSCAL Assessment Results"
+  # ar
+  # "OSCAL Catalog"
+  # catalog
+  # "OSCAL Component Definition"
+  # component_definition
+  # "OSCAL Profile"
+  # profile
+  # "OSCAL System Security Plan"
+  # ssp
 }
 
 "Defines the media types for OSCAL export"
 enum OscalMediaType {
   "application/oscal+json"
   application_oscal_json
-  "application/oscal+xml"
-  application_oscal_xml
-  "application/oscal+yaml"
-  application_oscal_yaml
-  "application/oscal+csv"
-  application_oscal_csv
+  # Commented out until supported
+  # "application/oscal+xml"
+  # application_oscal_xml
+  # "application/oscal+yaml"
+  # application_oscal_yaml
+  # "application/oscal+csv"
+  # application_oscal_csv
 }
 
 "Defines an risk reporting option"
@@ -1415,14 +1417,15 @@ input RiskReportOption {
 enum RiskReportType {
   "Security Assessment Report (SAR)"
   sar
-  "Vulnerability Assessment Report (VAR)"
-  var
-  "Asset Inventory Report (AIR)"
-  air
-  "Cybersecurity Risk Assessment Report (CRA)"
-  cra
-  "Threat Assessment Report (TAR)"
-  tar
+  # Commented out until supported
+  # "Vulnerability Assessment Report (VAR)"
+  # var
+  # "Asset Inventory Report (AIR)"
+  # air
+  # "Cybersecurity Risk Assessment Report (CRA)"
+  # cra
+  # "Threat Assessment Report (TAR)"
+  # tar
 }
 
 "Defines the Options for Reports"
@@ -1445,10 +1448,11 @@ enum ReportOptionType {
 enum ReportMediaType {
   "text/markdown"
   markdown
-  "application/pdf"
-  pdf
-  "text/html"
-  html
+  # Commented out until supported
+  # "application/pdf"
+  # pdf
+  # "text/html"
+  # html
 }
 
 ##### SAR Report-Specifics
@@ -1465,6 +1469,8 @@ enum SarSections {
 
 "Appendices of a Security Assessment Report"
 enum SarAppendices {
+  "Scanned Items Inventory"
+  scanned_inventory
   "Database Scan"
   db_scan
   "Web Scan"

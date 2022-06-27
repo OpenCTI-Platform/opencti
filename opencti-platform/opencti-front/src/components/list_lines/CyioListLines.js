@@ -134,12 +134,13 @@ const styles = (theme) => ({
     paddingTop: 0,
   },
   listScrollItem: {
-    width: '83.5%',
     top: '64px',
     zIndex: 999,
+    width: '100%',
+    left: '0px',
     position: 'fixed',
+    padding: '10px 53px 10px 306px',
     backgroundColor: theme.palette.header.background,
-    padding: '10px 0 10px 10px',
 
   },
   sortArrowButton: {

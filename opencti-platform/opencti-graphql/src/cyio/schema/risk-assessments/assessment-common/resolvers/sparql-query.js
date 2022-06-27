@@ -3057,6 +3057,7 @@ export const selectRiskByIriQuery = (iri, select) => {
     if (!select.includes('accepted')) select.push('accepted');
     if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
     if (!select.includes('priority')) select.push('priority')
+    if (!select.includes('occurrences')) select.push('occurrences');
   }
   
 
@@ -3111,10 +3112,11 @@ export const selectRiskByIriQuery = (iri, select) => {
     occurrenceQuery = `
       OPTIONAL {
         {
-          SELECT DISTINCT ?iri (COUNT(DISTINCT ?related_observations) AS ?count)
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?subjects) AS ?count)
           WHERE {
             ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
-            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects .
+            ?subjects <http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
           }
           GROUP BY ?iri
         }
@@ -3154,7 +3156,8 @@ export const selectAllRisks = (select, args, parent) => {
     if (!select.includes('false_positive')) select.push('false_positive');
     if (!select.includes('accepted')) select.push('accepted');
     if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
-    if (!select.includes('priority')) select.push('priority')
+    if (!select.includes('priority')) select.push('priority');
+    if (!select.includes('occurrences')) select.push('occurrences');
   }
   
   // fetch the uuid of each related_observation and related_risk as these are commonly used
@@ -3253,11 +3256,12 @@ export const selectAllRisks = (select, args, parent) => {
     occurrenceQuery = `
       OPTIONAL {
         {
-          SELECT DISTINCT ?iri (COUNT(DISTINCT ?related_observations) AS ?count)
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?subjects) AS ?count)
           WHERE {
             ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
-            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
-          }
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects .
+            ?subjects <http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+      }
           GROUP BY ?iri
         }
       }

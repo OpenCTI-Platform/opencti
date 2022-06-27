@@ -18,9 +18,7 @@
     "test": "jest --bail --testSequencer ./tests/utils/testSequencer.js --verbose --runInBand --forceExit --coverage --e test",
     "test:integrity": "jest --config tests/cyio/integrity/jest.config.js"
   },
-  "bin": {
-    "opencti-graphql": "./build/index.js"
-  },
+  "bin": "./build/index.js",
   "pkg": {
     "scripts": "dist/**/*.js",
     "assets": [

@@ -79,14 +79,14 @@ const oscalCommonResolvers = {
   },
   OscalMediaType: {
     application_oscal_json: 'application/oscal+json',
-    application_oscal_xml: 'application/oscal+xml',
-    application_oscal_yaml: 'application/oscal+yaml',
-    application_oscal_csv: 'application/oscal+csv',
+    // application_oscal_xml: 'application/oscal+xml',
+    // application_oscal_yaml: 'application/oscal+yaml',
+    // application_oscal_csv: 'application/oscal+csv',
   },
   ReportMediaType: {
     markdown: 'text/markdown',
-    html: 'text/html',
-    pdf: 'application/pdf',
+    // html: 'text/html',
+    // pdf: 'application/pdf',
   },
   // PartyOrComponent: {
   //   __resolveType: (item) => {
