@@ -178,7 +178,7 @@ class Export extends Component {
       values.web_scan && 'web_scan',
       values.pen_test && 'pen_test',
       values.manual_test && 'manual_test',
-      values.scanned_item && 'scanned_item',
+      values.scanned_inventory && 'scanned_inventory',
       values.mitigating_factors && 'mitigating_factors',
     ];
     const finalValues = pipe(
@@ -187,7 +187,7 @@ class Export extends Component {
       dissoc('pen_test'),
       dissoc('web_scan'),
       dissoc('manual_test'),
-      dissoc('scanned_item'),
+      dissoc('scanned_inventory'),
       dissoc('mitigating_factors'),
       dissoc('collected_during_assessment'),
       dissoc('include_risk_tracking_details'),
@@ -280,7 +280,7 @@ class Export extends Component {
               web_scan: false,
               pen_test: false,
               manual_test: false,
-              scanned_item: false,
+              scanned_inventory: false,
               mitigating_factors: false,
               collected_during_assessment: false,
               include_risk_tracking_details: false,
@@ -453,7 +453,7 @@ class Export extends Component {
                         <Field
                           component={SwitchField}
                           type="checkbox"
-                          name="scanned_item"
+                          name="scanned_inventory"
                           containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                           inputProps={{ 'aria-label': 'ant design' }}
                         />
