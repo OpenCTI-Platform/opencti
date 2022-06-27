@@ -424,10 +424,10 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Operational State')}
+                  {t('Operational Status')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Operation State')}>
+                  <Tooltip title={t('Operation Status')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
