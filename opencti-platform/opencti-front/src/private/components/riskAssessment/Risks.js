@@ -38,7 +38,7 @@ class Risks extends Component {
       sortBy: R.propOr('poam_id', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('cards', 'view', params),
+      view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -59,7 +59,7 @@ class Risks extends Component {
   }
 
   handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
+    this.setState({ view: mode });
   }
 
   handleSearch(value) {
@@ -366,7 +366,6 @@ class Risks extends Component {
           query={risksLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`props : ${props} Error : ${error}`);
             if (error) {
               toastGenericError('Request Failed');
             }
