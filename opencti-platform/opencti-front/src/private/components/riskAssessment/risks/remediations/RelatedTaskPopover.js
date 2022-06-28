@@ -269,15 +269,6 @@ class RelatedTaskPopover extends Component {
       relatedTaskData,
       data,
     } = this.props;
-    const taskDependency = pipe(
-      pathOr([], ['task_dependencies']),
-      mergeAll,
-    )(data);
-    const responsibleRoles = pipe(
-      pathOr([], ['responsible_roles']),
-      mergeAll,
-      path(['role']),
-    )(data);
     const initialValues = R.pipe(
       R.assoc('id', data?.id || ''),
       R.assoc('name', data?.name || ''),
@@ -287,8 +278,8 @@ class RelatedTaskPopover extends Component {
       R.assoc('end_date', dateFormat(data?.timing?.end_date)),
       R.assoc('related_tasks', []),
       R.assoc('associated_activities', []),
-      R.assoc('task_dependencies', taskDependency?.name || []),
-      R.assoc('responsible_roles', responsibleRoles?.role_identifier || []),
+      R.assoc('task_dependencies', data.task_dependencies.map((value) => value.name) || []),
+      R.assoc('responsible_roles', data.responsible_roles.map((value) => value.name) || []),
       R.pick([
         'id',
         'name',
