@@ -185,9 +185,9 @@ class RiskCardComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('ID')}
+                  {t('Name')}
                 </Typography>
-                {node.id && t(node.id)}
+                {node.name && t(node.name)}
               </div>
               <Grid
                 item={true}

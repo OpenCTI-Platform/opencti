@@ -226,6 +226,7 @@ class DeviceCreation extends Component {
             version: '',
             serial_number: '',
             vendor_name: '',
+            cpe_identifier: '',
             release_date: null,
             ipv4_address: [],
             locations: [],
