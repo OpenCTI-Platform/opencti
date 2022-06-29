@@ -176,8 +176,9 @@ class Export extends Component {
     const appendices = [
       values.db_scan && 'db_scan',
       values.web_scan && 'web_scan',
-      values.manual_test && 'manual_test',
       values.pen_test && 'pen_test',
+      values.manual_test && 'manual_test',
+      values.scanned_inventory && 'scanned_inventory',
       values.mitigating_factors && 'mitigating_factors',
     ];
     const finalValues = pipe(
@@ -186,6 +187,7 @@ class Export extends Component {
       dissoc('pen_test'),
       dissoc('web_scan'),
       dissoc('manual_test'),
+      dissoc('scanned_inventory'),
       dissoc('mitigating_factors'),
       dissoc('collected_during_assessment'),
       dissoc('include_risk_tracking_details'),
@@ -278,6 +280,7 @@ class Export extends Component {
               web_scan: false,
               pen_test: false,
               manual_test: false,
+              scanned_inventory: false,
               mitigating_factors: false,
               collected_during_assessment: false,
               include_risk_tracking_details: false,
@@ -442,10 +445,27 @@ class Export extends Component {
                         style={{ display: 'flex', alignItems: 'center' }}
                       >
                         <ItemIcon variant='inline' type='appendecies' />
-                        {t('APPENDECIES')}
+                        {t('APPENDICES')}
                       </Typography>
                     </Grid>
                     <Grid item={true} xs={6}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="scanned_inventory"
+                          containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                          inputProps={{ 'aria-label': 'ant design' }}
+                        />
+                        <Typography>
+                          {t('Scanned Items Inventory')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
+                          <Tooltip title={t('Scanned Items Inventory')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                      </div>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Field
                           component={SwitchField}
@@ -480,6 +500,8 @@ class Export extends Component {
                           </Tooltip>
                         </div>
                       </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Field
                           component={SwitchField}
@@ -497,8 +519,6 @@ class Export extends Component {
                           </Tooltip>
                         </div>
                       </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Field
                           component={SwitchField}
