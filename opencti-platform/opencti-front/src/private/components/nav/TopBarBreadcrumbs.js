@@ -303,6 +303,7 @@ const TopBarBreadcrumbs = ({
               aria-haspopup="true"
               onClick={handleOpenMenu}
               color="inherit"
+              data-cy='menu'
             >
               <AccountCircleOutlined fontSize="default" />
             </IconButton>
@@ -320,7 +321,7 @@ const TopBarBreadcrumbs = ({
               >
                 {t('Profile')}
               </MenuItem>
-              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+              <MenuItem onClick={handleLogout} data-cy='logout'>{t('Logout')}</MenuItem>
             </Menu>
           </div>
         </div>
