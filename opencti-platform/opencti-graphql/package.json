@@ -156,5 +156,6 @@
     "lodash": "4.17.21",
     "node-fetch": "2.6.1",
     "ws": "8.0.0"
-  }
+  },
+  "packageManager": "yarn@3.2.1"
 }
