@@ -4804,14 +4804,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async@npm:^1.4.0":
-  version: 1.5.2
-  resolution: "async@npm:1.5.2"
-  checksum: fe5d6214d8f15bd51eee5ae8ec5079b228b86d2d595f47b16369dec2e11b3ff75a567bb5f70d12d79006665fbbb7ee0a7ec0e388524eefd454ecbe651c124ebd
-  languageName: node
-  linkType: hard
-
-"async@npm:^3.1.0":
+"async@npm:^3.0.0, async@npm:^3.1.0":
   version: 3.2.4
   resolution: "async@npm:3.2.4"
   checksum: 43d07459a4e1d09b84a20772414aa684ff4de085cbcaec6eea3c7a8f8150e8c62aa6cd4e699fe8ee93c3a5b324e777d34642531875a0817a35697522c1b02e89
@@ -10583,14 +10576,7 @@ chromedriver@latest:
   languageName: node
   linkType: hard
 
-"moment@npm:2.29.1":
-  version: 2.29.1
-  resolution: "moment@npm:2.29.1"
-  checksum: 1e14d5f422a2687996be11dd2d50c8de3bd577c4a4ca79ba5d02c397242a933e5b941655de6c8cb90ac18f01cc4127e55b4a12ae3c527a6c0a274e455979345e
-  languageName: node
-  linkType: hard
-
-"moment@npm:^2.11.2":
+"moment@npm:2.29.3, moment@npm:^2.11.2":
   version: 2.29.3
   resolution: "moment@npm:2.29.3"
   checksum: 2e780e36d9a1823c08a1b6313cbb08bd01ecbb2a9062095820a34f42c878991ccba53abaa6abb103fd5c01e763724f295162a8c50b7e95b4f1c992ef0772d3f0
@@ -10651,15 +10637,15 @@ chromedriver@latest:
   languageName: node
   linkType: hard
 
-"nconf@npm:0.11.3":
-  version: 0.11.3
-  resolution: "nconf@npm:0.11.3"
+"nconf@npm:0.12.0":
+  version: 0.12.0
+  resolution: "nconf@npm:0.12.0"
   dependencies:
-    async: ^1.4.0
+    async: ^3.0.0
     ini: ^2.0.0
     secure-keys: ^1.0.0
     yargs: ^16.1.1
-  checksum: 708369c9526618936872fc7db4d257dda59cb55fb9e07949afcfac7cf60cdc840027a6bdf5bf3c5703129bea23090de1aa6f6f41aec004086963706c04bf81f5
+  checksum: 70c1ce82d91149940dbe57555372c99282a9625a961915b302093b34e04ab308d978d1885224b9738a0873c064a0aa48914a7260e67ba312441fc4917221dbd8
   languageName: node
   linkType: hard
 
@@ -11095,9 +11081,9 @@ chromedriver@latest:
     lru-cache: ^6.0.0
     migrate: 1.7.0
     mime-types: 2.1.32
-    moment: 2.29.1
+    moment: 2.29.3
     moment-range: 4.0.2
-    nconf: 0.11.3
+    nconf: 0.12.0
     node-fetch: 2.6.1
     nodemailer: 6.6.3
     openid-client: 4.7.4
@@ -11112,7 +11098,7 @@ chromedriver@latest:
     prettier: 2.3.2
     prom-client: ^14.0.1
     python-shell: 3.0.0
-    ramda: 0.27.1
+    ramda: 0.28.0
     redlock: 4.2.0
     remarkable-admonitions: 0.2.2
     remarkable-classy: 0.0.1
@@ -11128,7 +11114,7 @@ chromedriver@latest:
     terser-webpack-plugin: 5.1.4
     uuid: 8.3.2
     uuid-time: 1.0.0
-    validator: 13.6.0
+    validator: 13.7.0
     webpack: ^5.60.0
     webpack-cli: 4.7.2
     webpack-node-externals: 3.0.0
@@ -11870,10 +11856,10 @@ chromedriver@latest:
   languageName: node
   linkType: hard
 
-"ramda@npm:0.27.1":
-  version: 0.27.1
-  resolution: "ramda@npm:0.27.1"
-  checksum: 31a0c0ef739b2525d7615f84cbb5d3cb89ee0c795469b711f729ea1d8df0dccc3cd75d3717a1e9742d42315ce86435680b7c87743eb7618111c60c144a5b8059
+"ramda@npm:0.28.0":
+  version: 0.28.0
+  resolution: "ramda@npm:0.28.0"
+  checksum: 44ea6e5010bba70151b6a92d8114a91915e8b5a16105cce65fae58c9d7386b812c429645e35f21141d7087568550ce383bc10ee1a65cdec951f4b69ea457e6a4
   languageName: node
   linkType: hard
 
