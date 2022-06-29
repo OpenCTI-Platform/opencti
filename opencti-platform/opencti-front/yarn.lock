@@ -17900,7 +17900,7 @@ __metadata:
     prettier: 2.3.2
     prop-types: 15.7.2
     query-string: 7.0.1
-    ramda: 0.27.1
+    ramda: 0.28.0
     react: 17.0.2
     react-bootstrap: ^1.6.4
     react-color: 2.19.3
@@ -20200,10 +20200,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ramda@npm:0.27.1":
-  version: 0.27.1
-  resolution: "ramda@npm:0.27.1"
-  checksum: 31a0c0ef739b2525d7615f84cbb5d3cb89ee0c795469b711f729ea1d8df0dccc3cd75d3717a1e9742d42315ce86435680b7c87743eb7618111c60c144a5b8059
+"ramda@npm:0.28.0":
+  version: 0.28.0
+  resolution: "ramda@npm:0.28.0"
+  checksum: 44ea6e5010bba70151b6a92d8114a91915e8b5a16105cce65fae58c9d7386b812c429645e35f21141d7087568550ce383bc10ee1a65cdec951f4b69ea457e6a4
   languageName: node
   linkType: hard
 
