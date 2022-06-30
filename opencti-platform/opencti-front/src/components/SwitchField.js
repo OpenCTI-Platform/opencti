@@ -34,6 +34,7 @@ const SwitchField = (props) => {
               {...fieldToSwitch(props)}
               onChange={internalOnChange}
               onBlur={internalOnBlur}
+              color='primary'
             />
           }
           label={props.label}
