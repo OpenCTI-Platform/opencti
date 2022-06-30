@@ -438,6 +438,7 @@ class CyioListCards extends Component {
                     color="primary"
                     onClick={handleChangeView.bind(this, 'lines')}
                     style={{ marginTop: '-23px' }}
+                    data-cy='lines view'
                   >
                     <FormatListBulleted />
                   </IconButton>
