@@ -13,6 +13,7 @@ import {checkSystemDependencies} from "../initialization";
 import {getSettings} from "../domain/settings";
 import { applicationSession } from '../database/session';
 import StardogKB from '../datasources/stardog.js';
+import Artemis from '../datasources/artemis.js';
 import mockList from './mocks.js' ;
 import nconf from "nconf";
 import querySelectMap from "../cyio/schema/querySelectMap";
@@ -92,7 +93,8 @@ const createApolloServer = (app) => {
     mocks,
     mockEntireSchema: false,
     dataSources: () => ({
-      Stardog: new StardogKB( )
+      Stardog: new StardogKB( ),
+      Artemis: new Artemis( ),
     }),
     playground: {
       cdnUrl,

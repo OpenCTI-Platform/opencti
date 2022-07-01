@@ -879,7 +879,7 @@ input OscalResponsiblePartyAddInput {
   parties: [ID!]!
   # DarkLight extensions
   "Identifies a name given to the responsible party to make it friendlier."
-  name: String
+  name: String!
   "Identifies a summary of the reponsible party's purpose and associated responsibilities."
   description: String
 }
