@@ -633,7 +633,7 @@ class ViewCharts extends Component {
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis tick={{ fill: 'white' }} type="number" domain={[0, 'auto']} />
-                          <YAxis tick={{ fill: 'white' }} type="category" dataKey="host" />
+                          <YAxis width={210} tick={{ fill: 'white' }} type="category" dataKey="host" />
                           <Tooltip cursor={false} />
                           <Legend />
                           <Bar
