@@ -480,7 +480,7 @@ class ViewCharts extends Component {
                             dataKey="value"
                             innerRadius={90}
                             outerRadius={150}
-                            labelLine={false}
+                            labelLine={true}
                             isAnimationActive={false}
                             isUpdateAnimationActive={true}
                             label={({
@@ -502,9 +502,6 @@ class ViewCharts extends Component {
                               // eslint-disable-next-line
                               const y =
                                 cy + radius * Math.sin(-midAngle * RADIAN);
-                              if(value < 25) {
-                                return null;
-                              }
                               return (
                                 <text
                                   x={x}
