@@ -2439,7 +2439,7 @@ export const insertObservationQuery = (propValues) => {
     //TODO: Need the actor_ref and actor_type
     ...(propValues.collected && {"collected": propValues.collected}),
     ...(propValues.methods && {"methods": propValues.methods}),
-    ...(propValues.methods && {"observation_type": propValues.methods}),
+    ...(propValues.observation_types && {"observation_types": propValues.observation_types}),
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );

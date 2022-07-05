@@ -113,11 +113,13 @@ export function getReducer( type ) {
 export const computingDeviceAssetReducer = (item) => {
   // this code is to work around an issue in the data where we sometimes get multiple operating systems
   // when there shouldn't be but just one
-  if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
-    if (item.installed_operating_system.length > 1) {
-      console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
+  if ('installed_operating_system' in item) {
+    if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
+      if (item.installed_operating_system.length > 1) {
+        console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
+      }
+      item.installed_operating_system = item.installed_operating_system[0]
     }
-    item.installed_operating_system = item.installed_operating_system[0]
   }
 
   // if no object type was returned, compute the type from the IRI
