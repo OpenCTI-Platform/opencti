@@ -879,7 +879,7 @@ input OscalResponsiblePartyAddInput {
   parties: [ID!]!
   # DarkLight extensions
   "Identifies a name given to the responsible party to make it friendlier."
-  name: String
+  name: String!
   "Identifies a summary of the reponsible party's purpose and associated responsibilities."
   description: String
 }
@@ -1461,8 +1461,8 @@ enum ReportMediaType {
 enum SarSections {
   "Risk Tracking Details"
   tracking
-  "Collected During Testing"
-  collected_during_testing
+  "Corrected During Testing"
+  corrected_during_testing
   "Mitigating Factors"
   mitigating_factor
 }
@@ -1479,6 +1479,8 @@ enum SarAppendices {
   pen_test
   "Manual Test"
   manual_test
+  "Attack Surface Scan"
+  attack_surface_scan
 }
 
 ##### OSCAL Property

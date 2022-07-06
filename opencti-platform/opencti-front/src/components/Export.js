@@ -33,11 +33,12 @@ import SelectField from './SelectField';
 import TextField from './TextField';
 import ItemIcon from './ItemIcon';
 import { adaptFieldValue } from '../utils/String';
+import TaskType from '../private/components/common/form/TaskType';
 import environmentDarkLight, { fetchDarklightQuery } from '../relay/environmentDarkLight';
 
 const styles = (theme) => ({
   dialogRoot: {
-    overflowY: 'scroll',
+    overflowY: 'hidden',
     overflowX: 'hidden',
   },
   button: {
@@ -49,7 +50,11 @@ const styles = (theme) => ({
     textTransform: 'capitalize',
   },
   dialogContent: {
-    overflowY: 'hidden',
+    height: '570px',
+    overflowY: 'scroll',
+    '@media (max-height: 800px)': {
+      height: '400px',
+    },
   },
   popoverDialog: {
     fontSize: '18px',
@@ -58,7 +63,7 @@ const styles = (theme) => ({
   },
   dialogActions: {
     justifyContent: 'flex-start',
-    padding: '0px 0 20px 22px',
+    padding: '20px 0 20px 22px',
   },
   scrollBg: {
     background: theme.palette.header.background,
@@ -100,8 +105,8 @@ const exportTypeQuery = graphql`
 `;
 
 const exportMutation = graphql`
-  mutation ExportMutation($report: RiskReportType!, $options: [RiskReportOption]) {
-    generateRiskReport(report: $report, options: $options)
+  mutation ExportMutation($report: RiskReportType!, $mediaType: ReportMediaType, $options: [RiskReportOption]) {
+    generateRiskReport(report: $report, media_type: $mediaType, options: $options)
   }
 `;
 
@@ -173,24 +178,30 @@ class Export extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const sections = [
+      values.tracking && 'tracking',
+      values.mitigating_factor && 'mitigating_factor',
+      values.collected_during_testing && 'collected_during_testing',
+    ];
     const appendices = [
       values.db_scan && 'db_scan',
       values.web_scan && 'web_scan',
       values.pen_test && 'pen_test',
       values.manual_test && 'manual_test',
       values.scanned_inventory && 'scanned_inventory',
-      values.mitigating_factors && 'mitigating_factors',
     ];
     const finalValues = pipe(
-      assoc('appendices', appendices.filter((value) => value !== false)),
       dissoc('db_scan'),
       dissoc('pen_test'),
       dissoc('web_scan'),
+      dissoc('tracking'),
+      dissoc('media_type'),
       dissoc('manual_test'),
       dissoc('scanned_inventory'),
-      dissoc('mitigating_factors'),
-      dissoc('collected_during_assessment'),
-      dissoc('include_risk_tracking_details'),
+      dissoc('mitigating_factor'),
+      dissoc('collected_during_testing'),
+      assoc('sections', sections.filter((value) => value !== false)),
+      assoc('appendices', appendices.filter((value) => value !== false)),
       toPairs,
       map((n) => ({
         name: n[0],
@@ -203,6 +214,7 @@ class Export extends Component {
       mutation: exportMutation,
       variables: {
         report: this.state.reportType,
+        mediaType: values.media_type,
         options: finalValues,
       },
       setSubmitting,
@@ -268,7 +280,6 @@ class Export extends Component {
           fullWidth={true}
           open={this.state.open}
           classes={{ paper: classes.dialogRoot }}
-          onClose={this.handleClose.bind(this)}
         >
           <Formik
             enableReinitialize={true}
@@ -276,14 +287,15 @@ class Export extends Component {
               purpose: '',
               max_items: 0,
               db_scan: false,
+              media_type: '',
               description: '',
               web_scan: false,
               pen_test: false,
               manual_test: false,
               scanned_inventory: false,
-              mitigating_factors: false,
-              collected_during_assessment: false,
-              include_risk_tracking_details: false,
+              mitigating_factor: false,
+              collected_during_testing: false,
+              tracking: false,
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -363,7 +375,7 @@ class Export extends Component {
                         <Field
                           component={SwitchField}
                           type="checkbox"
-                          name="collected_during_assessment"
+                          name="collected_during_testing"
                           containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                           inputProps={{ 'aria-label': 'ant design' }}
                         />
@@ -420,7 +432,7 @@ class Export extends Component {
                         <Field
                           component={SwitchField}
                           type="checkbox"
-                          name="include_risk_tracking_details"
+                          name="tracking"
                           containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                           inputProps={{ 'aria-label': 'ant design' }}
                         />
@@ -540,7 +552,7 @@ class Export extends Component {
                         <Field
                           component={SwitchField}
                           type="checkbox"
-                          name="mitigating_factors"
+                          name="mitigating_factor"
                           containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                           inputProps={{ 'aria-label': 'ant design' }}
                         />
@@ -555,11 +567,32 @@ class Export extends Component {
                       </div>
                     </Grid>
                   </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <div style={{ display: 'flex', alignItems: 'end' }}>
+                        <Typography>
+                          {t('Media type to generate report')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
+                          <Tooltip title={t('Report Generate')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <TaskType
+                          name="media_type"
+                          taskType='ReportMediaType'
+                          fullWidth={true}
+                          style={{ height: '18.09px' }}
+                          containerstyle={{ width: '100%', marginLeft: '12px' }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogActions }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={8}>
-                      <Typography style={{ marginTop: '15px' }}>
+                      <Typography style={{ marginTop: '5px' }}>
                         {t('An email with a download link will be sent to your email')}
                       </Typography>
                     </Grid>
@@ -569,6 +602,7 @@ class Export extends Component {
                     >
                       <Button
                         variant="outlined"
+                        size="small"
                         onClick={handleReset}
                         classes={{ root: classes.buttonPopover }}
                       >
@@ -577,6 +611,7 @@ class Export extends Component {
                       <Button
                         variant="contained"
                         color="primary"
+                        size="small"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.buttonPopover }}
