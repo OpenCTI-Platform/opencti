@@ -34,3 +34,7 @@ __generated__
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+
+# Cypress
+cypress/videos
+cypress/screenshots
