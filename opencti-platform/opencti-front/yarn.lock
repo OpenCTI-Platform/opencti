@@ -8798,9 +8798,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cypress@npm:10.2.0":
-  version: 10.2.0
-  resolution: "cypress@npm:10.2.0"
+"cypress@npm:10.3.0":
+  version: 10.3.0
+  resolution: "cypress@npm:10.3.0"
   dependencies:
     "@cypress/request": ^2.88.10
     "@cypress/xvfb": ^1.2.4
@@ -8846,7 +8846,7 @@ __metadata:
     yauzl: ^2.10.0
   bin:
     cypress: bin/cypress
-  checksum: 1fd687658e036b2fd07031bde5a2f40ab61f664ca802ae650e0e15786d8825b38bb9444dffd8528b90a8e539e18241be6d5eaab7d5ae05d941839e2481e09342
+  checksum: 9cc6d8cd087d7c79f07ad83b8ef9b183f44cf816499bba53e1cee2b6f987d0a6893be209fcd47660cdd0e8456bd132813abe8a6bd15f446d9c96e0129be2de29
   languageName: node
   linkType: hard
 
@@ -17868,7 +17868,7 @@ __metadata:
     bs-custom-file-input: ^1.3.4
     classnames: 2.3.1
     cross-env: 7.0.3
-    cypress: 10.2.0
+    cypress: 10.3.0
     eslint-config-airbnb: 18.2.1
     eslint-config-airbnb-base: 14.2.1
     eslint-config-prettier: 8.3.0
