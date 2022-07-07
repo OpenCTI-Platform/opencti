@@ -25,6 +25,7 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 Cypress.Commands.add('login', (email, password) => {
+  cy.clearCookies();
   cy.visit('/');
   cy.contains('Login').click();
   cy.get('input[name=username]').type(email);
@@ -35,4 +36,5 @@ Cypress.Commands.add('login', (email, password) => {
 Cypress.Commands.add('logout', () => {
   cy.get('[data-cy="menu"]').click();
   cy.get('[data-cy="logout"]').click();
+  cy.clearCookies();
 });
