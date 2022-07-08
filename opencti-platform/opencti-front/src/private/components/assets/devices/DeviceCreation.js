@@ -138,8 +138,8 @@ class DeviceCreation extends Component {
     const adaptedValues = evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
-        ipv4_address: () => values.ipv4_address.length > 0 && values.ipv4_address.map((address) => { return {ip_address_value: address } }),
-        ipv6_address: () => values.ipv6_address.length > 0 && values.ipv6_address.map((address) => { return {ip_address_value: address } }),
+        ipv4_address: () => values.ipv4_address.length > 0 ? values.ipv4_address.map((address) => { return {ip_address_value: address } }) : [],
+        ipv6_address: () => values.ipv6_address.length > 0 ? values.ipv6_address.map((address) => { return {ip_address_value: address } }) : [],
       },
       values,
     );
