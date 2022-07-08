@@ -37,12 +37,10 @@ import {
   partyPredicateMap,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
-  getReducer as getComponentReducer,
   selectAllComponents,
   convertAssetToComponent,
 } from './../../component/resolvers/sparql-query.js';
 import {
-  getReducer as getInventoryItemReducer,
   selectAllInventoryItems,
   convertAssetToInventoryItem
 } from './../../inventory-item/resolvers/sparql-query.js';
@@ -1017,6 +1015,7 @@ const poamResolvers = {
           // clean up
           delete risk.remediation_type_values;
           delete risk.remediation_lifecycle_values;
+          delete risk.remediation_timestamp_values;
         }
 
         // TODO: WORKAROUND fix up invalidate deviation values
@@ -1249,8 +1248,7 @@ const poamResolvers = {
     },
   },
   POAMLocalDefinitions: {
-    components: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // if (parent.components_iri === undefined) return null;
+    components: async (_parent, args, {dbName, dataSources, selectMap}) => {
       const edges = [];
       let sparqlQuery = selectAllComponents(selectMap.getNode("node"));
       let response;
@@ -1360,8 +1358,7 @@ const poamResolvers = {
         edges: edges,
       }
     },
-    inventory_items: async(parent, args, {dbName, dataSources, selectMap}) => {
-      // if (parent.inventory_items_iri === undefined) return null;
+    inventory_items: async(_parent, args, {dbName, dataSources, selectMap}) => {
       const edges = [];
       let sparqlQuery = selectAllInventoryItems(selectMap.getNode("node"), args);
       let response;
