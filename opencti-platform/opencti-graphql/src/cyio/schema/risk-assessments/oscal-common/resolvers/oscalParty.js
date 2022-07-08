@@ -54,7 +54,7 @@ const oscalPartyResolvers = {
         throw e
       }
 
-      if (response === undefined) return null;
+      if (response === undefined || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("PARTY");
