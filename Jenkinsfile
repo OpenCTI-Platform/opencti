@@ -101,7 +101,9 @@ node {
     // } else {
     //   echo 'Skipping build...'
     // }
-    echo 'Skipping build - TURN THIS BACK ON BEFORE MERGING'
+    stage('Build') {
+      echo 'Skipping build - TURN THIS BACK ON BEFORE MERGING'
+    }
   }, test: {
     stage('Test') {
       if (commitMessage.contains('ci:test')) {
@@ -140,54 +142,30 @@ node {
 
   // Run integration tests, but do not block the ability to rapid deploy
   parallel ci: {
-    stage('Integration Testing') {
-      String containerArgs = \
-        '-e "NODE_TLS_REJECT_UNAUTHORIZED=false" ' +
-        '-e "REACT_APP_KEYCLOAK_URL=https://auth-dev.darklight.ai/auth" ' +
-        '-e "REACT_APP_KEYCLOAK_REALM=Cyio" ' +
-        '-e "REACT_APP_KEYCLOAK_CLIENT_ID=opencti" ' +
-        '-e "REACT_APP_GRAPHQL_HOST=https://cyio-dev.darklight.ai" ' +
-        '-e "HOST=cyio-localhost.darklight.ai"'
-
-      try {
-        docker.image("${registry}/${product}:${tag}").withRun(containerArgs) { cyio ->
-          withEnv(['CYPRESS_BASE_URL=https://cyio-localhost.darklight.ai:3000']) {
-              // while ! curl -kI $CYPRESS_BASE_URL; do sleep 5; done
-            sh label: "Run Tests", script: """
-              sleep 30
-              cd opencti-platform/opencti-front
-              yarn run cypress --ci-build-id ${env.BUILD_NUMBER} --spec "cypress/e2e/auth.cy.js || true"
-            """
-
-            sh label: 'Get OpenCTI/Cyio Logs', script: """
-              docker logs ${cyio.id}
-            """
+    try {
+      stage('Start Local Backend') {
+        dir('docker') {
+          configFileProvider([
+            configFile(fileId: "ci-testing-default-json", replaceTokens: true, targetLocation: "./default.json"),
+            configFile(fileId: "ci-testing-docker-env", replaceTokens: true, targetLocation: "./.env")
+          ]) {
+            sh 'docker-compose --profile backend up -d && sleep 60'
+            sh 'docker-compose --profile frontend up -d && sleep 15'
           }
         }
-      } catch(Exception ex) {
-        // office365ConnectorSend status: "CI Failed", webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
-        // office365ConnectorSend(
-        //     status: 'Completed',
-        //     color: '00FF00',
-        //     webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-        //     message: "New image built and pushed!",
-        //     factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
-        //                       [name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
-        //                       [name: "Image", template: "${registry}/${product}:${tag}"]]
-        //   )
-        throw ex;
       }
 
-      // docker.image('mysql:5').withRun('-e "MYSQL_ROOT_PASSWORD=my-secret-pw"') { c ->
-      //   docker.image('mysql:5').inside("--link ${c.id}:db") {
-      //     /* Wait until mysql service is up */
-      //     sh 'while ! mysqladmin ping -hdb --silent; do sleep 1; done'
-      //   }
-      //   docker.image('centos:7').inside("--link ${c.id}:db") {
-      //     /* Run some tests which require MySQL, and assume that it is available on the host name `db` */
-      //     sh 'make check'
-      //   }
-      // }
+      stage('Integration Testing') {
+        docker.image('cypress/base:10').inside {
+          sh """
+            set CYPRESS_BASE_URL=https://cyio-localhost.darklight.ai:4000
+            cd opencti-platform/opencti-front
+            yarn run cypress --ci-build-id ${branch}-${env.BUILD_NUMBER} --spec "cypress/e2e/auth.cy.js"
+          """
+        }
+      }
+    } catch(Exception ex) {
+      throw ex;
     }
   }, deploy: {
     if (commitMessage.contains('ci:deploy')) {
@@ -213,6 +191,29 @@ node {
       }
     } else {
       echo 'No \'ci:deploy\' flag detected in commit message; skipping auto deployment...'
+    }
+  }
+
+  stage('Update K8s') {
+    try {
+      checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'c4b687fd-69dc-4913-b28a-45a061914f60', url: 'https://github.com/champtc/k8s']]])
+      dir('k8s') {
+        sh 'ls -la'
+        String sha = sh(returnStdout: true, script: "docker images --no-trunc --quiet docker.darklight.ai/opencti:develop")
+        echo "Updating K8s image tag to new sha \'${sha}\'..."
+      }
+    } catch(Exception e) {
+      throw e;
+    }
+  }
+
+  post {
+    always {
+      echo 'Stopping local server'
+      dir('docker') {
+        sh 'docker-compose down'
+      }
+      sh "docker ps -a"
     }
   }
 }

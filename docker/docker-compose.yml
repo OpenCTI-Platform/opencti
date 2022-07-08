@@ -4,24 +4,18 @@ services:
   redis:
     image: redis:6.2.5
     container_name: redis
-    restart: unless-stopped
     ports:
       - "6379:6379"
-    volumes:
-      - redisdata:/data
     profiles:
       - backend
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
     container_name: elasticsearch
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
     environment:
       discovery.type: "single-node"
       xpack.ml.enabled: "false"
       ES_JAVA_OPTS: "-Dlog4j2.formatMsgNoLookups=true"
-    restart: unless-stopped
     ports:
       - "9200:9200"
     ulimits:
@@ -38,45 +32,40 @@ services:
     image: rabbitmq:3.9-management
     container_name: rabbitmq
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_USER=rodger
+      - RABBITMQ_DEFAULT_PASS=rabbit
     ports:
       - "5672:5672"
-    volumes:
-      - amqpdata:/var/lib/rabbitmq
-    restart: unless-stopped
     profiles:
       - backend
   
-  opencti:
-    image: docker.darklight.ai/opencti
-    build: ../opencti-platform
-    container_name: opencti
+  stardog:
+    image: docker.darklight.ai/stardog:7.9.0
+    container_name: stardog
+    hostname: stardog
     restart: unless-stopped
     environment:
-      - APP__APP_LOGS__LOGS_LEVEL=info
-      - MOCKS=${MOCKS}
-      - NODE_OPTIONS=--max-old-space-size=8096
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - APP__PORT=8080
-      - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
-      - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
-      - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
-      # - REACT_APP_GRAPHQL_HOST=${GRAPHQL_HOST}
-      - REACT_APP_API_URL=${REACT_APP_API_URL}
-      - SMTP__HOSTNAME=${SMTP_HOSTNAME}
-      - SMTP__PORT=25
-      - SUBSCRIPTION_SCHEDULER__ENABLED=false
+      STARDOG_USER: admin
+      STARDOG_PASSWORD: admin
     ports:
-      - "8080:8080"
+      - "15820:15820"
+    volumes:
+      - "./stardog-license-key.bin:/var/opt/stardog/stardog-license-key.bin"
+    profiles:
+      - backend
+  
+  cyio:
+    image: docker.darklight.ai/opencti:${CYIO_TAG:-latest}
+    container_name: cyio
+    restart: unless-stopped
+    environment:
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - NODE_OPTIONS=--max-old-space-size=8096
+    ports:
+      - "4000:4000"
     volumes:
       - ./default.json:/opt/opencti/config/default.json
-      # - ./darklight.crt:/opt/opencti/certs/darklight.crt
-      # - ./darklight.key:/opt/opencti/certs/darklight.key
+      - ./opencti-front-localhost.crt:/opt/opencti/certs/darklight.crt
+      - ./opencti-front-localhost.key:/opt/opencti/certs/darklight.key
     profiles:
       - frontend
-
-volumes:
-  esdata:
-  redisdata:
-  amqpdata:

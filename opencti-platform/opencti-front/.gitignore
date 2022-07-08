@@ -38,3 +38,4 @@ __generated__
 # Cypress
 cypress/videos
 cypress/screenshots
+cypress/fixtures/users.json
