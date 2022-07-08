@@ -86,6 +86,7 @@ const riskResolvers = {
             // clean up
             delete risk.remediation_type_values;
             delete risk.remediation_lifecycle_values;
+            delete risk.remediation_timestamp_values;
           }
 
           // TODO: WORKAROUND fix up invalidate deviation values
@@ -267,6 +268,7 @@ const riskResolvers = {
           // clean up
           delete risk.remediation_type_values;
           delete risk.remediation_lifecycle_values;
+          delete risk.remediation_timestamp_values;
         }
 
           // TODO: WORKAROUND fix up invalidate deviation values

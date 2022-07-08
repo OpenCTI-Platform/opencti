@@ -222,6 +222,7 @@ export const riskSingularizeSchema = {
     "cvssV3Temporal_score": true,
     "remediation_lifecycle_values": true,
     "remediation_type_values": true,
+    "remediation_timestamp_values": true,
     "occurrences": true,
   }
 };
