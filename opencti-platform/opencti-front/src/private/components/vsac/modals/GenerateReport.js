@@ -130,7 +130,7 @@ class GenerateReport extends Component {
 
 		this.state = {
 			report_title: this.props.scanName,
-			includeAppendices: true,
+			includeAppendices: false,
 			includeBenchmarkComparison: true,
 			includeCharts: true,
 			includeMostVulnerableHosts: true,
