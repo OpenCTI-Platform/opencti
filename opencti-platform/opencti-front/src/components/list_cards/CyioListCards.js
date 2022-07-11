@@ -88,6 +88,13 @@ const styles = (theme) => ({
     marginTop: '5px',
     padding: '14px 18px 12px 18px',
   },
+  selectedViews: {
+    width: '430px',
+    minWidth: '415px',
+    float: 'right',
+    marginTop: '5px',
+    padding: '14px 18px 12px 18px',
+  },
   cardsContainer: {
     marginTop: 10,
     paddingTop: '0px 16px 16px 16px',
@@ -166,7 +173,10 @@ class CyioListCards extends Component {
       handleNewCreation,
       numberOfElements,
       availableFilterKeys,
+      handleClearSelectedElements,
     } = this.props;
+    const totalElementsSelected = selectedElements && Object.keys(selectedElements).length;
+
     return (
       <div
         className={
@@ -374,8 +384,18 @@ class CyioListCards extends Component {
               }, toPairs(filters))}
             </div>
           </div>
-          <div className={classes.views}>
+          <div className={totalElementsSelected > 0 ? classes.selectedViews : classes.views}>
             <div style={{ float: 'right' }}>
+              {totalElementsSelected > 0 && (
+                <Chip
+                  className={classes.iconButton}
+                  label={
+                    <>
+                      <strong>{totalElementsSelected}</strong> Selected
+                    </>
+                  }
+                  onDelete={handleClearSelectedElements} />
+              )}
               {typeof handleChangeView === 'function' && (
                 // <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <>
@@ -465,6 +485,7 @@ CyioListCards.propTypes = {
   handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
+  handleClearSelectedElements: PropTypes.func,
   openExports: PropTypes.bool,
   disabled: PropTypes.bool,
   views: PropTypes.array,
