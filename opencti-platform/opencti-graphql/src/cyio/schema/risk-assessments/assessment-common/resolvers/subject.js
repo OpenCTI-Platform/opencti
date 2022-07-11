@@ -951,6 +951,9 @@ const subjectResolvers = {
   },
   SubjectTarget: {
     __resolveType: (item) => {
+      // WORKAROUND: entity_type not being set correctly
+      if (item.entity_type === 'location') item.entity_type = 'oscal-location';
+      // ENDIF
       return objectMap[item.entity_type].graphQLType;
     }
   }
