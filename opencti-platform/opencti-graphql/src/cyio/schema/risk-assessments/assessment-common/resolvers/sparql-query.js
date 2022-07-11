@@ -3841,7 +3841,7 @@ export const selectAllSubjects = (select, args, parent) => {
       classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor>';
       predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
     }
-    if (parent.entity_type === 'requested-asset') {
+    if (parent.entity_type === 'required-asset') {
       classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset>';
       predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
     }
