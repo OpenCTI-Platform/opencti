@@ -80,6 +80,10 @@ class Software extends Component {
     this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
   }
 
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
+  }
+
   handleSoftwareCreation() {
     this.setState({ openSoftwareCreation: true });
   }
@@ -199,6 +203,7 @@ class Software extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleSoftwareCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -311,6 +316,7 @@ class Software extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleSoftwareCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}

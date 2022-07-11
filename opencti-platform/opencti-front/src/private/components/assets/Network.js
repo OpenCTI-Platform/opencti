@@ -76,6 +76,10 @@ class Network extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
+  }
+
   handleToggleSelectAll() {
     this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
   }
@@ -198,6 +202,7 @@ class Network extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleNewCreation={this.handleNetworkCreation.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         OperationsComponent={<NetworkDeletion />}
         selectedElements={selectedElements}
@@ -303,6 +308,7 @@ class Network extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleNetworkCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
