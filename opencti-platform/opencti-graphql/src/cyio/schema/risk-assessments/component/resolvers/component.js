@@ -80,10 +80,34 @@ const componentResolvers = {
             continue
           }
 
+          // TODO: WORKAROUND missing component type 
+          if (component.component_type === undefined) {
+            console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${component.iri} missing required field 'component_type'; fixing`);
+            switch(component.asset_type) {
+              case 'software':
+              case 'operating-system':
+              case 'application-software':
+                component.component_type = 'software';
+                break;
+              case 'network':
+                component.component_type = 'network';
+                break;
+              default:
+                console.error(`[CYIO] UNKNOWN-COMPONENT Unknown component type '${item.component_type}' for object ${item.iri}`);        
+                console.error(`[CYIO] UNKNOWN-TYPE Unknown asset type '${item.asset_type}' for object ${item.iri}`);        
+                if (component.iri.includes('Software')) item.component_type = 'software';
+                if (component.iri.includes('Network')) item.component_type = 'network';
+                if (component.component_type === undefined) continue;
+            }
+          }
+          // END WORKAROUND
+
+          // TODO: WORKAROUND missing component type 
           if (!component.hasOwnProperty('operational_status')) {
             console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${component.iri} missing field 'operational_status'; fixing`);
             component.operational_status = 'operational';
           }
+          // END WORKAROUND
 
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
