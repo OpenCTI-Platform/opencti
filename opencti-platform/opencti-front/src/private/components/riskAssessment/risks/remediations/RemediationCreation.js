@@ -259,7 +259,7 @@ class RemediationCreation extends Component {
                       </div>
                     </Grid>
                   </Grid>
-                  <Grid container={true} spacing={3}>
+                  {/* <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '12px' }}>
                         <Typography
@@ -320,7 +320,7 @@ class RemediationCreation extends Component {
                         />
                       </div>
                     </Grid>
-                  </Grid>
+                  </Grid> */}
                   <Grid container={true} spacing={3}>
                     <Grid xs={12} item={true}>
                       <Typography
