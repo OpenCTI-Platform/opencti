@@ -1022,13 +1022,15 @@ class Filters extends Component {
             {t('Filters')}
           </Button>
         ) : (
-          <IconButton
-            color="primary"
-            onClick={this.handleOpenFilters.bind(this)}
-            style={{ float: 'left' }}
-          >
-            <FilterListOutlined />
-          </IconButton>
+          <Tooltip title={t('Filter')}>
+            <IconButton
+              color="primary"
+              onClick={this.handleOpenFilters.bind(this)}
+              style={{ float: 'left' }}
+            >
+              <FilterListOutlined />
+            </IconButton>
+          </Tooltip>
         )}
         <Popover
           classes={{ paper: classes.container }}
