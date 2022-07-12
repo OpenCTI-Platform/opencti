@@ -177,8 +177,8 @@ const oscalTaskResolvers = {
       // END WORKAROUND
 
       // Setup to handle embedded objects to be created
-      let dependentTasks = [], relatedTasks = [], links = [], remarks = []; 
-      let activities, responsibleRoles, assessmentSubjects;
+      let dependentTasks = [], relatedTasks = [], responsibleRoles = [], links = [], remarks = []; 
+      let activities, assessmentSubjects;
       if (input.timing !== undefined && input.timing !== null) {
         if (('within_date_range' in input.timing && 'on_date' in input.timing) ||
             ('within_date_range' in input.timing && 'at_frequency' in input.timing) ||
@@ -228,7 +228,17 @@ const oscalTaskResolvers = {
         delete input.related_tasks;
       }
       if (input.responsible_roles !== undefined && input.responsible_roles !== null) {
-        responsibleRoles = input.responsible_roles;
+        for (let roleId of input.responsible_roles) {
+          let sparqlQuery = selectObjectIriByIdQuery( roleId, 'responsible-party');
+          let result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Obtaining IRI for Responsible Party object with id",
+            singularizeSchema
+          });
+          if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${roleId}`);
+          responsibleRoles.push(`<${result[0].iri}>`);
+        }
         delete input.responsible_roles;
       }
       if (input.associated_activities !== undefined) {
@@ -306,10 +316,14 @@ const oscalTaskResolvers = {
         // create the Assessment Subject
         // attach Assessment Subject to the Task
       }
-      // TODO: create any responsible Roles supplied and attach them to the Task
-      if (responsibleRoles !== undefined && responsibleRoles !== null ) {
-        // create the Responsible Role
-        // attach Responsible Role to the Task
+      if (responsibleRoles !== undefined && responsibleRoles.length > 0 ) {
+        // attach task(s) to the Task
+        let attachQuery = attachToOscalTaskQuery( id, 'responsible_roles', responsibleRoles);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the Responsible Role(s) to the Task"
+        });
       }
       // Attach any link(s) supplied to the Task
       if (links !== undefined && links.length > 0 ) {
