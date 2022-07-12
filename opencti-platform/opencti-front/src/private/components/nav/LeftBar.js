@@ -238,7 +238,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <Database />
               </ListItemIcon>
-              <ListItemText primary={t('Data')} />
+              <ListItemText primary={t('Data')} data-cy='data' />
             </MenuItem>
             <MenuItem
               disabled="true"
@@ -251,7 +251,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <CogOutline />
               </ListItemIcon>
-              <ListItemText primary={t('Settings')} />
+              <ListItemText primary={t('Settings')} data-cy='settings' />
             </MenuItem>
             </MenuList> 
             <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
@@ -266,7 +266,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <PersonIcon />
               </ListItemIcon>
-              <ListItemText primary={t(me.name)} />
+              <ListItemText primary={t(me.name)} data-cy='profile' />
             </MenuItem>
             <MenuItem
               onClick={ () => handleUserPrefOpen() }
@@ -276,7 +276,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <LocationCityIcon />
               </ListItemIcon>
-              <ListItemText primary={currentOrg} />
+              <ListItemText primary={currentOrg} data-cy='organization' />
             </MenuItem>
         </MenuList>
       </Security>
