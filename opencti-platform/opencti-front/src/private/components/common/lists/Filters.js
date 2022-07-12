@@ -279,7 +279,7 @@ class Filters extends Component {
             });
           });
         break;
-      case 'risk_response':
+      case 'response_type':
         fetchDarklightQuery(RiskFiltersQuery, {
           type: 'ResponseType',
         })
@@ -296,9 +296,9 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                risk_response: R.union(
+                response_type: R.union(
                   riskResponseEntities,
-                  this.state.entities.risk_response,
+                  this.state.entities.response_type,
                 ),
               },
             });
