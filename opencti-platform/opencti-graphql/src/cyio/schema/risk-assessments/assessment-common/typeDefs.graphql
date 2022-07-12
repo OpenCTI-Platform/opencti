@@ -1948,7 +1948,7 @@ enum RisksOrdering {
   risk_status
   "Response Type"
   response_type
-  "Lifecycle"
+  "Response Lifecycle"
   lifecycle
   "Occurrences"
   occurrences
@@ -1977,6 +1977,10 @@ enum RisksFilter {
   risk_level
   "Risk Status"
   risk_status
+  "Response Type"
+  response_type
+  "Response Lifecycle"
+  lifecycle
   "Deadline"
   deadline
 }

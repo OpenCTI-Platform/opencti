@@ -228,55 +228,56 @@ const LeftBar = ({
       <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
         <MenuList component="nav" classes={{ root: classes.menuList }}>
-          <MenuItem
-            component={Link}
-            to={'/data'}
-            selected={location.pathname.includes('/data')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <Database />
-            </ListItemIcon>
-            <ListItemText primary={t('Data')} data-cy='data' />
-          </MenuItem>
-          <MenuItem
-            disabled="true"
-            component={Link}
-            to="/dashboard/settings"
-            selected={location.pathname.includes('/dashboard/setings')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <CogOutline />
-            </ListItemIcon>
-            <ListItemText primary={t('Settings')} data-cy='settings' />
-          </MenuItem>
-        </MenuList>
-        <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
-          <MenuItem
-            component={Link}
-            to="/dashboard/profile"
-            selected={location.pathname.includes('/dashboard/profile')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <PersonIcon />
-            </ListItemIcon>
-            <ListItemText primary={t(me.name)} data-cy='profile' />
-          </MenuItem>
-          <MenuItem
-            onClick={ () => handleUserPrefOpen() }
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <LocationCityIcon />
-            </ListItemIcon>
-            <ListItemText primary={currentOrg} data-cy='organization' />
-          </MenuItem>
+            <MenuItem
+              component={Link}
+              to={'/data'}
+              selected={location.pathname.includes('/data')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <Database />
+              </ListItemIcon>
+              <ListItemText primary={t('Data')} />
+            </MenuItem>
+            <MenuItem
+              disabled="true"
+              component={Link}
+              to="/dashboard/settings"
+              selected={location.pathname.includes('/dashboard/setings')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <CogOutline />
+              </ListItemIcon>
+              <ListItemText primary={t('Settings')} />
+            </MenuItem>
+            </MenuList> 
+            <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
+            <MenuItem
+              disabled={true}
+              component={Link}
+              to="/dashboard/profile"
+              selected={location.pathname.includes('/dashboard/profile')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <PersonIcon />
+              </ListItemIcon>
+              <ListItemText primary={t(me.name)} />
+            </MenuItem>
+            <MenuItem
+              onClick={ () => handleUserPrefOpen() }
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <LocationCityIcon />
+              </ListItemIcon>
+              <ListItemText primary={currentOrg} />
+            </MenuItem>
         </MenuList>
       </Security>
       <Dialog

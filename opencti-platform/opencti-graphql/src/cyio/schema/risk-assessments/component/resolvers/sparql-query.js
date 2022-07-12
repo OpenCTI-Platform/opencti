@@ -65,6 +65,7 @@ export const componentReducer = (item) => {
     ...(item.protocols && {protocols_iri: item.protocols}),
     ...(item.control_implementations && {control_implementations_iri: item.control_implementations}),
     ...(item.responsible_roles && {responsible_roles_iri: item.responsible_roles}),
+    ...(item.props && {props: item.props}),
     // Asset
     ...(item.asset_id && {asset_id: item.asset_id}),
     // ItAsset

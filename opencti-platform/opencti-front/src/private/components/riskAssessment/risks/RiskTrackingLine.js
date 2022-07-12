@@ -135,6 +135,7 @@ const styles = (theme) => ({
   },
   span: {
     color: theme.palette.background.nav,
+    marginLeft: 10,
   },
   statusButton: {
     cursor: 'default',
@@ -283,7 +284,9 @@ class RiskTrackingLineContainer extends Component {
                       </Typography>
                       <Typography color="textSecondary" variant="h3">
                         {t('Logged By')}
-                        <span className={classes.span}>{riskTrackingLoggedBy?.name}</span>
+                        <span className={classes.span}>
+                          {riskTrackingLoggedBy?.party && riskTrackingLoggedBy?.party.name}
+                        </span>
                       </Typography>
                     </div>
                   </div>
@@ -371,7 +374,7 @@ class RiskTrackingLineContainer extends Component {
                         </Avatar>
                         <div style={{ textAlign: 'left', marginLeft: '10px' }}>
                           <Typography variant="subtitle2">
-                            {riskTrackingLoggedBy?.name && t(riskTrackingLoggedBy?.name)}
+                            {riskTrackingLoggedBy?.party && t(riskTrackingLoggedBy?.party.name)}
                           </Typography>
                         </div>
                       </div>

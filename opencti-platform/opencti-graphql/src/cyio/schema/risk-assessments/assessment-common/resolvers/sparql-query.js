@@ -3077,6 +3077,7 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select.includes('response_type')|| select.includes('lifecycle')) {
     if (!select.includes('remediation_type')) select.push('remediation_type');
     if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
+    if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp')
   }
 
   // build selectionClause and predicate list
@@ -3094,6 +3095,7 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select.includes('response_type')|| select.includes('response_lifecycle')) {
     selectionClause = selectionClause.replace('?remediation_type','');
     selectionClause = selectionClause.replace('?remediation_lifecycle','')
+    selectionClause = selectionClause.replace('?remediation_timestamp','')
   }
 
   // Populate the insertSelections that compute results
@@ -3106,6 +3108,7 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select.includes('response_type') || select.includes('response_lifecycle')) {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
   }
   if (select.includes('occurrences')) {
     occurrences = '?occurrences';
@@ -3176,6 +3179,7 @@ export const selectAllRisks = (select, args, parent) => {
   if (select.includes('response_type')|| select.includes('lifecycle')) {
     if (!select.includes('remediation_type')) select.push('remediation_type');
     if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
+    if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp')
   }
 
   if (args !== undefined ) {
@@ -3235,9 +3239,10 @@ export const selectAllRisks = (select, args, parent) => {
     selectionClause = selectionClause.replace('?available_exploit','');
     selectionClause = selectionClause.replace('?exploitability_ease','');
   }
-  if (select.includes('response_type')|| select.includes('response_lifecycle')) {
+  if (select.includes('response_type') || select.includes('response_lifecycle')) {
     selectionClause = selectionClause.replace('?remediation_type','');
     selectionClause = selectionClause.replace('?remediation_lifecycle','')
+    selectionClause = selectionClause.replace('?remediation_timestamp','')    
   }
 
   // Populate the insertSelections that compute results
@@ -3250,6 +3255,7 @@ export const selectAllRisks = (select, args, parent) => {
   if (select.includes('response_type') || select.includes('response_lifecycle')) {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
   }
   if (select.includes('occurrences')) {
     occurrences = '?occurrences';
@@ -3835,7 +3841,7 @@ export const selectAllSubjects = (select, args, parent) => {
       classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor>';
       predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
     }
-    if (parent.entity_type === 'requested-asset') {
+    if (parent.entity_type === 'required-asset') {
       classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset>';
       predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
     }
@@ -5079,6 +5085,11 @@ export const riskPredicateMap = {
   remediation_lifecycle: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediation_lifecycle");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  remediation_timestamp: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "remediation_timestamp");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   observation_subject: {

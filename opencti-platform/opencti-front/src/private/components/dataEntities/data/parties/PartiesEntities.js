@@ -209,6 +209,7 @@ class PartiesEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handlePartyCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -318,6 +319,7 @@ class PartiesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handlePartyCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}

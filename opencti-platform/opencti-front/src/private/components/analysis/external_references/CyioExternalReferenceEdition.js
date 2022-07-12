@@ -93,7 +93,7 @@ const cyioExternalReferenceEditionFocus = graphql`
 const cyioExternalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string(),
-  url: Yup.string().url(t('The value must be an URL')),
+  url: Yup.string().url(t('The value must be a valid URL (scheme://host:port/path). For example, https://cyio.darklight.ai')),
   description: Yup.string(),
 });
 

@@ -40,7 +40,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/Cyio
 import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../components/Loader';
-import {toastGenericError} from "../../../../utils/bakedToast";
+import { toastGenericError } from "../../../../utils/bakedToast";
 import DeviceCreationDetails from './DeviceCreationDetails';
 
 const styles = (theme) => ({
@@ -114,6 +114,7 @@ const deviceCreationMutation = graphql`
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   port_number: Yup.number().moreThan(0, 'The port number must be greater than 0'),
+  uri: Yup.string().nullable().url('The value must be a valid URL (scheme://host:port/path). For example, https://cyio.darklight.ai'),
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -138,14 +139,16 @@ class DeviceCreation extends Component {
     const adaptedValues = evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        ipv4_address: () => values.ipv4_address.length > 0 ? values.ipv4_address.map((address) => { return {ip_address_value: address } }) : [],
+        ipv6_address: () => values.ipv6_address.length > 0 ? values.ipv6_address.map((address) => { return {ip_address_value: address } }) : [],
       },
       values,
     );
     const finalValues = R.pipe(
-      R.dissoc('port_number'),
-      R.dissoc('protocols'),
       R.dissoc('labels'),
       R.dissoc('locations'),
+      R.dissoc('protocols'),
+      R.dissoc('port_number'),
       R.assoc('asset_type', values.asset_type),
     )(adaptedValues);
     CM(environmentDarkLight, {
@@ -336,7 +339,7 @@ class DeviceCreation extends Component {
                       stixCoreObjectId={device.id}
                     /> */}
                   <div>
-                    <CyioCoreObjectAssetCreationExternalReferences disableAdd={true}/>
+                    <CyioCoreObjectAssetCreationExternalReferences disableAdd={true} />
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>

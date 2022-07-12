@@ -206,6 +206,7 @@ class RolesEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleLabelCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -310,6 +311,7 @@ class RolesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleLabelCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}

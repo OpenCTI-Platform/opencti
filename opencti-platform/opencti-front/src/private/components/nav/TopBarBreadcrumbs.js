@@ -315,6 +315,7 @@ const TopBarBreadcrumbs = ({
               onClose={handleCloseMenu}
             >
               <MenuItem
+                disabled={true}
                 component={Link}
                 to="/dashboard/profile"
                 onClick={handleCloseMenu}

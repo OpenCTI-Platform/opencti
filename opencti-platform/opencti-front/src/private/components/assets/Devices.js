@@ -208,6 +208,7 @@ class Devices extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleNewCreation={this.handleDeviceCreation.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
@@ -323,6 +324,7 @@ class Devices extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleDeviceCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
