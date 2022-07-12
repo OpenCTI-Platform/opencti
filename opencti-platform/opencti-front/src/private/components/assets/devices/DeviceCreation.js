@@ -114,6 +114,7 @@ const deviceCreationMutation = graphql`
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   port_number: Yup.number().moreThan(0, 'The port number must be greater than 0'),
+  uri: Yup.string().nullable().url('The value must be an URL'),
 });
 
 const Transition = React.forwardRef((props, ref) => (
