@@ -288,14 +288,12 @@ const TopBarBreadcrumbs = ({
                 <FindInPageIcon fontSize="default" />
               </IconButton>
             </Tooltip>
-            <Tooltip title={t('Data Import')}>
-               <ExportPoam />
-            </Tooltip>
-            <Tooltip
-              title={t('Add Note')}
-            >
+            <>
+              <ExportPoam />
+            </>
+            <>
               <Export />
-            </Tooltip>
+            </>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}

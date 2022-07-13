@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Input from '@material-ui/core/Input';
+import Tooltip from '@material-ui/core/Tooltip';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { Search } from '@material-ui/icons';
 import { compose } from 'ramda';
@@ -61,42 +62,44 @@ class SearchInput extends Component {
       classRoot = classes.searchRootNoAnimation;
     }
     return (
-      <Input
-        fullWidth={fullWidth}
-        name="keyword"
-        disabled={disabled}
-        defaultValue={keyword}
-        placeholder={`${t('Search')}...`}
-        onChange={(event) => {
-          const { value } = event.target;
-          if (typeof onChange === 'function') {
-            onChange(value);
+      <Tooltip title={t('Advanced Search')}>
+        <Input
+          fullWidth={fullWidth}
+          name="keyword"
+          disabled={disabled}
+          defaultValue={keyword}
+          placeholder={`${t('Search')}...`}
+          onChange={(event) => {
+            const { value } = event.target;
+            if (typeof onChange === 'function') {
+              onChange(value);
+            }
+          }}
+          onKeyPress={(event) => {
+            const { value } = event.target;
+            if (typeof onSubmit === 'function' && event.key === 'Enter') {
+              onSubmit(value);
+            }
+          }}
+          endAdornment={
+            <InputAdornment position="start">
+              <Search fontSize="inherit" />
+            </InputAdornment>
           }
-        }}
-        onKeyPress={(event) => {
-          const { value } = event.target;
-          if (typeof onSubmit === 'function' && event.key === 'Enter') {
-            onSubmit(value);
-          }
-        }}
-        endAdornment={
-          <InputAdornment position="start">
-            <Search fontSize="inherit" />
-          </InputAdornment>
-        }
-        classes={{
-          root: classRoot,
-          input:
-            // eslint-disable-next-line no-nested-ternary
-            variant === 'small'
-              ? classes.searchInputSmall
-              : variant !== 'noAnimation'
-                ? classes.searchInput
-                : classes.searchInputNoAnimation,
-        }}
-        disableUnderline={true}
-        autoComplete="off"
-      />
+          classes={{
+            root: classRoot,
+            input:
+              // eslint-disable-next-line no-nested-ternary
+              variant === 'small'
+                ? classes.searchInputSmall
+                : variant !== 'noAnimation'
+                  ? classes.searchInput
+                  : classes.searchInputNoAnimation,
+          }}
+          disableUnderline={true}
+          autoComplete="off"
+        />
+      </Tooltip>
     );
   }
 }
