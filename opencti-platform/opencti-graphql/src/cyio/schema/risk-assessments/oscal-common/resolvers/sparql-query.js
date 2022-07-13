@@ -462,6 +462,7 @@ export const selectAllLocations = (select, args, parent) => {
   let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

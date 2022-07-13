@@ -185,10 +185,8 @@ class RequiredResourceLineComponent extends Component {
     const requiredResourceNode = pipe(
       pathOr([], ['subjects']),
       map((value) => ({
-        name: value.subject_ref.name,
-        description: value.subject_ref.description,
-        resource_type: value.subject_ref.party_type,
-        resource: value.subject_ref.asset_type,
+        resource_type: value.subject_ref.__typename,
+        resource: value.subject_ref.name,
       })),
       mergeAll,
     )(data);
