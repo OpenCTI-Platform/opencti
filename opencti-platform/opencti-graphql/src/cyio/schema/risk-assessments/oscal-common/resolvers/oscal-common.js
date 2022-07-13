@@ -45,7 +45,7 @@ const oscalCommonResolvers = {
       let jsonPayload = JSON.stringify(payload);
 
       let response;
-      response = await dataSources.Artemis.publish(taskId, 'topics/cyio.tasks.export', jsonPayload);
+      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', jsonPayload);
       
       // return the tasking id for tracking purposes
       return response;
@@ -121,7 +121,7 @@ const oscalCommonResolvers = {
       let jsonPayload = JSON.stringify(payload);
 
       let response;
-      response = await dataSources.Artemis.publish(taskId, 'topics/cyio.tasks.export', jsonPayload);
+      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', jsonPayload);
       
       // return the tasking id for tracking purposes
       return response;
