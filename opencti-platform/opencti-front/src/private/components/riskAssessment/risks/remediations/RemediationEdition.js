@@ -6,8 +6,6 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import RemediationEditionContainer from './RemediationEditionContainer';
@@ -100,8 +98,7 @@ class RemediationEdition extends Component {
           onClose={this.handleClose.bind(this)}
         > */}
         <div>
-        <QR
-          environment={environmentDarkLight}
+        <QueryRenderer
           query={remediationEditionQuery}
           variables={{ id: riskId }}
           render={({ error, props }) => {

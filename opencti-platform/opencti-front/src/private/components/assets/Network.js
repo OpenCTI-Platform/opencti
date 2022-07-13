@@ -4,8 +4,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -221,9 +219,7 @@ class Network extends Component {
           'label_name',
         ]}
       >
-        {/* <QueryRenderer */}
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={networkCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
@@ -328,9 +324,7 @@ class Network extends Component {
           'label_name',
         ]}
       >
-        {/* <QueryRenderer */}
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={networkLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {

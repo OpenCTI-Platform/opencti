@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { QueryRenderer as QR } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
 // import CyioCoreObjectHistoryLines, {
 //   cyioCoreObjectHistoryLinesQuery,
 // } from './CyioCoreObjectHistoryLines';
@@ -18,8 +17,7 @@ class CyioCoreObjectLatestHistory extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Most recent history')}
         </Typography>
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           // query={cyioCoreObjectHistoryLinesQuery}
           variables={{
             filters: [

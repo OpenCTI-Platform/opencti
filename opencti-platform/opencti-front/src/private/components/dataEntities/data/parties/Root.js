@@ -6,8 +6,6 @@ import {
   Route, Redirect, withRouter, Switch,
 } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import {
   QueryRenderer,
   requestSubscription,
@@ -16,9 +14,8 @@ import TopBar from '../../../nav/TopBar';
 import EntityParty from './EntityParty';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import StixCoreObjectKnowledgeBar from '../../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { toastGenericError } from "../../../../../utils/bakedToast";
-import { EntityPartyCard } from './EntityPartyCard';
+import StixCoreObjectKnowledgeBar from '../../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const subscription = graphql`
   subscription RootPartySubscription($id: ID!) {
@@ -92,9 +89,7 @@ class RootParty extends Component {
             ]}
           />
         </Route>
-        {/* <QueryRenderer */}
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={partyQuery}
           variables={{ id: partyId }}
           render={({ error, props, retry }) => {

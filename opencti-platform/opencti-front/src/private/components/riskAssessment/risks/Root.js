@@ -5,8 +5,6 @@ import {
   Route, Redirect, withRouter, Switch,
 } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import {
   QueryRenderer,
   requestSubscription,
@@ -103,8 +101,7 @@ class RootRisk extends Component {
             ]}
           />
         </Route>
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={riskQuery}
           variables={{ id: riskId }}
           render={({ error, props, retry }) => {

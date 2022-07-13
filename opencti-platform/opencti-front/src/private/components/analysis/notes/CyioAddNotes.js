@@ -22,7 +22,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Add, Close } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -306,8 +306,7 @@ class CyioAddNotes extends Component {
             </div>
             <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
               <div className={classes.collapse}>
-                <QR
-                  environment={environmentDarkLight}
+                <QueryRenderer
                   query={cyioAddNotesLinesQuery}
                   variables={{
                     search: this.state.search,

@@ -5,16 +5,15 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import List from '@material-ui/core/List';
-import { createFragmentContainer, QueryRenderer as QR } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { QueryRenderer } from '../../../../relay/environment';
 import RiskObservationLines, { riskObservationLinesQuery } from './RiskObservationLines';
 import { toastGenericError } from '../../../../utils/bakedToast';
+import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   paper: {
@@ -85,8 +84,7 @@ class RiskObservation extends Component {
         </Typography>
         <div className="clearfix" />
         <Paper className={classes.paper} elevation={2}>
-          <QR
-            environment={QueryRendererDarkLight}
+          <QueryRenderer
             query={riskObservationLinesQuery}
             variables={{ id: risk.id, first: 10, offset: 0 }}
             render={({ error, props }) => {

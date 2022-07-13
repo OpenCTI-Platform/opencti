@@ -78,8 +78,7 @@ class DeviceEdition extends Component {
     } = this.props;
     return (
       <div>
-        <QR
-          environment={environmentDarkLight}
+        <QueryRenderer
           query={deviceEditionQuery}
           variables={{ id: deviceId }}
           render={({ error, props, retry }) => {
