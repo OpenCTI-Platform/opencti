@@ -6,9 +6,7 @@ const oscalCommonResolvers = {
   Query: {
   },
   Mutation: {
-    exportOscal: async (_, { model, id, media_type }, {clientId, kauth, dataSources}) => {
-      let mediaType;
-
+    exportOscal: async (_, { model, id, media_type }, {clientId, kauth, token, dataSources}) => {
       switch(model) {
         case 'poam':
           if (id === undefined) id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
@@ -22,35 +20,36 @@ const oscalCommonResolvers = {
 
       // Generate a unique identifier to associated with the tasking
       const taskId = uuid4();
-      let jwt = '';
-      if (kauth !== undefined) jwt = kauth.accessToken.token;
+      let bearer_token = '';
+      if (kauth !== undefined) {
+        bearer_token = kauth.accessToken.token;
+      } else {
+        bearer_token = token;
+      }
 
       // build the tasking request payload
-      let payload = `{
+      let payload = {
         "@type": "task", 
-        "task-uuid": "${taskId}",
+        "task-uid": `${taskId}`,
         "type": "export",
-        "token": "${jwt}",
-        "cyio-client": "${clientId}",
+        "token": `${bearer_token}`,
+        "cyio-client": `${clientId}`,
         "options": {
           "export": {
-            "media-format": "${media_type}",
-            "oscal-model": "${model}",
-            "object-id": "${id}"
+            "media-format": `${media_type}`,
+            "oscal-model": `${model}`,
+            "object-id": `${id}`
           }
         }
-      }`;
-
-      // submit the tasking payload on to the queue
-      let jsonPayload = JSON.stringify(payload);
+      };
 
       let response;
-      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', jsonPayload);
+      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', payload);
       
       // return the tasking id for tracking purposes
       return response;
     },
-    generateRiskReport: async (_, { report, id, media_type, options }, {clientId, kauth, dataSources}) => {
+    generateRiskReport: async (_, { report, id, media_type, options }, {clientId, kauth, token, dataSources}) => {
       let exportMediaType, model, description=null, purpose=null, maxItems='all';
       let sectionList = [], appendixList = [];
       switch(report) {
@@ -69,8 +68,12 @@ const oscalCommonResolvers = {
 
       // Generate a unique identifier to associated with the tasking
       const taskId = uuid4();
-      let jwt = ''
-      if (kauth !== undefined) jwt = kauth.accessToken.token;
+      let bearer_token = '';
+      if (kauth !== undefined) {
+        bearer_token = kauth.accessToken.token;
+      } else {
+        bearer_token = token;
+      }
 
       for (let option of options) {
         switch(option.name) {
@@ -93,35 +96,32 @@ const oscalCommonResolvers = {
       }
       
       // build the tasking request payload
-      let payload = `{
+      let payload = {
         "@type": "task", 
-        "task-uuid": "${taskId}",
+        "task-uid": `${taskId}`,
         "type": "report",
-        "token": "${jwt}",
-        "cyio-client": "${clientId}",
-        "options": [
+        "token": `${bearer_token}`,
+        "cyio-client": `${clientId}`,
+        "options": {
           "export": {
-            "media-format": "${exportMediaType}",
-            "oscal-model": "${model}",
-            "object-id": "${id}"
+            "media-format": `${exportMediaType}`,
+            "oscal-model": `${model}`,
+            "object-id": `${id}`
           },
           "report": {
-            "report-type": "${report}",
-            "media-format": "${media_type}",
-            "max-items": ${maxItems},
-            "description": ${description},
-            "purpose": ${purpose},
-            "appendices": [${appendixList}],
-            "sections": [${sectionList}]
+            "report-type": `${report}`,
+            "media-format": `${media_type}`,
+            "max-items": `${maxItems}`,
+            "description": `${description}`,
+            "purpose": `${purpose}`,
+            "appendices": [`${appendixList}`],
+            "sections": [`${sectionList}`]
           }
-        ]
-      }`;
+        }
+      };
       
-      // submit the tasking payload on to the queue
-      let jsonPayload = JSON.stringify(payload);
-
       let response;
-      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', jsonPayload);
+      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', payload);
       
       // return the tasking id for tracking purposes
       return response;

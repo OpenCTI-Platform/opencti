@@ -31,7 +31,8 @@ const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
   const clientId = req.headers['x-cyio-client'];
-  const context = { req, res, workId}
+  const token = req.headers['authorization'];
+  const context = {clientId, req, res, workId, token};
 
   //Stardog database
   if(clientId !== undefined){
