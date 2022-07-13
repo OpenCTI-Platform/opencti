@@ -42,12 +42,6 @@ import CyioCoreObjectExternalReferences from '../../../analysis/external_referen
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import TaskType from '../../../common/form/TaskType';
 import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
-import ResourceType from '../../../common/form/ResourceType';
-import AssociatedActivities from '../../../common/form/AssociatedActivities';
-import ResponsibleParties from '../../../common/form/ResponsibleParties';
-import Dependencies from '../../../common/form/Dependencies';
-import ResourceNameField from '../../../common/form/ResourceNameField';
-import ResourceTypeField from '../../../common/form/ResourceTypeField';
 import { toastGenericError } from "../../../../../utils/bakedToast";
 
 const styles = (theme) => ({
@@ -174,7 +168,6 @@ class RelatedTaskCreation extends Component {
     this.state = {
       open: false,
       close: false,
-      resourceName: '',
       associated_activities: [],
       timing: {},
       start_date: '',
@@ -186,12 +179,8 @@ class RelatedTaskCreation extends Component {
     this.setState({ open: true });
   }
 
-  handleResourceTypeFieldChange(resourceType) {
-    this.setState({ resourceName: resourceType });
-  }
-
   handleClose() {
-    this.setState({ open: false, resourceName: '', fieldName: '' });
+    this.setState({ open: false, fieldName: '' });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -215,8 +204,6 @@ class RelatedTaskCreation extends Component {
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      dissoc('resource_type'),
-      dissoc('resource'),
       assoc('timing', this.state.timing),
     )(values);
     CM(environmentDarkLight, {
@@ -284,13 +271,12 @@ class RelatedTaskCreation extends Component {
   handleCancelClick() {
     this.setState({
       close: true,
-      resourceName: '',
       fieldName: '',
     });
   }
 
   handleCancelCloseClick() {
-    this.setState({ close: false, resourceName: '', fieldName: '' });
+    this.setState({ close: false, fieldName: '' });
   }
 
   onResetContextual() {
@@ -431,8 +417,6 @@ class RelatedTaskCreation extends Component {
               related_tasks: [],
               associated_activities: [],
               responsible_roles: [],
-              resource_type: '',
-              resource: '',
             }}
             validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -619,62 +603,6 @@ class RelatedTaskCreation extends Component {
                           containerstyle={{ width: '100%' }}
                           minDate={this.state.startDate}
                           onChange={(_, date) => this.setState({ endDate: dateFormat(date, "YYYY-MM-DD") })}
-                        />
-                      </div>
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Type')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
-                          <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <ResourceTypeField
-                          name='resource_type'
-                          fullWidth={true}
-                          variant='outlined'
-                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
-                          type='hardware'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Name')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
-                          <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <ResourceNameField
-                          name='resource'
-                          resourceTypename={this.state.resourceName}
-                          fullWidth={true}
-                          variant='outlined'
-                          type='hardware'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
                         />
                       </div>
                     </Grid>

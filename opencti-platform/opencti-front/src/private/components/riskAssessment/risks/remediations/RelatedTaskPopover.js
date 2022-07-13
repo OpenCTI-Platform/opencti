@@ -51,8 +51,6 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/C
 import MarkDownField from '../../../../../components/MarkDownField';
 import TaskType from '../../../common/form/TaskType';
 import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
-import ResourceNameField from '../../../common/form/ResourceNameField';
-import ResourceTypeField from '../../../common/form/ResourceTypeField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
@@ -133,7 +131,6 @@ class RelatedTaskPopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
-      resourceName: '',
       responsible_roles: [],
       associated_activities: [],
       timing: {},
@@ -142,10 +139,6 @@ class RelatedTaskPopover extends Component {
 
   handleOpen(event) {
     this.setState({ anchorEl: event.currentTarget });
-  }
-
-  handleResourceTypeFieldChange(resourceType) {
-    this.setState({ resourceName: resourceType });
   }
 
   handleClose() {
@@ -184,10 +177,8 @@ class RelatedTaskPopover extends Component {
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      dissoc('resource_type'),
-      dissoc('resource'),
       assoc('responsible_role', this.state.responsible_roles),
-      assoc('timings', this.state.timings),
+      assoc('timings', this.state.timing),
       toPairs,
       map((n) => ({
         'key': n[0],
@@ -546,62 +537,6 @@ class RelatedTaskPopover extends Component {
                           invalidDateMessage={t(
                             'The value must be a date (YYYY-MM-DD)',
                           )}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Type')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
-                          <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <ResourceTypeField
-                          name='resource_type'
-                          fullWidth={true}
-                          variant='outlined'
-                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
-                          type='hardware'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Resource Name')}
-                          </Typography>
-                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <ResourceNameField
-                          name='resource'
-                          resourceTypename={this.state.resourceName}
-                          fullWidth={true}
-                          variant='outlined'
-                          type='hardware'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
