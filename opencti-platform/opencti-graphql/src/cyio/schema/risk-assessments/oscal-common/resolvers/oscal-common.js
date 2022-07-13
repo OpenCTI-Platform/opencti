@@ -21,10 +21,10 @@ const oscalCommonResolvers = {
       // Generate a unique identifier to associated with the tasking
       const taskId = uuid4();
       let bearer_token = '';
-      if (kauth !== undefined) {
-        bearer_token = kauth.accessToken.token;
-      } else {
-        bearer_token = token;
+      bearer_token = token;
+      if (kauth && kauth.accessToken && kauth.accessToken.token ) {
+        console.log(`kauth has accessToken: ${kauth.accessToken.token}`)
+        // bearer_token = kauth.accessToken.token;
       }
 
       // build the tasking request payload
@@ -69,10 +69,10 @@ const oscalCommonResolvers = {
       // Generate a unique identifier to associated with the tasking
       const taskId = uuid4();
       let bearer_token = '';
-      if (kauth !== undefined) {
-        bearer_token = kauth.accessToken.token;
-      } else {
-        bearer_token = token;
+      bearer_token = token;
+      if (kauth && kauth.accessToken && kauth.accessToken.token ) {
+        console.log(`kauth has accessToken: ${kauth.accessToken.token}`)
+        // bearer_token = kauth.accessToken.token;
       }
 
       for (let option of options) {
