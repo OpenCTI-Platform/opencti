@@ -861,6 +861,8 @@ type OscalResponsibleParty {
   "Identifies one or more references to additional commentary on the Model."
   remarks: [CyioNote]
   # ResponsibleParty
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
   "Identifies a reference to the role that the party is responsible for."
   role: OscalRole!
   "Identifies one or more references to the parties that are responsible for performing the associated role."
