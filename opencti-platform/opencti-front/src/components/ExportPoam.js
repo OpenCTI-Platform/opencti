@@ -18,7 +18,7 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContentText from '@material-ui/core/DialogContentText';
+import Tooltip from '@material-ui/core/Tooltip';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import PublishIcon from '@material-ui/icons/Publish';
@@ -114,7 +114,7 @@ class ExportPoam extends Component {
       this.setState({ open: true, anchorEl: null });
     }
   }
-  
+
   onReset() {
     this.handleCancelClick();
   }
@@ -153,35 +153,45 @@ class ExportPoam extends Component {
     } = this.props;
     return (
       <>
-        <IconButton
-          // disabled={true}
-          classes={{ root: classes.button }}
-          onClick={this.handleOscalModalOpen.bind((this))}
-          aria-haspopup='true'
-          // onClick={this.handleClickOpen.bind(this)}
+        <Tooltip title={t('Data Export')}>
+          <IconButton
+            // disabled={true}
+            classes={{ root: classes.button }}
+            onClick={this.handleOscalModalOpen.bind((this))}
+            aria-haspopup='true'
+          >
+            <PublishIcon fontSize="default" />
+          </IconButton>
+        </Tooltip>
+
+        <Menu
+          id="menu-appbar"
+          anchorEl={this.state.anchorEl}
+          open={Boolean(this.state.anchorEl)}
+          style={{ marginTop: 40, zIndex: 2100  }}
+          anchorOrigin={{
+            vertical: 'bottom',
+          }}
+          transformOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          onClose={this.handleOscalModalClose.bind(this)}
         >
-          <PublishIcon fontSize="default" />
-        </IconButton>
-          <Menu
-            anchorEl={this.state.anchorEl}
-            open={Boolean(this.state.anchorEl)}
-            anchorOrigin={{
-              vertical: "bottom",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            onClose={this.handleOscalModalClose.bind(this)}
-            >
-              <OscalModalTypeList
-                fullWidth={true}
-                variant='outlined'
-                style={{ height: '38.09px' }}
-                containerstyle={{ width: '100%', left: '1307px' }}
-                handleOscalType={this.handleOscalType.bind(this)}
-              />
-          </Menu>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '10px 13px' }}>
+            <PublishIcon fontSize="default" />
+            <Typography style={{ marginLeft: '10px' }}>
+              {t('Data Export')}
+            </Typography>
+          </div>
+          <OscalModalTypeList
+            fullWidth={true}
+            variant='outlined'
+            style={{ height: '38.09px' }}
+            containerstyle={{ width: '100%', left: '1307px' }}
+            handleOscalType={this.handleOscalType.bind(this)}
+          />
+        </Menu>
         <Formik
           enableReinitialize={true}
           initialValues={{

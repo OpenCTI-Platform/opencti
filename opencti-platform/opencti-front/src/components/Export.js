@@ -244,12 +244,16 @@ class Export extends Component {
     );
     return (
       <>
-        <IconButton
-          classes={{ root: classes.button }}
-          onClick={this.handleClickMenuOpen.bind(this)}
+        <Tooltip
+          title={t('Generate Report')}
         >
-          <NoteAddIcon fontSize="default" />
-        </IconButton>
+          <IconButton
+            classes={{ root: classes.button }}
+            onClick={this.handleClickMenuOpen.bind(this)}
+          >
+            <NoteAddIcon fontSize="default" />
+          </IconButton>
+        </Tooltip>
         <Menu
           id="menu-appbar"
           open={this.state.menuOpen.open}
