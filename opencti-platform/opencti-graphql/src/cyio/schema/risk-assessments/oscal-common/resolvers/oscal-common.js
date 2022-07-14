@@ -9,7 +9,7 @@ const oscalCommonResolvers = {
     exportOscal: async (_, { model, id, media_type }, {clientId, kauth, token, dataSources}) => {
       switch(model) {
         case 'poam':
-          if (id === undefined) id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+          if (id === undefined || id === null || id === '') id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
           break;
         case 'ap':
         case 'ar':
