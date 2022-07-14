@@ -142,21 +142,17 @@ node {
 
   // Run integration tests, but do not block the ability to rapid deploy
   parallel ci: {
-    try {
-      stage('Start Local Backend') {
+    stage('Integration Testing') {
+      configFileProvider([
+        configFile(fileId: "ci-testing-default-json", replaceTokens: true, targetLocation: "./docker/default.json"),
+        configFile(fileId: "ci-testing-docker-env", replaceTokens: true, targetLocation: "./docker/.env")
+      ]) {
         dir('docker') {
-          configFileProvider([
-            configFile(fileId: "ci-testing-default-json", replaceTokens: true, targetLocation: "./default.json"),
-            configFile(fileId: "ci-testing-docker-env", replaceTokens: true, targetLocation: "./.env")
-          ]) {
-            sh 'docker-compose --profile backend up -d && sleep 60'
-            sh 'docker-compose --profile frontend up -d && sleep 15'
-          }
+          sh 'docker-compose --profile backend up -d && sleep 60'
+          sh 'docker-compose --profile frontend up -d && sleep 15'
         }
-      }
 
-      stage('Integration Testing') {
-        docker.image('cypress/base:10').inside {
+        docker.image('cypress/included:14.16').inside {
           sh """
             node --version
             set CYPRESS_BASE_URL=https://cyio-localhost.darklight.ai:4000
@@ -165,12 +161,21 @@ node {
           """
         }
       }
-    } catch(Exception ex) {
-      throw ex;
+    }
+    post {
+      always {
+        dir('docker') {
+          sh label: 'cleanup', script: """
+            docker-compose down
+            rm -rf default.json
+            rm .env
+          """
+        }
+      }
     }
   }, deploy: {
-    if (commitMessage.contains('ci:deploy')) {
-      stage('Deploy') {
+    stage('Deploy') {
+      if (commitMessage.contains('ci:deploy')) {
         switch(branch) {
           case 'master':
           case 'prod':
@@ -189,9 +194,9 @@ node {
             echo "Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag..."
             break
         }
+      } else {
+        echo 'No \'ci:deploy\' flag detected in commit message; skipping...'
       }
-    } else {
-      echo 'No \'ci:deploy\' flag detected in commit message; skipping auto deployment...'
     }
   }
 
