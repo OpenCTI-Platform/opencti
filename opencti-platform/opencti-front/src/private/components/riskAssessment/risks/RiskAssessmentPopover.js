@@ -29,7 +29,7 @@ import SelectField from '../../../../components/SelectField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import RiskStatus from '../../common/form/RiskStatus';
-import {toastGenericError} from "../../../../utils/bakedToast";
+import { toastGenericError } from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   container: {
@@ -295,6 +295,7 @@ class RiskAssessmentPopover extends Component {
             {t('Assign POAM ID')}
           </MenuItem>
           <MenuItem
+            divider={true}
             className={classes.menuItem}
             onClick={this.handleOpenRiskLevel.bind(this)}
           >
