@@ -152,7 +152,9 @@ node {
           sh 'docker-compose --profile frontend up -d && sleep 15'
         }
 
-        docker.image('cypress/included:14.16').inside {
+        // Node 14.16 and Chrome 90
+        // https://github.com/cypress-io/cypress-docker-images/tree/master/included
+        docker.image('cypress/included:8.3.0').inside {
           sh """
             node --version
             set CYPRESS_BASE_URL=https://cyio-localhost.darklight.ai:4000
