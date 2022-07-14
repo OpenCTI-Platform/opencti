@@ -25,7 +25,7 @@ const USERNAME = conf.get('rabbitmq:username');
 const PASSWORD = conf.get('rabbitmq:password');
 const VHOST = conf.get('rabbitmq:vhost');
 const VHOST_PATH = VHOST === '/' ? '' : `/${VHOST}`;
-const USE_SSL_MGMT = booleanConf('rabbitmq:management_ssl', false)
+const USE_SSL_MGMT = booleanConf('rabbitmq:management_ssl', false);
 const HOSTNAME_MGMT = conf.get('rabbitmq:hostname_management') || HOSTNAME;
 const PORT_MGMT = conf.get('rabbitmq:port_management');
 
@@ -75,7 +75,7 @@ export const send = (exchangeName, routingKey, message) => {
 
 export const metrics = async () => {
   const ssl = USE_SSL_MGMT ? 's' : '';
-  const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`
+  const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
 
   const overview = await axios
     .get('/api/overview', {
