@@ -253,7 +253,7 @@ const LeftBar = ({
               </ListItemIcon>
               <ListItemText primary={t('Settings')} data-cy='settings' />
             </MenuItem>
-            </MenuList> 
+            </MenuList>
             <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
             <MenuItem
               disabled={true}

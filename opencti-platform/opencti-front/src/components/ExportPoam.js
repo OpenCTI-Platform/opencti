@@ -164,7 +164,7 @@ class ExportPoam extends Component {
           id="menu-appbar"
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
-          style={{ marginTop: 40, zIndex: 2100  }}
+          style={{ marginTop: 40, zIndex: 2100 }}
           anchorOrigin={{
             vertical: 'bottom',
           }}
