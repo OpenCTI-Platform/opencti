@@ -158,6 +158,7 @@ node {
       stage('Integration Testing') {
         docker.image('cypress/base:10').inside {
           sh """
+            node --version
             set CYPRESS_BASE_URL=https://cyio-localhost.darklight.ai:4000
             cd opencti-platform/opencti-front
             yarn run cypress --ci-build-id ${branch}-${env.BUILD_NUMBER} --spec "cypress/e2e/auth.cy.js"
