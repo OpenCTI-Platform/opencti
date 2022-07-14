@@ -35,6 +35,7 @@ import {
   selectAllRoles,
   selectAllResponsibleParties,
   partyPredicateMap,
+  responsiblePartyPredicateMap,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
   selectAllComponents,
@@ -799,6 +800,12 @@ const poamResolvers = {
         if (offset) {
           offset--;
           continue;
+        }
+
+        // if props were requested
+        if (selectMap.getNode('node').includes('props')) {
+          let props = convertToProperties(item, responsiblePartyPredicateMap);
+          if (props !== null) item.props = props;
         }
 
         // filter out non-matching entries if a filter is to be applied

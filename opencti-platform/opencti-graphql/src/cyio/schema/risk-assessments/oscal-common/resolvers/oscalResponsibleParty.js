@@ -70,6 +70,12 @@ const responsiblePartyResolvers = {
             continue;
           }
 
+          // if props were requested
+          if (selectMap.getNode('node').includes('props')) {
+            let props = convertToProperties(respParty, responsiblePartyPredicateMap);
+            if (props !== null) respParty.props = props;
+          }
+          
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(respParty, args.filters, args.filterMode)) {
@@ -143,6 +149,14 @@ const responsiblePartyResolvers = {
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const reducer = getReducer("RESPONSIBLE-PARTY");
+        let respParty = response[0];
+
+        // if props were requested
+        if (selectMap.getNode('oscalResponsibleParty').includes('props')) {
+          let props = convertToProperties(respParty, responsiblePartyPredicateMap);
+          if (props !== null) respParty.props = props;
+        }
+        
         return reducer(response[0]);
       } else {
         // Handle reporting Stardog Error
