@@ -505,6 +505,12 @@ const subjectReducer = (item) => {
     item.object_type = 'subject';
   }
 
+  // TODO: WORKAROUND - remove bad data
+  if (item.name !== undefined && item.name === 'undefined') {
+    item.name = undefined
+  }
+  // END WORKAROUND
+
   // populate name if we have the actual subject's information
   if (item.name === undefined && (item.subject_name !== undefined)) {
     item.name = item.subject_name;
@@ -3760,7 +3766,7 @@ export const insertSubjectsQuery = (subjects) => {
     insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#ComplexDatatype>`);
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`);
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "subject"`); 
-    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#name> "${subject.name}"`);
+    if (subject.name != undefined) insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#name> "${subject.name}"`);
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_type> "${subject.subject_type}"`);
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref> <${subject.subject_ref}>`);
     if (subject.subject_context != undefined) {
