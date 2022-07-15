@@ -30,7 +30,6 @@ import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import CreatedByField from '../form/CreatedByField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ObjectMarkingField from '../form/ObjectMarkingField';

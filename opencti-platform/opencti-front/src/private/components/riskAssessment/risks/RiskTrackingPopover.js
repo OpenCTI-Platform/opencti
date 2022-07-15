@@ -28,12 +28,10 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import { adaptFieldValue } from '../../../../utils/String';
 import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 // import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
@@ -165,7 +163,7 @@ class RiskTrackingPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: RiskTrackingEditionQuery,
       variables: {
         id: this.props.node.id,
@@ -205,7 +203,7 @@ class RiskTrackingPopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: RiskTrackingPopoverDeletionMutation,
       variables: {
         id: this.props.node.id,

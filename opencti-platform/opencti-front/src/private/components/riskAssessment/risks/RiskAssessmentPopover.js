@@ -11,7 +11,6 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import { commitMutation as CM } from 'react-relay';
 import IconButton from '@material-ui/core/IconButton';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -22,7 +21,6 @@ import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import { adaptFieldValue } from '../../../../utils/String';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import inject18n from '../../../../components/i18n';
@@ -135,7 +133,7 @@ class RiskAssessmentPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: riskAddPoamIdMutation,
       variables: {
         id: this.props.node.id,
@@ -164,7 +162,7 @@ class RiskAssessmentPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: riskStatusEditionMutation,
       variables: {
         id: this.props.node.id,

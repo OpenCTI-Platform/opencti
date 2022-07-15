@@ -26,7 +26,6 @@ import Typography from '@material-ui/core/Typography';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
-import { commitMutation as CM } from 'react-relay';
 import inject18n from './i18n';
 import SwitchField from './SwitchField';
 import SelectField from './SelectField';
@@ -34,7 +33,7 @@ import TextField from './TextField';
 import ItemIcon from './ItemIcon';
 import { adaptFieldValue } from '../utils/String';
 import TaskType from '../private/components/common/form/TaskType';
-import environmentDarkLight, { fetchDarklightQuery } from '../relay/environmentDarkLight';
+import { commitMutation, fetchQuery } from '../relay/environment';
 
 const styles = (theme) => ({
   dialogRoot: {
@@ -123,7 +122,7 @@ class Export extends Component {
   }
 
   componentDidMount() {
-    fetchDarklightQuery(exportTypeQuery)
+    fetchQuery(exportTypeQuery)
       .toPromise()
       .then((data) => {
         const ExportTypeEntities = pipe(
@@ -210,7 +209,7 @@ class Export extends Component {
           : [adaptFieldValue(n[1])],
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: exportMutation,
       variables: {
         report: this.state.reportType,

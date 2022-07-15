@@ -23,10 +23,9 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { adaptFieldValue } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/Store';
 import { dateFormat, parse } from '../../../../utils/Time';
@@ -154,7 +153,7 @@ class DeviceEditionContainer extends Component {
         'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(filteredValue);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: deviceEditionMutation,
       variables: {
         id: this.props.device?.id,

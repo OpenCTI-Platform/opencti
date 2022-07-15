@@ -18,9 +18,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import SoftwareEditionContainer from './SoftwareEditionContainer';
 import { softwareEditionQuery, softwareEditionDarkLightQuery } from './SoftwareEdition';
@@ -140,7 +138,7 @@ class SoftwareDeletion extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: SoftwareDeletionDarkLightMutation,
       variables: {
         id: this.props.id,

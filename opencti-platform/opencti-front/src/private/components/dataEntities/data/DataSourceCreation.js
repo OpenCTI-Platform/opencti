@@ -26,8 +26,6 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -136,7 +134,7 @@ class DataSourceCreation extends Component {
     const finalValues = R.pipe(
       R.assoc('name', values.name),
     )(adaptedValues);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: dataSourceCreationMutation,
       variables: {
         input: finalValues,

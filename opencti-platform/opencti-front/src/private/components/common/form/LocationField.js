@@ -24,7 +24,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { Dialog, DialogContent, DialogActions } from '@material-ui/core';
-import environmentDarkLight, { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 import NewTextField from '../../../../components/TextField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
@@ -108,7 +108,7 @@ class LocationField extends Component {
   }
 
   searchData = (event) => {
-    fetchDarklightQuery(LocationFieldSearchQuery, {
+    fetchQuery(LocationFieldSearchQuery, {
       orderedBy: 'name',
       orderMode: 'asc',
     })

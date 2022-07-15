@@ -10,7 +10,7 @@ import {
   mergeAll,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -20,7 +20,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import RiskAnalysisThreats from './RiskAnalysisThreats';
 import RiskAnalysisEdition from './RiskAnalysisEdition';

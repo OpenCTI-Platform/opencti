@@ -15,8 +15,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../../utils/Time';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
@@ -128,7 +126,7 @@ class AddRemediation extends Component {
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       // mutation: remediationCreationMutation,
       // const adaptedValues = evolve(
       //   {

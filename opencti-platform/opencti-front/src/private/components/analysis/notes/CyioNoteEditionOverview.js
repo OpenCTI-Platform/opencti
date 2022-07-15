@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -21,7 +21,6 @@ import Badge from '@material-ui/core/Badge';
 import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
 import TextField from '../../../../components/TextField';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -143,7 +142,7 @@ class CyioNoteEditionOverviewComponent extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: cyioNoteMutationFieldPatch,
       variables: {
         id: this.props.note.id,

@@ -11,7 +11,6 @@ import {
   evolve,
   pipe,
 } from 'ramda';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -30,7 +29,7 @@ import inject18n from './i18n';
 import SelectField from './SelectField';
 import OscalModalTypeList from '../private/components/common/form/OscalModalTypeList';
 import OscalMediaTypeList from '../private/components/common/form/OscalMediaTypeList';
-import environmentDarkLight from '../../../opencti-front/src/relay/environmentDarkLight';
+import { commitMutation } from '../../../opencti-front/src/relay/environment';
 
 const styles = (theme) => ({
   dialogRoot: {
@@ -123,7 +122,7 @@ class ExportPoam extends Component {
       dissoc('marking'),
       // assoc('model', this.state.selectedOscalType),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: ExportPoamMutation,
       variables: {
         model: this.state.selectedOscalType,

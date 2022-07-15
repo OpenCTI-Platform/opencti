@@ -27,11 +27,9 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import AddIcon from '@material-ui/icons/Add';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation } from '../../../../../relay/environment';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dateFormat, parse } from '../../../../../utils/Time';
 import { adaptFieldValue } from '../../../../../utils/String';
 import SelectField from '../../../../../components/SelectField';
@@ -163,7 +161,7 @@ class PartyEntityEditionContainer extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: partyEntityEditionContainerMutation,
       variables: {
         id: this.props.party.id,

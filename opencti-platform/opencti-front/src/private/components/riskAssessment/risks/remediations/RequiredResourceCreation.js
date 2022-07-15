@@ -36,8 +36,6 @@ import {
   ListSubheader,
   Paper,
 } from '@material-ui/core';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight, { fetchDarklightQuery } from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
@@ -211,7 +209,7 @@ class RequiredResourceCreation extends Component {
       assoc('remediation_id', this.props.remediationId),
       assoc('subjects', this.state.subjects),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: RequiredResourceCreationMutation,
       variables: {
         input: finalValues,

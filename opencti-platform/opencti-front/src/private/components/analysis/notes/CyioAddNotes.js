@@ -22,11 +22,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Add, Close } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../relay/environment';
 import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
 import NoteCreation from './NoteCreation';
 import CyioNoteCreation from './CyioNoteCreation';
@@ -121,7 +120,7 @@ class CyioAddNotes extends Component {
     // };
     if (this.state.totalNotes.length > 0) {
       this.state.totalNotes.map((note) => (
-        CM(environmentDarkLight, {
+        commitMutation({
           mutation: cyioNoteLinesMutationRelationAdd,
           variables: {
             toId: note.id,
@@ -151,7 +150,7 @@ class CyioAddNotes extends Component {
         })
       ));
     } else {
-      CM(environmentDarkLight, {
+      commitMutation({
         mutation: cyioNoteLinesMutationRelationAdd,
         variables: {
           toId: createNote.id,

@@ -5,7 +5,6 @@ import * as R from 'ramda';
 import { QueryRenderer as QR } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../../relay/environment';
-import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,

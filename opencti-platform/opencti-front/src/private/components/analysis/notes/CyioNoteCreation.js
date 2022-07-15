@@ -20,11 +20,8 @@ import Badge from '@material-ui/core/Badge';
 import Avatar from '@material-ui/core/Avatar';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { commitMutation as CM } from 'react-relay';
 import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import environmentDarkLight, { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
-// import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -168,7 +165,7 @@ class CyioNoteCreation extends Component {
     this.setState({
       labelInput: event && event.target.value !== 0 ? event.target.value : '',
     });
-    fetchDarklightQuery(cyioLabelsQuery, {
+    fetchQuery(cyioLabelsQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
     })
       .toPromise()
@@ -200,7 +197,7 @@ class CyioNoteCreation extends Component {
       dissoc('labels'),
       assoc('authors', values.authors),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: cyioNoteCreationMutation,
       variables: {
         input: finalValues,

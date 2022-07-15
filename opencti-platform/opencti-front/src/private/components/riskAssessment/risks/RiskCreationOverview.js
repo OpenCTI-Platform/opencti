@@ -28,7 +28,6 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import DatePickerField from '../../../../components/DatePickerField';

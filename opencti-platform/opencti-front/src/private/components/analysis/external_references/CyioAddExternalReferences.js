@@ -23,10 +23,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { Add } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import CyioExternalReferenceCreation from './CyioExternalReferenceCreation';
 import CyioAddExternalReferencesLines, {
   cyioAddExternalReferencesLinesQuery,
@@ -129,7 +127,7 @@ class CyioAddExternalReferences extends Component {
     } = this.props;
     if (this.state.totalExternalReference.length > 0) {
       this.state.totalExternalReference.map((externalReference) => (
-        CM(environmentDarkLight, {
+        commitMutation({
           mutation: cyioExternalReferenceLinesMutationRelationAdd,
           variables: {
             toId: externalReference.id,
@@ -159,7 +157,7 @@ class CyioAddExternalReferences extends Component {
         })
       ));
     } else {
-      CM(environmentDarkLight, {
+      commitMutation({
         mutation: cyioExternalReferenceLinesMutationRelationAdd,
         variables: {
           toId: createExternalRef.id,

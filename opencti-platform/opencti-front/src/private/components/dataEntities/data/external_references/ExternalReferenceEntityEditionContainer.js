@@ -12,10 +12,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation } from '../../../../../relay/environment';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { adaptFieldValue } from '../../../../../utils/String';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
@@ -108,7 +106,7 @@ class ExternalReferenceEntityEditionContainer extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: externalReferencesEntityEditionContainerMutation,
       variables: {
         id: this.props.externalReference.id,

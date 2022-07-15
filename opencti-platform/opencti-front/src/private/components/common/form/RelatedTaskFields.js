@@ -8,7 +8,7 @@ import { Information } from 'mdi-material-ui';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const RelatedTaskFieldsRelatedTaskQuery = graphql`
   query RelatedTaskFieldsRelatedTaskQuery($orderedBy: OscalTaskOrdering, $orderMode: OrderingMode) {
@@ -89,7 +89,7 @@ class RelatedTaskFields extends Component {
 
   handleRelatedTaskField(){
     if(this.props.name === "related_tasks"){
-      fetchDarklightQuery(RelatedTaskFieldsRelatedTaskQuery, {
+      fetchQuery(RelatedTaskFieldsRelatedTaskQuery, {
         orderedBy: 'name',
         orderMode: 'asc',
       })
@@ -112,7 +112,7 @@ class RelatedTaskFields extends Component {
       });
     }
     if(this.props.name === "associated_activities"){
-      fetchDarklightQuery(RelatedTaskFieldsAssociatedActivitiesQuery, {
+      fetchQuery(RelatedTaskFieldsAssociatedActivitiesQuery, {
         orderedBy: 'activity_id',
         orderMode: 'asc',
       })
@@ -135,7 +135,7 @@ class RelatedTaskFields extends Component {
       });
     }
     if(this.props.name === "responsible_roles"){
-      fetchDarklightQuery(RelatedTaskFieldsResponsiblePartiesQuery, {
+      fetchQuery(RelatedTaskFieldsResponsiblePartiesQuery, {
         orderedBy: 'name',
         orderMode: 'asc',
       })
@@ -158,7 +158,7 @@ class RelatedTaskFields extends Component {
       });
     }
     if(this.props.name === "task_dependencies"){
-      fetchDarklightQuery(RelatedTaskFieldsDependenciesQuery, {
+      fetchQuery(RelatedTaskFieldsDependenciesQuery, {
         orderedBy: 'name',
         orderMode: 'asc',
       })

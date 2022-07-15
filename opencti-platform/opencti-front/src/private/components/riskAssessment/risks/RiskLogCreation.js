@@ -31,9 +31,7 @@ import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
 import Slide from '@material-ui/core/Slide';
 import { Add, Close } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import DatePickerField from '../../../../components/DatePickerField';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -180,7 +178,7 @@ class RiskLogCreation extends Component {
     const finalValues = R.pipe(
       R.assoc('logged_by', this.state.logged_by),
     )(adaptedValues)
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: RiskLogCreationMutation,
       variables: {
         input: finalValues,

@@ -23,14 +23,12 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
-import { commitMutation as CM } from 'react-relay';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import { Add, CancelOutlined } from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import { Label, Information } from 'mdi-material-ui';
-import environmentDarkLight, { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
-// import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
 import SelectField from '../../../../components/SelectField';
@@ -111,7 +109,7 @@ const CyioCoreObjectLabelsView = (props) => {
 
   const searchLabels = (event) => {
     setLabelInput(event && event.target.value !== 0 ? event.target.value : '');
-    fetchDarklightQuery(cyioLabelsQuery, {
+    fetchQuery(cyioLabelsQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
     })
       .toPromise()
@@ -146,7 +144,7 @@ const CyioCoreObjectLabelsView = (props) => {
       })),
     )(values);
     labelsValues.map((label) => (
-      CM(environmentDarkLight, {
+      commitMutation({
         mutation: cyioCoreObjectMutationRelationsAdd,
         variables: {
           toId: label.id,
@@ -191,7 +189,7 @@ const CyioCoreObjectLabelsView = (props) => {
   };
 
   const handleRemoveLabel = (labelId, toType) => {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: cyioCoreObjectMutationRelationDelete,
       variables: {
         toId: labelId,

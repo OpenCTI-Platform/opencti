@@ -15,10 +15,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-// import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
 import { toastGenericError } from '../../../../utils/bakedToast';
 
@@ -107,7 +105,7 @@ class CyioExternalReferencePopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: cyioExternalReferencePopoverDeletionMutation,
       variables: {
         id: this.props.externalReferenceId,
@@ -197,7 +195,6 @@ class CyioExternalReferencePopover extends Component {
           onClose={this.handleCloseUpdate.bind(this)}
         >
           {/* <QR
-            environment={environmentDarkLight}
             query={cyioExternalReferenceEditionQuery}
             variables={{ id: externalReferenceId }}
             render={({ props }) => {

@@ -3,8 +3,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-// import { createPaginationContainer } from 'react-relay';
-// import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
@@ -29,11 +27,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
-import { commitMutation as CM, createFragmentContainer, createPaginationContainer } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-// import { commitMutation } from '../../../../relay/environment';
 import CyioAddExternalReferences from './CyioAddExternalReferences';
 import { cyioExternalReferenceMutationRelationDelete } from './CyioAddExternalReferencesLines';
 import Security, {
@@ -158,7 +154,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
   }
 
   removeExternalReference(externalReferenceEdge) {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: cyioExternalReferenceMutationRelationDelete,
       variables: {
         toId: externalReferenceEdge.id,

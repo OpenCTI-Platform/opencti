@@ -10,7 +10,7 @@ import Grid from '@material-ui/core/Grid';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const installedHardwareAssetQuery = graphql`
@@ -58,7 +58,7 @@ class InstalledAsset extends Component {
 
     {
       this.props.type === 'hardware' && (
-        fetchDarklightQuery(installedHardwareAssetQuery)
+        fetchQuery(installedHardwareAssetQuery)
           .toPromise()
           .then((data) => {
             const installedHardwareEntities = R.pipe(
@@ -82,7 +82,7 @@ class InstalledAsset extends Component {
     {
       this.props.type === 'software'
         && (
-          fetchDarklightQuery(installedSoftwareAssetQuery, {
+          fetchQuery(installedSoftwareAssetQuery, {
             filters: this.props.assetType ? [{ key: 'asset_type', values: [this.props.assetType] }] : [],
           })
             .toPromise()

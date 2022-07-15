@@ -15,9 +15,7 @@ import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../../components/i18n';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import Loader from '../../../../../components/Loader';
 import Security, {
@@ -115,7 +113,7 @@ class EntitiesRolesDeletion extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: EntitiesRolesDeletionDarkLightMutation,
       variables: {
         id: this.props.id,

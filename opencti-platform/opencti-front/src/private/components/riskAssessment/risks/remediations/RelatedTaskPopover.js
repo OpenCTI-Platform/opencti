@@ -35,9 +35,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import DatePickerField from '../../../../../components/DatePickerField';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import { dateFormat, parse } from '../../../../../utils/Time';
@@ -185,7 +183,7 @@ class RelatedTaskPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: relatedTaskEditionQuery,
       variables: {
         id: this.props.data.id,
@@ -207,7 +205,7 @@ class RelatedTaskPopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: relatedTaskPopoverDeletionMutation,
       variables: {
         id: this.props.relatedTaskId,

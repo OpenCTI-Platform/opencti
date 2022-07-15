@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import { commitMutation as CM, createPaginationContainer, QueryRenderer as QR } from 'react-relay';
+import { createPaginationContainer } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import RiskObservationLine from './RiskObservationLine';
 

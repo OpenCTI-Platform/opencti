@@ -15,10 +15,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
-// import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 // import { noteEditionQuery } from './NoteEdition';
 import CyioNoteEditionContainer from './CyioNoteEditionContainer';
 import Security, {
@@ -102,7 +100,7 @@ class CyioNotePopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: CyioNotePopoverDeletionMutation,
       variables: {
         id: this.props.id,
@@ -249,7 +247,6 @@ class CyioNotePopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           {/* <QR
-            environment={environmentDarkLight}
             query={cyioNoteEditionQuery}
             variables={{ id }}
             render={({ props }) => {
