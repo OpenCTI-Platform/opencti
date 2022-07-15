@@ -22,11 +22,12 @@ import { MoreVertOutlined } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import { adaptFieldValue } from '../../../../utils/String';
 import TextField from '../../../../components/TextField';
+import DatePickerField from '../../../../components/DatePickerField';
 import SelectField from '../../../../components/SelectField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import RiskStatus from '../../common/form/RiskStatus';
-import {toastGenericError} from "../../../../utils/bakedToast";
+import { toastGenericError } from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   container: {
@@ -51,7 +52,7 @@ const styles = (theme) => ({
   },
   dialogActions: {
     justifyContent: 'flex-start',
-    margin: '10px 0',
+    margin: '20px 0 10px 0',
     padding: '10px 0 20px 22px',
   },
   dialogRiskLevelAction: {
@@ -79,19 +80,8 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const riskAddPoamIdMutation = graphql`
-  mutation RiskAssessmentPopoverAddPoamIdMutation(
-    $id: ID!,
-    $input: [EditInput]!
-  ) {
-    editRisk(id: $id, input: $input) {
-      id
-    }
-  }
-`;
-
-const riskStatusEditionMutation = graphql`
-  mutation RiskAssessmentPopoverMutation(
+const riskAssessmentPopoverEditMutation = graphql`
+  mutation RiskAssessmentPopoverEditMutation(
     $id: ID!,
     $input: [EditInput]!
   ) {
@@ -105,11 +95,12 @@ class RiskAssessmentPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      anchorEl: null,
-      displayPoamId: false,
-      deleting: false,
       isOpen: false,
+      anchorEl: null,
+      deleting: false,
+      displayPoamId: false,
       displayRiskLevel: false,
+      displayRiskDeadline: false,
     };
   }
 
@@ -133,8 +124,8 @@ class RiskAssessmentPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: riskAddPoamIdMutation,
+    CM(environmentDarkLight, {
+      mutation: riskAssessmentPopoverEditMutation,
       variables: {
         id: this.props.node.id,
         input: finalValues,
@@ -162,8 +153,8 @@ class RiskAssessmentPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: riskStatusEditionMutation,
+    CM(environmentDarkLight, {
+      mutation: riskAssessmentPopoverEditMutation,
       variables: {
         id: this.props.node.id,
         input: finalValues,
@@ -173,6 +164,34 @@ class RiskAssessmentPopover extends Component {
         setSubmitting(false);
         resetForm();
         this.handleCloseRiskLevel();
+        this.props.history.push('/activities/risk assessment/risks');
+      },
+      onError: (err) => {
+        console.error(err);
+        toastGenericError("Failed to fetch Risk");
+      }
+    });
+  }
+
+  onRiskDeadlineSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = R.pipe(
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': [adaptFieldValue(n[1])],
+      })),
+    )(values);
+    CM(environmentDarkLight, {
+      mutation: riskAssessmentPopoverEditMutation,
+      variables: {
+        id: this.props.nodeId,
+        input: finalValues,
+      },
+      setSubmitting,
+      onCompleted: (response) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleCloseRiskDeadline();
         this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => {
@@ -201,6 +220,10 @@ class RiskAssessmentPopover extends Component {
     this.handleClosePoam();
   }
 
+  onResetRiskDeadline() {
+    this.handleCloseRiskDeadline();
+  }
+
   onResetRiskLevel() {
     this.handleCloseRiskLevel();
   }
@@ -213,8 +236,23 @@ class RiskAssessmentPopover extends Component {
     }
   }
 
+  handleOpenRiskDeadline() {
+    this.setState({ displayRiskDeadline: true, isOpen: true });
+    this.handleClose();
+    if (this.props.handleOpenMenu) {
+      this.props.handleOpenMenu(this.state.isOpen);
+    }
+  }
+
   handleCloseRiskLevel() {
     this.setState({ displayRiskLevel: false, isOpen: false });
+    if (this.props.handleOpenMenu) {
+      this.props.handleOpenMenu(this.state.isOpen);
+    }
+  }
+
+  handleCloseRiskDeadline() {
+    this.setState({ displayRiskDeadline: false, isOpen: false });
     if (this.props.handleOpenMenu) {
       this.props.handleOpenMenu(this.state.isOpen);
     }
@@ -255,10 +293,17 @@ class RiskAssessmentPopover extends Component {
             {t('Assign POAM ID')}
           </MenuItem>
           <MenuItem
+            divider={true}
             className={classes.menuItem}
             onClick={this.handleOpenRiskLevel.bind(this)}
           >
             {t('Change Risk Status')}
+          </MenuItem>
+          <MenuItem
+            className={classes.menuItem}
+            onClick={this.handleOpenRiskDeadline.bind(this)}
+          >
+            {t('Assign Risk Deadline')}
           </MenuItem>
         </Menu>
         <Dialog
@@ -379,6 +424,62 @@ class RiskAssessmentPopover extends Component {
                     </Button>
                   </DialogActions>
                 </Grid>
+              </Form>
+            )}
+          </Formik>
+        </Dialog>
+        <Dialog
+          maxWidth='sm'
+          fullWidth={true}
+          keepMounted={true}
+          open={this.state.displayRiskDeadline}
+          TransitionComponent={Transition}
+          classes={{ root: classes.dialogRoot }}
+        >
+          <Formik
+            enableReinitialize={true}
+            initialValues={{
+              deadline: this.props.node.deadline,
+            }}
+            // validationSchema={RelatedTaskValidation(t)}
+            onSubmit={this.onRiskDeadlineSubmit.bind(this)}
+            onReset={this.onResetRiskDeadline.bind(this)}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form>
+                <DialogTitle>{t('Assign Risk Deadline')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    component={DatePickerField}
+                    name="deadline"
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
+                    fullWidth={true}
+                    style={{ overflowY: 'hidden', padding: '10px 0' }}
+                  />
+                </DialogContent>
+                <DialogActions className={classes.dialogActions}>
+                  <Button
+                    size='small'
+                    variant='outlined'
+                    onClick={handleReset}
+                    disabled={this.state.deleting}
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    size='small'
+                    color='primary'
+                    variant='contained'
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Submit')}
+                  </Button>
+                </DialogActions>
               </Form>
             )}
           </Formik>

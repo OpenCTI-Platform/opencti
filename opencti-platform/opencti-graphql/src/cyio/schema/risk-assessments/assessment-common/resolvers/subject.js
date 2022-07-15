@@ -755,12 +755,15 @@ const subjectResolvers = {
             select.push('asset_type');
             break;
           case 'oscal-location':
+          case 'location':
             select.push('location_type');
             break;
           case 'oscal-party':
+          case 'party':
             select.push('party_type');
             break;
           case 'oscal-user':
+          case 'user':
             select.push('user_type');
             break;
         }
