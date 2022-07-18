@@ -129,9 +129,13 @@ class DeviceEditionContainer extends Component {
     const adaptedValues = R.evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        ipv4_address: () => values.ipv4_address.length > 0 ? values.ipv4_address.map((address) => JSON.stringify({ip_address_value: address})) : [],
+        ipv6_address: () => values.ipv6_address.length > 0 ? values.ipv6_address.map((address) => JSON.stringify({ip_address_value: address})) : [],
+        ports: () => values.ports.length > 0 ? values.ports.map((port) => JSON.stringify(port)) : [],
       },
       values,
     );
+
     Object.keys(totalInitial).forEach((key, j) => {
       if (Array.isArray(adaptedValues[key])) {
         if (adaptedValues[key].some((value, i) => value !== totalInitial[key][i])) {

@@ -192,18 +192,17 @@ class RequiredResourcePopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const subjects = (values.resource_type || values.resource) ? [{
-      subject_type: values.resource_type,
-      subject_ref: values.resource,
-    }] : []
-    // this.setState({
-    // });
+    const subjects = (values.resource_type === '' && values.resource === '')
+      ? []
+      : [JSON.stringify({
+        subject_type: values.resource_type,
+        subject_ref: values.resource,
+      })];
 
     const finalValues = pipe(
-      dissoc('resource_type'),
-      dissoc('resource'),
       dissoc('id'),
-      // assoc('remediation_id', this.props.remediationId),
+      dissoc('resource'),
+      dissoc('resource_type'),
       assoc('subjects', subjects),
       toPairs,
       map((n) => ({
