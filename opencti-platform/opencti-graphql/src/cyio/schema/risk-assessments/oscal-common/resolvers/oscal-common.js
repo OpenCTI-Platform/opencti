@@ -121,7 +121,7 @@ const oscalCommonResolvers = {
       };
       
       let response;
-      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', payload);
+      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.report', payload);
       
       // return the tasking id for tracking purposes
       return response;
