@@ -2,7 +2,7 @@
   extend type Query {
     cyioNote(id: ID!): CyioNote
     cyioNotes( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: CyioNotesOrdering
       orderMode: OrderingMode
@@ -12,7 +12,7 @@
     ): CyioNoteConnection
     cyioExternalReference(id: ID!): CyioExternalReference
     cyioExternalReferences(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: CyioExternalReferencesOrdering
       orderMode: OrderingMode
@@ -21,7 +21,7 @@
     ): CyioExternalReferenceConnection
     cyioLabel(id: ID!): CyioLabel
     cyioLabels(
-      limit: Int
+      first: Int
       offset: Int
       orderBy: CyioLabelsOrdering
       orderMode: OrderingMode
@@ -71,6 +71,14 @@
     target_id: ID!
   }
 
+  "Defines the identifying information about a complex type"
+  interface ComplexDatatype {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+  }
+  
   "Defines the identifying information about a lifecycle object"
   interface LifecycleObject {
     "Identities the date and time at which the object was originally created."
@@ -132,6 +140,10 @@
     media_type: String
   }
   enum CyioExternalReferencesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
     "Source Name"
     source_name
     "URL"
@@ -140,12 +152,12 @@
     hash
     "External ID"
     external_id
+  }
+  enum CyioExternalReferencesFilter {
     "Created"
     created
     "Modified"
     modified
-  }
-  enum CyioExternalReferencesFilter {
     "URL"
     url
     "Source Name"
@@ -241,16 +253,18 @@
     description: String
   }
   enum CyioLabelsOrdering {
-    "Name"
-    name
-    "Color"
-    color
     "Created"
     created
     "Modified"
     modified
+    "Name"
+    name
   }
   enum CyioLabelsFilter {
+    "Created"
+    created
+    "Modified"
+    modified
     "Name"
     name
   }
@@ -303,20 +317,22 @@
     "Modified"
     modified
     "Label"
-    labels
+    label_name
+    "Author"
+    author_name
+    "Abstract"
+    abstract
   }
   # filtering
   enum CyioNotesFilter {
-    "Abstract"
-    abstract
-    "Authors"
-    authors
     "Created"
     created
     "Modified"
     modified
     "Label"
     label_name
+    "Author"
+    author
   }
   input CyioNotesFiltering {
     key: CyioNotesFilter!

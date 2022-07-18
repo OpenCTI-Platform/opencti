@@ -37,14 +37,12 @@ import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/SelectField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { insertNode } from '../../../../../utils/Store';
-import { parse } from '../../../../../utils/Time';
+import { dateFormat, parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import TaskType from '../../../common/form/TaskType';
-import ResourceType from '../../../common/form/ResourceType';
-import AssociatedActivities from '../../../common/form/AssociatedActivities';
-import ResponsibleParties from '../../../common/form/ResponsibleParties';
-import Dependencies from '../../../common/form/Dependencies';
+import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
+import { toastGenericError } from "../../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -132,16 +130,36 @@ const RelatedTaskCreationMutation = graphql`
     $input: OscalTaskAddInput
   ) {
     createOscalTask(input: $input) {
+      __typename
       id
     }
   }
 `;
 
+export const RelatedTaskCreationAddReferenceMutation = graphql`
+  mutation RelatedTaskCreationAddReferenceMutation(
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
+    $to_type: String
+    $from_type: String
+  ) {
+    addReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId, to_type: $to_type, from_type: $from_type})
+  }
+`;
+
 const RelatedTaskValidation = (t) => Yup.object().shape({
-  source_name: Yup.string().required(t('This field is required')),
-  external_id: Yup.string(),
-  url: Yup.string().url(t('The value must be an URL')),
-  description: Yup.string(),
+  name: Yup.string().required(t('This field is required')),
+  task_type: Yup.string().required(t('This field is required')),
+  description: Yup.string().required(t('This field is required')),
+  start_date: Yup.date().required('This field is required'),
+  end_date: Yup.date()
+    .when("start_date", {
+      is: Yup.date,
+      then: Yup.date().nullable().min(
+        Yup.ref('start_date'),
+        "End date can't be before start date")
+    })
 });
 
 class RelatedTaskCreation extends Component {
@@ -150,12 +168,10 @@ class RelatedTaskCreation extends Component {
     this.state = {
       open: false,
       close: false,
-      timing: {
-        within_date_range: 
-        {
-          start_date: '',
-          end_date: '',
-        }},
+      associated_activities: [],
+      timing: {},
+      start_date: '',
+      end_date: null,
     };
   }
 
@@ -164,47 +180,47 @@ class RelatedTaskCreation extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, fieldName: '' });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('relatedTask', values);
-    this.setState({
-      timing: { within_date_range: {
-        start_date: values.start_date === null ? null : parse(values.start_date).format(),
-        end_date: values.end_date === null ? null : parse(values.end_date).format(),
-      }},
-    });
+    if (values.associated_activities.length > 0) {
+      this.setState({
+        associated_activities: values.associated_activities.map((value) => (
+          { 'activity_id': value }
+        )),
+      });
+    }
+    if (values.start_date) {
+      this.setState({
+        timing: {
+          within_date_range: {
+            start_date: values.start_date === null ? '' : parse(values.start_date),
+            end_date: values.end_date === null ? null : parse(values.end_date),
+          }
+        },
+      })
+    }
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      dissoc('related_tasks'),
       assoc('timing', this.state.timing),
-      dissoc('timing'),
-      dissoc('resource_type'),
-      dissoc('milestone'),
-      dissoc('associated_activities'),
-      dissoc('responsible_roles'),
     )(values);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
       variables: {
         input: finalValues,
       },
-      // updater: (store) => insertNode(
-      //   store,
-      //   'Pagination_externalReferences',
-      //   this.props.paginationOptions,
-      //   'externalReferenceAdd',
-      // ),
       setSubmitting,
       onCompleted: (response) => {
-        console.log('relatedTasksCreationResponse', response);
+        this.handleAddReferenceMutation(response.createOscalTask);
         setSubmitting(false);
-        resetForm();
         this.handleClose();
       },
-      onError: (err) => console.log('finalValuesRelatedTasksError', err),
+      onError: (err) => {
+        toastGenericError("Failed to create related task")
+        console.error(err);
+      }
     });
     // commitMutation({
     //   mutation: RelatedTaskCreationMutation,
@@ -228,6 +244,25 @@ class RelatedTaskCreation extends Component {
     //   },
     // });
   }
+  handleAddReferenceMutation(taskResponse) {
+    CM(environmentDarkLight, {
+      mutation: RelatedTaskCreationAddReferenceMutation,
+      variables: {
+        toId: taskResponse.id,
+        fromId: this.props.remediationId,
+        fieldName: 'tasks',
+        to_type: this.props.toType,
+        from_type: this.props.fromType,
+      },
+      onCompleted: () => {
+        this.props.refreshQuery();
+      },
+      onError: (err) => {
+        toastGenericError("Failed to Add related task")
+        console.error(err);
+      }
+    });
+  }
 
   onResetClassic() {
     this.handleClose();
@@ -235,17 +270,17 @@ class RelatedTaskCreation extends Component {
 
   handleCancelClick() {
     this.setState({
-      open: false,
       close: true,
+      fieldName: '',
     });
   }
 
   handleCancelCloseClick() {
-    this.setState({ close: false });
+    this.setState({ close: false, fieldName: '' });
   }
 
   onResetContextual() {
-    this.handleClose();
+    this.handleCancelClick();
   }
 
   renderClassic() {
@@ -359,6 +394,7 @@ class RelatedTaskCreation extends Component {
           color="inherit"
           aria-label="Add"
           edge="end"
+          style={{ marginTop: '-15px' }}
           onClick={this.handleOpen.bind(this)}
         >
           <Add fontSize="small" />
@@ -366,7 +402,6 @@ class RelatedTaskCreation extends Component {
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleClose.bind(this)}
           fullWidth={true}
           maxWidth='sm'
         >
@@ -376,14 +411,14 @@ class RelatedTaskCreation extends Component {
               name: '',
               description: '',
               task_type: '',
-              start_date: null,
+              start_date: '',
               end_date: null,
               task_dependencies: [],
               related_tasks: [],
               associated_activities: [],
               responsible_roles: [],
             }}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -415,6 +450,9 @@ class RelatedTaskCreation extends Component {
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          invalidDateMessage={t(
+                            'Field is required',
+                          )}
                         />
                       </div>
                     </Grid>
@@ -430,7 +468,7 @@ class RelatedTaskCreation extends Component {
                           {t('ID')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('ID')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -443,7 +481,9 @@ class RelatedTaskCreation extends Component {
                           size="small"
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          {this.props.remediationId}
+                        </Field>
                       </div>
                     </Grid>
                   </Grid>
@@ -466,6 +506,7 @@ class RelatedTaskCreation extends Component {
                         <div className="clearfix" />
                         <TaskType
                           name="task_type"
+                          taskType='OscalTaskType'
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
@@ -529,6 +570,7 @@ class RelatedTaskCreation extends Component {
                             'The value must be a date (YYYY-MM-DD)',
                           )}
                           style={{ height: '38.09px' }}
+                          onChange={(_, date) => this.setState({ startDate: dateFormat(date, "YYYY-MM-DD") })}
                         />
                       </div>
                     </Grid>
@@ -559,59 +601,8 @@ class RelatedTaskCreation extends Component {
                           )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
-                      </div>
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Type')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
-                          <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                          <ResourceType
-                            name="resource_type"
-                            fullWidth={true}
-                            variant='outlined'
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '100%' }}
-                          />
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Name')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
-                          <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource_name"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
+                          minDate={this.state.startDate}
+                          onChange={(_, date) => this.setState({ endDate: dateFormat(date, "YYYY-MM-DD") })}
                         />
                       </div>
                     </Grid>
@@ -633,24 +624,14 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <RelatedTaskFields
                           name="related_tasks"
                           fullWidth={true}
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        >
-                          {/* <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem> */}
-                        </Field>
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -669,12 +650,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <AssociatedActivities
-                           name="associated_activities"
-                           fullWidth={true}
-                           variant='outlined'
-                           style={{ height: '38.09px' }}
-                           containerstyle={{ width: '100%' }}
+                        <RelatedTaskFields
+                          name="associated_activities"
+                          fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
                         />
                       </div>
                     </Grid>
@@ -695,12 +677,12 @@ class RelatedTaskCreation extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <ResponsibleParties
-                          style={{ height: '38.09px' }}
-                          variant='outlined'
+                        <RelatedTaskFields
                           name="responsible_roles"
-                          size='small'
                           fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
@@ -721,12 +703,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Dependencies
-                           name="task_dependencies"
-                           fullWidth={true}
-                           variant='outlined'
-                           style={{ height: '38.09px' }}
-                           containerstyle={{ width: '100%' }}
+                        <RelatedTaskFields
+                          name="task_dependencies"
+                          fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
                         />
                       </div>
                     </Grid>
@@ -735,17 +718,19 @@ class RelatedTaskCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        disableAdd={true}
                         fieldName='links'
-                        typename={relatedTaskData.__typename}
-                        externalReferences={relatedTaskData.links}
+                        typename='CyioExternalReference'
+                        externalReferences={[]}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
-                        typename={relatedTaskData.__typename}
-                        notes={relatedTaskData.remarks}
+                        disableAdd={true}
+                        typename='CyioNotes'
+                        notes={[]}
                         fieldName='remarks'
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
@@ -758,9 +743,7 @@ class RelatedTaskCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    onClick={this.handleCancelClick.bind(this)}
-                    disabled={isSubmitting}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -778,44 +761,43 @@ class RelatedTaskCreation extends Component {
               </Form>
             )}
           </Formik>
-        </Dialog>
-        <Dialog
-          open={this.state.close}
-          keepMounted={true}
+          <Dialog
+            open={this.state.close}
+            keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
-        >
-          <DialogContent>
-            <Typography className={classes.popoverDialog} >
-              {t('Are you sure you’d like to cancel?')}
-            </Typography>
-            <Typography align='left'>
-              {t('Your progress will not be saved')}
-            </Typography>
-          </DialogContent>
-          <DialogActions className={classes.dialogActions}>
-            <Button
-              // onClick={this.handleCloseDelete.bind(this)}
-              // disabled={this.state.deleting}
-              // onClick={handleReset}
-              onClick={this.handleCancelCloseClick.bind(this)}
-              classes={{ root: classes.buttonPopover }}
-              variant="outlined"
-              size="small"
-            >
-              {t('Go Back')}
-            </Button>
-            <Button
-              onClick={() => this.props.history.goBack()}
-              color="secondary"
-              // disabled={this.state.deleting}
-              classes={{ root: classes.buttonPopover }}
-              variant="contained"
-              size="small"
-            >
-              {t('Yes, Cancel')}
-            </Button>
-          </DialogActions>
+          >
+            <DialogContent>
+              <Typography className={classes.popoverDialog} >
+                {t('Are you sure you’d like to cancel?')}
+              </Typography>
+              <Typography align='left'>
+                {t('Your progress will not be saved')}
+              </Typography>
+            </DialogContent>
+            <DialogActions className={classes.dialogActions}>
+              <Button
+                // onClick={this.handleCloseDelete.bind(this)}
+                // disabled={this.state.deleting}
+                // onClick={handleReset}
+                onClick={this.handleCancelCloseClick.bind(this)}
+                classes={{ root: classes.buttonPopover }}
+                variant="outlined"
+                size="small"
+              >
+                {t('Go Back')}
+              </Button>
+              <Button
+                onClick={() => this.props.history.goBack()}
+                color="secondary"
+                // disabled={this.state.deleting}
+                classes={{ root: classes.buttonPopover }}
+                variant="contained"
+                size="small"
+              >
+                {t('Yes, Cancel')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Dialog>
       </div>
     );
@@ -831,6 +813,8 @@ class RelatedTaskCreation extends Component {
 }
 
 RelatedTaskCreation.propTypes = {
+  toType: PropTypes.string,
+  fromType: PropTypes.string,
   relatedTaskData: PropTypes.object,
   remediationId: PropTypes.string,
   paginationOptions: PropTypes.object,

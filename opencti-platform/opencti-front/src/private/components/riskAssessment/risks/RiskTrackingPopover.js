@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -27,6 +29,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { adaptFieldValue } from '../../../../utils/String';
 import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -40,7 +43,7 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
-
+import { toastGenericError } from '../../../../utils/bakedToast';
 const styles = (theme) => ({
   container: {
     margin: 0,
@@ -88,17 +91,15 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const RiskTrackingPopoverDeletionMutation = graphql`
-  mutation RiskTrackingPopoverDeletionMutation($id: ID!) {
-    externalReferenceEdit(id: $id) {
-      delete
-    }
+  mutation RiskTrackingPopoverDeletionMutation($id: ID!, $riskId: ID) {
+    deleteRiskLogEntry(id: $id, riskId: $riskId)
   }
 `;
 
 const RiskTrackingEditionQuery = graphql`
-  query RiskTrackingPopoverEditionQuery($id: String!) {
-    externalReference(id: $id) {
-      ...ExternalReferenceEdition_externalReference
+  mutation RiskTrackingPopoverEditionQuery($id: ID!, $input: [EditInput]!) {
+    editRiskLogEntry(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -112,6 +113,7 @@ class RiskTrackingPopover extends Component {
       displayCancel: false,
       displayDelete: false,
       deleting: false,
+      logged_by: [],
     };
   }
 
@@ -128,8 +130,12 @@ class RiskTrackingPopover extends Component {
     this.handleClose();
   }
 
+  handleCloseEditUpdate(){
+    this.setState({ displayUpdate: false });
+  }
+
   handleCloseUpdate() {
-    this.setState({ displayUpdate: false, displayCancel: true });
+    this.setState({ displayCancel: true });
   }
 
   handleOpenDelete() {
@@ -146,15 +152,55 @@ class RiskTrackingPopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    this.setState({
-      related_responses: [{
-        related_response: values.related_response,
-      }],
-    });
-    const finalValues = pipe(
-      dissoc('related_response'),
-      assoc('related_responses', this.state.related_responses),
+    if(values.logged_by.length > 0){
+      this.setState({
+        logged_by: [{'party': values.logged_by}],
+      })
+    }
+    const finalValues = R.pipe(
+      R.assoc('logged_by', this.state.logged_by),
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
     )(values);
+    CM(environmentDarkLight, {
+      mutation: RiskTrackingEditionQuery,
+      variables: {
+        id: this.props.node.id,
+        input: finalValues,
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        this.handleCloseEditUpdate();
+        this.props.refreshQuery();
+      },
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Request Failed');
+      },
+    });
+
+    // commitMutation({
+    //   mutation: deviceEditionMutation,
+    //   variables: {
+    //     input: finalValues,
+    //   },
+    //   updater: (store) => insertNode(
+    //     store,
+    //     'Pagination_computingDeviceAssetList',
+    //     this.props.paginationOptions,
+    //     'editComputingDeviceAsset',
+    //   ),
+    //   setSubmitting,
+    //   onCompleted: () => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //   },
+    // });
   }
 
   submitDelete() {
@@ -162,13 +208,18 @@ class RiskTrackingPopover extends Component {
     CM(environmentDarkLight, {
       mutation: RiskTrackingPopoverDeletionMutation,
       variables: {
-        id: this.props.externalReferenceId,
+        id: this.props.node.id,
+        riskId: this.props.riskId,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
+        this.props.refreshQuery();
       },
-      onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Request Failed');
+      },
     });
     // commitMutation({
     //   mutation: RiskTrackingPopoverDeletionMutation,
@@ -193,6 +244,10 @@ class RiskTrackingPopover extends Component {
     // });
   }
 
+  onReset() {
+    this.handleCloseUpdate();
+  }
+
   render() {
     const {
       classes,
@@ -207,26 +262,24 @@ class RiskTrackingPopover extends Component {
       R.pathOr([], ['logged_by']),
       R.mergeAll,
     )(node);
-    console.log('riskTrackingLoggedBy', node);
-
     const initialValues = R.pipe(
       R.assoc('entry_type', node?.entry_type || []),
-      R.assoc('title', node?.name || ''),
+      R.assoc('name', node?.name || ''),
       R.assoc('description', node?.description || ''),
       R.assoc('event_start', dateFormat(node?.event_start)),
       R.assoc('event_end', dateFormat(node?.event_end)),
-      R.assoc('logged_by', riskTrackingLoggedBy?.name || ''),
+      R.assoc('logged_by', riskTrackingLoggedBy?.name || []),
       R.assoc('status_change', node?.status_change || ''),
-      R.assoc('related_response', riskStatusResponse?.name || []),
+      R.assoc('related_responses', riskStatusResponse.map((value) => value.id) || []),
       R.pick([
         'entry_type',
-        'title',
+        'name',
         'description',
         'event_start',
         'event_end',
         'logged_by',
         'status_change',
-        'related_response',
+        'related_responses',
       ]),
     )(node);
     return (
@@ -273,7 +326,6 @@ class RiskTrackingPopover extends Component {
           fullWidth={true}
           maxWidth='sm'
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleCloseUpdate.bind(this)}
         >
           {/* <QR
             environment={environmentDarkLight}
@@ -312,6 +364,7 @@ class RiskTrackingPopover extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
             // validationSchema={riskValidation(t)}
+            onReset={this.onReset.bind(this)}
             onSubmit={this.onSubmit.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -367,7 +420,7 @@ class RiskTrackingPopover extends Component {
                           component={TextField}
                           variant='outlined'
                           size='small'
-                          name="title"
+                          name="name"
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
                         />
@@ -487,12 +540,13 @@ class RiskTrackingPopover extends Component {
                           name="related_responses"
                           fullWidth={true}
                           size="small"
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
                           {riskStatusResponse.map((value, i) => (
-                            <MenuItem value={value.name} key={i}>
+                            value.name && <MenuItem value={value.id} key={i}>
                               {value.name}
                             </MenuItem>
                           ))}
@@ -547,7 +601,7 @@ class RiskTrackingPopover extends Component {
                         <div className="clearfix" />
                         <RiskStatus
                           variant='outlined'
-                          name="entry_type"
+                          name="status_change"
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px', marginBottom: '3px' }}
@@ -561,7 +615,7 @@ class RiskTrackingPopover extends Component {
                   <Button
                     variant="outlined"
                     classes={{ root: classes.buttonPopover }}
-                    onClick={this.handleCloseUpdate.bind(this)}
+                    onClick={handleReset}
                   // disabled={isSubmitting}
                   >
                     {t('Cancel')}
@@ -583,7 +637,6 @@ class RiskTrackingPopover extends Component {
         <Dialog
           open={this.state.displayCancel}
           TransitionComponent={Transition}
-          onClose={this.handleCancelButton.bind(this)}
         >
           <DialogContent>
             <Typography style={{
@@ -611,7 +664,7 @@ class RiskTrackingPopover extends Component {
             <Button
               // onClick={this.submitDelete.bind(this)}
               // disabled={this.state.deleting}
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/tracking`)}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
@@ -625,7 +678,6 @@ class RiskTrackingPopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >
@@ -665,6 +717,8 @@ class RiskTrackingPopover extends Component {
 RiskTrackingPopover.propTypes = {
   externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,
+  refreshQuery: PropTypes.func,
+  riskId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   handleRemove: PropTypes.func,

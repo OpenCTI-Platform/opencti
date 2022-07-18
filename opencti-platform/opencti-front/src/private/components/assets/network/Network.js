@@ -62,12 +62,14 @@ class NetworkComponent extends Component {
         {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <CyioDomainObjectHeader
-              cyioDomainObject={network}
               history={history}
+              name={network.name}
+              cyioDomainObject={network}
               PopoverComponent={<NetworkPopover />}
+              goBack='/defender HQ/assets/network'
+              OperationsComponent={<NetworkDeletion />}
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              OperationsComponent={<NetworkDeletion />}
             />
             <Grid
               container={true}
@@ -170,14 +172,6 @@ const Network = createFragmentContainer(NetworkComponent, {
         # created
         # modified
         entity_type
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
         abstract
         content
         authors

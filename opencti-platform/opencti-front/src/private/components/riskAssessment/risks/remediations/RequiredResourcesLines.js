@@ -57,7 +57,6 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '4px 0 0 0',
     padding: 0,
     borderRadius: 6,
     position: 'relative',
@@ -198,10 +197,9 @@ class RequiredResourcesLinesContainer extends Component {
     const { expanded } = this.state;
     const requiredResourceData = data.riskResponse;
     const requiredResourcesEdges = R.pathOr([], ['required_assets'], requiredResourceData);
-    // const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex' }}>
           <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
             {t('Required Resource')}
           </Typography>
@@ -228,10 +226,10 @@ class RequiredResourcesLinesContainer extends Component {
           {requiredResourcesEdges.map((requiredResource, i) => (
             <RequiredResourceLine
               remediationId={remediationId}
-              requiredResourceData={requiredResourceData}
               refreshQuery={refreshQuery}
               key={requiredResource.id}
               data={requiredResource}
+              requiredResourceId={requiredResource.id}
             />
           ))}
         </Paper>
@@ -239,7 +237,6 @@ class RequiredResourcesLinesContainer extends Component {
           open={this.state.displayDialog}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
@@ -270,7 +267,6 @@ class RequiredResourcesLinesContainer extends Component {
           open={this.state.displayExternalLink}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
@@ -326,38 +322,14 @@ const RequiredResourcesLines = createFragmentContainer(
           id
           name
           description
-          links {
-            __typename
-            id
-            # created
-            # modified
-            external_id
-            source_name
-            description
-            url
-            media_type
-            entity_type
-          }
-          remarks {
-            __typename
-            id
-            abstract
-            content
-            authors
-            entity_type
-            labels {
-              __typename
-              id
-              name
-              color
-              entity_type
-              description
-            }
-          }
           required_assets { # Required Resources
+            __typename
             id
+            name
+            description
             subjects {
               subject_ref {
+                __typename
                 ... on Component {
                   id
                   component_type
@@ -379,6 +351,26 @@ const RequiredResourcesLines = createFragmentContainer(
                   name # Required Resource
                 }
               }
+            }
+            links {
+              __typename
+              id
+              # created
+              # modified
+              external_id
+              source_name
+              description
+              url
+              media_type
+              entity_type
+            }
+            remarks {
+              __typename
+              id
+              abstract
+              content
+              authors
+              entity_type
             }
           }
         }

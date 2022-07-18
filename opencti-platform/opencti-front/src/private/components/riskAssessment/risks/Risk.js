@@ -62,19 +62,20 @@ class RiskComponent extends Component {
       location,
       refreshQuery,
     } = this.props;
-    console.log('RiskMainContainer', risk);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <CyioDomainObjectHeader
-              cyioDomainObject={risk}
-              history={history}
               disabled={true}
+              name={risk.name}
+              history={history}
+              cyioDomainObject={risk}
               PopoverComponent={<RiskPopover />}
+              OperationsComponent={<RiskDeletion />}
+              goBack='/activities/risk assessment/risks'
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              OperationsComponent={<RiskDeletion />}
             />
             <TopMenuRisk risk={risk.name}/>
             <Grid
@@ -175,14 +176,6 @@ const Risk = createFragmentContainer(RiskComponent, {
         content
         authors
         entity_type
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
       }
       ...RiskOverview_risk
       ...RiskDetails_risk

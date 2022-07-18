@@ -92,13 +92,15 @@ class RiskAnalysisContainerComponent extends Component {
         {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <CyioDomainObjectHeader
-              cyioDomainObject={risk}
-              history={history}
               disabled={true}
+              name={risk.name}
+              history={history}
+              cyioDomainObject={risk}
               PopoverComponent={<RiskPopover />}
-              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
+              goBack='/activities/risk assessment/risks'
+              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             />
             <TopMenuRisk risk={risk.name} />
             <Grid
@@ -123,22 +125,26 @@ class RiskAnalysisContainerComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
-                  typename={risk.__typename}
+                  disableAdd={true}
+                  typename={riskCharacterizations.__typename}
                   externalReferences={riskCharacterizations.links}
                   fieldName='links'
                   cyioCoreObjectId={riskCharacterizations.id}
                   refreshQuery={refreshQuery}
+                  removeIcon={true}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  typename={risk.__typename}
+                  typename={riskCharacterizations.__typename}
+                  disableAdd={true}
                   notes={riskCharacterizations.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={riskCharacterizations.id}
                   marginTop='0px'
                   fieldName='remarks'
                   refreshQuery={refreshQuery}
+                  removeIcon={true}
                 />
               </Grid>
             </Grid>
@@ -177,6 +183,7 @@ const RiskAnalysisContainerFragment = createFragmentContainer(
         id
         name
         characterizations {
+          __typename
           id
           entity_type
           created

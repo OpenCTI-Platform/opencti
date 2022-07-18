@@ -28,12 +28,14 @@ export function getReducer( type ) {
 const hardwareAssetReducer = (item) => {
   // this code is to work around an issue in the data where we sometimes get multiple operating systems
   // when there shouldn't be but just one
-  if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
-    if (item.installed_operating_system.length > 1) {
-      console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
+  if ('installed_operating_system' in item) {
+    if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
+      if (item.installed_operating_system.length > 1) {
+        console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
+      }
+      item.installed_operating_system = item.installed_operating_system[0]
     }
-    item.installed_operating_system = item.installed_operating_system[0]
-  }
+}
 
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined && item.asset_type !== undefined ) {
@@ -114,6 +116,13 @@ export const insertHardwareQuery = (propValues) => {
   
   if (!deviceMap.hasOwnProperty(propValues.asset_type)) throw new UserInputError(`Unsupported hardware type ' ${propValues.asset_type}'`);
 
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const selectPredicates = Object.entries(propValues)
     .filter((propPair) => hardwarePredicateMap.hasOwnProperty(propPair[0]))
@@ -152,9 +161,9 @@ export const selectHardwareQuery = (id, select) => {
 export const selectHardwareByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select != null) {
+    if (select.includes('ipv4_address') || select.includes('ipv6_address')) select.push('ip_address');
     select = select.filter(i => i !== 'ipv4_address')
     select = select.filter(i => i !== 'ipv6_address')
-    select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
@@ -182,6 +191,7 @@ export const selectAllHardware = (select, args) => {
     select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -635,6 +645,11 @@ export const hardwarePredicateMap = {
   installed_software: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#installed_software>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_software");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  installed_software_name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#installed_software>/<http://scap.nist.gov/ns/asset-identification#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "installed_software_name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   ip_address: {

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -26,7 +27,9 @@ import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } fr
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation } from '../../../../../relay/environment';
+import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dateFormat, parse } from '../../../../../utils/Time';
+import { adaptFieldValue } from '../../../../../utils/String';
 import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
@@ -34,6 +37,8 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
+import { toastGenericError } from "../../../../../utils/bakedToast";
+
 
 const styles = (theme) => ({
   container: {
@@ -83,6 +88,22 @@ const styles = (theme) => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
+const remediationEditionMutation = graphql`
+  mutation RemediationDetailsPopoverMutation(
+    $id: ID!,
+    $input: [EditInput]!
+  ) {
+    editRiskResponse(id: $id, input: $input) {
+      id
+    }
+  }
+`;
+
 class RemediationDetailsPopover extends Component {
   constructor(props) {
     super(props);
@@ -90,6 +111,7 @@ class RemediationDetailsPopover extends Component {
       anchorEl: null,
       details: false,
       close: false,
+      onSubmit: false,
     };
   }
 
@@ -102,21 +124,58 @@ class RemediationDetailsPopover extends Component {
     this.setState({ anchorEl: null });
   }
 
-  handleCloseUpdate() {
-    this.setState({ details: false });
+  handleSubmit() {
+    this.setState({ onSumbit: true });
   }
 
-  handleOpenDetails() {
-    this.setState({ details: true });
+  onReset() {
     this.handleClose();
   }
 
-  handleCloseDetails() {
-    this.setState({ details: false });
+  handleCancelOpenClick() {
+    this.setState({ close: true });
   }
 
   handleCancelCloseClick() {
     this.setState({ close: false });
+  }
+
+  onSubmit(values, { setSubmitting, resetForm }) {
+    const sourceValues = R.pickAll(['actor_ref', 'actor_ref'], values);
+
+    const adaptedValues = R.evolve(
+      {
+        modified: () => values.modified === null ? null : parse(values.modified).format(),
+        created: () => values.created === null ? null : parse(values.created).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.dissoc('actor_type'),
+      R.dissoc('actor_ref'),
+      R.assoc('origins', { origin_actors: [sourceValues] }),
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
+    )(adaptedValues);
+    CM(environmentDarkLight, {
+      mutation: remediationEditionMutation,
+      variables: {
+        id: this.props.cyioCoreRelationshipId,
+        input: finalValues,
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation/`);
+      },
+      onError: (err) => toastGenericError('Request Failed'),
+    });
+    this.setState({ onSubmit: true });
   }
 
   render() {
@@ -127,39 +186,44 @@ class RemediationDetailsPopover extends Component {
       risk,
       remediation,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
+    const SourceOfDetection = R.pipe(
+      R.pathOr([], ['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(remediation);
     const initialValues = R.pipe(
-      R.assoc('description', remediation?.description || ''),
       R.assoc('name', remediation?.name || ''),
-      R.assoc('source', remediationOriginData?.name || []),
-      R.assoc('modified', dateFormat(remediation?.modified)),
-      R.assoc('created', dateFormat(remediation?.created)),
+      R.assoc('description', remediation?.description || ''),
+      R.assoc('actor_type', SourceOfDetection.actor_type || ''),
+      R.assoc('actor_ref', SourceOfDetection.actor_ref?.id || ''),
+      // R.assoc('modified', dateFormat(remediation?.modified)),
+      // R.assoc('created', dateFormat(remediation?.created)),
       R.assoc('lifecycle', remediation?.lifecycle || []),
       R.assoc('response_type', remediation?.response_type || ''),
       R.pick([
         'name',
-        'description',
-        'source',
-        'modified',
         'created',
+        'modified',
+        'actor_ref',
         'lifecycle',
+        'actor_type',
+        'description',
         'response_type',
       ]),
     )(remediation);
-    console.log('remediation', remediation);
     return (
       <>
         <Dialog
           open={this.props.displayEdit}
           keepMounted={true}
-          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-          // validationSchema={RelatedTaskValidation(t)}
-          // onSubmit={this.onSubmit.bind(this)}
-          // onReset={this.onResetContextual.bind(this)}
+            // validationSchema={RelatedTaskValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
           >
             {({
               submitForm,
@@ -199,7 +263,7 @@ class RemediationDetailsPopover extends Component {
                       </div>
                     </Grid>
                   </Grid>
-                  <Grid container={true} spacing={3}>
+                  {/* <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '12px' }}>
                         <Typography
@@ -260,7 +324,7 @@ class RemediationDetailsPopover extends Component {
                         />
                       </div>
                     </Grid>
-                  </Grid>
+                  </Grid> */}
                   <Grid container={true} spacing={3}>
                     <Grid xs={12} item={true}>
                       <Typography
@@ -278,7 +342,7 @@ class RemediationDetailsPopover extends Component {
                       </div>
                       <div className="clearfix" />
                       <Field
-                        component={TextField}
+                        component={MarkDownField}
                         name="description"
                         fullWidth={true}
                         multiline={true}
@@ -375,10 +439,7 @@ class RemediationDetailsPopover extends Component {
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
-                    onClick={() => {
-                      this.props.handleDisplayEdit();
-                      this.setState({ close: true });
-                    }}
+                    onClick={this.handleCancelOpenClick.bind(this)}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -402,7 +463,6 @@ class RemediationDetailsPopover extends Component {
           open={this.state.close}
           keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>
@@ -425,7 +485,7 @@ class RemediationDetailsPopover extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
               color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
@@ -443,7 +503,6 @@ class RemediationDetailsPopover extends Component {
 
 RemediationDetailsPopover.propTypes = {
   cyioCoreRelationshipId: PropTypes.string,
-  handleDisplayEdit: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
   disabled: PropTypes.bool,
@@ -454,6 +513,7 @@ RemediationDetailsPopover.propTypes = {
   connectionKey: PropTypes.string,
   enableReferences: PropTypes.bool,
   risk: PropTypes.object,
+  riskId: PropTypes.string,
   remediation: PropTypes.object,
   remediationId: PropTypes.string,
 };

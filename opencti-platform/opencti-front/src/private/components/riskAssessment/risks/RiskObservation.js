@@ -13,7 +13,8 @@ import Typography from '@material-ui/core/Typography';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { QueryRenderer } from '../../../../relay/environment';
-import RiskObservationLine, { riskObservationLineQuery } from './RiskObservationLine';
+import RiskObservationLines, { riskObservationLinesQuery } from './RiskObservationLines';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   paper: {
@@ -86,12 +87,18 @@ class RiskObservation extends Component {
         <Paper className={classes.paper} elevation={2}>
           <QR
             environment={QueryRendererDarkLight}
-            query={riskObservationLineQuery}
+            query={riskObservationLinesQuery}
             variables={{ id: risk.id, first: 10, offset: 0 }}
             render={({ error, props }) => {
+              if (error) {
+                return (
+                  toastGenericError('Failed to get risk observation'),
+                  console.error(error)
+                );
+              }
               if (props) {
                 return (
-                  <RiskObservationLine
+                  <RiskObservationLines
                     risk={props.risk}
                   />
                 );

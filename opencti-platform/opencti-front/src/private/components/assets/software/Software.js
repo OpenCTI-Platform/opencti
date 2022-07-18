@@ -62,12 +62,14 @@ class SoftwareComponent extends Component {
         {!this.state.displayEdit && !location.openEdit ? (
           <div className={classes.container}>
             <CyioDomainObjectHeader
-              cyioDomainObject={software}
               history={history}
+              name={software.name}
+              cyioDomainObject={software}
               PopoverComponent={<SoftwarePopover />}
+              goBack='/defender HQ/assets/software'
+              OperationsComponent={<SoftwareDeletion />}
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              OperationsComponent={<SoftwareDeletion />}
             />
             <Grid
               container={true}
@@ -165,14 +167,6 @@ const Software = createFragmentContainer(SoftwareComponent, {
         # created
         # modified
         entity_type
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
         abstract
         content
         authors

@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 
@@ -35,6 +36,7 @@ class NoteDetailsComponent extends Component {
           </Typography>
           <Markdown
             remarkPlugins={[remarkGfm, remarkParse]}
+            rehypePlugins={[rehypeRaw]}
             parserOptions={{ commonmark: true }}
             className="markdown"
           >
@@ -49,6 +51,7 @@ class NoteDetailsComponent extends Component {
           </Typography>
           <Markdown
             remarkPlugins={[remarkGfm, remarkParse]}
+            rehypePlugins={[rehypeRaw]}
             parserOptions={{ commonmark: true }}
             className="markdown"
           >

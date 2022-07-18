@@ -42,7 +42,7 @@ import RiskAssessmentPopover from './RiskAssessmentPopover';
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: '337px',
+    height: '319px',
     borderRadius: 9,
   },
   cardDummy: {
@@ -135,13 +135,13 @@ class RiskCardComponent extends Component {
       selectedElements,
     } = this.props;
     const riskData = pipe(
-      pathOr([], ['related_risks', 'edges']),
+      pathOr([]),
       mergeAll,
     )(node);
     const riskRemediation = pipe(
       pathOr([], ['remediations']),
       mergeAll,
-    )(riskData.node);
+    )(node);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
@@ -150,7 +150,7 @@ class RiskCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           TouchRippleProps={ this.state.openMenu && { classes: { root: classes.buttonRipple } }}
-          to={`/activities/risk assessment/risks/${riskData?.node?.id}`}
+          to={`/activities/risk assessment/risks/${node?.id}`}
         >
           {/* <CardHeader
             classes={{ root: classes.header }}
@@ -185,9 +185,9 @@ class RiskCardComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('ID')}
+                  {t('Name')}
                 </Typography>
-                {node.id && t(node.id)}
+                {node.name && t(node.name)}
               </div>
               <Grid
                 item={true}
@@ -197,7 +197,7 @@ class RiskCardComponent extends Component {
                 <RiskAssessmentPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
                   history={history}
-                  nodeId={riskData?.node?.id}
+                  nodeId={node?.id}
                   riskNode={riskData.node}
                   node={node}
                 />
@@ -230,7 +230,7 @@ class RiskCardComponent extends Component {
                   {t('Risk')}
                 </Typography>
                 <Typography>
-                  {riskData?.node?.risk_level && riskData?.node?.risk_level}
+                  {node?.risk_level && node?.risk_level}
                 </Typography>
               </Grid>
             </Grid>
@@ -339,28 +339,16 @@ const RiskCardFragment = createFragmentContainer(
   RiskCardComponent,
   {
     node: graphql`
-      fragment RiskCard_node on POAMItem {
+      fragment RiskCard_node on Risk {
         id
         poam_id
         name
+        risk_level
+        risk_status
+        response_type
+        lifecycle
         occurrences
-        related_risks {
-          edges {
-            node {
-              __typename
-              id
-              name
-              risk_status
-              risk_level
-              deadline
-              remediations {
-                id
-                response_type
-                lifecycle
-              }
-            }
-          }
-        }
+        deadline
       }
     `,
   },

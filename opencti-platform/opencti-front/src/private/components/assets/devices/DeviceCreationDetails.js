@@ -145,7 +145,6 @@ class DeviceCreationDetailsComponent extends Component {
                   <Tooltip title={t('Installed Operating System')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
-                  <AddIcon fontSize="small" color="disabled" />
                 </div>
                 <InstalledAsset
                   component={SelectField}
@@ -171,7 +170,6 @@ class DeviceCreationDetailsComponent extends Component {
                   <Tooltip title={t('Installed Software')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
-                  <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
                 </div>
                 <InstalledAsset
                   component={SelectField}
@@ -395,7 +393,6 @@ class DeviceCreationDetailsComponent extends Component {
                   <Tooltip title={t('Installed Hardware')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
-                  <AddIcon fontSize="small" color="disabled" />
                 </div>
                 <div className="clearfix" />
                 <InstalledAsset
@@ -590,6 +587,28 @@ class DeviceCreationDetailsComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   name="default_gateway"
+                  size='small'
+                  fullWidth={true}
+                />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('CPE Identifier')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('CPE Identifier')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  name="cpe_identifier"
                   size='small'
                   fullWidth={true}
                 />

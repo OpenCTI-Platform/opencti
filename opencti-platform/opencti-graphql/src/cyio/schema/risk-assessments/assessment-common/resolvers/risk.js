@@ -1,12 +1,18 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {compareValues, updateQuery, filterValues, generateId, OSCAL_NS} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
+import { calculateRiskLevel, getLatestRemediationInfo, convertToProperties } from '../../riskUtils.js';
+import { findParentIriQuery, objectMap } from '../../../global/global-utils.js';
 import {
   selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
+import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
 import {
   getReducer, 
   insertRiskQuery,
@@ -16,10 +22,15 @@ import {
   riskPredicateMap,
   selectCharacterizationByIriQuery,
   selectMitigatingFactorByIriQuery,
+  selectAllObservations,
   selectObservationByIriQuery,
   selectRiskResponseByIriQuery,
+  riskResponsePredicateMap,
   selectRiskLogEntryByIriQuery,
+  deleteOriginByIriQuery,
+  selectAllOrigins,
   selectOriginByIriQuery,
+  selectAllRiskLogEntries,
 } from './sparql-query.js';
 
 
@@ -44,11 +55,55 @@ const riskResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("RISK");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
-        let riskList ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = ((args.first === undefined || args.first === null) ? response.length : args.first) ;
+        offsetSize = offset = ((args.offset === undefined || args.offset === null) ? 0 : args.offset) ;
+        filterCount = 0;
+
+        // update the risk level and score before sorting
+        for (let risk of response) {
+          risk.risk_level = 'unknown';
+          if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
+            // calculate the risk level
+            const {riskLevel, riskScore} = calculateRiskLevel(risk);
+            risk.risk_score = riskScore;
+            risk.risk_level = riskLevel;
+
+            // clean up
+            delete risk.cvssV2Base_score;
+            delete risk.cvssV2Temporal_score;
+            delete risk.cvssV3Base_score
+            delete risk.cvssV3Temporal_score;
+            delete risk.available_exploit_values;
+            delete risk.exploitability_ease_values;
+          }
+
+          // retrieve most recent remediation state
+          if (risk.remediation_type_values !== undefined) {
+            const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
+            if (responseType !== undefined) risk.response_type = responseType;
+            if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
+            // clean up
+            delete risk.remediation_type_values;
+            delete risk.remediation_lifecycle_values;
+            delete risk.remediation_timestamp_values;
+          }
+
+          // TODO: WORKAROUND fix up invalidate deviation values
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
+          }
+          // END WORKAROUND
+        }
+
+        // sort the values
+        let riskList, sortBy ;
         if (args.orderedBy !== undefined ) {
-          riskList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+          if (args.orderedBy === 'risk_level') {
+            sortBy = 'risk_score';
+          } else { sortBy = args.orderedBy; }
+          riskList = response.sort(compareValues(sortBy, args.orderMode ));
         } else {
           riskList = response;
         }
@@ -57,49 +112,68 @@ const riskResolvers = {
 
         // for each Risk in the result set
         for (let risk of riskList) {
+          if (risk.id === undefined || risk.id == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
+            continue;
+          }
+
           // skip down past the offset
           if (offset) {
             offset--
             continue
           }
 
-          if (risk.id === undefined || risk.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
-            continue;
+          // if props were requested
+          if (selectMap.getNode('node').includes('props')) {
+            let props = convertToProperties(risk, riskPredicateMap);
+            if (risk.hasOwnProperty('risk_level')) {
+              if (props === null) props = [];
+              let id_material = {"name":"risk-level","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_level}`};
+              let propId = generateId(id_material, OSCAL_NS);
+              let property = {
+                id: `${propId}`,
+                entity_type: 'property',
+                prop_name: 'risk-level',
+                ns: 'http://darklight.ai/ns/oscal',
+                value: `${risk.risk_level}`,
+              }
+              props.push(property)
+            }
+            if (risk.hasOwnProperty('risk_score')) {
+              if (props === null) props = [];
+              let id_material = {"name":"risk-score","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_score}`};
+              let propId = generateId(id_material, OSCAL_NS);
+              let property = {
+                id: `${propId}`,
+                entity_type: 'property',
+                prop_name: 'risk-score',
+                ns: 'http://darklight.ai/ns/oscal',
+                value: `${risk.risk_score}`,
+              }
+              props.push(property)
+            }
+            if (risk.hasOwnProperty('occurrences')) {
+              if (props === null) props = [];
+              let id_material = {"name":"risk-occurrences","ns":"http://darklight.ai/ns/oscal","value":`${risk.occurrences}`};
+              let propId = generateId(id_material, OSCAL_NS);
+              let property = {
+                id: `${propId}`,
+                entity_type: 'property',
+                prop_name: 'risk-occurrences',
+                ns: 'http://darklight.ai/ns/oscal',
+                value: `${risk.occurrences}`,
+              }
+              props.push(property)
+            }  
+            if (props !== null) risk.props = props;
           }
-
-          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
-            risk.risk_status = risk.risk_status.replace('_', '-');
-          }
-
-          // calculate the risk level
-          risk.risk_level = 'unknown';
-          if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
-            let riskLevel;
-            let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
-            if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
-            if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
-            if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
-            if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
-            if (score == 0) riskLevel = 'very-low';
-            risk.risk_score = score;
-            risk.risk_level = riskLevel;
-
-            // clean up
-            delete risk.cvss20_base_score;
-            delete risk.cvss20_temporal_score;
-            delete risk.cvss30_base_score
-            delete risk.cvss30_temporal_score;
-            delete risk.exploit_available;
-            delete risk.exploitability;
-          }
-
+          
           // filter out non-matching entries if a filter is to be applied
-          if ('filters' in args && args.filters != null && args.filters.length > 0) {
+          if ('filters' in args && (args.filters != null && args.filters.length > 0) && args.filters[0] !== null) {
             if (!filterValues(risk, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -110,16 +184,30 @@ const riskResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = riskList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < riskList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: riskList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -155,31 +243,84 @@ const riskResolvers = {
         const reducer = getReducer("RISK");
         let risk = response[0];
 
-        if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+        // calculate the risk level
+        risk.risk_level = 'unknown';
+        if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
+          // calculate the risk level
+          const {riskLevel, riskScore} = calculateRiskLevel(risk);
+          risk.risk_score = riskScore;
+          risk.risk_level = riskLevel;
+
+          // clean up
+          delete risk.cvssV2Base_score;
+          delete risk.cvssV2Temporal_score;
+          delete risk.cvssV3Base_score
+          delete risk.cvssV3Temporal_score;
+          delete risk.available_exploit_values;
+          delete risk.exploitability_ease_values;
+        }
+
+        // retrieve most recent remediation state
+        if (risk.remediation_type_values !== undefined) {
+          const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
+          if (responseType !== undefined) risk.response_type = responseType;
+          if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
+          // clean up
+          delete risk.remediation_type_values;
+          delete risk.remediation_lifecycle_values;
+          delete risk.remediation_timestamp_values;
+        }
+
+          // TODO: WORKAROUND fix up invalidate deviation values
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
           console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
           risk.risk_status = risk.risk_status.replace('_', '-');
         }
+          // END WORKAROUND
 
-        // calculate the risk level
-        risk.risk_level = 'unknown';
-        if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
-          let riskLevel;
-          let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
-          if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
-          if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
-          if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
-          if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
-          if (score == 0) riskLevel = 'very-low';
-          risk.risk_level = riskLevel;
-          risk.risk_score = score;
-
-          // clean up
-          delete risk.cvss20_base_score;
-          delete risk.cvss20_temporal_score;
-          delete risk.cvss30_base_score
-          delete risk.cvss30_temporal_score;
-          delete risk.exploit_available;
-          delete risk.exploitability;
+        // if props were requested
+        if (selectMap.getNode('risk').includes('props')) {
+          let props = convertToProperties(risk, riskPredicateMap);
+          if (risk.hasOwnProperty('risk_level')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-level","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_level}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-level',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.risk_level}`,
+            }
+            props.push(property)
+          }
+          if (risk.hasOwnProperty('risk_score')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-score","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_score}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-score',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.risk_score}`,
+            }
+            props.push(property)
+          }
+          if (risk.hasOwnProperty('occurrences')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-occurrences","ns":"http://darklight.ai/ns/oscal","value":`${risk.occurrences}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-occurrences',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.occurrences}`,
+            }
+            props.push(property)
+          }
+          if (props !== null) risk.props = props;
         }
 
         return reducer(risk);  
@@ -197,7 +338,25 @@ const riskResolvers = {
     }
   },
   Mutation: {
-    createRisk: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+    createRisk: async ( _, {poamId, resultId, input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
+      // Ensure either the ID of either a POAM or a Assessment Result is supplied
+      if (poamId === undefined && resultId === undefined) {
+        // Default to the POAM
+        poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      }
+
       // Setup to handle embedded objects to be created
       let origins;
       if (input.origins !== undefined) {
@@ -206,14 +365,27 @@ const riskResolvers = {
       }
 
       // create the Risk
-      const {id, query} = insertRiskQuery(input);
+      const {iri, id, query} = insertRiskQuery(input);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
         queryId: "Create Risk"
       });
 
-      // add the Risk to its supplied parent
+      // attach the Risk to the supplied POAM
+      if (poamId !== undefined && poamId !== null) {
+        const attachQuery = attachToPOAMQuery(poamId, 'risks', iri );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Add Risk to POAM",
+            sparqlQuery: attachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
 
       // create any origins supplied and attach them to the Risk
       if (origins !== undefined && origins !== null ) {
@@ -232,7 +404,13 @@ const riskResolvers = {
       const reducer = getReducer("RISK");
       return reducer(result[0]);
     },
-    deleteRisk: async ( _, {id}, {dbName, dataSources} ) => {
+    deleteRisk: async ( _, {poamId, _resultId, id}, {dbName, dataSources} ) => {
+      // Ensure either the ID of either a POAM or a Assessment Result is supplied
+      if (poamId === undefined && resultId === undefined) {
+        // Default to the POAM
+        poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      }
+
       // check that the risk exists
       const sparqlQuery = selectRiskQuery(id, null);
       let response;
@@ -269,9 +447,22 @@ const riskResolvers = {
         }
       }
 
-      // Detach the Risk from the parent
+      // Detach the Risk from the supplied POAM
+      if (poamId !== undefined && poamId !== null) {
+        const attachQuery = detachFromPOAMQuery(poamId, 'risks', risk.iri );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Detaching Risk from POAM",
+            sparqlQuery: attachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
 
-      // Delete the Observation itself
+      // Delete the Risk itself
       const query = deleteRiskQuery(id);
       try {
         await dataSources.Stardog.delete({
@@ -286,33 +477,82 @@ const riskResolvers = {
       return id;
     },
     editRisk: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the risk exists
-      const sparqlQuery = selectRiskQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Risk",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
-      const query = updateQuery(
-        `http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}`,
-        "http://csrc.nist.gov/ns/oscal/assessment/common#Risk",
-        input,
-        riskPredicateMap
-      )
-      response = await dataSources.Stardog.edit({
+      const sparqlQuery = selectRiskQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
         dbName,
-        sparqlQuery: query,
-        queryId: "Update Risk"
-      });
-      if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+        sparqlQuery,
+        queryId: "Select Risk",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
+      // Handle 'dynamic' property editing separately
+      for (let editItem of input) {
+        let parentIri, iriTemplate, predicateMap;
+        if (editItem.key === 'poam_id') {
+          // remove edit item so it doesn't get processed again
+          input = input.filter(item => item.key != 'poam_id');
+
+          // find parent IRI of POAM Item 
+          let parentQuery = findParentIriQuery(response[0].iri, editItem.key, riskPredicateMap);
+          let results = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery: parentQuery,
+            queryId: "Select Find Parent",
+            singularizeSchema
+          })
+          if (results.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+          for (let result of results) {
+            let index = result.objectType.indexOf('poam-item');
+            parentIri = result.parentIri[index];
+            iriTemplate = objectMap[result.objectType[index]].iriTemplate;
+            predicateMap = objectMap[result.objectType[index]].predicateMap;
+            break;
+          }
+
+          let newInput = [editItem];
+          const query = updateQuery(
+            parentIri,
+            iriTemplate,
+            newInput,
+            predicateMap
+          );
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update Risk"
+          });
+          if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+        }
+      }
+
+      if (input.length > 0 ) {
+        const query = updateQuery(
+          `http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}`,
+          "http://csrc.nist.gov/ns/oscal/assessment/common#Risk",
+          input,
+          riskPredicateMap
+        )
+        response = await dataSources.Stardog.edit({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Update Risk"
+        });
+        if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      }
+
       const select = selectRiskQuery(id, selectMap.getNode("editRisk"));
       const result = await dataSources.Stardog.queryById({
         dbName,
@@ -369,8 +609,8 @@ const riskResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -411,8 +651,8 @@ const riskResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -452,47 +692,40 @@ const riskResolvers = {
         return [];
       }
     },
-    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
+    origins: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
-      let iriArray = parent.origins_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("ORIGIN");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Origin')) {
-            continue;
-          }
-          const sparqlQuery = selectOriginByIriQuery(iri, selectMap.getNode("origins"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Origin",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("ORIGIN");
+      let sparqlQuery = selectAllOrigins(selectMap.getNode('origins'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Origins",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let origin of response) {
+        results.push(reducer(origin));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
     threats: async (parent, _, ) => {
       if (parent.threats_iri === undefined) return [];
@@ -541,7 +774,7 @@ const riskResolvers = {
         return [];
       }
     },
-    mitigating_factors: async (parent, _, {dbName, dataSources, }) => {
+    mitigating_factors: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.mitigating_factors_iri === undefined) return [];
       let iriArray = parent.mitigating_factors_iri;
       const results = [];
@@ -551,7 +784,7 @@ const riskResolvers = {
           if (iri === undefined || !iri.includes('MitigatingFactor')) {
             continue;
           }
-          const sparqlQuery = selectMitigatingFactorByIriQuery(iri, null);
+          const sparqlQuery = selectMitigatingFactorByIriQuery(iri, selectMap.getNode('mitigating_factors'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -583,7 +816,7 @@ const riskResolvers = {
         return [];
       }
     },
-    remediations: async (parent, _, {dbName, dataSources, }) => {
+    remediations: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.remediations_iri === undefined) return [];
       let iriArray = parent.remediations_iri;
       const results = [];
@@ -608,7 +841,15 @@ const riskResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
+            let riskResponse = response[0];
+
+            // if props were requested
+            if (selectMap.getNode('remediations').includes('props')) {
+              let props = convertToProperties(riskResponse, riskResponsePredicateMap);
+              if (props !== null) riskResponse.props = props;
+            }
+            
+            results.push(reducer(riskResponse))
           }
           else {
             // Handle reporting Stardog Error
@@ -625,122 +866,258 @@ const riskResolvers = {
         return [];
       }
     },
-    risk_log: async (parent, args, {dbName, dataSources, }) => {
+    risk_log: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.risk_log_iri === undefined) return null;
-      let iriArray = parent.risk_log_iri;
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const edges = [];
-        const reducer = getReducer("RISK-LOG-ENTRY");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('RiskLogEntry')) continue ;
-          const sparqlQuery = selectRiskLogEntryByIriQuery(iri, null);
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Risk Log Entry",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return null;
-          if (Array.isArray(response) && response.length > 0) {
-            if ( limit ) {
-              let edge = {
-                cursor: iri,
-                node: reducer(response[0]),
-              }
-              edges.push(edge);
-              limit--;
-            }
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        if (edges.length === 0 ) return null;
-        return {
-          pageInfo: {
-            startCursor: edges[0].cursor,
-            endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < iriArray.length ? true : false ),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: iriArray.length,
-          },
-          edges: edges,
-        }
+      const edges = [];
+      const reducer = getReducer("RISK-LOG-ENTRY");
+      let sparqlQuery = selectAllRiskLogEntries(selectMap.getNode('node'), args, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced RiskLog Entries",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+      limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+      offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+      filterCount = 0;
+      let entryList ;
+      if (args.orderedBy !== undefined ) {
+        entryList = response.sort(compareValues(args.orderedBy, args.orderMode ));
       } else {
-        return null;
+        entryList = response;
+      }
+
+      if (offset > entryList.length) return null;
+      resultCount = entryList.length;
+      for (let entry of entryList) {
+        if (offset) {
+          offset--;
+          continue;
+        }
+
+        // filter out non-matching entries if a filter is to be applied
+        if ('filters' in args && args.filters != null && args.filters.length > 0) {
+          if (!filterValues(entry, args.filters, args.filterMode) ) {
+            continue
+          }
+          filterCount++;
+        }
+        // if haven't reached limit to be returned
+        if (limit) {
+          let edge = {
+            cursor: entry.iri,
+            node: reducer(entry),
+          }
+          edges.push(edge)
+          limit--;
+          if (limit === 0) break;
+        }
+      }
+
+      // check if there is data to be returned
+      if (edges.length === 0 ) return null;
+      let hasNextPage = false, hasPreviousPage = false;
+      if (edges.length < resultCount) {
+        if (edges.length === limitSize && filterCount <= limitSize ) {
+          hasNextPage = true;
+          if (offsetSize > 0) hasPreviousPage = true;
+        }
+        if (edges.length <= limitSize) {
+          if (filterCount !== edges.length) hasNextPage = true;
+          if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+        }
+      }
+      return {
+        pageInfo: {
+          startCursor: edges[0].cursor,
+          endCursor: edges[edges.length-1].cursor,
+          hasNextPage: (hasNextPage ),
+          hasPreviousPage: (hasPreviousPage),
+          globalCount: resultCount,
+        },
+        edges: edges,
       }
     },
-    related_observations: async (parent, args, {dbName, dataSources, }) => {
+    related_observations: async (parent, args, {dbName, dataSources,selectMap}) => {
       if (parent.related_observations_iri === undefined) return null;
-      let iriArray = parent.related_observations_iri;
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const edges = [];
-        const reducer = getReducer("OBSERVATION");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Observation')) continue ;
-          const sparqlQuery = selectObservationByIriQuery(iri, null);
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Observation",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return null;
-          if (Array.isArray(response) && response.length > 0) {
-            if ( limit ) {
+      const edges = [];
+      let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+      filterCount = 0;
+      
+      // if only returning the id, then use the values already collected in the parent
+      if (selectMap.getNode('node').length === 1 && selectMap.getNode('node').includes('id')) {
+        if (parent.related_observation_ids !== undefined && parent.related_observation_ids.length > 0) {
+          limitSize = limit = (args.first === undefined ? parent.related_observations_iri.length : args.first) ;
+          offsetSize = (args.offset === undefined ? 0 : args.offset) ;
+          resultCount = parent.related_observations_iri.length;
+          for (let i = 0; i < parent.related_observations_iri.length; i++) {
+            let relObservation = {
+              iri: parent.related_observations_iri[i],
+              id: parent.related_observation_ids[i],
+              entity_type: 'observation'
+            };
+
+            if (limit) {
               let edge = {
-                cursor: iri,
-                node: reducer(response[0]),
+                cursor: parent.related_observations_iri[i],
+                node: relObservation,
               }
-              edges.push(edge);
+              edges.push(edge)
               limit--;
+              if (limit === 0) break;
             }
           }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        if (edges.length === 0 ) return null;
-        return {
-          pageInfo: {
-            startCursor: edges[0].cursor,
-            endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < iriArray.length ? true : false ),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: iriArray.length,
-          },
-          edges: edges,
         }
       } else {
-        return null;
+        // Perform a query as more info that just the uuid is to be returned
+        const reducer = getReducer("OBSERVATION");
+        let sparqlQuery = selectAllObservations(selectMap.getNode('node'), args, parent );
+        let response;
+        try {
+          response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select Related Observations",
+            singularizeSchema
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+        if (response === undefined || response.length === 0) return null;
+
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        }
+
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let observationList ;
+        if (args.orderedBy !== undefined ) {
+          observationList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+        } else {
+          observationList = response;
+        }
+
+        if (offset > observationList.length) return null;
+        resultCount = observationList.length;
+        for (let observation of observationList) {
+          if (offset) {
+            offset--;
+            continue;
+          }
+
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters != null && args.filters.length > 0) {
+            if (!filterValues(observation, args.filters, args.filterMode) ) {
+              continue
+            }
+            filterCount++;
+          }
+          // if haven't reached limit to be returned
+          if (limit) {
+            let edge = {
+              cursor: observation.iri,
+              node: reducer(observation),
+            }
+            edges.push(edge)
+            limit--;
+            if (limit === 0) break;
+          }
+        }
+      }
+
+      // check if there is data to be returned
+      if (edges.length === 0 ) return null;
+      let hasNextPage = false, hasPreviousPage = false;
+      if (edges.length < resultCount) {
+        if (edges.length === limitSize && filterCount <= limitSize ) {
+          hasNextPage = true;
+          if (offsetSize > 0) hasPreviousPage = true;
+        }
+        if (edges.length <= limitSize) {
+          if (filterCount !== edges.length) hasNextPage = true;
+          if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+        }
+      }
+      return {
+        pageInfo: {
+          startCursor: edges[0].cursor,
+          endCursor: edges[edges.length-1].cursor,
+          hasNextPage: (hasNextPage ),
+          hasPreviousPage: (hasPreviousPage),
+          globalCount: resultCount,
+        },
+        edges: edges,
       }
     },
+    occurrences: async (parent, _, {dbName, dataSources, }) => {
+      if (parent.id === undefined) {
+        return 0;
+      }
+
+      // return occurrences value from parent if already exists
+      if (parent.hasOwnProperty('occurrences')) return parent.occurrences;
+
+      const id = parent.id
+      const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}>`
+      const sparqlQuery = `
+      SELECT DISTINCT (COUNT(?related_observations) as ?occurrences)
+      FROM <tag:stardog:api:context:local>
+      WHERE {
+        ${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
+      }
+      `;
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select occurrence count",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined) {
+        return 0;
+      }
+      if (Array.isArray(response) && response.length > 0) {
+        return( response[0].occurrences)
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return null;
+        }
+      }
+    }
   }
 }
 

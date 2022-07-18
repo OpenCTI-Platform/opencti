@@ -22,6 +22,7 @@ const poamReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
@@ -37,8 +38,8 @@ const poamReducer = (item) => {
     ...(item.document_ids && {doc_id_iri: item.document_ids}),
     ...(item.roles && {roles_iri: item.roles}),
     ...(item.locations && {locations_iri: item.locations}),
-    ...(item.parties && {parties_iri:item_parties}),
-    ...(item.responsible_parties && {resp_parties_iri: item.responsible_parties}),
+    ...(item.parties && {parties_iri: item.parties}),
+    ...(item.responsible_parties && {responsible_parties_iri: item.responsible_parties}),
     ...(item.labels && {labels_iri: item.labels}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
@@ -62,6 +63,7 @@ const poamItemReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
@@ -78,23 +80,28 @@ const poamItemReducer = (item) => {
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationship_iri: item.relationships}),
     // POAM Item
+    ...(item.props && {props: item.props}),
     ...(item.poam_id && {poam_id: item.poam_id}),
-    ...(item.accepted_risk !== undefined && {accepted_risk: item.accepted_risk})
+    ...(item.accepted_risk !== undefined && {accepted_risk: item.accepted_risk}),
+    ...(item.related_observation_ids && {related_observation_ids: item.related_observation_ids}),
+    ...(item.related_risk_ids && {related_risk_ids: item.related_risk_ids}),
   }
 }
 const poamLocalDefReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
-    item.object_type = 'poam-local-definition';
+    item.object_type = 'poam-local-definitions';
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     // Local Definition
     ...(item.components && {components_iri: item.components}),
     ...(item.inventory_items && {inventory_items_iri: item.inventory_items}),
+    ...(item.assessment_assets && {assessment_assets_iri: item.assessment_assets}),
     ...(item.remarks && {remarks_iri: item.remarks}),
   }
 }
@@ -313,9 +320,19 @@ export const poamItemPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_observations");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  related_observation_ids: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_observation_ids");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   related_risks: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_risks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  related_risk_ids: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_risk_ids");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   poam_id: {
@@ -340,11 +357,6 @@ export const poamLocalDefinitionPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  remarks: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
   components: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#components>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "components");},
@@ -353,6 +365,16 @@ export const poamLocalDefinitionPredicateMap = {
   inventory_items: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#inventory_items>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "inventory_items");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  assessment_assets: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_assets>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "assessment_assets");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  remarks: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
@@ -396,7 +418,7 @@ export const selectPOAMByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(poamPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(poamPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -407,6 +429,8 @@ export const selectPOAMByIriQuery = (iri, select) => {
 }
 export const selectAllPOAMs = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(poamPredicateMap);
+  // if (select.includes('props')) select = Object.keys(poamPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -429,7 +453,7 @@ export const selectAllPOAMs = (select, args) => {
     ?iri a <http://csrc.nist.gov/ns/oscal/common#POAM> . 
     ${predicates}
   }
-  `
+  `;
 }
 export const deletePOAMQuery = (id) => {
   const iri = `http://csrc.nist.gov/ns/oscal/common#POAM-${id}`;
@@ -480,6 +504,7 @@ export const attachToPOAMQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -501,6 +526,7 @@ export const detachFromPOAMQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -518,7 +544,15 @@ export const insertPOAMItemQuery = (propValues) => {
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => poamItemPredicateMap.hasOwnProperty(propPair[0]))
@@ -547,9 +581,10 @@ export const selectPOAMItemQuery = (id, select) => {
 export const selectPOAMItemByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
+  if (select.includes('props') && !select.includes('poam_id')) select.push('poam_id');
   const { selectionClause, predicates } = buildSelectVariables(poamItemPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -558,9 +593,16 @@ export const selectPOAMItemByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllPOAMItems = (select, args) => {
+export const selectAllPOAMItems = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
-  
+  if (select.includes('props')) select = Object.keys(poamItemPredicateMap);
+  if (!select.includes('id')) select.push('id');
+
+  // fetch the uuid of each related_observation and related_risk as these are commonly used
+  if (select.includes('related_observations')) select.push('related_observation_ids');
+  if (select.includes('related_risks')) select.push('related_risk_ids');
+
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
@@ -575,12 +617,26 @@ export const selectAllPOAMItems = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(poamItemPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a <http://csrc.nist.gov/ns/oscal/common#POAM> ;
+            <http://csrc.nist.gov/ns/oscal/poam#poam_items> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/poam#Item> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -628,6 +684,7 @@ export const attachToPOAMItemQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -649,6 +706,7 @@ export const detachFromPOAMItemQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -658,4 +716,155 @@ export const detachFromPOAMItemQuery = (id, field, itemIris) => {
     }
   }
   `
+}
+
+// POAM LocalDefinitions support functions
+export const insertPOAMLocalDefinitionQuery = (propValues) => {
+  const id = propValues.id;
+  const iri = `<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}>`;
+  const insertPredicates = Object.entries(propValues)
+      .filter((propPair) => poamLocalDefinitionPredicateMap.hasOwnProperty(propPair[0]))
+      .map((propPair) => poamLocalDefinitionPredicateMap[propPair[0]].binding(iri, propPair[1]))
+      .join('. \n      ');
+  const query = `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${iri} a <http://csrc.nist.gov/ns/oscal/poam#LocalDefinition> .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
+      ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
+      ${iri} <http://darklight.ai/ns/common#id> "${id}" .
+      ${iri} <http://darklight.ai/ns/common#object_type> "poam-local-definition" . 
+      ${insertPredicates}
+    }
+  }
+  `;
+  return {iri, id, query}
+}
+export const selectPOAMLocalDefinitionQuery = (id, select) => {
+  return selectPOAMLocalDefinitionByIriQuery(`http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}`, select);
+}
+export const selectPOAMLocalDefinitionByIriQuery = (iri, select) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === undefined || select === null) select = Object.keys(poamLocalDefinitionPredicateMap);
+  if (!select.includes('id')) select.push('id');
+  const { selectionClause, predicates } = buildSelectVariables(poamLocalDefinitionPredicateMap, select);
+  return `
+  SELECT ?iri ${selectionClause}
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    BIND(${iri} AS ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/poam#LocalDefinition> .
+    ${predicates}
+  }
+  `
+}
+export const selectAllPOAMLocalDefinitions = (select, args, parent) => {
+  let constraintClause = '';
+  if (select === undefined || select === null) select = Object.keys(assessmentAssetPredicateMap);
+  if (!select.includes('id')) select.push('id');
+
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
+  }
+
+  const { selectionClause, predicates } = buildSelectVariables(assessmentAssetPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/poam#local_definitions>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+  return `
+  SELECT DISTINCT ?iri ${selectionClause} 
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    ?iri a <http://csrc.nist.gov/ns/oscal/poam#LocalDefinition> . 
+    ${predicates}
+    ${constraintClause}
+  }
+  `
+}
+export const deletePOAMLocalDefinitionQuery = (id) => {
+  const iri = `http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}`;
+  return deletePOAMLocalDefinitionByIirQuery(iri);
+}
+export const deletePOAMLocalDefinitionByIirQuery = (iri) => {
+  return `
+  DELETE {
+    GRAPH <${iri}> {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH <${iri}> {
+      ?iri a <http://csrc.nist.gov/ns/oscal/poam#LocalDefinition> .
+      ?iri ?p ?o
+    }
+  }
+  `
+
+}
+export const attachToPOAMLocalDefinitionQuery = (id, field, itemIris) => {
+  const iri = `<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}>`;
+  if (!poamLocalDefinitionPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = poamLocalDefinitionPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `
+}
+export const detachFromPOAMLocalDefinitionQuery = (id, field, itemIris) => {
+  const iri = `<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}>`;
+  if (!poamLocalDefinitionPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = poamLocalDefinitionPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  DELETE DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `  
 }

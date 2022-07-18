@@ -28,6 +28,7 @@ import {
   itAssetFiltersNetworkFieldsQuery,
   itAssetFiltersSoftwareFieldsQuery,
 } from '../../settings/ItAssetFilters';
+import { RiskFiltersQuery, riskFiltersNameQuery } from '../../settings/RiskFilters';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -35,6 +36,7 @@ import { truncate } from '../../../../utils/String';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 import { statusFieldStatusesSearchQuery } from '../form/StatusField';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { dateFormatRegex } from '../../../../utils/Network';
 
 const styles = (theme) => ({
   filters: {
@@ -174,6 +176,10 @@ class Filters extends Component {
           nameQuery = itAssetFiltersSoftwareFieldsQuery;
           namePath = ['softwareAssetList', 'edges'];
         }
+        if (this.props.filterEntityType === 'Risk') {
+          nameQuery = riskFiltersNameQuery;
+          namePath = ['risks', 'edges'];
+        }
         fetchDarklightQuery(nameQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
         })
@@ -193,6 +199,106 @@ class Filters extends Component {
                 name_m: R.union(
                   nameEntities,
                   this.state.entities.name_m,
+                ),
+              },
+            });
+          });
+        break;
+      case 'risk_level':
+        fetchDarklightQuery(RiskFiltersQuery, {
+          type: 'RiskLevel',
+        })
+          .toPromise()
+          .then((data) => {
+            const riskLevelEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
+              R.map((n) => ({
+                label: t(n.name),
+                value: n.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                risk_level: R.union(
+                  riskLevelEntities,
+                  this.state.entities.risk_level,
+                ),
+              },
+            });
+          });
+        break;
+      case 'risk_status':
+        fetchDarklightQuery(RiskFiltersQuery, {
+          type: 'RiskStatus',
+        })
+          .toPromise()
+          .then((data) => {
+            const riskStatusEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
+              R.map((n) => ({
+                label: t(n.name),
+                value: n.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                risk_status: R.union(
+                  riskStatusEntities,
+                  this.state.entities.risk_status,
+                ),
+              },
+            });
+          });
+        break;
+      case 'lifecycle':
+        fetchDarklightQuery(RiskFiltersQuery, {
+          type: 'RiskLifeCyclePhase',
+        })
+          .toPromise()
+          .then((data) => {
+            const riskLifecycleEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
+              R.map((n) => ({
+                label: t(n.name),
+                value: n.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                lifecycle: R.union(
+                  riskLifecycleEntities,
+                  this.state.entities.lifecycle,
+                ),
+              },
+            });
+          });
+        break;
+      case 'response_type':
+        fetchDarklightQuery(RiskFiltersQuery, {
+          type: 'ResponseType',
+        })
+          .toPromise()
+          .then((data) => {
+            const riskResponseEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
+              R.map((n) => ({
+                label: t(n.name),
+                value: n.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                response_type: R.union(
+                  riskResponseEntities,
+                  this.state.entities.response_type,
                 ),
               },
             });
@@ -784,11 +890,12 @@ class Filters extends Component {
   }
 
   handleChangeDate(filterKey, date, value) {
+    const newDate = date.toISOString().replace(dateFormatRegex, 'T00:00:00.000Z');
     if (date && value && date.toISOString()) {
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(filterKey, date.toISOString(), value);
+        this.handleAddFilter(filterKey, newDate, value);
       } else {
-        this.props.handleAddFilter(filterKey, date.toISOString(), value);
+        this.props.handleAddFilter(filterKey, newDate, value);
       }
     }
   }
@@ -915,13 +1022,15 @@ class Filters extends Component {
             {t('Filters')}
           </Button>
         ) : (
-          <IconButton
-            color="primary"
-            onClick={this.handleOpenFilters.bind(this)}
-            style={{ float: 'left' }}
-          >
-            <FilterListOutlined />
-          </IconButton>
+          <Tooltip title={t('Filter')}>
+            <IconButton
+              color="primary"
+              onClick={this.handleOpenFilters.bind(this)}
+              style={{ float: 'left' }}
+            >
+              <FilterListOutlined />
+            </IconButton>
+          </Tooltip>
         )}
         <Popover
           classes={{ paper: classes.container }}
@@ -1032,7 +1141,7 @@ class Filters extends Component {
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
-            // style={{ color: theme.palette.header.text }}
+          // style={{ color: theme.palette.header.text }}
           >
             <ToyBrickSearchOutline fontSize="default" />
           </IconButton>

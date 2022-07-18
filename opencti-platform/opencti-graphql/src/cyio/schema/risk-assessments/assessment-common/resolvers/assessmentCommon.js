@@ -115,7 +115,7 @@ const assessmentCommonResolvers = {
     deviation_approved: 'deviation-approved',
     closed: 'closed',
   },
-  TaskType: {
+  OscalTaskType: {
     milestone: 'milestone',
     action: 'action',
   },

@@ -87,16 +87,21 @@ const styles = (theme) => ({
     padding: '24px',
     background: theme.palette.background.paper,
   },
+  menuItemName: {
+    padding: '15px 50px',
+  },
 });
 
 class CyioAddNotes extends Component {
   constructor(props) {
     super(props);
+    this.timeout = null;
     this.state = {
       open: false,
       search: '',
       expanded: false,
       totalNotes: [],
+      removeIcon: false,
     };
   }
 
@@ -128,7 +133,9 @@ class CyioAddNotes extends Component {
           onCompleted: (response) => {
             this.handleClose();
             this.setState({ totalNotes: [] });
-            this.props.refreshQuery();
+            if (this.props.refreshQuery) {
+              this.props.refreshQuery();
+            }
           },
           // updater: (store) => {
           //   const payload = store
@@ -155,7 +162,9 @@ class CyioAddNotes extends Component {
         },
         onCompleted: (response) => {
           this.setState({ totalNotes: [] });
-          this.props.refreshQuery();
+          if (this.props.refreshQuery) {
+            this.props.refreshQuery();
+          }
         },
         // updater: (store) => {
         //   const payload = store
@@ -194,7 +203,14 @@ class CyioAddNotes extends Component {
 
   handleSearch(event) {
     const keyword = event.target.value;
-    this.setState({ search: keyword, expanded: keyword ? true : false });
+    if (this.timeout) clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => {
+      if (keyword.length === 0) {
+        this.setState({ expanded: false });
+      } else {
+        this.setState({ search: keyword, expanded: true });
+      }
+    }, 1500);
   }
 
   render() {
@@ -203,23 +219,40 @@ class CyioAddNotes extends Component {
       classes,
       typename,
       disableAdd,
+      menuItemName,
       cyioCoreObjectOrStixCoreRelationshipId,
       cyioCoreObjectOrStixCoreRelationshipNotes,
+      removeIcon,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
     return (
       <div>
-        <IconButton
-          color="default"
-          aria-label="Add"
-          disabled={disableAdd}
-          onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
-        >
-          <Add fontSize="small" />
-        </IconButton>
+        {
+          menuItemName ? (
+            <div
+              className={classes.menuItemName}
+              onClick={this.handleOpen.bind(this)}
+            >
+              {t(menuItemName)}
+            </div>
+          ) : (
+            <IconButton
+              color="default"
+              aria-label="Add"
+              disabled={disableAdd}
+              onClick={this.handleOpen.bind(this)}
+              classes={{ root: classes.createButton }}
+            >
+              {removeIcon ? (
+                <></>
+              ) : (
+                <Add fontSize="small" />
+              )}
+            </IconButton>
+          )
+        }
         <div classes={{ root: classes.dialogRoot }}>
           <Dialog
             maxWidth='md'
@@ -242,7 +275,7 @@ class CyioAddNotes extends Component {
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <TextField
                   style={{ width: 495 }}
-                  onChange={this.handleSearch.bind(this)}
+                  onChange={(event) => this.handleSearch(event)}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end" >
@@ -278,11 +311,9 @@ class CyioAddNotes extends Component {
                   query={cyioAddNotesLinesQuery}
                   variables={{
                     search: this.state.search,
-                    count: 4,
                   }}
                   render={({ props }) => {
                     if (props) {
-                      console.log('cyioAddNotes', props, cyioCoreObjectOrStixCoreRelationshipNotes);
                       return (
                         <CyioAddNotesLines
                           cyioCoreObjectOrStixCoreRelationshipId={
@@ -299,41 +330,7 @@ class CyioAddNotes extends Component {
                         />
                       );
                     }
-                    return (
-                      <List>
-                        {Array.from(Array(20), (e, i) => (
-                          <ListItem key={i} divider={true} button={false}>
-                            <ListItemIcon>
-                              <Skeleton
-                                animation="wave"
-                                variant="circle"
-                                width={30}
-                                height={30}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <Skeleton
-                                  animation="wave"
-                                  variant="rect"
-                                  width="90%"
-                                  height={15}
-                                  style={{ marginBottom: 10 }}
-                                />
-                              }
-                              secondary={
-                                <Skeleton
-                                  animation="wave"
-                                  variant="rect"
-                                  width="90%"
-                                  height={15}
-                                />
-                              }
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    );
+                    return <></>;
                   }}
                 />
               </div>
@@ -346,6 +343,7 @@ class CyioAddNotes extends Component {
 }
 
 CyioAddNotes.propTypes = {
+  menuItemName: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
   refreshQuery: PropTypes.func,
@@ -354,6 +352,7 @@ CyioAddNotes.propTypes = {
   disableAdd: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
+  removeIcon: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(CyioAddNotes);

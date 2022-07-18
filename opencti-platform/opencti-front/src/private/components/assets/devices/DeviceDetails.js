@@ -481,6 +481,24 @@ class DeviceDetailsComponent extends Component {
                 {device?.default_gateway
                   && t(device.default_gateway)}
               </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('CPE Identifier')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('CPE Identifier')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device.cpe_identifier
+                  && t(device.cpe_identifier)}
+              </div>
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -628,6 +646,7 @@ const DeviceDetails = createFragmentContainer(
         model
         mac_address
         fqdn
+        cpe_identifier
         baseline_configuration_name
         bios_id
         is_scanned

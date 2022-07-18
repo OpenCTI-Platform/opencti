@@ -43,6 +43,7 @@ import {
   UserContext,
 } from '../../../../utils/Security';
 import { hexToRGB } from '../../../../utils/Colors';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = () => ({
   labels: {
@@ -67,6 +68,9 @@ const styles = () => ({
   },
   autoCompleteIndicator: {
     display: 'none',
+  },
+  menuItemName: {
+    padding: '15px 50px',
   },
 });
 
@@ -96,7 +100,7 @@ const cyioCoreObjectMutationRelationDelete = graphql`
 
 const CyioCoreObjectLabelsView = (props) => {
   const {
-    classes, labels, t, marginTop, id, typename, refreshQuery, disableAdd,
+    classes, labels, t, marginTop, id, typename, refreshQuery, disableAdd, menuItemName,
   } = props;
   const { me } = useContext(UserContext);
   // const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
@@ -157,9 +161,14 @@ const CyioCoreObjectLabelsView = (props) => {
           setSubmitting(false);
           resetForm();
           handleCloseAdd();
-          refreshQuery();
+          if (refreshQuery) {
+            refreshQuery();
+          }
         },
-        onError: (err) => console.log('cyioCoreObjectLabelsError', err),
+        onError: (err) => {
+          console.error(err);
+          toastGenericError('Failed to add label');
+        }
       })
     ));
     // commitMutation({
@@ -192,7 +201,9 @@ const CyioCoreObjectLabelsView = (props) => {
         to_type: toType,
       },
       onCompleted: () => {
-        refreshQuery();
+        if (refreshQuery) {
+          refreshQuery();
+        }
       }
     });
   };
@@ -214,76 +225,87 @@ const CyioCoreObjectLabelsView = (props) => {
   )(labels);
   return (
     <div style={{ marginTop: marginTop || 0 }}>
-      <Typography variant="h3" color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Labels')}
-      </Typography>
-      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-        <Tooltip
-          title={t(
-            'Label',
-          )}
+      {menuItemName ? (
+        <div
+          className={classes.menuItemName}
+          onClick={handleOpenAdd}
         >
-          <Information fontSize="inherit" color="disabled" />
-        </Tooltip>
-      </div>
-      {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-      <IconButton
-        color="default"
-        disabled={disableAdd}
-        aria-label="Label"
-        size="small"
-        onClick={handleOpenAdd}
-        style={{ float: 'left', margin: '-8px 0 0 -2px' }}
-      >
-        <Add fontSize="small" />
-      </IconButton>
-      {/* </Security> */}
-      <div className="clearfix" />
-      {labels ? (
-        <div className={classes.objectLabel}>
-          {map(
-            (label) => (
-              <Chip
-                key={label.id}
-                variant="outlined"
-                classes={{ root: classes.label }}
-                label={label.name}
-                style={{
-                  color: label.color,
-                  borderColor: label.color,
-                  backgroundColor: hexToRGB(label.color),
-                }}
-                onDelete={() => handleRemoveLabel(label.id, label.__typename)}
-                deleteIcon={
-                  <CancelOutlined
-                    className={classes.deleteIcon}
-                    style={{
-                      color: label.color,
-                    }}
-                  />
-                }
-              />
-            ),
-            labelsNodes,
-          )}
+          {t(menuItemName)}
         </div>
       ) : (
-        <Field
-          component={SelectField}
-          variant='outlined'
-          size='small'
-          name="labels"
-          fullWidth={true}
-          containerstyle={{ width: '50%' }}
-        >
-          <MenuItem key="activist" value="activist">
-            {t('activist')}
-          </MenuItem>
-          <MenuItem key="competitor" value="competitor">
-            {t('competitor')}
-          </MenuItem>
-        </Field>
+        <>
+          <Typography variant="h3" color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
+            {t('Labels')}
+          </Typography>
+          <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+            <Tooltip
+              title={t(
+                'Label',
+              )}
+            >
+              <Information fontSize="inherit" color="disabled" />
+            </Tooltip>
+          </div>
+          {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
+          <IconButton
+            color="default"
+            disabled={disableAdd}
+            aria-label="Label"
+            size="small"
+            onClick={handleOpenAdd}
+            style={{ float: 'left', margin: '-8px 0 0 -2px' }}
+          >
+            <Add fontSize="small" />
+          </IconButton>
+          <div className="clearfix" />
+          {labels ? (
+            <div className={classes.objectLabel}>
+              {map(
+                (label) => (
+                  <Chip
+                    key={label.id}
+                    variant="outlined"
+                    classes={{ root: classes.label }}
+                    label={label.name}
+                    style={{
+                      color: label.color,
+                      borderColor: label.color,
+                      backgroundColor: hexToRGB(label.color),
+                    }}
+                    onDelete={() => handleRemoveLabel(label.id, label.__typename)}
+                    deleteIcon={
+                      <CancelOutlined
+                        className={classes.deleteIcon}
+                        style={{
+                          color: label.color,
+                        }}
+                      />
+                    }
+                  />
+                ),
+                labelsNodes,
+              )}
+            </div>
+          ) : (
+            <Field
+              component={SelectField}
+              variant='outlined'
+              size='small'
+              name="labels"
+              fullWidth={true}
+              containerstyle={{ width: '50%' }}
+            >
+              <MenuItem key="activist" value="activist">
+                {t('activist')}
+              </MenuItem>
+              <MenuItem key="competitor" value="competitor">
+                {t('competitor')}
+              </MenuItem>
+            </Field>
+          )}
+        </>
       )}
+      {/* </Security> */}
       <Formik
         initialValues={{ new_labels: [] }}
         onSubmit={onSubmit}
@@ -376,6 +398,7 @@ const CyioCoreObjectLabelsView = (props) => {
 
 CyioCoreObjectLabelsView.propTypes = {
   classes: PropTypes.object.isRequired,
+  menuItemName: PropTypes.string,
   disableAdd: PropTypes.bool,
   typename: PropTypes.string,
   t: PropTypes.func,

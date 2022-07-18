@@ -11,6 +11,10 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import Accordion from '@material-ui/core/Accordion';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import rehypeRaw from 'rehype-raw';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LinkIcon from '@material-ui/icons/Link';
@@ -39,6 +43,7 @@ import Security, {
 } from '../../../../utils/Security';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import CyioExternalReferencePopover from './CyioExternalReferencePopover';
+import { toastGenericError } from "../../../../utils/bakedToast";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -62,6 +67,10 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
   buttonExpand: {
     position: 'absolute',
@@ -155,7 +164,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
         toId: externalReferenceEdge.id,
         fromId: this.props.cyioCoreObjectId,
         fieldName: this.props.fieldName,
-        from_type: externalReferenceEdge.entity_type,
+        from_type: this.props.typename,
         to_type: externalReferenceEdge.__typename,
       },
       onCompleted: (resp) => {
@@ -163,7 +172,10 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
         this.handleCloseDialog();
         this.props.refreshQuery();
       },
-      // onError: (err) => console.log('ExtRefRemoveDarkLightMutationError', err),
+      onError: (err) => {
+        toastGenericError('Failed to remove external reference');
+        console.error(err);
+      },
     });
     // commitMutation({
     //   mutation: cyioExternalReferenceMutationRelationDelete,
@@ -189,7 +201,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, externalReference,
+      t, classes, cyioCoreObjectId, externalReference, refreshQuery,
     } = this.props;
     const { expanded, displayExternalRefID } = this.state;
     // const externalReferencesEdges = externalReference || [];
@@ -216,9 +228,14 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                 </AccordionSummary>
                 <AccordionDetails>
                   <div >
-                    <Typography variant="subtitle1" gutterBottom={true}>
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      rehypePlugins={[rehypeRaw]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
                       {externalReference.description}
-                    </Typography>
+                    </Markdown>
                     <Typography variant="subtitle2" style={{ display: 'flex', color: '#F9B406' }} >
                       <LinkIcon fontSize="small" style={{ paddingRight: '5px' }} />
                       {externalReference.url && truncate(
@@ -234,6 +251,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                 {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
                 <CyioExternalReferencePopover
                   externalReference={externalReference}
+                  refreshQuery={refreshQuery}
                   externalReferenceId={externalReference.id}
                   handleRemove={this.handleOpenDialog.bind(
                     this,
@@ -256,20 +274,24 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
           onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
-            <DialogContentText>
+            <Typography>
               {t('Do you want to remove this external reference?')}
-            </DialogContentText>
+            </Typography>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDialog.bind(this)}
               disabled={this.state.removing}
+              variant='outlined'
+              size='small'
             >
               {t('Cancel')}
             </Button>
             <Button
               onClick={this.handleRemoval.bind(this)}
-              color="primary"
+              color="secondary"
+              size='small'
+              variant='contained'
               disabled={this.state.removing}
             >
               {t('Remove')}
@@ -309,6 +331,7 @@ CyioCoreObjectExternalReferencesLinesContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   externalReference: PropTypes.object,
   fieldName: PropTypes.string,
+  typename: PropTypes.string,
   refreshQuery: PropTypes.func,
   limit: PropTypes.number,
   classes: PropTypes.object,

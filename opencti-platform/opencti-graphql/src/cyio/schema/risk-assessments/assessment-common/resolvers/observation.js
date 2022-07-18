@@ -1,6 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
+import {selectObjectIriByIdQuery, selectObjectByIriQuery} from '../../../global/global-utils.js';
 import {
   selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
@@ -8,17 +9,25 @@ import {
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
 import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
+import {
   getReducer, 
   insertObservationQuery,
   selectObservationQuery,
   selectAllObservations,
   deleteObservationQuery,
   attachToObservationQuery,
+  selectAllEvidence,
   selectEvidenceByIriQuery,
   insertEvidencesQuery,
   deleteEvidenceByIriQuery,
+  selectAllOrigins,
   selectOriginByIriQuery,
+  selectAllSubjects,
   selectSubjectByIriQuery,
+  deleteSubjectByIriQuery,
   observationPredicateMap,
 } from './sparql-query.js';
 
@@ -44,8 +53,10 @@ const observationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("OBSERVATION");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let observationList ;
         if (args.orderedBy !== undefined ) {
           observationList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -73,6 +84,7 @@ const observationResolvers = {
             if (!filterValues(observation, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -85,14 +97,27 @@ const observationResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = observationList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < observationList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: observationList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -141,7 +166,25 @@ const observationResolvers = {
     }
   },
   Mutation: {
-    createObservation: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+    createObservation: async ( _, {poamId, resultId, input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
+      // Ensure either the ID of either a POAM or a Assessment Result is supplied
+      if (poamId === undefined && resultId === undefined) {
+        // Default to the POAM
+        poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      }
+
       // Setup to handle embedded objects to be created
       let evidence, origins, subjects;
       if (input.relevant_evidence !== undefined) {
@@ -158,14 +201,27 @@ const observationResolvers = {
       }
 
       // create the Observation
-      const {id, query} = insertObservationQuery(input);
+      const {iri, id, query} = insertObservationQuery(input);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
         queryId: "Create Observation"
       });
 
-      //add the Observation to parent
+      // attach the Observation to the supplied POAM
+      if (poamId !== undefined && poamId !== null) {
+        const attachQuery = attachToPOAMQuery(poamId, 'observations', iri );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Add Observation to POAM",
+            sparqlQuery: attachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
 
       // create any evidence supplied and attach them to the Observation
       if (evidence !== undefined && evidence !== null){
@@ -225,7 +281,13 @@ const observationResolvers = {
       const reducer = getReducer("OBSERVATION");
       return reducer(response[0]);
     },
-    deleteObservation: async ( _, {id}, {dbName, dataSources} ) => {
+    deleteObservation: async ( _, {poamId, _resultId, id}, {dbName, dataSources} ) => {
+      // Ensure either the ID of either a POAM or a Assessment Result is supplied
+      if (poamId === undefined && resultId === undefined) {
+        // Default to the POAM
+        poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      }
+
       // check that the observation exists
       const sparqlQuery = selectObservationQuery(id, null);
       let response;
@@ -295,7 +357,20 @@ const observationResolvers = {
         }
       }
 
-      // Detach the Observation from the parent
+      // Detach the Observation from the supplied POAM
+      if (poamId !== undefined && poamId !== null) {
+        const attachQuery = detachFromPOAMQuery(poamId, 'observations', observation.iri );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Detaching Observation from POAM",
+            sparqlQuery: attachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
 
       // Delete the Observation itself
       const query = deleteObservationQuery(id);
@@ -312,6 +387,26 @@ const observationResolvers = {
       return id;
     },
     editObservation: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectObservationQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Observation",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Observation-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Observation",
@@ -379,8 +474,8 @@ const observationResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -421,8 +516,8 @@ const observationResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -464,129 +559,108 @@ const observationResolvers = {
     },
     origins:async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
-      let iriArray = parent.origins_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("ORIGIN");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Origin')) {
-            continue;
-          }
-          const sparqlQuery = selectOriginByIriQuery(iri, selectMap.getNode("origins"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Origin",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("ORIGIN");
+      let sparqlQuery = selectAllOrigins(selectMap.getNode('origins'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Origins",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let origin of response) {
+        results.push(reducer(origin));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
     subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
-      let iriArray = parent.subjects_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("SUBJECT");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Subject')) {
-            continue;
-          }
-          const sparqlQuery = selectSubjectByIriQuery(iri, selectMap.getNode("subjects"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Subject",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("SUBJECT");
+      let sparqlQuery = selectAllSubjects(selectMap.getNode('subjects'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Subjects",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let subject of response) {
+        results.push(reducer(subject));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
     relevant_evidence: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.relevant_evidence_iri === undefined) return [];
-      let iriArray = parent.relevant_evidence_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("EVIDENCE");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Evidence')) {
-            continue;
-          }
-          const sparqlQuery = selectEvidenceByIriQuery(iri, selectMap.getNode("relevant_evidence"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Evidence",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("EVIDENCE");
+      let sparqlQuery = selectAllEvidence(selectMap.getNode('evidence'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Relevant Evidence",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let evidence of response) {
+        results.push(reducer(evidence));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
   }
 }

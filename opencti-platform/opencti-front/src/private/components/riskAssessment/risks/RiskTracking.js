@@ -22,6 +22,7 @@ import RiskTrackingLines, {
   RiskTrackingLinesQuery,
 } from './RiskTrackingLines';
 import TopMenuRisk from '../../nav/TopMenuRisk';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   paper: {
@@ -63,31 +64,36 @@ class RiskTracking extends Component {
       riskId,
       history,
     } = this.props;
-    console.log('RiskTrackingItems', risk);
     return (
       <>
         <CyioDomainObjectHeader
-          cyioDomainObject={risk}
-          history={history}
           disabled={true}
+          name={risk.name}
+          history={history}
+          cyioDomainObject={risk}
           PopoverComponent={<RiskPopover />}
-          // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          goBack='/activities/risk assessment/risks'
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-          // OperationsComponent={<RiskDeletion />}
+        // OperationsComponent={<RiskDeletion />}
+        // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
-        <TopMenuRisk risk={risk.name}/>
+        <TopMenuRisk risk={risk.name} />
         <QR
           environment={QueryRendererDarkLight}
           query={RiskTrackingLinesQuery}
           variables={{ id: riskId }}
-          render={({ props }) => {
-            console.log('RiskTrackingProps', props);
+          render={({ props, retry, error }) => {
+            if (error) {
+              console.error(error);
+              return toastGenericError('Failed to get Tracking Data');
+            }
             if (props) {
               return (
                 <RiskTrackingLines
                   history={history}
                   riskId={riskId}
                   data={props.risk}
+                  refreshQuery={retry}
                 />
               );
             }

@@ -24,6 +24,7 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { RelayProfiler } from 'relay-runtime';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -36,7 +37,6 @@ import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objec
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import { RelayProfiler } from 'relay-runtime';
 
 const styles = (theme) => ({
   container: {
@@ -123,6 +123,7 @@ class NetworkEditionContainer extends Component {
       open: false,
       onSubmit: false,
       displayCancel: false,
+      totalInitial: {},
     };
   }
 
@@ -131,30 +132,43 @@ class NetworkEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const network_ipv4_address_range= {
+    const filteredValue = {};
+    const { totalInitial } = this.state;
+    const network_ipv4_address_range = {
       starting_ip_address: {
-        ip_address_value: values?.starting_address
+        ip_address_value: values?.starting_address,
       },
       ending_ip_address: {
-        ip_address_value: values?.ending_address
-      }
-    }
+        ip_address_value: values?.ending_address,
+      },
+    };
     const adaptedValues = R.evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
       },
       values,
     );
+    Object.keys(totalInitial).forEach((key, j) => {
+      if (Array.isArray(adaptedValues[key])) {
+        if (adaptedValues[key].some((value, i) => value !== totalInitial[key][i])) {
+          filteredValue[key] = adaptedValues[key];
+        }
+      }
+      if (!Array.isArray(adaptedValues[key]) && totalInitial[key] !== adaptedValues[key]) {
+        filteredValue[key] = adaptedValues[key];
+      }
+    });
     const finalValues = R.pipe(
+      R.dissoc('id'),
       R.dissoc('starting_address'),
       R.dissoc('ending_address'),
       R.assoc('network_ipv4_address_range', network_ipv4_address_range),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
-        'value': adaptFieldValue(n[1]),
+        'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
-    )(adaptedValues);
+    )(filteredValue);
     CM(environmentDarkLight, {
       mutation: networkEditionMutation,
       variables: {
@@ -308,7 +322,7 @@ class NetworkEditionContainer extends Component {
                       variant="contained"
                       color="primary"
                       startIcon={<CheckCircleOutline />}
-                      onClick={submitForm}
+                      onClick={() => this.setState({ totalInitial: initialValues }, submitForm)}
                       disabled={isSubmitting}
                       classes={{ root: classes.iconButton }}
                     >
@@ -464,14 +478,6 @@ const NetworkEditionFragment = createFragmentContainer(
           # created
           # modified
           entity_type
-          labels {
-            __typename
-            id
-            name
-            color
-            entity_type
-            description
-          }
           abstract
           content
           authors

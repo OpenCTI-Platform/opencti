@@ -17,6 +17,7 @@ import {
   attachToRiskQuery,
   detachFromRiskQuery,
   insertSubjectsQuery,
+  selectAllSubjects,
   selectSubjectByIriQuery,
   deleteSubjectByIriQuery,
   mitigatingFactorPredicateMap,
@@ -43,8 +44,10 @@ const mitigatingFactorResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("MITIGATING-FACTOR");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let factorList ;
         if (args.orderedBy !== undefined ) {
           factorList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -72,6 +75,7 @@ const mitigatingFactorResolvers = {
             if (!filterValues(factor, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -84,14 +88,27 @@ const mitigatingFactorResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = factorList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < factorList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: factorList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -287,22 +304,26 @@ const mitigatingFactorResolvers = {
       return id;
     },
     editMitigatingFactor: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the MitigatingFactor exists
-      const sparqlQuery = selectMitigatingFactorQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select MitigatingFactor",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectMitigatingFactorQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Mitigating Factor",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor",
@@ -369,8 +390,8 @@ const mitigatingFactorResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -411,8 +432,8 @@ const mitigatingFactorResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -454,45 +475,38 @@ const mitigatingFactorResolvers = {
     },
     subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
-      let iriArray = parent.subjects_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("SUBJECT");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Subject')) {
-            continue;
-          }
-          const sparqlQuery = selectSubjectByIriQuery(iri, selectMap.getNode("subjects"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Subject",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("SUBJECT");
+      let sparqlQuery = selectAllSubjects(selectMap.getNode('subjects'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Subjects",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let subject of response) {
+        results.push(reducer(subject));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
   }
 }

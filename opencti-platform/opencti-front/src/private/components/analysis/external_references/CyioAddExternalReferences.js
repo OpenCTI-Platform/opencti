@@ -95,6 +95,9 @@ const styles = (theme) => ({
     padding: '24px',
     background: theme.palette.background.paper,
   },
+  menuItemName: {
+    padding: '15px 10px',
+  },
 });
 
 const sharedUpdater = (store, cyioCoreObjectId, newEdge) => {
@@ -114,7 +117,9 @@ class CyioAddExternalReferences extends Component {
       search: '',
       expanded: false,
       totalExternalReference: [],
+      removeIcon: false,
     };
+    this.timeout = null;
   }
 
   toggleExternalReference(createExternalRef) {
@@ -136,7 +141,9 @@ class CyioAddExternalReferences extends Component {
           onCompleted: (response) => {
             this.handleClose();
             this.setState({ totalExternalReference: [] });
-            this.props.refreshQuery();
+            if (this.props.refreshQuery) {
+              this.props.refreshQuery();
+            }
           },
           // updater: (store) => {
           //   const payload = store
@@ -173,8 +180,10 @@ class CyioAddExternalReferences extends Component {
         //   sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
         // },
         onCompleted: (response) => {
-          this.setState({ totalExternalReference : [] });
-          this.props.refreshQuery();
+          this.setState({ totalExternalReference: [] });
+          if (this.props.refreshQuery) {
+            this.props.refreshQuery();
+          }
         },
       });
     }
@@ -202,7 +211,14 @@ class CyioAddExternalReferences extends Component {
 
   handleSearch(event) {
     const keyword = event.target.value;
-    this.setState({ search: keyword, expanded: keyword ? true : false });
+    if (this.timeout) clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => {
+      if (keyword.length === 0) {
+        this.setState({ expanded: false });
+      } else {
+        this.setState({ search: keyword, expanded: true });
+      }
+    }, 1500);
   }
 
   render() {
@@ -210,24 +226,39 @@ class CyioAddExternalReferences extends Component {
       t,
       classes,
       disableAdd,
+      menuItemName,
       cyioCoreObjectOrCyioCoreRelationshipId,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
       typename,
+      removeIcon,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
     return (
       <div>
-        <IconButton
-          color="default"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
-          disabled={disableAdd}
-        >
-          <Add fontSize="small" />
-        </IconButton>
+        {menuItemName ? (
+          <div
+            className={classes.menuItemName}
+            onClick={this.handleOpen.bind(this)}
+          >
+            {t(menuItemName)}
+          </div>
+        ) : (
+          <IconButton
+            color="default"
+            aria-label="Add"
+            onClick={this.handleOpen.bind(this)}
+            classes={{ root: classes.createButton }}
+            disabled={disableAdd}
+          >
+            {removeIcon ? (
+              <></>
+            ) : (
+              <Add fontSize="small" />
+            )}
+          </IconButton>
+        )}
         <div classes={{ root: classes.dialogRoot }}>
           <Dialog
             maxWidth='md'
@@ -250,7 +281,7 @@ class CyioAddExternalReferences extends Component {
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <TextField
                   style={{ width: 495 }}
-                  onChange={this.handleSearch.bind(this)}
+                  onChange={(event) => this.handleSearch(event)}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end" >
@@ -303,45 +334,11 @@ class CyioAddExternalReferences extends Component {
                           handleDataCollect={this.handleDataCollect.bind(this)}
                           paginationOptions={paginationOptions}
                           open={this.state.open}
-                          search={this.state.search}
+                          search={this.state.search.toLowerCase()}
                         />
                       );
                     }
-                    return (
-                      <List>
-                        {Array.from(Array(20), (e, i) => (
-                          <ListItem key={i} divider={true} button={false}>
-                            <ListItemIcon>
-                              <Skeleton
-                                animation="wave"
-                                variant="circle"
-                                width={30}
-                                height={30}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <Skeleton
-                                  animation="wave"
-                                  variant="rect"
-                                  width="90%"
-                                  height={15}
-                                  style={{ marginBottom: 10 }}
-                                />
-                              }
-                              secondary={
-                                <Skeleton
-                                  animation="wave"
-                                  variant="rect"
-                                  width="90%"
-                                  height={15}
-                                />
-                              }
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    );
+                    return <></>;
                   }}
                 />
               </div>
@@ -357,11 +354,13 @@ CyioAddExternalReferences.propTypes = {
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
   refreshQuery: PropTypes.func,
+  menuItemName: PropTypes.string,
   fieldName: PropTypes.string,
   disableAdd: PropTypes.bool,
   typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  removeIcon: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(CyioAddExternalReferences);

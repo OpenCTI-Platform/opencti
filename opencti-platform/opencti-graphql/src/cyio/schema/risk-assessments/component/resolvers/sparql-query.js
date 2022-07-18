@@ -1,3 +1,4 @@
+import { UserInputError } from "apollo-server-express";
 import {
   optionalizePredicate, 
   parameterizePredicate, 
@@ -22,13 +23,33 @@ export const componentReducer = (item) => {
   if ( item.object_type === undefined ) {
     item.object_type = 'component';
   }
+  // TODO: WORKAROUND missing component type 
+  if (item.component_type === undefined) {
+    switch(item.asset_type) {
+      case 'software':
+      case 'operating-system':
+      case 'application-software':
+        item.component_type = 'software';
+        break;
+      case 'network':
+        item.component_type = 'network';
+        break;
+      default:
+        console.error(`[CYIO] UNKNOWN-COMPONENT Unknown component type '${item.component_type}' for object ${item.iri}`);        
+        console.error(`[CYIO] UNKNOWN-TYPE Unknown asset type '${item.asset_type}' for object ${item.iri}`);        
+        if (item.iri.includes('Software')) item.component_type = 'software';
+        if (item.iri.includes('Network')) item.component_type = 'network';
+        if (item.component_type === undefined) return null;
+    }
+  }
+  // END WORKAROUND
 
   return {
     id: item.id,
     standard_id: item.id,
     entity_type: 'component',
     ...(item.iri && {parent_iri: item.iri}),
-    ...(item.object_type && {component_type: item.object_type}),
+    ...(item.object_type && {object_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
@@ -44,6 +65,7 @@ export const componentReducer = (item) => {
     ...(item.protocols && {protocols_iri: item.protocols}),
     ...(item.control_implementations && {control_implementations_iri: item.control_implementations}),
     ...(item.responsible_roles && {responsible_roles_iri: item.responsible_roles}),
+    ...(item.props && {props: item.props}),
     // Asset
     ...(item.asset_id && {asset_id: item.asset_id}),
     // ItAsset
@@ -84,7 +106,15 @@ export const insertComponentQuery = (propValues) => {
     ...(propValues.methods && {"methods": propValues.methods}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/common#Component-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => componentPredicateMap.hasOwnProperty(propPair[0]))
@@ -112,6 +142,9 @@ export const selectComponentQuery = (id, select) => {
 export const selectComponentByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(componentPredicateMap);
+  if (!select.includes('component_type')) select.push('component_type');
+  if (!select.includes('asset_type')) select.push('asset_type');
+
   const { selectionClause, predicates } = buildSelectVariables(componentPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -123,25 +156,67 @@ export const selectComponentByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllComponents = (select, filters) => {
+export const selectAllComponents = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(componentPredicateMap);
+  if (select.includes('props')) select = Object.keys(componentPredicateMap);
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('component_type')) select.push('component_type');
+  if (!select.includes('asset_type')) select.push('asset_type');
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined) {
+    // add value of filter's key to cause special predicates to be included
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(componentPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'assessment-asset') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#components>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  } else {
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+                <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/common#Component> . 
     ${predicates}
+    ${constraintClause}
   }
-  `
+  `;
 }
 export const deleteComponentQuery = (id) => {
   const iri = `http://csrc.nist.gov/ns/oscal/common#Component-${id}`;
@@ -172,6 +247,7 @@ export const attachToComponentQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -193,6 +269,7 @@ export const detachFromComponentQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -248,7 +325,7 @@ export const componentPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   component_type: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#componenet_type>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#component_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "component_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
@@ -397,4 +474,72 @@ export const componentPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "validation_reference")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
+}
+
+// Function to convert an Asset to a Component
+export function convertAssetToComponent(asset) {
+  let propList = [];
+
+  // Convert the each key/value pair of asset into an individual OSCAL Property objects
+  for (let [key, value] of Object.entries(asset)) {
+    let namespace = 'http://csrc.nist.gov/ns/oscal';
+    switch(key) {
+      case 'iri':
+      case 'id':
+      case 'object_type':
+      case 'entity_type':
+      case 'standard_id':
+      case 'created':
+      case 'modified':
+      case 'links':
+      case 'labels':
+      case 'remarks':
+      case 'component_type':
+      case 'name':
+      case 'description':
+      case 'purpose':
+      case 'operational_status':
+      case 'links':
+      case 'responsible_roles':
+      case 'protocols':
+        continue;
+      case 'cpe_identifier':
+        key = 'software-identifier';
+        break;
+      default:
+        break;
+    }
+
+    if (value === null || value === 'null') continue;
+    // replace '_' with'-'
+    if (key.includes('_')) key = key.replace(/_/g, '-');
+    // generate id based on the name and the namespace
+    let id_material = { "name":`${key}`,"ns":`${namespace}`,"value": (Array.isArray(value) ? value.toString() : `${value}`)};
+    let id = generateId(id_material, OSCAL_NS);
+    let prop = { 
+      id: `${id}`,
+      entity_type: 'property',
+      prop_name: `${key}`,
+      ns: `${namespace}`,
+      value: (Array.isArray(value) ? value.toString() : `${value}`),
+      // class: `${},
+    }
+    propList.push(prop)
+  }
+
+  return {
+    id: asset.id,
+    entity_type: 'component',
+    ...(asset.iri && {iri: asset.iri}),
+    ...(asset.component_type && {component_type: asset.component_type}),
+    ...(asset.name && {name: asset.name}),
+    ...(asset.description && {description: asset.description}),
+    ...(asset.purpose && {purpose: asset.purpose}),
+    props: propList,
+    ...(asset.operational_status && {operational_status: asset.operational_status}),
+    ...(asset.links && {links_iri: asset.links}),
+    ...(asset.responsible_roles && {responsible_roles_iri: asset.responsible_roles}),
+    ...(asset.protocols && {protocols_iri: asset.protocols}),
+    ...(asset.remarks && {remarks_iri: asset.remarks}),
+  };
 }

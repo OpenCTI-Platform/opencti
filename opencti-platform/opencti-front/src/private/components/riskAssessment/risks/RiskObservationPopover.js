@@ -3,45 +3,28 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-// import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
 import Typography from '@material-ui/core/Typography';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
-// import ManageSearchIcon from '@material-ui/icons/m';
 import AccessTimeIcon from '@material-ui/icons/AccessTime';
 import LaunchIcon from '@material-ui/icons/Launch';
 import FindInPageIcon from '@material-ui/icons/FindInPage';
 import LayersIcon from '@material-ui/icons/Layers';
 import MapIcon from '@material-ui/icons/Map';
 import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
-import { MoreVertOutlined } from '@material-ui/icons';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-// import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    backgroundColor: theme.palette.background.paper,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '15px 20px',
   },
   menuItem: {
     padding: '15px 0',
@@ -55,6 +38,12 @@ const styles = (theme) => ({
   },
   buttonPopover: {
     textTransform: 'capitalize',
+  },
+  dialogContent: {
+    overflowY: 'hidden',
+    '@media (max-height: 1000px)': {
+      overflowY: 'scroll',
+    },
   },
   popoverDialog: {
     fontSize: '18px',
@@ -71,6 +60,15 @@ const styles = (theme) => ({
     background: '#075AD333',
     marginBottom: '5px',
     border: '1px solid #075AD3',
+  },
+  componentScroll: {
+    height: '80px',
+    overflowY: 'scroll',
+  },
+  observationContainer: {
+    color: theme.palette.primary.text,
+    display: 'flex',
+    alignItems: 'center',
   },
 });
 
@@ -90,241 +88,206 @@ class RiskObservationPopover extends Component {
     };
   }
 
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
-
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
-
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
   render() {
     const {
       classes,
       t,
       fd,
       data,
+      displayUpdate,
+      handleCloseUpdate,
       handleRemove,
     } = this.props;
+    const subjectTypes = R.pipe(
+      R.pathOr([], ['subjects']),
+      // R.mergeAll,
+    )(data);
     return (
       <>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 1 }}
-        >
-          <MoreVertOutlined />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
-          <MenuItem
-            className={classes.menuItem}
-            onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Details')}
-          </MenuItem>
-        </Menu>
-        <Dialog
-          open={this.state.displayUpdate}
-          keepMounted={true}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText style={{ color: 'white' }}>
-              {data.name && t(data.name)}
-            </DialogContentText>
-            <DialogContentText style={{ color: 'white' }}>
-              {data.description && t(data.description)}
-            </DialogContentText>
-            <DialogContentText>
-              <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
-                <Grid item={true} xs={3}>
-                  <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
-                    <FindInPageIcon fontSize="small" style={{ marginRight: '8px' }} />How
-                  </Typography>
+        <DialogTitle style={{ color: 'white' }}>
+          {data.name && t(data.name)}
+        </DialogTitle>
+        <DialogContent classes={{ root: classes.dialogContent }}>
+          <DialogContentText>
+            <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
+              <Grid item={true} xs={3}>
+                <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
+                  <FindInPageIcon fontSize="small" style={{ marginRight: '8px' }} />How
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={9}>
+                <DialogContentText>
+                  {t('Observation Sources')}
+                </DialogContentText>
+                <div className={classes.componentScroll}>
+                  {
+                    data.origins.map((value, j) => value.origin_actors.map((s, i) => (
+                      <Typography key={i} style={{ alignItems: 'center', display: 'flex' }} color="primary">
+                        <LaunchIcon fontSize='small' /> {t(s.actor_ref.name)}
+                        <br />
+                      </Typography>
+                    )))
+                  }
+                </div>
+                <Grid style={{ marginTop: '20px' }} spacing={3} container={true}>
+                  <Grid item={true} xs={6}>
+                    <DialogContentText>
+                      {t('Methods')}
+                    </DialogContentText>
+                    {data.methods.map((value, i) => (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        key={i}
+                        style={{ margin: '1px' }}
+                        className={classes.statusButton}
+                      >
+                        {value}
+                      </Button>
+                    ))}
+                    <Typography style={{ marginTop: '5px', textTransform: 'inherit' }} variant="h4">
+                      {t('A manual or automated test was performed.')}
+                    </Typography>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <DialogContentText>
+                      {t('Type')}
+                    </DialogContentText>
+                    {data.observation_types.map((value, i) => (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        key={i}
+                        style={{ margin: '1px' }}
+                        className={classes.statusButton}
+                      >
+                        {value}
+                      </Button>
+                    ))}
+                    <Typography style={{ marginTop: '5px', textTransform: 'inherit' }} variant="h4">
+                      {t(' An assessment finding made by a source.')}
+                    </Typography>
+                  </Grid>
                 </Grid>
-                <Grid item={true} xs={9}>
-                  <DialogContentText>
-                    {t('Source Of Observation')}
-                  </DialogContentText>
-                  <Typography style={{ alignItems: 'center', display: 'flex' }} color="primary">
-                    {data.origins.map((origin, i) => {
-                      const originActor = R.pipe(
-                        R.pathOr([], ['origin_actors']),
-                        R.mergeAll,
-                      )(origin);
+              </Grid>
+            </Grid>
+            <Divider />
+          </DialogContentText>
+
+          <DialogContentText>
+            <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
+              <Grid item={true} xs={3}>
+                <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
+                  <AccessTimeIcon fontSize="small" style={{ marginRight: '8px' }} /> When
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={9}>
+                <Grid container={true}>
+                  <Grid item={true} xs={6}>
+                    <DialogContentText>
+                      {t('Collected')}
+                    </DialogContentText>
+                    <Typography variang="h2" style={{ color: 'white' }}>
+                      {data.collected && fd(data.collected)}
+                    </Typography>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <DialogContentText>
+                      {t('Expiration Date')}
+                    </DialogContentText>
+                    <Typography variang="h2" style={{ color: 'white' }}>
+                      {data.expires && fd(data.expires)}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Divider />
+          </DialogContentText>
+
+          <DialogContentText>
+            <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
+              <Grid item={true} xs={3}>
+                <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
+                  <MapIcon fontSize="small" style={{ marginRight: '8px' }} />Where
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={9}>
+                <DialogContentText>
+                  {t('Observation Target(s)')}
+                </DialogContentText>
+                <div className={classes.componentScroll}>
+                  {data.subjects && data.subjects.map((subject, i) => {
+                    if (subject && subject.subject_context === 'target') {
                       return (
-                        <>
-                          <LaunchIcon key={i} fontSize='small' /> {t(originActor.actor_ref.name)}
-                        </>
+                        <div className={classes.observationContainer}>
+                          <ItemIcon
+                            key={i}
+                            type={subject.subject_type}
+                            style={{ height: '26px', padding: '0 0 10px' }}
+                          />
+                          <Typography
+                            key={i} variant="h2"
+                            color="primary"
+                            style={{ margin: '0 0 0 10px' }}
+                          >
+                            {subject.subject_ref && t(subject.subject_ref.name)}
+                          </Typography>
+                        </div>
                       );
-                    })}
-                  </Typography>
-                  <Grid style={{ marginTop: '20px' }} spacing={3} container={true}>
-                    <Grid item={true} xs={6}>
-                      <DialogContentText>
-                        {t('Methods')}
-                      </DialogContentText>
-                      {data.methods.map((value, i) => (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          key={i}
-                          style={{ margin: '1px' }}
-                          className={classes.statusButton}
-                        >
-                          {value}
-                        </Button>
-                      ))}
-                      <Typography style={{ marginTop: '5px', textTransform: 'inherit' }} variant="h4">
-                        {t('A manual or automated test was performed.')}
-                      </Typography>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <DialogContentText>
-                        {t('Type')}
-                      </DialogContentText>
-                      {data.observation_types.map((value, i) => (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          key={i}
-                          style={{ margin: '1px' }}
-                          className={classes.statusButton}
-                        >
-                          {value}
-                        </Button>
-                      ))}
-                      <Typography style={{ marginTop: '5px', textTransform: 'inherit' }} variant="h4">
-                        {t(' An assessment finding made by a source.')}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </Grid>
+                    }
+                    return <></>;
+                  })}
+                </div>
               </Grid>
-              <Divider />
-            </DialogContentText>
+            </Grid>
+            <Divider />
+          </DialogContentText>
 
-            <DialogContentText>
-              <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
-                <Grid item={true} xs={3}>
-                  <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
-                    <AccessTimeIcon fontSize="small" style={{ marginRight: '8px' }} /> When
-                  </Typography>
-                </Grid>
-                <Grid item={true} xs={9}>
-                  <Grid container={true}>
-                    <Grid item={true} xs={6}>
-                      <DialogContentText>
-                        {t('Collected')}
-                      </DialogContentText>
-                      <Typography variang="h2" style={{ color: 'white' }}>
-                        {data.collected && fd(data.collected)}
-                      </Typography>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <DialogContentText>
-                        {t('Expiration Date')}
-                      </DialogContentText>
-                      <Typography variang="h2" style={{ color: 'white' }}>
-                        {data.expires && fd(data.expires)}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </Grid>
+          <DialogContentText>
+            <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
+              <Grid item={true} xs={3}>
+                <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
+                  <LayersIcon fontSize="small" style={{ marginRight: '8px' }} />What
+                </Typography>
               </Grid>
-              <Divider />
-            </DialogContentText>
-
-            <DialogContentText>
-              <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
-                <Grid item={true} xs={3}>
-                  <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
-                    <MapIcon fontSize="small" style={{ marginRight: '8px' }} />Where
-                  </Typography>
-                </Grid>
-                <Grid item={true} xs={9}>
-                  <DialogContentText>
-                    {t('Observation Target(s)')}
-                  </DialogContentText>
-                  {/* {data?.subjects?.map((subject, i) => {
-                    if (subject?.subject_context === 'target') {
+              <Grid item={true} xs={9}>
+                <DialogContentText>
+                  {t('Component(s)')}
+                </DialogContentText>
+                <div className={classes.componentScroll}>
+                  {data.subjects && data.subjects.map((subject, i) => {
+                    if (subject && subject.subject_context === 'secondary_target') {
                       return (
                         <Typography key={i} variant="h2" color="primary">
-                          {subject?.name}
+                          {subject.subject_ref && t(subject.subject_ref.name)}
                         </Typography>
                       );
                     }
                     return <></>;
-                  })} */}
-                </Grid>
+                  })}
+                </div>
               </Grid>
-              <Divider />
-            </DialogContentText>
-
-            <DialogContentText>
-              <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
-                <Grid item={true} xs={3}>
-                  <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
-                    <LayersIcon fontSize="small" style={{ marginRight: '8px' }} />What
-                  </Typography>
-                </Grid>
-                <Grid item={true} xs={9}>
-                  <DialogContentText>
-                    {t('Component(s)')}
-                  </DialogContentText>
-                  {/* {data.subjects.map((subject, i) => {
-                    if (subject.subject_context === 'secondary_target') {
-                      return (
-                        <Typography key={i} variant="h2" color="primary">
-                          {t(subject?.name)}
-                        </Typography>
-                      );
-                    }
-                    return <></>;
-                  })} */}
-                </Grid>
-              </Grid>
-              <Divider />
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions style={{ marginLeft: '15px', display: 'flex', justifyContent: 'flex-start' }}>
-            <Button
-              onClick={this.handleCloseUpdate.bind(this)}
-              variant="outlined"
-            >
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+            </Grid>
+            <Divider />
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions style={{ marginLeft: '15px', display: 'flex', justifyContent: 'flex-start' }}>
+          <Button
+            onClick={() => handleCloseUpdate()}
+            variant="outlined"
+          >
+            {t('Close')}
+          </Button>
+        </DialogActions>
       </>
     );
   }
 }
 
 RiskObservationPopover.propTypes = {
+  displayUpdate: PropTypes.bool,
+  handleCloseUpdate: PropTypes.func,
   data: PropTypes.object,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -332,6 +295,14 @@ RiskObservationPopover.propTypes = {
   fd: PropTypes.func,
   handleRemove: PropTypes.func,
 };
+
+export const riskObservationPopoverQuery = graphql`
+  query RiskObservationPopoverQuery($id: ID!) {
+    observation(id: $id){
+      ...RiskObservationPopover_risk
+    }
+  }
+`;
 
 export const RiskObservationPopoverComponent = createFragmentContainer(RiskObservationPopover, {
   data: graphql`

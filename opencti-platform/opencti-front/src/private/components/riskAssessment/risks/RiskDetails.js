@@ -80,9 +80,6 @@ class RiskDetailsComponent extends Component {
     } = this.props;
     const riskDetectionSource = R.pipe(
       R.path(['origins']),
-      R.mergeAll,
-      R.path(['origin_actors']),
-      R.mergeAll,
     )(risk);
     return (
       <div style={{ height: '500px' }}>
@@ -104,7 +101,7 @@ class RiskDetailsComponent extends Component {
                 <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                   <Tooltip
                     title={t(
-                      'Statement',
+                      'Identifies a summary of impact for how the risk affects the system.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -136,7 +133,7 @@ class RiskDetailsComponent extends Component {
               <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
                 <Tooltip
                   title={t(
-                    'Risk Status',
+                    'Identifies the status of the associated risk.',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -163,7 +160,7 @@ class RiskDetailsComponent extends Component {
               <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
                 <Tooltip
                   title={t(
-                    'Deadline',
+                    'Identifies the date/time by which the risk must be resolved.',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -191,7 +188,12 @@ class RiskDetailsComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {t(riskDetectionSource.actor_ref.name)}
+              {riskDetectionSource
+              && riskDetectionSource.map((value) => value.origin_actors.map((actor, i) => (
+                <Typography key={i}>
+                  {actor.actor_ref.name && t(actor.actor_ref.name)}
+                </Typography>
+              )))}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -208,7 +210,7 @@ class RiskDetailsComponent extends Component {
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                   <Tooltip
                     title={t(
-                      'False Positive',
+                      'Identifies that the risk has been confirmed to be a false positive.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -235,7 +237,7 @@ class RiskDetailsComponent extends Component {
                 <div style={{ float: 'left', margin: '22px 0 0 5px' }}>
                   <Tooltip
                     title={t(
-                      'Risk Adjusted',
+                      'Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -291,7 +293,7 @@ class RiskDetailsComponent extends Component {
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                   <Tooltip
                     title={t(
-                      'Vendor Dependency',
+                      'Identifies that a vendor resolution is pending, but not yet available.',
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />

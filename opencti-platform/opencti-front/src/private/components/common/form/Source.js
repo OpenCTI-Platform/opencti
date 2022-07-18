@@ -1,21 +1,13 @@
-import React, { Component, useState } from 'react';
+import React, { Component } from 'react';
 import * as R from 'ramda';
 import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import graphql from 'babel-plugin-relay/macro';
-import Typography from '@material-ui/core/Typography';
-import CancelIcon from '@material-ui/icons/Cancel';
-import IconButton from '@material-ui/core/IconButton';
-import Chip from '@material-ui/core/Chip';
-import AddIcon from '@material-ui/icons/Add';
 import Tooltip from '@material-ui/core/Tooltip';
-import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
-import { SubscriptionFocus } from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   chip: {
@@ -46,11 +38,37 @@ const SourceActorTypeQuery = graphql`
   }
 `;
 
-const SourceOscalPartiesQuery = graphql`
-  query SourceOscalPartiesQuery {
-    oscalParties {
+const componentFilter = [];
+
+componentFilter.push({ key: 'asset_type', values: 'software' });
+
+const ComponentListQuery = graphql`
+  query SourceComponentListQuery{
+    componentList(filters: [
+    {
+      key: component_type,
+      values: "software"
+    }
+    ]){
       edges {
         node {
+          id
+          name
+          description
+        }
+        
+      }
+      
+    }
+  }
+`;
+
+const AssessmentPlatformQuery = graphql`
+  query SourceAssessmentPlatformQuery {
+    assessmentPlatforms {
+      edges {
+        node {
+          id
           name
           description
         }
@@ -59,12 +77,28 @@ const SourceOscalPartiesQuery = graphql`
   }
 `;
 
+const OscalPartiesQuery = graphql`
+  query SourceOscalPartiesQuery {
+    oscalParties {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
+  }
+`;
 class Source extends Component {
   constructor(props) {
     super(props);
     this.state = {
       actorTypeList: [],
       oscalPartiesList: [],
+      actorReferences: [],
+      selectedWeakCount: null,
+      actor_type: null,
     };
   }
 
@@ -72,13 +106,15 @@ class Source extends Component {
     fetchDarklightQuery(SourceActorTypeQuery)
       .toPromise()
       .then((data) => {
-        const actorTypeEntities = R.pipe(
-          R.pathOr([], ['__type', 'enumValues']),
-          R.map((n) => ({
-            label: n.description,
-            value: n.name,
-          })),
-        )(data);
+        const actorTypeEntities = R.pathOr([], ['__type', 'enumValues']).length > 0
+          ? R.pipe(
+            R.pathOr([], ['__type', 'enumValues']),
+            R.map((n) => ({
+              label: n.description,
+              value: n.name,
+            })),
+          )(data)
+          : [];
         this.setState({
           actorTypeList: {
             ...this.state.entities,
@@ -86,37 +122,69 @@ class Source extends Component {
           },
         });
       });
-    fetchDarklightQuery(SourceOscalPartiesQuery)
-      .toPromise()
-      .then((data) => {
-        const oscalPartiesEntities = R.pipe(
-          R.pathOr([], ['oscalParties', 'edges']),
-          R.map((n) => ({
-            label: n.node.description,
-            value: n.node.name,
-          })),
-        )(data);
-        this.setState({
-          oscalPartiesList: {
-            ...this.state.entities,
-            oscalPartiesEntities,
-          },
-        });
-      });
+    this.handleThisChange('', this.props.values.actor_type);
   }
+
+  handleThisChange = (name, value) => {
+    let queryType;
+    let queryInfo;
+    let filterBy = '';
+
+    if (value) {
+      switch (value) {
+        case 'tool':
+          queryType = ComponentListQuery;
+          queryInfo = 'componentList';
+          filterBy = {
+            filters: [
+              {
+                key: 'component_type',
+                values: 'software',
+              },
+            ],
+          };
+          break;
+        case 'assessment_platform':
+          queryType = AssessmentPlatformQuery;
+          queryInfo = 'assessmentPlatforms';
+          break;
+        case 'party':
+          queryType = OscalPartiesQuery;
+          queryInfo = 'oscalParties';
+          break;
+        default:
+        //
+      }
+      fetchDarklightQuery(queryType)
+        .toPromise()
+        .then((data) => {
+          const oscalEntities = R.pathOr([], [queryInfo, 'edges'], data).length > 0
+            ? R.pipe(
+              R.pathOr({}, [queryInfo, 'edges']),
+              R.map((n) => ({
+                key: n.node.id,
+                label: n.node.name,
+                value: n.node.id,
+              })),
+            )(data)
+            : [];
+          this.setState({
+            actorReferences: {
+              ...this.state.entities,
+              oscalEntities,
+            },
+          });
+        });
+    }
+  };
 
   render() {
     const {
-      t,
-      name,
       size,
       label,
-      values,
-      setFieldValue,
       style,
       variant,
       containerstyle,
-      editContext,
       disabled,
       helperText,
     } = this.props;
@@ -126,17 +194,19 @@ class Source extends Component {
       ['actorTypeEntities'],
       this.state.actorTypeList,
     );
-    const oscalPartiesList = R.pathOr(
+
+    const actorReferences = R.pathOr(
       [],
-      ['oscalPartiesEntities'],
-      this.state.oscalPartiesList,
+      ['oscalEntities'],
+      this.state.actorReferences,
     );
     return (
       <div>
         <div className='clearfix' />
         <Field
           component={SelectField}
-          name='actor_target'
+          name='actor_type'
+          onChange={this.handleThisChange.bind(this)}
           label={label}
           fullWidth={true}
           containerstyle={containerstyle}
@@ -147,16 +217,17 @@ class Source extends Component {
           helperText={helperText}
         >
           {actorTypeList.map(
-            (et, key) => et.label && (
+            (et) => et.label && (
               <Tooltip title={et.label} value={et.value} key={et.label}>
-                <MenuItem value={et.value}>{et.value}</MenuItem>
+                <MenuItem value={et.value}>{et.value}
+                </MenuItem>
               </Tooltip>
             ),
           )}
         </Field>
         <Field
           component={SelectField}
-          name='oscal_party'
+          name='actor_ref'
           label={label}
           fullWidth={true}
           containerstyle={containerstyle}
@@ -166,9 +237,9 @@ class Source extends Component {
           style={style}
           helperText={helperText}
         >
-          {oscalPartiesList.map(
-            (et, key) => et.label && (
-              <MenuItem key={key} value={et.value}>{et.value}</MenuItem>
+          {actorReferences?.map(
+            (et) => (
+              <MenuItem key={et.key} value={et.key}>{et.label}</MenuItem>
             ),
           )}
         </Field>
@@ -176,6 +247,4 @@ class Source extends Component {
     );
   }
 }
-
-// export default inject18n(Source);
 export default R.compose(inject18n, withStyles(styles))(Source);

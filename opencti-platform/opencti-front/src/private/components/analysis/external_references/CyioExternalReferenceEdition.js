@@ -16,6 +16,7 @@ import {
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   header: {
@@ -92,7 +93,7 @@ const cyioExternalReferenceEditionFocus = graphql`
 const cyioExternalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string(),
-  url: Yup.string().url(t('The value must be an URL')),
+  url: Yup.string().url(t('The value must be a valid URL (scheme://host:port/path). For example, https://cyio.darklight.ai')),
   description: Yup.string(),
 });
 
@@ -138,8 +139,12 @@ class CyioExternalReferenceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.props.handleClose();
+        this.props.refreshQuery();
       },
-      // onError: (err) => console.log('ExtRefEditionDarkLightMutationError', err),
+      onError: (err) => {
+        toastGenericError('Failed to update external reference');
+        console.error(err);
+      },
     });
   }
 
@@ -260,6 +265,7 @@ class CyioExternalReferenceEditionContainer extends Component {
 CyioExternalReferenceEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   externalReference: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

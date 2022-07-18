@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { withRouter, Link } from 'react-router-dom';
 import {
   compose, last, map, toPairs,
 } from 'ramda';
@@ -16,6 +17,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
   Edit,
+  Share,
   ArrowDownward,
   ArrowUpward,
   ArrowDropDown,
@@ -28,6 +30,15 @@ import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import Checkbox from '@material-ui/core/Checkbox';
 import Alert from '@material-ui/lab/Alert';
+import responsiblePartiesIcon from '../../resources/images/entities/responsible_parties.svg';
+import tasksIcon from '../../resources/images/entities/tasks.svg';
+import locations from '../../resources/images/entities/locations.svg';
+import roles from '../../resources/images/entities/roles.svg';
+import labels from '../../resources/images/entities/labelsImage.svg';
+import notes from '../../resources/images/entities/Notes.svg';
+import parties from '../../resources/images/entities/parties.svg';
+import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
+import externalReferenceIcon from '../../resources/images/entities/externalReferenceIcon.svg';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
@@ -70,6 +81,9 @@ const styles = (theme) => ({
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
+  dataEntities: {
+    width: '180px',
+  },
   parameters: {
     // float: 'left',
     display: 'flex',
@@ -84,8 +98,15 @@ const styles = (theme) => ({
   },
   views: {
     // float: 'right',
-    width: '254px',
-    minWidth: '254px',
+    width: '295px',
+    minWidth: '285px',
+    marginTop: '5px',
+    padding: '14px 18px 12px 18px',
+  },
+  selectedViews: {
+    width: '430px',
+    minWidth: '415px',
+    float: 'right',
     marginTop: '5px',
     padding: '14px 18px 12px 18px',
   },
@@ -103,9 +124,8 @@ const styles = (theme) => ({
     margin: '10px 0 90px 0',
     padding: 0,
   },
-  item: {
-    paddingLeft: 10,
-    // textTransform: 'uppercase',
+  icon: {
+    marginRight: '10px',
   },
   sortField: {
     float: 'left',
@@ -115,6 +135,20 @@ const styles = (theme) => ({
     fontSize: 14,
     float: 'left',
     color: theme.palette.header.text,
+  },
+  listItem: {
+    paddingLeft: 10,
+    paddingTop: 0,
+  },
+  listScrollItem: {
+    top: '64px',
+    zIndex: 999,
+    width: '100%',
+    left: '0px',
+    position: 'fixed',
+    padding: '10px 53px 10px 306px',
+    backgroundColor: theme.palette.header.background,
+
   },
   sortArrowButton: {
     float: 'left',
@@ -139,7 +173,7 @@ const styles = (theme) => ({
     cursor: 'pointer',
   },
   filters: {
-    padding: '0 0 9px 0',
+    padding: '0 0 9px 12px',
     '@media (max-width: 1250px)': {
       marginTop: '20px',
     },
@@ -160,8 +194,27 @@ const styles = (theme) => ({
 });
 
 class CyioListLines extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      scrollValue: 0,
+    };
+  }
+
   reverseBy(field) {
     this.props.handleSort(field, !this.props.orderAsc);
+  }
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  handleScroll(event) {
+    this.setState({ scrollValue: window.pageYOffset });
   }
 
   sortBy(event) {
@@ -180,12 +233,12 @@ class CyioListLines extends Component {
       const orderComponent = orderAsc ? (
         <ArrowDropDown
           classes={{ root: classes.sortIcon }}
-          style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
+        // style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
         />
       ) : (
         <ArrowDropUp
           classes={{ root: classes.sortIcon }}
-          style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
+        // style={{ top: typeof handleToggleSelectAll === 'function' ? 7 : 0 }}
         />
       );
       return (
@@ -239,8 +292,10 @@ class CyioListLines extends Component {
       noHeaders,
       iconExtension,
       searchVariant,
+      selectedDataEntity,
       OperationsComponent,
       message,
+      handleClearSelectedElements,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -248,6 +303,8 @@ class CyioListLines extends Component {
     } else if (openExports && !noPadding) {
       className = classes.containerOpenExports;
     }
+    const totalElementsSelected = selectedElements && Object.keys(selectedElements).length;
+
     return (
       <>
         <div
@@ -318,6 +375,97 @@ class CyioListLines extends Component {
               {(!availableFilterKeys || availableFilterKeys.length === 0)
                 && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
             </div>
+            {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+              <FormControl
+                size='small'
+                fullWidth={true}
+                variant='outlined'
+                className={classes.dataEntities}
+              >
+                <InputLabel>
+                  Data Types
+                </InputLabel>
+                <Select
+                  variant='outlined'
+                  value={selectedDataEntity}
+                  label='Data Types'
+                  className={classes.dataEntitiesSelect}
+                >
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/responsibility'
+                    value='responsibility'
+                  >
+                    <img src={roles} className={classes.icon} alt="" />
+                    {t('Responsibility')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/locations'
+                    value='locations'
+                  >
+                    <img src={locations} className={classes.icon} alt="" />
+                    {t('Locations')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/parties'
+                    value='parties'
+                  >
+                    <img src={parties} className={classes.icon} alt="" />
+                    {t('Parties')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/responsible_parties'
+                    value='responsible_parties'
+                  >
+                    <img src={responsiblePartiesIcon} style={{ marginRight: '12px' }} alt="" />
+                    {t('Responsible Parties')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/tasks'
+                    value='tasks'
+                  >
+                    <img src={tasksIcon} className={classes.icon} alt="" />
+                    {t('Tasks')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/assessment_platform'
+                    value='assessment_platform'
+                  >
+                    <img src={assessmentPlatform} className={classes.icon} alt="" />
+                    {t('Assessment Platform')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/notes'
+                    value='notes'
+                  >
+                    <img src={notes} className={classes.icon} alt="" />
+                    {t('Notes')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/labels'
+                    value='labels'
+                  >
+                    <img src={labels} className={classes.icon} alt="" />
+                    {t('Labels')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/external_references'
+                    value='external_references'
+                  >
+                    <img src={externalReferenceIcon} className={classes.icon} alt="" />
+                    {t('External References')}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            )}
             <div className={classes.filters}>
               {map((currentFilter) => {
                 const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
@@ -361,8 +509,18 @@ class CyioListLines extends Component {
               }, toPairs(filters))}
             </div>
           </div>
-          <div className={classes.views}>
+          <div className={totalElementsSelected > 0 ? classes.selectedViews : classes.views}>
             <div style={{ float: 'right' }}>
+              {totalElementsSelected > 0 && (
+                <Chip
+                  className={classes.iconButton}
+                  label={
+                    <>
+                      <strong>{totalElementsSelected}</strong> Selected
+                    </>
+                  }
+                  onDelete={handleClearSelectedElements} />
+              )}
               {typeof handleChangeView === 'function' && (
                 // <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <>
@@ -379,6 +537,23 @@ class CyioListLines extends Component {
                       <Edit fontSize="inherit" />
                     </Button>
                   </Tooltip>
+                  {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+                    <Tooltip title={t('Merge')}>
+                      <Button
+                        variant="contained"
+                        // onClick={handleDisplayEdit &&
+                        // handleDisplayEdit.bind(this, selectedElements)}
+                        className={classes.iconButton}
+                        // disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                        //   || disabled}
+                        disabled={true}
+                        color="primary"
+                        size="large"
+                      >
+                        <Share fontSize="inherit" />
+                      </Button>
+                    </Tooltip>
+                  )}
                   <div style={{ display: 'inline-block' }}>
                     {OperationsComponent && React.cloneElement(OperationsComponent, {
                       id: Object.entries(selectedElements || {}).length !== 0
@@ -440,9 +615,10 @@ class CyioListLines extends Component {
           >
             {!noHeaders ? (
               <ListItem
-                classes={{ root: classes.item }}
                 divider={true}
-                style={{ paddingTop: 0 }}
+                className={this.state.scrollValue > 130
+                  ? classes.listScrollItem
+                  : classes.listItem}
               >
                 <ListItemIcon
                   style={{
@@ -524,6 +700,7 @@ CyioListLines.propTypes = {
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   handleToggleSelectAll: PropTypes.func,
+  handleClearSelectedElements: PropTypes.func,
   selectAll: PropTypes.bool,
   openExports: PropTypes.bool,
   noPadding: PropTypes.bool,
@@ -536,6 +713,7 @@ CyioListLines.propTypes = {
   disabled: PropTypes.bool,
   sortBy: PropTypes.string,
   orderAsc: PropTypes.bool,
+  selectedDataEntity: PropTypes.string,
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
   secondaryAction: PropTypes.bool,
@@ -548,4 +726,4 @@ CyioListLines.propTypes = {
   message: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(CyioListLines);
+export default compose(inject18n, withRouter, withStyles(styles))(CyioListLines);

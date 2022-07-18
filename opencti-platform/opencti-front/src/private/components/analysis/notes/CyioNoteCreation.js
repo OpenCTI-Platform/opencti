@@ -38,6 +38,8 @@ import TextField from '../../../../components/TextField';
 import { UserContext } from '../../../../utils/Security';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
+import { toastGenericError } from '../../../../utils/bakedToast';
+
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '452px',
@@ -64,7 +66,8 @@ const styles = (theme) => ({
   },
   createButtonContextual: {
     float: 'left',
-    marginTop: -15,
+    marginTop: -10,
+    marginRight: -10,
   },
   buttons: {
     marginTop: 20,
@@ -100,14 +103,6 @@ export const cyioNoteCreationMutation = graphql`
       __typename
       id
       entity_type
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
       abstract
       content
       authors
@@ -220,7 +215,10 @@ class CyioNoteCreation extends Component {
         }
         this.props.onExpand();
       },
-      onError: (err) => console.log('NoteCreationDarkLightMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create Note');
+      },
     });
     // commitMutation({
     //   mutation: cyioNoteCreationMutation,
@@ -394,7 +392,7 @@ class CyioNoteCreation extends Component {
         <IconButton
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
-          color="primary"
+          color="default"
           className={classes.createButtonContextual}
         >
           <Add fontSize="small" />
@@ -456,7 +454,7 @@ class CyioNoteCreation extends Component {
                       style={{ marginTop: 20 }}
                     />
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  {/* <Grid item={true} xs={6}>
                     <Field
                       component={AutocompleteField}
                       name="labels"
@@ -501,7 +499,7 @@ class CyioNoteCreation extends Component {
                         );
                       }}
                     />
-                  </Grid>
+                  </Grid> */}
                   <Grid style={{
                     marginLeft: 'auto',
                     display: 'grid',

@@ -21,6 +21,7 @@ import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
 // import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 import RemediationDetailsPopover from './RemediationDetailsPopover';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -86,6 +87,10 @@ const remediationPopoverQuery = graphql`
         origin_actors {
           actor_type
           actor_ref {
+            ... on AssessmentPlatform {
+              id
+              name
+            }
             ... on Component {
               id
               component_type
@@ -179,7 +184,7 @@ class RemediationPopover extends Component {
 
   render() {
     const {
-      classes, t, cyioCoreRelationshipId, disabled, history,
+      classes, t, cyioCoreRelationshipId, disabled, history, riskId,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -196,38 +201,17 @@ class RemediationPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          {/* <MenuItem
-            className={classes.menuItem}
-            divider={true}
-            onClick={this.handleOpenEdit.bind(this)}
-          >
-            {t('Update')}
-          </MenuItem> */}
           <MenuItem
             className={classes.menuItem}
             onClick={this.handleDisplayEdit.bind(this)}
           >
             {t('Edit Remediation')}
           </MenuItem>
-          {/* <MenuItem
-            className={classes.menuItem}
-            divider={true}
-            onClick={this.handleOpenDelete.bind(this)}
-          >
-            {t('Delete')}
-          </MenuItem> */}
         </Menu>
-        {/* <StixCoreRelationshipEdition
-          variant="noGraph"
-          cyioCoreRelationshipId={cyioCoreRelationshipId}
-          open={this.state.displayUpdate}
-          handleClose={this.handleCloseUpdate.bind(this)}
-        /> */}
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >
@@ -264,13 +248,18 @@ class RemediationPopover extends Component {
           query={remediationPopoverQuery}
           variables={{ id: cyioCoreRelationshipId }}
           render={({ error, props, retry }) => {
+            if (error) {
+              console.error(error);
+              toastGenericError('Request Failed');
+            }
             if (props) {
               return (
                 <RemediationDetailsPopover
+                  cyioCoreRelationshipId={cyioCoreRelationshipId}
                   displayEdit={this.state.displayEdit}
                   history={history}
-                  handleDisplayEdit={this.handleDisplayEdit.bind(this)}
                   remediation={props.riskResponse}
+                  riskId={riskId}
                 />
               );
             }
@@ -291,6 +280,7 @@ RemediationPopover.propTypes = {
   history: PropTypes.object,
   onDelete: PropTypes.func,
   connectionKey: PropTypes.string,
+  riskId: PropTypes.string,
 };
 
 export default compose(

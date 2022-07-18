@@ -334,7 +334,15 @@ export const phoneNumberPredicateMap = {
 
 // Address support functions
 export const insertAddressQuery = (propValues) => {
-  const id = generateId( );
+  const id_material = {
+    ...(propValues.address_type && {"address_type": propValues.address_type}),
+    ...(propValues.street_address && {"street_address": propValues.street_address}),
+    ...(propValues.city && {"city": propValues.city}),
+    ...(propValues.administrative_area && {"administrative_area": propValues.administrative_area}),
+    ...(propValues.country_code && {"country_code": propValues.country_code}),
+    ...(propValues.postal_code && {"postal_code": propValues.postal_code}),
+  } ;
+  const id = generateId( id_material, OASIS_NS );
   const iri = `<http://csrc.nist.gov/ns/oscal/common#Address-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => addressPredicateMap.hasOwnProperty(propPair[0]))
@@ -343,7 +351,7 @@ export const insertAddressQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Address .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Address> .
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
       ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
@@ -357,8 +365,16 @@ export const insertAddressQuery = (propValues) => {
 export const insertAddressesQuery = (addresses) => {
   const graphs = [], addrIris = [];
   addresses.forEach((addr) => {
-    const id = generateId( );
-    const insertPredicates = [];
+    const id_material = {
+      ...(addr.address_type && {"address_type": addr.address_type}),
+      ...(addr.street_address && {"street_address": addr.street_address}),
+      ...(addr.city && {"city": addr.city}),
+      ...(addr.administrative_area && {"administrative_area": addr.administrative_area}),
+      ...(addr.country_code && {"country_code": addr.country_code}),
+      ...(addr.postal_code && {"postal_code": addr.postal_code}),
+    } ;
+    const id = generateId( id_material, OASIS_NS );
+      const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/common#Address-${id}>`;
     addrIris.push(iri);
     insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#Address>`);
@@ -401,6 +417,7 @@ export const selectAddressQuery = (id, select) => {
 export const selectAddressByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(addressPredicateMap);
+  if (!select.includes('id')) select.push('id');
   const { selectionClause, predicates } = buildSelectVariables(addressPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -414,6 +431,7 @@ export const selectAddressByIriQuery = (iri, select) => {
 }
 export const selectAllAddresses = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(addressPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -545,6 +563,7 @@ export const selectLabelByIriQuery = (iri, select) => {
 }
 export const selectAllLabels = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(labelPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -634,6 +653,14 @@ export const insertExternalReferenceQuery = (propValues) => {
     ...(propValues.external_id && {"external_id": propValues.external_id}),
     ...(propValues.url && {"url": propValues.url}),
   } ;
+
+  if (propValues.description !== undefined) {
+    // escape any newlines
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+  
   const id = generateId( id_material, OASIS_NS );
   const timestamp = new Date().toISOString()
   const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
@@ -665,6 +692,14 @@ export const insertExternalReferencesQuery = (externalReferences) => {
       ...(extRef.url && {"url": extRef.url}),
     } ;
     const id = generateId( id_material, OASIS_NS );
+
+    if (extRef.description !== undefined) {
+      // escape any newlines
+      if (extRef.description.includes('\n')) extRef.description = extRef.description.replace(/\n/g, '\\n');
+      if (extRef.description.includes('\"')) extRef.description = extRef.description.replace(/\"/g, '\\"');
+      if (extRef.description.includes("\'")) extRef.description = extRef.description.replace(/\'/g, "\\'");
+    }
+
     const insertPredicates = [];
     const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
     extRefIris.push(iri);
@@ -716,6 +751,7 @@ export const selectExternalReferenceByIriQuery = (iri, select) => {
 }
 export const selectAllExternalReferences = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(externalReferencePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -806,6 +842,14 @@ export const insertNoteQuery = (propValues) => {
     ...(propValues.content && {"content": propValues.content}),
   } ;
   const id = generateId( id_material, OASIS_NS );
+
+  if (propValues.content !== undefined) {
+    // escape any newlines
+    if (propValues.content.includes('\n')) propValues.content = propValues.content.replace(/\n/g, '\\n');
+    if (propValues.content.includes('\"')) propValues.content = propValues.content.replace(/\"/g, '\\"');
+    if (propValues.content.includes("\'")) propValues.content = propValues.content.replace(/\'/g, "\\'");
+  }
+
   const timestamp = new Date().toISOString()
   const iri = `<http://darklight.ai/ns/common#Note-${id}>`;
   const insertPredicates = Object.entries(propValues)
@@ -846,6 +890,7 @@ export const selectNoteByIriQuery = (iri, select) => {
 }
 export const selectAllNotes = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(notePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -930,7 +975,11 @@ export const detachFromNoteQuery = (id, field, itemIris) => {
 
 // Telephone Number support functions
 export const insertPhoneNumberQuery = (propValues) => {
-  const id = generateId( );
+  const id_material = {
+    ...(propValues.usage_type && {"usage_type": propValues.usage_type}),
+    ...(propValues.phone_number && {"phone_number": propValues.phone_number}),
+  } ;
+  const id = generateId( id_material, OASIS_NS );
   const iri = `<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => phoneNumberPredicateMap.hasOwnProperty(propPair[0]))
@@ -939,7 +988,7 @@ export const insertPhoneNumberQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber> .
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
       ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
@@ -953,7 +1002,11 @@ export const insertPhoneNumberQuery = (propValues) => {
 export const insertPhoneNumbersQuery = (phoneNumbers) => {
   const graphs = [], phoneIris = [];
   phoneNumbers.forEach((phone) => {
-    const id = generateId( );
+    const id_material = {
+      ...(phone.usage_type && {"usage_type": phone.usage_type}),
+      ...(phone.phone_number && {"phone_number": phone.phone_number}),
+    } ;
+    const id = generateId( id_material, OASIS_NS );
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-${id}>`;
     phoneIris.push(iri);
@@ -995,6 +1048,7 @@ export const selectPhoneNumberByIriQuery = (iri, select) => {
 }
 export const selectAllPhoneNumbers = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(phoneNumberPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

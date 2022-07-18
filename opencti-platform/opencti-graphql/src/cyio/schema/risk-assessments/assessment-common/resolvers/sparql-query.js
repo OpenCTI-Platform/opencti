@@ -1,3 +1,4 @@
+import { UserInputError } from "apollo-server-express";
 import {
   optionalizePredicate, 
   parameterizePredicate, 
@@ -5,10 +6,16 @@ import {
   generateId, 
   OSCAL_NS
 } from "../../../utils.js";
-
+import {
+  oscalPartyReducer,
+} from "../../oscal-common/resolvers/sparql-query.js";
+import {
+  componentReducer,
+} from "../../component/resolvers/sparql-query.js";
 import {
   selectObjectIriByIdQuery,
 } from "../../../global/global-utils.js";
+
 
 // Utility functions
 export function getReducer( type ) {
@@ -17,8 +24,11 @@ export function getReducer( type ) {
       return actorReducer;
     case 'ACTIVITY':
       return activityReducer;
+    case 'TOOL':
+      return componentReducer;
+    case 'ASSESSMENT-ASSET':
+      return assessmentAssetReducer;
     case 'ASSESSMENT-PLATFORM':
-    case 'TOOL':                    // TODO: change 
       return assessmentPlatformReducer;
     case 'ASSESSMENT-SUBJECT':
       return assessmentSubjectReducer;
@@ -38,6 +48,8 @@ export function getReducer( type ) {
       return observationReducer;
     case 'ORIGIN':
       return originReducer;
+    case 'PARTY':
+      return oscalPartyReducer;
     case 'REQUIRED-ASSET':
       return requiredAssetReducer;
     case 'RISK':
@@ -104,16 +116,18 @@ export const getSubjectIriByIdQuery = (id, subjectType) => {
 const activityReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
-    item.object_type = 'activity';
+    item.object_type = 'oscal-activity';
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -132,13 +146,29 @@ const actorReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.actor_type && {actor_type: item.actor_type} ),
     ...(item.actor_ref && {actor_ref_iri: item.actor_ref}),
     ...(item.role_ref && {role_ref_iri: item.role_ref}),
+  }
+}
+const assessmentAssetReducer = (item) => {
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined ) {
+    item.object_type = 'assessment-asset';
+  }
+  return {
+    iri: item.iri,
+    id: item.id,
+    standard_id: item.id,
+    ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.components && {components_iri: item.components}),
+    ...(item.assessment_platforms && {assessment_platforms_iri: item.assessment_platforms}),
   }
 }
 const assessmentPlatformReducer = (item) => {
@@ -148,11 +178,13 @@ const assessmentPlatformReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.name && {name: item.name}),
@@ -167,9 +199,11 @@ const assessmentSubjectReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.subject_type && {subject_type: item.subject_type}),
@@ -186,9 +220,11 @@ const associatedActivityReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.activity_id && {activity_id_iri: item.activity_id} ),
@@ -203,11 +239,13 @@ const characterizationReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.origins && {origins_iri: item.origins}),
@@ -221,11 +259,13 @@ const evidenceReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.href && {href: item.href}),
@@ -239,9 +279,11 @@ const facetReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.risk_state && {risk_state: item.risk_state}),
@@ -257,6 +299,7 @@ const logEntryAuthorReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -271,12 +314,14 @@ const mitigatingFactorReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -296,12 +341,14 @@ const observationReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -323,9 +370,12 @@ const originReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
+    ...(item.links && {links_iri: item.links}),
     ...(item.origin_actors && {origin_actors_iri: item.origin_actors}),
     ...(item.related_tasks && {related_tasks_iri: item.related_tasks}),
   }
@@ -338,9 +388,11 @@ const requiredAssetReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.subjects && {subjects_iri: item.subjects}),
@@ -355,12 +407,14 @@ const riskReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -377,12 +431,17 @@ const riskReducer = (item) => {
     ...(item.remediations && {remediations_iri: item.remediations}),
     ...(item.risk_log && {risk_log_iri: item.risk_log}),
     ...(item.related_observations && {related_observations_iri: item.related_observations}),
+    ...(item.related_observation_ids && {related_observation_ids: item.related_observation_ids}),
     ...(item.false_positive && {false_positive: item.false_positive}),
     ...(item.accepted && {accepted: item.accepted}),
     ...(item.risk_adjusted && {risk_adjusted: item.risk_adjusted}),
     ...(item.priority && {priority: item.priority}),
     ...(item.vendor_dependency && {vendor_dependency: item.vendor_dependency}),
     ...(item.impacted_control_id && {impacted_control_iri: item.impacted_control_id}),
+    ...(item.response_type && {response_type: item.response_type}),
+    ...(item.lifecycle && {lifecycle: item.lifecycle}),
+    ...(item.poam_id && {poam_id: item.poam_id}),
+    ...(item.occurrences && {occurrences: item.occurrences}),
   }
 }
 const riskLogReducer = (item) => {
@@ -392,12 +451,14 @@ const riskLogReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -418,12 +479,14 @@ const riskResponseReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -442,16 +505,37 @@ const subjectReducer = (item) => {
     item.object_type = 'subject';
   }
 
+  // TODO: WORKAROUND - remove bad data
+  if (item.name !== undefined && item.name === 'undefined') {
+    item.name = undefined
+  }
+  // END WORKAROUND
+
+  // populate name if we have the actual subject's information
+  if (item.name === undefined && (item.subject_name !== undefined)) {
+    item.name = item.subject_name;
+    if (item.subject_version !== undefined) item.name = item.name + ` ${item.subject_version}`;
+  }
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.name && {name: item.name}),
     ...(item.subject_type && {subject_type: item.subject_type}),
     ...(item.subject_ref && {subject_ref_iri: item.subject_ref}),
     ...(item.subject_context && {subject_context: item.subject_context}),
+    ...(item.subject_id && {subject_id: item.subject_id}),
+    ...(item.subject_name && {subject_name: item.subject_name}),
+    ...(item.subject_version && {subject_version: item.subject_version}),
+    ...(item.subject_asset_type && {subject_asset_type: item.subject_asset_type}),
+    ...(item.subject_component_type && {subject_component_type: item.subject_component_type}),
+    ...(item.subject_party_type && {subject_party_type: item.subject_party_type}),
+    ...(item.subject_location_type && {subject_location_type: item.subject_location_type}),
+    ...(item.subject_user_type && {subject_user_type: item.subject_user_type}),
   }
 }
 const taskReducer = (item) => {
@@ -461,12 +545,14 @@ const taskReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
+    ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
     ...(item.relationships && {relationships_iri: item.relationships}),
@@ -476,10 +562,11 @@ const taskReducer = (item) => {
     // ...(item.timing && {timing_iri: item.timing}),
     ...(item.on_date && {on_date: item.on_date}),
     ...(item.start_date && {start_date: item.start_date}),
-    ...(item.end_date && {end_date: item.end-date}),
+    ...(item.end_date && {end_date: item.end_date}),
     ...(item.frequency_period && {frequency_period: item.frequency_period}),
     ...(item.time_unit && {time_unit: item.time_unit}),
-    ...(item.task_dependencies && {task_dependency_iri: item.task_dependencies}),
+    ...(item.related_tasks && {related_tasks_iri: item.related_tasks}),
+    ...(item.task_dependencies && {task_dependencies_iri: item.task_dependencies}),
     ...(item.associated_activities && {associated_activities_iri: item.associated_activities}),
     ...(item.subjects && {subjects_iri: item.subjects}),
     ...(item.responsible_roles && {responsible_roles_iri: item.responsible_roles}),
@@ -492,6 +579,7 @@ const vulnerabilityFacetReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -523,7 +611,15 @@ export const insertActivityQuery = (propValues) => {
     ...(propValues.methods && {"methods": propValues.methods}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Activity-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => activityPredicateMap.hasOwnProperty(propPair[0]))
@@ -536,7 +632,7 @@ export const insertActivityQuery = (propValues) => {
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#Object> .
       ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
-      ${iri} <http://darklight.ai/ns/common#object_type> "activity" . 
+      ${iri} <http://darklight.ai/ns/common#object_type> "oscal-activity" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
       ${insertPredicates}
@@ -551,9 +647,10 @@ export const selectActivityQuery = (id, select) => {
 export const selectActivityByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(activityPredicateMap);
+  
   const { selectionClause, predicates } = buildSelectVariables(activityPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -564,6 +661,7 @@ export const selectActivityByIriQuery = (iri, select) => {
 }
 export const selectAllActivities = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(activityPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -617,6 +715,7 @@ export const attachToActivityQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -638,6 +737,7 @@ export const detachFromActivityQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -652,8 +752,8 @@ export const detachFromActivityQuery = (id, field, itemIris) => {
 // Actor support functions
 export const insertActorQuery = (propValues) => {
   const id_material = {
+    ...(propValues.actor_ref && {"actor_ref": propValues.actor_ref}),
     ...(propValues.actor_type && {"actor_type": propValues.actor_type}),
-    ...(propValues.actor_ref && {"actor_type": propValues.actor_ref}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Actor-${id}>`;
@@ -678,7 +778,11 @@ export const insertActorQuery = (propValues) => {
 export const insertActorsQuery = (actors) => {
   const graphs = [], actorIris = [];
   actors.forEach((actor) => {
-    const id = generateId( );
+    const id_material = {
+      ...(actor.actor_ref && {"actor_ref": actor.actor_ref}),
+      ...(actor.actor_type && {"actor_type": actor.actor_type}),
+    } ;
+    const id = generateId( id_material, OSCAL_NS );
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Actor-${id}>`;
     actorIris.push(iri);
@@ -688,8 +792,10 @@ export const insertActorsQuery = (actors) => {
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`);
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "actor"`); 
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#actor_type> "${actor.actor_type}"`);
-    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#actor> "${actor.actor}"`);
-    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#role> "${actor.role}"`);
+    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#actor_ref> <${actor.actor_ref}>`);
+    if (actor.role_ref !== undefined) {
+      insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#role> <${actor.role_ref}>`);
+    }
     graphs.push(`
   GRAPH ${iri} {
     ${insertPredicates.join(".\n        ")}
@@ -712,7 +818,7 @@ export const selectActorByIriQuery = (iri, select) => {
   if (!select.includes('actor_type')) select.push('actor_type');
   const { selectionClause, predicates } = buildSelectVariables(actorPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -723,6 +829,7 @@ export const selectActorByIriQuery = (iri, select) => {
 }
 export const selectAllActors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(actorPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -776,6 +883,7 @@ export const attachToActorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -797,6 +905,7 @@ export const detachFromActorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -806,6 +915,164 @@ export const detachFromActorQuery = (id, field, itemIris) => {
     }
   }
   `
+}
+
+// AssessmentAsset support functions
+export const insertAssessmentAssetQuery = (propValues) => {
+  const id = propValues.id;
+  const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}>`;
+  const insertPredicates = Object.entries(propValues)
+      .filter((propPair) => actorPredicateMap.hasOwnProperty(propPair[0]))
+      .map((propPair) => actorPredicateMap[propPair[0]].binding(iri, propPair[1]))
+      .join('. \n      ');
+  const query = `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${iri} a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
+      ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
+      ${iri} <http://darklight.ai/ns/common#id> "${id}" .
+      ${iri} <http://darklight.ai/ns/common#object_type> "assessment-asset" . 
+      ${insertPredicates}
+    }
+  }
+  `;
+  return {iri, id, query}  
+}
+export const selectAssessmentAssetQuery = (id, select) => {
+  return selectAssessmentAssetByIriQuery(`http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}`, select);
+}
+export const selectAssessmentAssetByIriQuery = (iri, select) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === undefined || select === null) select = Object.keys(assessmentAssetPredicateMap);
+  if (!select.includes('id')) select.push('id');
+  const { selectionClause, predicates } = buildSelectVariables(assessmentAssetPredicateMap, select);
+  return `
+  SELECT ?iri ${selectionClause}
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    BIND(${iri} AS ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> .
+    ${predicates}
+  }
+  `
+}
+export const selectAllAssessmentAssets = (select, args, parent) => {
+  let constraintClause = '';
+  if (select === undefined || select === null) select = Object.keys(assessmentAssetPredicateMap);
+  if (!select.includes('id')) select.push('id');
+
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
+  }
+
+  const { selectionClause, predicates } = buildSelectVariables(assessmentAssetPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam-local-definitions') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_assets>';
+    }
+    if (parent.entity_type === 'result-local-definitions') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#LocalDefinition>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_assets>';
+    }
+    if (parent.entity_type === 'assessment-plan') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#AssessmentPlan>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_assets>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+  return `
+  SELECT DISTINCT ?iri ${selectionClause} 
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> . 
+    ${predicates}
+    ${constraintClause}
+  }
+  `
+}
+export const deleteAssessmentAssetQuery = (id) => {
+  const iri = `http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}`;
+  return deleteAssessmentAssetByIriQuery(iri);
+}
+export const deleteAssessmentAssetByIriQuery = (iri) => {
+  return `
+  DELETE {
+    GRAPH <${iri}> {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH <${iri}> {
+      ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset> .
+      ?iri ?p ?o
+    }
+  }
+  `
+}
+export const attachToAssessmentAssetQuery = (id, field, itemIris) => {
+  const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}>`;
+  if (!assessmentAssetPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = assessmentAssetPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `
+}
+export const detachFromAssessmentAssetQuery = (id, field, itemIris) => {
+  const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset-${id}>`;
+  if (!assessmentAssetPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = assessmentAssetPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  DELETE DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `  
 }
 
 // AssessmentPlatform support functions
@@ -821,7 +1088,15 @@ export const insertAssessmentPlatformQuery = (propValues) => {
     } ;
     id = generateId( id_material, OSCAL_NS );  
   }
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => assessmentPlatformPredicateMap.hasOwnProperty(propPair[0]))
@@ -849,9 +1124,10 @@ export const selectAssessmentPlatformQuery = (id, select) => {
 export const selectAssessmentPlatformByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(assessmentPlatformPredicateMap);
+  if (!select.includes('id')) select.push('id');
   const { selectionClause, predicates } = buildSelectVariables(assessmentPlatformPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -860,8 +1136,10 @@ export const selectAssessmentPlatformByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllAssessmentPlatforms = (select, args) => {
+export const selectAllAssessmentPlatforms = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(assessmentPlatformPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -877,12 +1155,32 @@ export const selectAllAssessmentPlatforms = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(assessmentPlatformPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'assessment-asset') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_platforms>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -915,6 +1213,7 @@ export const attachToAssessmentPlatformQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -936,6 +1235,7 @@ export const detachFromAssessmentPlatformQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -950,6 +1250,14 @@ export const detachFromAssessmentPlatformQuery = (id, field, itemIris) => {
 // AssessmentSubject support functions
 export const insertAssessmentSubjectQuery = (propValues) => {
   const id = generateId( );
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => assessmentSubjectPredicateMap.hasOwnProperty(propPair[0]))
@@ -973,6 +1281,14 @@ export const insertAssessmentSubjectsQuery = (assessmentSubjects) => {
   const graphs = [], subjectIris = [];
   assessmentSubjects.forEach((subject) => {
     const id = generateId( );
+
+    // escape any special characters (e.g., newline)
+    if (subject.description !== undefined) {
+      if (subject.description.includes('\n')) subject.description = subject.description.replace(/\n/g, '\\n');
+      if (subject.description.includes('\"')) subject.description = subject.description.replace(/\"/g, '\\"');
+      if (subject.description.includes("\'")) subject.description = subject.description.replace(/\'/g, "\\'");
+    }
+
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject-${id}>`;
     subjectIris.push(iri);
@@ -1006,7 +1322,7 @@ export const selectAssessmentSubjectByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(assessmentSubjectPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(assessmentSubjectPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1015,13 +1331,20 @@ export const selectAssessmentSubjectByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllAssessmentSubjects = (select, filters) => {
+export const selectAllAssessmentSubjects = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(assessmentSubjectPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1064,6 +1387,7 @@ export const attachToAssessmentSubjectQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1085,6 +1409,7 @@ export const detachFromAssessmentSubjectQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1147,7 +1472,7 @@ export const selectAssociatedActivityByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(associatedActivityPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(associatedActivityPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1158,6 +1483,7 @@ export const selectAssociatedActivityByIriQuery = (iri, select) => {
 }
 export const selectAllAssociatedActivities = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(associatedActivityPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1211,6 +1537,7 @@ export const attachToAssociatedActivityQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1232,6 +1559,7 @@ export const detachFromAssociatedActivityQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1302,7 +1630,7 @@ export const selectCharacterizationByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(characterizationPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(characterizationPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1313,6 +1641,7 @@ export const selectCharacterizationByIriQuery = (iri, select) => {
 }
 export const selectAllCharacterizations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(characterizationPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1366,6 +1695,7 @@ export const attachToCharacterizationQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1387,6 +1717,7 @@ export const detachFromCharacterizationQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1408,7 +1739,15 @@ export const insertEvidenceQuery = (propValues) => {
   }
 
   const id = generateId( );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Evidence-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => evidencePredicateMap.hasOwnProperty(propPair[0]))
@@ -1439,6 +1778,14 @@ export const insertEvidencesQuery = (evidences) => {
   evidences.forEach((evidence) => {
     const id = generateId( );
     const timestamp = new Date().toISOString();
+
+    // escape any special characters (e.g., newline)
+    if (evidence.description !== undefined) {
+      if (evidence.description.includes('\n')) evidence.description = evidence.description.replace(/\n/g, '\\n');
+      if (evidence.description.includes('\"')) evidence.description = evidence.description.replace(/\"/g, '\\"');
+      if (evidence.description.includes("\'")) evidence.description = evidence.description.replace(/\'/g, "\\'");
+    }
+
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Evidence-${id}>`;
     evidenceIris.push(iri);
@@ -1469,9 +1816,10 @@ export const selectEvidenceQuery = (id, select) => {
 export const selectEvidenceByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(evidencePredicateMap);
+
   const { selectionClause, predicates } = buildSelectVariables(evidencePredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1480,8 +1828,10 @@ export const selectEvidenceByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllEvidence = (select, args) => {
+export const selectAllEvidence = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(evidencePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1497,12 +1847,27 @@ export const selectAllEvidence = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(evidencePredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified object
+  if (parent !== undefined && parent.iri !== undefined) {
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a <http://csrc.nist.gov/ns/oscal/assessment/common#Observation> ;
+            <http://csrc.nist.gov/ns/oscal/assessment/common#relevant_evidence> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Evidence> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -1535,6 +1900,7 @@ export const attachToEvidenceQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1556,6 +1922,7 @@ export const detachFromEvidenceQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1646,7 +2013,7 @@ export const selectFacetByIriQuery = (iri, select) => {
 
   const { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1657,6 +2024,7 @@ export const selectFacetByIriQuery = (iri, select) => {
 }
 export const selectAllFacets = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(facetPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1710,6 +2078,7 @@ export const attachToFacetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1731,6 +2100,7 @@ export const detachFromFacetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1767,6 +2137,7 @@ export const insertLogEntryAuthorQuery = (propValues) => {
 export const insertLogEntryAuthorsQuery = (authors) => {
   const graphs = [], authorIris = [];
   authors.forEach((author) => {
+    if (author.party === undefined) throw new UserInputError(`Party ID not specified for LogEntryAuthor`); 
     const id = generateId( );
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor-${id}>`;
@@ -1799,9 +2170,14 @@ export const selectLogEntryAuthorQuery = (id, select) => {
 export const selectLogEntryAuthorByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(logEntryAuthorPredicateMap);
+  if (select.includes('party')) {
+    select.push('party_name');
+    select.push('party_type');
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(logEntryAuthorPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1810,13 +2186,24 @@ export const selectLogEntryAuthorByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllLogEntryAuthors = (select, filters) => {
+export const selectAllLogEntryAuthors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(logEntryAuthorPredicateMap);
+  if (!select.includes('id')) select.push('id');
+  if (select.includes('party')) {
+    select.push('party_name');
+    select.push('party_type');
+  }
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1859,6 +2246,7 @@ export const attachToLogEntryAuthorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1880,6 +2268,7 @@ export const detachFromLogEntryAuthorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -1908,7 +2297,15 @@ export const insertMitigatingFactorQuery = (propValues) => {
     ...(propValues.implementation && {"implementation": propValues.implementation}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => mitigatingFactorPredicateMap.hasOwnProperty(propPair[0]))
@@ -1943,7 +2340,7 @@ export const selectMitigatingFactorByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(mitigatingFactorPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(mitigatingFactorPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1954,6 +2351,7 @@ export const selectMitigatingFactorByIriQuery = (iri, select) => {
 }
 export const selectAllMitigatingFactors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(mitigatingFactorPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2007,6 +2405,7 @@ export const attachToMitigatingFactorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2028,6 +2427,7 @@ export const detachFromMitigatingFactorQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2042,12 +2442,22 @@ export const detachFromMitigatingFactorQuery = (id, field, itemIris) => {
 // Observation support functions
 export const insertObservationQuery = (propValues) => {
   const id_material = {
+    //TODO: Need the actor_ref and actor_type
     ...(propValues.collected && {"collected": propValues.collected}),
     ...(propValues.methods && {"methods": propValues.methods}),
+    ...(propValues.observation_types && {"observation_types": propValues.observation_types}),
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Observation-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => observationPredicateMap.hasOwnProperty(propPair[0]))
@@ -2075,9 +2485,10 @@ export const selectObservationQuery = (id, select) => {
 export const selectObservationByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(observationPredicateMap);
+  if (!select.includes('id')) select.push('id');
   const { selectionClause, predicates } = buildSelectVariables(observationPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2086,8 +2497,10 @@ export const selectObservationByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllObservations = (select, args) => {
+export const selectAllObservations = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(observationPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2103,12 +2516,48 @@ export const selectAllObservations = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(observationPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/poam#observations>';
+    }
+    if (parent.entity_type === 'poam-item') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/poam#Item>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>';
+    }
+    if (parent.entity_type === 'risk') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Risk>' ;
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>';
+    }
+    if (parent.entity_type === 'result') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Result>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#observations>';
+    }
+    if (parent.entity_type === 'finding') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Finding>'
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Observation> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -2141,6 +2590,7 @@ export const attachToObservationQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2162,6 +2612,7 @@ export const detachFromObservationQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2188,7 +2639,7 @@ export const insertOriginQuery = (propValues) => {
   // compute the deterministic identifier
   const id_material = {
     ...(originActors[0].actor_type && {"actor_type": originActors[0].actor_type}),
-    ...(originActors[0].actor_ref && {"actor_type": originActors[0].actor_ref}),
+    ...(originActors[0].actor_ref && {"actor_ref": originActors[0].actor_ref}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
 
@@ -2224,7 +2675,7 @@ export const selectOriginByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(originPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(originPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2233,8 +2684,10 @@ export const selectOriginByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllOrigins = (select, args) => {
+export const selectAllOrigins = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(originPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2250,14 +2703,42 @@ export const selectAllOrigins = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(originPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified object
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri;
+    if (parent.entity_type === 'characterization') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Characterization>';
+    }
+    if (parent.entity_type === 'observation') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Observation>';
+    }
+    if (parent.entity_type === 'risk') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Risk>';
+    }
+    if (parent.entity_type === 'risk-response') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            <http://csrc.nist.gov/ns/oscal/assessment/common#origins> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Origin> . 
     ${predicates}
+    ${constraintClause}
   }
-  `
+  `;
 }
 export const deleteOriginQuery = (id) => {
   const iri = `http://csrc.nist.gov/ns/oscal/assessment/common#Origin-${id}`;
@@ -2288,6 +2769,7 @@ export const attachToOriginQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2309,6 +2791,7 @@ export const detachFromOriginQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2333,13 +2816,20 @@ export const insertRequiredAssetQuery = (propValues) => {
     delete propValues.subjects;
   }
 
-
   const id_material = {
     ...(propValues.name && {"name": propValues.name}),
     ...(propValues.description && {"description": propValues.description}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => requiredAssetPredicateMap.hasOwnProperty(propPair[0]))
@@ -2369,8 +2859,20 @@ export const insertRequiredAssetQuery = (propValues) => {
 export const insertRequiredAssetsQuery = (requiredAssets) => {
   const graphs = [], reqAssetIris = [];
   requiredAssets.forEach((reqAsset) => {
-    const id = generateId( );
+    const id_material = {
+      ...(reqAsset.name && {"name": reqAsset.name}),
+      ...(reqAsset.description && {"description": reqAsset.description}),
+    } ;
+    const id = generateId( id_material, OSCAL_NS );
     const timestamp = new Date().toISOString();
+  
+    // escape any special characters (e.g., newline)
+    if (reqAsset.description !== undefined) {
+      if (reqAsset.description.includes('\n')) reqAsset.description = reqAsset.description.replace(/\n/g, '\\n');
+      if (reqAsset.description.includes('\"')) reqAsset.description = reqAsset.description.replace(/\"/g, '\\"');
+      if (reqAsset.description.includes("\'")) reqAsset.description = reqAsset.description.replace(/\'/g, "\\'");
+    }
+
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset-${id}>`;
     reqAssetIris.push(iri);
@@ -2403,7 +2905,7 @@ export const selectRequiredAssetByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(requiredAssetPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(requiredAssetPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2414,6 +2916,7 @@ export const selectRequiredAssetByIriQuery = (iri, select) => {
 }
 export const selectAllRequiredAssets = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(requiredAssetPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2467,6 +2970,7 @@ export const attachToRequiredAssetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2488,6 +2992,7 @@ export const detachFromRequiredAssetQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2505,7 +3010,20 @@ export const insertRiskQuery = (propValues) => {
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+  if (propValues.statement !== undefined) {
+    if (propValues.statement.includes('\n')) propValues.statement = propValues.statement.replace(/\n/g, '\\n');
+    if (propValues.statement.includes('\"')) propValues.statement = propValues.statement.replace(/\"/g, '\\"');
+    if (propValues.statement.includes("\'")) propValues.statement = propValues.statement.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => riskPredicateMap.hasOwnProperty(propPair[0]))
@@ -2531,46 +3049,149 @@ export const selectRiskQuery = (id, select) => {
   return selectRiskByIriQuery(`http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}`, select);
 }
 export const selectRiskByIriQuery = (iri, select) => {
+  const insertSelections = [], groupByClause = [];
+  let occurrences = '', occurrenceQuery = '';
+
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
-  // Update select to impact what predicates get retrieved if looking to calculate risk level
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('risk_level')) select.push('risk_level');
+    if (!select.includes('false_positive')) select.push('false_positive');
+    if (!select.includes('accepted')) select.push('accepted');
+    if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
+    if (!select.includes('priority')) select.push('priority')
+    if (!select.includes('occurrences')) select.push('occurrences');
+  }
+  
+
+  // fetch the uuid of each related_observation and related_risk as these are commonly used
+  if (select.includes('related_observations')) select.push('related_observation_ids');
+
+  // Update select to collect additional predicates if looking to calculate risk level
   if (select.includes('risk_level')) {
-    select.push('cvss20_base_score');
-    select.push('cvss20_temporal_score');
-    select.push('cvss30_base_score');
-    select.push('cvss30_temporal_score');
-    select.push('exploit_available');
-    select.push('exploitability');
+    if (!select.includes('cvss2_base_score')) select.push('cvss2_base_score');
+    if (!select.includes('cvss2_temporal_score')) select.push('cvss2_temporal_score');
+    if (!select.includes('cvss3_base_score')) select.push('cvss3_base_score');
+    if (!select.includes('cvss3_temporal_score')) select.push('cvss3_temporal_score');
+    if (!select.includes('available_exploit')) select.push('available_exploit');
+    if (!select.includes('exploitability_ease')) select.push('exploitability_ease');
+  }
+  // Update select to collect additional predicates if looking for response type
+  if (select.includes('response_type')|| select.includes('lifecycle')) {
+    if (!select.includes('remediation_type')) select.push('remediation_type');
+    if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
+    if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp')
   }
 
-  const { selectionClause, predicates } = buildSelectVariables(riskPredicateMap, select);
+  // build selectionClause and predicate list
+  let { selectionClause, predicates } = buildSelectVariables(riskPredicateMap, select);
+  
+  // remove any select items pushed from selectionClause to reduce what is not returned
+  if (select.includes('risk_level')) {
+    selectionClause = selectionClause.replace('?cvss2_base_score','');
+    selectionClause = selectionClause.replace('?cvss2_temporal_score','');
+    selectionClause = selectionClause.replace('?cvss3_base_score','');
+    selectionClause = selectionClause.replace('?cvss3_temporal_score','');
+    selectionClause = selectionClause.replace('?available_exploit','');
+    selectionClause = selectionClause.replace('?exploitability_ease','');
+  }
+  if (select.includes('response_type')|| select.includes('response_lifecycle')) {
+    selectionClause = selectionClause.replace('?remediation_type','');
+    selectionClause = selectionClause.replace('?remediation_lifecycle','')
+    selectionClause = selectionClause.replace('?remediation_timestamp','')
+  }
+
+  // Populate the insertSelections that compute results
+  if (select.includes('risk_level')) {
+    insertSelections.push(`(MAX(?cvss2_base_score) AS ?cvssV2Base_score) (MAX(?cvss2_temporal_score) as ?cvssV2Temporal_score)`);
+    insertSelections.push(`(MAX(?cvss3_base_score) AS ?cvssV3Base_score) (MAX(?cvss3_temporal_score) as ?cvssV3Temporal_score)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?available_exploit;SEPARATOR=",") as ?available_exploit_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?exploitability_ease;SEPARATOR=",") as ?exploitability_ease_values)`);
+  }
+  if (select.includes('response_type') || select.includes('response_lifecycle')) {
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
+  }
+  if (select.includes('occurrences')) {
+    occurrences = '?occurrences';
+    occurrenceQuery = `
+      OPTIONAL {
+        {
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?subjects) AS ?count)
+          WHERE {
+            ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects .
+            ?subjects <http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+          }
+          GROUP BY ?iri
+        }
+      }
+      BIND(IF(!BOUND(?count), 0, ?count) AS ?occurrences)
+  `;
+  }
+
+  // build "GROUP BY" clause if performing counting or consolidation
+  if (select.includes('risk_level') || select.includes('response_type') || 
+      select.includes('response_lifecycle') || select.includes('occurrences')) {
+      groupByClause.push(`GROUP BY ?iri ${selectionClause.trim()} ${occurrences}`); 
+  }
+  
   return `
-  SELECT ${selectionClause}
+  SELECT DISTINCT ?iri ${selectionClause.trim()} ${occurrences}
+  ${insertSelections.join("\n")}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> .
     ${predicates}
+    ${occurrenceQuery}
   }
+  ${groupByClause.join("\n")}
   `
 }
-export const selectAllRisks = (select, args) => {
+export const selectAllRisks = (select, args, parent) => {
+  const insertSelections = [], groupByClause = [];
+  let occurrences = '', occurrenceQuery = '', constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
+  if (!select.includes('id')) select.push('id');
+
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('risk_level')) select.push('risk_level');
+    if (!select.includes('false_positive')) select.push('false_positive');
+    if (!select.includes('accepted')) select.push('accepted');
+    if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
+    if (!select.includes('priority')) select.push('priority');
+    if (!select.includes('occurrences')) select.push('occurrences');
+  }
   
+  // fetch the uuid of each related_observation and related_risk as these are commonly used
+  if (select.includes('related_observations')) select.push('related_observation_ids');
+
   // Update select to impact what predicates get retrieved if looking to calculate risk level
   if (select.includes('risk_level')) {
-    select.push('cvss20_base_score');
-    select.push('cvss20_temporal_score');
-    select.push('cvss30_base_score');
-    select.push('cvss30_temporal_score');
-    select.push('exploit_available');
-    select.push('exploitability');
+    if (!select.includes('cvss2_base_score')) select.push('cvss2_base_score');
+    if (!select.includes('cvss2_temporal_score')) select.push('cvss2_temporal_score');
+    if (!select.includes('cvss3_base_score')) select.push('cvss3_base_score');
+    if (!select.includes('cvss3_temporal_score')) select.push('cvss3_temporal_score');
+    if (!select.includes('available_exploit')) select.push('available_exploit');
+    if (!select.includes('exploitability_ease')) select.push('exploitability_ease');
+  }
+  // Update select to collect additional predicates if looking for response type
+  if (select.includes('response_type')|| select.includes('lifecycle')) {
+    if (!select.includes('remediation_type')) select.push('remediation_type');
+    if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
+    if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp')
   }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
+        if (filter === undefined || filter === null) continue;
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
     }
@@ -2581,14 +3202,102 @@ export const selectAllRisks = (select, args) => {
     }
   }
 
-  const { selectionClause, predicates } = buildSelectVariables(riskPredicateMap, select);
+  // build selectionClause and predicate list
+  let { selectionClause, predicates } = buildSelectVariables(riskPredicateMap, select);
+
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'poam') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/common#POAM>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/poam#risks>';
+    }
+    if (parent.entity_type === 'poam-item') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/poam#Item>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>';
+    }
+    if (parent.entity_type === 'result') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Result>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#risks>';
+    }
+    if (parent.entity_type === 'finding') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Finding>'
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_riskss>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
+  // remove any select items pushed from selectionClause to reduce what is not returned
+  if (select.includes('risk_level')) {
+    selectionClause = selectionClause.replace('?cvss2_base_score','');
+    selectionClause = selectionClause.replace('?cvss2_temporal_score','');
+    selectionClause = selectionClause.replace('?cvss3_base_score','');
+    selectionClause = selectionClause.replace('?cvss3_temporal_score','');
+    selectionClause = selectionClause.replace('?available_exploit','');
+    selectionClause = selectionClause.replace('?exploitability_ease','');
+  }
+  if (select.includes('response_type') || select.includes('response_lifecycle')) {
+    selectionClause = selectionClause.replace('?remediation_type','');
+    selectionClause = selectionClause.replace('?remediation_lifecycle','')
+    selectionClause = selectionClause.replace('?remediation_timestamp','')    
+  }
+
+  // Populate the insertSelections that compute results
+  if (select.includes('risk_level')) {
+    insertSelections.push(`(MAX(?cvss2_base_score) AS ?cvssV2Base_score) (MAX(?cvss2_temporal_score) as ?cvssV2Temporal_score)`);
+    insertSelections.push(`(MAX(?cvss3_base_score) AS ?cvssV3Base_score) (MAX(?cvss3_temporal_score) as ?cvssV3Temporal_score)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?available_exploit;SEPARATOR=",") as ?available_exploit_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?exploitability_ease;SEPARATOR=",") as ?exploitability_ease_values)`);
+  }
+  if (select.includes('response_type') || select.includes('response_lifecycle')) {
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
+  }
+  if (select.includes('occurrences')) {
+    occurrences = '?occurrences';
+    occurrenceQuery = `
+      OPTIONAL {
+        {
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?subjects) AS ?count)
+          WHERE {
+            ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects .
+            ?subjects <http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+      }
+          GROUP BY ?iri
+        }
+      }
+      BIND(IF(!BOUND(?count), 0, ?count) AS ?occurrences)
+  `;
+  }
+
+  // build "GROUP BY" clause if performing counting or consolidation
+  if (select.includes('risk_level') || select.includes('response_type') || 
+      select.includes('response_lifecycle') || select.includes('occurrences')) {
+      groupByClause.push(`GROUP BY ?iri ${selectionClause.trim()} ${occurrences}`); 
+  }
+
   return `
-  SELECT DISTINCT ?iri ${selectionClause} 
+  SELECT DISTINCT ?iri ${selectionClause.trim()} ${occurrences}
+  ${insertSelections.join("\n")}
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> . 
     ${predicates}
+    ${occurrenceQuery}
+    ${constraintClause}
   }
+  ${groupByClause.join("\n")}
   `
 }
 export const deleteRiskQuery = (id) => {
@@ -2620,6 +3329,7 @@ export const attachToRiskQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2641,6 +3351,7 @@ export const detachFromRiskQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2667,6 +3378,13 @@ export const insertRiskLogEntryQuery = (propValues) => {
   if (propValues.risk_id !== undefined) {
     riskId = propValues.risk_id;
     delete propValues.risk_id;
+  }
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
   }
 
   const id = generateId( );
@@ -2707,7 +3425,7 @@ export const selectRiskLogEntryByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(riskLogPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(riskLogPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2716,8 +3434,10 @@ export const selectRiskLogEntryByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllRiskLogEntries = (select, args) => {
+export const selectAllRiskLogEntries = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(riskLogPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2733,12 +3453,27 @@ export const selectAllRiskLogEntries = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(riskLogPredicateMap, select);
+  // add constraint clause to limit to those that are referenced by the specified POAM
+  if (parent !== undefined && parent.iri !== undefined) {
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> ;
+          <http://csrc.nist.gov/ns/oscal/assessment/common#risk_log> ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -2771,6 +3506,7 @@ export const attachToRiskLogEntryQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2792,6 +3528,7 @@ export const detachFromRiskLogEntryQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2830,6 +3567,14 @@ export const insertRiskResponseQuery = (propValues) => {
     ...(riskId && {"risk_id": riskId}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+  
   const timestamp = new Date().toISOString()
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse-${id}>`;
   const insertPredicates = Object.entries(propValues)
@@ -2865,9 +3610,15 @@ export const selectRiskResponseQuery = (id, select) => {
 export const selectRiskResponseByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
+
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('response_type')) select.push('response_type');
+  }
+  
   const { selectionClause, predicates } = buildSelectVariables(riskResponsePredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2878,7 +3629,13 @@ export const selectRiskResponseByIriQuery = (iri, select) => {
 }
 export const selectAllRiskResponses = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
+  // extension properties
+  if (select.includes('props')) {
+    if (!select.includes('response_type')) select.push('response_type');
+  }
+  
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
@@ -2897,7 +3654,7 @@ export const selectAllRiskResponses = (select, args) => {
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
-    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse . 
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse> . 
     ${predicates}
   }
   `
@@ -2931,6 +3688,7 @@ export const attachToRiskResponseQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2952,6 +3710,7 @@ export const detachFromRiskResponseQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -2965,7 +3724,12 @@ export const detachFromRiskResponseQuery = (id, field, itemIris) => {
 
 // Subject support functions
 export const insertSubjectQuery = (propValues) => {
-  const id = generateId( );
+  const id_material = {
+    ...(propValues.subject_context && {"subject_context": propValues.subject_context}),
+    ...(propValues.subject_ref && {"subject_ref": propValues.subject_ref}),
+    ...(propValues.subject_type && {"subject_type": propValues.subject_type}),
+  } ;
+  const id = generateId( id_material, OSCAL_NS );
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => subjectPredicateMap.hasOwnProperty(propPair[0]))
@@ -2988,8 +3752,13 @@ export const insertSubjectQuery = (propValues) => {
 export const insertSubjectsQuery = (subjects) => {
   const graphs = [], subjectIris = [];
   subjects.forEach((subject) => {
-    const id = generateId( );
-    const insertPredicates = [];
+    const id_material = {
+      ...(subject.subject_context && {"subject_context": subject.subject_context}),
+      ...(subject.subject_ref && {"subject_ref": subject.subject_ref}),
+      ...(subject.subject_type && {"subject_type": subject.subject_type}),
+    } ;
+    const id = generateId( id_material, OSCAL_NS );
+      const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-${id}>`;
     subjectIris.push(iri);
     insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/assessment/common#Subject>`);
@@ -2997,7 +3766,7 @@ export const insertSubjectsQuery = (subjects) => {
     insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#ComplexDatatype>`);
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`);
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "subject"`); 
-    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#name> "${subject.name}"`);
+    if (subject.name != undefined) insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#name> "${subject.name}"`);
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_type> "${subject.subject_type}"`);
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref> <${subject.subject_ref}>`);
     if (subject.subject_context != undefined) {
@@ -3021,9 +3790,18 @@ export const selectSubjectQuery = (id, select) => {
 export const selectSubjectByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
-  const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
+  const cloneSelect = [...select];
+  // defensive code to protect against query not supplying subject type
+  if (!select.includes('subject_type')) cloneSelect.push('subject_type');
+  // get the references name and version, if name is asked for
+  if (select.includes('name')) {
+    cloneSelect.push('subject_id');
+    cloneSelect.push('subject_name');
+    cloneSelect.push('subject_version');
+  }
+  const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, cloneSelect);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -3032,8 +3810,18 @@ export const selectSubjectByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllSubjects = (select, args) => {
+export const selectAllSubjects = (select, args, parent) => {
+  let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
+  if (!select.includes('id')) select.push('id');
+  // defensive code to protect against query not supplying subject type
+  if (!select.includes('subject_type')) select.push('subject_type');
+  // get the references name and version, if name is asked for
+  if (select.includes('name')) {
+    select.push('subject_id');
+    select.push('subject_name');
+    select.push('subject_version');
+  }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -3049,12 +3837,39 @@ export const selectAllSubjects = (select, args) => {
   }
 
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
+  if (parent !== undefined && parent.iri !== undefined) {
+    let classTypeIri, predicate;
+    if (parent.entity_type === 'observation') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#Observation>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
+    }
+    if (parent.entity_type === 'mitigating-factor') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
+    }
+    if (parent.entity_type === 'required-asset') {
+      classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
+    }
+    // define a constraint to limit retrieval to only those referenced by the parent
+    constraintClause = `
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          <${parent.iri}> a ${classTypeIri} ;
+            ${predicate} ?iri .
+      }
+    }
+    `;
+  }
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Subject> . 
     ${predicates}
+    ${constraintClause}
   }
   `
 }
@@ -3087,6 +3902,7 @@ export const attachToSubjectQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3108,6 +3924,7 @@ export const detachFromSubjectQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3126,7 +3943,15 @@ export const insertOscalTaskQuery = (propValues) => {
     ...(propValues.task_type && {"task_type": propValues.task_type}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => oscalTaskPredicateMap.hasOwnProperty(propPair[0]))
@@ -3149,14 +3974,23 @@ export const insertOscalTaskQuery = (propValues) => {
   return {iri, id, query}  
 }
 export const selectOscalTaskQuery = (id, select) => {
-  return selectRemediationTaskByIriQuery(`http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}`, select);
+  return selectOscalTaskByIriQuery(`http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}`, select);
 }
 export const selectOscalTaskByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(oscalTaskPredicateMap);
+  if (!select.includes('id')) select.push('id');
+  if (select.includes('timing')) {
+    select.push('on_date');
+    select.push('start_date');
+    select.push('end_date');
+    select.push('frequency_period');
+    select.push('frequency_unit')
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(oscalTaskPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -3167,6 +4001,15 @@ export const selectOscalTaskByIriQuery = (iri, select) => {
 }
 export const selectAllOscalTasks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(oscalTaskPredicateMap);
+  if (!select.includes('id')) select.push('id');
+
+  if (select.includes('timing')) {
+    select.push('on_date');
+    select.push('start_date');
+    select.push('end_date');
+    select.push('frequency_period');
+    select.push('frequency_unit')
+  }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -3220,6 +4063,7 @@ export const attachToOscalTaskQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3241,6 +4085,7 @@ export const detachFromOscalTaskQuery = (id, field, itemIris) => {
       .join(".\n        ")
     }
   else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -3363,6 +4208,28 @@ export const actorPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
+export const assessmentAssetPredicateMap = {
+  id: {
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  object_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  components: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#components>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "components");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  assessment_platforms: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_platforms>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "assessment_platforms");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+}
 export const assessmentPlatformPredicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
@@ -3419,9 +4286,9 @@ export const assessmentPlatformPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  subject_ref: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_ref");},
+  uses_components: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#uses_components>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "uses_components");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
@@ -3584,7 +4451,7 @@ export const evidencePredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#description>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
@@ -3650,6 +4517,16 @@ export const logEntryAuthorPredicateMap = {
   party: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#party>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  party_name: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  party_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#party_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   role: {
@@ -3798,7 +4675,7 @@ export const observationPredicateMap = {
   },
   relevant_evidence: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#relevant_evidence>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "relative_evidence");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "relevant_evidence");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   collected: {
@@ -3901,12 +4778,12 @@ export const oscalTaskPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   start_date: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#timing_start>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#start_date>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "start_date");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   end_date: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#timing_start>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#end_date>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "end_date");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
@@ -3920,9 +4797,9 @@ export const oscalTaskPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "frequency_unit");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  tasks: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#tasks>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "tasks");},
+  related_tasks: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_tasks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_tasks");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   task_dependencies: {
@@ -4109,25 +4986,34 @@ export const riskPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_observations");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  related_observation_ids: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_observation_ids");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   false_positive: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#false_positive>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "false_positive");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'false-positive',
   },
   accepted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#accepted>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "accepted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'accepted',
   },
   risk_adjusted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_adjusted>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_adjusted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'risk-adjusted',
   },
   priority: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#priority>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:nonNegativeInteger` : null,  this.predicate, "priority");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'priority',
   },
   vendor_dependency: {
     predicate: "<http://fedramp.gov/ns/oscal#vendor_dependency>",
@@ -4144,47 +5030,79 @@ export const riskPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "operational_requirement");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  // Predicate mappings used to gather data for POAM ID
+  poam_id: {
+    predicate: "^<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>/<http://fedramp.gov/ns/oscal#poam_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "poam_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   // Predicate mappings used to gather data for risk level scoring
-  cvss20_base_score: {
+  cvss2_base_score: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_base_score>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_base_score");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss2_base_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  cvss20_temporal_score: {
+  cvss2_temporal_score: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_temporal_score>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_temporal_score");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss2_temporal_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  // cvss20_environmental_score: {
+  // cvss2_environmental_score: {
   //   predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_environmental_score>",
-  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_environmental_score");},
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss2_environmental_score");},
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
-  cvss30_base_score: {
+  cvss3_base_score: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_base_score>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_base_score");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss3_base_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  cvss30_temporal_score: {
+  cvss3_temporal_score: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_temporal_score>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_temporal_score");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss3_temporal_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  // cvss30_environmental_score: {
+  // cvss3_environmental_score: {
   //   predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_environmental_score>",
-  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_environmental_score");},
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss3_environmental_score");},
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
-  exploit_available: {
+  available_exploit: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploit_available>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "exploit_available");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "available_exploit");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  exploitability: {
+  exploitability_ease: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploitability>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "exploitability");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "exploitability_ease");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  // Predicate mappings used to gather data for risk response
+  // remediation_response_date: {
+  //   predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://darklight.ai/ns/common#modified>",
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "remediation_response_date");},
+  //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  // },
+  remediation_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediation_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  remediation_lifecycle: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediation_lifecycle");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  remediation_timestamp: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "remediation_timestamp");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  observation_subject: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "observation_subject");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  }
 }
 export const riskLogPredicateMap = {
   id: {
@@ -4333,6 +5251,7 @@ export const riskResponsePredicateMap = {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "response_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: 'type',
   },
   lifecycle: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",
@@ -4394,6 +5313,21 @@ export const subjectPredicateMap = {
   subject_context: {
     predicate: "<http://darklight.ai/ns/oscal/assessment/common#subject_context>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_context");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_id: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_name: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_version: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/common#version>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_version");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }

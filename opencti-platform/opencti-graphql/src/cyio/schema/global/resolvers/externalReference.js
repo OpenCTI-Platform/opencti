@@ -32,8 +32,10 @@ const cyioExternalReferenceResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("EXTERNAL-REFERENCE");
-        let limit = (args.limit === undefined ? response.length : args.limit) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let externalRefList ;
         if (args.orderedBy !== undefined ) {
           externalRefList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -61,6 +63,7 @@ const cyioExternalReferenceResolvers = {
             if (!filterValues(externalRef, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -73,14 +76,27 @@ const cyioExternalReferenceResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = externalRefList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.limit < externalRefList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: externalRefList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -130,6 +146,18 @@ const cyioExternalReferenceResolvers = {
   },
   Mutation: {
     createCyioExternalReference: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       const {id, query} = insertExternalReferenceQuery(input);
       await dataSources.Stardog.create({
         dbName,
@@ -148,25 +176,63 @@ const cyioExternalReferenceResolvers = {
     },
     deleteCyioExternalReference: async ( _, {id}, {dbName, dataSources} ) => {
       const query = deleteExternalReferenceQuery(id);
-      await dataSources.Stardog.delete({
+      let results = await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: query,
         queryId: "Delete External Reference"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
       return id;
     },
     editCyioExternalReference: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectExternalReferenceQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select ExternalReference",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://darklight.ai/ns/common#ExternalReference-${id}`,
         "http://darklight.ai/ns/common#ExternalReference",
         input,
         externalReferencePredicateMap
       )
-      await dataSources.Stardog.edit({
+      let results = await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
         queryId: "Update External Reference"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
       const select = selectExternalReferenceQuery(id, selectMap.getNode("editCyioExternalReference"));
       const result = await dataSources.Stardog.queryById({
         dbName,

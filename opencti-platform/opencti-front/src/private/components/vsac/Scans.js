@@ -16,7 +16,6 @@ import GenerateReport from "./modals/GenerateReport";
 import VulnerabilityScan from "./modals/VulnerabilityScan";
 import DescriptionIcon from "@material-ui/icons/Description";
 import AddIcon from "@material-ui/icons/Add";
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import ExploreIcon from "@material-ui/icons/Explore";
 import ShowChartIcon from "@material-ui/icons/ShowChart";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -171,6 +170,11 @@ const classes = {
   },
 };
 
+const ScanSortBy = {
+  UploadDate: 0,
+  ScanDate: 1
+}
+
 class Scans extends Component {
 
   constructor(props) {
@@ -199,6 +203,7 @@ class Scans extends Component {
       popoverAnchorEl: null,
       analysisAnchorEl: null,
       renderScans: null,
+      scanSortBy: ScanSortBy.ScanDate,
       sortByLabel: "Scan Date",
       openDialog: false,
       openScanMenu: false,
@@ -210,13 +215,14 @@ class Scans extends Component {
     };
   }
 
-  sortScansByReportDate(unSorted) {
-    const scans = unSorted
-      .slice()
-      .sort((a, b) =>
-        new Date(a.report_date) < new Date(b.report_date) ? 1 : -1
-      );
-    return scans;
+  sortScans(scans, scanSortBy) {
+    let sortedScans = scans;
+    if (scanSortBy === ScanSortBy.ScanDate) {
+      sortedScans = scans.slice().sort((a,b) => new Date(b.report_date) - new Date(a.report_date))
+    } else if (scanSortBy === ScanSortBy.UploadDate) {
+      sortedScans = scans.slice().sort((a,b) => new Date(b.upload_date) - new Date(a.upload_date))
+    }
+    return sortedScans
   }
 
   refreshScans(refreshInBackground){
@@ -226,17 +232,13 @@ class Scans extends Component {
           const newScans = response.data;
           if(refreshInBackground){
             
-            if(JSON.stringify(this.state.scans) !== JSON.stringify(newScans)){
-              this.setState({ scans: newScans });
-              this.setState({ scansReportDate: this.sortScansByReportDate(newScans) });
-              this.setState({ renderScans: newScans });
+            if(JSON.stringify(this.state.renderScans) !== JSON.stringify(newScans)){
+              this.setState({ renderScans: this.sortScans(newScans, this.state.scanSortBy) });
               clearInterval(this.state.refreshIntervalId);
 
             }
           } else {
-            this.setState({ scans: newScans });
-            this.setState({ scansReportDate: this.sortScansByReportDate(newScans) });
-            this.setState({ renderScans: newScans });
+            this.setState({ renderScans: this.sortScans(newScans, this.state.scanSortBy) });
           }
 
           this.setState({ loadingScans: false });
@@ -320,25 +322,20 @@ class Scans extends Component {
 
   render() {
 
-    const { t, n, fsd, mtd, theme } = this.props;
+    const { t } = this.props;
     const {
       client_ID,
-      scans,
       loadingScans,
       renderScans,
-      scansReportDate,
       sortByLabel,
       loadingAnalyses,
       analyses,
       scatterPlotData,
-      modalStyle,
       openDialog,
       openScanMenu,
-      loadDialog,
       dialogParams,
       popoverAnchorEl,
       analysisAnchorEl,
-      vulnerabilityAnchorEl,
       sortByAnchorEl,
       openedPopoverId,
       openAnalysisMenu,
@@ -346,8 +343,6 @@ class Scans extends Component {
       scanAssociation,
       analysisLoaderNoDisplay,
     } = this.state;
-
-    const openPopover = Boolean(popoverAnchorEl);
 
     const handlePopoverOpen = (event, popoverId) => {
       this.setState({ popoverAnchorEl: event.currentTarget, openedPopoverId: popoverId });
@@ -357,20 +352,8 @@ class Scans extends Component {
       this.setState({ popoverAnchorEl: null, openedPopoverId: null });
     };
 
-    const handleClick = (event) => {
-      this.setState({ vulnerabilityAnchorEl: event.currentTarget });
-    };
-
-    const handleClose = () => {
-      this.setState({ vulnerabilityAnchorEl: false });
-    };
-
     const handleSortByClick = (event) => {
       this.setState({ sortByAnchorEl: event.currentTarget });
-    };
-
-    const handleSortByClose = () => {
-      this.setState({ sortByAnchorEl: null });
     };
 
     const handleAnalysisClick = (event, analysis_id) => {
@@ -378,12 +361,9 @@ class Scans extends Component {
     };
 
     const handleScanClick =(event, scan_id) => {
+      handlePopoverClose()
       this.setState({vulnerabilityAnchorEl: event.currentTarget, openScanMenu: scan_id})
     }
-
-    const handleAnalysisClose = () => {
-      this.setState({ analysisByAnchorEl: null,  openAnalysisMenu: null});
-    };
 
     const triggerPageRefreshInterval = () =>{
         this.refreshScans(false);
@@ -395,15 +375,17 @@ class Scans extends Component {
       this.setState({refreshIntervalId: intervalId});
     }
 
-    const sortByReportDate = () => {
-      this.setState({ sortByLabel: "Report Date" });
-      this.setState({ renderScans: scansReportDate });
+    const sortByScanDate = () => {
+      this.setState({ sortByLabel: "Scan Date" });
+      this.setState({ scanSortBy: ScanSortBy.ScanDate })
+      this.setState({ renderScans: this.sortScans(renderScans, ScanSortBy.ScanDate) });
       this.setState({ sortByAnchorEl: null });
     };
 
     const sortByUploadDate = () => {
-      this.setState({ sortByLabel: "Scan Date" });
-      this.setState({ renderScans: scans });
+      this.setState({ sortByLabel: "Upload Date" });
+      this.setState({ scanSortBy: ScanSortBy.UploadDate })
+      this.setState({ renderScans: this.sortScans(renderScans, ScanSortBy.UploadDate) });
       this.setState({ sortByAnchorEl: null });
     };
 
@@ -436,7 +418,7 @@ class Scans extends Component {
     }
 
     const onNewAnalysis = (id, client, params) => {
-      const scanName = scans.filter((s) => s.id === params.scan_id)[0].scan_name
+      const scanName = renderScans.filter((s) => s.id === params.scan_id)[0].scan_name
       createNewScanAnalysis(id, client, params)
         .then((response) => {
           toastSuccess("Creating New Analysis")
@@ -518,7 +500,7 @@ class Scans extends Component {
         handleDialogOpen({
           modal: "Scan Delete Verify",
           clientId: client_ID,
-          scan: this.state.scans.filter((s) => s.id === id)[0],
+          scan: this.state.renderScans.filter((s) => s.id === id)[0],
           analyses: analysesToDelete,
           action: onDeleteComplete
         })
@@ -679,7 +661,7 @@ class Scans extends Component {
                         open={sortByAnchorEl}
                         onClose={() => this.setState({ sortByAnchorEl: null })}
                       >
-                        <MenuItem onClick={() => sortByReportDate()}>
+                        <MenuItem onClick={() => sortByScanDate()}>
                           <ListItemIcon>
                             <ScannerIcon fontSize="small" />
                           </ListItemIcon>
@@ -749,14 +731,6 @@ class Scans extends Component {
                                 New Analysis
                               </MenuItem>
                               <MenuItem
-                                onClick={() => handleDialogOpen({ modal: "Rename" })}
-                              >
-                                <ListItemIcon>
-                                  <EditOutlinedIcon fontSize="small" />
-                                </ListItemIcon>
-                                Rename
-                              </MenuItem>
-                              <MenuItem
                                 onClick={(e) => handleDeleteScan(e, scan.id)}
                               >
                                 <ListItemIcon>
@@ -769,9 +743,7 @@ class Scans extends Component {
                           <Popover
                             id="mouse-over-popover"
                             className={classes.popover}
-                            classes={{
-                              paper: classes.paper,
-                            }}
+                            classes={{paper: classes.paper}}
                             style={{ pointerEvents: 'none'}}
                             open={openedPopoverId === scan.id}
                             anchorEl={popoverAnchorEl}
@@ -886,7 +858,7 @@ class Scans extends Component {
                                             {
                                               analysis: analysis,
                                               client: client_ID,
-                                              scan: getCurrentScan(analysis.scan.id, scans)
+                                              scan: getCurrentScan(analysis.scan.id, renderScans)
                                             })}
                                 >
                                   <ListItemIcon>
@@ -1121,7 +1093,7 @@ class Scans extends Component {
                                     {
                                       analysis,
                                       client: client_ID,
-                                      scan: getCurrentScan(analysis.scan.id, scans)
+                                      scan: getCurrentScan(analysis.scan.id, renderScans)
                                     })}
                         >
                           Explore Results

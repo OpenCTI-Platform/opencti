@@ -48,6 +48,7 @@ import CyioCoreObjectExternalReferences from '../../../analysis/external_referen
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   item: {
@@ -79,7 +80,7 @@ const styles = (theme) => ({
   },
   dialogContent: {
     overflowY: 'scroll',
-    height: '500px',
+    height: '550px',
     overflowX: 'hidden',
     padding: '8px 24px',
   },
@@ -162,7 +163,6 @@ class RequiredResourceCreation extends Component {
         {
           subject_type: '',
           subject_ref: '',
-          name: '',
         },
       ],
       selectedIndex: 1,
@@ -183,7 +183,6 @@ class RequiredResourceCreation extends Component {
 
   handleCancelClick() {
     this.setState({
-      open: false,
       close: true,
       resourceName: '',
     });
@@ -194,21 +193,24 @@ class RequiredResourceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    this.setState({
-      subjects: [
-        {
-          subject_type: values.resource_type,
-          subject_ref: values.resource,
-          name: values.name,
-        },
-      ],
-    });
+    if (values.resource_type === '' && values.resource === '') {
+      this.setState({ subjects: [] });
+    } else {
+      this.setState({
+        subjects: [
+          {
+            subject_type: values.resource_type,
+            subject_ref: values.resource,
+          },
+        ],
+      });
+    }
     const finalValues = pipe(
       dissoc('resource_type'),
       dissoc('resource'),
+      assoc('remediation_id', this.props.remediationId),
       assoc('subjects', this.state.subjects),
     )(values);
-    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: RequiredResourceCreationMutation,
       variables: {
@@ -223,13 +225,16 @@ class RequiredResourceCreation extends Component {
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
-        resetForm();
         this.handleClose();
+        this.props.refreshQuery();
         if (this.props.onCreate) {
           this.props.onCreate(response.externalReferenceAdd, true);
         }
       },
-      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create Required Resource');
+      },
     });
     // commitMutation({
     //   mutation: RequiredResourceCreationMutation,
@@ -259,7 +264,7 @@ class RequiredResourceCreation extends Component {
   }
 
   onResetContextual() {
-    this.handleClose();
+    this.handleCancelClick();
   }
 
   renderClassic() {
@@ -378,6 +383,7 @@ class RequiredResourceCreation extends Component {
           color='inherit'
           aria-label='Add'
           edge='end'
+          style={{ marginTop: '-15px' }}
           onClick={this.handleOpen.bind(this)}
         >
           <Add fontSize='small' />
@@ -385,7 +391,6 @@ class RequiredResourceCreation extends Component {
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleClose.bind(this)}
           fullWidth={true}
           maxWidth='sm'
         >
@@ -408,108 +413,79 @@ class RequiredResourceCreation extends Component {
                 </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant='h3'
-                          color='textSecondary'
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Name')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')}>
-                            <Information fontSize='inherit' color='disabled' />
-                          </Tooltip>
-                        </div>
-                        <div className='clearfix' />
-                        <Field
-                          component={TextField}
-                          name='name'
-                          fullWidth={true}
-                          size='small'
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                        />
+                    <Grid item={true} xs={12}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Name')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Description')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
                       </div>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant='h3'
-                          color='textSecondary'
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Type')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Resource Type')}>
-                            <Information fontSize='inherit' color='disabled' />
-                          </Tooltip>
-                        </div>
-                        <div className='clearfix' />
-                        <ResourceTypeField
-                          name='resource_type'
-                          fullWidth={true}
-                          variant='outlined'
-                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
-                          type='hardware'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
+                      <div className='clearfix' />
+                      <Field
+                        component={TextField}
+                        name='name'
+                        fullWidth={true}
+                        size='small'
+                        containerstyle={{ width: '100%' }}
+                        variant='outlined'
+                      />
                     </Grid>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant='h3'
-                          color='textSecondary'
-                          gutterBottom={true}
-                          size='small'
-                          style={{ float: 'left' }}
-                        >
-                          {t('ID')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')}>
-                            <Information fontSize='inherit' color='disabled' />
-                          </Tooltip>
-                        </div>
-                        <div className='clearfix' />
-                        <Field
-                          component={TextField}
-                          name='id'
-                          fullWidth={true}
-                          size='small'
-                          variant='outlined'
-                          containerstyle={{ width: '100%' }}
-                        />
+                    <Grid item={true} xs={6} style={{ marginBottom: '15px' }}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Resource Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Resource Type')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
                       </div>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant='h3'
-                          color='textSecondary'
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Name')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Resource')}>
-                            <Information fontSize='inherit' color='disabled' />
-                          </Tooltip>
-                        </div>
-                        <div className='clearfix' />
-                        <ResourceNameField
-                          name='resource'
-                          resourceTypename={this.state.resourceName}
-                          fullWidth={true}
-                          variant='outlined'
-                          type='hardware'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
+                      <div className='clearfix' />
+                      <ResourceTypeField
+                        name='resource_type'
+                        fullWidth={true}
+                        variant='outlined'
+                        handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
+                        type='hardware'
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6} style={{ marginBottom: '15px' }}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Resource Name')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Resource')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
                       </div>
+                      <div className='clearfix' />
+                      <ResourceNameField
+                        name='resource'
+                        resourceTypename={this.state.resourceName}
+                        fullWidth={true}
+                        variant='outlined'
+                        type='hardware'
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
@@ -541,18 +517,20 @@ class RequiredResourceCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        disableAdd={true}
                         fieldName='links'
-                        typename={requiredResourceData.__typename}
-                        externalReferences={requiredResourceData.links}
+                        typename='CyioExternalReference'
+                        externalReferences={[]}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
+                    <Grid style={{ marginTop: '25px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
+                        disableAdd={true}
                         fieldName='remarks'
-                        typename={requiredResourceData.__typename}
-                        notes={requiredResourceData.remarks}
+                        typename='CyioNotes'
+                        notes={[]}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         // data={props}
                         marginTop='0px'
@@ -563,8 +541,7 @@ class RequiredResourceCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant='outlined'
-                    // onClick={handleReset}
-                    onClick={this.handleCancelClick.bind(this)}
+                    onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -583,44 +560,43 @@ class RequiredResourceCreation extends Component {
               </Form>
             )}
           </Formik>
-        </Dialog>
-        <Dialog
-          open={this.state.close}
-          keepMounted={true}
+          <Dialog
+            open={this.state.close}
+            keepMounted={true}
           // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
-        >
-          <DialogContent>
-            <Typography className={classes.popoverDialog}>
-              {t('Are you sure you’d like to cancel?')}
-            </Typography>
-            <Typography align='left'>
-              {t('Your progress will not be saved')}
-            </Typography>
-          </DialogContent>
-          <DialogActions className={classes.dialogActions}>
-            <Button
-              // onClick={this.handleCloseDelete.bind(this)}
-              // disabled={this.state.deleting}
-              // onClick={handleReset}
-              onClick={this.handleCancelCloseClick.bind(this)}
-              classes={{ root: classes.buttonPopover }}
-              variant='outlined'
-              size='small'
-            >
-              {t('Go Back')}
-            </Button>
-            <Button
-              onClick={() => this.props.history.goBack()}
-              color='secondary'
-              // disabled={this.state.deleting}
-              classes={{ root: classes.buttonPopover }}
-              variant='contained'
-              size='small'
-            >
-              {t('Yes, Cancel')}
-            </Button>
-          </DialogActions>
+          >
+            <DialogContent>
+              <Typography className={classes.popoverDialog}>
+                {t('Are you sure you’d like to cancel?')}
+              </Typography>
+              <Typography align='left'>
+                {t('Your progress will not be saved')}
+              </Typography>
+            </DialogContent>
+            <DialogActions className={classes.dialogActions}>
+              <Button
+                // onClick={this.handleCloseDelete.bind(this)}
+                // disabled={this.state.deleting}
+                // onClick={handleReset}
+                onClick={this.handleCancelCloseClick.bind(this)}
+                classes={{ root: classes.buttonPopover }}
+                variant='outlined'
+                size='small'
+              >
+                {t('Go Back')}
+              </Button>
+              <Button
+                onClick={() => this.props.history.goBack()}
+                color='secondary'
+                // disabled={this.state.deleting}
+                classes={{ root: classes.buttonPopover }}
+                variant='contained'
+                size='small'
+              >
+                {t('Yes, Cancel')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Dialog>
       </div>
     );

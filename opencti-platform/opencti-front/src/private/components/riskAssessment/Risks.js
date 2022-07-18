@@ -38,7 +38,7 @@ class Risks extends Component {
       sortBy: R.propOr('poam_id', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('cards', 'view', params),
+      view: 'lines',
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -59,7 +59,7 @@ class Risks extends Component {
   }
 
   handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
+    this.setState({ view: mode });
   }
 
   handleSearch(value) {
@@ -196,6 +196,7 @@ class Risks extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleRiskCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -204,16 +205,19 @@ class Risks extends Component {
         CreateItemComponent={<RiskCreation />}
         OperationsComponent={<RiskDeletion />}
         openExports={openExports}
-        exportEntityType="Risk"
+        filterEntityType="Risk"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'markedBy',
+          'name_m',
+          'risk_level',
+          'risk_status',
+          'response_type',
+          'deadline_start_date',
           'created_start_date',
           'created_end_date',
-          'createdBy',
           'label_name',
         ]}
       >
@@ -223,7 +227,7 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <RisksCards
@@ -289,7 +293,7 @@ class Risks extends Component {
       name: {
         label: 'Name',
         width: '16%',
-        isSortable: false,
+        isSortable: true,
       },
       risk_level: {
         label: 'Risk',
@@ -301,7 +305,7 @@ class Risks extends Component {
         width: '16%',
         isSortable: true,
       },
-      risk_response: {
+      response_type: {
         label: 'Response',
         width: '11%',
         isSortable: true,
@@ -319,7 +323,7 @@ class Risks extends Component {
       deadline: {
         label: 'Deadline',
         width: '10%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
@@ -334,6 +338,7 @@ class Risks extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleRiskCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -342,20 +347,19 @@ class Risks extends Component {
         openExports={openExports}
         selectAll={selectAll}
         disabled={true}
-        exportEntityType="Risk"
+        filterEntityType="Risk"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
+          'name_m',
+          'risk_level',
+          'risk_status',
+          'response_type',
+          'deadline_start_date',
+          'created_start_date',
+          'created_end_date',
           'label_name',
         ]}
       >
@@ -364,9 +368,8 @@ class Risks extends Component {
           query={risksLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`props : ${props} Error : ${error}`);
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <RisksLines
@@ -423,6 +426,7 @@ class Risks extends Component {
       orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
+      filterMode: 'and',
     };
     const { location } = this.props;
     return (

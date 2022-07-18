@@ -26,7 +26,7 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import DeviceDeletion from './devices/DeviceDeletion';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import {toastSuccess, toastGenericError} from "../../../utils/bakedToast";
+import { toastSuccess, toastGenericError } from "../../../utils/bakedToast";
 
 class Devices extends Component {
   constructor(props) {
@@ -40,7 +40,7 @@ class Devices extends Component {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('cards', 'view', params),
+      view: 'lines',
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -61,7 +61,7 @@ class Devices extends Component {
   }
 
   handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
+    this.setState({ view: mode });
   }
 
   handleSearch(value) {
@@ -183,16 +183,16 @@ class Devices extends Component {
       asset_id: {
         label: 'Asset ID',
       },
-      ip_address: {
+      ip_address_value: {
         label: 'IP Address',
       },
-      installed_operating_system: {
+      installed_os_name: {
         label: 'OS',
       },
       network_id: {
         label: 'Network ID',
       },
-      labels: {
+      label_name: {
         label: 'Label',
       },
     };
@@ -208,6 +208,7 @@ class Devices extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleNewCreation={this.handleDeviceCreation.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
@@ -233,7 +234,7 @@ class Devices extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <DevicesCards
@@ -285,7 +286,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: true,
       },
-      ip_address: {
+      ip_address_value: {
         label: 'IP Address',
         width: '12%',
         isSortable: true,
@@ -295,7 +296,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: false,
       },
-      installed_operating_system: {
+      installed_os_name: {
         label: 'OS',
         width: '8%',
         isSortable: true,
@@ -305,7 +306,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: true,
       },
-      labels: {
+      label_name: {
         label: 'Label',
         width: '20%',
         isSortable: true,
@@ -323,6 +324,7 @@ class Devices extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleDeviceCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -349,7 +351,7 @@ class Devices extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <DevicesLines
@@ -385,6 +387,7 @@ class Devices extends Component {
       orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
+      filterMode: 'and',
     };
     const { location } = this.props;
     return (

@@ -15,14 +15,23 @@ import {
   deleteRiskLogEntryQuery,
   riskLogPredicateMap,
   attachToRiskLogEntryQuery,
+  selectRiskQuery,
   attachToRiskQuery,
   detachFromRiskQuery,
+  selectRiskResponseQuery,
   selectRiskResponseByIriQuery,
   selectOscalTaskByIriQuery,
   insertLogEntryAuthorsQuery,
   deleteLogEntryAuthorByIriQuery,
+  selectLogEntryAuthorQuery,
   selectLogEntryAuthorByIriQuery,
+  selectAllLogEntryAuthors,
 } from './sparql-query.js';
+import {
+  selectPartyQuery,
+  selectPartyByIriQuery,
+  getReducer as getCommonReducer,
+} from '../../oscal-common/resolvers/sparql-query.js'
 
 const logEntryResolvers = {
   Query: {
@@ -47,8 +56,10 @@ const logEntryResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("RISK-LOG-ENTRY");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let logEntryList ;
         if (args.orderedBy !== undefined ) {
           logEntryList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -60,15 +71,15 @@ const logEntryResolvers = {
 
         // for each Log Entry in the result set
         for (let logEntry of logEntryList) {
+          if (logEntry.id === undefined || logEntry.id == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${logEntry.iri} missing field 'id'; skipping`);
+            continue;
+          }
+
           // skip down past the offset
           if (offset) {
             offset--
             continue
-          }
-
-          if (logEntry.id === undefined || logEntry.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${logEntry.iri} missing field 'id'; skipping`);
-            continue;
           }
 
           // filter out non-matching entries if a filter is to be applied
@@ -76,7 +87,16 @@ const logEntryResolvers = {
             if (!filterValues(logEntry, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
+
+          //TODO: WORKAROUND data issues
+          if (logEntry.hasOwnProperty('entry_type')) {
+            for (let entry in logEntry.entry_type) {
+              logEntry.entry_type[entry] = logEntry.entry_type[entry].replace(/_/g,'-');
+            }
+          }
+          //END WORKAROUND
 
           // if haven't reached limit to be returned
           if (limit) {
@@ -88,14 +108,27 @@ const logEntryResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = logEntryList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < logEntryList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: logEntryList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -142,17 +175,231 @@ const logEntryResolvers = {
         }
       }
     },
+    logEntryAuthors: async (_, args, {dbName, dataSources, selectMap}) => {
+      const sparqlQuery = selectAllLogEntryAuthors(selectMap.getNode("node"), args);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryAll({
+          dbName,
+          sparqlQuery,
+          queryId: "Select LogEntry Author List",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined) return null;
+      if (Array.isArray(response) && response.length > 0) {
+        const edges = [];
+        const reducer = getReducer("LOG-ENTRY-AUTHOR");
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
+        let authorList ;
+        if (args.orderedBy !== undefined ) {
+          authorList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+        } else {
+          authorList = response;
+        }
+
+        if (offset > authorList.length) return null;
+
+        // for each Log Entry in the result set
+        for (let author of authorList) {
+          if (author.id === undefined || author.id == null ) {
+            console.log(`[CYIO] (${dbName}) CONSTRAINT-VIOLATION: (${dbName}) ${author.iri} missing field 'id'; skipping`);
+            continue;
+          }
+          if (author.party === undefined || author.party == null ) {
+            console.log(`[CYIO] (${dbName}) CONSTRAINT-VIOLATION: (${dbName}) ${author.iri} missing field 'party'; skipping`);
+            continue;
+          }
+
+          let found = false;
+          for (let party of author.party) {
+            if (party.includes('Party-undefined')) {
+              console.error(`[CYIO] INVALID-IRI: (${dbName}) ${author.iri} 'party' contains an IRI ${party} which is invalid; skipping`);
+              found = true;
+              break;
+            }
+          }
+          if (found) continue;
+
+          // skip down past the offset
+          if (offset) {
+            offset--
+            continue
+          }
+
+          // filter out non-matching entries if a filter is to be applied
+          if ('filters' in args && args.filters != null && args.filters.length > 0) {
+            if (!filterValues(author, args.filters, args.filterMode) ) {
+              continue
+            }
+            filterCount++;
+          }
+
+          // if haven't reached limit to be returned
+          if (limit) {
+            let edge = {
+              cursor: author.iri,
+              node: reducer(author),
+            }
+            edges.push(edge)
+            limit--;
+          }
+        }
+        // check if there is data to be returned
+        if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = authorList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
+        return {
+          pageInfo: {
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
+          },
+          edges: edges,
+        }
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return null;
+        }
+      }
+    },
+    logEntryAuthor: async (_, {id}, {dbName, dataSources, selectMap}) => {
+      const sparqlQuery = selectLogEntryAuthorQuery(id, selectMap.getNode("logEntryAuthor"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select LogEntry Author",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      if (response === undefined) return null;
+      if (Array.isArray(response) && response.length > 0) {
+        const reducer = getReducer("LOG-ENTRY-AUTHOR");
+        return reducer(response[0]);  
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return null;
+        }
+      }
+    },
   },
   Mutation: {
     createAssessmentLogEntry: async ( _, {_input}, {_dbName, _dataSources, _selectMap} ) => {},
     deleteAssessmentLogEntry: async ( _, {_resultId, _id}, {_dbName, _dataSources} ) => {},
     editAssessmentLogEntry: async (_, {_id, _input}, {_dbName, _dataSources, _selectMap}) => {},
     createRiskLogEntry: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
       let riskId, responses, authors;
-      if (input.logged_by !== undefined) authors = input.logged_by;
-      if (input.related_responses !== undefined) responses = input.related_responses;
-      if (input.risk_id !== undefined) riskId = input.risk_id;
+      if (input.risk_id !== undefined) {
+        riskId = input.risk_id;
+
+        // check that the Risk exists
+        const sparqlQuery = selectRiskQuery(riskId, ["id"]);
+        let response;
+        try {
+          response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Checking existence of Risk object",
+            singularizeSchema
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+        if (response.length === 0) throw new UserInputError(`Risk does not exist with ID ${riskId}`);
+      }
+      if (input.logged_by !== undefined) {
+        authors = input.logged_by;
+        for ( let author of authors) {
+          // check that the Party exists
+          const sparqlQuery = selectPartyQuery(author.party, ["id"]);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Checking existence of Party object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+
+          if (response.length === 0) throw new UserInputError(`Party does not exist with ID ${author.party}`);
+        }
+      }
+      if (input.related_responses !== undefined) {
+        responses = input.related_responses;
+        for ( let responseId of responses) {
+          // check that the Risk exists
+          const sparqlQuery = selectRiskResponseQuery(responseId, ["id"]);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Checking existence of Risk Response object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+
+          if (response.length === 0) throw new UserInputError(`Risk Response does not exist with ID ${responseId}`);
+        }
+      }
 
       // create the Risk Log Entry
       const {iri, id, query} = insertRiskLogEntryQuery(input);
@@ -180,20 +427,20 @@ const logEntryResolvers = {
       // create any authors supplied and attach them to the log entry 
       if (authors !== undefined && authors !== null ) {
         // create the Log Entry Author
+        let result;
         const {authorIris, query} = insertLogEntryAuthorsQuery( authors );
-        await dataSources.Stardog.create({
+        result = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
           queryId: "Create Authors of Log Entry"
         });
         // attach the Author to the Party
         const authorAttachQuery = attachToRiskLogEntryQuery(id, 'logged_by', authorIris);
-        await dataSources.Stardog.create({
+        result = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: authorAttachQuery,
           queryId: "Attach Authors to Log Entry"
         });
-
       }
 
       // Create references to the Risk Responses
@@ -291,6 +538,26 @@ const logEntryResolvers = {
       return id;
     },
     editRiskLogEntry: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectRiskLogEntryQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Risk Log Entry",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry",
@@ -358,8 +625,8 @@ const logEntryResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -400,8 +667,8 @@ const logEntryResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -528,8 +795,8 @@ const logEntryResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -570,8 +837,8 @@ const logEntryResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -636,7 +903,20 @@ const logEntryResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
+            // Return a null logEntryAuthor if it has a reference to the party that is bad or missing
+            if (response[0].hasOwnProperty('party')) {
+              let parties = [];
+              for (let party of response[0].party) {
+                if (party.includes('Party-undefined')) {
+                  console.error(`[CYIO] INVALID-IRI: (${dbName}) ${response[0].iri} 'party' contains an IRI ${party} which is invalid; skipping`);
+                  continue;
+                }
+                parties.push(party);
+              }
+              if (parties.length === 0) parties = null;
+              response[0].party = parties;
+            } 
+            if (response[0].party !== null) results.push(reducer(response[0]))
           }
           else {
             // Handle reporting Stardog Error
@@ -694,6 +974,70 @@ const logEntryResolvers = {
       } else {
         return [];
       }
+    },
+  },
+  LogEntryAuthor: {
+    party: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.party_iri === undefined) return null;
+      const reducer = getCommonReducer("PARTY");
+      let iri = parent.party_iri[0];
+      const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode("party"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Party",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined || response.length === 0) return null;
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+      if (Array.isArray(response) && response.length > 0) {
+        return (reducer(response[0]));
+      }
+
+      return null;  
+    },
+    role: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.role_iri === undefined) return null;
+      const reducer = getCommonReducer("PARTY");
+      let iri = parent.role_iri[0];
+      const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode("party"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Party",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined) return null;
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+      if (Array.isArray(response) && response.length > 0) {
+        return (reducer(response[0]));
+      }
+
+      return null;  
     },
   },
 }

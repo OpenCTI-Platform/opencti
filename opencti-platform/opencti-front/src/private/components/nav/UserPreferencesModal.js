@@ -164,13 +164,13 @@ const UserPreferencesModal = (props) => {
     updateOrganizationSettings(currentClient_id, param).then((results) =>{
 
       localStorage.setItem('client_id', currentClient_id);
-
+      props.setClientId(currentClient_id);
       if(location.pathname === '/activities/vulnerability assessment/scans/explore results'){
-
-       window.location.replace('/activities/vulnerability assessment/scans');
+       props.history.push('/activities/vulnerability assessment/scans');
       } else {
-        window.location.reload(false);
+        props.history.push(props.url);
       }
+      handleCancel();
 
     }).catch((error) => {
       console.log(error)

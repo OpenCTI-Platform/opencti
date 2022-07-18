@@ -113,11 +113,13 @@ export function getReducer( type ) {
 export const computingDeviceAssetReducer = (item) => {
   // this code is to work around an issue in the data where we sometimes get multiple operating systems
   // when there shouldn't be but just one
-  if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
-    if (item.installed_operating_system.length > 1) {
-      console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
+  if ('installed_operating_system' in item) {
+    if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
+      if (item.installed_operating_system.length > 1) {
+        console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
+      }
+      item.installed_operating_system = item.installed_operating_system[0]
     }
-    item.installed_operating_system = item.installed_operating_system[0]
   }
 
   // if no object type was returned, compute the type from the IRI
@@ -244,6 +246,7 @@ export function getSelectSparqlQuery( type, select, id, args, ) {
     select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined && id === undefined ) {
@@ -303,7 +306,15 @@ export const insertQuery = (propValues) => {
     ...(propValues.version && {"version": propValues.version})
   } ;
   const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => computingDevicePredicateMap.hasOwnProperty(propPair[0]))
@@ -348,7 +359,15 @@ export const insertComputingDeviceQuery = (propValues) => {
     ...(propValues.version && {"version": propValues.version})
   } ;
   const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => computingDevicePredicateMap.hasOwnProperty(propPair[0]))
@@ -392,6 +411,7 @@ export const selectComputingDeviceByIriQuery = (iri, select) => {
 }
 export const selectAllComputingDevices = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

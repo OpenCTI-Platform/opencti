@@ -110,11 +110,12 @@ class CyioNotePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        if (this.props.handleOpenRemove) {
-          this.handleCloseDelete();
-        } else {
-          this.props.history.push('/dashboard/analysis/notes');
-        }
+        this.props.refreshQuery();
+        // if (this.props.handleOpenRemove) {
+        //   this.handleCloseDelete();
+        // } else {
+        //   this.props.history.push('/dashboard/analysis/notes');
+        // }
       },
       // onError: (err) => console.log('NoteDeletionDarkLightMutationError', err),
     });
@@ -198,13 +199,13 @@ class CyioNotePopover extends Component {
               {t('Remove')}
             </MenuItem>
           )}
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
             <MenuItem
               className={classes.menuItem}
               onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
-          </Security>
+          {/* </Security> */}
         </Menu>
         <Dialog
           open={this.state.displayDelete}
@@ -231,7 +232,7 @@ class CyioNotePopover extends Component {
             </Button>
             <Button
               onClick={this.submitDelete.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
               variant="contained"

@@ -218,14 +218,14 @@ class RiskTrackingLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, riskId, data, history,
+      t, classes, riskId, data, history, refreshQuery,
     } = this.props;
-    const riskLogEdges = R.pathOr([], ['risk', 'risk_log', 'edges'], data);
+    const riskLogEdges = R.pathOr([], ['risk_log', 'edges'], data);
     const { expanded, displayUpdate } = this.state;
     const riskStatusResponse = R.pipe(
-      R.pathOr([], ['risk', 'remediations']),
+      R.pathOr([], ['remediations']),
       R.map((n) => ({
-        description: n.description,
+        id: n.id,
         name: n.name,
       })),
     )(data);
@@ -249,6 +249,7 @@ class RiskTrackingLinesContainer extends Component {
             inputValue={this.state.search}
             paginationOptions={paginationOptions}
             riskId={riskId}
+            refreshQuery={refreshQuery}
             data={data}
             history={history}
             riskStatusResponse={riskStatusResponse}
@@ -261,11 +262,12 @@ class RiskTrackingLinesContainer extends Component {
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {(riskLogEdges.length > 0 ? (riskLogEdges.map((riskTrackingEdge, key) => {
-            const riskLogItem = riskTrackingEdge.node;
-            return <RiskTrackingLine
+            const riskLogItem = riskTrackingEdge?.node;
+            return riskTrackingEdge && <RiskTrackingLine
               history={history}
               node={riskLogItem}
               key={riskLogItem.id}
+              refreshQuery={refreshQuery}
               riskId={riskId}
               riskStatusResponse={riskStatusResponse}
             />;
@@ -284,6 +286,7 @@ RiskTrackingLinesContainer.propTypes = {
   riskId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
+  refreshQuery: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
@@ -340,6 +343,10 @@ const RiskTrackingLines = createFragmentContainer(
               }
             }
           }
+        }
+        remediations {
+          id
+          name
         }
       }
     `,

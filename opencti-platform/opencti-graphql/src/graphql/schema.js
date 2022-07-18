@@ -122,6 +122,10 @@ import riskResponseResolvers from '../cyio/schema/risk-assessments/assessment-co
 import subjectResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/subject.js';
 import poamResolvers from '../cyio/schema/risk-assessments/poam/resolvers/poam.js';
 import poamItemResolvers from '../cyio/schema/risk-assessments/poam/resolvers/poamItem.js';
+import componentResolvers from '../cyio/schema/risk-assessments/component/resolvers/component.js';
+import inventoryItemResolvers from '../cyio/schema/risk-assessments/inventory-item/resolvers/inventoryItem.js';
+import assessmentAssetResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/assessmentAsset.js';
+import oscalResponsibleRoleResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalResponsibleRole.js';
 // Cyio Extensions to support merged graphQL schema
 import { loadSchemaSync } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader' ;
@@ -261,6 +265,10 @@ const createSchema = () => {
       subjectResolvers,
       poamResolvers,
       poamItemResolvers,
+      componentResolvers,
+      inventoryItemResolvers,
+      assessmentAssetResolvers,
+      oscalResponsibleRoleResolvers,
 ]);
 
   // load the OpenCTI and each of the Cyio GraphQL schema files

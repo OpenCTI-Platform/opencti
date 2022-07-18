@@ -2,15 +2,11 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
 import {
-  compose, propOr, filter, append, take,
+  compose,
 } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import Slide from '@material-ui/core/Slide';
 import {
   Add,
@@ -20,25 +16,9 @@ import {
   ArrowBack,
   AddCircleOutline,
 } from '@material-ui/icons';
-import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
-import Dialog from '@material-ui/core/Dialog';
 import Tooltip from '@material-ui/core/Tooltip';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
-import { DialogTitle } from '@material-ui/core';
-import InputLabel from '@material-ui/core/InputLabel/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -101,18 +81,21 @@ class CyioDomainObjectAssetHeader extends Component {
   render() {
     const {
       t,
+      name,
+      goBack,
       classes,
+      history,
       disabled,
+      disablePopover,
       cyioDomainObject,
       handleDisplayEdit,
       OperationsComponent,
       handleOpenNewCreation,
-      disablePopover,
     } = this.props;
     return (
       <div className={classes.header}>
         <Tooltip title={t('Back')} style={{ marginTop: -5 }}>
-          <Button variant="outlined" className={classes.iconButton} size="large" onClick={() => this.props.history.goBack()}>
+          <Button variant="outlined" className={classes.iconButton} size="large" onClick={() => history.push(goBack)}>
             <ArrowBack fontSize="inherit" />
           </Button>
         </Tooltip>
@@ -121,7 +104,7 @@ class CyioDomainObjectAssetHeader extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {cyioDomainObject?.name}
+          {name}
         </Typography>
         <div className={classes.aliases}>
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
@@ -149,7 +132,7 @@ class CyioDomainObjectAssetHeader extends Component {
                 size="small"
                 onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
                 startIcon={<AddCircleOutline />}
-                disabled={disabled || false}
+                disabled={disabled || !handleOpenNewCreation || false}
                 color='primary'
               >
                 {t('New')}
@@ -165,8 +148,10 @@ class CyioDomainObjectAssetHeader extends Component {
 CyioDomainObjectAssetHeader.propTypes = {
   cyioDomainObject: PropTypes.object,
   PopoverComponent: PropTypes.object,
+  name: PropTypes.string,
   variant: PropTypes.string,
   classes: PropTypes.object,
+  goBack: PropTypes.string,
   t: PropTypes.func,
   disabled: PropTypes.bool,
   fld: PropTypes.func,

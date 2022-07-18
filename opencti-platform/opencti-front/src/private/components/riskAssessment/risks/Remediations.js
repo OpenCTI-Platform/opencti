@@ -49,27 +49,31 @@ const Remediations = (props) => {
 
   const handleCreation = () => {
     setOpenCreation(true);
-    // this.props.handleCreation();
+  };
+  const handleOpenCreation = () => {
+    setOpenCreation(false);
   };
 
-  const handleOpenNewCreation = () => {
-    props.history.push({
-      pathname: '/activities/risk assessment/risks',
-      openNewCreation: true,
-    });
-  };
+  // const handleOpenNewCreation = () => {
+  //   props.history.push({
+  //     pathname: '/activities/risk assessment/risks',
+  //     openNewCreation: true,
+  //   });
+  // };
   return (
     <div className={classes.container}>
-      {console.log('remediationData', remediation)}
-      {!openCreation ? (
+      {/* {!openCreation ? (
         <>
+        </>) : ( */}
           <CyioDomainObjectHeader
-            cyioDomainObject={remediation}
-            history={history}
             disabled={true}
+            history={history}
+            name={remediation.name}
+            cyioDomainObject={remediation}
+            handleOpenCreation={handleOpenCreation}
+            goBack='/activities/risk assessment/risks'
             // PopoverComponent={<DevicePopover />}
-            // handleDisplayEdit={handleDisplayEdit.bind(this)}
-            handleOpenNewCreation={handleOpenNewCreation.bind(this)}
+            // handleOpenNewCreation={handleOpenNewCreation.bind(this)}
             // OperationsComponent={<RiskDeletion />}
           />
           <TopMenuRisk risk={remediation.name}/>
@@ -96,9 +100,14 @@ const Remediations = (props) => {
               riskId={riskId.id}
             />
           </Grid>
-        </>) : (
-        <RemediationCreation remediationId={remediation.id} history={history}/>
-      )}
+        <RemediationCreation
+          remediationId={remediation.id}
+          riskId={riskId.id}
+          history={history}
+          openCreation={openCreation}
+          handleOpenCreation={handleOpenCreation}
+        />
+      {/* )} */}
       {/* </Grid> */}
     </div>
   );

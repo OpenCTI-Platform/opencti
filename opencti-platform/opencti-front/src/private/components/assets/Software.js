@@ -40,7 +40,7 @@ class Software extends Component {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('cards', 'view', params),
+      view: 'lines',
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -61,7 +61,7 @@ class Software extends Component {
   }
 
   handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
+    this.setState({ view: mode });
   }
 
   handleSearch(value) {
@@ -78,6 +78,10 @@ class Software extends Component {
 
   handleToggleSelectAll() {
     this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
   }
 
   handleSoftwareCreation() {
@@ -183,7 +187,7 @@ class Software extends Component {
       vendor_name: {
         label: 'Vendor',
       },
-      labels: {
+      label_name: {
         label: 'Labels',
       },
     };
@@ -199,6 +203,7 @@ class Software extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleSoftwareCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -226,7 +231,7 @@ class Software extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <SoftwareCards
@@ -283,17 +288,17 @@ class Software extends Component {
         width: '10%',
         isSortable: false,
       },
-      cpeId: {
+      cpe_identifier: {
         label: 'CPE ID',
         width: '19%',
-        isSortable: false,
+        isSortable: true,
       },
-      swId: {
+      software_identifier: {
         label: 'SWID',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
         width: '23%',
         isSortable: true,
@@ -311,6 +316,7 @@ class Software extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleSoftwareCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -338,7 +344,7 @@ class Software extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <SoftwareLines
@@ -374,6 +380,7 @@ class Software extends Component {
       orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
+      filterMode: 'and',
     };
     const { location } = this.props;
     return (

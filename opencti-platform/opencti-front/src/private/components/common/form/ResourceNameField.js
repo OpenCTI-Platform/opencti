@@ -27,6 +27,7 @@ const ResourceNameFieldComponentQuery = graphql`
   componentList {
     edges {
       node {
+        id
         name
         description
       }
@@ -39,6 +40,7 @@ const ResourceNameFieldInventoryQuery = graphql`
   inventoryItemList {
     edges {
       node {
+        id
         name
         description
       }
@@ -51,6 +53,7 @@ const ResourceNameFieldResourceQuery = graphql`
   oscalResources {
     edges {
       node {
+        id
         name
         description
       }
@@ -63,6 +66,7 @@ const ResourceNameFieldUserQuery = graphql`
   oscalUsers {
     edges {
       node {
+        id
         name
         description
       }
@@ -75,6 +79,7 @@ const ResourceNameFieldPartyQuery = graphql`
   oscalParties {
     edges {
       node {
+        id
         name
         description
       }
@@ -87,6 +92,7 @@ const ResourceNameFieldLocationQuery = graphql`
   oscalLocations {
     edges {
       node {
+        id
         name
         description
       }
@@ -124,6 +130,7 @@ class ResourceNameField extends Component {
           const ResourceTypeEntities = R.pipe(
             R.pathOr([], ['componentList', 'edges']),
             R.map((n) => ({
+              id: n.node.id,
               name: n.node.name,
               description: n.node.description,
             })),
@@ -138,6 +145,7 @@ class ResourceNameField extends Component {
           const ResourceTypeEntities = R.pipe(
             R.pathOr([], ['oscalLocations', 'edges']),
             R.map((n) => ({
+              id: n.node.id,
               name: n.node.name,
               description: n.node.description,
             })),
@@ -152,6 +160,7 @@ class ResourceNameField extends Component {
           const ResourceTypeEntities = R.pipe(
             R.pathOr([], ['inventoryItemList', 'edges']),
             R.map((n) => ({
+              id: n.node.id,
               name: n.node.name,
               description: n.node.description,
             })),
@@ -166,6 +175,7 @@ class ResourceNameField extends Component {
           const ResourceTypeEntities = R.pipe(
             R.pathOr([], ['oscalParties', 'edges']),
             R.map((n) => ({
+              id: n.node.id,
               name: n.node.name,
               description: n.node.description,
             })),
@@ -180,6 +190,7 @@ class ResourceNameField extends Component {
           const ResourceTypeEntities = R.pipe(
             R.pathOr([], ['oscalUsers', 'edges']),
             R.map((n) => ({
+              id: n.node.id,
               name: n.node.name,
               description: n.node.description,
             })),
@@ -194,6 +205,7 @@ class ResourceNameField extends Component {
           const ResourceTypeEntities = R.pipe(
             R.pathOr([], ['oscalResources', 'edges']),
             R.map((n) => ({
+              id: n.node.id,
               name: n.node.name,
               description: n.node.description,
             })),
@@ -247,7 +259,7 @@ class ResourceNameField extends Component {
             <MenuItem
               key={i}
               classes={{ root: classes.menuItemRoot }}
-              value={value.name}
+              value={value.id}
             >
               {value.name}
             </MenuItem>

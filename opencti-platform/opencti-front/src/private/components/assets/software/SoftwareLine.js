@@ -102,7 +102,7 @@ class SoftwareLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.asset_type.width }}
               >
-                {node.vendor_name && <ItemIcon type={node.vendor_name === 'apple' || node.vendor_name === 'microsoft' || node.vendor_name === 'linux' ? node.vendor_name : 'other'} />}
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -114,29 +114,23 @@ class SoftwareLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.version.width }}
               >
-                {/* {fd(node.created)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.version && node.version}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.cpeId.width }}
+                style={{ width: dataColumns.cpe_identifier.width }}
               >
-                {/* {fd(node.modified)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.cpe_identifier && node.cpe_identifier}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.swId.width }}
+                style={{ width: dataColumns.software_identifier.width }}
               >
-                {/* {fd(node.modified)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
                 {node.software_identifier && node.software_identifier}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.label_name.width }}
               >
                 <CyioCoreObjectLabels
                   variant="inList"
@@ -171,6 +165,7 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
     fragment SoftwareLine_node on SoftwareAsset {
       id
       name
+      asset_type
       labels {
         __typename
         id
@@ -196,12 +191,6 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
         # created
         # modified
         entity_type
-        labels {
-          id
-          name
-          color
-          description
-        }
         abstract
         content
         authors
@@ -298,7 +287,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.cpeId.width }}
+                style={{ width: dataColumns.cpe_identifier.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -309,7 +298,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.swId.width }}
+                style={{ width: dataColumns.software_identifier.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -320,7 +309,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.label_name.width }}
               >
                 <Skeleton
                   animation="wave"

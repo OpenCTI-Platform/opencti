@@ -153,7 +153,6 @@ class RemediationEditionContainer extends Component {
         'value': adaptFieldValue(n[1])
       }))
     )(adaptedValues);
-    console.log('RemediationEntitiesEdition', finalValues);
     // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
     CM(environmentDarkLight, {
       // mutation: remediationEditionMutation,
@@ -166,10 +165,9 @@ class RemediationEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        console.log('RiskEditionDarkLightMutationData', data);
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('RiskEditionDarkLightMutationError', err),
+      onError: (err) => console.error(err),
     });
     // commitMutation({
     //   mutation: riskCreationOverviewMutation,
@@ -234,7 +232,6 @@ class RemediationEditionContainer extends Component {
         'response_type',
       ]),
     )(risk);
-    console.log('RiskEditionPropsData', risk);
     // const { editContext } = risk;
     return (
       <div className={classes.container}>
@@ -332,7 +329,11 @@ class RemediationEditionContainer extends Component {
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}
-                  <RelatedTasks remediationId={remediationId} />
+                  <RelatedTasks
+                    toType='OscalTask'
+                    fromType='RiskResponse'
+                    remediationId={remediationId}
+                  />
                 </Grid>
               </Grid>
               <Grid
@@ -360,7 +361,6 @@ class RemediationEditionContainer extends Component {
               <Dialog
                 open={this.state.displayCancel}
                 TransitionComponent={Transition}
-                onClose={this.handleCancelButton.bind(this)}
               >
                 <DialogContent>
                   <Typography style={{
@@ -388,7 +388,7 @@ class RemediationEditionContainer extends Component {
                   <Button
                     // onClick={this.submitDelete.bind(this)}
                     // disabled={this.state.deleting}
-                    onClick={() => this.props.history.goBack()}
+                    onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
                     color="primary"
                     classes={{ root: classes.buttonPopover }}
                     variant="contained"
@@ -415,6 +415,7 @@ RemediationEditionContainer.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   remediation: PropTypes.object,
+  riskId: PropTypes.string,
 };
 
 const RemediationEditionFragment = createFragmentContainer(
@@ -444,12 +445,6 @@ const RemediationEditionFragment = createFragmentContainer(
           abstract
           content
           authors
-          labels {
-            id
-            name
-            color
-            description
-          }
         }
         origins {
           id

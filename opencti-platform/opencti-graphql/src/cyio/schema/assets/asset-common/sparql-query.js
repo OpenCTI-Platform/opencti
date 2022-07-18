@@ -212,6 +212,7 @@ export function getSelectSparqlQuery( type, select, id, filters, ) {
   var sparqlQuery;
 
   if (select === undefined || select === null) select = Object.keys(assetPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if ( filters !== undefined && id === undefined ) {
     for( const filter of filters) {
@@ -377,6 +378,7 @@ export const selectLocationByIriQuery = (iri, select) => {
 }
 export const selectAllLocations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

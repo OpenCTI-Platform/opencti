@@ -44,12 +44,16 @@ import {
 } from '../../../services/account.service';
 import Dialog from "@material-ui/core/Dialog";
 import FeatureFlag from "../../../components/feature/FeatureFlag";
+import {toastGenericError} from "../../../utils/bakedToast";
 
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 255,
     backgroundColor: theme.palette.background.nav,
+    backgroundImage: `url(${window.BASE_PATH}/static/Darklight_CyioLogo-Lock-Up.png)`,
+    backgroundRepeat  : 'no-repeat',
+    backgroundPosition: '50% 70%;',
   },
   menuList: {
     marginTop: 20,
@@ -84,41 +88,33 @@ const styles = (theme) => ({
 });
 
 const LeftBar = ({
-  t, location, history, classes,
+  t, location, classes, clientId, history, setClientId,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const [user, setUser] = useState();
-  const [currentClient_id, setCurrentClient_id] = useState(localStorage.getItem('client_id'));
   const [currentOrg, setCurrentOrg] = useState();
   const [userPrefOpen ,setUserPrefOpen] = useState(false);
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
-  let toData;
-  if (granted(me, [KNOWLEDGE])) {
-    toData = '/dashboard/data/entities';
-  } else if (granted(me, [MODULES])) {
-    toData = '/dashboard/data/connectors';
-  } else {
-    toData = '/dashboard/data/taxii';
-  }
 
   useEffect(() => {
-    getAccount()
-      .then((res) => {
-        setUser({
-          email: res.data.email,
-          clients: res.data.clients,
-          first_name: me.name,
-          last_name: me.lastname,
-        });
-        localStorage.setItem("currentOrg", res.data.clients.find(obj => { return obj.client_id === currentClient_id}).name)
-        setCurrentOrg(res.data.clients.find(obj => { return obj.client_id === currentClient_id}).name);
-
-      }).catch((error) => {
-
-        console.log(error);
-      })
-  },[])
+    if(clientId) {
+      getAccount()
+        .then((res) => {
+          setUser({
+            email: res.data.email,
+            clients: res.data.clients,
+            first_name: me.name,
+            last_name: me.lastname,
+          });
+          localStorage.setItem("currentOrg", res.data.clients.find(obj => obj.client_id === clientId).name)
+          setCurrentOrg(res.data.clients.find(obj => obj.client_id === clientId).name);
+        }).catch((error) => {
+          console.log(error);
+          toastGenericError("Failed to get user information")
+        })
+    }
+  },[clientId])
 
   const handleUserPrefOpen = () => {
     setUserPrefOpen(true);
@@ -243,17 +239,16 @@ const LeftBar = ({
         <Divider />
         <MenuList component="nav" classes={{ root: classes.menuList }}>
             <MenuItem
-              disabled="true"
               component={Link}
-              to={toData}
-              selected={location.pathname.includes('/dashboard/data')}
+              to={'/data'}
+              selected={location.pathname.includes('/data')}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon style={{ minWidth: 35 }}>
                 <Database />
               </ListItemIcon>
-              <ListItemText primary={t('Data Source')} />
+              <ListItemText primary={t('Data')} />
             </MenuItem>
             <MenuItem
               disabled="true"
@@ -271,8 +266,8 @@ const LeftBar = ({
             </MenuList> 
             <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
             <MenuItem
-              component={Link}
-              to="/dashboard/profile"
+              // component={Link}
+              // to="/dashboard/profile"
               selected={location.pathname.includes('/dashboard/profile')}
               dense={false}
               classes={{ root: classes.menuItem }}
@@ -303,7 +298,10 @@ const LeftBar = ({
        me={me}
        user={user}
        isLoading="true"
+       history={history}
        action={cancelUserPref}
+       url={location.pathname}
+       setClientId={setClientId}
       />
       </Dialog>
     </Drawer>
@@ -315,6 +313,7 @@ LeftBar.propTypes = {
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  clientId: PropTypes.string
 };
 
 export default compose(inject18n, withRouter, withStyles(styles))(LeftBar);

@@ -13,6 +13,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import graphql from 'babel-plugin-relay/macro';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import rehypeRaw from 'rehype-raw';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
@@ -111,8 +115,8 @@ class CyioAddExternalReferencesLinesContainer extends Component {
       (n) => n.id,
       cyioCoreObjectOrCyioCoreRelationshipReferences || []);
     const filteredValue = data.cyioExternalReferences
-    ? filter((value) => (value.node.source_name.toLowerCase()).includes(this.props.search), data.cyioExternalReferences.edges)
-    : [];
+      ? filter((value) => (value.node.source_name.toLowerCase()).includes(this.props.search), data.cyioExternalReferences.edges)
+      : [];
     return (
       <div>
         <List className={classes.list}>
@@ -147,22 +151,28 @@ class CyioAddExternalReferencesLinesContainer extends Component {
                 </ListItemIcon>
                 <ListItemText
                   primary={`${externalReference.source_name} ${externalReferenceId}`}
-                  secondary={truncate(
-                    externalReference.description !== null
-                      && externalReference.description.length > 0
-                      ? externalReference.description
-                      : externalReference.url,
-                    120,
-                  )}
+                  secondary={<Markdown
+                    remarkPlugins={[remarkGfm, remarkParse]}
+                    rehypePlugins={[rehypeRaw]}
+                    parserOptions={{ commonmark: true }}
+                    className="markdown">
+                    {truncate(
+                      externalReference.description !== null
+                        && externalReference.description.length > 0
+                        ? externalReference.description
+                        : externalReference.url,
+                      120,
+                    )}
+                  </Markdown>}
                 />
               </ListItem>
             );
           })
-          : (
-            <Typography style={{ padding: '20px 0', textAlign: 'center' }}>
-              {t('No Entries')}
-            </Typography>
-          )}
+            : (
+              <Typography style={{ padding: '20px 0', textAlign: 'center' }}>
+                {t('No Entries')}
+              </Typography>
+            )}
         </List>
       </div>
     );
@@ -201,7 +211,7 @@ const CyioAddExternalReferencesLines = createFragmentContainer(
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 4 }
       ) {
-        cyioExternalReferences(limit: $count) {
+        cyioExternalReferences(first: $count) {
           edges {
             cursor
             node {

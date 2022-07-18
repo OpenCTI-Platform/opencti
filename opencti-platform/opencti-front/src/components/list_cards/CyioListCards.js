@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { withRouter, Link } from 'react-router-dom';
 import {
   compose, last, map, toPairs,
 } from 'ramda';
@@ -11,6 +12,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
+  Share,
   Edit,
   ArrowDownward,
   ArrowUpward,
@@ -19,6 +21,15 @@ import {
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
+import responsiblePartiesIcon from '../../resources/images/entities/responsible_parties.svg';
+import tasksIcon from '../../resources/images/entities/tasks.svg';
+import locations from '../../resources/images/entities/locations.svg';
+import roles from '../../resources/images/entities/roles.svg';
+import notes from '../../resources/images/entities/Notes.svg';
+import parties from '../../resources/images/entities/parties.svg';
+import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
+import labels from '../../resources/images/entities/labelsImage.svg';
+import externalReferenceIcon from '../../resources/images/entities/externalReferenceIcon.svg';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
@@ -54,6 +65,9 @@ const styles = (theme) => ({
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
+  dataEntities: {
+    width: '180px',
+  },
   parameters: {
     // float: 'left',
     display: 'flex',
@@ -68,8 +82,15 @@ const styles = (theme) => ({
   },
   views: {
     // display: 'flex',
-    width: '254px',
-    minWidth: '254px',
+    width: '295px',
+    minWidth: '280px',
+    float: 'right',
+    marginTop: '5px',
+    padding: '14px 18px 12px 18px',
+  },
+  selectedViews: {
+    width: '430px',
+    minWidth: '415px',
     float: 'right',
     marginTop: '5px',
     padding: '14px 18px 12px 18px',
@@ -77,6 +98,9 @@ const styles = (theme) => ({
   cardsContainer: {
     marginTop: 10,
     paddingTop: '0px 16px 16px 16px',
+  },
+  icon: {
+    marginRight: '10px',
   },
   iconButton: {
     float: 'left',
@@ -140,6 +164,7 @@ class CyioListCards extends Component {
       disabled,
       keyword,
       filterEntityType,
+      selectedDataEntity,
       filters,
       selectAll,
       sortBy,
@@ -148,7 +173,10 @@ class CyioListCards extends Component {
       handleNewCreation,
       numberOfElements,
       availableFilterKeys,
+      handleClearSelectedElements,
     } = this.props;
+    const totalElementsSelected = selectedElements && Object.keys(selectedElements).length;
+
     return (
       <div
         className={
@@ -222,6 +250,97 @@ class CyioListCards extends Component {
                 {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
               </IconButton> */}
             </div>
+            {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+              <FormControl
+                size='small'
+                fullWidth={true}
+                variant='outlined'
+                className={classes.dataEntities}
+              >
+                <InputLabel>
+                  Data Types
+                </InputLabel>
+                <Select
+                  variant='outlined'
+                  label='Data Types'
+                  value={selectedDataEntity}
+                  className={classes.dataEntitiesSelect}
+                >
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/responsibility'
+                    value='responsibility'
+                  >
+                    <img src={roles} className={classes.icon} alt="" />
+                    {t('Responsibility')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/locations'
+                    value='locations'
+                  >
+                    <img src={locations} className={classes.icon} alt="" />
+                    {t('Locations')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/parties'
+                    value='parties'
+                  >
+                    <img src={parties} className={classes.icon} alt="" />
+                    {t('Parties')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/responsible_parties'
+                    value='responsible_parties'
+                  >
+                    <img src={responsiblePartiesIcon} style={{ marginRight: '12px' }} alt="" />
+                    {t('Responsible Parties')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/tasks'
+                    value='tasks'
+                  >
+                    <img src={tasksIcon} className={classes.icon} alt="" />
+                    {t('Tasks')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/assessment_platform'
+                    value='assessment_platform'
+                  >
+                    <img src={assessmentPlatform} className={classes.icon} alt="" />
+                    {t('Assessment Platform')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/notes'
+                    value='notes'
+                  >
+                    <img src={notes} className={classes.icon} alt="" />
+                    {t('Notes')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/labels'
+                    value='labels'
+                  >
+                    <img src={labels} className={classes.icon} alt="" />
+                    {t('Labels')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/external_references'
+                    value='external_references'
+                  >
+                    <img src={externalReferenceIcon} className={classes.icon} alt="" />
+                    {t('External References')}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            )}
             <div className={classes.filters}>
               {map((currentFilter) => {
                 const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
@@ -265,8 +384,18 @@ class CyioListCards extends Component {
               }, toPairs(filters))}
             </div>
           </div>
-          <div className={classes.views}>
+          <div className={totalElementsSelected > 0 ? classes.selectedViews : classes.views}>
             <div style={{ float: 'right' }}>
+              {totalElementsSelected > 0 && (
+                <Chip
+                  className={classes.iconButton}
+                  label={
+                    <>
+                      <strong>{totalElementsSelected}</strong> Selected
+                    </>
+                  }
+                  onDelete={handleClearSelectedElements} />
+              )}
               {typeof handleChangeView === 'function' && (
                 // <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <>
@@ -283,6 +412,23 @@ class CyioListCards extends Component {
                       <Edit fontSize="inherit" />
                     </Button>
                   </Tooltip>
+                  {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+                    <Tooltip title={t('Merge')}>
+                      <Button
+                        variant="contained"
+                        // onClick={handleDisplayEdit &&
+                        // handleDisplayEdit.bind(this, selectedElements)}
+                        className={classes.iconButton}
+                        // disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                        //   || disabled}
+                        disabled={true}
+                        color="primary"
+                        size="large"
+                      >
+                        <Share fontSize="inherit" />
+                      </Button>
+                    </Tooltip>
+                  )}
                   <div style={{ display: 'inline-block' }}>
                     {OperationsComponent && React.cloneElement(OperationsComponent, {
                       id: Object.entries(selectedElements || {}).length !== 0
@@ -332,12 +478,14 @@ CyioListCards.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   children: PropTypes.object,
+  selectedDataEntity: PropTypes.string,
   handleSearch: PropTypes.func.isRequired,
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
   handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
+  handleClearSelectedElements: PropTypes.func,
   openExports: PropTypes.bool,
   disabled: PropTypes.bool,
   views: PropTypes.array,
@@ -353,4 +501,4 @@ CyioListCards.propTypes = {
   availableFilterKeys: PropTypes.array,
 };
 
-export default compose(inject18n, withStyles(styles))(CyioListCards);
+export default compose(inject18n, withRouter, withStyles(styles))(CyioListCards);

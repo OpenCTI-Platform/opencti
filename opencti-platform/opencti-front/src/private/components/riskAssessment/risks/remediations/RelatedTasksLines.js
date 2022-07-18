@@ -59,7 +59,6 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '4px 0 0 0',
     padding: 0,
     borderRadius: 6,
     position: 'relative',
@@ -83,7 +82,6 @@ const styles = (theme) => ({
   },
   cardContent: {
     display: 'flex',
-    alignItems: 'center',
   },
   buttonExpand: {
     position: 'absolute',
@@ -221,15 +219,11 @@ class RelatedTasksLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, remediationId, data, refreshQuery, history,
+      t, classes, remediationId, data, refreshQuery, history, fromType, toType,
     } = this.props;
     const { expanded } = this.state;
     const relatedTaskData = data.riskResponse;
-    // const externalReferencesEdges = data.riskResponse.external_references.edges;
-    // const expandable = externalReferencesEdges.length > 7;
-    console.log('RelatedTasksData', data);
     const relatedTasksEdges = R.pathOr([], ['tasks'], data.riskResponse);
-    console.log('relatedTasksEdges', relatedTasksEdges);
     return (
       <div style={{ height: '100%' }}>
         <div className={classes.cardContent}>
@@ -240,11 +234,12 @@ class RelatedTasksLinesContainer extends Component {
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 28 }} />}
         > */}
-          <div>
             <RelatedTaskCreation
               relatedTaskData={relatedTaskData}
               display={true}
               contextual={true}
+              fromType={fromType}
+              toType={toType}
               history={history}
               refreshQuery={refreshQuery}
               remediationId={remediationId}
@@ -253,7 +248,6 @@ class RelatedTasksLinesContainer extends Component {
             //   data.riskResponse.external_references.edges
             // }
             />
-          </div>
           {/* </Security> */}
         </div>
         <div className="clearfix" />
@@ -264,7 +258,7 @@ class RelatedTasksLinesContainer extends Component {
               key={relatedTask.id}
               data={relatedTask}
               refreshQuery={refreshQuery}
-              relatedTaskData={relatedTaskData}
+              relatedTaskId={relatedTask.id}
             />
           ))}
         </Paper>
@@ -272,7 +266,6 @@ class RelatedTasksLinesContainer extends Component {
           open={this.state.displayDialog}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
@@ -303,7 +296,6 @@ class RelatedTasksLinesContainer extends Component {
           open={this.state.displayExternalLink}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
@@ -329,6 +321,8 @@ class RelatedTasksLinesContainer extends Component {
 }
 
 RelatedTasksLinesContainer.propTypes = {
+  toType: PropTypes.string,
+  fromType: PropTypes.string,
   remediationId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -357,39 +351,71 @@ const RelatedTasksLines = createFragmentContainer(
         riskResponse(id: $id) {
           __typename
           id
-          links {
-            __typename
-            id
-            # created
-            # modified
-            external_id
-            source_name
-            description
-            entity_type
-            url
-            media_type
-          }
-          remarks {
-            __typename
-            id
-            abstract
-            content
-            authors
-            entity_type
-            labels {
-              __typename
-              id
-              name
-              color
-              entity_type
-              description
-            }
-          }
           tasks {   # Related Tasks
+            __typename
             id
             task_type
             name
             description
+            timing {
+              ... on DateRangeTiming {
+                start_date
+                end_date
+              }
+            }
+            task_dependencies {
+              __typename
+              id
+              name
+            }
+            related_tasks {
+              __typename
+              id
+              name
+            }
+            responsible_roles {
+              id
+              name
+              parties {
+                id
+                party_type
+                name
+              }
+              role {
+                id
+                name
+                role_identifier
+              }
+            }
+            associated_activities {
+              __typename
+              id
+              activity_id {
+                __typename
+                id
+                name
+              }
+            }
+            links {
+              __typename
+              id
+              # created
+              # modified
+              external_id
+              source_name
+              description
+              entity_type
+              url
+              media_type
+            }
+            remarks {
+              __typename
+              id
+              abstract
+              content
+              authors
+              entity_type
+            }
           }
         }
       }

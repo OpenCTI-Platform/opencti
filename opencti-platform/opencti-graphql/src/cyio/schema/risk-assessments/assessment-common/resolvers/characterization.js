@@ -27,6 +27,7 @@ import {
   attachToCharacterizationQuery,
   detachFromCharacterizationQuery,
   selectOriginByIriQuery,
+  selectAllOrigins,
 } from './sparql-query.js';
 
 const characterizationResolvers = {
@@ -50,8 +51,10 @@ const characterizationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("CHARACTERIZATION");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let characterizationList ;
         if (args.orderedBy !== undefined ) {
           characterizationList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -79,6 +82,7 @@ const characterizationResolvers = {
             if (!filterValues(characterization, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -91,14 +95,27 @@ const characterizationResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = characterizationList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < characterizationList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: characterizationList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -146,6 +163,7 @@ const characterizationResolvers = {
       }
     },
     facets: async (_, args, { dbName, dataSources, selectMap }) => {
+      // TODO: Update to support vulnerability-facets
       const sparqlQuery = selectAllFacets(selectMap.getNode("node"), args);
       let response;
       try {
@@ -164,8 +182,10 @@ const characterizationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("FACET");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let facetList ;
         if (args.orderedBy !== undefined ) {
           facetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -193,6 +213,7 @@ const characterizationResolvers = {
             if (!filterValues(facet, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -205,14 +226,27 @@ const characterizationResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = facetList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < facetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: facetList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -229,6 +263,7 @@ const characterizationResolvers = {
       }
     },
     facet: async (_, {id}, { dbName, dataSources, selectMap }) => {
+      // TODO: Update to support vulnerability-facets
       const sparqlQuery = selectFacetQuery(id, selectMap.getNode("facets"));
       let response;
       try {
@@ -434,22 +469,26 @@ const characterizationResolvers = {
       return id;
     },
     editCharacterization: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the characterization exists
-      const sparqlQuery = selectCharacterizationQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Characterization",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectCharacterizationQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Characterization",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Characterization-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Characterization",
@@ -564,6 +603,26 @@ const characterizationResolvers = {
       return id;
     },
     editFacet: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectFacetQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Facet",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Facet-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Facet",
@@ -588,8 +647,8 @@ const characterizationResolvers = {
   },
   Characterization: {
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -630,8 +689,8 @@ const characterizationResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -705,8 +764,44 @@ const characterizationResolvers = {
             // Process DarkLight custom facets
 
             // Convert the each key/value pair of Vulnerability Facet into an individual OSCAL facet
-            for (const [key, value] of Object.entries(facet)) {
-              if (key === 'id' || key === 'entity_type' || key === 'standard_id' || key === 'risk_state' || key === 'source_system' ) continue;
+            for (let [key, value] of Object.entries(facet)) {
+              if (key === 'iri' || key === 'id' || key === 'entity_type' || key === 'standard_id' || key === 'risk_state' || key === 'source_system' ) continue;
+              if (value === null || value === 'null') continue;
+              if (key.includes('_')) key = key.replace(/_/g, '-');
+              switch(key) {
+                case 'vulnerability-id':
+                  if (value.startsWith('CVE')) {
+                    key = 'cve-id';
+                    facet.source_system = 'http://cve.mitre.org';
+                  } else {
+                    facet.source_system = 'http://darklight.ai/ns/oscal';
+                  }
+                  break;
+                case 'cvss20-base-score':
+                  key = 'cvss2-base-score';
+                  facet.source_system = 'http://www.first.org/cvss/v2.0';
+                  break;
+                case 'cvss20-temporal-score':
+                  key = 'cvss2-temporal-score';
+                  facet.source_system = 'http://www.first.org/cvss/v2.0';
+                  break;
+                case 'cvss20-vector-string':
+                  key = 'cvss2-vector';
+                  facet.source_system = 'http://www.first.org/cvss/v2.0';
+                  break;
+                case 'cvss30-base-score':
+                  key = 'cvss3-base-score';
+                  facet.source_system = 'http://www.first.org/cvss/v3.0';
+                  break;
+                case 'cvss30-temporal-score':
+                  key = 'cvss2-base-score';
+                  facet.source_system = 'http://www.first.org/cvss/v3.0';
+                  break;
+                case 'cvss30-vector-string':
+                  key = 'cvss3-vector';
+                  facet.source_system = 'http://www.first.org/cvss/v3.0';
+                  break;
+              }
               let id = generateId();
               let newFacet = { 
                 id: `${id}`,
@@ -734,47 +829,40 @@ const characterizationResolvers = {
         return [];
       }
     },
-    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
+    origins: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
-      let iriArray = parent.origins_iri;
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("ORIGIN");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Origin')) {
-            continue;
-          }
-          const sparqlQuery = selectOriginByIriQuery(iri, selectMap.getNode("origins"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Origin",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      const reducer = getReducer("ORIGIN");
+      let sparqlQuery = selectAllOrigins(selectMap.getNode('origins'), undefined, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Referenced Origins",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let origin of response) {
+        results.push(reducer(origin));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0 ) return [];
+      return results;
     },
   },
 }

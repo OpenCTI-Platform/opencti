@@ -17,8 +17,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Typography from '@material-ui/core/Typography';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
+import PersonIcon from '@material-ui/icons/Person';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
@@ -38,6 +37,10 @@ import Button from '@material-ui/core/Button';
 import * as R from 'ramda';
 import { AutoFix, Information } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import remarkParse from 'remark-parse';
 import ItemConfidence from '../../../../../components/ItemConfidence';
 import RemediationPopover from './RemediationPopover';
 import { resolveLink } from '../../../../../utils/Entity';
@@ -83,6 +86,11 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  avatarIcon: {
+    width: '35px',
+    height: '35px',
+    color: 'white',
   },
   cardContent: {
     display: 'flex',
@@ -176,9 +184,9 @@ class RelatedTaskLine extends Component {
       classes,
       data,
       remediationId,
-      relatedTaskData,
       displayRelation,
       entityId,
+      relatedTaskId,
     } = this.props;
     const { expanded } = this.state;
     const taskDependency = pipe(
@@ -188,9 +196,8 @@ class RelatedTaskLine extends Component {
     const responsibleRoles = pipe(
       pathOr([], ['responsible_roles']),
       mergeAll,
-      path(['role']),
+      path(['parties']),
     )(data);
-    console.log('RelatedTaskDataCurrent', data);
     return (
       <div style={{
         display: 'grid',
@@ -219,7 +226,7 @@ class RelatedTaskLine extends Component {
                       {t('Start Date: ')}
                     </Typography>
                     <Typography align="left" color="textSecondary" variant="h3">
-                      {data.timing?.start_date || data.timing?.on_date}
+                      {data.timing?.start_date && fldt(data.timing?.start_date)}
                     </Typography>
                   </Grid>
                   <Grid style={{ display: 'flex' }} item={true} xs={6}>
@@ -227,7 +234,7 @@ class RelatedTaskLine extends Component {
                       {t('End Date: ')}
                     </Typography>
                     <Typography align="left" color="textSecondary" variant="h3">
-                      {data.timing?.end_date && t(data.timing?.end_date)}
+                      {data.timing?.end_date && fldt(data.timing?.end_date)}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -247,7 +254,6 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {/* {t('Lorem Ipsum')} */}
                       {data.name && t(data.name)}
                     </Typography>
                   </div>
@@ -263,7 +269,6 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {/* {t('Lorem Ipsum')} */}
                       {data.id && t(data.id)}
                     </Typography>
                   </div>
@@ -288,7 +293,7 @@ class RelatedTaskLine extends Component {
                     <Typography align="left" color="textSecondary" variant="h3">{t('Start Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {/* {t('21 June 2021')} */}
-                      {data.timing?.start_date || data.timing?.on_date}
+                      {data.timing?.start_date && fsd(data.timing?.start_date)}
                     </Typography>
                   </div>
                 </Grid>
@@ -306,7 +311,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Dependency')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {taskDependency?.name || t(taskDependency?.name)}
+                      {taskDependency?.name && t(taskDependency?.name)}
                     </Typography>
                   </div>
                 </Grid>
@@ -318,24 +323,23 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('End Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {data.timing?.end_date && t(data.timing?.end_date)}
+                      {data.timing?.end_date && fsd(data.timing?.end_date)}
                     </Typography>
                   </div>
                 </Grid>
                 <Grid item={true} xs={6} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                <div style={{ marginLeft: '18px' }}>
-                  <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
-                  <div className={classes.cardContent}>
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                    <div style={{ marginLeft: '10px' }}>
-                      <Typography variant="subtitle1">
-                        {responsibleRoles.name && t(responsibleRoles.name)}
-                      </Typography>
-                      {responsibleRoles.role_identifier && t(responsibleRoles.role_identifier)}
+                  <div style={{ marginLeft: '18px' }}>
+                    <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Parties')}</Typography>
+                    <div className={classes.cardContent}>
+                      <PersonIcon className={classes.avatarIcon} />
+                      <div style={{ marginLeft: '10px' }}>
+                        <Typography variant="subtitle1">
+                          {data.responsible_roles && data.responsible_roles.map((role) => t(role?.name))}
+                        </Typography>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Grid>
+                </Grid>
               </Grid>
             </Grid>
             <Grid container={true}>
@@ -358,7 +362,14 @@ class RelatedTaskLine extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {data.description && t(data.description)}
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        rehypePlugins={[rehypeRaw]}
+                        parserOptions={{ commonmark: true }}
+                        className="markdown"
+                      >
+                        {data.description && t(data.description)}
+                      </Markdown>
                     </div>
                   </div>
                 </div>
@@ -367,21 +378,19 @@ class RelatedTaskLine extends Component {
                 <CyioCoreobjectExternalReferences
                   refreshQuery={refreshQuery}
                   fieldName='links'
-                  typename={relatedTaskData.__typename}
-                  externalReferences={relatedTaskData.links}
-                  cyioCoreObjectId={remediationId}
+                  typename={data.__typename}
+                  externalReferences={data.links}
+                  cyioCoreObjectId={data.id}
                 />
               </Grid>
               <Grid style={{ margin: '50px 0 20px 0' }} xs={12} item={true}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   refreshQuery={refreshQuery}
-                  typename={relatedTaskData.__typename}
+                  typename={data.__typename}
                   fieldName='remarks'
-                  notes={relatedTaskData.remarks}
-                  cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                  notes={data.remarks}
+                  cyioCoreObjectOrCyioCoreRelationshipId={data.id}
                   marginTop='0px'
-                // data={props}
-                // marginTop={marginTop}
                 />
               </Grid>
             </Grid>
@@ -389,11 +398,11 @@ class RelatedTaskLine extends Component {
         </Accordion>
         <div style={{ marginTop: '30px' }}>
           <RelatedTaskPopover
-            relatedTaskData={relatedTaskData}
             refreshQuery={refreshQuery}
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
             data={data}
+            relatedTaskId={relatedTaskId}
           />
         </div>
       </div>
@@ -402,7 +411,6 @@ class RelatedTaskLine extends Component {
 }
 
 RelatedTaskLine.propTypes = {
-  relatedTaskData: PropTypes.object,
   paginationOptions: PropTypes.object,
   remediationId: PropTypes.string,
   dataColumns: PropTypes.object,
@@ -415,6 +423,7 @@ RelatedTaskLine.propTypes = {
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
+  relatedTaskId: PropTypes.string,
 };
 
 export default compose(

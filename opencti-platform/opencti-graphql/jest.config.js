@@ -1,7 +1,7 @@
 module.exports = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['./jest.setup.js'],
-  testRegex: '__tests__/.*.test.js$',
+  testRegex: 'tests/.*.test.js$',
   transform: {
     '\\.js$': ['babel-jest'],
     '\\.graphql$': 'jest-transform-graphql',
@@ -33,5 +33,12 @@ module.exports = {
     '/src/index.js',
     '/src/indexer.js',
     '/src/initialization.js',
+    'tests/01-unit',
+    'tests/02-integration',
+    'tests/03-streams',
+    'tests/04-sync',
+    'tests/05-rules',
+    'tests/data',
+    'tests/utils',
   ],
 };
