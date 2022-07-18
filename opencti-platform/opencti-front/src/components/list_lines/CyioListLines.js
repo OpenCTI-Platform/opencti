@@ -93,8 +93,8 @@ const styles = (theme) => ({
     padding: '18px 18px 0 18px',
   },
   searchBar: {
-    width: '350px',
-    minWidth: '350px',
+    width: '210px',
+    minWidth: '210px',
   },
   views: {
     // float: 'right',
@@ -314,7 +314,7 @@ class CyioListLines extends Component {
         >
           <div className={classes.parameters}>
             <div className={classes.searchBar}>
-              {typeof handleSearch === 'function' && (
+              {/* {typeof handleSearch === 'function' && (
                 <div style={{ float: 'left', marginRight: 20 }}>
                   <SearchInput
                     variant={searchVariant || 'small'}
@@ -323,9 +323,10 @@ class CyioListLines extends Component {
                     disabled={true}
                   />
                 </div>
-              )}
+              )} */}
               {availableFilterKeys && availableFilterKeys.length > 0 && (
                 <Filters
+                  variant='text'
                   availableFilterKeys={availableFilterKeys}
                   handleAddFilter={handleAddFilter}
                   currentFilters={filters}

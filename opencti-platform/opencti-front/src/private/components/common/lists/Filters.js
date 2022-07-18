@@ -41,7 +41,7 @@ import { dateFormatRegex } from '../../../../utils/Network';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '-10px 0 0 -5px',
+    margin: '0 10px 0 20px',
   },
   filtersDialog: {
     margin: '0 0 20px 0',
@@ -1015,9 +1015,9 @@ class Filters extends Component {
             variant="contained"
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
-            startIcon={<FilterListOutlined />}
+            endIcon={<FilterListOutlined />}
             size="small"
-            style={{ float: 'left', margin: '0 15px 0 7px' }}
+            style={{ float: 'left' }}
           >
             {t('Filters')}
           </Button>
