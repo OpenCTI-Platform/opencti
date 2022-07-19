@@ -49,6 +49,7 @@ const styles = (theme) => ({
   container: {
     width: 490,
     padding: 20,
+    marginTop: 15,
   },
   icon: {
     paddingTop: 4,
@@ -1039,11 +1040,11 @@ class Filters extends Component {
           onClose={this.handleCloseFilters.bind(this)}
           anchorOrigin={{
             vertical: 'bottom',
-            horizontal: 'center',
+            horizontal: 'left',
           }}
           transformOrigin={{
             vertical: 'top',
-            horizontal: 'center',
+            horizontal: 'left',
           }}
         >
           {this.renderFilters()}

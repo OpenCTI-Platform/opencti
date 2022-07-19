@@ -93,8 +93,8 @@ const styles = (theme) => ({
     padding: '18px 18px 0 18px',
   },
   searchBar: {
-    width: '210px',
-    minWidth: '210px',
+    width: '220px',
+    minWidth: '220px',
   },
   views: {
     // float: 'right',
