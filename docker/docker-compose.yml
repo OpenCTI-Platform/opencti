@@ -42,13 +42,12 @@ services:
   stardog:
     image: docker.darklight.ai/stardog:7.9.0
     container_name: stardog
-    hostname: stardog
     restart: unless-stopped
     environment:
       STARDOG_USER: admin
       STARDOG_PASSWORD: admin
     ports:
-      - "15820:15820"
+      - "15820:5820"
     volumes:
       - "./stardog-license-key.bin:/var/opt/stardog/stardog-license-key.bin"
     profiles:

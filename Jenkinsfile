@@ -106,7 +106,7 @@ node {
     }
   }, test: {
     stage('Test') {
-      if (commitMessage.contains('ci:skip-tests')) {
+      if (commitMessage.contains('!ci:skip-tests')) { // TODO: Remove the !
         echo 'Skipping tests'
         currentBuild.result = 'SUCCESS'
         return
@@ -150,40 +150,39 @@ node {
             configFile(fileId: 'ci-testing-docker-env', replaceTokens: true, targetLocation: './docker/.env'),
             configFile(fileId: 'ci-testing-users-json', replaceTokens: true, targetLocation: './opencti-platform/opencti-front/cypress/fixtures/users.json')
           ]) {
-            dir('docker') {
-              sh 'docker-compose --profile backend up -d && sleep 60'
-              sh 'docker-compose --profile frontend up -d && sleep 15'
-            }
+            withCredentials([
+              file(credentialsId: 'STARDOG_LICENSE_FILE', variable: 'LICENSE_FILE'),
+              file(credentialsId: 'OPENCTI_FRONT_LOCALHOST_CRT', variable: 'CRT'),
+              file(credentialsId: 'OPENCTI_FRONT_LOCALHOST_KEY', variable: 'KEY')
+            ]) {
+              dir('docker') {
+                writeFile(file: "stardog-license-key.bin", text: readFile(LICENSE_FILE))
+                writeFile(file: "opencti-front-localhost.crt", text: readFile(CRT))
+                writeFile(file: "opencti-front-localhost.key", text: readFile(KEY))
 
-            dir('opencti-platform/opencti-front') {
-              sh """
-                \$(npm bin)/cypress install
-                \$(npm bin)/cypress verify
-                set CYPRESS_BASE_URL=https://cyio-localhost.darklight.ai:4000
-                \$(npm bin)/cypress run --spec "cypress/e2e/auth.cy.js"
-              """
-            }
+                sh 'docker-compose --profile backend up -d && sleep 60'
+                sh 'docker-compose --profile frontend up -d && sleep 30'
+              }
 
-            // Node 14.16 and Chrome 90
-            // https://github.com/cypress-io/cypress-docker-images/tree/master/included
-            // docker.image('cypress/base:14.16.0').inside('--group-add 995') {
-            //   dir ('opencti-platform/opencti-front') {
-            //     sh """
-            //       \$(npm bin)/cypress verify
-            //       set CYPRESS_BASE_URL=https://cyio-localhost.darklight.ai:4000
-            //       \$(npm bin)/cypress run --ci-build-id ${branch}-${env.BUILD_NUMBER} --spec "cypress/e2e/auth.cy.js"
-            //     """
-            //   }
-            // }
+              dir('opencti-platform/opencti-front') {
+                env.CYPRESS_BASE_URL = 'https://cyio-localhost.darklight.ai:4000'
+                sh """
+                  \$(npm bin)/cypress install
+                  \$(npm bin)/cypress verify
+                  \$(npm bin)/cypress run --spec "cypress/e2e/auth.cy.js"
+                """
+              }
+            }
           }
         } catch (Exception e) {
           throw e
         } finally {
           dir('docker') {
-            sh '''
-              docker-compose down || true
-              rm default.json .env || true
-            '''
+            echo 'Normally where I cleanup'
+            // sh '''
+            //   docker-compose down || true
+            //   rm default.json .env || true
+            // '''
           }
         }
       }
