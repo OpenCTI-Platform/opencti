@@ -803,7 +803,7 @@ const oscalTaskResolvers = {
         console.log(e)
         throw e
       }
-      if (response === undefined || response.length === 0) return null;
+      if (response === undefined || response.length === 0) return [];
 
       // Handle reporting Stardog Error
       if (typeof (response) === 'object' && 'body' in response) {
