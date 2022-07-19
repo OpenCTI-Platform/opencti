@@ -14,7 +14,6 @@ services:
     container_name: elasticsearch
     environment:
       discovery.type: "single-node"
-      xpack.ml.enabled: "false"
       ES_JAVA_OPTS: "-Dlog4j2.formatMsgNoLookups=true"
     ports:
       - "9200:9200"
@@ -56,6 +55,7 @@ services:
   cyio:
     image: docker.darklight.ai/opencti:${CYIO_TAG:-latest}
     container_name: cyio
+    hostname: cyio-localhost.darklight.ai
     restart: unless-stopped
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0

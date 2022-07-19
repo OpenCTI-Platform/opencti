@@ -103,10 +103,10 @@ node {
       } else {
         echo 'Skipping build...'
       }
-    }
+      }
   }, test: {
     stage('Test') {
-      if (commitMessage.contains('!ci:skip-tests')) { // TODO: Remove the !
+      if (!commitMessage.contains('ci:skip-tests')) { // TODO: Remove the !
         echo 'Skipping tests'
         currentBuild.result = 'SUCCESS'
         return
@@ -143,7 +143,7 @@ node {
   // Run integration tests, but do not block the ability to rapid deploy
   parallel ci: {
     stage('Integration Testing') {
-      lock('docker') {
+      lock('testing:opencti') {
         try {
           configFileProvider([
             configFile(fileId: 'ci-testing-default-json', replaceTokens: true, targetLocation: './docker/default.json'),
@@ -152,25 +152,20 @@ node {
           ]) {
             withCredentials([
               file(credentialsId: 'STARDOG_LICENSE_FILE', variable: 'LICENSE_FILE'),
-              file(credentialsId: 'OPENCTI_FRONT_LOCALHOST_CRT', variable: 'CRT'),
-              file(credentialsId: 'OPENCTI_FRONT_LOCALHOST_KEY', variable: 'KEY')
+              file(credentialsId: 'WILDCARD_DARKLIGHT_CRT', variable: 'CRT'),
+              file(credentialsId: 'WILDCARD_DARKLIGHT_KEY', variable: 'KEY')
             ]) {
               dir('docker') {
-                writeFile(file: "stardog-license-key.bin", text: readFile(LICENSE_FILE))
-                writeFile(file: "opencti-front-localhost.crt", text: readFile(CRT))
-                writeFile(file: "opencti-front-localhost.key", text: readFile(KEY))
+                sh "cat ${LICENSE_FILE} > stardog-license-key.bin"
+                writeFile(file: 'opencti-front-localhost.crt', text: readFile(CRT))
+                writeFile(file: 'opencti-front-localhost.key', text: readFile(KEY))
 
-                sh 'docker-compose --profile backend up -d && sleep 60'
+                sh 'docker-compose --profile backend up -d && sleep 90'
                 sh 'docker-compose --profile frontend up -d && sleep 30'
               }
 
-              dir('opencti-platform/opencti-front') {
-                env.CYPRESS_BASE_URL = 'https://cyio-localhost.darklight.ai:4000'
-                sh """
-                  \$(npm bin)/cypress install
-                  \$(npm bin)/cypress verify
-                  \$(npm bin)/cypress run --spec "cypress/e2e/auth.cy.js"
-                """
+              dir('opencti-platform/opencti-front/') {
+                sh 'docker run --rm -v $PWD:/e2e -w /e2e --network docker_default --entrypoint cypress cypress/included:10.3.0 run && chown -R 997:995 . || true'
               }
             }
           }
@@ -178,11 +173,12 @@ node {
           throw e
         } finally {
           dir('docker') {
-            echo 'Normally where I cleanup'
             // sh '''
             //   docker-compose down || true
-            //   rm default.json .env || true
+            //   rm -rf default.json .env || true
+            //   rm -rf stardog-license-key.bin || true
             // '''
+            echo 'skipping cleanup'
           }
         }
       }

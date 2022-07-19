@@ -8,6 +8,6 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       return require('./cypress/plugins/index.js')(on, config);
     },
-    baseUrl: 'https://cyio-localhost.darklight.ai:3000',
+    baseUrl: 'https://cyio-localhost.darklight.ai:4000',
   },
 });
