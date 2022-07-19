@@ -1,5 +1,6 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues, generateId} from '../../../utils.js';
+import {convertToProperties} from '../../riskUtils.js'
 import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
@@ -11,6 +12,8 @@ import {
 import {
   deleteResponsiblePartyByIriQuery,
   selectResponsiblePartyByIriQuery,
+  selectAllResponsibleRoles,
+  responsiblePartyPredicateMap,
   getReducer as getCommonReducer,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
@@ -783,47 +786,44 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    responsible_roles: async (parent, _, {dbName, dataSources, selectMap}) => {
+    responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.responsible_roles_iri === undefined) return [];
-      let iriArray = parent.responsible_roles_iri;
+      const reducer = getCommonReducer("RESPONSIBLE-ROLE");
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getCommonReducer("RESPONSIBLE-PARTY");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('ResponsibleParty')) {
-            continue;
-          }
-          const sparqlQuery = selectResponsiblePartyByIriQuery(iri, selectMap.getNode("responsible_roles"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Responsible Role",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      let sparqlQuery = selectAllResponsibleRoles(selectMap.getNode('node'), args, parent );
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select All Responsible Roles",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let item of response) {
+        // if props were requested
+        if (selectMap.getNode('responsible_roles').includes('props')) {
+          let props = convertToProperties(item, responsiblePartyPredicateMap);
+          if (props !== null) item.props = props;
+        }
+
+        results.push(reducer(item));
+      }
+
+      return results;
     },
     timing: async (parent, _, ) => {
       if (parent.on_date === undefined && parent.start_date === undefined && parent.frequency_period === undefined) {
