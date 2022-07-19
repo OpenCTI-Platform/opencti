@@ -92,6 +92,7 @@ const createApp = async () => {
     res.send(withBasePath);
   });
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
+  app.use(`${basePath}/docs`, express.static(path.join(__dirname, '../../public/static/docs')));
 
   configureKeycloakMiddleware(`${basePath}/graphql`, app);
 
