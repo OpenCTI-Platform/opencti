@@ -1,0 +1,116 @@
+/* Request lanscape from the printer/browser */
+@page {
+    size: landscape;
+    margin-bottom: 100px;
+}
+
+.md div.title {
+    font-size:  36px;
+    font-weight: bold;
+    counter-increment: page;
+}
+
+.md div.subtitle {
+    font-size: 23px;
+}
+
+
+body#md {
+    width: 900px;
+    max-width: 100%;
+    font-size: 16px;
+    padding: 40px;
+    counter-reset: page;
+    --accent-color: #49B8FC;
+    background-color: #06102D;
+    color: #AAAEB7;
+    font-family: "Roboto",sans-serif;
+}
+
+/* Disable section numbering */
+.md h1:before {content: ""}
+.md h2:before {content: ""}
+
+.md svg.diagram {
+    zoom: 150%;
+}
+
+/* Sections become presentation sections */
+.md h1, .md .nonumberh1 {
+    page-break-before: always;
+    width: 1100px;
+    text-align: left;
+    padding-bottom: 40px;
+    border: none;
+    color: var(--accent-color);
+    margin-left: -100px;
+    margin-right:-100px;
+    font-size: 50px;
+    counter-increment: page;
+    color: #ffffff;
+}
+
+/* Subsections become slides */
+.md h2, .md .nonumberh2 {
+    page-break-before: always;
+    width: 1100px;
+    text-align: left;
+    color:  var(--accent-color);
+    border: none;
+    margin-left: -100px;
+    margin-right:-100px;
+    font-size: 34px;
+    counter-increment: page;
+}
+
+.md hr {
+    counter-increment: page;
+}
+
+.md code {
+    font-size: 100%;
+}
+
+.md pre.listing {
+    font-size: 80%;
+    border: 1px solid #CCC;
+}
+
+.md strong, .md b {
+    color: var(--accent-color);
+}
+
+.md table {
+    font-size: 100%;
+    background-color: #06102D;
+}
+
+.md table.table td {
+    background-color: #06102D;
+    border: none;
+}
+
+.md table.table th {
+    background-color: #06102D;
+    color: white;
+    border: none;
+    font-family: "Roboto",sans-serif;
+}
+
+.md table.table th + th {
+    border-bottom: 1px solid #CCC;
+}
+
+.md table.table td + td {
+    border-top: 1px solid #CCC;
+}
+
+.md table.table tr:nth-child(n) {
+    border-bottom: 1px solid #CCC;
+}
+
+ul {
+    list-style-type: none;
+    line-height: 38px;
+    margin-left: -40px;
+}
