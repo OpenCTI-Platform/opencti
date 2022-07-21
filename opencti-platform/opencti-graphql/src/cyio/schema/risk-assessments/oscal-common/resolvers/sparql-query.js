@@ -1002,7 +1002,7 @@ export const selectAllResponsibleRoles = (select, args, parent) => {
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
-    ?iri a <http://csrc.nist.gov/ns/oscal/common#ResponsibleRole> . 
+    ?iri a <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty> . 
     ${predicates}
     ${constraintClause}
   }
