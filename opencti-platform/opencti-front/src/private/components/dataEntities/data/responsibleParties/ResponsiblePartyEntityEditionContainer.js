@@ -86,7 +86,7 @@ const respPartyEntityEditionContainerMutation = graphql`
 `;
 
 const ResponsiblePartyValidation = (t) => Yup.object().shape({
-  // name: Yup.string().required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
 });
 
 class ResponsiblePartyEntityEditionContainer extends Component {

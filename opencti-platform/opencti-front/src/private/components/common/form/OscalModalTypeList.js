@@ -64,25 +64,20 @@ class OscalModalTypeList extends Component {
       this.state.OscalModalTypeList
     );
     return (
-      <div>
-        <div className='clearfix' />
-          <IconButton>
-            <PublishIcon fontSize="default" />
-            <MenuItem>Data Export</MenuItem>
-          </IconButton>
-          {OscalModalTypeList.map(
-            (et, key) =>
-              et.value && (
-                <MenuItem
-                  key={et.value}
-                  value={et.value}
-                  onClick={handleOscalType.bind(this, et.value)}
-                >
-                    {et.label}
-                </MenuItem>
-              )
-          )}
-      </div>
+      <>
+        {OscalModalTypeList.map(
+          (et, key) =>
+            et.value && (
+              <MenuItem
+                key={et.value}
+                value={et.value}
+                onClick={handleOscalType.bind(this, et.value)}
+              >
+                {et.label}
+              </MenuItem>
+            )
+        )}
+      </>
     );
   }
 }

@@ -861,6 +861,8 @@ type OscalResponsibleParty {
   "Identifies one or more references to additional commentary on the Model."
   remarks: [CyioNote]
   # ResponsibleParty
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
   "Identifies a reference to the role that the party is responsible for."
   role: OscalRole!
   "Identifies one or more references to the parties that are responsible for performing the associated role."
@@ -879,7 +881,7 @@ input OscalResponsiblePartyAddInput {
   parties: [ID!]!
   # DarkLight extensions
   "Identifies a name given to the responsible party to make it friendlier."
-  name: String
+  name: String!
   "Identifies a summary of the reponsible party's purpose and associated responsibilities."
   description: String
 }
@@ -1461,8 +1463,8 @@ enum ReportMediaType {
 enum SarSections {
   "Risk Tracking Details"
   tracking
-  "Collected During Testing"
-  collected_during_testing
+  "Corrected During Testing"
+  corrected_during_testing
   "Mitigating Factors"
   mitigating_factor
 }
@@ -1479,6 +1481,8 @@ enum SarAppendices {
   pen_test
   "Manual Test"
   manual_test
+  "Attack Surface Scan"
+  attack_surface_scan
 }
 
 ##### OSCAL Property

@@ -77,13 +77,20 @@ const styles = (theme) => ({
     padding: '18px 18px 0 18px',
   },
   searchBar: {
-    width: '350px',
-    minWidth: '350px',
+    width: '220px',
+    minWidth: '220px',
   },
   views: {
     // display: 'flex',
     width: '295px',
     minWidth: '280px',
+    float: 'right',
+    marginTop: '5px',
+    padding: '14px 18px 12px 18px',
+  },
+  selectedViews: {
+    width: '430px',
+    minWidth: '415px',
     float: 'right',
     marginTop: '5px',
     padding: '14px 18px 12px 18px',
@@ -166,7 +173,10 @@ class CyioListCards extends Component {
       handleNewCreation,
       numberOfElements,
       availableFilterKeys,
+      handleClearSelectedElements,
     } = this.props;
+    const totalElementsSelected = selectedElements && Object.keys(selectedElements).length;
+
     return (
       <div
         className={
@@ -180,20 +190,21 @@ class CyioListCards extends Component {
         >
           <div className={classes.parameters}>
             <div className={classes.searchBar}>
-              <div style={{ float: 'left', marginRight: 20 }}>
+              {/* <div style={{ float: 'left', marginRight: 20 }}>
                 <SearchInput
                   variant="small"
                   onSubmit={handleSearch.bind(this)}
                   keyword={keyword}
                   disabled={true}
                 />
-              </div>
+              </div> */}
               {availableFilterKeys && availableFilterKeys.length > 0 ? (
                 <Filters
                   availableFilterKeys={availableFilterKeys}
                   handleAddFilter={handleAddFilter}
                   currentFilters={filters}
                   filterEntityType={filterEntityType}
+                  variant='text'
                 />
               ) : (
                 ''
@@ -374,8 +385,18 @@ class CyioListCards extends Component {
               }, toPairs(filters))}
             </div>
           </div>
-          <div className={classes.views}>
+          <div className={totalElementsSelected > 0 ? classes.selectedViews : classes.views}>
             <div style={{ float: 'right' }}>
+              {totalElementsSelected > 0 && (
+                <Chip
+                  className={classes.iconButton}
+                  label={
+                    <>
+                      <strong>{totalElementsSelected}</strong> Selected
+                    </>
+                  }
+                  onDelete={handleClearSelectedElements} />
+              )}
               {typeof handleChangeView === 'function' && (
                 // <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <>
@@ -465,6 +486,7 @@ CyioListCards.propTypes = {
   handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
+  handleClearSelectedElements: PropTypes.func,
   openExports: PropTypes.bool,
   disabled: PropTypes.bool,
   views: PropTypes.array,

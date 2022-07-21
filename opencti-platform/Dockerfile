@@ -4,13 +4,15 @@ RUN corepack enable
 
 FROM base AS graphql-deps-builder
 WORKDIR /opt/opencti-build/opencti-graphql
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-RUN yarn install --network-timeout 300000 --frozen-lockfile --production && yarn cache clean --all
+COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
+COPY opencti-graphql/.yarn ./.yarn
+RUN yarn install --network-timeout 300000 --frozen-lockfile && yarn cache clean --all
 
 
 FROM base AS graphql-builder
 WORKDIR /opt/opencti-build/opencti-graphql
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
+COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
+COPY opencti-graphql/.yarn ./.yarn
 RUN yarn install --network-timeout 300000
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production

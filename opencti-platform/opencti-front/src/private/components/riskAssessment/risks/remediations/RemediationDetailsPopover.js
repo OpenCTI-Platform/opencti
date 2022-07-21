@@ -197,8 +197,8 @@ class RemediationDetailsPopover extends Component {
       R.assoc('description', remediation?.description || ''),
       R.assoc('actor_type', SourceOfDetection.actor_type || ''),
       R.assoc('actor_ref', SourceOfDetection.actor_ref?.id || ''),
-      R.assoc('modified', dateFormat(remediation?.modified)),
-      R.assoc('created', dateFormat(remediation?.created)),
+      // R.assoc('modified', dateFormat(remediation?.modified)),
+      // R.assoc('created', dateFormat(remediation?.created)),
       R.assoc('lifecycle', remediation?.lifecycle || []),
       R.assoc('response_type', remediation?.response_type || ''),
       R.pick([
@@ -263,7 +263,7 @@ class RemediationDetailsPopover extends Component {
                       </div>
                     </Grid>
                   </Grid>
-                  <Grid container={true} spacing={3}>
+                  {/* <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '12px' }}>
                         <Typography
@@ -324,7 +324,7 @@ class RemediationDetailsPopover extends Component {
                         />
                       </div>
                     </Grid>
-                  </Grid>
+                  </Grid> */}
                   <Grid container={true} spacing={3}>
                     <Grid xs={12} item={true}>
                       <Typography

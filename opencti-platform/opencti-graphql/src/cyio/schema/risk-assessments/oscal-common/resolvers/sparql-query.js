@@ -462,6 +462,7 @@ export const selectAllLocations = (select, args, parent) => {
   let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1001,7 +1002,7 @@ export const selectAllResponsibleRoles = (select, args, parent) => {
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
-    ?iri a <http://csrc.nist.gov/ns/oscal/common#ResponsibleRole> . 
+    ?iri a <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty> . 
     ${predicates}
     ${constraintClause}
   }
@@ -1553,11 +1554,13 @@ export const responsiblePartyPredicateMap = {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: "name",
   },
   description: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    extension_property: "description",
   },
 }
 export const rolePredicateMap = {

@@ -544,6 +544,28 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('CPE Identifier')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('CPE Identifier')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="cpe_identifier"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
               </Grid>
               <Grid item={true} xs={12}>
                 <AddressField

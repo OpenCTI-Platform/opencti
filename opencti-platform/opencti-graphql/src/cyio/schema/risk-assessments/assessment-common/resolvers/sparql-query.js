@@ -505,6 +505,12 @@ const subjectReducer = (item) => {
     item.object_type = 'subject';
   }
 
+  // TODO: WORKAROUND - remove bad data
+  if (item.name !== undefined && item.name === 'undefined') {
+    item.name = undefined
+  }
+  // END WORKAROUND
+
   // populate name if we have the actual subject's information
   if (item.name === undefined && (item.subject_name !== undefined)) {
     item.name = item.subject_name;
@@ -2439,7 +2445,7 @@ export const insertObservationQuery = (propValues) => {
     //TODO: Need the actor_ref and actor_type
     ...(propValues.collected && {"collected": propValues.collected}),
     ...(propValues.methods && {"methods": propValues.methods}),
-    ...(propValues.methods && {"observation_type": propValues.methods}),
+    ...(propValues.observation_types && {"observation_types": propValues.observation_types}),
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
@@ -3057,6 +3063,7 @@ export const selectRiskByIriQuery = (iri, select) => {
     if (!select.includes('accepted')) select.push('accepted');
     if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
     if (!select.includes('priority')) select.push('priority')
+    if (!select.includes('occurrences')) select.push('occurrences');
   }
   
 
@@ -3076,6 +3083,7 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select.includes('response_type')|| select.includes('lifecycle')) {
     if (!select.includes('remediation_type')) select.push('remediation_type');
     if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
+    if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp')
   }
 
   // build selectionClause and predicate list
@@ -3093,6 +3101,7 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select.includes('response_type')|| select.includes('response_lifecycle')) {
     selectionClause = selectionClause.replace('?remediation_type','');
     selectionClause = selectionClause.replace('?remediation_lifecycle','')
+    selectionClause = selectionClause.replace('?remediation_timestamp','')
   }
 
   // Populate the insertSelections that compute results
@@ -3105,16 +3114,18 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (select.includes('response_type') || select.includes('response_lifecycle')) {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
   }
   if (select.includes('occurrences')) {
     occurrences = '?occurrences';
     occurrenceQuery = `
       OPTIONAL {
         {
-          SELECT DISTINCT ?iri (COUNT(DISTINCT ?related_observations) AS ?count)
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?subjects) AS ?count)
           WHERE {
             ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
-            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects .
+            ?subjects <http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
           }
           GROUP BY ?iri
         }
@@ -3154,7 +3165,8 @@ export const selectAllRisks = (select, args, parent) => {
     if (!select.includes('false_positive')) select.push('false_positive');
     if (!select.includes('accepted')) select.push('accepted');
     if (!select.includes('risk_adjusted')) select.push('risk_adjusted');
-    if (!select.includes('priority')) select.push('priority')
+    if (!select.includes('priority')) select.push('priority');
+    if (!select.includes('occurrences')) select.push('occurrences');
   }
   
   // fetch the uuid of each related_observation and related_risk as these are commonly used
@@ -3173,6 +3185,7 @@ export const selectAllRisks = (select, args, parent) => {
   if (select.includes('response_type')|| select.includes('lifecycle')) {
     if (!select.includes('remediation_type')) select.push('remediation_type');
     if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
+    if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp')
   }
 
   if (args !== undefined ) {
@@ -3232,9 +3245,10 @@ export const selectAllRisks = (select, args, parent) => {
     selectionClause = selectionClause.replace('?available_exploit','');
     selectionClause = selectionClause.replace('?exploitability_ease','');
   }
-  if (select.includes('response_type')|| select.includes('response_lifecycle')) {
+  if (select.includes('response_type') || select.includes('response_lifecycle')) {
     selectionClause = selectionClause.replace('?remediation_type','');
     selectionClause = selectionClause.replace('?remediation_lifecycle','')
+    selectionClause = selectionClause.replace('?remediation_timestamp','')    
   }
 
   // Populate the insertSelections that compute results
@@ -3247,17 +3261,19 @@ export const selectAllRisks = (select, args, parent) => {
   if (select.includes('response_type') || select.includes('response_lifecycle')) {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
   }
   if (select.includes('occurrences')) {
     occurrences = '?occurrences';
     occurrenceQuery = `
       OPTIONAL {
         {
-          SELECT DISTINCT ?iri (COUNT(DISTINCT ?related_observations) AS ?count)
+          SELECT DISTINCT ?iri (COUNT(DISTINCT ?subjects) AS ?count)
           WHERE {
             ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
-            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
-          }
+            ?related_observations <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects .
+            ?subjects <http://darklight.ai/ns/oscal/assessment/common#subject_context> "target" .
+      }
           GROUP BY ?iri
         }
       }
@@ -3750,7 +3766,7 @@ export const insertSubjectsQuery = (subjects) => {
     insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#ComplexDatatype>`);
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`);
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "subject"`); 
-    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#name> "${subject.name}"`);
+    if (subject.name != undefined) insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#name> "${subject.name}"`);
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_type> "${subject.subject_type}"`);
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref> <${subject.subject_ref}>`);
     if (subject.subject_context != undefined) {
@@ -3831,7 +3847,7 @@ export const selectAllSubjects = (select, args, parent) => {
       classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor>';
       predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
     }
-    if (parent.entity_type === 'requested-asset') {
+    if (parent.entity_type === 'required-asset') {
       classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset>';
       predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>';
     }
@@ -5075,6 +5091,11 @@ export const riskPredicateMap = {
   remediation_lifecycle: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediation_lifecycle");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  remediation_timestamp: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "remediation_timestamp");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   observation_subject: {

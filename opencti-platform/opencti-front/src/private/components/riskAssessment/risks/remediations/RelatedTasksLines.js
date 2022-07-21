@@ -374,6 +374,8 @@ const RelatedTasksLines = createFragmentContainer(
               name
             }
             responsible_roles {
+              id
+              name
               parties {
                 id
                 party_type

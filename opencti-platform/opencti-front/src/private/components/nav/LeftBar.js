@@ -88,7 +88,7 @@ const styles = (theme) => ({
 });
 
 const LeftBar = ({
-  t, location, classes, clientId
+  t, location, classes, clientId, history, setClientId,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const [user, setUser] = useState();
@@ -266,8 +266,8 @@ const LeftBar = ({
             </MenuList> 
             <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
             <MenuItem
-              component={Link}
-              to="/dashboard/profile"
+              // component={Link}
+              // to="/dashboard/profile"
               selected={location.pathname.includes('/dashboard/profile')}
               dense={false}
               classes={{ root: classes.menuItem }}
@@ -298,7 +298,10 @@ const LeftBar = ({
        me={me}
        user={user}
        isLoading="true"
+       history={history}
        action={cancelUserPref}
+       url={location.pathname}
+       setClientId={setClientId}
       />
       </Dialog>
     </Drawer>

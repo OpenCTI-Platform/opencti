@@ -41,7 +41,7 @@ import { dateFormatRegex } from '../../../../utils/Network';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '-10px 0 0 -5px',
+    margin: '0 10px 0 20px',
   },
   filtersDialog: {
     margin: '0 0 20px 0',
@@ -49,6 +49,7 @@ const styles = (theme) => ({
   container: {
     width: 490,
     padding: 20,
+    marginTop: 15,
   },
   icon: {
     paddingTop: 4,
@@ -279,7 +280,7 @@ class Filters extends Component {
             });
           });
         break;
-      case 'risk_response':
+      case 'response_type':
         fetchDarklightQuery(RiskFiltersQuery, {
           type: 'ResponseType',
         })
@@ -296,9 +297,9 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                risk_response: R.union(
+                response_type: R.union(
                   riskResponseEntities,
-                  this.state.entities.risk_response,
+                  this.state.entities.response_type,
                 ),
               },
             });
@@ -1015,20 +1016,22 @@ class Filters extends Component {
             variant="contained"
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
-            startIcon={<FilterListOutlined />}
+            endIcon={<FilterListOutlined />}
             size="small"
-            style={{ float: 'left', margin: '0 15px 0 7px' }}
+            style={{ float: 'left' }}
           >
             {t('Filters')}
           </Button>
         ) : (
-          <IconButton
-            color="primary"
-            onClick={this.handleOpenFilters.bind(this)}
-            style={{ float: 'left' }}
-          >
-            <FilterListOutlined />
-          </IconButton>
+          <Tooltip title={t('Filter')}>
+            <IconButton
+              color="primary"
+              onClick={this.handleOpenFilters.bind(this)}
+              style={{ float: 'left' }}
+            >
+              <FilterListOutlined />
+            </IconButton>
+          </Tooltip>
         )}
         <Popover
           classes={{ paper: classes.container }}
@@ -1037,11 +1040,11 @@ class Filters extends Component {
           onClose={this.handleCloseFilters.bind(this)}
           anchorOrigin={{
             vertical: 'bottom',
-            horizontal: 'center',
+            horizontal: 'left',
           }}
           transformOrigin={{
             vertical: 'top',
-            horizontal: 'center',
+            horizontal: 'left',
           }}
         >
           {this.renderFilters()}

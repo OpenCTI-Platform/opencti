@@ -106,13 +106,15 @@ class Source extends Component {
     fetchDarklightQuery(SourceActorTypeQuery)
       .toPromise()
       .then((data) => {
-        const actorTypeEntities = R.pipe(
-          R.pathOr([], ['__type', 'enumValues']),
-          R.map((n) => ({
-            label: n.description,
-            value: n.name,
-          })),
-        )(data);
+        const actorTypeEntities = R.pathOr([], ['__type', 'enumValues']).length > 0
+          ? R.pipe(
+            R.pathOr([], ['__type', 'enumValues']),
+            R.map((n) => ({
+              label: n.description,
+              value: n.name,
+            })),
+          )(data)
+          : [];
         this.setState({
           actorTypeList: {
             ...this.state.entities,
@@ -156,15 +158,16 @@ class Source extends Component {
       fetchDarklightQuery(queryType)
         .toPromise()
         .then((data) => {
-          const oscalEntities = R.pipe(
-            R.pathOr({}, [queryInfo, 'edges']),
-            R.map((n) => ({
-              key: n.node.id,
-              label: n.node.name,
-              value: n.node.id,
-            })),
-          )(data);
-
+          const oscalEntities = R.pathOr([], [queryInfo, 'edges'], data).length > 0
+            ? R.pipe(
+              R.pathOr({}, [queryInfo, 'edges']),
+              R.map((n) => ({
+                key: n.node.id,
+                label: n.node.name,
+                value: n.node.id,
+              })),
+            )(data)
+            : [];
           this.setState({
             actorReferences: {
               ...this.state.entities,
@@ -217,7 +220,7 @@ class Source extends Component {
             (et) => et.label && (
               <Tooltip title={et.label} value={et.value} key={et.label}>
                 <MenuItem value={et.value}>{et.value}
-               </MenuItem>
+                </MenuItem>
               </Tooltip>
             ),
           )}
@@ -236,7 +239,7 @@ class Source extends Component {
         >
           {actorReferences?.map(
             (et) => (
-             <MenuItem key={et.key} value={et.key}>{et.label}</MenuItem>
+              <MenuItem key={et.key} value={et.key}>{et.label}</MenuItem>
             ),
           )}
         </Field>

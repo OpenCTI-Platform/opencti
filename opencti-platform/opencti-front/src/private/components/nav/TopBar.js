@@ -306,9 +306,9 @@ const TopBar = ({
         <div className={classes.barRight}>
           <div className={classes.barContainer}>
             <Security needs={[KNOWLEDGE]}>
-              <div className={classes.searchContainer}>
+              {/* <div className={classes.searchContainer}>
                 <SearchInput disabled={true} onSubmit={handleSearch} keyword={keyword} />
-              </div>
+              </div> */}
               <Filters
                 variant="dialog"
                 availableFilterKeys={[
@@ -421,6 +421,7 @@ const TopBar = ({
               onClose={handleCloseMenu}
             >
               <MenuItem
+                disabled={true}
                 component={Link}
                 to="/dashboard/profile"
                 onClick={handleCloseMenu}

@@ -93,13 +93,20 @@ const styles = (theme) => ({
     padding: '18px 18px 0 18px',
   },
   searchBar: {
-    width: '350px',
-    minWidth: '350px',
+    width: '220px',
+    minWidth: '220px',
   },
   views: {
     // float: 'right',
     width: '295px',
     minWidth: '285px',
+    marginTop: '5px',
+    padding: '14px 18px 12px 18px',
+  },
+  selectedViews: {
+    width: '430px',
+    minWidth: '415px',
+    float: 'right',
     marginTop: '5px',
     padding: '14px 18px 12px 18px',
   },
@@ -288,6 +295,7 @@ class CyioListLines extends Component {
       selectedDataEntity,
       OperationsComponent,
       message,
+      handleClearSelectedElements,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -295,6 +303,8 @@ class CyioListLines extends Component {
     } else if (openExports && !noPadding) {
       className = classes.containerOpenExports;
     }
+    const totalElementsSelected = selectedElements && Object.keys(selectedElements).length;
+
     return (
       <>
         <div
@@ -304,7 +314,7 @@ class CyioListLines extends Component {
         >
           <div className={classes.parameters}>
             <div className={classes.searchBar}>
-              {typeof handleSearch === 'function' && (
+              {/* {typeof handleSearch === 'function' && (
                 <div style={{ float: 'left', marginRight: 20 }}>
                   <SearchInput
                     variant={searchVariant || 'small'}
@@ -313,9 +323,10 @@ class CyioListLines extends Component {
                     disabled={true}
                   />
                 </div>
-              )}
+              )} */}
               {availableFilterKeys && availableFilterKeys.length > 0 && (
                 <Filters
+                  variant='text'
                   availableFilterKeys={availableFilterKeys}
                   handleAddFilter={handleAddFilter}
                   currentFilters={filters}
@@ -499,8 +510,18 @@ class CyioListLines extends Component {
               }, toPairs(filters))}
             </div>
           </div>
-          <div className={classes.views}>
+          <div className={totalElementsSelected > 0 ? classes.selectedViews : classes.views}>
             <div style={{ float: 'right' }}>
+              {totalElementsSelected > 0 && (
+                <Chip
+                  className={classes.iconButton}
+                  label={
+                    <>
+                      <strong>{totalElementsSelected}</strong> Selected
+                    </>
+                  }
+                  onDelete={handleClearSelectedElements} />
+              )}
               {typeof handleChangeView === 'function' && (
                 // <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <>
@@ -680,6 +701,7 @@ CyioListLines.propTypes = {
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   handleToggleSelectAll: PropTypes.func,
+  handleClearSelectedElements: PropTypes.func,
   selectAll: PropTypes.bool,
   openExports: PropTypes.bool,
   noPadding: PropTypes.bool,

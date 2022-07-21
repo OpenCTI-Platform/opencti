@@ -106,7 +106,7 @@ type POAM implements BasicObject & LifecycleObject & OscalObject & Model {
   "Identifies one or more individual observations."
   observations(first: Int, offset: Int): ObservationConnection
   "Identifies one or more individual observations."
-  risks(first: Int, offset: Int): RiskConnection
+  risks(first: Int, offset: Int, orderedBy: RisksOrdering orderMode: OrderingMode): RiskConnection
   "Identifies one ore more POAM Items that bind a specific Risk to the associated Observations."
   poam_items(first: Int, offset: Int): POAMItemConnection
   # Backmatter

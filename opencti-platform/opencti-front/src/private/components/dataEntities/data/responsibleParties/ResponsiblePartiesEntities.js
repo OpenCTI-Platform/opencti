@@ -213,6 +213,7 @@ class ResponsiblePartiesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleNewCreation={this.handleResponsiblePartyCreation.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
@@ -327,6 +328,7 @@ class ResponsiblePartiesEntities extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleNewCreation={this.handleResponsiblePartyCreation.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         CreateItemComponent={<EntitiesResponsiblePartiesCreation />}

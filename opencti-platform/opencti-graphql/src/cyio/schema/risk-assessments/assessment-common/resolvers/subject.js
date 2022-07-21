@@ -755,12 +755,15 @@ const subjectResolvers = {
             select.push('asset_type');
             break;
           case 'oscal-location':
+          case 'location':
             select.push('location_type');
             break;
           case 'oscal-party':
+          case 'party':
             select.push('party_type');
             break;
           case 'oscal-user':
+          case 'user':
             select.push('user_type');
             break;
         }
@@ -951,6 +954,9 @@ const subjectResolvers = {
   },
   SubjectTarget: {
     __resolveType: (item) => {
+      // WORKAROUND: entity_type not being set correctly
+      if (item.entity_type === 'location') item.entity_type = 'oscal-location';
+      // ENDIF
       return objectMap[item.entity_type].graphQLType;
     }
   }

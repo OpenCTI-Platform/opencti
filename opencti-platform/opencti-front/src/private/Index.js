@@ -66,7 +66,7 @@ const Index = (me) => {
         }
       });
     }
-  });
+  }, [clientId]);
 
   const clearStorage = () => {
     localStorage.removeItem('token')
@@ -77,7 +77,7 @@ const Index = (me) => {
   return (
     <div className={classes.root}>
       <TopBarBreadcrumbs />
-      <LeftBar clientId={clientId} />
+      <LeftBar clientId={clientId} setClientId={setClientId}/>
       <Message />
       <main className={classes.content} style={{ paddingRight: 24 }}>
         <div className={classes.toolbar} />

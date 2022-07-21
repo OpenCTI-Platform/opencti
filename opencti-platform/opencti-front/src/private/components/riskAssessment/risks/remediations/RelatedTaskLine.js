@@ -334,9 +334,8 @@ class RelatedTaskLine extends Component {
                       <PersonIcon className={classes.avatarIcon} />
                       <div style={{ marginLeft: '10px' }}>
                         <Typography variant="subtitle1">
-                          {responsibleRoles?.name && t(responsibleRoles?.name)}
+                          {data.responsible_roles && data.responsible_roles.map((role) => t(role?.name))}
                         </Typography>
-                        {responsibleRoles?.party_type && t(responsibleRoles?.party_type)}
                       </div>
                     </div>
                   </div>

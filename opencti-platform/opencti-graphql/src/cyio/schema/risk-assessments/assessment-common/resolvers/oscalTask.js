@@ -1,5 +1,6 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues, generateId} from '../../../utils.js';
+import {convertToProperties} from '../../riskUtils.js'
 import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
@@ -11,6 +12,8 @@ import {
 import {
   deleteResponsiblePartyByIriQuery,
   selectResponsiblePartyByIriQuery,
+  selectAllResponsibleRoles,
+  responsiblePartyPredicateMap,
   getReducer as getCommonReducer,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
@@ -177,8 +180,8 @@ const oscalTaskResolvers = {
       // END WORKAROUND
 
       // Setup to handle embedded objects to be created
-      let dependentTasks = [], relatedTasks = [], links = [], remarks = []; 
-      let activities, responsibleRoles, assessmentSubjects;
+      let dependentTasks = [], relatedTasks = [], responsibleRoles = [], links = [], remarks = []; 
+      let activities, assessmentSubjects;
       if (input.timing !== undefined && input.timing !== null) {
         if (('within_date_range' in input.timing && 'on_date' in input.timing) ||
             ('within_date_range' in input.timing && 'at_frequency' in input.timing) ||
@@ -228,7 +231,17 @@ const oscalTaskResolvers = {
         delete input.related_tasks;
       }
       if (input.responsible_roles !== undefined && input.responsible_roles !== null) {
-        responsibleRoles = input.responsible_roles;
+        for (let roleId of input.responsible_roles) {
+          let sparqlQuery = selectObjectIriByIdQuery( roleId, 'responsible-party');
+          let result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Obtaining IRI for Responsible Party object with id",
+            singularizeSchema
+          });
+          if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${roleId}`);
+          responsibleRoles.push(`<${result[0].iri}>`);
+        }
         delete input.responsible_roles;
       }
       if (input.associated_activities !== undefined) {
@@ -306,10 +319,14 @@ const oscalTaskResolvers = {
         // create the Assessment Subject
         // attach Assessment Subject to the Task
       }
-      // TODO: create any responsible Roles supplied and attach them to the Task
-      if (responsibleRoles !== undefined && responsibleRoles !== null ) {
-        // create the Responsible Role
-        // attach Responsible Role to the Task
+      if (responsibleRoles !== undefined && responsibleRoles.length > 0 ) {
+        // attach task(s) to the Task
+        let attachQuery = attachToOscalTaskQuery( id, 'responsible_roles', responsibleRoles);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the Responsible Role(s) to the Task"
+        });
       }
       // Attach any link(s) supplied to the Task
       if (links !== undefined && links.length > 0 ) {
@@ -769,47 +786,44 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    responsible_roles: async (parent, _, {dbName, dataSources, selectMap}) => {
+    responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.responsible_roles_iri === undefined) return [];
-      let iriArray = parent.responsible_roles_iri;
+      const reducer = getCommonReducer("RESPONSIBLE-ROLE");
       const results = [];
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getCommonReducer("RESPONSIBLE-PARTY");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('ResponsibleParty')) {
-            continue;
-          }
-          const sparqlQuery = selectResponsiblePartyByIriQuery(iri, selectMap.getNode("responsible_roles"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Responsible Role",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      let sparqlQuery = selectAllResponsibleRoles(selectMap.getNode('node'), args, parent );
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select All Responsible Roles",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return [];
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+
+      for (let item of response) {
+        // if props were requested
+        if (selectMap.getNode('responsible_roles').includes('props')) {
+          let props = convertToProperties(item, responsiblePartyPredicateMap);
+          if (props !== null) item.props = props;
+        }
+
+        results.push(reducer(item));
+      }
+
+      return results;
     },
     timing: async (parent, _, ) => {
       if (parent.on_date === undefined && parent.start_date === undefined && parent.frequency_period === undefined) {

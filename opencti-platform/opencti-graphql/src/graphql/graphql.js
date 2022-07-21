@@ -13,6 +13,7 @@ import {checkSystemDependencies} from "../initialization";
 import {getSettings} from "../domain/settings";
 import { applicationSession } from '../database/session';
 import StardogKB from '../datasources/stardog.js';
+import Artemis from '../datasources/artemis.js';
 import mockList from './mocks.js' ;
 import nconf from "nconf";
 import querySelectMap from "../cyio/schema/querySelectMap";
@@ -30,7 +31,8 @@ const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
   const clientId = req.headers['x-cyio-client'];
-  const context = { req, res, workId}
+  const token = req.headers['authorization'];
+  const context = {clientId, req, res, workId, token};
 
   //Stardog database
   if(clientId !== undefined){
@@ -92,7 +94,8 @@ const createApolloServer = (app) => {
     mocks,
     mockEntireSchema: false,
     dataSources: () => ({
-      Stardog: new StardogKB( )
+      Stardog: new StardogKB( ),
+      Artemis: new Artemis( ),
     }),
     playground: {
       cdnUrl,

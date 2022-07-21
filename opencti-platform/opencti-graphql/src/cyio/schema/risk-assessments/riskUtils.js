@@ -24,29 +24,44 @@ return {riskLevel, riskScore};
 }
 
 export const getLatestRemediationInfo = (risk) => {
-  let responseType, lifeCycle;
+  let responseType, lifeCycle, index = 0;
+  if (risk.remediation_timestamp_values !== undefined) {
+    if (risk.remediation_timestamp_values.includes(',')) {
+      // Determine the index of the latest remediation
+      let typeArray = risk.remediation_timestamp_values.split(',');
+      let latestTime = typeArray.reduce((max, c) => c > max? c : max)
+      index = typeArray.indexOf(latestTime);
+    }
+
+  }
   if (risk.remediation_type_values !== undefined) {
     if (!risk.remediation_type_values.includes(',')) {
       responseType = risk.remediation_type_values;
     } else {
-      // TODO: Determine better way to select the right value
       let typeArray = risk.remediation_type_values.split(',');
-      responseType = typeArray[0];
+      if (index >= typeArray.length) {
+        responseType = typeArray[typeArray.length-1]
+      } else {
+        responseType = typeArray[index];
+      }
     }
   }
   if (risk.remediation_lifecycle_values !== undefined) {
     if (!risk.remediation_lifecycle_values.includes(',')) {
       lifeCycle = risk.remediation_lifecycle_values;
     } else {
-      // TODO: Determine better way to select the right value
       let typeArray = risk.remediation_lifecycle_values.split(',');
-      lifeCycle = typeArray[0];
+      if (index >= typeArray.length) {
+        lifeCycle = typeArray[typeArray.length-1]
+      } else {
+        lifeCycle = typeArray[index];
+      }
     }
   }
   return {responseType, lifeCycle};
 }
 
-export function convertToProperties(item, predicateMap, customProperties) {
+export function convertToProperties(item, predicateMap, _customProperties) {
   let propList = [];
   let id, id_material, token;
 

@@ -40,7 +40,7 @@ class Software extends Component {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('cards', 'view', params),
+      view: 'lines',
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -61,7 +61,7 @@ class Software extends Component {
   }
 
   handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
+    this.setState({ view: mode });
   }
 
   handleSearch(value) {
@@ -78,6 +78,10 @@ class Software extends Component {
 
   handleToggleSelectAll() {
     this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
   }
 
   handleSoftwareCreation() {
@@ -199,6 +203,7 @@ class Software extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleSoftwareCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
@@ -311,6 +316,7 @@ class Software extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleNewCreation={this.handleSoftwareCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}

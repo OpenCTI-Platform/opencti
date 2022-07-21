@@ -94,6 +94,7 @@ const deviceEditionMutation = graphql`
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   port_number: Yup.number().moreThan(0, 'The port number must be greater than 0'),
+  uri: Yup.string().nullable().url('The value must be a valid URL (scheme://host:port/path). For example, https://cyio.darklight.ai'),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -227,6 +228,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('version', device?.version || ''),
       R.assoc('labels', labels),
       R.assoc('vendor_name', device?.vendor_name || ''),
+      R.assoc('cpe_identifier', device?.cpe_identifier || ''),
       R.assoc('serial_number', device?.serial_number || ''),
       R.assoc('release_date', dateFormat(device?.release_date)),
       R.assoc('installed_hardware', installedHardwares || []),
@@ -263,6 +265,7 @@ class DeviceEditionContainer extends Component {
         'asset_tag',
         'asset_type',
         'locations',
+        'cpe_identifier',
         'labels',
         'version',
         'vendor_name',
@@ -510,6 +513,7 @@ const DeviceEditionFragment = createFragmentContainer(
         version
         vendor_name
         asset_tag
+        cpe_identifier
         asset_type
         serial_number
         release_date

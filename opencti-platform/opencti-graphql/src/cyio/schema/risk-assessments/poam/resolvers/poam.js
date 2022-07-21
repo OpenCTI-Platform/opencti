@@ -35,14 +35,13 @@ import {
   selectAllRoles,
   selectAllResponsibleParties,
   partyPredicateMap,
+  responsiblePartyPredicateMap,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
-  getReducer as getComponentReducer,
   selectAllComponents,
   convertAssetToComponent,
 } from './../../component/resolvers/sparql-query.js';
 import {
-  getReducer as getInventoryItemReducer,
   selectAllInventoryItems,
   convertAssetToInventoryItem
 } from './../../inventory-item/resolvers/sparql-query.js';
@@ -803,6 +802,12 @@ const poamResolvers = {
           continue;
         }
 
+        // if props were requested
+        if (selectMap.getNode('node').includes('props')) {
+          let props = convertToProperties(item, responsiblePartyPredicateMap);
+          if (props !== null) item.props = props;
+        }
+
         // filter out non-matching entries if a filter is to be applied
         if ('filters' in args && args.filters != null && args.filters.length > 0) {
           if (!filterValues(item, args.filters, args.filterMode) ) {
@@ -1017,6 +1022,7 @@ const poamResolvers = {
           // clean up
           delete risk.remediation_type_values;
           delete risk.remediation_lifecycle_values;
+          delete risk.remediation_timestamp_values;
         }
 
         // TODO: WORKAROUND fix up invalidate deviation values
@@ -1065,6 +1071,32 @@ const poamResolvers = {
               prop_name: 'risk-level',
               ns: 'http://darklight.ai/ns/oscal',
               value: `${risk.risk_level}`,
+            }
+            props.push(property)
+          }
+          if (risk.hasOwnProperty('risk_score')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-score","ns":"http://darklight.ai/ns/oscal","value":`${risk.risk_score}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-score',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.risk_score}`,
+            }
+            props.push(property)
+          }
+          if (risk.hasOwnProperty('occurrences')) {
+            if (props === null) props = [];
+            let id_material = {"name":"risk-occurrences","ns":"http://darklight.ai/ns/oscal","value":`${risk.occurrences}`};
+            let propId = generateId(id_material, OSCAL_NS);
+            let property = {
+              id: `${propId}`,
+              entity_type: 'property',
+              prop_name: 'risk-occurrences',
+              ns: 'http://darklight.ai/ns/oscal',
+              value: `${risk.occurrences}`,
             }
             props.push(property)
           }
@@ -1223,8 +1255,7 @@ const poamResolvers = {
     },
   },
   POAMLocalDefinitions: {
-    components: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // if (parent.components_iri === undefined) return null;
+    components: async (_parent, args, {dbName, dataSources, selectMap}) => {
       const edges = [];
       let sparqlQuery = selectAllComponents(selectMap.getNode("node"));
       let response;
@@ -1334,8 +1365,7 @@ const poamResolvers = {
         edges: edges,
       }
     },
-    inventory_items: async(parent, args, {dbName, dataSources, selectMap}) => {
-      // if (parent.inventory_items_iri === undefined) return null;
+    inventory_items: async(_parent, args, {dbName, dataSources, selectMap}) => {
       const edges = [];
       let sparqlQuery = selectAllInventoryItems(selectMap.getNode("node"), args);
       let response;

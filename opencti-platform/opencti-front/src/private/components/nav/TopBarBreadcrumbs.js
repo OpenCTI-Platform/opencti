@@ -197,9 +197,9 @@ const TopBarBreadcrumbs = ({
         <div className={classes.barRight}>
           <div className={classes.barContainer}>
             <Security needs={[KNOWLEDGE]}>
-              <div className={classes.searchContainer}>
+              {/* <div className={classes.searchContainer}>
                 <SearchInput disabled={true} onSubmit={handleSearch} keyword={keyword} />
-              </div>
+              </div> */}
               <Filters
                 variant="dialog"
                 availableFilterKeys={[
@@ -288,14 +288,12 @@ const TopBarBreadcrumbs = ({
                 <FindInPageIcon fontSize="default" />
               </IconButton>
             </Tooltip>
-            <Tooltip title={t('Data Import')}>
-               <ExportPoam />
-            </Tooltip>
-            <Tooltip
-              title={t('Add Note')}
-            >
+            <>
+              <ExportPoam />
+            </>
+            <>
               <Export />
-            </Tooltip>
+            </>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}
@@ -314,6 +312,7 @@ const TopBarBreadcrumbs = ({
               onClose={handleCloseMenu}
             >
               <MenuItem
+                disabled={true}
                 component={Link}
                 to="/dashboard/profile"
                 onClick={handleCloseMenu}

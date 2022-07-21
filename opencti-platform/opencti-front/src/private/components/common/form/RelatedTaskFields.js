@@ -46,14 +46,9 @@ const RelatedTaskFieldsResponsiblePartiesQuery = graphql`
     oscalResponsibleParties(orderedBy: $orderedBy, orderMode: $orderMode) {
       edges {
         node {
-          role {
-            id
-          }
-          parties {
-            id
-            name
-            description
-          }
+          id
+          name
+          description
         }
       }
     }
@@ -148,12 +143,10 @@ class RelatedTaskFields extends Component {
       .then((data) => {
         const RelatedTaskFieldsEntities = R.pipe(
           R.pathOr([], ['oscalResponsibleParties', 'edges']),
-          R.mergeAll,
-          R.pathOr([], ['node', 'parties']),
           R.map((n) => ({
-            id: n.id,
-            label: n.description,
-            value: n.name,
+            id: n.node.id,
+            label: n.node.description,
+            value: n.node.name,
           })),
         )(data);
         this.setState({
