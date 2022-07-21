@@ -38,6 +38,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Party-7f9fa876-0a43-5199-a7be-3b11bc
         oscal:party_type "person" ;
         oscal:email_addresses "ppatrick@darklight.ai", "paul.patrick.sr@gmail.com" ;
         oscal:job_title "Executive VP of Engineering"@en-US ;
+        oscal:member_of_organizations <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
     .
 }
 # Beth Ellis
@@ -57,6 +58,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Party-75e44e79-b456-5406-838a-de094c
         oscal:party_type "person" ;
         oscal:email_addresses "bellis@darklight.ai" ;
         oscal:job_title "Director of Operations"@en-US ;
+        oscal:member_of_organizations <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
     .
 }
 # Dan Wachtler
@@ -77,6 +79,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Party-ba43670c-fc4b-504f-8915-75433e
         oscal:email_addresses "dan@darklight.ai" ;
         oscal:job_title "Chief Executive Officer"@en-US ;
         oscal:locations <http://csrc.nist.gov/ns/oscal/common#Location-e28be726-9e75-5e7e-bcdb-46ac6d2c5eb4> ;
+        oscal:member_of_organizations <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
     .
 }
 # -----------------------
@@ -158,6 +161,32 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-7f68e205-eaca-58c2-8
 # -------------------------
 # Responsible Parties
 # -------------------------
+GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-5c0445f8-29d9-5dff-8be5-1e81ad53de3d> {
+    <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-5c0445f8-29d9-5dff-8be5-1e81ad53de3d>
+        a <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty> ;
+        a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "5c0445f8-29d9-5dff-8be5-1e81ad53de3d" ;
+        common:object_type "oscal-responsible-party" ;
+        oscal:name "Report Consumer"@en-US ;
+        oscal:description "This is the organization for which the content was prepared."@en-US ;
+        oscal:role <http://csrc.nist.gov/ns/oscal/common#Role-609156af-16ca-55e1-9c32-0f602daae834> ;
+        oscal:party <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
+    .
+}
+GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-d15abedc-8090-568f-a7e9-cc18abf2c4b0> {
+    <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-d15abedc-8090-568f-a7e9-cc18abf2c4b0>
+        a <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty> ;
+        a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "d15abedc-8090-568f-a7e9-cc18abf2c4b0" ;
+        common:object_type "oscal-responsible-party" ;
+        oscal:name "Report Producer"@en-US ;
+        oscal:description "This is the organization responsible for the content of the report."@en-US ;
+        oscal:role <http://csrc.nist.gov/ns/oscal/common#Role-fa315278-017f-5e5e-b666-edeb1ea08fdf> ;
+        oscal:party <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
+    .
+}
 GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f> {
     <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f>
         a <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty> ;
@@ -165,12 +194,12 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-
         a <http://darklight.ai/ns/common#ComplexDatatype> ;
         common:id "e1cfca7e-4fba-5c28-8a13-886c3639dd0f" ;
         common:object_type "oscal-responsible-party" ;
+        oscal:name "DarkLight Leadership Team"@en-US ;
+        oscal:description "Represents the DarkLight Leadership team"@en-US ;
         oscal:role <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c723ce> ;
         oscal:parties <http://csrc.nist.gov/ns/oscal/common#Party-ba43670c-fc4b-504f-8915-75433eccac54>,
                       <http://csrc.nist.gov/ns/oscal/common#Party-7f9fa876-0a43-5199-a7be-3b11bc25578b>,
                       <http://csrc.nist.gov/ns/oscal/common#Party-75e44e79-b456-5406-838a-de094cd5d1d8> ;
-        oscal:name "DarkLight Leadership Team"@en-US ;
-        oscal:description "Represents the DarkLight Leadership team"@en-US ;
     .
 }
 
