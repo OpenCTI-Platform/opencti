@@ -165,7 +165,7 @@ node {
               }
 
               dir('opencti-platform/opencti-front/') {
-                sh 'docker run --rm -v $PWD:/e2e -w /e2e --network docker_default cypress/included:10.3.0'
+                sh 'docker run --rm -v $PWD:/e2e -w /e2e --network docker_default --entrypoint cypress cypress/included:10.3.0 run && chown -R 997:995 . || true'
               }
             }
           }
