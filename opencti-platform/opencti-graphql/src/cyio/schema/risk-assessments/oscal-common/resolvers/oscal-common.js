@@ -9,7 +9,7 @@ const oscalCommonResolvers = {
     exportOscal: async (_, { model, id, media_type }, {clientId, kauth, token, dataSources}) => {
       switch(model) {
         case 'poam':
-          if (id === undefined) id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+          if (id === undefined || id === null || id === '') id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
           break;
         case 'ap':
         case 'ar':
@@ -54,7 +54,7 @@ const oscalCommonResolvers = {
       let sectionList = [], appendixList = [];
       switch(report) {
         case 'sar':
-          if (id === undefined) id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+          if (id === undefined || id === null || id === '') id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
           exportMediaType = 'application/oscal+json';
           model = 'poam';
           break;
@@ -78,19 +78,19 @@ const oscalCommonResolvers = {
       for (let option of options) {
         switch(option.name) {
           case 'description':
-            description = `"${option.values[0]}"`;
+            description = `${option.values[0]}`;
             break;
           case 'purpose':
-            purpose = `"${option.values[0]}"`;
+            purpose = `${option.values[0]}`;
             break;
           case 'max_items':
-            maxItems = `"${option.values[0]}"`;
+            maxItems = `${option.values[0]}`;
             break
           case 'appendices':
-            for (let appendix of option.values) appendixList.push(`"${appendix}"`);
+            for (let appendix of option.values) appendixList.push(`${appendix}`);
             break;
           case 'sections':
-            for (let section of option.values) sectionList.push(`"${section}"`);
+            for (let section of option.values) sectionList.push(`${section}`);
             break;
         }
       }
@@ -114,14 +114,14 @@ const oscalCommonResolvers = {
             "max-items": `${maxItems}`,
             "description": `${description}`,
             "purpose": `${purpose}`,
-            "appendices": [`${appendixList}`],
-            "sections": [`${sectionList}`]
+            "appendices": appendixList,
+            "sections": sectionList
           }
         }
       };
       
       let response;
-      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', payload);
+      response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.report', payload);
       
       // return the tasking id for tracking purposes
       return response;

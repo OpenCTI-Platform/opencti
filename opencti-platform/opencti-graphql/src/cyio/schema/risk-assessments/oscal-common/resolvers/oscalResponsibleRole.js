@@ -69,6 +69,12 @@ const responsibleRoleResolvers = {
           continue
         }
 
+        // if props were requested
+        if (selectMap.getNode('node').includes('props')) {
+          let props = convertToProperties(respRole, responsiblePartyPredicateMap);
+          if (props !== null) respRole.props = props;
+        }
+
         // filter out non-matching entries if a filter is to be applied
         if ('filters' in args && args.filters != null && args.filters.length > 0) {
           if (!filterValues(respRole, args.filters, args.filterMode)) {
@@ -128,8 +134,6 @@ const responsibleRoleResolvers = {
         throw e
       }
 
-      if (response === undefined) return null;
-
       // Handle reporting Stardog Error
       if (typeof (response) === 'object' && 'body' in response) {
         throw new UserInputError(response.statusText, {
@@ -138,8 +142,17 @@ const responsibleRoleResolvers = {
         });
       }
 
+      if (response === undefined) return null;
       const reducer = getReducer("RESPONSIBLE-ROLE");
-      return reducer(response[0]);
+      let respRole = response[0];
+
+      // if props were requested
+      if (selectMap.getNode('oscalResponsibleRole').includes('props')) {
+        let props = convertToProperties(respRole, responsiblePartyPredicateMap);
+        if (props !== null) respRole.props = props;
+      }
+
+      return reducer(respRole);
     }
   },
   Mutation: {
