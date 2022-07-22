@@ -146,7 +146,7 @@ class DataSources extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) });
   }
 
   setNumberOfElements(numberOfElements) {
