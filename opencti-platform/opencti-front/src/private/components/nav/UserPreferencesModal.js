@@ -168,7 +168,7 @@ const UserPreferencesModal = (props) => {
       if(location.pathname === '/activities/vulnerability assessment/scans/explore results'){
        props.history.push('/activities/vulnerability assessment/scans');
       } else {
-        props.history.push(props.url);
+        props.history.push('/dashboard');
       }
       handleCancel();
 
