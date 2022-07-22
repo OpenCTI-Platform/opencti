@@ -144,14 +144,12 @@ class TasksEntities extends Component {
             this.state.filters,
           ),
         },
-        () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
-        () => this.saveView(),
       );
     }
   }
