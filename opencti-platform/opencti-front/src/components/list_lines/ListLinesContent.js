@@ -27,6 +27,7 @@ class ListLinesContent extends Component {
     this._resetLoadingRowCount = this._resetLoadingRowCount.bind(this);
     this.listRef = React.createRef();
     this.state = {
+      loadedData: 0,
       loadingRowCount: 0,
       newDataList: [],
     };
@@ -57,7 +58,8 @@ class ListLinesContent extends Component {
       this.listRef.forceUpdateGrid();
     }
     const checker = (arr, target) => target.every((v) => arr.includes(v));
-    if (this.state.newDataList.length !== (this.props.dataList.length + this.props.offset)) {
+    if (this.state.loadedData !== (this.props.dataList.length + this.props.offset)
+      && ((this.props.globalCount - this.state.loadedData) > 0)) {
       if (this.props.dataList.length === 0) {
         this.setState({ newDataList: [] });
         this.listRef.forceUpdateGrid();
@@ -65,6 +67,7 @@ class ListLinesContent extends Component {
       if (!checker(this.state.newDataList, this.props.dataList)) {
         this.setState({
           newDataList: [...this.state.newDataList, ...this.props.dataList],
+          loadedData: this.state.loadedData + this.props.dataList.length,
         });
       }
     }
@@ -91,13 +94,19 @@ class ListLinesContent extends Component {
     if (!hasMore() || isLoading()) {
       return;
     }
-    const difference = globalCount - this.state.newDataList.length;
+    const difference = globalCount - this.state.loadedData;
     this.setState({
       loadingRowCount:
         difference >= nbOfRowsToLoad ? nbOfRowsToLoad : difference,
     });
     handleOffsetChange();
     loadMore(nbOfRowsToLoad, this._resetLoadingRowCount);
+    if (this.state.newDataList.length > 50 && difference > 0) {
+      setTimeout(() => {
+        this.setState({ newDataList: this.state.newDataList.slice(50) });
+        window.scrollTo(0, 1500);
+      }, 500);
+    }
   }
 
   _isRowLoaded({ index }) {

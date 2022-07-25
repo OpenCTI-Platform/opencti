@@ -34,6 +34,7 @@ class CyioListCardsContent extends Component {
     this._resetLoadingCardCount = this._resetLoadingCardCount.bind(this);
     this.gridRef = React.createRef();
     this.state = {
+      loadedData: 0,
       loadingCardCount: 0,
       newDataList: [],
     };
@@ -64,14 +65,16 @@ class CyioListCardsContent extends Component {
       this.gridRef.forceUpdate();
     }
     const checker = (arr, target) => target.every((v) => arr.includes(v));
-    if (this.state.newDataList.length !== (this.props.dataList.length + this.props.offset)) {
+    if (this.state.loadedData !== (this.props.dataList.length + this.props.offset)
+      && ((this.props.globalCount - this.state.loadedData) > 0)) {
       if (this.props.dataList.length === 0) {
         this.setState({ newDataList: [] });
-        this.gridRef.forceUpdate();
+        this.listRef.forceUpdateGrid();
       }
       if (!checker(this.state.newDataList, this.props.dataList)) {
         this.setState({
           newDataList: [...this.state.newDataList, ...this.props.dataList],
+          loadedData: this.state.loadedData + this.props.dataList.length,
         });
       }
     }
@@ -105,6 +108,12 @@ class CyioListCardsContent extends Component {
     });
     handleOffsetChange();
     loadMore(nbOfCardsToLoad, this._resetLoadingCardCount);
+    if (this.state.newDataList.length > 50 && difference > 0) {
+      setTimeout(() => {
+        this.setState({ newDataList: this.state.newDataList.slice(50) });
+        window.scrollTo(0, 4000);
+      }, 500);
+    }
   }
 
   _onSectionRendered({
