@@ -125,6 +125,12 @@ export const checkSystemDependencies = async () => {
   } else {
     logApp.info('[Check] Keycloak service did not load.');
   }
+  // Check if ActiveMQ Artemis REST API is alive
+  if (await artemisAlive()) {
+    logApp.info('[Check] ActiveMQ Artemis REST service is alive');
+  } else {
+    logApp.info('[Check] ActiveMQ Artemis REST service did not load.');
+  }
   // Check if elasticsearch is available
   await elIsAlive();
   logApp.info(`[CHECK] ElasticSearch is alive`);
