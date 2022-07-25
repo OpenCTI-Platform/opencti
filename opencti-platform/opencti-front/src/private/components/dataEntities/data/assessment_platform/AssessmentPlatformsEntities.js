@@ -158,7 +158,7 @@ class AssessmentPlatformsEntities extends Component {
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: R.dissoc(key, this.state.filters) });
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
