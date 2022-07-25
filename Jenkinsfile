@@ -78,12 +78,12 @@ node {
     }
   }
 
-  // Run any tests we can that do not require a build along side the build process
+  // Run any tests we can that do not require a build, alongside the build process
   parallel build: {
       stage('Build') {
-      // if core branches (master, staging, or develop) build, except if:
-      //   - commit says: 'ci:skip' then skip build
-      //   - commit says: 'ci:build' then build regardless of branch
+      // if core branches (master, staging, or develop) build; except if the commit says:
+      //   - 'ci:skip' then skip build
+      //   - 'ci:build' then build regardless of branch
       if (((branch.equals('master') || branch.equals('prod') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
         dir('opencti-platform') {
           String buildArgs = '--no-cache --progress=plain .'
@@ -106,7 +106,7 @@ node {
       }
   }, test: {
     stage('Test') {
-      if (!commitMessage.contains('ci:skip-tests')) { // TODO: Remove the !
+      if (commitMessage.contains('ci:skip-tests')) {
         echo 'Skipping tests'
         currentBuild.result = 'SUCCESS'
         return
@@ -172,14 +172,12 @@ node {
         } catch (Exception e) {
           throw e
         } finally {
-          sh 'chown -R 997:995 . || true'
           dir('docker') {
-            // sh '''
-            //   docker-compose down || true
-            //   rm -rf default.json .env || true
-            //   rm -rf stardog-license-key.bin || true
-            // '''
-            echo 'skipping cleanup'
+            sh '''
+              docker-compose down || true
+              rm -rf default.json .env || true
+              rm -rf stardog-license-key.bin || true
+            '''
           }
         }
       }
@@ -214,7 +212,7 @@ node {
   stage('Update K8s') {
     checkout([
       $class: 'GitSCM',
-      branches: [[name: '*/master']],
+      branches: [[name: '*/main']],
       extensions: [],
       userRemoteConfigs: [
         [credentialsId: 'c4b687fd-69dc-4913-b28a-45a061914f60', url: 'https://github.com/champtc/k8s']
