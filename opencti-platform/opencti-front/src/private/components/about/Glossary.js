@@ -3,10 +3,6 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import parse from 'html-react-parser';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import rehypeRaw from 'rehype-raw';
 import Typography from '@material-ui/core/Typography';
 import * as R from 'ramda';
 import inject18n from '../../../components/i18n';
@@ -33,7 +29,7 @@ class HowTo extends Component {
   }
 
   componentDidMount() {
-    fetch('/static/docs/how_to/page.md.html')
+    fetch('/static/docs/glossary/index.html')
       .then((response) => response.text())
       .then((data) => this.setState({ htmlFormatData: data }));
   }

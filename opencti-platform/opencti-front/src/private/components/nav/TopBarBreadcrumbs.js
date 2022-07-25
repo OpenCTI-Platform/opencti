@@ -12,6 +12,7 @@ import {
   AccountCircleOutlined,
   ExploreOutlined,
   InsertChartOutlined,
+  Info,
 } from '@material-ui/icons';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import PublishIcon from '@material-ui/icons/Publish';
@@ -277,6 +278,15 @@ const TopBarBreadcrumbs = ({
                 classes={{ root: classes.button }}
               >
                 <DashboardIcon fontSize="default" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('About')}>
+              <IconButton
+                component={Link}
+                to='/about'
+                classes={{ root: classes.button }}
+              >
+                <Info fontSize="default" />
               </IconButton>
             </Tooltip>
             <Tooltip title={t('Find in Page')}>

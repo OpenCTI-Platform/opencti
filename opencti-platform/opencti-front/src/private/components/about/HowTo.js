@@ -2,11 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import parse from 'html-react-parser';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import rehypeRaw from 'rehype-raw';
 import Typography from '@material-ui/core/Typography';
 import * as R from 'ramda';
 import inject18n from '../../../components/i18n';
@@ -33,9 +28,14 @@ class HowTo extends Component {
   }
 
   componentDidMount() {
-    fetch('/static/docs/how_to/page.md.html')
+    fetch('/static/docs/how_to/index.html')
       .then((response) => response.text())
       .then((data) => this.setState({ htmlFormatData: data }));
+
+    const script = document.createElement('script');
+    script.src = '/static/docs/_markdeep/markdeep.min.js';
+    script.async = true;
+    document.querySelector('.HowToData').appendChild(script);
   }
 
   render() {
@@ -57,7 +57,10 @@ class HowTo extends Component {
           </Typography>
         </div>
         <div>
-          {parse(this.state.htmlFormatData)}
+          {/* <div className='HowToData'> */}
+          <div className='HowToData' dangerouslySetInnerHTML={{ __html: this.state.htmlFormatData }} />
+          {/* {parse(this.state.htmlFormatData)} */}
+          {/* </div> */}
         </div>
       </>
     );

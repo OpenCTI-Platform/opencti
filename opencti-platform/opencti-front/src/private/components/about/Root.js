@@ -1,9 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Switch, Redirect } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import Faq from './Faq';
 import About from './About';
 import HowTo from './HowTo';
+import Index from './Index';
+import Glossary from './Glossary';
+import ContactUs from './ContactUs';
+import ReleaseNote from './ReleaseNote';
+import { BoundaryRoute } from '../Error';
 
 class Root extends Component {
   render() {
@@ -13,42 +18,37 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/about"
-          render={() => <Redirect to="/about/entities" />}
-        />
-        <BoundaryRoute
-          exact
-          path="/about/entities"
           component={About}
         />
         <BoundaryRoute
           exact
-          path="/about/entities/how_to"
+          path="/about/how_to"
           component={HowTo}
         />
         <BoundaryRoute
           exact
-          path="/about/entities/index"
-          component={HowTo}
+          path="/about/index"
+          component={Index}
         />
         <BoundaryRoute
           exact
-          path="/about/entities/glossary"
-          component={HowTo}
+          path="/about/glossary"
+          component={Glossary}
         />
         <BoundaryRoute
           exact
-          path="/about/entities/release_note"
-          component={HowTo}
+          path="/about/release_note"
+          component={ReleaseNote}
         />
         <BoundaryRoute
           exact
-          path="/about/entities/faq"
-          component={HowTo}
+          path="/about/faq"
+          component={Faq}
         />
         <BoundaryRoute
           exact
-          path="/about/entities/contact_us"
-          component={HowTo}
+          path="/about/contact_us"
+          component={ContactUs}
         />
       </Switch>
     );
