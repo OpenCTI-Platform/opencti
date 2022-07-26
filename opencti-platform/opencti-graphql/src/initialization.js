@@ -7,6 +7,7 @@ import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSea
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/s3';
 import { amqpIsAlive } from './database/amqp';
+import { artemisAlive } from './service/artemis';
 import { keycloakAlive } from './service/keycloak';
 import { stardogAlive } from './service/stardog';
 import { addMarkingDefinition } from './domain/markingDefinition';
