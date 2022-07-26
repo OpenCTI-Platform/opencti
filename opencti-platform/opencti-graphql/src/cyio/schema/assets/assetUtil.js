@@ -1,5 +1,6 @@
 
 export const addToInventoryQuery = (assetIri) => {
+  if (!assetIri.startsWith('<')) assetIri = `<${assetIri}>`;
   return `
   INSERT {
     GRAPH ?g {
@@ -13,11 +14,12 @@ export const addToInventoryQuery = (assetIri) => {
   `
 }
 
-export const removeFromInventoryQuery = (id) => {
+export const removeFromInventoryQuery = (assetIri) => {
+  if (!assetIri.startsWith('<')) assetIri = `<${assetIri}>`;
   return `
   DELETE {
     GRAPH ?g {
-      ?inv <http://csrc.nist.gov/ns/oscal/common#assets> <http://scap.nist.gov/ns/asset-identification#Asset-${id}> .
+      ?inv <http://csrc.nist.gov/ns/oscal/common#assets> ${assetIri} .
     }
   } WHERE {
     GRAPH ?g {
