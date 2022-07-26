@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import {
   Environment,
   Network,
@@ -16,19 +18,19 @@ const store = new Store(new RecordSource());
 const hostUrl = process.env.REACT_APP_GRAPHQL_HOST;
 
 const buildHeaders = () => {
-  const accessToken = localStorage.getItem('token');
-  const headers = {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-  };
-  if (accessToken) {
-    headers.Authorization = `Bearer ${accessToken}`;
-  }
-  const clientId = localStorage.getItem('client_id');
-  if (clientId) {
-    headers['X-Cyio-Client'] = clientId;
-  }
-  return headers;
+    const accessToken = localStorage.getItem('token');
+    const headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+    };
+    if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+    }
+    const clientId = localStorage.getItem('client_id');
+    if (clientId) {
+        headers['X-Cyio-Client'] = clientId;
+    }
+    return headers;
 };
 
 const network = Network.create((operation, variables) => (

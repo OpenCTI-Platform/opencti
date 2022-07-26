@@ -1,4 +1,6 @@
-/* eslint-disable max-len */
+/* eslint-disable linebreak-style */
+/* eslint-disable */
+/* refactor */
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
@@ -234,18 +236,18 @@ const TopBarMenu = ({
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
           )}
-          {/* {(location.pathname === '/activities/vulnerability assessment/scans/explore results'
+          {(location.pathname === '/activities/vulnerability assessment/scans/explore results'
             || location.pathname.match('/activities/vulnerability assessment/scans/explore results')) && (
               <TopMenuVsacExploreResults />
-          )} */}
-          {/* {(location.pathname === '/activities/vulnerability assessment/scans/view charts'
+          )}
+          {(location.pathname === '/activities/vulnerability assessment/scans/view charts'
             || location.pathname.match('/activities/vulnerability assessment/scans/view charts')) && (
               <TopMenuVsacViewCharts />
-          )} */}
-          {/* {(location.pathname === '/activities/vulnerability assessment/scans/compare analysis'
+          )}
+          {(location.pathname === '/activities/vulnerability assessment/scans/compare analysis'
             || location.pathname.match('/activities/vulnerability assessment/scans/compare analysis')) && (
               <TopMenuVsacCompare />
-          )} */}
+          )}
           {(location.pathname === '/defender HQ/assets'
             || location.pathname.match('/defender HQ/assets/[a-z_]+$')) && (
               <TopMenuAssets />
