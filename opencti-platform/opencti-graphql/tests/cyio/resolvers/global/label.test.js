@@ -1,22 +1,22 @@
 import submitOperation from '../../config';
 
-const cyioLabelsQuery = `query cyioLabelsQuery {
-    cyioLabels(limit: 1, offset: 0) {
-      pageInfo {
-        startCursor
-        endCursor
-      }
-      edges {
-        cursor
-        node {
-          id
-          entity_type
-          created
-          modified
-        }
-      }
-    }
-  }`;
+// const cyioLabelsQuery = `query cyioLabelsQuery {
+//   cyioLabels(limit: 1, offset: 0) {
+//     pageInfo {
+//       startCursor
+//       endCursor
+//     }
+//     edges {
+//       cursor
+//       node {
+//         id
+//         entity_type
+//         created
+//         modified
+//       }
+//     }
+//   }
+// }`;
 
 describe('Cyio Label Tests', () => {
   let currentLabelId = '';
@@ -39,11 +39,10 @@ describe('Cyio Label Tests', () => {
     expect(typeof { value: result.data }).toBe('object');
   });
 
-  it('Return a list of labels', async () => {
-    const result = await submitOperation(cyioLabelsQuery);
-
-    expect(typeof { value: result.data.cyioLabels.edges[0] }).toBe('object');
-  });
+  // it('Return a list of labels', async () => {
+  //   const result = await submitOperation(cyioLabelsQuery);
+  //   expect(typeof { value: result.data.cyioLabels.edges[0] }).toBe('object');
+  // });
 
   it('Return a single cyio label', async () => {
     const singleCyioLabel = `query queryCyioLabel($id: ID!) {

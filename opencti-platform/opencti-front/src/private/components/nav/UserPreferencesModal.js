@@ -239,10 +239,11 @@ const UserPreferencesModal = (props) => {
               id="organization"
               value={currentClient_id}
               onChange={(e) => handleOrgChange(e)}
+              data-cy='org selection'
              >
             { user &&
               user.clients.map((item,i) => {
-               return ( <MenuItem value={item.client_id}>{item.name}</MenuItem> )
+               return ( <MenuItem value={item.client_id} data-cy='an org'>{item.name}</MenuItem> )
               })
             }
             </Select>
