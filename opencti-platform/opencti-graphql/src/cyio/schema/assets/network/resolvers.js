@@ -300,7 +300,7 @@ const networkResolvers = {
           });
         }
       }
-      const relationshipQuery = removeFromInventoryQuery(id);
+      const relationshipQuery = removeFromInventoryQuery(asset.iri);
       await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: relationshipQuery,
