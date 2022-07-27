@@ -105,6 +105,8 @@ class EntitiesLocationsCreation extends Component {
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
+      R.dissoc(R.isEmpty(values.location_class) ? 'location_class' : ''),
+      R.dissoc(R.isEmpty(values.location_type) ? 'location_type' : ''),
     )(values);
     CM(environmentDarkLight, {
       mutation: entitiesLocationsCreationMutation,
