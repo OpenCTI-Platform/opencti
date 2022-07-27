@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React from 'react';
 import graphql from 'babel-plugin-relay/macro';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -46,11 +44,11 @@ const Root = () => (
       variables={{}}
       render={(data) => {
         const { props } = data;
-        // Check in conjunction with query renderer. Rather than throwing an error for failed root query
-        // pass the empty data and do the login render here since query render can't do redirect or
-        // render stuff.
-        if(props === null ){
-          return <RootPublic/>
+        // Check in conjunction with query renderer. Rather than throwing an error for failed root
+        // query pass the empty data and do the login render here since query render can't do
+        // redirect or render stuff.
+        if (props === null) {
+          return <RootPublic/>;
         }
         clearToken();
         if (props) {

@@ -171,7 +171,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-5c0445f8-29d9-5dff-
         oscal:name "Report Consumer"@en-US ;
         oscal:description "This is the organization for which the content was prepared."@en-US ;
         oscal:role <http://csrc.nist.gov/ns/oscal/common#Role-609156af-16ca-55e1-9c32-0f602daae834> ;
-        oscal:party <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
+        oscal:parties <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
     .
 }
 GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-d15abedc-8090-568f-a7e9-cc18abf2c4b0> {
@@ -184,7 +184,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-d15abedc-8090-568f-
         oscal:name "Report Producer"@en-US ;
         oscal:description "This is the organization responsible for the content of the report."@en-US ;
         oscal:role <http://csrc.nist.gov/ns/oscal/common#Role-fa315278-017f-5e5e-b666-edeb1ea08fdf> ;
-        oscal:party <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
+        oscal:parties <http://csrc.nist.gov/ns/oscal/common#Party-c17e0fab-2019-542e-abb7-8ab76726eef9> ;
     .
 }
 GRAPH <http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-e1cfca7e-4fba-5c28-8a13-886c3639dd0f> {

@@ -76,15 +76,15 @@ const hardwareResolvers = {
 
         // for each Hardware device in the result set
         for (let hardware of hardwareList) {
+          if (hardware.id === undefined) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${hardware.iri} missing field 'id'; skipping`);
+            continue;
+          }
+
           // skip down past the offset
           if (offset) {
             offset--
             continue
-          }
-
-          if (hardware.id === undefined) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${hardware.iri} missing field 'id'; skipping`);
-            continue;
           }
 
           // filter out non-matching entries if a filter is to be applied
@@ -363,7 +363,7 @@ const hardwareResolvers = {
     },
     deleteHardwareAsset: async (_, {id}, {dbName, dataSources} ) => {
       // check that the Hardware asset exists
-      const sparqlQuery = selectHardwareQuery(id, null );
+      const sparqlQuery = selectHardwareQuery(id, ['id','ports','ip_address', 'mac_address'] );
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -405,7 +405,7 @@ const hardwareResolvers = {
         }
       }
       
-      const relationshipQuery = removeFromInventoryQuery(id);
+      const relationshipQuery = removeFromInventoryQuery(asset.iri);
       await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: relationshipQuery,

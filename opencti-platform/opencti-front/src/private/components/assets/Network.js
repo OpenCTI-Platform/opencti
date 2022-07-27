@@ -24,7 +24,7 @@ import NetworkDeletion from './network/NetworkDeletion';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import {toastSuccess, toastGenericError} from "../../../utils/bakedToast";
+import { toastSuccess, toastGenericError } from "../../../utils/bakedToast";
 
 class Network extends Component {
   constructor(props) {
@@ -139,15 +139,13 @@ class Network extends Component {
               ]),
             this.state.filters,
           ),
-        },
-        () => this.saveView(),
+        }
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
-        () => this.saveView(),
+        }
       );
     }
   }

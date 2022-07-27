@@ -138,14 +138,12 @@ class Risks extends Component {
             this.state.filters,
           ),
         },
-        () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
-        () => this.saveView(),
       );
     }
   }
@@ -365,6 +363,7 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
+              console.error(error);
               toastGenericError('Request Failed');
             }
             return (

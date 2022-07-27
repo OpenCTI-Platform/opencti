@@ -584,6 +584,7 @@ class CyioListLines extends Component {
                     color="primary"
                     onClick={handleChangeView.bind(this, 'cards')}
                     style={{ marginTop: '-23px' }}
+                    data-cy='cards view'
                   >
                     <AppsOutlined />
                   </IconButton>

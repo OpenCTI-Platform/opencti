@@ -134,20 +134,18 @@ class Entities extends Component {
             this.state.filters,
           ),
         },
-        () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
-        () => this.saveView(),
       );
     }
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) });
   }
 
   setNumberOfElements(numberOfElements) {
