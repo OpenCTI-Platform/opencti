@@ -328,7 +328,11 @@ class EntityPartyDetailsComponent extends Component {
                   <div className={classes.scrollBg}>
                     <div className={classes.scrollAddressDiv}>
                       <div className={classes.scrollObj}>
-                        {party.locations && t(party.locations.map((value) => value.name))}
+                        {party.locations && party.locations.map((value) => (
+                          <Typography>
+                            {t(value.name)}
+                          </Typography>
+                        ))}
                       </div>
                     </div>
                   </div>
