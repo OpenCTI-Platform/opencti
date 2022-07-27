@@ -37,6 +37,7 @@ class EntitiesPartiesLines extends Component {
   render() {
     const {
       relay,
+      history,
       selectAll,
       dataColumns,
       onLabelClick,
@@ -58,7 +59,7 @@ class EntitiesPartiesLines extends Component {
           this.props.data,
         )}
         offset={this.state.offset}
-        LineComponent={<EntityPartyLine />}
+        LineComponent={<EntityPartyLine history={history} />}
         DummyLineComponent={<EntityPartyLineDummy />}
         selectAll={selectAll}
         dataColumns={dataColumns}
@@ -73,6 +74,7 @@ class EntitiesPartiesLines extends Component {
 
 EntitiesPartiesLines.propTypes = {
   classes: PropTypes.object,
+  history: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,

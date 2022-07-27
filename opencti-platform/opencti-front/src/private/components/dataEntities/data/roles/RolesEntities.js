@@ -171,7 +171,7 @@ class RolesEntities extends Component {
       selectAll,
     } = this.state;
     const {
-      t,
+      t, history,
     } = this.props;
     const dataColumns = {
       type: {
@@ -236,6 +236,7 @@ class RolesEntities extends Component {
               <EntitiesRolesCards
                 data={props}
                 extra={props}
+                history={history}
                 selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
@@ -263,7 +264,7 @@ class RolesEntities extends Component {
       numberOfElements,
     } = this.state;
     const {
-      t,
+      t, history,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -344,6 +345,7 @@ class RolesEntities extends Component {
             return (
               <EntitiesRolesLines
                 data={props}
+                history={history}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
                 initialLoading={props === null}

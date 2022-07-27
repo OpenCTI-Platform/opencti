@@ -100,10 +100,16 @@ class EntitiesLocationsCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const adaptedValues = R.evolve(
+      {
+        address: () => values.address[0],
+      },
+      values,
+    );
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
-    )(values);
+    )(adaptedValues);
     commitMutation({
       mutation: entitiesLocationsCreationMutation,
       variables: {

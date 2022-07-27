@@ -46,11 +46,12 @@ class EntitiesAssessmentPlatformsCards extends Component {
   }
   render() {
     const {
-      initialLoading,
       relay,
+      history,
       selectAll,
       onLabelClick,
       onToggleEntity,
+      initialLoading,
       selectedElements,
     } = this.props;
     const { bookmarks, offset } = this.state;
@@ -68,7 +69,7 @@ class EntitiesAssessmentPlatformsCards extends Component {
           this.props.data,
         )}
         offset={offset}
-        CardComponent={<EntityAssessmentPlatformCard />}
+        CardComponent={<EntityAssessmentPlatformCard history={history} />}
         DummyCardComponent={<EntityAssessmentPlatformCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
         selectAll={selectAll}
@@ -85,6 +86,7 @@ EntitiesAssessmentPlatformsCards.propTypes = {
   data: PropTypes.object,
   extra: PropTypes.object,
   connectorsExport: PropTypes.array,
+  history: PropTypes.object,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   onLabelClick: PropTypes.func,

@@ -258,6 +258,7 @@ EntityPartyCardComponent.propTypes = {
   bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
   fsd: PropTypes.func,
   onLabelClick: PropTypes.func,
   onBookmarkClick: PropTypes.func,
