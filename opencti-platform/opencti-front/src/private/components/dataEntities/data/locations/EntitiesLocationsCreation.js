@@ -102,12 +102,16 @@ class EntitiesLocationsCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const adaptedValues = R.evolve(
+      {
+        address: () => values.address[0],
+      },
+      values,
+    );
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
-      R.dissoc(R.isEmpty(values.location_class) ? 'location_class' : ''),
-      R.dissoc(R.isEmpty(values.location_type) ? 'location_type' : ''),
-    )(values);
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: entitiesLocationsCreationMutation,
       variables: {
