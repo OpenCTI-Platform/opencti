@@ -177,7 +177,7 @@ class AssessmentPlatformsEntities extends Component {
       selectAll,
     } = this.state;
     const {
-      t,
+      t, history,
     } = this.props;
     const dataColumns = {
       type: {
@@ -243,6 +243,7 @@ class AssessmentPlatformsEntities extends Component {
               <EntitiesAssessmentPlatformsCards
                 data={props}
                 extra={props}
+                history={history}
                 selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
@@ -270,7 +271,7 @@ class AssessmentPlatformsEntities extends Component {
       numberOfElements,
     } = this.state;
     const {
-      t,
+      t, history,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -352,6 +353,7 @@ class AssessmentPlatformsEntities extends Component {
             return (
               <EntitiesAssessmentPlatformsLines
                 data={props}
+                history={history}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
                 initialLoading={props === null}

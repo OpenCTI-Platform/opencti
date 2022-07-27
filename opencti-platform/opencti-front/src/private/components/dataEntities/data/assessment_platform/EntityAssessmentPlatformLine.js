@@ -54,6 +54,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
     const {
       t,
       fd,
+      history,
       classes,
       node,
       selectAll,
@@ -131,7 +132,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
           <EntitiesAssessmentPlatformsPopover
-            // history={history}
+            history={history}
             nodeId={node?.id}
             // riskNode={riskData.node}
             node={node}
@@ -146,6 +147,7 @@ EntityAssessmentPlatformLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
+  history: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
   onLabelClick: PropTypes.func,

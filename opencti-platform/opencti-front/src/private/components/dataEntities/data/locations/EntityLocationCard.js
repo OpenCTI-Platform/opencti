@@ -256,6 +256,7 @@ EntityLocationCardComponent.propTypes = {
   node: PropTypes.object,
   bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
+  history: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
   onLabelClick: PropTypes.func,
