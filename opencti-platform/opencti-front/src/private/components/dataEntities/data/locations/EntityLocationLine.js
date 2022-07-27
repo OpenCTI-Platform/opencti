@@ -55,6 +55,7 @@ class EntityLocationLineComponent extends Component {
       t,
       fd,
       classes,
+      history,
       node,
       selectAll,
       dataColumns,
@@ -131,7 +132,7 @@ class EntityLocationLineComponent extends Component {
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
           <EntitiesLocationsPopover
-            // history={history}
+            history={history}
             nodeId={node?.id}
             // riskNode={riskData.node}
             node={node}
@@ -145,6 +146,7 @@ class EntityLocationLineComponent extends Component {
 EntityLocationLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
+  history: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,

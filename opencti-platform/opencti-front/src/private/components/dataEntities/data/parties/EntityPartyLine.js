@@ -54,8 +54,9 @@ class EntityPartyLineComponent extends Component {
     const {
       t,
       fd,
-      classes,
       node,
+      history,
+      classes,
       selectAll,
       dataColumns,
       onLabelClick,
@@ -131,7 +132,7 @@ class EntityPartyLineComponent extends Component {
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
           <EntitiesPartiesPopover
-            // history={history}
+            history={history}
             nodeId={node?.id}
             // riskNode={riskData.node}
             node={node}
@@ -143,12 +144,13 @@ class EntityPartyLineComponent extends Component {
 }
 
 EntityPartyLineComponent.propTypes = {
-  dataColumns: PropTypes.object,
-  node: PropTypes.object,
-  classes: PropTypes.object,
-  fd: PropTypes.func,
   t: PropTypes.func,
+  fd: PropTypes.func,
+  node: PropTypes.object,
+  history: PropTypes.object,
+  classes: PropTypes.object,
   onLabelClick: PropTypes.func,
+  dataColumns: PropTypes.object,
 };
 
 const EntityPartyLineFragment = createFragmentContainer(
