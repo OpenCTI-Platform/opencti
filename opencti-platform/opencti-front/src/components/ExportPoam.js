@@ -23,7 +23,7 @@ import inject18n from './i18n';
 import SelectField from './SelectField';
 import OscalModalTypeList from '../private/components/common/form/OscalModalTypeList';
 import OscalMediaTypeList from '../private/components/common/form/OscalMediaTypeList';
-import { commitMutation } from '../../../opencti-front/src/relay/environment';
+import { commitMutation } from '../relay/environment';
 import { toastGenericError } from '../utils/bakedToast';
 
 const styles = (theme) => ({
