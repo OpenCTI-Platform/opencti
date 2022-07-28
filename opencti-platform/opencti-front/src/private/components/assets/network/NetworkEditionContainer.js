@@ -162,7 +162,7 @@ class NetworkEditionContainer extends Component {
       R.dissoc('id'),
       R.dissoc('starting_address'),
       R.dissoc('ending_address'),
-      R.assoc('network_ipv4_address_range', network_ipv4_address_range),
+      R.assoc('network_ipv4_address_range', JSON.stringify(network_ipv4_address_range)),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
@@ -182,7 +182,7 @@ class NetworkEditionContainer extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/network');
       },
-      onError: (err) => console.log('NetworkEditionDarkLightMutationError', err),
+      onError: (err) => console.error(err),
     });
     // commitMutation({
     //   mutation: deviceCreationOverviewMutation,
