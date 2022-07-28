@@ -4,8 +4,8 @@
     margin-bottom: 100px;
 }
 
-.md div.title {
-    font-size:  36px;
+div.title {
+    font-size:  24px;
     font-weight: bold;
     counter-increment: page;
 }
@@ -14,9 +14,14 @@
     font-size: 23px;
 }
 
+.HowTo-toolbar-50 {
+    width: 100%;
+    margin-left: -50px;
+}
+
 
 body#md {
-    width: 900px;
+    width: 100%;
     max-width: 100%;
     font-size: 16px;
     padding: 40px;
@@ -24,6 +29,10 @@ body#md {
     --accent-color: #49B8FC;
     background-color: #06102D;
     color: #AAAEB7;
+    font-family: "Roboto",sans-serif;
+}
+
+.MuiBreadcrumbs-li {
     font-family: "Roboto",sans-serif;
 }
 
@@ -40,12 +49,11 @@ body#md {
     page-break-before: always;
     width: 1100px;
     text-align: left;
-    padding-bottom: 40px;
+    padding-bottom: 24px;
+    margin-top: -20px;
     border: none;
     color: var(--accent-color);
-    margin-left: -100px;
-    margin-right:-100px;
-    font-size: 50px;
+    font-size: 24px;
     counter-increment: page;
     color: #ffffff;
 }
