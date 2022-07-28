@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -75,6 +73,7 @@ class SoftwareLineComponent extends Component {
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
         to={`/defender HQ/assets/software/${node.id}`}
+        data-cy='software line'
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}

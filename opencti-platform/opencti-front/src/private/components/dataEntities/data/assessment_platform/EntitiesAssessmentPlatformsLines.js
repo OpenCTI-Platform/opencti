@@ -37,6 +37,7 @@ class EntitiesAssessmentPlatformsLines extends Component {
   render() {
     const {
       relay,
+      history,
       selectAll,
       dataColumns,
       onLabelClick,
@@ -58,7 +59,7 @@ class EntitiesAssessmentPlatformsLines extends Component {
           this.props.data,
         )}
         offset={this.state.offset}
-        LineComponent={<EntityAssessmentPlatformLine />}
+        LineComponent={<EntityAssessmentPlatformLine history={history} />}
         DummyLineComponent={<EntityAssessmentPlatformLineDummy />}
         selectAll={selectAll}
         dataColumns={dataColumns}
@@ -77,6 +78,7 @@ EntitiesAssessmentPlatformsLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
+  history: PropTypes.object,
   threatActors: PropTypes.object,
   computingDeviceAssetList: PropTypes.object,
   initialLoading: PropTypes.bool,

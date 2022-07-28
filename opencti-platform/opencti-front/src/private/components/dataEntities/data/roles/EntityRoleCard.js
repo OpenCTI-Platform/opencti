@@ -257,6 +257,7 @@ class EntityRoleCardComponent extends Component {
 EntityRoleCardComponent.propTypes = {
   node: PropTypes.object,
   bookmarksIds: PropTypes.array,
+  history: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,

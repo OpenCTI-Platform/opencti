@@ -77,8 +77,8 @@ const styles = (theme) => ({
     padding: '18px 18px 0 18px',
   },
   searchBar: {
-    width: '350px',
-    minWidth: '350px',
+    width: '220px',
+    minWidth: '220px',
   },
   views: {
     // display: 'flex',
@@ -190,20 +190,21 @@ class CyioListCards extends Component {
         >
           <div className={classes.parameters}>
             <div className={classes.searchBar}>
-              <div style={{ float: 'left', marginRight: 20 }}>
+              {/* <div style={{ float: 'left', marginRight: 20 }}>
                 <SearchInput
                   variant="small"
                   onSubmit={handleSearch.bind(this)}
                   keyword={keyword}
                   disabled={true}
                 />
-              </div>
+              </div> */}
               {availableFilterKeys && availableFilterKeys.length > 0 ? (
                 <Filters
                   availableFilterKeys={availableFilterKeys}
                   handleAddFilter={handleAddFilter}
                   currentFilters={filters}
                   filterEntityType={filterEntityType}
+                  variant='text'
                 />
               ) : (
                 ''
@@ -458,6 +459,7 @@ class CyioListCards extends Component {
                     color="primary"
                     onClick={handleChangeView.bind(this, 'lines')}
                     style={{ marginTop: '-23px' }}
+                    data-cy='lines view'
                   >
                     <FormatListBulleted />
                   </IconButton>

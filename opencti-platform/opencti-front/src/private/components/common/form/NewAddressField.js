@@ -135,7 +135,7 @@ class NewAddressField extends Component {
               <Information fontSize="inherit" color="disabled" />
             </Tooltip>
           </div>
-          <IconButton size='small' onClick={() => this.setState({ open: true })}>
+          <IconButton disabled={this.state.ipAddress.length > 0} size='small' onClick={() => this.setState({ open: true })}>
             <AddIcon />
           </IconButton>
         </div>

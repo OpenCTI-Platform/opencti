@@ -39,7 +39,11 @@ export const getLatestRemediationInfo = (risk) => {
       responseType = risk.remediation_type_values;
     } else {
       let typeArray = risk.remediation_type_values.split(',');
-      responseType = typeArray[index];
+      if (index >= typeArray.length) {
+        responseType = typeArray[typeArray.length-1]
+      } else {
+        responseType = typeArray[index];
+      }
     }
   }
   if (risk.remediation_lifecycle_values !== undefined) {
@@ -47,7 +51,11 @@ export const getLatestRemediationInfo = (risk) => {
       lifeCycle = risk.remediation_lifecycle_values;
     } else {
       let typeArray = risk.remediation_lifecycle_values.split(',');
-      lifeCycle = typeArray[index];
+      if (index >= typeArray.length) {
+        lifeCycle = typeArray[typeArray.length-1]
+      } else {
+        lifeCycle = typeArray[index];
+      }
     }
   }
   return {responseType, lifeCycle};

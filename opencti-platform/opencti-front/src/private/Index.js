@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch } from 'react-router-dom';
@@ -53,6 +52,11 @@ const useStyles = makeStyles((theme) => ({
 const Index = (me) => {
   const [clientId, setClientId] = useState(localStorage.getItem('client_id'));
 
+  const clearStorage = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('client_id');
+  };
+
   useEffect(() => {
     if (!clientId) {
       getAccount().then((res) => {
@@ -60,18 +64,13 @@ const Index = (me) => {
         if (account) {
           const id = account.clients?.[0].client_id;
           localStorage.setItem('client_id', id);
-          setClientId(id)
+          setClientId(id);
         } else {
           clearStorage();
         }
       });
     }
   }, [clientId]);
-
-  const clearStorage = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('client_id');
-  };
 
   const classes = useStyles();
   return (
@@ -110,7 +109,7 @@ const Index = (me) => {
           <Route path="/dashboard/observations" component={RootObservations} />
           <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
           <BoundaryRoute path="/defender HQ/assets" component={RootAssets} />
-          <FeatureFlag tag={"RISK_ASSESSMENT"}>
+          <FeatureFlag tag={'RISK_ASSESSMENT'}>
             <BoundaryRoute path="/activities/risk assessment" component={RootRiskAssessment} />
           </FeatureFlag>
           <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />

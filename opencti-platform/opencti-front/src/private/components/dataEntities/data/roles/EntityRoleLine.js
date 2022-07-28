@@ -54,8 +54,9 @@ class EntityRoleLineComponent extends Component {
     const {
       t,
       fd,
-      classes,
       node,
+      classes,
+      history,
       selectAll,
       dataColumns,
       onLabelClick,
@@ -131,7 +132,7 @@ class EntityRoleLineComponent extends Component {
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
           <EntitiesRolesPopover
-            // history={history}
+            history={history}
             nodeId={node?.id}
             // riskNode={riskData.node}
             node={node}
@@ -145,6 +146,7 @@ class EntityRoleLineComponent extends Component {
 EntityRoleLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
+  history: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,

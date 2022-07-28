@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
@@ -13,11 +11,8 @@ import {
   ExploreOutlined,
   InsertChartOutlined,
 } from '@material-ui/icons';
-import NoteAddIcon from '@material-ui/icons/NoteAdd';
-import PublishIcon from '@material-ui/icons/Publish';
 import FindInPageIcon from '@material-ui/icons/FindInPage';
 import DashboardIcon from '@material-ui/icons/Dashboard';
-import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
 import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -64,7 +59,6 @@ import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
 import Security, {
   KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
   EXPLORE,
 } from '../../../utils/Security';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
@@ -189,7 +183,7 @@ const TopBar = ({
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
               <TopMenuAnalysis />
-            )}
+          )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -205,7 +199,7 @@ const TopBar = ({
           {(location.pathname === '/dashboard/events'
             || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
               <TopMenuEvents />
-            )}
+          )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuIncident />
           )}
@@ -218,7 +212,7 @@ const TopBar = ({
           {(location.pathname === '/dashboard/observations'
             || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
               <TopMenuObservations />
-            )}
+          )}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
           ) && <TopMenuIndicator />}
@@ -234,7 +228,7 @@ const TopBar = ({
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
               <TopMenuThreats />
-            )}
+          )}
           {location.pathname.includes('/dashboard/threats/threat_actors/') && (
             <TopMenuThreatActor />
           )}
@@ -247,7 +241,7 @@ const TopBar = ({
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
               <TopMenuArsenal />
-            )}
+          )}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && (
             <TopMenuMalware />
           )}
@@ -266,7 +260,7 @@ const TopBar = ({
           {(location.pathname === '/dashboard/entities'
             || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
               <TopMenuEntities />
-            )}
+          )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
           )}
@@ -306,9 +300,9 @@ const TopBar = ({
         <div className={classes.barRight}>
           <div className={classes.barContainer}>
             <Security needs={[KNOWLEDGE]}>
-              <div className={classes.searchContainer}>
+              {/* <div className={classes.searchContainer}>
                 <SearchInput disabled={true} onSubmit={handleSearch} keyword={keyword} />
-              </div>
+              </div> */}
               <Filters
                 variant="dialog"
                 availableFilterKeys={[
@@ -428,7 +422,7 @@ const TopBar = ({
               >
                 {t('Profile')}
               </MenuItem>
-              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+              <MenuItem onClick={handleLogout} data-cy='logout'>{t('Logout')}</MenuItem>
             </Menu>
           </div>
         </div>

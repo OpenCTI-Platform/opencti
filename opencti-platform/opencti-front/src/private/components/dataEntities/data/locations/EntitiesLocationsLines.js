@@ -37,6 +37,7 @@ class EntitiesLocationsLines extends Component {
   render() {
     const {
       relay,
+      history,
       selectAll,
       dataColumns,
       onLabelClick,
@@ -58,7 +59,7 @@ class EntitiesLocationsLines extends Component {
           this.props.data,
         )}
         offset={this.state.offset}
-        LineComponent={<EntityLocationLine />}
+        LineComponent={<EntityLocationLine history={history} />}
         DummyLineComponent={<EntityLocationLineDummy />}
         selectAll={selectAll}
         dataColumns={dataColumns}
@@ -73,6 +74,7 @@ class EntitiesLocationsLines extends Component {
 
 EntitiesLocationsLines.propTypes = {
   classes: PropTypes.object,
+  history: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,

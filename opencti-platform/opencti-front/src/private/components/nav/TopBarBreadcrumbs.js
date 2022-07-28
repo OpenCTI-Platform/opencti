@@ -197,9 +197,9 @@ const TopBarBreadcrumbs = ({
         <div className={classes.barRight}>
           <div className={classes.barContainer}>
             <Security needs={[KNOWLEDGE]}>
-              <div className={classes.searchContainer}>
+              {/* <div className={classes.searchContainer}>
                 <SearchInput disabled={true} onSubmit={handleSearch} keyword={keyword} />
-              </div>
+              </div> */}
               <Filters
                 variant="dialog"
                 availableFilterKeys={[
@@ -301,6 +301,7 @@ const TopBarBreadcrumbs = ({
               aria-haspopup="true"
               onClick={handleOpenMenu}
               color="inherit"
+              data-cy='menu'
             >
               <AccountCircleOutlined fontSize="default" />
             </IconButton>
@@ -319,7 +320,7 @@ const TopBarBreadcrumbs = ({
               >
                 {t('Profile')}
               </MenuItem>
-              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+              <MenuItem onClick={handleLogout} data-cy='logout'>{t('Logout')}</MenuItem>
             </Menu>
           </div>
         </div>
