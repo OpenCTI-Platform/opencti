@@ -1,4 +1,5 @@
 /* eslint-disable no-underscore-dangle */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -27,6 +28,7 @@ class ListLinesContent extends Component {
     this._resetLoadingRowCount = this._resetLoadingRowCount.bind(this);
     this.listRef = React.createRef();
     this.state = {
+      scrollValue: 0,
       loadedData: 0,
       loadingRowCount: 0,
       newDataList: [],
@@ -58,6 +60,18 @@ class ListLinesContent extends Component {
       this.listRef.forceUpdateGrid();
     }
     const checker = (arr, target) => target.every((v) => arr.includes(v));
+    if (window.pageYOffset < 40 && this.state.newDataList.length > 50
+      && this.props.offset > 0) {
+      window.scrollTo(0, 2500);
+      this.props.handleDecrementedOffsetChange();
+      this.setState({ newDataList: this.state.newDataList.slice(-50) });
+      if (!checker(this.state.newDataList, this.props.dataList)) {
+        this.setState({
+          newDataList: [...this.props.dataList, ...this.state.newDataList],
+          loadedData: this.state.loadedData - this.props.dataList.length,
+        });
+      }
+    }
     if (this.state.loadedData !== (this.props.dataList.length + this.props.offset)
       && ((this.props.globalCount - this.state.loadedData) > 0)) {
       if (this.props.dataList.length === 0) {
@@ -71,6 +85,18 @@ class ListLinesContent extends Component {
         });
       }
     }
+  }
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  handleScroll(event) {
+    this.setState({ scrollValue: window.pageYOffset });
   }
 
   _setRef(windowScroller) {
@@ -88,7 +114,7 @@ class ListLinesContent extends Component {
       hasMore,
       isLoading,
       globalCount,
-      handleOffsetChange,
+      handleIncrementedOffsetChange,
       nbOfRowsToLoad,
     } = this.props;
     if (!hasMore() || isLoading()) {
@@ -99,7 +125,7 @@ class ListLinesContent extends Component {
       loadingRowCount:
         difference >= nbOfRowsToLoad ? nbOfRowsToLoad : difference,
     });
-    handleOffsetChange();
+    handleIncrementedOffsetChange();
     loadMore(nbOfRowsToLoad, this._resetLoadingRowCount);
     if (this.state.newDataList.length > 50 && difference > 0) {
       setTimeout(() => {
@@ -222,7 +248,8 @@ ListLinesContent.propTypes = {
   loadMore: PropTypes.func,
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
-  handleOffsetChange: PropTypes.func,
+  handleIncrementedOffsetChange: PropTypes.func,
+  handleDecrementedOffsetChange: PropTypes.func,
   offset: PropTypes.number,
   me: PropTypes.object,
   globalCount: PropTypes.number,
