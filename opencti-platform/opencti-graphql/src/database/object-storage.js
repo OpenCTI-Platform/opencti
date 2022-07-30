@@ -1,7 +1,7 @@
 import * as s3 from '@aws-sdk/client-s3';
 import * as R from 'ramda';
 import * as He from 'he';
-import { Upload } from "@aws-sdk/lib-storage";
+import { Upload } from '@aws-sdk/lib-storage';
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
 import { join as joinPaths } from 'path';
@@ -26,7 +26,7 @@ const useSslConnection = booleanConf('minio:use_ssl', false);
 const credentialProvider = (init) => memoize(
   chain(
     async () => {
-      if (clientAccessKey && clientSecretKey && clientAccessKey != "ChangeMe" && clientSecretKey != "ChangeMe") {
+      if (clientAccessKey && clientSecretKey && clientAccessKey !== 'ChangeMe' && clientSecretKey !== 'ChangeMe') {
         return {
           accessKeyId: clientAccessKey,
           secretAccessKey: clientSecretKey,
@@ -55,7 +55,7 @@ const s3Client = new s3.S3Client({
 
 function getEndpoint() {
   // If using AWS S3, unset the endpoint to let the library choose the best endpoint
-  if (clientEndpoint == 's3.amazonaws.com') {
+  if (clientEndpoint === 's3.amazonaws.com') {
     return undefined;
   }
 
@@ -181,7 +181,7 @@ export function isFileObjectExcluded(id) {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 }
 
-export async function rawFilesListing(user, directory, recursive = false) {
+export async function rawFilesListing(user, directory) {
   let truncated = true;
   let pageMarker;
   const objects = [];
@@ -229,7 +229,7 @@ export async function upload(user, path, fileUpload, metadata = {}) {
     version
   };
 
-  const upload = new Upload({
+  const s3Upload = new Upload({
     client: s3Client,
     params: {
       Bucket: bucketName,
@@ -238,7 +238,7 @@ export async function upload(user, path, fileUpload, metadata = {}) {
       Metadata: fullMetadata
     }
   });
-  await upload.done();
+  await s3Upload.done();
 
   return {
     id: key,
