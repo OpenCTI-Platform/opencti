@@ -59,13 +59,7 @@ function getEndpoint() {
     return undefined;
   }
 
-  let endpoint = useSslConnection ? 'https://' : 'http://';
-  endpoint += clientEndpoint;
-  if (clientPort) {
-    endpoint += `:${clientPort}`;
-  }
-
-  return endpoint;
+  return `${(useSslConnection ? 'https' : 'http')}://${clientEndpoint}:${clientPort}`;
 }
 
 export async function initializeBucket() {
