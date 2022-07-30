@@ -112,13 +112,13 @@
   },
   "minio": {
     "bucket_name": "opencti-bucket",
+    "bucket_region": "us-east-1",
     "endpoint": "localhost",
     "port": 9000,
     "use_ssl": false,
     "access_key": "ChangeMe",
     "secret_key": "ChangeMe",
-    "excluded_files": [".DS_Store"],
-    "use_aws_role": false
+    "excluded_files": [".DS_Store"]
   },
   "rabbitmq": {
     "hostname": "localhost",

@@ -11,31 +11,32 @@ import { DatabaseError } from '../config/errors';
 import { deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
 import { buildPagination } from './utils';
 
-const bucketName = conf.get('storage:bucket_name') || 'opencti-bucket';
-const excludedFiles = conf.get('storage:excluded_files') || ['.DS_Store'];
+// Minio configuration
+const clientEndpoint = conf.get('minio:endpoint');
+const clientPort = conf.get('minio:port') || 9000;
+const clientCA = conf.get('minio:ca');
+const clientAccessKey = conf.get('minio:access_key');
+const clientSecretKey = conf.get('minio:secret_key');
+const clientSessionToken = conf.get('minio:session_token');
+const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
+const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
+const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
+const useSslConnection = booleanConf('minio:use_ssl', false);
 
 const credentialProvider = (init) => memoize(
   chain(
-    // First, load credentials from AWS IMDS
-    remoteProvider(init),
-    // Second, load from config file
     async () => {
-      const accessKeyId = conf.get('storage:access_key');
-      const secretAccessKey = conf.get('storage:secret_key');
-      const sessionToken = conf.get('storage:session_token');
-      const expiry = conf.get('storage:exipration');
-
-      if (accessKeyId && secretAccessKey) {
+      if (clientAccessKey && clientSecretKey && clientAccessKey != "ChangeMe" && clientSecretKey != "ChangeMe") {
         return {
-          accessKeyId,
-          secretAccessKey,
-          ...(sessionToken && { sessionToken }),
-          ...(expiry && { expiration: new Date(expiry) })
+          accessKeyId: clientAccessKey,
+          secretAccessKey: clientSecretKey,
+          ...(clientSessionToken && { sessionToken: clientSessionToken })
         };
       }
 
-      throw new CredentialsProviderError('Unable to find credentials from OpenCTI config');
+      throw new CredentialsProviderError('Unable to load credentials from OpenCTI config');
     },
+    remoteProvider(init),
     async () => {
       throw new CredentialsProviderError('Could not load credentials from any providers', false);
     }
@@ -45,14 +46,29 @@ const credentialProvider = (init) => memoize(
 );
 
 const s3Client = new s3.S3Client({
-  region: conf.get('storage:region') || 'us-east-1',
-  endpoint: conf.get('storage:endpoint'),
+  region: bucketRegion,
+  endpoint: getEndpoint(),
   forcePathStyle: true,
   credentialDefaultProvider: credentialProvider,
-  tls: booleanConf('storage:use_ssl', false)
+  tls: useSslConnection
 });
 
-export async function initializeMinioBucket() {
+function getEndpoint() {
+  // If using AWS S3, unset the endpoint to let the library choose the best endpoint
+  if (clientEndpoint == 's3.amazonaws.com') {
+    return undefined;
+  }
+
+  let endpoint = useSslConnection ? 'https://' : 'http://';
+  endpoint += clientEndpoint;
+  if (clientPort) {
+    endpoint += `:${clientPort}`;
+  }
+
+  return endpoint;
+}
+
+export async function initializeBucket() {
   try {
     await s3Client.send(new s3.CreateBucketCommand({
       Bucket: bucketName
@@ -72,7 +88,7 @@ export async function initializeMinioBucket() {
 }
 
 export async function isStorageAlive() {
-  return initializeMinioBucket();
+  return initializeBucket();
 }
 
 export async function deleteFile(user, id) {
