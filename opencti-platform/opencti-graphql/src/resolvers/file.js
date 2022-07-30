@@ -1,5 +1,5 @@
 import { GraphQLUpload } from 'graphql-upload';
-import { deleteFile, filesListing, loadFile } from '../database/minio';
+import { deleteFile, filesListing, loadFile } from '../database/object-storage';
 import { askJobImport, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
 import { stixCoreObjectImportDelete } from '../domain/stixCoreObject';

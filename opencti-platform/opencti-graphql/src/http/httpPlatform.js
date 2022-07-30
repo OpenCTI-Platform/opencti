@@ -15,7 +15,7 @@ import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, formatPath, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
-import { downloadFile, getFileContent, loadFile } from '../database/minio';
+import { downloadFile, getFileContent, loadFile } from '../database/object-storage';
 import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { LOGIN_ACTION } from '../config/audit';

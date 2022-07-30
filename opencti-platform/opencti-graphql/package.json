@@ -29,7 +29,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.121.0",
     "@aws-sdk/credential-provider-node": "^3.137.0",
-    "@aws-sdk/credential-providers": "3.110.0",
     "@aws-sdk/property-provider": "^3.127.0",
     "@elastic/elasticsearch": "7.17.0",
     "@graphql-tools/schema": "8.3.14",
@@ -76,7 +75,6 @@
     "merge-graphql-schemas": "1.7.8",
     "migrate": "1.8.0",
     "mime-types": "2.1.35",
-    "minio": "7.0.28",
     "moment": "2.29.3",
     "moment-range": "4.0.2",
     "nconf": "0.12.0",

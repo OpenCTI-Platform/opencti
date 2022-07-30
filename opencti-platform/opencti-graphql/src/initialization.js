@@ -4,7 +4,7 @@ import semver from 'semver';
 import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
-import { initializeMinioBucket, isStorageAlive } from './database/minio';
+import { initializeBucket, isStorageAlive } from './database/object-storage';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
@@ -315,7 +315,7 @@ const platformInit = async (withMarkings = true) => {
     const alreadyExists = await isExistingPlatform();
     if (!alreadyExists) {
       logApp.info('[INIT] New platform detected, initialization...');
-      await initializeMinioBucket();
+      await initializeBucket();
       await initializeSchema();
       await initializeMigration();
       await initializeData(withMarkings);

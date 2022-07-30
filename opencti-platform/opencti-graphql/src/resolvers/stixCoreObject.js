@@ -26,7 +26,7 @@ import { creator } from '../domain/log';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
-import { filesListing } from '../database/minio';
+import { filesListing } from '../database/object-storage';
 import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../domain/stixDomainObject';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';

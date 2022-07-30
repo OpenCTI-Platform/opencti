@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { loadFile, upload } from '../database/minio';
+import { loadFile, upload } from '../database/object-storage';
 import { pushToConnector } from '../database/rabbitmq';
 import { createWork } from './work';
 import { logApp } from '../config/conf';

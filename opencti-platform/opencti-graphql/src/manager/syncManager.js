@@ -85,7 +85,7 @@ import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
 import { EVENT_CURRENT_VERSION, lockResource } from '../database/redis';
 import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/stixCoreObject';
-import { rawFilesListing } from '../database/minio';
+import { rawFilesListing } from '../database/object-storage';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';

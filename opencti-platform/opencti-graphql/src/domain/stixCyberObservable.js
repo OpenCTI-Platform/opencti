@@ -26,7 +26,7 @@ import { addIndicator } from './indicator';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax } from '../utils/syntax';
-import { upload } from '../database/minio';
+import { upload } from '../database/object-storage';
 import {
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,

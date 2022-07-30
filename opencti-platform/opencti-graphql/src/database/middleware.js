@@ -199,7 +199,7 @@ import {
   yearFormat,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
-import { deleteAllFiles, storeFileConverter, upload } from './minio';
+import { deleteAllFiles, storeFileConverter, upload } from './object-storage';
 import { BYPASS, BYPASS_REFERENCE, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
