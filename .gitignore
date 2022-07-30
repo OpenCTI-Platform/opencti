@@ -4,3 +4,4 @@
 .mypy_cache
 .venv
 venv
+.vscode
