@@ -1,6 +1,7 @@
 import * as s3 from '@aws-sdk/client-s3';
 import * as R from 'ramda';
 import * as He from 'he';
+import { Upload } from "@aws-sdk/lib-storage";
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
 import { join as joinPaths } from 'path';
@@ -14,7 +15,6 @@ import { buildPagination } from './utils';
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
 const clientPort = conf.get('minio:port') || 9000;
-const clientCA = conf.get('minio:ca');
 const clientAccessKey = conf.get('minio:access_key');
 const clientSecretKey = conf.get('minio:secret_key');
 const clientSessionToken = conf.get('minio:session_token');
@@ -187,7 +187,7 @@ export async function rawFilesListing(user, directory, recursive = false) {
   const objects = [];
   const requestParams = {
     Bucket: bucketName,
-    Prefix: `${directory}/` || undefined
+    Prefix: directory || undefined
   };
 
   while (truncated) {
@@ -229,12 +229,16 @@ export async function upload(user, path, fileUpload, metadata = {}) {
     version
   };
 
-  await s3Client.send(new s3.PutObjectCommand({
-    Bucket: bucketName,
-    Key: key,
-    Body: readStream,
-    Metadata: fullMetadata
-  }));
+  const upload = new Upload({
+    client: s3Client,
+    params: {
+      Bucket: bucketName,
+      Key: key,
+      Body: readStream,
+      Metadata: fullMetadata
+    }
+  });
+  await upload.done();
 
   return {
     id: key,
