@@ -125,7 +125,6 @@
     "esbuild": "0.14.38",
     "esbuild-jest": "0.5.0",
     "esbuild-plugin-import-glob": "0.1.1",
-    "esbuild-runner": "^2.2.1",
     "eslint": "8.14.0",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-base": "15.0.0",

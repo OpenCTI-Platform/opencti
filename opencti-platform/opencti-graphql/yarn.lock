@@ -7073,20 +7073,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-runner@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "esbuild-runner@npm:2.2.1"
-  dependencies:
-    source-map-support: 0.5.19
-    tslib: 2.3.1
-  peerDependencies:
-    esbuild: "*"
-  bin:
-    esr: bin/esr.js
-  checksum: 6818c1a0b7773ca6d688ceb8dc33f8077eabf1a3154c86b5e9006321c11a29a5544500f56456e804cdbdefae2281614e2e2b2bf1173316f80e36a2da496d3795
-  languageName: node
-  linkType: hard
-
 "esbuild-sunos-64@npm:0.14.38":
   version: 0.14.38
   resolution: "esbuild-sunos-64@npm:0.14.38"
@@ -11931,7 +11917,6 @@ __metadata:
     esbuild: 0.14.38
     esbuild-jest: 0.5.0
     esbuild-plugin-import-glob: 0.1.1
-    esbuild-runner: ^2.2.1
     eslint: 8.14.0
     eslint-config-airbnb: 19.0.4
     eslint-config-airbnb-base: 15.0.0
@@ -13622,16 +13607,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:0.5.19":
-  version: 0.5.19
-  resolution: "source-map-support@npm:0.5.19"
-  dependencies:
-    buffer-from: ^1.0.0
-    source-map: ^0.6.0
-  checksum: c72802fdba9cb62b92baef18cc14cc4047608b77f0353e6c36dd993444149a466a2845332c5540d4a6630957254f0f68f4ef5a0120c33d2e83974c51a05afbac
-  languageName: node
-  linkType: hard
-
 "source-map-support@npm:0.5.21, source-map-support@npm:^0.5.17, source-map-support@npm:^0.5.6":
   version: 0.5.21
   resolution: "source-map-support@npm:0.5.21"
@@ -14379,13 +14354,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.3.1, tslib@npm:~2.3.0":
-  version: 2.3.1
-  resolution: "tslib@npm:2.3.1"
-  checksum: de17a98d4614481f7fcb5cd53ffc1aaf8654313be0291e1bfaee4b4bb31a20494b7d218ff2e15017883e8ea9626599b3b0e0229c18383ba9dce89da2adf15cb9
-  languageName: node
-  linkType: hard
-
 "tslib@npm:^1.10.0, tslib@npm:^1.11.1, tslib@npm:^1.8.1, tslib@npm:^1.9.0, tslib@npm:^1.9.3":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
@@ -14397,6 +14365,13 @@ __metadata:
   version: 2.4.0
   resolution: "tslib@npm:2.4.0"
   checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
+  languageName: node
+  linkType: hard
+
+"tslib@npm:~2.3.0":
+  version: 2.3.1
+  resolution: "tslib@npm:2.3.1"
+  checksum: de17a98d4614481f7fcb5cd53ffc1aaf8654313be0291e1bfaee4b4bb31a20494b7d218ff2e15017883e8ea9626599b3b0e0229c18383ba9dce89da2adf15cb9
   languageName: node
   linkType: hard
 
