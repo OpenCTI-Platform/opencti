@@ -1,6 +1,5 @@
 import * as s3 from '@aws-sdk/client-s3';
 import * as R from 'ramda';
-import * as He from 'he';
 import { Upload } from '@aws-sdk/lib-storage';
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
@@ -154,7 +153,7 @@ export async function loadFile(user, filename) {
 
     return {
       id: filename,
-      name: He.decode(object.Metadata.filename || 'unknown'),
+      name: decodeURIComponent(object.Metadata.filename || 'unknown'),
       size: object.ContentLength,
       information: '',
       lastModified: object.LastModified,
@@ -218,7 +217,7 @@ export async function upload(user, path, fileUpload, metadata = {}) {
   const key = joinPaths(path, filename);
   const fullMetadata = {
     ...metadata,
-    filename: He.encode(filename),
+    filename: encodeURIComponent(filename),
     mimetype,
     encoding,
     version
