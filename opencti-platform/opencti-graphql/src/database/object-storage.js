@@ -22,11 +22,12 @@ const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
 const useSslConnection = booleanConf('minio:use_ssl', false);
+const useAwsRole = booleanConf('minio:use_aws_role', false);
 
 const credentialProvider = (init) => memoize(
   chain(
     async () => {
-      if (clientAccessKey && clientSecretKey && clientAccessKey !== 'ChangeMe' && clientSecretKey !== 'ChangeMe') {
+      if (clientAccessKey && clientSecretKey && !useAwsRole) {
         return {
           accessKeyId: clientAccessKey,
           secretAccessKey: clientSecretKey,
