@@ -24,16 +24,24 @@ body#md {
     width: 100%;
     max-width: 100%;
     font-size: 16px;
-    padding: 40px;
+    padding: 40px 0px 0px 4px;
     counter-reset: page;
     --accent-color: #49B8FC;
     background-color: #06102D;
     color: #AAAEB7;
-    font-family: "Roboto",sans-serif;
+    font-family: "Roboto",sans-serif !important;
 }
 
-.MuiBreadcrumbs-li {
-    font-family: "Roboto",sans-serif;
+a {
+    font-family: "Roboto",sans-serif !important;
+}
+
+.md a:link, .md a:visited  {
+    color: #ffffff !important;
+}
+
+.MuiListItemText-root {
+    display: block !important;
 }
 
 /* Disable section numbering */
@@ -65,7 +73,6 @@ body#md {
     text-align: left;
     color:  var(--accent-color);
     border: none;
-    margin-left: -100px;
     margin-right:-100px;
     font-size: 34px;
     counter-increment: page;
@@ -120,5 +127,8 @@ body#md {
 ul {
     list-style-type: none;
     line-height: 38px;
-    margin-left: -40px;
+}
+
+h1 {
+    vertical-align: text-top;
 }
