@@ -228,7 +228,7 @@ class NetworkCreation extends Component {
             vendor_name: '',
             release_date: null,
             operational_status: '',
-            implementation_point: '',
+            implementation_point: 'internal',
             network_id: '',
             network_name: '',
             labels: [],
