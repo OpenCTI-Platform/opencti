@@ -157,7 +157,7 @@ class NetworkCreation extends Component {
       R.dissoc('starting_address'),
       R.dissoc('ending_address'),
       R.dissoc('labels'),
-      // R.assoc('network_ipv4_address_range', network_ipv4_address_range),
+      R.assoc('network_ipv4_address_range', network_ipv4_address_range),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: networkCreationMutation,
@@ -171,7 +171,7 @@ class NetworkCreation extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/network');
       },
-      onError: (err) => console.log('NetworkCreationDarkLightMutationError', err),
+      onError: (err) => console.error(err),
     });
     // commitMutation({
     //   mutation: deviceCreationOverviewMutation,
