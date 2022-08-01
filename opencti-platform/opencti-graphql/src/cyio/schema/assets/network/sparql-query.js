@@ -489,6 +489,16 @@ export const networkPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "network_address_range")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
+  network_ipv4_address_range: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#network_address_range>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "network_ipv4_address_range")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  network_ipv6_address_range: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#network_address_range>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "network_ipv6_address_range")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
   is_publicly_accessible: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_publicly_accessible>",
     binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_publicly_accessible")},

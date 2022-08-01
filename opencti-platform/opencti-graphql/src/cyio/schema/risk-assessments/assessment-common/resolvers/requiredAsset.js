@@ -19,6 +19,7 @@ import {
   insertSubjectsQuery,
   selectAllSubjects,
   selectSubjectByIriQuery,
+  detachFromRequiredAssetQuery,
   deleteSubjectByIriQuery,
   requiredAssetPredicateMap,
 } from './sparql-query.js';
@@ -390,25 +391,196 @@ const requiredAssetResolvers = {
       }
       return id;
     },
-    editRiskResponse: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      const query = updateQuery(
+    editRequiredAsset: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      let targetIri, relationshipQuery, query;
+
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id','modified'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      query = selectRequiredAssetQuery(id, editSelect);
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery: query,
+        queryId: "Select Required Asset",
+        singularizeSchema
+      });
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      targetIri = response[0].iri;
+
+      // determine operation, if missing
+      for (let editItem of input) {
+        if (editItem.operation !== undefined) continue;
+        if (!response[0].hasOwnProperty(editItem.key)) {
+          editItem.operation = 'add';
+        } else {
+          editItem.operation = 'replace';
+        }
+      }
+
+      // Push an edit to update the modified time of the object
+      const timestamp = new Date().toISOString();
+      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      input.push(update);
+
+      // obtain the IRIs for the referenced objects so that if one doesn't 
+      // exists we have created anything yet.  For complex objects that are
+      // private to this object, remove them (if needed) and add the new instances
+      for (let editItem  of input) {
+        let value, fieldType, iris=[];
+        for (value of editItem.value) {
+          switch(editItem.key) {
+            case 'subjects':
+              fieldType = 'complex';
+              let editObjects = JSON.parse(value);
+              if (!Array.isArray(editObjects)) editObjects = [editObjects];
+
+              // perform any validations of the input values and convert id's to IRI's
+              if (editItem.operation === 'add' || editItem.operation === 'replace') {
+                // check if referenced object(s) exists
+                for (let subject of editObjects) {
+                  let result;
+                  try {
+                    query = selectObjectIriByIdQuery(subject.subject_ref, subject.subject_type);
+                    result = await dataSources.Stardog.queryById({
+                      dbName,
+                      sparqlQuery: query,
+                      queryId: "Select Object",
+                      singularizeSchema
+                    });
+                  } catch (e) {
+                    console.log(e)
+                    throw e
+                  }
+                  if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${obj.subject_ref}`);
+                  subject.subject_ref = result[0].iri;
+
+                  // check if there is a corresponding replacement subject already exists
+                  try {
+                    let args = {filters: [{key: 'subject_type', values:[subject.subject_type]}]}
+                    query = selectAllSubjects(['iri','id','subject_type','subject_ref'], args);
+                    result = await dataSources.Stardog.queryAll({
+                      dbName,
+                      sparqlQuery: query,
+                      queryId: "Select Object",
+                      singularizeSchema
+                    });
+                  } catch (e) {
+                    console.log(e)
+                    throw e
+                  }
+                  if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${obj.subject_ref}`);
+                  for (let sub of result) {
+                    if (sub.subject_type !== subject.subject_type) continue;
+                    if (sub.subject_ref[0] == subject.subject_ref) {
+                      // add iri and update the subject_ref to indicates it already exits
+                      subject.iri = sub.iri;
+                      subject.subject_ref = sub.subject_ref[0];
+                    }
+                  }
+                }
+              }
+
+              // need to remove existing complex object(s)
+              if (editItem.operation !== 'add') {
+                let subjects = `<${response[0][editItem.key]}>`;
+                try {
+                  // detach from the target object
+                  query = detachFromRequiredAssetQuery(id, 'subjects', subjects);
+                  await dataSources.Stardog.delete({
+                    dbName,
+                    sparqlQuery: subjectQuery,
+                    queryId: "Delete Subject from Required Asset"
+                  });
+                } catch (e) {
+                  console.log(e)
+                  throw e
+                }    
+              }
+
+              // Need to add new complex object(s)
+              if (editItem.operation !== 'delete') {
+                let subjectIris = [];
+                for (let subject of editObjects) {
+                  // if no IRI, then we need to create the Subject
+                  if (!subject.subject_ref.startsWith('<')) subject.subject_ref = `<${subject.subject_ref}>`;
+                  if (!subject.hasOwnProperty('iri')) {
+                    const { subjectIris, query } = insertSubjectsQuery( [subject] );
+                    try {
+                      await dataSources.Stardog.create({
+                        dbName,
+                        sparqlQuery: query,
+                        queryId: "Create subject of Required Asset"
+                      });
+                    } catch (e) {
+                      console.log(e)
+                      throw e
+                    }
+                    subject.iri = subjectIris[0];
+                  }
+                  if (!subject.iri.startsWith('<')) subject.iri = `<${subject.iri}>`;
+                  subjectIris.push(subject.iri);
+                }
+
+                // attach Subject to the Required Asset
+                relationshipQuery = attachToRequiredAssetQuery(id, 'subjects', subjectIris );
+                try {
+                  await dataSources.Stardog.create({
+                    dbName,
+                    queryId: "Add Subjects to Required Assets",
+                    sparqlQuery: relationshipQuery
+                  });
+                } catch (e) {
+                  console.log(e)
+                  throw e
+                }
+              }
+
+              // set operation value to indicate to skip processing it
+              editItem.operation = 'skip';
+              break;
+            default:
+              fieldType = 'simple';
+              break;
+          }
+
+          if (fieldType === 'id') {
+            // do nothing
+          }
+        }
+        if (iris.length > 0) editItem.value = iris;
+      }    
+
+      // build composite update query for all edit items
+      query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset",
         input,
         requiredAssetPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Required Asset"
-      });
-      const select = selectRequiredAssetQuery(id, selectMap.getNode("editRequiredAsset"));
-      const result = await dataSources.Stardog.queryById({
-        dbName,
-        sparqlQuery: select,
-        queryId: "Select Required Asset",
-        singularizeSchema
-      });
+      );
+      if (query != null) {
+        await dataSources.Stardog.edit({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Update Required Asset"
+        });  
+      }
+      // retrieve the updated contents
+      let result;
+      try {
+        query = selectRequiredAssetQuery(id, selectMap.getNode("editRequiredAsset"));
+        result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Select Required Asset",
+          singularizeSchema
+        });  
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
       const reducer = getReducer("REQUIRED-ASSET");
       return reducer(result[0]);
     },
