@@ -158,7 +158,7 @@ class NetworkCreation extends Component {
       R.dissoc('starting_address'),
       R.dissoc('ending_address'),
       R.dissoc('labels'),
-      // R.assoc('network_ipv4_address_range', network_ipv4_address_range),
+      R.assoc('network_ipv4_address_range', network_ipv4_address_range),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: networkCreationMutation,
@@ -233,7 +233,7 @@ class NetworkCreation extends Component {
             vendor_name: '',
             release_date: null,
             operational_status: '',
-            implementation_point: '',
+            implementation_point: 'internal',
             network_id: '',
             network_name: '',
             labels: [],
