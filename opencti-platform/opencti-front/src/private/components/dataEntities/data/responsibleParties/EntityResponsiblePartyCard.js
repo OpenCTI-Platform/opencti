@@ -35,7 +35,7 @@ import {
 } from '../../../common/stix_domain_objects/StixDomainObjectBookmark';
 import { truncate } from '../../../../../utils/String';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
-import EntitiesRolesPopover from './EntitiesResponsiblePartiesPopover';
+import EntitiesResponsiblePartiesPopover from './EntitiesResponsiblePartiesPopover';
 
 const styles = (theme) => ({
   card: {
@@ -126,9 +126,9 @@ class EntityResponsiblePartyCardComponent extends Component {
       t,
       fsd,
       classes,
+      history,
       node,
       selectAll,
-      history,
       onToggleEntity,
       bookmarksIds,
       onLabelClick,
@@ -169,7 +169,7 @@ class EntityResponsiblePartyCardComponent extends Component {
                 onClick={(event) => event.preventDefault()}
                 style={{ display: 'flex' }}
               >
-                <EntitiesRolesPopover
+                <EntitiesResponsiblePartiesPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
                   history={history}
                   node={node}
@@ -285,12 +285,13 @@ class EntityResponsiblePartyCardComponent extends Component {
 }
 
 EntityResponsiblePartyCardComponent.propTypes = {
-  node: PropTypes.object,
-  bookmarksIds: PropTypes.array,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
+  node: PropTypes.object,
+  history: PropTypes.object,
+  classes: PropTypes.object,
   onLabelClick: PropTypes.func,
+  bookmarksIds: PropTypes.array,
   onBookmarkClick: PropTypes.func,
 };
 

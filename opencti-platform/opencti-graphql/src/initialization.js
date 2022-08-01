@@ -7,6 +7,7 @@ import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSea
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/s3';
 import { amqpIsAlive } from './database/amqp';
+import { artemisAlive } from './service/artemis';
 import { keycloakAlive } from './service/keycloak';
 import { stardogAlive } from './service/stardog';
 import { addMarkingDefinition } from './domain/markingDefinition';
@@ -124,6 +125,12 @@ export const checkSystemDependencies = async () => {
     logApp.info('[Check] Keycloak service is alive');
   } else {
     logApp.info('[Check] Keycloak service did not load.');
+  }
+  // Check if ActiveMQ Artemis REST API is alive
+  if (await artemisAlive()) {
+    logApp.info('[Check] ActiveMQ Artemis REST service is alive');
+  } else {
+    logApp.info('[Check] ActiveMQ Artemis REST service did not load.');
   }
   // Check if elasticsearch is available
   await elIsAlive();

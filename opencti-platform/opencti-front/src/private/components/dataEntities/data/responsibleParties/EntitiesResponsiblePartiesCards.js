@@ -57,10 +57,11 @@ class EntitiesResponsiblePartiesCards extends Component {
 
   render() {
     const {
-      initialLoading,
       relay,
+      history,
       selectAll,
       onLabelClick,
+      initialLoading,
       onToggleEntity,
       selectedElements,
     } = this.props;
@@ -80,7 +81,7 @@ class EntitiesResponsiblePartiesCards extends Component {
           this.props.data,
         )}
         offset={offset}
-        CardComponent={<EntityResponsiblePartyCard />}
+        CardComponent={<EntityResponsiblePartyCard history={history} />}
         DummyCardComponent={<EntityResponsiblePartyCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
         selectAll={selectAll}

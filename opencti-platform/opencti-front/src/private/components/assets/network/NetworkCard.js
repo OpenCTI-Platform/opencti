@@ -119,6 +119,7 @@ class NetworkCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           to={`/defender HQ/assets/network/${node.id}`}
+          data-cy='network card'
         >
           {/* <CardHeader
             classes={{ root: classes.header }}

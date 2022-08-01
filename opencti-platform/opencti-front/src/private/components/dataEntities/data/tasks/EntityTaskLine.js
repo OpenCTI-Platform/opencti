@@ -55,6 +55,7 @@ class EntityTaskLineComponent extends Component {
       t,
       fd,
       classes,
+      history,
       node,
       selectAll,
       dataColumns,
@@ -132,7 +133,7 @@ class EntityTaskLineComponent extends Component {
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
           <EntitiesTasksPopover
-            // history={history}
+            history={history}
             nodeId={node?.id}
             // riskNode={riskData.node}
             node={node}
@@ -147,6 +148,7 @@ EntityTaskLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
+  history: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
   onLabelClick: PropTypes.func,
