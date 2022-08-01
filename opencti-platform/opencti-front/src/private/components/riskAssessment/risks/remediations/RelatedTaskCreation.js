@@ -168,7 +168,6 @@ class RelatedTaskCreation extends Component {
     this.state = {
       open: false,
       close: false,
-      associated_activities: [],
       timing: {},
       start_date: '',
       end_date: null,
@@ -184,28 +183,31 @@ class RelatedTaskCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    if (values.associated_activities.length > 0) {
-      this.setState({
-        associated_activities: values.associated_activities.map((value) => (
-          { 'activity_id': value }
-        )),
-      });
-    }
-    if (values.start_date) {
-      this.setState({
-        timing: {
-          within_date_range: {
-            start_date: values.start_date === null ? '' : parse(values.start_date),
-            end_date: values.end_date === null ? null : parse(values.end_date),
+    const adaptedValues = evolve(
+      {
+        associated_activities: () => {
+          if (values.associated_activities.length > 0) {
+            values.associated_activities.map((value) => (
+              { 'activity_id': value }
+            ))
+          } else {
+            return []
           }
         },
-      })
+      },
+      values,
+    );
+    const timing = {
+      within_date_range: {
+        start_date: values.start_date === null ? null : parse(values.start_date),
+        end_date: values.end_date === null ? null : parse(values.end_date),
+      }
     }
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      assoc('timing', this.state.timing),
-    )(values);
+      assoc('timing', timing),
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
       variables: {

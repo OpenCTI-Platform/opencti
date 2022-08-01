@@ -188,6 +188,7 @@ export const buildSelectVariables = (predicateMap, selects) => {
 export const updateQuery = (iri, type, input, predicateMap) => {
   let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [], replacementPredicate;
   for(const {key, value, operation} of input) {
+    if (operation === 'skip') continue;
     if (!predicateMap.hasOwnProperty(key)) {
       console.error(`[CYIO] UNKNOWN-FIELD Unknown field '${key}' for object ${iri}`);        
       continue;
@@ -207,7 +208,12 @@ export const updateQuery = (iri, type, input, predicateMap) => {
           if (itr.includes("\'")) itr = itr.replace(/\'/g, "\\'");
         }
       }
-      const predicate = predicateMap[key].binding(`<${iri}>`, itr) + ' .';
+      let predicate = predicateMap[key].binding(`<${iri}>`, itr) + ' .';
+
+      // if value is IRI, remove quotes added by binding
+      if (itr.startsWith('<') && itr.endsWith('>')) {
+        predicate = predicate.replace(/\"/g, '');
+      }
       switch (operation) {
         case UpdateOps.ADD:
           if (insertPredicates.includes(predicate)) continue;
@@ -226,6 +232,9 @@ export const updateQuery = (iri, type, input, predicateMap) => {
         }
     }
   }
+  // return null if no query was built
+  if (deletePredicates.length === 0 && insertPredicates.length === 0 && replaceBindingPredicates.length ==  0) return null;
+
   return `
 DELETE {
   GRAPH ?g {
