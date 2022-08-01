@@ -40,6 +40,7 @@ import Loader from '../../../../components/Loader';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import NetworkCreationDetails from './NetworkCreationDetails';
 import { dayStartDate, parse } from '../../../../utils/Time';
+import { toastGenericError } from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   container: {
@@ -171,7 +172,11 @@ class NetworkCreation extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/network');
       },
-      onError: (err) => console.log('NetworkCreationDarkLightMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to Create Network');
+        this.props.history.push('/defender HQ/assets/network');
+      }
     });
     // commitMutation({
     //   mutation: deviceCreationOverviewMutation,
