@@ -881,7 +881,7 @@ const poamResolvers = {
       let sparqlQuery = selectAllObservations(selectMap.getNode('node'), args, parent);
       let response;
       try {
-        response = await dataSources.Stardog.queryById({
+        response = await dataSources.Stardog.queryAll({
           dbName,
           sparqlQuery,
           queryId: "Select Referenced Observations",
