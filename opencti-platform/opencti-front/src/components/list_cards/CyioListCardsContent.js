@@ -34,6 +34,7 @@ class CyioListCardsContent extends Component {
     this._resetLoadingCardCount = this._resetLoadingCardCount.bind(this);
     this.gridRef = React.createRef();
     this.state = {
+      scrollValue: 0,
       loadedData: 0,
       loadingCardCount: 0,
       newDataList: [],
@@ -65,8 +66,22 @@ class CyioListCardsContent extends Component {
       this.gridRef.forceUpdate();
     }
     const checker = (arr, target) => target.every((v) => arr.includes(v));
+    if (!checker(this.state.newDataList, this.props.dataList)
+      && (this.state.loadingCardCount === 0 || this.props.offset !== 0)) {
+      this.setState({
+        newDataList: [...this.props.dataList, ...this.state.newDataList],
+        loadedData: this.state.loadedData - this.props.dataList.length,
+      });
+    }
+    if (window.pageYOffset < 40 && this.state.newDataList.length > 50
+      && this.props.offset > 0) {
+      window.scrollTo(0, 3000);
+      this.props.handleDecrementedOffsetChange();
+      this.setState({ newDataList: this.state.newDataList.slice(-50) });
+    }
     if (this.state.loadedData !== (this.props.dataList.length + this.props.offset)
-      && ((this.props.globalCount - this.state.loadedData) > 0)) {
+      && ((this.props.globalCount - this.state.loadedData) > 0)
+      && (this.state.loadingCardCount !== 0 || this.props.offset === 0)) {
       if (this.props.dataList.length === 0) {
         this.setState({ newDataList: [] });
         this.listRef.forceUpdateGrid();
@@ -78,6 +93,18 @@ class CyioListCardsContent extends Component {
         });
       }
     }
+  }
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  handleScroll(event) {
+    this.setState({ scrollValue: window.pageYOffset });
   }
 
   _setRef(windowScroller) {
@@ -95,7 +122,7 @@ class CyioListCardsContent extends Component {
       hasMore,
       isLoading,
       globalCount,
-      handleOffsetChange,
+      handleIncrementedOffsetChange,
       nbOfCardsToLoad,
     } = this.props;
     if (!hasMore() || isLoading()) {
@@ -106,7 +133,7 @@ class CyioListCardsContent extends Component {
       loadingCardCount:
         difference >= nbOfCardsToLoad ? nbOfCardsToLoad : difference,
     });
-    handleOffsetChange();
+    handleIncrementedOffsetChange();
     loadMore(nbOfCardsToLoad, this._resetLoadingCardCount);
     if (this.state.newDataList.length > 50 && difference > 0) {
       setTimeout(() => {
@@ -262,7 +289,8 @@ CyioListCardsContent.propTypes = {
   loadMore: PropTypes.func,
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
-  handleOffsetChange: PropTypes.func,
+  handleIncrementedOffsetChange: PropTypes.func,
+  handleDecrementedOffsetChange: PropTypes.func,
   bookmarkList: PropTypes.array,
   offset: PropTypes.number,
   globalCount: PropTypes.number,

@@ -60,20 +60,22 @@ class ListLinesContent extends Component {
       this.listRef.forceUpdateGrid();
     }
     const checker = (arr, target) => target.every((v) => arr.includes(v));
+    if (!checker(this.state.newDataList, this.props.dataList)
+      && (this.state.loadingRowCount === 0 || this.props.offset !== 0)) {
+      this.setState({
+        newDataList: [...this.props.dataList, ...this.state.newDataList],
+        loadedData: this.state.loadedData - this.props.dataList.length,
+      });
+    }
     if (window.pageYOffset < 40 && this.state.newDataList.length > 50
       && this.props.offset > 0) {
       window.scrollTo(0, 2500);
       this.props.handleDecrementedOffsetChange();
       this.setState({ newDataList: this.state.newDataList.slice(-50) });
-      if (!checker(this.state.newDataList, this.props.dataList)) {
-        this.setState({
-          newDataList: [...this.props.dataList, ...this.state.newDataList],
-          loadedData: this.state.loadedData - this.props.dataList.length,
-        });
-      }
     }
     if (this.state.loadedData !== (this.props.dataList.length + this.props.offset)
-      && ((this.props.globalCount - this.state.loadedData) > 0)) {
+      && ((this.props.globalCount - this.state.loadedData) > 0)
+      && (this.state.loadingRowCount !== 0 || this.props.offset === 0)) {
       if (this.props.dataList.length === 0) {
         this.setState({ newDataList: [] });
         this.listRef.forceUpdateGrid();
