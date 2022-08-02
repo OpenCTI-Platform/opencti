@@ -35,7 +35,7 @@ class HowTo extends Component {
     const script = document.createElement('script');
     script.src = '/static/docs/_markdeep/markdeep.min.js';
     script.async = true;
-    document.querySelector('.HowToData').appendChild(script);
+    document.querySelector('.staticData').appendChild(script);
   }
 
   render() {
@@ -57,10 +57,10 @@ class HowTo extends Component {
           </Typography>
         </div>
         <div>
-          {/* <div className='HowToData'> */}
-          <div className='HowToData' dangerouslySetInnerHTML={{ __html: this.state.htmlFormatData }} />
-          {/* {parse(this.state.htmlFormatData)} */}
-          {/* </div> */}
+          <div
+            className='staticData'
+            dangerouslySetInnerHTML={{ __html: this.state.htmlFormatData }}
+          />
         </div>
       </>
     );

@@ -58,14 +58,10 @@ class About extends Component {
           </Typography>
         </div>
         <div>
-          {/* <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
-            rehypePlugins={[rehypeRaw]}
-            parserOptions={{ commonmark: true }}
-          > */}
-          {parse(this.state.htmlFormatData)}
-          {/* {this.state.htmlFormatData} */}
-          {/* </Markdown> */}
+          <div
+            className='staticData'
+            dangerouslySetInnerHTML={{ __html: this.state.htmlFormatData }}
+          />
         </div>
       </>
     );

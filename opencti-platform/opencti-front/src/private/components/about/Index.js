@@ -32,6 +32,10 @@ class HowTo extends Component {
     fetch('/static/docs/index/index.html')
       .then((response) => response.text())
       .then((data) => this.setState({ htmlFormatData: data }));
+    const script = document.createElement('script');
+    script.src = '/static/docs/_markdeep/markdeep.min.js';
+    script.async = true;
+    document.querySelector('.staticData').appendChild(script);
   }
 
   render() {
@@ -53,14 +57,10 @@ class HowTo extends Component {
           </Typography>
         </div>
         <div>
-          {/* <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
-            rehypePlugins={[rehypeRaw]}
-            parserOptions={{ commonmark: true }}
-          > */}
-          {parse(this.state.htmlFormatData)}
-          {/* {this.state.htmlFormatData} */}
-          {/* </Markdown> */}
+          <div
+            className='staticData'
+            dangerouslySetInnerHTML={{ __html: this.state.htmlFormatData }}
+          />
         </div>
       </>
     );

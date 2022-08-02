@@ -232,77 +232,6 @@ const LeftBar = ({
         <MenuList component="nav" classes={{ root: classes.menuList }}>
           <MenuItem
             component={Link}
-            to="/defender HQ/assets"
-            selected={location.pathname.includes('/defender HQ/assets')}
-            dense={false}
-            classes={{ root: classes.menuItemNested }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-            </ListItemIcon>
-            <ListItemText primary={t('Data')} data-cy='data' />
-          </MenuItem>
-          <MenuItem
-            disabled="true"
-            component={Link}
-            to="/dashboard/events"
-            selected={location.pathname.includes('/dashboard/events')}
-            dense={false}
-            classes={{ root: classes.menuItemNested }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-            </ListItemIcon>
-            <ListItemText primary={t('Settings')} data-cy='settings' />
-          </MenuItem>
-        </MenuList>
-        <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
-          <MenuItem
-            disabled="true"
-            component={Link}
-            to="/dashboard/threats"
-            selected={location.pathname.includes('/dashboard/threats')}
-            dense={false}
-            classes={{ root: classes.menuItemNested }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-            </ListItemIcon>
-            <ListItemText primary={t(me.name)} data-cy='profile' />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to="/activities/vulnerability assessment"
-            selected={location.pathname.includes('/activities/vulnerability assessment')}
-            dense={false}
-            classes={{ root: classes.menuItemNested }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-            </ListItemIcon>
-            <ListItemText primary={currentOrg} data-cy='organization' />
-          </MenuItem>
-          <FeatureFlag tag={'RISK_ASSESSMENT'}>
-            <MenuItem
-              component={Link}
-              to='/activities/risk assessment'
-              selected={location.pathname.includes('/activities/risk assessment')}
-              dense={false}
-              classes={{ root: classes.menuItemNested }}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-              </ListItemIcon>
-              <ListItemText primary={t('Risk Assessment')} />
-            </MenuItem>
-          </FeatureFlag>
-        </MenuList>
-      </Security>
-      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-        <Divider />
-        <MenuList component="nav" classes={{ root: classes.menuList }}>
-          <MenuItem
-            component={Link}
             to={'/data'}
             selected={location.pathname.includes('/data')}
             dense={false}
@@ -379,7 +308,7 @@ const LeftBar = ({
           setClientId={setClientId}
         />
       </Dialog>
-    </Drawer >
+    </Drawer>
   );
 };
 

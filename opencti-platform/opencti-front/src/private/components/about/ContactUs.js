@@ -33,6 +33,10 @@ class HowTo extends Component {
     fetch('/static/docs/contact_us/m_contact.md.html')
       .then((response) => response.text())
       .then((data) => this.setState({ htmlFormatData: data }));
+    const script = document.createElement('script');
+    script.src = '/static/docs/_markdeep/markdeep.min.js';
+    script.async = true;
+    document.querySelector('.staticData').appendChild(script);
   }
 
   render() {
@@ -54,7 +58,10 @@ class HowTo extends Component {
           </Typography>
         </div>
         <div>
-          {parse(this.state.htmlFormatData)}
+          <div
+            className='staticData'
+            dangerouslySetInnerHTML={{ __html: this.state.htmlFormatData }}
+          />
         </div>
       </>
     );

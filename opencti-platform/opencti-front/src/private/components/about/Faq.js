@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import parse from 'html-react-parser';
 import Typography from '@material-ui/core/Typography';
 import * as R from 'ramda';
 import inject18n from '../../../components/i18n';
@@ -32,6 +31,10 @@ class HowTo extends Component {
     fetch('/static/docs/faq/index.html')
       .then((response) => response.text())
       .then((data) => this.setState({ htmlFormatData: data }));
+    const script = document.createElement('script');
+    script.src = '/static/docs/_markdeep/markdeep.min.js';
+    script.async = true;
+    document.querySelector('.staticData').appendChild(script);
   }
 
   render() {
@@ -53,7 +56,10 @@ class HowTo extends Component {
           </Typography>
         </div>
         <div>
-          {parse(this.state.htmlFormatData)}
+          <div
+            className='staticData'
+            dangerouslySetInnerHTML={{ __html: this.state.htmlFormatData }}
+          />
         </div>
       </>
     );
