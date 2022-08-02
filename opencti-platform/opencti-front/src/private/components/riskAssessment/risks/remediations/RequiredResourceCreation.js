@@ -159,12 +159,6 @@ class RequiredResourceCreation extends Component {
       open: false,
       close: false,
       resourceName: '',
-      subjects: [
-        {
-          subject_type: '',
-          subject_ref: '',
-        },
-      ],
       selectedIndex: 1,
     };
   }
@@ -193,23 +187,17 @@ class RequiredResourceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    if (values.resource_type === '' && values.resource === '') {
-      this.setState({ subjects: [] });
-    } else {
-      this.setState({
-        subjects: [
-          {
-            subject_type: values.resource_type,
-            subject_ref: values.resource,
-          },
-        ],
-      });
-    }
+    const subjects = (values.resource_type === '' && values.resource === '')
+      ? []
+      : [{
+        subject_type: values.resource_type,
+        subject_ref: values.resource,
+      }];
     const finalValues = pipe(
       dissoc('resource_type'),
       dissoc('resource'),
       assoc('remediation_id', this.props.remediationId),
-      assoc('subjects', this.state.subjects),
+      assoc('subjects', subjects),
     )(values);
     CM(environmentDarkLight, {
       mutation: RequiredResourceCreationMutation,

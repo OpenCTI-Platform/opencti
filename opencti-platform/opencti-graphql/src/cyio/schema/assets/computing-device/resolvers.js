@@ -354,7 +354,7 @@ const computingDeviceResolvers = {
     },
     deleteComputingDeviceAsset: async (_, {id}, {dbName, dataSources} ) => {
       // check that the ComputingDevice exists
-      const sparqlQuery = selectComputingDeviceQuery(id, null );
+      const sparqlQuery = selectComputingDeviceQuery(id, ['id','ports','ip_address', 'mac_address'] );
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -396,7 +396,7 @@ const computingDeviceResolvers = {
         }
       }
 
-      const relationshipQuery = removeFromInventoryQuery(id);
+      const relationshipQuery = removeFromInventoryQuery(asset.iri);
       await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: relationshipQuery,

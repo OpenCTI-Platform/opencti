@@ -1,36 +1,28 @@
-/* eslint-disable */
-/* refactor */
 import React, { useContext, useState, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import UserPreferencesModal from './UserPreferencesModal';
 import Toolbar from '@material-ui/core/Toolbar';
-import graphql from 'babel-plugin-relay/macro';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
-import Collapse from '@material-ui/core/Collapse';
 import {
   DashboardOutlined,
-  ExpandLess,
-  ExpandMore,
+  TabSharp,
   Language,
 } from '@material-ui/icons';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import PersonIcon from '@material-ui/icons/Person';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import {
   CogOutline,
   Database,
-  Brain,
-  GlobeModel,
 } from 'mdi-material-ui';
+import Dialog from '@material-ui/core/Dialog';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE,
@@ -38,14 +30,13 @@ import Security, {
   MODULES,
   TAXIIAPI_SETCOLLECTIONS,
   UserContext,
-  granted,
 } from '../../../utils/Security';
 import {
-  getAccount
+  getAccount,
 } from '../../../services/account.service';
-import Dialog from "@material-ui/core/Dialog";
-import FeatureFlag from "../../../components/feature/FeatureFlag";
-import { toastGenericError } from "../../../utils/bakedToast";
+import UserPreferencesModal from './UserPreferencesModal';
+import FeatureFlag from '../../../components/feature/FeatureFlag';
+import { toastGenericError } from '../../../utils/bakedToast';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -108,26 +99,26 @@ const LeftBar = ({
             first_name: me.name,
             last_name: me.lastname,
           });
-          localStorage.setItem("currentOrg", res.data.clients.find(obj => obj.client_id === clientId).name)
-          setCurrentOrg(res.data.clients.find(obj => obj.client_id === clientId).name);
+          localStorage.setItem('currentOrg', res.data.clients.find((obj) => obj.client_id === clientId).name);
+          setCurrentOrg(res.data.clients.find((obj) => obj.client_id === clientId).name);
         }).catch((error) => {
-          console.log(error);
-          toastGenericError("Failed to get user information")
-        })
+          console.error(error);
+          toastGenericError('Failed to get user information');
+        });
     }
-  }, [clientId])
+  }, [clientId]);
 
   const handleUserPrefOpen = () => {
     setUserPrefOpen(true);
-  }
+  };
 
   const handleDialogClose = () => {
     setUserPrefOpen(null);
-  }
+  };
 
   const cancelUserPref = () => {
     setUserPrefOpen(null);
-  }
+  };
 
   return (
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
@@ -167,7 +158,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
               </ListItemIcon>
-              <ListItemText primary={t('Assets')} />
+              <ListItemText primary={t('Assets')} data-cy='assets' />
             </MenuItem>
             <MenuItem
               disabled="true"
@@ -180,7 +171,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
               </ListItemIcon>
-              <ListItemText primary={t('Information Systems')} />
+              <ListItemText primary={t('Information Systems')} data-cy='information systems' />
             </MenuItem>
           </MenuList>
           <MenuItem
@@ -205,7 +196,7 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
               </ListItemIcon>
-              <ListItemText primary={t('Threats Assessment')} />
+              <ListItemText primary={t('Threats Assessment')} data-cy='threats assessment' />
             </MenuItem>
             <MenuItem
               component={Link}
@@ -217,9 +208,9 @@ const LeftBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
               </ListItemIcon>
-              <ListItemText primary={t('Vulnerability Assessment')} />
+              <ListItemText primary={t('Vulnerability Assessment')} data-cy='vsac' />
             </MenuItem>
-            <FeatureFlag tag={"RISK_ASSESSMENT"}>
+            <FeatureFlag tag={'RISK_ASSESSMENT'}>
               <MenuItem
                 component={Link}
                 to="/activities/risk assessment"
@@ -230,12 +221,83 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Risk Assessment')} />
+                <ListItemText primary={t('Risk Assessment')} data-cy='risk assessment' />
               </MenuItem>
             </FeatureFlag>
           </MenuList>
         </Security>
       </MenuList>
+      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+        <Divider />
+        <MenuList component="nav" classes={{ root: classes.menuList }}>
+          <MenuItem
+            component={Link}
+            to="/defender HQ/assets"
+            selected={location.pathname.includes('/defender HQ/assets')}
+            dense={false}
+            classes={{ root: classes.menuItemNested }}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
+            </ListItemIcon>
+            <ListItemText primary={t('Data')} data-cy='data' />
+          </MenuItem>
+          <MenuItem
+            disabled="true"
+            component={Link}
+            to="/dashboard/events"
+            selected={location.pathname.includes('/dashboard/events')}
+            dense={false}
+            classes={{ root: classes.menuItemNested }}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
+            </ListItemIcon>
+            <ListItemText primary={t('Settings')} data-cy='settings' />
+          </MenuItem>
+        </MenuList>
+        <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
+          <MenuItem
+            disabled="true"
+            component={Link}
+            to="/dashboard/threats"
+            selected={location.pathname.includes('/dashboard/threats')}
+            dense={false}
+            classes={{ root: classes.menuItemNested }}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
+            </ListItemIcon>
+            <ListItemText primary={t(me.name)} data-cy='profile' />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to="/activities/vulnerability assessment"
+            selected={location.pathname.includes('/activities/vulnerability assessment')}
+            dense={false}
+            classes={{ root: classes.menuItemNested }}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
+            </ListItemIcon>
+            <ListItemText primary={currentOrg} data-cy='organization' />
+          </MenuItem>
+          <FeatureFlag tag={'RISK_ASSESSMENT'}>
+            <MenuItem
+              component={Link}
+              to='/activities/risk assessment'
+              selected={location.pathname.includes('/activities/risk assessment')}
+              dense={false}
+              classes={{ root: classes.menuItemNested }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
+              </ListItemIcon>
+              <ListItemText primary={t('Risk Assessment')} />
+            </MenuItem>
+          </FeatureFlag>
+        </MenuList>
+      </Security>
       <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
         <MenuList component="nav" classes={{ root: classes.menuList }}>
@@ -317,8 +379,7 @@ const LeftBar = ({
           setClientId={setClientId}
         />
       </Dialog>
-    </Drawer>
-
+    </Drawer >
   );
 };
 
@@ -326,7 +387,7 @@ LeftBar.propTypes = {
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  clientId: PropTypes.string
+  clientId: PropTypes.string,
 };
 
 export default compose(inject18n, withRouter, withStyles(styles))(LeftBar);

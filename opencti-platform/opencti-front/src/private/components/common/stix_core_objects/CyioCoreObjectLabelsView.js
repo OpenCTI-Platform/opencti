@@ -100,7 +100,16 @@ const cyioCoreObjectMutationRelationDelete = graphql`
 
 const CyioCoreObjectLabelsView = (props) => {
   const {
-    classes, labels, t, marginTop, id, typename, refreshQuery, disableAdd, menuItemName,
+    t,
+    id,
+    labels,
+    history,
+    classes,
+    typename,
+    marginTop,
+    disableAdd,
+    menuItemName,
+    refreshQuery,
   } = props;
   const { me } = useContext(UserContext);
   // const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
@@ -163,6 +172,9 @@ const CyioCoreObjectLabelsView = (props) => {
           handleCloseAdd();
           if (refreshQuery) {
             refreshQuery();
+          }
+          if(history) {
+            history.push(history.location.pathname);
           }
         },
         onError: (err) => {
@@ -402,6 +414,7 @@ CyioCoreObjectLabelsView.propTypes = {
   disableAdd: PropTypes.bool,
   typename: PropTypes.string,
   t: PropTypes.func,
+  history: PropTypes.object,
   id: PropTypes.string,
   labels: PropTypes.array,
   refreshQuery: PropTypes.func,

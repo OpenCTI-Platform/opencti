@@ -32,6 +32,7 @@ const networkAssetReducer = (item) => {
   }
   
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -254,7 +255,7 @@ export const selectNetworkByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -486,6 +487,16 @@ export const networkPredicateMap = {
   network_address_range: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#network_address_range>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "network_address_range")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  network_ipv4_address_range: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#network_address_range>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "network_ipv4_address_range")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  network_ipv6_address_range: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#network_address_range>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "network_ipv6_address_range")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   is_publicly_accessible: {

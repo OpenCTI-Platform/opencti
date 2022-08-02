@@ -783,6 +783,11 @@ const subjectResolvers = {
       }
       if (response === undefined || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
+        if (response[0].id === undefined) {
+          console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${response[0].iri} required field 'id' is missing; skipping`);
+          return null;
+        }
+
         return (reducer(response[0]))
       }
       else {

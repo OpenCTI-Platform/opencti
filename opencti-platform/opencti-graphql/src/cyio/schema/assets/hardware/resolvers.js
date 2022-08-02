@@ -10,7 +10,8 @@ import {
   selectAllHardware,
   selectHardwareQuery,
   hardwarePredicateMap, 
-  attachToHardwareQuery
+  attachToHardwareQuery,
+  detachFromHardwareQuery
 } from './sparql-query.js';
 import { getSelectSparqlQuery} from '../computing-device/sparql-query.js'
 import {
@@ -76,15 +77,15 @@ const hardwareResolvers = {
 
         // for each Hardware device in the result set
         for (let hardware of hardwareList) {
+          if (hardware.id === undefined) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${hardware.iri} missing field 'id'; skipping`);
+            continue;
+          }
+
           // skip down past the offset
           if (offset) {
             offset--
             continue
-          }
-
-          if (hardware.id === undefined) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${hardware.iri} missing field 'id'; skipping`);
-            continue;
           }
 
           // filter out non-matching entries if a filter is to be applied
@@ -251,13 +252,13 @@ const hardwareResolvers = {
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
-        queryId: "Create Computing Device Asset"
+        queryId: "Create Hardware Asset"
       });
       const connectQuery = addToInventoryQuery(iri);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: connectQuery,
-        queryId: "Add Computing Device Asset to Inventory"
+        queryId: "Add Hardware Asset to Inventory"
       });
 
       if (ports !== undefined && ports !== null) {
@@ -265,12 +266,12 @@ const hardwareResolvers = {
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: portsQuery,
-          queryId: "Create Computing Device Asset Ports"
+          queryId: "Create Ports of Hardware Asset"
         });
         const relationshipQuery = insertPortRelationships(iri, portIris);
         await dataSources.Stardog.create({
           dbName,
-          queryId: "Add Ports to Computing Device Asset",
+          queryId: "Add Ports to Hardware Asset",
           sparqlQuery: relationshipQuery
         });
       }
@@ -279,13 +280,13 @@ const hardwareResolvers = {
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
-          queryId: "Creat Computing Device Asset IPv4"
+          queryId: "Create IPv4 Addresses of Hardware Asset"
         });
         const relationshipQuery = insertIPRelationship(iri, ipIris);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: relationshipQuery,
-          queryId: "Add IPv4 to Computing Device Asset"
+          queryId: "Add IPv4 to Hardware Asset"
         });
       }
       if (ipv6 !== undefined && ipv6!== null) {
@@ -293,13 +294,13 @@ const hardwareResolvers = {
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
-          queryId: "Create Computing Device Asset IPv6"
+          queryId: "Create IPv6 Addresses of Hardware Asset"
         });
         const relationshipQuery = insertIPRelationship(iri, ipIris);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: relationshipQuery,
-          queryId: "Add IPv6 to Computing Device Asset"
+          queryId: "Add IPv6 to Hardware Asset"
         });
       }
       if (mac !== undefined && mac!== null) {
@@ -307,13 +308,13 @@ const hardwareResolvers = {
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
-          queryId: "Create Computing Device Asset MAC"
+          queryId: "Create MAC Addresses of Hardware Asset"
         });
         const relationshipQuery = insertMACRelationship(iri, macIris);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: relationshipQuery,
-          queryId: "Add MAC to Computing Device Asset"
+          queryId: "Add MAC to Hardware Asset"
         });
       }
         // attach any Network(s) to Computing Device
@@ -325,7 +326,7 @@ const hardwareResolvers = {
             queryId: "Attaching connected network to the Hardware device Asset"
           });
         }
-        // attach Operating System to Computing Device
+        // attach Operating System to Hardware Asset
         if (installedOS !== undefined && installedOS !== null) {
           let osAttachQuery = attachToHardwareQuery(id, 'installed_operating_system', installedOS);
           await dataSources.Stardog.create({
@@ -334,7 +335,7 @@ const hardwareResolvers = {
             queryId: "Attaching Operating System to the Hardware device Asset"
           });
         }
-        // attach Software to Computing Device
+        // attach Software to Hardware Asset
         if (installedSoftware !== undefined && installedSoftware !== null) {
           let softwareAttachQuery = attachToHardwareQuery(id, 'installed_software', installedSoftware);
           await dataSources.Stardog.create({
@@ -363,7 +364,7 @@ const hardwareResolvers = {
     },
     deleteHardwareAsset: async (_, {id}, {dbName, dataSources} ) => {
       // check that the Hardware asset exists
-      const sparqlQuery = selectHardwareQuery(id, null );
+      const sparqlQuery = selectHardwareQuery(id, ['id','ports','ip_address', 'mac_address'] );
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -405,7 +406,7 @@ const hardwareResolvers = {
         }
       }
       
-      const relationshipQuery = removeFromInventoryQuery(id);
+      const relationshipQuery = removeFromInventoryQuery(asset.iri);
       await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: relationshipQuery,
@@ -421,7 +422,7 @@ const hardwareResolvers = {
     },
     editHardwareAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id'];
+      let editSelect = ['id','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -431,35 +432,271 @@ const hardwareResolvers = {
         sparqlQuery,
         queryId: "Select Hardware asset",
         singularizeSchema
-      })
+      });
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
-
-      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      // determine operation, if missing
       for (let editItem of input) {
-        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+        if (editItem.operation !== undefined) continue;
+        if (!response[0].hasOwnProperty(editItem.key)) {
+          editItem.operation = 'add';
+        } else {
+          editItem.operation = 'replace';
+        }
       }
-      // END WORKAROUND
 
+      // Push an edit to update the modified time of the object
+      const timestamp = new Date().toISOString();
+      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      input.push(update);
+
+      // obtain the IRIs for the referenced objects so that if one doesn't 
+      // exists we have created anything yet.  For complex objects that are
+      // private to this object, remove them (if needed) and add the new instances
+      for (let editItem  of input) {
+        let value, objType, objArray, iris=[], isId = true;
+        let relationshipQuery, queryDetails;
+        for (value of editItem.value) {
+          switch(editItem.key) {
+            case 'connected_to_network':
+              objType = 'network';
+              break;
+            case 'installed_operating_system':
+              objType = 'operating-system';
+              break;
+            case 'installed_software':
+              objType = 'software';
+              break;
+            case 'installed_hardware':
+              objType = 'hardware';
+              break;
+            case 'locations':
+              objType = 'location';
+              break;
+            case 'ipv4_address':
+              isId = false;
+              objArray = JSON.parse(value);
+
+              if (editItem.operation !== 'add') {
+                // find the existing IPv4 object(s) of the Hardware Asset
+                for (const ipAddr of response[0].ip_address) {
+                  if (ipAddr.includes('IpV4')) {
+                    let ipQuery;
+
+                    // detach the IPv4 address object
+                    ipQuery = detachFromHardwareQuery(id, 'ip_address', ipAddr);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: ipQuery,
+                      queryId: "Detach IPv4 Address from Hardware Asset"
+                    });
+                    // Delete the IPv4 address object since its private to the Hardware Asset
+                    ipQuery = deleteIpQuery(`<${ipAddr}>`);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: ipQuery,
+                      queryId: "Delete IPv4 Address"
+                    });  
+                  }
+                }
+              }
+              if (editItem.operation !== 'delete') {
+                // create the new IPv4 address object(s) of the Hardware asset
+                queryDetails = insertIPQuery(objArray, 6);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: queryDetails.query,
+                  queryId: "Create IPv4 Addresses of Hardware Asset"
+                });
+                // attach the new IPv6 address object(s) to the Hardware asset
+                relationshipQuery = insertIPRelationship(response[0].iri, queryDetails.ipIris);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: relationshipQuery,
+                  queryId: "Add IPv4 Addresses to Hardware Asset"
+                });
+              }
+              editItem.operation = 'skip';
+              break;
+            case 'ipv6_address':
+              isId = false;
+              objArray = JSON.parse(value);
+    
+              if (editItem.operation !== 'add') {
+                // find the existing IPv6 object(s) of the Hardware Asset
+                for (const ipAddr of response[0].ip_address) {
+                  if (ipAddr.includes('IpV6')) {
+                    let ipQuery;
+
+                    // detach the IPv6 address object
+                    ipQuery = detachFromHardwareQuery(id, 'ip_address', ipAddr);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: ipQuery,
+                      queryId: "Detach IPv6 Address from Hardware Asset"
+                    });
+                    // Delete the IPv6 address object since its private to the Hardware Asset
+                    ipQuery = deleteIpQuery(`<${ipAddr}>`);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: ipQuery,
+                      queryId: "Delete IPv6 Address"
+                    });  
+                  }
+                }
+              }
+              if (editItem.operation !== 'delete') {
+                // create the new IPv6 address object(s) of the Hardware asset
+                queryDetails = insertIPQuery(objArray, 6);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: queryDetails.query,
+                  queryId: "Create IPv6 Addresses of Hardware Asset"
+                });
+                // attach the new IPv6 address object(s) to the Hardware asset
+                relationshipQuery = insertIPRelationship(response[0].iri, queryDetails.ipIris);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: relationshipQuery,
+                  queryId: "Add IPv6 Addresses to Hardware Asset"
+                });
+              }
+              editItem.operation = 'skip';
+              break;
+            case 'ports':
+              isId = false;
+              objArray = JSON.parse(value);
+    
+              if (editItem.operation !== 'add') {
+                // find the existing Port object(s) of the Hardware Asset
+                for (const port of response[0].ports) {
+                  if (port.includes('Port')) {
+                    let portQuery;
+
+                    // detach the Port object
+                    portQuery = detachFromHardwareQuery(id, 'ports', port);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: portQuery,
+                      queryId: "Detach Port Address from Hardware Asset"
+                    });
+                    // Delete the Port object since its private to the Hardware Asset
+                    portQuery = deletePortQuery(`<${port}>`);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: portQuery,
+                      queryId: "Delete Port "
+                    });  
+                  }
+                }
+              }
+              if (editItem.operation !== 'delete') {
+                // create the new Port object(s) of the Hardware asset
+                const { iris: portIris, query: portsQuery } = insertPortsQuery(objArray);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: portsQuery,
+                  queryId: "Create Ports of Hardware Asset"
+                });
+                // attach the new Port object(s) to the Hardware asset
+                relationshipQuery = insertPortRelationships(response[0].iri, portIris);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: relationshipQuery,
+                  queryId: "Add Ports to Hardware Asset"
+                });
+              }
+              editItem.operation = 'skip';
+              break;
+            case 'mac_address':
+              isId = false;
+              objArray = editItem.value;
+    
+              if (editItem.operation !== 'add') {
+              // find the existing MAC Address object(s) of the Hardware Asset
+                for (const macAddr of response[0].mac_address) {
+                  if (macAddr.includes('MACAddress')) {
+                    let macQuery;
+
+                    // detach the MAC address object
+                    macQuery = detachFromHardwareQuery(id, 'mac_address', macAddr);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: macQuery,
+                      queryId: "Detach MAC Address from Hardware Asset"
+                    });
+                    // Delete the MAC address object since its private to the Hardware Asset
+                    macQuery = deleteMacQuery(`<${macAddr}>`);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: macQuery,
+                      queryId: "Delete MAC Address"
+                    });  
+                  }
+                }
+              }
+              if (editItem.operation !== 'delete') {
+                // create the new MAC address object(s) of the Hardware asset
+                queryDetails = insertMACQuery(objArray);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: queryDetails.query,
+                  queryId: "Create MAC Addresses of Hardware Asset"
+                });
+                // attach the new MAC address object(s) to the Hardware asset
+                relationshipQuery = insertMACRelationship(response[0].iri, queryDetails.ipIris);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: relationshipQuery,
+                  queryId: "Add MAC Addresses to Hardware Asset"
+                });
+              }
+              editItem.operation = 'skip';
+              break;
+            default:
+              isId = false;
+              break;
+          }
+
+          if (isId) {
+            let query = selectObjectIriByIdQuery(value, objType);
+            let result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery: query,
+              queryId: "Obtaining IRI for object by id",
+              singularizeSchema
+            });
+            if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${value}`);
+            iris.push(`<${result[0].iri}>`);    
+          }
+        }
+        if (iris.length > 0) editItem.value = iris;
+      }
+
+      // build composite update query for all edit items
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Hardware-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Hardware",
         input,
         hardwarePredicateMap
-      )
-      response = await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Hardware Asset"
-      });
-      if (response !== undefined && 'status' in response) {
-        if (response.ok === false || response.status > 299) {
-          // Handle reporting Stardog Error
-          throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : results.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
-          });
+      );
+      if (query != null ) {
+        response = await dataSources.Stardog.edit({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Update Hardware Asset"
+        });
+        if (response !== undefined && 'status' in response) {
+          if (response.ok === false || response.status > 299) {
+            // Handle reporting Stardog Error
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : results.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
         }
       }
+
+      // retrieve the updated contents
       const selectQuery = selectHardwareQuery(id, selectMap.getNode("editHardwareAsset"));
       let result;
       try {
@@ -882,7 +1119,7 @@ const hardwareResolvers = {
   HardwareKind: {
     __resolveType: (item) => {
       return objectTypeMapping[item.entity_type];
-  },
+    },
   }
 };
 

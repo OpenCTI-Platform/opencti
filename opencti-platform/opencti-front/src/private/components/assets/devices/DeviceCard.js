@@ -122,6 +122,7 @@ class DeviceCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           to={`/defender HQ/assets/devices/${node.id}`}
+          data-cy='device card'
         >
           {/* <CardHeader
             classes={{ root: classes.header }}

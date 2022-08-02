@@ -179,7 +179,7 @@ const softwareResolvers = {
     },
     deleteSoftwareAsset: async ( _, {id}, {dbName, dataSources}) => {
       // check that the ComputingDevice exists
-      const sparqlQuery = selectSoftwareQuery(id, null );
+      const sparqlQuery = selectSoftwareQuery(id, ['id'] );
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -187,7 +187,7 @@ const softwareResolvers = {
         singularizeSchema
       })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
-      const relationshipQuery = removeFromInventoryQuery(id);
+      const relationshipQuery = removeFromInventoryQuery(response[0].iri);
       await dataSources.Stardog.delete({dbName, sparqlQuery:relationshipQuery, queryId: "Remove from Inventory"});
       const query = deleteQuery(id);
       await dataSources.Stardog.delete({dbName, sparqlQuery: query, queryId: "Delete Software Asset"});

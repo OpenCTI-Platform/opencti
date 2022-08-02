@@ -49,7 +49,7 @@ INSERT DATA {
 }
 
 /**
- * @param ip - the ip string
+ * @param ip - the IPAddress node
  * @param version - either 4 or 6 (number values)
  */
 export const insertIPQuery = (ip, version) => {
@@ -98,6 +98,7 @@ INSERT DATA {
  * @param ipIri - iri of the existing IP object
  */
 export const insertIPRelationship = (parentIri, ipIris) => {
+    if (!parentIri.startsWith('<')) parentIri = `<${parentIri}>`;
     const predicates = ipIris
         .map((ipIri) => `${parentIri} <http://scap.nist.gov/ns/asset-identification#ip_address> ${ipIri}`)
         .join(".\n        ")
@@ -134,10 +135,10 @@ INSERT DATA {
         macIris.push(iri);
         insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#MACAddress>`);
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`);
-        insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#mac_address_value> "${mac.mac_address_value}"`)
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "${type}"`);
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime`);
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime`);
+        insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#mac_address_value> "${mac.mac_address_value}"`)
         graphs.push(`
     GRAPH ${iri} {
         ${insertPredicates.join(".\n        ")}
@@ -157,6 +158,7 @@ INSERT DATA {
  * @param macIri - iri of the existing MAC object
  */
 export const insertMACRelationship = (parentIri, macIris) => {
+    if (!parentIri.startsWith('<')) parentIri = `<${parentIri}>`;
     const predicates = macIris
         .map((macIri) => `${parentIri} <http://scap.nist.gov/ns/asset-identification#mac_address> ${macIri}`)
         .join(".\n        ")
@@ -245,6 +247,7 @@ export const insertIPAddressRangeQuery = (startingIri, endingIri) => {
 }
 
 export const insertIPAddressRangeRelationship = (parentIri, rangeIri) => {
+    if (!parentIri.startsWith('<')) parentIri = `<${parentIri}>`;
     return `
     INSERT DATA {
         GRAPH ${parentIri} {
