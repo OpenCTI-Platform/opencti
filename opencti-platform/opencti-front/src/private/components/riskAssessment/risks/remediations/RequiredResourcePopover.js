@@ -161,6 +161,17 @@ class RequiredResourcePopover extends Component {
     };
   }
 
+  componentDidMount() {
+    const requiredResourceNode = R.pipe(
+      R.pathOr([], ['subjects']),
+      R.map((value) => ({
+        resource_type: value.subject_type
+      })),
+      R.mergeAll,
+    )(this.props.data);
+    this.setState({ resourceName: requiredResourceNode.resource_type });
+  }
+
   handleResourceTypeFieldChange(resourceType) {
     this.setState({ resourceName: resourceType });
   }
@@ -288,10 +299,8 @@ class RequiredResourcePopover extends Component {
     const requiredResourceNode = R.pipe(
       R.pathOr([], ['subjects']),
       R.map((value) => ({
-        name: value.subject_ref.name,
-        description: value.subject_ref.description,
-        resource_type: value.subject_ref.party_type,
-        resource: value.subject_ref.asset_type,
+        resource_type: value.subject_type,
+        resource: value.subject_ref.id,
       })),
       R.mergeAll,
     )(data);
@@ -299,8 +308,8 @@ class RequiredResourcePopover extends Component {
       R.assoc('id', data.id || ''),
       R.assoc('name', data?.name || ''),
       R.assoc('description', data?.description || ''),
-      R.assoc('resource_type', data.resource_type || ''),
-      R.assoc('resource', data.resource || ''),
+      R.assoc('resource_type', requiredResourceNode.resource_type || ''),
+      R.assoc('resource', requiredResourceNode.resource || ''),
       R.pick([
         'id',
         'name',
