@@ -789,6 +789,11 @@ const assetCommonResolvers = {
       }
 
       let selectList = selectMap.getNode('starting_ip_address');
+      if (selectList !== undefined ) {
+        selectList = selectList.filter(i => i !== '__typename');
+      }
+      if (selectList.length === 0) selectList = undefined
+
       let sparqlQuery = selectIpAddressByIriQuery(parent.start_addr_iri, selectList === undefined ? null : selectList );
       const response = await dataSources.Stardog.queryById({
         dbName,
@@ -826,7 +831,14 @@ const assetCommonResolvers = {
       }
 
       selectList = selectMap.getNode('ending_ip_address');
-      let sparqlQuery = selectIpAddressByIriQuery(parent.start_addr_iri, selectList === undefined ? null : selectList );
+      if (selectList !== undefined ) {
+        selectList = selectList.filter(i => i !== '__typename');
+      }
+      if (selectList.length === 0) selectList = undefined
+
+
+
+      let sparqlQuery = selectIpAddressByIriQuery(parent.ending_addr_iri, selectList === undefined ? null : selectList );
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
