@@ -1,5 +1,5 @@
 import { head } from 'ramda';
-import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/object-storage';
+import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/file-storage';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';

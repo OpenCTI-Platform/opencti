@@ -43,7 +43,7 @@ import {
 import { listRelations } from '../database/middleware-loader';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
-import { upload } from '../database/object-storage';
+import { upload } from '../database/file-storage';
 
 export const findAll = async (user, args) => {
   return listRelations(user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);

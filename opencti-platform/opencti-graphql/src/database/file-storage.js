@@ -86,7 +86,7 @@ export async function isStorageAlive() {
 }
 
 export async function deleteFile(user, id) {
-  logApp.debug(`[MINIO] delete file ${id} by ${user.user_email}`);
+  logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
     Key: id
@@ -96,7 +96,7 @@ export async function deleteFile(user, id) {
 }
 
 export async function deleteFiles(user, ids) {
-  logApp.debug(`[MINIO] delete files ${ids} by ${user.user_email}`);
+  logApp.debug(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
   for (let i = 0; i < ids.length; i += 1) {
     const id = ids[i];
     await deleteFile(user, id);
