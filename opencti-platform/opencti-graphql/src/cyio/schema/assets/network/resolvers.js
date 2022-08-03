@@ -453,7 +453,7 @@ const networkResolvers = {
                   sparqlQuery: endQuery,
                   queryId: "Create Ending IP Address for Network Asset"
                 });
-                const { iri: rangeIri, rangeQuery } = insertIPAddressRangeQuery(startIri, endIri);
+                const { iri: rangeIri, query:rangeQuery } = insertIPAddressRangeQuery(startIri, endIri);
                 await dataSources.Stardog.create({
                   dbName,
                   sparqlQuery: rangeQuery,
