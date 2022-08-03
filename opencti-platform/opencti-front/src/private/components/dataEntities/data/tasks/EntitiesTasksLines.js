@@ -37,6 +37,7 @@ class EntitiesTasksLines extends Component {
   render() {
     const {
       relay,
+      history,
       selectAll,
       dataColumns,
       onLabelClick,
@@ -58,7 +59,7 @@ class EntitiesTasksLines extends Component {
           this.props.data,
         )}
         offset={this.state.offset}
-        LineComponent={<EntityTaskLine />}
+        LineComponent={<EntityTaskLine history={history} />}
         DummyLineComponent={<EntityTaskLineDummy />}
         selectAll={selectAll}
         dataColumns={dataColumns}
@@ -76,6 +77,7 @@ EntitiesTasksLines.propTypes = {
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
+  history: PropTypes.object,
   relay: PropTypes.object,
   threatActors: PropTypes.object,
   computingDeviceAssetList: PropTypes.object,

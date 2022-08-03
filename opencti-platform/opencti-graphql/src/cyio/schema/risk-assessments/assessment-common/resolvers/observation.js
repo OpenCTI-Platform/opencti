@@ -620,6 +620,10 @@ const observationResolvers = {
       }
 
       for (let subject of response) {
+        if (subject.id === undefined || subject.id === null ) {
+          console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
+          continue;
+        }
         results.push(reducer(subject));
       }
 

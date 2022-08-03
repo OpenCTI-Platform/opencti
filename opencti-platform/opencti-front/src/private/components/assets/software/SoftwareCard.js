@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -121,8 +119,9 @@ class SoftwareCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          style= {{ background:  (selectAll || node.id in (selectedElements || {})) && '#075AD3'}}
+          style= {{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           to={`/defender HQ/assets/software/${node.id}`}
+          data-cy='software card'
         >
           {/* <CardHeader
             classes={{ root: classes.header }}

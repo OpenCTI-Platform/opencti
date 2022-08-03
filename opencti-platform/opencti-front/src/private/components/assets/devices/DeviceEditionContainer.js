@@ -126,22 +126,25 @@ class DeviceEditionContainer extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const filteredValue = {};
     const { totalInitial } = this.state;
+    Object.keys(totalInitial).forEach((key, j) => {
+      if (Array.isArray(values[key])) {
+        if (values[key].some((value, i) => value !== totalInitial[key][i])) {
+          filteredValue[key] = values[key];
+        }
+      }
+      if (!Array.isArray(values[key]) && totalInitial[key] !== values[key]) {
+        filteredValue[key] = values[key];
+      }
+    });
     const adaptedValues = R.evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        ipv4_address: () => values.ipv4_address.length > 0 ? values.ipv4_address.map((address) => JSON.stringify({ ip_address_value: address })) : [],
+        ipv6_address: () => values.ipv6_address.length > 0 ? values.ipv6_address.map((address) => JSON.stringify({ ip_address_value: address })) : [],
+        ports: () => values.ports.length > 0 ? values.ports.map((port) => JSON.stringify(port)) : [],
       },
-      values,
+      filteredValue,
     );
-    Object.keys(totalInitial).forEach((key, j) => {
-      if (Array.isArray(adaptedValues[key])) {
-        if (adaptedValues[key].some((value, i) => value !== totalInitial[key][i])) {
-          filteredValue[key] = adaptedValues[key];
-        }
-      }
-      if (!Array.isArray(adaptedValues[key]) && totalInitial[key] !== adaptedValues[key]) {
-        filteredValue[key] = adaptedValues[key];
-      }
-    });
     const finalValues = R.pipe(
       R.dissoc('id'),
       R.dissoc('locations'),
@@ -153,7 +156,7 @@ class DeviceEditionContainer extends Component {
         'key': n[0],
         'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
-    )(filteredValue);
+    )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: deviceEditionMutation,
       variables: {
@@ -398,7 +401,7 @@ class DeviceEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={device.external_references}
                     cyioCoreObjectId={device?.id}
-                    fieldName= 'external_references'
+                    fieldName='external_references'
                     typename={device.__typename}
                     refreshQuery={refreshQuery}
                   />
@@ -410,7 +413,7 @@ class DeviceEditionContainer extends Component {
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={device.__typename}
                 refreshQuery={refreshQuery}
-                fieldName= 'notes'
+                fieldName='notes'
                 notes={device.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />

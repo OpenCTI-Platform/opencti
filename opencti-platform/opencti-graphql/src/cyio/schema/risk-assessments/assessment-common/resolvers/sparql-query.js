@@ -3757,8 +3757,9 @@ export const insertSubjectsQuery = (subjects) => {
       ...(subject.subject_ref && {"subject_ref": subject.subject_ref}),
       ...(subject.subject_type && {"subject_type": subject.subject_type}),
     } ;
+    if (!subject.subject_ref.startsWith('<')) subject.subject_ref = `<${subject.subject_ref}>`;
     const id = generateId( id_material, OSCAL_NS );
-      const insertPredicates = [];
+    const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-${id}>`;
     subjectIris.push(iri);
     insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/assessment/common#Subject>`);
@@ -3768,7 +3769,7 @@ export const insertSubjectsQuery = (subjects) => {
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "subject"`); 
     if (subject.name != undefined) insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#name> "${subject.name}"`);
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_type> "${subject.subject_type}"`);
-    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref> <${subject.subject_ref}>`);
+    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref> ${subject.subject_ref}`);
     if (subject.subject_context != undefined) {
       insertPredicates.push(`${iri} <http://darklight.ai/ns/oscal/assessment/common#subject_context> "${subject.subject_context}"`);
     }
@@ -3826,7 +3827,7 @@ export const selectAllSubjects = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push(filter.key);
       }
     }
     

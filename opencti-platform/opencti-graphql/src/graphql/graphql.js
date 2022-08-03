@@ -113,7 +113,7 @@ const createApolloServer = (app) => {
       const user = await authenticateUserFromRequest(req);
       return buildContext(user, req, res);
     },
-    tracing: true,
+    tracing: false,
     plugins,
     formatError: (error) => {
       let e = apolloFormatError(error);

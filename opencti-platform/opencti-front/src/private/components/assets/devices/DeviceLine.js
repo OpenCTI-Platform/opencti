@@ -75,6 +75,7 @@ class DeviceLineComponent extends Component {
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
         to={`/defender HQ/assets/devices/${node.id}`}
+        data-cy='device line'
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />
