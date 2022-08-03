@@ -175,13 +175,14 @@ export function isFileObjectExcluded(id) {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 }
 
-export async function rawFilesListing(user, directory) {
+export async function rawFilesListing(user, directory, recursive = false) {
   let truncated = true;
   let pageMarker;
   const objects = [];
   const requestParams = {
     Bucket: bucketName,
-    Prefix: directory || undefined
+    Prefix: directory || undefined,
+    Delimiter: recursive ? undefined : '/'
   };
 
   while (truncated) {
