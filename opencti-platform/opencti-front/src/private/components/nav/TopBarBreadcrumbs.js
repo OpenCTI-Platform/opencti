@@ -37,6 +37,7 @@ import Security, {
 import Filters from '../common/lists/Filters';
 import ExportPoam from '../../../components/ExportPoam';
 import Export from '../../../components/Export';
+import AboutField from '../../../components/AboutField';
 
 const styles = (theme) => ({
   appBar: {
@@ -280,15 +281,10 @@ const TopBarBreadcrumbs = ({
                 <DashboardIcon fontSize="default" />
               </IconButton>
             </Tooltip>
-            <Tooltip title={t('About')}>
-              <IconButton
-                component={Link}
-                to='/about'
-                classes={{ root: classes.button }}
-              >
-                <Info fontSize="default" />
-              </IconButton>
-            </Tooltip>
+            <AboutField
+              history={history}
+              location={location}
+            />
             <Tooltip title={t('Find in Page')}>
               <IconButton
                 disabled={true}

@@ -52,7 +52,7 @@ class HowTo extends Component {
             gutterBottom={true}
             classes={{ root: classes.title }}
           >
-            About
+            FAQ
           </Typography>
         </div>
         <div>
