@@ -27,6 +27,7 @@ class OpenCTIApiConnector:
                     config {
                         connection {
                             host
+                            vhost
                             use_ssl
                             port
                             user
@@ -82,6 +83,7 @@ class OpenCTIApiConnector:
                     config {
                         connection {
                             host
+                            vhost
                             use_ssl
                             port
                             user

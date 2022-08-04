@@ -116,6 +116,7 @@ class ListenQueue(threading.Thread):
         self.helper = helper
         self.callback = callback
         self.host = config["connection"]["host"]
+        self.vhost = config["connection"]["vhost"]
         self.use_ssl = config["connection"]["use_ssl"]
         self.port = config["connection"]["port"]
         self.user = config["connection"]["user"]
@@ -192,7 +193,7 @@ class ListenQueue(threading.Thread):
                 self.pika_parameters = pika.ConnectionParameters(
                     host=self.host,
                     port=self.port,
-                    virtual_host="/",
+                    virtual_host=self.vhost,
                     credentials=self.pika_credentials,
                     ssl_options=pika.SSLOptions(create_ssl_context(), self.host)
                     if self.use_ssl
@@ -789,7 +790,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         pika_parameters = pika.ConnectionParameters(
             host=self.config["connection"]["host"],
             port=self.config["connection"]["port"],
-            virtual_host="/",
+            virtual_host=self.config["connection"]["vhost"],
             credentials=pika_credentials,
             ssl_options=pika.SSLOptions(
                 create_ssl_context(), self.config["connection"]["host"]
