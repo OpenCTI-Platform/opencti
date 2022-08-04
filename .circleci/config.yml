@@ -549,13 +549,6 @@ workflows:
             branches:
               only:
                 - master
-      - deploy_club:
-          requires:
-            - build_platform
-          filters:
-            branches:
-              only:
-                - master
       - docker_build_platform_rolling:
           requires:
             - build_frontend
@@ -589,7 +582,7 @@ workflows:
       - notify_rolling:
           requires:
             - deploy_demo
-            - deploy_club
+            - deploy_lab
             - deploy_reference
             - package_rolling
             - package_rolling_musl
