@@ -3,7 +3,6 @@ import * as R from 'ramda';
 import { Upload } from '@aws-sdk/lib-storage';
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
-import { join as joinPaths } from 'path';
 import conf, { booleanConf, logApp, logAudit } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { UPLOAD_ACTION } from '../config/audit';
@@ -201,12 +200,9 @@ export async function rawFilesListing(user, directory, recursive = false) {
     }
   }
 
-  return objects.reduce(async (items, item) => {
-    if (!isFileObjectExcluded(item.Key)) {
-      items.push(await loadFile(user, item.Key));
-    }
-    return items;
-  }, []);
+  return Promise.all(objects
+    .filter((obj) => !isFileObjectExcluded(obj.Key))
+    .map((obj) => loadFile(user, obj.Key)));
 }
 
 export async function upload(user, path, fileUpload, metadata = {}) {
@@ -215,7 +211,7 @@ export async function upload(user, path, fileUpload, metadata = {}) {
 
   logAudit.info(user, UPLOAD_ACTION, { path, filename, metadata });
 
-  const key = joinPaths(path, filename);
+  const key = `${path}/${filename}`;
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(filename),

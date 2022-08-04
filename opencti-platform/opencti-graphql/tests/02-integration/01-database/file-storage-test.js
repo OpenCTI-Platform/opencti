@@ -19,7 +19,7 @@ const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
 const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName}`;
 const importFileId = `import/global/${exportFileName}`;
 
-describe('Object storage file listing', () => {
+describe('File storage file listing', () => {
   it('should file upload succeed', async () => {
     await startModules();
     const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
