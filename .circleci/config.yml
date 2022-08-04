@@ -588,11 +588,9 @@ workflows:
               ignore: /.*/
       - notify_rolling:
           requires:
-            #- deploy_demo
-            - deploy_lab
+            - deploy_demo
             - deploy_club
-            #- deploy_reference
-            - deploy_testing
+            - deploy_reference
             - package_rolling
             - package_rolling_musl
             - docker_build_platform_rolling
