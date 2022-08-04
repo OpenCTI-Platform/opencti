@@ -62,6 +62,11 @@ const networkResolvers = {
             continue;
           }
 
+          if (asset.network_id === undefined || asset.network_id == null) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'network_id'; skipping`);
+            continue;
+          }
+
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(asset, args.filters, args.filterMode)) {
@@ -519,8 +524,8 @@ const networkResolvers = {
     network_address_range: async (parent, _, {dbName, dataSources},) => {
       let item = parent.netaddr_range_iri;
       if (item === undefined) return null;
-      var sparqlQuery = selectIPAddressRange(`<${item}>`)
-      var reducer = getReducer('NETADDR-RANGE');
+      let sparqlQuery = selectIPAddressRange(`<${item}>`);
+      let reducer = getReducer('NETADDR-RANGE');
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
