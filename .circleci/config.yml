@@ -549,21 +549,7 @@ workflows:
             branches:
               only:
                 - master
-      - deploy_testing:
-          requires:
-            - build_platform
-          filters:
-            branches:
-              only:
-                - master
       - deploy_club:
-          requires:
-            - build_platform
-          filters:
-            branches:
-              only:
-                - master
-      - deploy_lab:
           requires:
             - build_platform
           filters:
