@@ -10467,6 +10467,7 @@ export type RabbitMqConnection = {
   port: Scalars['Int'];
   use_ssl: Scalars['Boolean'];
   user: Scalars['String'];
+  vhost: Scalars['String'];
 };
 
 export type RabbitMqMetrics = {
@@ -20068,6 +20069,7 @@ export type RabbitMqConnectionResolvers<ContextType = any, ParentType extends Re
   port?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   use_ssl?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  vhost?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
