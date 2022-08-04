@@ -1,28 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import {
-  Route, Redirect, withRouter, Switch,
-} from 'react-router-dom';
+import { Route, withRouter, Switch } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Risk from './Risk';
-import RiskKnowledge from './RiskKnowledge';
 import Loader from '../../../../components/Loader';
-import FileManager from '../../common/files/FileManager';
-import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
-import RiskPopover from './RiskPopover';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import Remediations from './Remediations';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import RiskAnalysisContainer from './RiskAnalysisContainer';
@@ -107,7 +92,7 @@ class RootRisk extends Component {
           environment={QueryRendererDarkLight}
           query={riskQuery}
           variables={{ id: riskId }}
-          render={({ error, props, retry }) => {
+          render={({ props, retry }) => {
             if (props) {
               if (props.risk) {
                 return (

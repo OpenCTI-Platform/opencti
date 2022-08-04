@@ -3,54 +3,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer, createFragmentContainer } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
+import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import IconButton from '@material-ui/core/IconButton';
-import FlagIcon from '@material-ui/icons/Flag';
-import Grid from '@material-ui/core/Grid';
-import CardContent from '@material-ui/core/CardContent';
-import Tooltip from '@material-ui/core/Tooltip';
-import { Information } from 'mdi-material-ui';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Button from '@material-ui/core/Button';
-import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
-import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
-// import { interval } from 'rxjs';
 import inject18n from '../../../../../components/i18n';
-import { truncate } from '../../../../../utils/String';
-import { commitMutation } from '../../../../../relay/environment';
 import RelatedTaskCreation from './RelatedTaskCreation';
-// import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
-import Security, {
-  KNOWLEDGE_KNENRICHMENT,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../../../utils/Security';
-// import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
-import FileLine from '../../../common/files/FileLine';
-// import { FIVE_SECONDS } from '../../../../../utils/Time';
-import FileUploader from '../../../common/files/FileUploader';
-import RelatedTaskPopover from './RelatedTaskPopover';
-import CyioCoreobjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import RelatedTaskLine from './RelatedTaskLine';
 
 // const interval$ = interval(FIVE_SECONDS);

@@ -15,16 +15,9 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import Button from '@material-ui/core/Button';
-import Tooltip from '@material-ui/core/Tooltip';
 import * as R from 'ramda';
-import { AutoFix } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
-import ItemConfidence from '../../../../../components/ItemConfidence';
 import RemediationPopover from './RemediationPopover';
-import { resolveLink } from '../../../../../utils/Entity';
-import ItemIcon from '../../../../../components/ItemIcon';
-import { defaultValue } from '../../../../../utils/Graph';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { truncate } from '../../../../../utils/String';
 
 const styles = (theme) => ({
@@ -73,17 +66,13 @@ const styles = (theme) => ({
 class RemediationEntityLineComponent extends Component {
   render() {
     const {
-      fsd,
       t,
       fldt,
       history,
       classes,
-      dataColumns,
-      riskData,
       riskId,
       node,
       paginationOptions,
-      displayRelation,
     } = this.props;
     const remediationTiming = R.pipe(
       R.pathOr([], ['tasks']),

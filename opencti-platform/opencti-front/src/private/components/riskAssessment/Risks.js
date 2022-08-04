@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer as QR } from 'react-relay';
-import { QueryRenderer } from '../../../relay/environment';
 import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -20,11 +19,9 @@ import RisksLines, {
   risksLinesQuery,
 } from './risks/RisksLines';
 import RiskCreation from './risks/RiskCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import RiskDeletion from './risks/RiskDeletion';
-import ErrorNotFound from '../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from '../../../utils/bakedToast';
+import { toastGenericError } from '../../../utils/bakedToast';
 
 class Risks extends Component {
   constructor(props) {

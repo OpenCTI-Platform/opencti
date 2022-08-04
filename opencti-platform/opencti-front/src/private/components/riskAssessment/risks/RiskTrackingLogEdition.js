@@ -3,36 +3,21 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import * as Yup from 'yup';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
-import Cancel from '@material-ui/icons/Cancel';
-import Button from '@material-ui/core/Button';
-import MenuItem from '@material-ui/core/MenuItem';
-import AddIcon from '@material-ui/icons/Add';
-// import AssetTaglist from '../../common/form/AssetTaglist';
 import DatePickerField from '../../../../components/DatePickerField';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByField from '../../common/form/CreatedByField';
-import AssetType from '../../common/form/AssetType';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -220,13 +205,7 @@ class RiskTrackingLogEditionComponent extends Component {
   }
 
   render() {
-    const {
-      t,
-      classes,
-      risk,
-      context,
-      enableReferences,
-    } = this.props;
+    const { t, risk } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     const createdBy = R.pathOr(null, ['createdBy', 'name'], risk) === null
       ? ''
@@ -281,12 +260,9 @@ class RiskTrackingLogEditionComponent extends Component {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        // validationSchema={riskValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >
-        {({
-          submitForm, isSubmitting, validateForm, setFieldValue,
-        }) => (
+        {() => (
           <>
             <Grid spacing={3} container={true}>
               <Grid item={true} xs={4}>

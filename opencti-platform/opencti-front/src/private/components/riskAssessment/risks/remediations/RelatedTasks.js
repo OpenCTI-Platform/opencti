@@ -13,7 +13,6 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
-import { QueryRenderer } from '../../../../../relay/environment';
 import RelatedTasksLines, {
   RelatedTasksLinesQuery,
 } from './RelatedTasksLines';
@@ -58,7 +57,7 @@ class RelatedTasks extends Component {
         environment={QueryRendererDarkLight}
         query={RelatedTasksLinesQuery}
         variables={{ id: remediationId }}
-        render={({ props, error, retry }) => {
+        render={({ props, retry }) => {
           if (props) {
             return (
               <RelatedTasksLines

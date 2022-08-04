@@ -13,7 +13,6 @@ import FindInPageIcon from '@material-ui/icons/FindInPage';
 import LayersIcon from '@material-ui/icons/Layers';
 import MapIcon from '@material-ui/icons/Map';
 import Divider from '@material-ui/core/Divider';
-import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -94,14 +93,12 @@ class RiskObservationPopover extends Component {
       t,
       fd,
       data,
-      displayUpdate,
       handleCloseUpdate,
-      handleRemove,
     } = this.props;
-    const subjectTypes = R.pipe(
-      R.pathOr([], ['subjects']),
-      // R.mergeAll,
-    )(data);
+    // const subjectTypes = R.pipe(
+    //   R.pathOr([], ['subjects']),
+    //   // R.mergeAll,
+    // )(data);
     return (
       <>
         <DialogTitle style={{ color: 'white' }}>

@@ -2,16 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
-import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { QueryRenderer as QR } from 'react-relay';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import RemediationEditionContainer from './RemediationEditionContainer';
-// import { riskEditionOverviewFocus } from '../RiskEditionOverview';
 import Loader from '../../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -76,10 +72,8 @@ class RemediationEdition extends Component {
 
   render() {
     const {
-      classes,
       riskId,
       remediationId,
-      open,
       history,
       remediation,
     } = this.props;
@@ -104,7 +98,7 @@ class RemediationEdition extends Component {
           environment={environmentDarkLight}
           query={remediationEditionQuery}
           variables={{ id: riskId }}
-          render={({ error, props }) => {
+          render={({ props }) => {
             console.log('RemediationEditionDarkLightQuery', props);
             if (props) {
               return (

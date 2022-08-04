@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-// import { ConnectionHandler } from 'relay-runtime';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
@@ -15,16 +12,14 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import MoreVertOutlined from '@material-ui/icons/MoreVertOutlined';
 import Slide from '@material-ui/core/Slide';
-import { commitMutation as CM, createPaginationContainer, QueryRenderer as QR } from 'react-relay';
+import { QueryRenderer as QR } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
-import { truncate } from '../../../../utils/String';
-// import { commitMutation } from '../../../../relay/environment';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import RiskObservationPopover, { riskObservationPopoverQuery } from './RiskObservationPopover';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -143,7 +138,7 @@ class RiskObservationLineContainer extends Component {
 
   render() {
     const {
-      t, classes, risk, fldt, observation, observationId,
+      t, classes, fldt, observation, observationId,
     } = this.props;
     return (
       <>

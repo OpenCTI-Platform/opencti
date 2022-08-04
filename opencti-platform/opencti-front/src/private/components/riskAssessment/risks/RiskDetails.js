@@ -7,17 +7,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { Grid, Switch, Tooltip } from '@material-ui/core';
-import Chip from '@material-ui/core/Chip';
+import { Grid, Tooltip } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import Link from '@material-ui/core/Link';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Launch from '@material-ui/icons/Launch';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, Information } from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({

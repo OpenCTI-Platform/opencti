@@ -4,17 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
-import RiskCreationOverview from './RiskCreationOverview';
-import RiskCreationDetails from './RiskCreationDetails';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
@@ -64,7 +54,7 @@ class RiskCreationContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, risk,
+      classes,
     } = this.props;
     // const { editContext } = risk;
     return (
