@@ -2,9 +2,9 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import {
-  map, filter, head, compose,
+  map, filter, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -20,7 +20,6 @@ import rehypeRaw from 'rehype-raw';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
 import Typography from '@material-ui/core/Typography';
 
 const styles = (theme) => ({
