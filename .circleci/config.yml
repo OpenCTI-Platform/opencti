@@ -166,7 +166,7 @@ jobs:
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add -A
+          command: git add -A && git add -f ~/opencti/opencti-platform/opencti-graphql/public && git add -f ~/opencti/opencti-platform/opencti-graphql/build
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
@@ -207,7 +207,7 @@ jobs:
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add -A
+          command: git add -A && git add -f ~/opencti/opencti-platform/opencti-graphql/public && git add -f ~/opencti/opencti-platform/opencti-graphql/build
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
@@ -248,7 +248,7 @@ jobs:
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add -A
+          command: git add -A && git add -f ~/opencti/opencti-platform/opencti-graphql/public && git add -f ~/opencti/opencti-platform/opencti-graphql/build
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
@@ -289,7 +289,7 @@ jobs:
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add -A
+          command: git add -A && git add -f ~/opencti/opencti-platform/opencti-graphql/public && git add -f ~/opencti/opencti-platform/opencti-graphql/build
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
@@ -330,7 +330,7 @@ jobs:
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add -A
+          command: git add -A && git add -f ~/opencti/opencti-platform/opencti-graphql/public && git add -f ~/opencti/opencti-platform/opencti-graphql/build
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
