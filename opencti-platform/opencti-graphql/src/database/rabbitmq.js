@@ -19,26 +19,33 @@ export const EVENT_TYPE_DELETE = 'delete';
 const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
 const QUEUE_TYPE = conf.get('rabbitmq:queue_type');
 const RABBITMQ_CA = conf.get('rabbitmq:ca').map((path) => readFileSync(path));
+const HOSTNAME = conf.get('rabbitmq:hostname');
+const PORT = conf.get('rabbitmq:port');
+const USERNAME = conf.get('rabbitmq:username');
+const PASSWORD = conf.get('rabbitmq:password');
+const VHOST = conf.get('rabbitmq:vhost');
+const VHOST_PATH = VHOST === '/' ? '' : `/${VHOST}`;
+const USE_SSL_MGMT = booleanConf('rabbitmq:management_ssl', false);
+const HOSTNAME_MGMT = conf.get('rabbitmq:hostname_management') || HOSTNAME;
+const PORT_MGMT = conf.get('rabbitmq:port_management');
 
 const amqpUri = () => {
-  const host = conf.get('rabbitmq:hostname');
-  const port = conf.get('rabbitmq:port');
-  return `amqp${USE_SSL ? 's' : ''}://${host}:${port}`;
+  const ssl = USE_SSL ? 's' : '';
+  return `amqp${ssl}://${HOSTNAME}:${PORT}${VHOST_PATH}`;
 };
 
 const amqpCred = () => {
-  const user = conf.get('rabbitmq:username');
-  const pass = conf.get('rabbitmq:password');
-  return { credentials: amqp.credentials.plain(user, pass) };
+  return { credentials: amqp.credentials.plain(USERNAME, PASSWORD) };
 };
 
 export const config = () => {
   return {
-    host: conf.get('rabbitmq:hostname'),
-    use_ssl: booleanConf('rabbitmq:use_ssl', false),
-    port: conf.get('rabbitmq:port'),
-    user: conf.get('rabbitmq:username'),
-    pass: conf.get('rabbitmq:password'),
+    host: HOSTNAME,
+    vhost: VHOST,
+    use_ssl: USE_SSL,
+    port: PORT,
+    user: USERNAME,
+    pass: PASSWORD,
   };
 };
 
@@ -48,7 +55,7 @@ const amqpExecute = async (execute) => {
       ...amqpCred(),
       tls: {
         ...configureCA(RABBITMQ_CA),
-        servername: conf.get('rabbitmq:hostname'),
+        servername: HOSTNAME,
       }
     } : amqpCred());
     const channel = await amqpConnection.createConfirmChannel();
@@ -67,30 +74,28 @@ export const send = (exchangeName, routingKey, message) => {
 };
 
 export const metrics = async () => {
-  const baseURL = `http${
-    conf.get('rabbitmq:management_ssl') === true ? 's' : ''
-  }://${
-    conf.get('rabbitmq:hostname_management') || conf.get('rabbitmq:hostname')
-  }:${conf.get('rabbitmq:port_management')}`;
+  const ssl = USE_SSL_MGMT ? 's' : '';
+  const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
+
   const overview = await axios
     .get('/api/overview', {
       baseURL,
       withCredentials: true,
       auth: {
-        username: conf.get('rabbitmq:username'),
-        password: conf.get('rabbitmq:password'),
+        username: USERNAME,
+        password: PASSWORD,
       },
     })
     .then((response) => {
       return response.data;
     });
   const queues = await axios
-    .get('/api/queues', {
+    .get(`/api/queues${VHOST_PATH}`, {
       baseURL,
       withCredentials: true,
       auth: {
-        username: conf.get('rabbitmq:username'),
-        password: conf.get('rabbitmq:password'),
+        username: USERNAME,
+        password: PASSWORD,
       },
     })
     .then((response) => {

@@ -55,7 +55,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.pika_parameters = pika.ConnectionParameters(
             self.connector["config"]["connection"]["host"],
             self.connector["config"]["connection"]["port"],
-            "/",
+            self.connector["config"]["connection"]["vhost"],
             self.pika_credentials,
             ssl_options=pika.SSLOptions(create_ssl_context())
             if self.connector["config"]["connection"]["use_ssl"]

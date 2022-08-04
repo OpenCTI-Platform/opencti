@@ -122,6 +122,7 @@
   },
   "rabbitmq": {
     "hostname": "localhost",
+    "vhost": "/",
     "use_ssl": false,
     "ca": [],
     "port": 5672,

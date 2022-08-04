@@ -481,7 +481,7 @@ enum StreamCollectionOrdering {
   description
 }
 
-############## Subcription
+############## Subscription
 type UserSubscription {
   id: ID!
   user_id: String
@@ -1147,6 +1147,7 @@ input RegisterConnectorInput {
 }
 type RabbitMQConnection {
   host: String!
+  vhost: String!
   use_ssl: Boolean!
   ca: [String]
   port: Int!
