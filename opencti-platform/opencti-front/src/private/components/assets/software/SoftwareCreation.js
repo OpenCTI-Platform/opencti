@@ -5,21 +5,11 @@ import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { compose, evolve } from 'ramda';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
-import {
-  Add,
-  Edit,
-  Close,
-  Delete,
-  ArrowBack,
-  AddCircleOutline,
-  CheckCircleOutline,
-} from '@material-ui/icons';
-import { dayStartDate, parse } from '../../../../utils/Time';
+import { Close, CheckCircleOutline } from '@material-ui/icons';
+import { parse } from '../../../../utils/Time';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
@@ -31,13 +21,10 @@ import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
-import Loader from '../../../../components/Loader';
 import SoftwareCreationDetails from './SoftwareCreationDetails';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import { toastGenericError } from "../../../../utils/bakedToast";
@@ -202,13 +189,7 @@ class SoftwareCreation extends Component {
   }
 
   render() {
-    const {
-      t,
-      classes,
-      softwareId,
-      open,
-      history,
-    } = this.props;
+    const { t, classes } = this.props;
     return (
       <div className={classes.container}>
         <Formik
@@ -237,7 +218,6 @@ class SoftwareCreation extends Component {
         >
           {({
             submitForm,
-            handleReset,
             isSubmitting,
             setFieldValue,
             values,

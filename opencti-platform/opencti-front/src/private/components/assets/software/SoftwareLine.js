@@ -10,11 +10,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
-import AppleIcon from '@material-ui/icons/Apple';
-import { ChessKnight } from 'mdi-material-ui';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
@@ -55,7 +52,6 @@ const styles = (theme) => ({
 class SoftwareLineComponent extends Component {
   render() {
     const {
-      fd,
       classes,
       node,
       selectAll,
@@ -64,7 +60,7 @@ class SoftwareLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+
     return (
       <ListItem
         classes={{ root: classes.item }}

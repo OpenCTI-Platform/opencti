@@ -10,20 +10,10 @@ import Paper from '@material-ui/core/Paper';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import { Formik, Form, Field } from 'formik';
 import Switch from '@material-ui/core/Switch';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import {
-  BullseyeArrow,
-  ArmFlexOutline,
-  Information,
-} from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import NetworkLocations from './NetworkLocations';
+
 
 const styles = (theme) => ({
   paper: {
@@ -46,9 +36,7 @@ const styles = (theme) => ({
 
 class NetworkDetailsComponent extends Component {
   render() {
-    const {
-      t, classes, network, fd,
-    } = this.props;
+    const { t, classes, network } = this.props;
     const ntadr = network.network_address_range;
     const startingAddress = ntadr?.starting_ip_address && ntadr.starting_ip_address?.ip_address_value;
     const endingAddress = ntadr?.ending_ip_address && ntadr.ending_ip_address?.ip_address_value;
