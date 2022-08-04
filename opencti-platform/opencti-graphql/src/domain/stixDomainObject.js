@@ -16,7 +16,7 @@ import {
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { elCount } from '../database/engine';
-import { upload } from '../database/minio';
+import { upload } from '../database/file-storage';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';

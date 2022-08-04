@@ -31,7 +31,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
-import { filesListing } from '../database/minio';
+import { filesListing } from '../database/file-storage';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { deleteFiles, rawFilesListing, storeFileConverter } from '../database/minio';
+import { deleteFiles, rawFilesListing, storeFileConverter } from '../database/file-storage';
 import { SYSTEM_USER } from '../utils/access';
 import { elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { internalLoadById } from '../database/middleware';

@@ -45,7 +45,7 @@ import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, loadFile, storeFileConverter, upload } from '../database/minio';
+import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
 import { elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
 import { askEntityExport } from './stix';
