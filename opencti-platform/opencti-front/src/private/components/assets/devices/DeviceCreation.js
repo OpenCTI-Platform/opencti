@@ -30,16 +30,12 @@ import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { parse } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import DeviceCreationOverview from './DeviceCreationOverview';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
-import Loader from '../../../../components/Loader';
 import { toastGenericError } from "../../../../utils/bakedToast";
 import DeviceCreationDetails from './DeviceCreationDetails';
 
@@ -213,9 +209,6 @@ class DeviceCreation extends Component {
     const {
       t,
       classes,
-      deviceId,
-      open,
-      history,
     } = this.props;
     return (
       <div className={classes.container}>

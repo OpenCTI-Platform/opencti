@@ -18,8 +18,6 @@ import graphql from 'babel-plugin-relay/macro';
 import { commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
-// import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-// import { noteEditionQuery } from './NoteEdition';
 import CyioNoteEditionContainer from './CyioNoteEditionContainer';
 
 const styles = (theme) => ({
