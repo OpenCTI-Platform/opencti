@@ -32,7 +32,6 @@ const credentialProvider = (init) => memoize(
           ...(clientSessionToken && { sessionToken: clientSessionToken })
         };
       }
-
       throw new CredentialsProviderError('Unable to load credentials from OpenCTI config');
     },
     remoteProvider(init),
@@ -57,7 +56,6 @@ function getEndpoint() {
   if (clientEndpoint === 's3.amazonaws.com') {
     return undefined;
   }
-
   return `${(useSslConnection ? 'https' : 'http')}://${clientEndpoint}:${clientPort}`;
 }
 
@@ -71,11 +69,9 @@ export async function initializeBucket() {
     if (err instanceof s3.BucketAlreadyOwnedByYou) {
       return true;
     }
-
     if (err instanceof s3.BucketAlreadyExists) {
       throw new Error(`The S3 bucket name ${bucketName} is already in use, please choose another.`);
     }
-
     throw err;
   }
 }
@@ -130,7 +126,6 @@ export async function getFileContent(id) {
     Bucket: bucketName,
     Key: id
   }));
-
   return streamToString(object.Body);
 }
 
@@ -149,7 +144,6 @@ export async function loadFile(user, filename) {
       Bucket: bucketName,
       Key: filename
     }));
-
     return {
       id: filename,
       name: decodeURIComponent(object.Metadata.filename || 'unknown'),
@@ -164,7 +158,6 @@ export async function loadFile(user, filename) {
     if (err instanceof s3.NoSuchKey) {
       throw DatabaseError('File not found', { user_id: user.id, filename });
     }
-
     throw err;
   }
 }
@@ -183,15 +176,12 @@ export async function rawFilesListing(user, directory, recursive = false) {
     Prefix: directory || undefined,
     Delimiter: recursive ? undefined : '/'
   };
-
   while (truncated) {
     const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
-
     if (!response.Contents) {
       truncated = false;
       break;
     }
-
     objects.push(...response.Contents);
     truncated = response.IsTruncated;
     if (truncated) {
@@ -199,27 +189,26 @@ export async function rawFilesListing(user, directory, recursive = false) {
       requestParams.Marker = pageMarker;
     }
   }
-
   return Promise.all(objects
     .filter((obj) => !isFileObjectExcluded(obj.Key))
     .map((obj) => loadFile(user, obj.Key)));
 }
 
-export async function upload(user, path, fileUpload, metadata = {}) {
-  const { createReadStream, filename, mimetype, encoding = '', version = now() } = await fileUpload;
+export async function upload(user, path, fileUpload, meta = {}) {
+  const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
   const readStream = createReadStream();
-
+  const metadata = { ...meta };
+  if (!metadata.version) {
+    metadata.version = now();
+  }
   logAudit.info(user, UPLOAD_ACTION, { path, filename, metadata });
-
   const key = `${path}/${filename}`;
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(filename),
     mimetype,
     encoding,
-    version
   };
-
   const s3Upload = new Upload({
     client: s3Client,
     params: {
@@ -230,7 +219,6 @@ export async function upload(user, path, fileUpload, metadata = {}) {
     }
   });
   await s3Upload.done();
-
   return {
     id: key,
     name: filename,

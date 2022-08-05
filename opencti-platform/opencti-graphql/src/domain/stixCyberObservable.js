@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { assoc, dissoc, filter, map, pipe } from 'ramda';
 import { createHash } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   batchListThroughGetFrom,
@@ -10,9 +11,9 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  storeFullLoadById,
   internalLoadById,
   listThroughGetFrom,
+  storeFullLoadById,
   storeLoadById,
   timeSeriesEntities,
   updateAttribute,
@@ -28,6 +29,7 @@ import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax } from '../utils/syntax';
 import { upload } from '../database/file-storage';
 import {
+  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions,
@@ -38,7 +40,7 @@ import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { escape, observableValue } from '../utils/format';
+import { escape, now, observableValue } from '../utils/format';
 
 export const findById = (user, stixCyberObservableId) => {
   return storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -371,11 +373,21 @@ const checksumFile = async (hashName, stream) => {
 export const artifactImport = async (user, args) => {
   const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
   const { createReadStream, filename, mimetype } = await file;
+  const targetId = uuidv4();
+  const filePath = `import/${ENTITY_HASHED_OBSERVABLE_ARTIFACT}/${targetId}`;
+  const version = now();
   const artifactData = {
-    type: 'Artifact',
+    internal_id: targetId,
+    type: ENTITY_HASHED_OBSERVABLE_ARTIFACT,
     Artifact: {
       x_opencti_description: description || 'Artifact uploaded',
       x_opencti_additional_names: [filename],
+      x_opencti_files: [{
+        id: `${filePath}/${filename}`,
+        name: filename,
+        version,
+        mime_type: mimetype,
+      }],
       mime_type: mimetype,
       hashes: [
         { algorithm: 'MD5', hash: await checksumFile('md5', createReadStream()) },
@@ -388,6 +400,6 @@ export const artifactImport = async (user, args) => {
     objectLabel,
   };
   const artifact = await addStixCyberObservable(user, artifactData);
-  await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id });
+  await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id, version });
   return artifact;
 };
