@@ -11,7 +11,7 @@ import {
   externalReferenceEditField,
   findAll,
   findById,
-  externalReferenceAskEnrichment,
+  askExternalReferenceEnrichment,
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -46,7 +46,7 @@ const externalReferenceResolvers = {
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
       relationDelete: ({ fromId, relationship_type: relationshipType }) => externalReferenceDeleteRelation(user, id, fromId, relationshipType),
-      askEnrichment: ({ connectorId }) => externalReferenceAskEnrichment(user, id, connectorId),
+      askEnrichment: ({ connectorId }) => askExternalReferenceEnrichment(user, id, connectorId),
       importPush: ({ file }) => stixCoreObjectImportPush(user, id, file),
     }),
     externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input),

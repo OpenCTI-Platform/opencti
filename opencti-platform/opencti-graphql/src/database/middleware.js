@@ -214,7 +214,7 @@ import {
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
 import { buildFilters } from './repository';
-import { askEnrich } from '../domain/enrichment';
+import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listEntities, listRelations } from './middleware-loader';
 import { uploadJobImport } from '../domain/file';
@@ -2959,7 +2959,7 @@ export const createEntity = async (user, input, type) => {
   const data = await createEntityRaw(user, input, type);
   // In case of creation, start an enrichment
   if (data.isCreation) {
-    await askEnrich(user, data.element.id, type);
+    await createEntityAutoEnrichment(user, data.element.id, type);
   }
   return data.element;
 };

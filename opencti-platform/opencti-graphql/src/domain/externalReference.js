@@ -45,7 +45,7 @@ export const references = async (user, externalReferenceId, args) => {
   return listThings(user, types, R.assoc('filters', filters, args));
 };
 
-export const externalReferenceAskEnrichment = async (user, externalReferenceId, connectorId) => {
+export const askExternalReferenceEnrichment = async (user, externalReferenceId, connectorId) => {
   const connector = await storeLoadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
   const work = await createWork(user, connector, 'Manual enrichment', externalReferenceId);
   const message = {

@@ -154,7 +154,7 @@ export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
 };
 // endregion
 
-export const stixCoreObjectAskEnrichment = async (user, stixCoreObjectId, connectorId) => {
+export const askStixCoreObjectEnrichment = async (user, stixCoreObjectId, connectorId) => {
   const connector = await storeLoadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
   const work = await createWork(user, connector, 'Manual enrichment', stixCoreObjectId);
   const message = {
