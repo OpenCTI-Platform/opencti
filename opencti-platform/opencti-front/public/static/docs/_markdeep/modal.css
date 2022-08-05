@@ -4,8 +4,8 @@
     margin-bottom: 100px;
 }
 
-.md div.title {
-    font-size:  36px;
+div.title {
+    font-size:  24px;
     font-weight: bold;
     counter-increment: page;
 }
@@ -14,20 +14,34 @@
     font-size: 23px;
 }
 
-a:link {
-    font-family: "Roboto", sans-serif;
-    font-weight: bold;
+.HowTo-toolbar-50 {
+    width: 100%;
+    margin-left: -50px;
 }
 
+
 body#md {
+    width: 100%;
     max-width: 100%;
     font-size: 16px;
-    padding: 40px;
+    padding: 40px 0px 0px 4px;
     counter-reset: page;
     --accent-color: #49B8FC;
-    background-color: #1F2842;
+    background-color: #06102D;
     color: #AAAEB7;
-    font-family: "Roboto", sans-serif;
+    font-family: "Roboto",sans-serif !important;
+}
+
+a {
+    font-family: "Roboto",sans-serif !important;
+}
+
+.md a:link, .md a:visited  {
+    color: #ffffff !important;
+}
+
+.MuiListItemText-root {
+    display: block !important;
 }
 
 /* Disable section numbering */
@@ -43,10 +57,11 @@ body#md {
     page-break-before: always;
     width: 1100px;
     text-align: left;
-    padding-bottom: 20px;
+    padding-bottom: 24px;
+    margin-top: -20px;
     border: none;
     color: var(--accent-color);
-    font-size: 18px;
+    font-size: 24px;
     counter-increment: page;
     color: #ffffff;
 }
@@ -58,7 +73,8 @@ body#md {
     text-align: left;
     color:  var(--accent-color);
     border: none;
-    font-size: 16px;
+    margin-right:-100px;
+    font-size: 34px;
     counter-increment: page;
 }
 
@@ -93,7 +109,7 @@ body#md {
     background-color: #06102D;
     color: white;
     border: none;
-    font-family: "Roboto", sans-serif;
+    font-family: "Roboto",sans-serif;
 }
 
 .md table.table th + th {
@@ -111,5 +127,12 @@ body#md {
 ul {
     list-style-type: none;
     line-height: 38px;
-    margin-left: -40px;
+}
+
+h1 {
+    vertical-align: text-top;
+}
+
+.md iframe.textinsert {
+    background-color: transparent !important;
 }
