@@ -10,6 +10,7 @@ import {
   dissoc,
   map,
 } from 'ramda';
+import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
@@ -35,6 +36,7 @@ import ItemIcon from './ItemIcon';
 import { adaptFieldValue } from '../utils/String';
 import TaskType from '../private/components/common/form/TaskType';
 import environmentDarkLight, { fetchDarklightQuery } from '../relay/environmentDarkLight';
+import { toastGenericError } from '../utils/bakedToast';
 
 const styles = (theme) => ({
   dialogRoot: {
@@ -109,6 +111,10 @@ const exportMutation = graphql`
     generateRiskReport(report: $report, media_type: $mediaType, options: $options)
   }
 `;
+
+const ExportValidation = (t) => Yup.object().shape({
+  media_type: Yup.string().required(t('This field is required')),
+});
 
 class Export extends Component {
   constructor(props) {
@@ -223,7 +229,9 @@ class Export extends Component {
         resetForm();
         this.handleClose();
       },
-      onError: () => {},
+      onError: () => {
+        toastGenericError('Failed to Generate Sar Report');
+      },
     });
   }
 
@@ -299,7 +307,7 @@ class Export extends Component {
               collected_during_testing: false,
               tracking: false,
             }}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={ExportValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
