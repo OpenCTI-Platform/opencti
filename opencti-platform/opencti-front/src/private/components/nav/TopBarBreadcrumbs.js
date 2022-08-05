@@ -2,7 +2,10 @@
 /* refactor */
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import {
+  withRouter,
+  Link,
+} from 'react-router-dom';
 import { compose } from 'ramda';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -37,7 +40,7 @@ import Security, {
 import Filters from '../common/lists/Filters';
 import ExportPoam from '../../../components/ExportPoam';
 import Export from '../../../components/Export';
-import AboutField from '../../../components/AboutField';
+import AboutModal from '../../../components/AboutModal';
 
 const styles = (theme) => ({
   appBar: {
@@ -281,7 +284,7 @@ const TopBarBreadcrumbs = ({
                 <DashboardIcon fontSize="default" />
               </IconButton>
             </Tooltip>
-            <AboutField
+            <AboutModal
               history={history}
               location={location}
             />

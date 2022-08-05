@@ -61,6 +61,7 @@ import Security, {
   KNOWLEDGE,
   EXPLORE,
 } from '../../../utils/Security';
+import AboutModal from '../../../components/AboutModal';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
@@ -382,6 +383,10 @@ const TopBar = ({
                 <DashboardIcon fontSize="default" />
               </IconButton>
             </Tooltip>
+            <AboutModal
+              history={history}
+              location={location}
+            />
             <Tooltip title={t('Find in Page')}>
               <IconButton
                 component={Link}
