@@ -77,9 +77,14 @@ class Users extends Component {
         width: '15%',
         isSortable: true,
       },
+      otp: {
+        label: '2FA',
+        width: '5%',
+        isSortable: false,
+      },
       created_at: {
         label: 'Creation date',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
     };

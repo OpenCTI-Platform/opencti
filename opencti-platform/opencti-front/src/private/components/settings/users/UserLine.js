@@ -9,6 +9,8 @@ import {
   PersonOutlined,
   PermIdentityOutlined,
   KeyboardArrowRightOutlined,
+  HorizontalRule,
+  Security,
 } from '@mui/icons-material';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
@@ -89,6 +91,14 @@ class UserLineComponent extends Component {
                 {node.lastname}
               </div>
               <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.otp.width }}
+              >
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  {node.otp_activated ? <Security fontSize="small" /> : <HorizontalRule fontSize="small" /> }
+                </ListItemIcon>
+              </div>
+              <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
@@ -123,6 +133,7 @@ const UserLineFragment = createFragmentContainer(UserLineComponent, {
       firstname
       external
       lastname
+      otp_activated
       created_at
     }
   `,
@@ -194,13 +205,24 @@ class UserLineDummyComponent extends Component {
                 />
               </div>
               <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.otp.width }}
+              >
+                <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width={40}
+                    height="100%"
+                />
+              </div>
+              <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
-                  width={140}
+                  width={100}
                   height="100%"
                 />
               </div>

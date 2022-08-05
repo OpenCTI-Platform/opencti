@@ -10079,6 +10079,7 @@ type Mutation {
   token(input: UserLoginInput): String
   otpActivation(input: UserOTPActivationInput): User @auth
   otpDeactivation: User @auth
+  otpUserDeactivation(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
   otpLogin(input: UserOTPLoginInput): Boolean @auth
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS])

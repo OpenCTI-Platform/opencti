@@ -531,9 +531,9 @@ export const otpUserActivation = async (user, { secret, code }) => {
   throw AuthenticationFailure();
 };
 
-export const otpUserDeactivation = async (user) => {
+export const otpUserDeactivation = async (user, id) => {
   const patch = { otp_activated: false, otp_secret: '', otp_qr: '' };
-  const { element } = await patchAttribute(user, user.id, ENTITY_TYPE_USER, patch);
+  const { element } = await patchAttribute(user, id, ENTITY_TYPE_USER, patch);
   return element;
 };
 

@@ -89,7 +89,7 @@ const userResolvers = {
   },
   Mutation: {
     otpActivation: (_, { input }, { user }) => otpUserActivation(user, input),
-    otpDeactivation: (_, __, { user }) => otpUserDeactivation(user),
+    otpDeactivation: (_, __, { user }) => otpUserDeactivation(user, user.id),
     otpLogin: (_, { input }, { req, user }) => otpUserLogin(req, user, input),
     token: async (_, { input }, { req }) => {
       // We need to iterate on each provider to find one that validated the credentials
@@ -124,6 +124,7 @@ const userResolvers = {
       throw AuthenticationFailure();
     },
     sessionKill: (_, { id }) => killSession(id),
+    otpUserDeactivation: (_, { id }, { user }) => otpUserDeactivation(user, id),
     userSessionsKill: (_, { id }) => killUserSessions(id),
     logout: (_, args, context) => logout(context.user, context.req, context.res),
     roleEdit: (_, { id }, { user }) => ({

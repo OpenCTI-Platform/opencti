@@ -127,6 +127,14 @@ export const userUserSessionsKillMutation = graphql`
   }
 `;
 
+export const userOtpDeactivationMutation = graphql`
+  mutation UserOtpDeactivationMutation($id: ID!) {
+    otpUserDeactivation(id: $id) {
+      ...User_user
+    }
+  }
+`;
+
 const userLogsTimeSeriesQuery = graphql`
   query UserLogsTimeSeriesQuery(
     $field: String!
@@ -223,6 +231,15 @@ class UserComponent extends Component {
     });
   }
 
+  otpUserDeactivation() {
+    commitMutation({
+      mutation: userOtpDeactivationMutation,
+      variables: {
+        id: this.props.user.id,
+      },
+    });
+  }
+
   render() {
     const { classes, theme, user, t, fsd, nsdt } = this.props;
     const orderedSessions = R.sort(
@@ -256,11 +273,22 @@ class UserComponent extends Component {
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={12}>
+                <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Email address')}
                   </Typography>
                   <pre style={{ margin: 0 }}>{user.user_email}</pre>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('2FA Status')}
+                  </Typography>
+                  { user.otp_activated ? <span>Activated</span> : <span>Disable</span>}
+                  { user.otp_activated && <IconButton color="secondary" onClick={this.otpUserDeactivation.bind(this)}
+                                  aria-label="Delete all" size="large">
+                        <DeleteForeverOutlined fontSize="small"/>
+                      </IconButton>
+                  }
                 </Grid>
                 <Grid item={true} xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -575,6 +603,7 @@ const User = createRefetchContainer(
         lastname
         language
         api_token
+        otp_activated
         roles {
           id
           name

@@ -248,7 +248,9 @@ const ProfileOverviewComponent = (props) => {
           onClose={ () => setDisplay2FA(false) }>
         <DialogContent>
           <DialogContentText>
-            <h2 style={{ textAlign: 'center' }}>{t('Activate your 2FA authentication')}</h2>
+            <Typography style={{ textAlign: 'center' }} variant="h1" gutterBottom={true}>
+              {t('Activate your 2FA authentication')}
+            </Typography>
           </DialogContentText>
           <OtpComponent closeFunction={ () => setDisplay2FA(false)} />
         </DialogContent>

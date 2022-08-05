@@ -6289,6 +6289,7 @@ export type Mutation = {
   otpActivation?: Maybe<User>;
   otpDeactivation?: Maybe<User>;
   otpLogin?: Maybe<Scalars['Boolean']>;
+  otpUserDeactivation?: Maybe<User>;
   pingConnector?: Maybe<Connector>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
@@ -6668,6 +6669,11 @@ export type MutationOtpActivationArgs = {
 
 export type MutationOtpLoginArgs = {
   input?: InputMaybe<UserOtpLoginInput>;
+};
+
+
+export type MutationOtpUserDeactivationArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -19298,6 +19304,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpActivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationOtpActivationArgs>>;
   otpDeactivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   otpLogin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationOtpLoginArgs>>;
+  otpUserDeactivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, Partial<MutationPositionAddArgs>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
