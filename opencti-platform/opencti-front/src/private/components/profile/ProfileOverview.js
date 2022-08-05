@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
+import qrcode from 'qrcode';
 import withStyles from '@mui/styles/withStyles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
@@ -18,13 +19,18 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItem from '@mui/material/ListItem';
 import Alert from '@mui/material/Alert';
-import inject18n from '../../../components/i18n';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Dialog from '@mui/material/Dialog';
+import OtpInput from 'react-otp-input';
+import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import { commitMutation, MESSAGING$ } from '../../../relay/environment';
-import { OPENCTI_ADMIN_UUID } from '../../../utils/Security';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
+import { OPENCTI_ADMIN_UUID, UserContext } from '../../../utils/Security';
 import UserSubscriptionCreation from './UserSubscriptionCreation';
 import UserSubscriptionPopover from './UserSubscriptionPopover';
+import Loader from '../../../components/Loader';
 
 const styles = () => ({
   panel: {
@@ -58,6 +64,31 @@ const renewTokenPatch = graphql`
   }
 `;
 
+const generateOTP = graphql`
+  query ProfileOverviewOTPQuery {
+    otpGeneration {
+      secret
+      uri
+    }
+  }
+`;
+
+const validateOtpPatch = graphql`
+  mutation ProfileOverviewOtpMutation($input: UserOTPActivationInput) {
+    otpActivation(input: $input) {
+      ...UserEditionOverview_user
+    }
+  }
+`;
+
+const disableOtpPatch = graphql`
+  mutation ProfileOverviewOtpDisableMutation {
+    otpDeactivation {
+      ...UserEditionOverview_user
+    }
+  }
+`;
+
 const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   user_email: Yup.string()
@@ -68,6 +99,7 @@ const userValidation = (t) => Yup.object().shape({
   theme: Yup.string().nullable(),
   language: Yup.string().nullable(),
   description: Yup.string().nullable(),
+  otp_activated: Yup.boolean(),
 });
 
 const passwordValidation = (t) => Yup.object().shape({
@@ -78,9 +110,81 @@ const passwordValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
+const Otp = ({ closeFunction, secret, uri }) => {
+  const { t } = useFormatter();
+  const { me, settings } = useContext(UserContext);
+  const userTheme = me.theme === 'default' ? settings.platform_theme : me.theme;
+  const [otpQrImage, setOtpQrImage] = useState('');
+  const [code, setCode] = useState('');
+  const handleChange = (data) => setCode(data);
+  const activateOtp = () => {
+    commitMutation({
+      mutation: validateOtpPatch,
+      variables: { input: { secret, code } },
+      onError: () => setCode(''),
+      onCompleted: () => closeFunction(),
+    });
+  };
+  useEffect(() => {
+    qrcode.toDataURL(uri, { color: {
+      dark: userTheme === 'dark' ? '#FFFFFF' : '#000000',
+      light: '#0000', // Transparent background
+    } }, (err, imageUrl) => {
+      if (err) {
+        setOtpQrImage('');
+        return;
+      }
+      setOtpQrImage(imageUrl);
+    });
+  }, [uri, userTheme]);
+  return <div>
+    <div style={{ textAlign: 'center' }}>
+      <img src={otpQrImage} style={{ marginLeft: -15, width: 265 }} alt="" />
+    </div>
+    <OtpInput value={code} onChange={handleChange}
+        numInputs={6}
+        separator={<span style={{ width: '8px' }}></span>}
+        isInputNum={true}
+        shouldAutoFocus={true}
+        inputStyle={{
+          border: '1px solid transparent',
+          borderRadius: '8px',
+          width: '54px',
+          height: '54px',
+          fontSize: '16px',
+          color: '#000',
+          fontWeight: '400',
+          caretColor: 'blue',
+        }}
+        focusStyle={{ border: '1px solid #CFD3DB', outline: 'none' }}/>
+    <Button variant="contained"
+            type="button"
+            color="primary"
+            style={{ marginTop: 20 }}
+            onClick={activateOtp}>
+      {t('Activate')}
+    </Button>
+  </div>;
+};
+
+const OtpComponent = ({ closeFunction }) => <QueryRenderer
+      query={generateOTP}
+      render={({ props }) => {
+        if (props) {
+          return <div>
+            <Otp closeFunction={closeFunction} secret={props.otpGeneration.secret}
+                 uri={props.otpGeneration.uri} />
+          </div>;
+        }
+        return <Loader />;
+      }}
+  />;
+
 const ProfileOverviewComponent = (props) => {
   const { t, me, classes, fldt, subscriptionStatus, about } = props;
-  const { external } = me;
+  const { external, otp_activated: useOtp } = me;
+  const [display2FA, setDisplay2FA] = useState(false);
+
   const initialValues = pick(
     [
       'name',
@@ -90,9 +194,16 @@ const ProfileOverviewComponent = (props) => {
       'lastname',
       'theme',
       'language',
+      'otp_activated',
     ],
     me,
   );
+
+  const disableOtp = () => {
+    commitMutation({
+      mutation: disableOtpPatch,
+    });
+  };
 
   const renewToken = () => {
     commitMutation({
@@ -128,8 +239,20 @@ const ProfileOverviewComponent = (props) => {
       },
     });
   };
+
   return (
     <div>
+      <Dialog open={display2FA}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={false}
+          onClose={ () => setDisplay2FA(false) }>
+        <DialogContent>
+          <DialogContentText>
+            <h2 style={{ textAlign: 'center' }}>{t('Activate your 2FA authentication')}</h2>
+          </DialogContentText>
+          <OtpComponent closeFunction={ () => setDisplay2FA(false)} />
+        </DialogContent>
+      </Dialog>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={6}>
           <Paper classes={{ root: classes.panel }} variant="outlined">
@@ -228,6 +351,22 @@ const ProfileOverviewComponent = (props) => {
                     style={{ marginTop: 20 }}
                     onSubmit={handleSubmitField}
                   />
+                  <div style={{ marginTop: 20 }}>
+                    { useOtp && <Button variant="outlined"
+                        type="button"
+                        color="primary"
+                        onClick={disableOtp}
+                        classes={{ root: classes.button }}>
+                      {t('Disable Two-factor authentication')}
+                    </Button> }
+                    { !useOtp && <Button variant="contained"
+                                        type="button"
+                                        color="primary"
+                                        onClick={() => setDisplay2FA(true)}
+                                        classes={{ root: classes.button }}>
+                      {t('Activate Two-factor authentication')}
+                    </Button> }
+                  </div>
                 </Form>
               )}
             </Formik>
@@ -441,6 +580,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       language
       theme
       api_token
+      otp_activated
+      otp_qr
       description
       userSubscriptions(first: 200)
         @connection(key: "Pagination_userSubscriptions") {

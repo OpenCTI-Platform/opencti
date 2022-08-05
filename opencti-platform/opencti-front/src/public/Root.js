@@ -25,7 +25,7 @@ const rootPublicQuery = graphql`
   }
 `;
 
-const Root = () => (
+const Root = ({ type }) => (
   <QueryRenderer
     query={rootPublicQuery}
     variables={{}}
@@ -36,7 +36,7 @@ const Root = () => (
             <ConnectedThemeProvider settings={props.settings}>
               <CssBaseline />
               <ConnectedIntlProvider settings={props.settings}>
-                <Login settings={props.settings} />
+                <Login settings={props.settings} type={type} />
               </ConnectedIntlProvider>
             </ConnectedThemeProvider>
           </StyledEngineProvider>

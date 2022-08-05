@@ -6286,6 +6286,9 @@ export type Mutation = {
   opinionEdit?: Maybe<OpinionEditMutations>;
   organizationAdd?: Maybe<Organization>;
   organizationEdit?: Maybe<OrganizationEditMutations>;
+  otpActivation?: Maybe<User>;
+  otpDeactivation?: Maybe<User>;
+  otpLogin?: Maybe<Scalars['Boolean']>;
   pingConnector?: Maybe<Connector>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
@@ -6655,6 +6658,16 @@ export type MutationOrganizationAddArgs = {
 
 export type MutationOrganizationEditArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationOtpActivationArgs = {
+  input?: InputMaybe<UserOtpActivationInput>;
+};
+
+
+export type MutationOtpLoginArgs = {
+  input?: InputMaybe<UserOtpLoginInput>;
 };
 
 
@@ -8401,6 +8414,12 @@ export enum OrganizationsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type OtpElement = {
+  __typename?: 'OtpElement';
+  secret: Scalars['String'];
+  uri: Scalars['String'];
+};
+
 export type OverviewMetrics = {
   __typename?: 'OverviewMetrics';
   message_stats?: Maybe<MessagesStats>;
@@ -8888,6 +8907,7 @@ export type Query = {
   opinionsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   organization?: Maybe<Organization>;
   organizations?: Maybe<OrganizationConnection>;
+  otpGeneration?: Maybe<OtpElement>;
   pendingFiles?: Maybe<FileConnection>;
   platform_theme?: Maybe<Scalars['String']>;
   position?: Maybe<Position>;
@@ -14585,6 +14605,8 @@ export type User = BasicObject & InternalObject & {
   language?: Maybe<Scalars['String']>;
   lastname?: Maybe<Scalars['String']>;
   name: Scalars['String'];
+  otp_activated?: Maybe<Scalars['Boolean']>;
+  otp_qr?: Maybe<Scalars['String']>;
   parent_types: Array<Maybe<Scalars['String']>>;
   roles: Array<Maybe<Role>>;
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
@@ -14978,6 +15000,15 @@ export type UserEditMutationsRelationDeleteArgs = {
 export type UserLoginInput = {
   email: Scalars['String'];
   password: Scalars['String'];
+};
+
+export type UserOtpActivationInput = {
+  code: Scalars['String'];
+  secret: Scalars['String'];
+};
+
+export type UserOtpLoginInput = {
+  code: Scalars['String'];
 };
 
 export type UserSession = {
@@ -16356,6 +16387,7 @@ export type ResolversTypes = {
   OrganizationsFilter: OrganizationsFilter;
   OrganizationsFiltering: OrganizationsFiltering;
   OrganizationsOrdering: OrganizationsOrdering;
+  OtpElement: ResolverTypeWrapper<OtpElement>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   Position: ResolverTypeWrapper<Position>;
@@ -16588,6 +16620,8 @@ export type ResolversTypes = {
   UserEdge: ResolverTypeWrapper<UserEdge>;
   UserEditMutations: ResolverTypeWrapper<UserEditMutations>;
   UserLoginInput: UserLoginInput;
+  UserOTPActivationInput: UserOtpActivationInput;
+  UserOTPLoginInput: UserOtpLoginInput;
   UserSession: ResolverTypeWrapper<UserSession>;
   UserSubscription: ResolverTypeWrapper<UserSubscription>;
   UserSubscriptionAddInput: UserSubscriptionAddInput;
@@ -16866,6 +16900,7 @@ export type ResolversParentTypes = {
   OrganizationEditMutations: OrganizationEditMutations;
   OrganizationOrIndividual: ResolversParentTypes['Individual'] | ResolversParentTypes['Organization'];
   OrganizationsFiltering: OrganizationsFiltering;
+  OtpElement: OtpElement;
   OverviewMetrics: OverviewMetrics;
   PageInfo: PageInfo;
   Position: Position;
@@ -17051,6 +17086,8 @@ export type ResolversParentTypes = {
   UserEdge: UserEdge;
   UserEditMutations: UserEditMutations;
   UserLoginInput: UserLoginInput;
+  UserOTPActivationInput: UserOtpActivationInput;
+  UserOTPLoginInput: UserOtpLoginInput;
   UserSession: UserSession;
   UserSubscription: UserSubscription;
   UserSubscriptionAddInput: UserSubscriptionAddInput;
@@ -19258,6 +19295,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   opinionEdit?: Resolver<Maybe<ResolversTypes['OpinionEditMutations']>, ParentType, ContextType, RequireFields<MutationOpinionEditArgs, 'id'>>;
   organizationAdd?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<MutationOrganizationAddArgs>>;
   organizationEdit?: Resolver<Maybe<ResolversTypes['OrganizationEditMutations']>, ParentType, ContextType, RequireFields<MutationOrganizationEditArgs, 'id'>>;
+  otpActivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationOtpActivationArgs>>;
+  otpDeactivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  otpLogin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationOtpLoginArgs>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, Partial<MutationPositionAddArgs>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
@@ -19704,6 +19744,12 @@ export type OrganizationOrIndividualResolvers<ContextType = any, ParentType exte
   __resolveType: TypeResolveFn<'Individual' | 'Organization', ParentType, ContextType>;
 };
 
+export type OtpElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['OtpElement'] = ResolversParentTypes['OtpElement']> = {
+  secret?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type OverviewMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewMetrics'] = ResolversParentTypes['OverviewMetrics']> = {
   message_stats?: Resolver<Maybe<ResolversTypes['MessagesStats']>, ParentType, ContextType>;
   node?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -19924,6 +19970,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   opinionsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryOpinionsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<QueryOrganizationArgs>>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;
+  otpGeneration?: Resolver<Maybe<ResolversTypes['OtpElement']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryPendingFilesArgs>>;
   platform_theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
@@ -21546,6 +21593,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   roles?: Resolver<Array<Maybe<ResolversTypes['Role']>>, ParentType, ContextType>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
@@ -22174,6 +22223,7 @@ export type Resolvers<ContextType = any> = {
   OrganizationEdge?: OrganizationEdgeResolvers<ContextType>;
   OrganizationEditMutations?: OrganizationEditMutationsResolvers<ContextType>;
   OrganizationOrIndividual?: OrganizationOrIndividualResolvers<ContextType>;
+  OtpElement?: OtpElementResolvers<ContextType>;
   OverviewMetrics?: OverviewMetricsResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Position?: PositionResolvers<ContextType>;

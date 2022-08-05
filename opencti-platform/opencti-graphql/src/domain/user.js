@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import { map } from 'ramda';
+import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
@@ -12,17 +13,12 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   listThroughGetTo,
-  storeLoadById,
   patchAttribute,
+  storeLoadById,
   updateAttribute,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
-import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_USER,
-} from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER, } from '../schema/internalObject';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -349,11 +345,13 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
 
 // User related
 export const userEditField = async (user, userId, inputs) => {
-  const input = R.head(inputs);
-  const { key } = input;
-  const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString())] : input.value;
-  const patch = { [key]: value };
-  const { element } = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
+  for (let index = 0; index < inputs.length; index += 1) {
+    const input = inputs[index];
+    if (input.key === 'password') {
+      input.value = [bcrypt.hashSync(R.head(input.value).toString())];
+    }
+  }
+  const { element } = await updateAttribute(user, userId, ENTITY_TYPE_USER, inputs);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
@@ -516,6 +514,41 @@ export const login = async (email, password) => {
   return user;
 };
 
+export const otpUserGeneration = (user) => {
+  const secret = authenticator.generateSecret();
+  const uri = authenticator.keyuri(user.user_email, 'OpenCTI', secret);
+  return { secret, uri };
+};
+
+export const otpUserActivation = async (user, { secret, code }) => {
+  const isValidated = authenticator.check(code, secret);
+  if (isValidated) {
+    const uri = authenticator.keyuri(user.user_email, 'OpenCTI', secret);
+    const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
+    const { element } = await patchAttribute(user, user.id, ENTITY_TYPE_USER, patch);
+    return element;
+  }
+  throw AuthenticationFailure();
+};
+
+export const otpUserDeactivation = async (user) => {
+  const patch = { otp_activated: false, otp_secret: '', otp_qr: '' };
+  const { element } = await patchAttribute(user, user.id, ENTITY_TYPE_USER, patch);
+  return element;
+};
+
+export const otpUserLogin = (req, user, { code }) => {
+  if (!user.otp_activated) {
+    throw AuthenticationFailure();
+  }
+  const isValidated = authenticator.check(code, user.otp_secret);
+  if (!isValidated) {
+    throw AuthenticationFailure();
+  }
+  req.session.user.otp_validated = isValidated;
+  return isValidated;
+};
+
 export const logout = async (user, req, res) => {
   await delUserContext(user);
   return new Promise((resolve, reject) => {
@@ -539,6 +572,9 @@ const buildSessionUser = (user) => {
     api_token: user.api_token,
     internal_id: user.internal_id,
     user_email: user.user_email,
+    otp_activated: user.otp_activated,
+    otp_validated: !user.otp_activated,
+    otp_secret: user.otp_secret,
     name: user.name,
     external: user.external,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),

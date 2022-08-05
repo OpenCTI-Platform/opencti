@@ -1018,6 +1018,10 @@ type UserEdge {
   cursor: String!
   node: User!
 }
+type OtpElement {
+  secret: String!
+  uri: String!
+}
 type User implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -1029,6 +1033,8 @@ type User implements BasicObject & InternalObject {
   name: String!
   description: String
   firstname: String
+  otp_activated: Boolean
+  otp_qr: String
   lastname: String
   theme: String
   language: String
@@ -1068,6 +1074,15 @@ input UserAddInput {
 input UserLoginInput {
   email: String!
   password: String!
+}
+
+input UserOTPLoginInput {
+  code: String!
+}
+
+input UserOTPActivationInput {
+  secret: String!
+  code: String!
 }
 
 ############## Roles
@@ -8665,6 +8680,7 @@ type Query {
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
     @auth(for: [SETTINGS_SETACCESSES])
   me: User @auth
+  otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
   users(
     first: Int
@@ -10061,6 +10077,9 @@ type Mutation {
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String
+  otpActivation(input: UserOTPActivationInput): User @auth
+  otpDeactivation: User @auth
+  otpLogin(input: UserOTPLoginInput): Boolean @auth
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS])
   groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])

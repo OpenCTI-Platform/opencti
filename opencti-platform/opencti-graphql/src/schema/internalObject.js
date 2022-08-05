@@ -133,6 +133,9 @@ export const internalObjectsAttributes = {
     'i_created_at_year',
     'updated_at',
     'api_token',
+    'otp_secret',
+    'otp_qr',
+    'otp_activated',
   ],
   [ENTITY_TYPE_ROLE]: [
     'internal_id',

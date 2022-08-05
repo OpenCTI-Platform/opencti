@@ -10,6 +10,7 @@ import Paper from '@mui/material/Paper';
 import { APP_BASE_PATH } from '../../relay/environment';
 import logo from '../../resources/images/logo.png';
 import LoginForm from './LoginForm';
+import OTPForm from './OTPForm';
 
 const styles = (theme) => ({
   container: {
@@ -76,7 +77,7 @@ const styles = (theme) => ({
   },
 });
 
-const Login = ({ classes, theme, settings }) => {
+const Login = ({ classes, theme, settings, type }) => {
   // eslint-disable-next-line max-len
   const [dimension, setDimension] = useState({
     width: window.innerWidth,
@@ -155,6 +156,29 @@ const Login = ({ classes, theme, settings }) => {
     loginHeight = 150;
   }
   const marginTop = dimension.height / 2 - loginHeight / 2 - 200;
+
+  const loginScreen = () => <div>
+      {loginMessage && loginMessage.length > 0 && (
+          <Paper classes={{ root: classes.paper }} variant="outlined">
+            <Markdown>{loginMessage}</Markdown>
+          </Paper>
+      )}
+      {isAuthForm && (
+          <Paper variant="outlined">
+            {type}
+            <LoginForm />
+          </Paper>
+      )}
+      {isAuthButtons && renderExternalAuth(authSSOs)}
+      {providers.length === 0 && (
+          <div>No authentication provider available</div>
+      )}
+    </div>;
+
+  const otpScreen = () => <div>
+    <OTPForm />
+  </div>;
+
   return (
     <div className={classes.container} style={{ marginTop }}>
       <img
@@ -166,20 +190,7 @@ const Login = ({ classes, theme, settings }) => {
         alt="logo"
         className={classes.logo}
       />
-      {loginMessage && loginMessage.length > 0 && (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Markdown>{loginMessage}</Markdown>
-        </Paper>
-      )}
-      {isAuthForm && (
-        <Paper variant="outlined">
-          <LoginForm />
-        </Paper>
-      )}
-      {isAuthButtons && renderExternalAuth(authSSOs)}
-      {providers.length === 0 && (
-        <div>No authentication provider available</div>
-      )}
+      { type === '2FA' ? otpScreen() : loginScreen() }
     </div>
   );
 };

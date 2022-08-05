@@ -167,6 +167,7 @@ export const booleanAttributes = [
   'no_dependencies',
   'ssl_verify',
   'include_header',
+  'otp_activated',
 ];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes: { [k: string]: { key: string, value: string } } = { hashes: { key: 'algorithm', value: 'hash' } };

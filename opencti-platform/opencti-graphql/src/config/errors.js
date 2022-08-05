@@ -23,6 +23,13 @@ export const AuthRequired = (data) => error(AUTH_REQUIRED, 'You must be logged i
   ...data,
 });
 
+export const OTP_REQUIRED = 'OtpRequired';
+export const OtpRequired = (data) => error(OTP_REQUIRED, 'You must validate your accout with 2FA.', {
+  http_status: 401,
+  category: CATEGORY_TECHNICAL,
+  ...data,
+});
+
 export const FORBIDDEN_ACCESS = 'ForbiddenAccess';
 export const ForbiddenAccess = (data) => error(FORBIDDEN_ACCESS, 'You are not allowed to do this.', {
   http_status: 403,

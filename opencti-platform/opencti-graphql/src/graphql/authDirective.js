@@ -2,7 +2,7 @@
 import { mapSchema, MapperKind, getDirective } from '@graphql-tools/utils';
 import { includes, map, filter } from 'ramda';
 import { defaultFieldResolver, responsePathAsArray } from 'graphql';
-import { AuthRequired, ForbiddenAccess } from '../config/errors';
+import { AuthRequired, ForbiddenAccess, OtpRequired } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { logAudit } from '../config/conf';
 import { ACCESS_CONTROL } from '../config/audit';
@@ -33,6 +33,10 @@ export const authDirectiveBuilder = (directiveName) => {
               if (!user) {
                 throw AuthRequired();
               } // User must be authenticated.
+              const isOTP = user.otp_activated && user.otp_validated !== true;
+              if (info.fieldName !== 'logout' && info.fieldName !== 'otpLogin' && isOTP) {
+                throw OtpRequired();
+              }
               // Start checking capabilities
               if (requiredCapabilities.length === 0) {
                 return resolve(source, args, context, info);

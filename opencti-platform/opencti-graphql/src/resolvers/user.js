@@ -37,6 +37,9 @@ import {
   deleteBookmark,
   userRenewToken,
   authenticateUser,
+  otpUserGeneration,
+  otpUserLogin,
+  otpUserActivation, otpUserDeactivation,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -56,6 +59,7 @@ const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
 const userResolvers = {
   Query: {
     user: (_, { id }, { user }) => findById(user, id),
+    otpGeneration: (_, __, { user }) => otpUserGeneration(user),
     users: (_, args, { user }) => findAll(user, args),
     role: (_, { id }, { user }) => findRoleById(user, id),
     roles: (_, args, { user }) => findRoles(user, args),
@@ -84,6 +88,9 @@ const userResolvers = {
     capabilities: (role, _, { user }) => rolesCapabilitiesLoader.load(role.id, user),
   },
   Mutation: {
+    otpActivation: (_, { input }, { user }) => otpUserActivation(user, input),
+    otpDeactivation: (_, __, { user }) => otpUserDeactivation(user),
+    otpLogin: (_, { input }, { req, user }) => otpUserLogin(req, user, input),
     token: async (_, { input }, { req }) => {
       // We need to iterate on each provider to find one that validated the credentials
       const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);

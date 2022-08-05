@@ -378,6 +378,8 @@ const UserEditionOverview = createFragmentContainer(
         language
         theme
         api_token
+        otp_activated
+        otp_qr
         roles {
           id
           name

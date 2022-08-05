@@ -23,7 +23,10 @@ class AuthBoundaryComponent extends React.Component {
       if (includes('ForbiddenAccess', types)) window.location.href = '/';
       // If user not authenticated, redirect to login with encoded path
       if (includes('AuthRequired', types)) {
-        return <RootPublic />;
+        return <RootPublic type="LOGIN" />;
+      }
+      if (includes('OtpRequired', types)) {
+        return <RootPublic type="2FA" />;
       }
     }
     return this.props.children;
