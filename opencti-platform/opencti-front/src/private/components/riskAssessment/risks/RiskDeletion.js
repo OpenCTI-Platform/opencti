@@ -53,14 +53,6 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const RiskDeletionMutation = graphql`
-  mutation RiskDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
 const RiskDeletionDarkLightMutation = graphql`
   mutation RiskDeletionDarkLightMutation($id: ID!) {
   deleteComputingDeviceAsset(id: $id)
@@ -137,7 +129,7 @@ class RiskDeletion extends Component {
         this.handleClose();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: () => {},
     });
     // commitMutation({
     //   mutation: RiskDeletionDarkLightMutation,

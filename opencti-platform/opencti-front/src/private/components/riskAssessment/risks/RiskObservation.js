@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import Skeleton from '@material-ui/lab/Skeleton';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -89,8 +89,7 @@ class RiskObservation extends Component {
             render={({ error, props }) => {
               if (error) {
                 return (
-                  toastGenericError('Failed to get risk observation'),
-                  console.error(error)
+                  toastGenericError('Failed to get risk observation')
                 );
               }
               if (props) {

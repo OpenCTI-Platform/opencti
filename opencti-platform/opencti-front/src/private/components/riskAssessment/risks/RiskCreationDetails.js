@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
@@ -50,21 +49,6 @@ const styles = (theme) => ({
     right: 30,
   },
 });
-
-const riskMutationFieldPatch = graphql`
-  mutation RiskCreationDetailsFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-    $commitMessage: String
-  ) {
-    threatActorEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
-        ...RiskCreationDetails_risk
-       # ...Risk_risk
-      }
-    }
-  }
-`;
 
 const riskCreationDetailsFocus = graphql`
   mutation RiskCreationDetailsFocusMutation(

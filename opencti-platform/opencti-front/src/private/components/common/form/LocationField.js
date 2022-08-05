@@ -1,8 +1,7 @@
-// /* eslint-disable */
 // /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field } from 'formik';
 import {
   compose,
   map,
@@ -12,11 +11,8 @@ import {
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import AddIcon from '@material-ui/icons/Add';
 import InsertLinkIcon from '@material-ui/icons/InsertLink';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
-import Delete from '@material-ui/icons/Delete';
-import InputAdornment from '@material-ui/core/InputAdornment';
 import Typography from '@material-ui/core/Typography';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -24,11 +20,9 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { Dialog, DialogContent, DialogActions } from '@material-ui/core';
-import environmentDarkLight, { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
-import NewTextField from '../../../../components/TextField';
+import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
 
 const LocationFieldSearchQuery = graphql`
   query LocationFieldSearchQuery(
@@ -107,7 +101,7 @@ class LocationField extends Component {
     };
   }
 
-  searchData = (event) => {
+  searchData = () => {
     fetchDarklightQuery(LocationFieldSearchQuery, {
       orderedBy: 'name',
       orderMode: 'asc',
@@ -142,17 +136,14 @@ class LocationField extends Component {
   }
 
   handleDeleteAddress(key) {
-    this.setState({ ipAddress: this.state.ipAddress.filter((value, i) => i !== key) },
+    this.setState({ ipAddress: this.state.ipAddress.filter((i) => i !== key) },
       () => this.props.setFieldValue(this.props.name, this.state.ipAddress));
   }
 
   render() {
     const {
-      t, fldt, classes, name, title,
+      t, classes, name, title,
     } = this.props;
-    const {
-      error,
-    } = this.state;
     return (
       <>
         <div style={{ display: 'flex', alignItems: 'center' }}>

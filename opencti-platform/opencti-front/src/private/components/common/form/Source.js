@@ -125,24 +125,15 @@ class Source extends Component {
     this.handleThisChange('', this.props.values.actor_type);
   }
 
-  handleThisChange = (name, value) => {
+  handleThisChange = (value) => {
     let queryType;
     let queryInfo;
-    let filterBy = '';
 
     if (value) {
       switch (value) {
         case 'tool':
           queryType = ComponentListQuery;
           queryInfo = 'componentList';
-          filterBy = {
-            filters: [
-              {
-                key: 'component_type',
-                values: 'software',
-              },
-            ],
-          };
           break;
         case 'assessment_platform':
           queryType = AssessmentPlatformQuery;

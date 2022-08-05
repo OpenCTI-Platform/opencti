@@ -54,14 +54,6 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const RemediationDeletionMutation = graphql`
-  mutation RemediationDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
 const RemediationDeletionDarkLightMutation = graphql`
   mutation RemediationDeletionDarkLightMutation($id: ID!, $riskId: ID!) {
     deleteRiskResponse(id: $id, riskId: $riskId)
@@ -139,10 +131,7 @@ class RemediationDeletion extends Component {
         this.handleClose();
         this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
       },
-      onError: (err) => {
-        console.error(err);
-        return toastGenericError('Failed to delete Remediation');
-      },
+      onError: () => toastGenericError('Failed to delete Remediation'),
     });
     // commitMutation({
     //   mutation: RemediationDeletionDarkLightMutation,

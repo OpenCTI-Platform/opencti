@@ -41,23 +41,6 @@ const riskQuery = graphql`
 `;
 
 class RootRisk extends Component {
-  constructor(props) {
-    super(props);
-    const {
-      match: {
-        params: { riskId },
-      },
-    } = props;
-    // this.sub = requestSubscription({
-    //   subscription,
-    //   variables: { id: riskId },
-    // });
-  }
-
-  // componentWillUnmount() {
-  //   this.sub.dispose();
-  // }
-
   render() {
     const {
       me,

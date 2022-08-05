@@ -212,8 +212,7 @@ class RiskObservationLineContainer extends Component {
               render={({ error, props }) => {
                 if (error) {
                   return (
-                    toastGenericError('Failed to get risk observation Details'),
-                    console.error(error)
+                    toastGenericError('Failed to get risk observation Details')
                   );
                 }
                 if (props) {

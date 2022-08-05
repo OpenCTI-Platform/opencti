@@ -218,14 +218,12 @@ class Export extends Component {
         options: finalValues,
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
-      onError: (err) => {
-        console.error(err);
-      },
+      onError: () => {},
     });
   }
 
@@ -235,7 +233,7 @@ class Export extends Component {
 
   render() {
     const {
-      t, classes, location, history, keyword, theme,
+      t, classes,
     } = this.props;
     const exportTypeListData = pathOr(
       [],

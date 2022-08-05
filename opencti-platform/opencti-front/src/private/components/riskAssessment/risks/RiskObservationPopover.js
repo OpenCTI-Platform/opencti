@@ -118,7 +118,7 @@ class RiskObservationPopover extends Component {
                 </DialogContentText>
                 <div className={classes.componentScroll}>
                   {
-                    data.origins.map((value, j) => value.origin_actors.map((s, i) => (
+                    data.origins.map((value) => value.origin_actors.map((s, i) => (
                       <Typography key={i} style={{ alignItems: 'center', display: 'flex' }} color="primary">
                         <LaunchIcon fontSize='small' /> {t(s.actor_ref.name)}
                         <br />

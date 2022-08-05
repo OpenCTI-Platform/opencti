@@ -4,8 +4,6 @@ import { Formik, Form, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
   compose,
-  dissoc,
-  pipe,
 } from 'ramda';
 import { commitMutation as CM } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles';
@@ -115,10 +113,6 @@ class ExportPoam extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      dissoc('marking'),
-      // assoc('model', this.state.selectedOscalType),
-    )(values);
     CM(environmentDarkLight, {
       mutation: ExportPoamMutation,
       variables: {
@@ -127,13 +121,12 @@ class ExportPoam extends Component {
         id: '',
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
-      onError: (err) => {
-        console.error(err);
+      onError: () => {
         toastGenericError('Failed to export data');
       },
     });
@@ -145,7 +138,7 @@ class ExportPoam extends Component {
 
   render() {
     const {
-      t, classes, location, history, keyword, theme,
+      t, classes,
     } = this.props;
     return (
       <>

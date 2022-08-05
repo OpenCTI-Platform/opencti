@@ -4,30 +4,18 @@ import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
 import Button from '@material-ui/core/Button';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
-import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import RiskEditionContainer from '../../riskAssessment/risks/RiskEditionContainer';
-import { riskEditionQuery } from '../../riskAssessment/risks/RiskEdition';
-import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -64,14 +52,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const DataSourceDeletionMutation = graphql`
-  mutation DataSourceDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
-  }
-`;
 
 const DataSourceDeletionDarkLightMutation = graphql`
   mutation DataSourceDeletionDarkLightMutation($id: ID!) {
@@ -123,11 +103,11 @@ class DataSourceDeletion extends Component {
       variables: {
         id: this.props.id,
       },
-      onCompleted: (data) => {
+      onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
       },
-      onError: (err) => console.error(err),
+      onError: () => {},
     });
   }
 

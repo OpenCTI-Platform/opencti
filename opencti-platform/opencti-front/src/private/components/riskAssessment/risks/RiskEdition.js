@@ -88,7 +88,6 @@ class RiskEdition extends Component {
           query={riskEditionQuery}
           variables={{ id: riskId }}
           render={({ props }) => {
-            console.log('RiskEditionPropsContainer', props);
             if (props) {
               return (
                 <RiskEditionContainer

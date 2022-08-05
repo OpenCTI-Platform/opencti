@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { interval } from 'rxjs';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
@@ -13,7 +12,6 @@ import inject18n from '../../../../../components/i18n';
 import {
   RemediationEntityLine,
 } from './RemediationEntityLine';
-import { TEN_SECONDS } from '../../../../../utils/Time';
 
 const styles = () => ({
   paper: {

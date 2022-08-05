@@ -94,7 +94,6 @@ class RootRemediation extends Component {
           query={remediationQuery}
           variables={{ id: remediationId }}
           render={({ props, retry }) => {
-            console.log('RemediationRootQuery', props);
             if (props) {
               if (props.riskResponse) {
                 return (

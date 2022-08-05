@@ -118,7 +118,6 @@ class RiskAnalysisEditionCharacterizationComponent extends Component {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    console.log('riskEditionOverviewSubmit', inputValues);
     commitMutation({
       mutation: riskAnalysisEditionCharacterizationMutationFieldPatch,
       variables: {
@@ -257,7 +256,6 @@ class RiskAnalysisEditionCharacterizationComponent extends Component {
         'labels',
       ]),
     )(risk);
-    console.log('RiskEditionContainerRisk', risk);
     return (
       <Formik
         enableReinitialize={true}

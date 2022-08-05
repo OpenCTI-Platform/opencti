@@ -275,10 +275,6 @@ class Risks extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       poam_id: {
         label: 'POAM ID',
@@ -364,7 +360,6 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             return (

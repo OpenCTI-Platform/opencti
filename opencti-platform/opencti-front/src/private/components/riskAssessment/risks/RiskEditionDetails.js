@@ -28,17 +28,6 @@ const styles = () => ({
   },
 });
 
-const riskMutationFieldPatch = graphql`
-  mutation RiskEditionDetailsFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
-    editRisk(id: $id, input: $input) {
-      id
-    }
-  }
-`;
-
 const riskEditionDetailsFocus = graphql`
   mutation RiskEditionDetailsFocusMutation(
     $id: ID!

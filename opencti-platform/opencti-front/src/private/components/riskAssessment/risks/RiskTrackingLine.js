@@ -20,13 +20,11 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import Slide from '@material-ui/core/Slide';
-import { interval } from 'rxjs';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
-import { FIVE_SECONDS } from '../../../../utils/Time';
 import RiskTrackingPopover from './RiskTrackingPopover';
 
 const styles = (theme) => ({
@@ -167,7 +165,7 @@ class RiskTrackingLineContainer extends Component {
     this.setState(openedState);
   }
 
-  handleClick(e) {
+  handleClick() {
     this.setState({
       value: !this.state.value,
     });

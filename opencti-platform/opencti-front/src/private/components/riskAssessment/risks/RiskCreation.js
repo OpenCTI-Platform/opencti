@@ -19,7 +19,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { parse } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -210,7 +210,7 @@ class RiskCreation extends Component {
         this.handleClose();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: () => {},
     });
     // commitMutation({
     //   mutation: riskCreationMutation,

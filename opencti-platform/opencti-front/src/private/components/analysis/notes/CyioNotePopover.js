@@ -21,9 +21,6 @@ import environmentDarkLight from '../../../../relay/environmentDarkLight';
 // import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 // import { noteEditionQuery } from './NoteEdition';
 import CyioNoteEditionContainer from './CyioNoteEditionContainer';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {

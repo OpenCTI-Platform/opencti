@@ -74,35 +74,7 @@ class RemediationEntityLineComponent extends Component {
       node,
       paginationOptions,
     } = this.props;
-    const remediationTiming = R.pipe(
-      R.pathOr([], ['tasks']),
-      R.mergeAll,
-    )(node);
-    const remediationSource = R.pipe(
-      R.pathOr([], ['origins']),
-      R.mergeAll,
-      R.path(['origin_actors']),
-      R.mergeAll,
-    )(node);
-    let restricted = false;
-    let targetEntity = null;
-    if (node.from && node.from.id === riskId) {
-      targetEntity = node.to;
-    } else if (node.to && node.to.id === riskId) {
-      targetEntity = node.from;
-    } else {
-      restricted = true;
-    }
-    if (targetEntity === null) {
-      restricted = true;
-    }
-    // eslint-disable-next-line no-nested-ternary
-    // const link = !restricted
-    //   ? targetEntity.parent_types.includes('stix-core-relationship')
-    //     ? `/dashboard/observations/observables/${riskId}/knowledge/relations/${node.id}`
-    //     : `${resolveLink(targetEntity.entity_type)}/${targetEntity.id
-    //     }/knowledge/relations/${node.id}`
-    //   : null;
+
     const SourceOfDetection = R.pipe(
       R.pathOr([], ['origins']),
       R.mergeAll,
@@ -116,7 +88,6 @@ class RemediationEntityLineComponent extends Component {
         button={true}
         component={Link}
         to={`/activities/risk assessment/risks/${riskId}/remediation/${node.id}`}
-      // disabled={restricted}
       >
         <ListItemText
           primary={
@@ -181,7 +152,6 @@ class RemediationEntityLineComponent extends Component {
             paginationOptions={paginationOptions}
             history={history}
             riskId={riskId}
-          // disabled={restricted}
           />
         </ListItemSecondaryAction>
       </ListItem>

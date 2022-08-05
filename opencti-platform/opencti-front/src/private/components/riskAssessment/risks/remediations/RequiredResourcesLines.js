@@ -187,7 +187,7 @@ class RequiredResourcesLinesContainer extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          {requiredResourcesEdges.map((requiredResource, i) => (
+          {requiredResourcesEdges.map((requiredResource) => (
             <RequiredResourceLine
               remediationId={remediationId}
               refreshQuery={refreshQuery}

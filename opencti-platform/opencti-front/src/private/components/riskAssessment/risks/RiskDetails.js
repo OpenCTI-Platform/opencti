@@ -68,7 +68,6 @@ class RiskDetailsComponent extends Component {
       classes,
       risk,
       fldt,
-      history,
     } = this.props;
     const riskDetectionSource = R.pipe(
       R.path(['origins']),

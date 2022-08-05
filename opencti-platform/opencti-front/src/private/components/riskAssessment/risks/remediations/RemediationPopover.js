@@ -248,7 +248,6 @@ class RemediationPopover extends Component {
           variables={{ id: cyioCoreRelationshipId }}
           render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             if (props) {

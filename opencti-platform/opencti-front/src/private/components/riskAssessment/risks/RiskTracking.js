@@ -81,7 +81,6 @@ class RiskTracking extends Component {
           variables={{ id: riskId }}
           render={({ props, retry, error }) => {
             if (error) {
-              console.error(error);
               return toastGenericError('Failed to get Tracking Data');
             }
             if (props) {
