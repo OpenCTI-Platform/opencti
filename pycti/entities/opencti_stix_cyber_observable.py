@@ -749,7 +749,7 @@ class StixCyberObservable:
                     if "is_multipart" in observable_data
                     else None,
                     "attribute_date": observable_data["attribute_date"]
-                    if "date" in observable_data
+                    if "attribute_date" in observable_data
                     else None,
                     "message_id": observable_data["message_id"]
                     if "message_id" in observable_data
