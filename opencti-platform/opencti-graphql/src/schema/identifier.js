@@ -388,7 +388,8 @@ export const generateStandardId = (type, data) => {
   // Unknown
   throw UnsupportedError(`${type} is not supported by the platform`);
 };
-export const generateAliasesId = (aliases, instance = {}) => {
+export const generateAliasesId = (rawAliases, instance = {}) => {
+  const aliases = R.uniq(rawAliases);
   const additionalFields = {};
   if (isStixDomainObjectIdentity(instance.entity_type)) {
     additionalFields.identity_class = instance.identity_class;
@@ -399,11 +400,11 @@ export const generateAliasesId = (aliases, instance = {}) => {
   if (instance.entity_type === ENTITY_TYPE_ATTACK_PATTERN && instance.x_mitre_id) {
     additionalFields.x_mitre_id = instance.x_mitre_id;
   }
-  return R.map((a) => {
-    const dataUUID = { name: normalizeName(a), ...additionalFields };
-    const uuid = idGen('ALIAS', aliases, dataUUID, OPENCTI_NAMESPACE);
+  return R.uniq(aliases.map((alias) => {
+    const dataUUID = { name: normalizeName(alias), ...additionalFields };
+    const uuid = idGen('ALIAS', alias, dataUUID, OPENCTI_NAMESPACE);
     return `aliases--${uuid}`;
-  }, R.uniq(aliases));
+  }));
 };
 
 export const generateAliasesIdsForInstance = (instance) => {

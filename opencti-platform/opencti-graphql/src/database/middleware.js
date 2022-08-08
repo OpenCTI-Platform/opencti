@@ -2268,7 +2268,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
   // endregion
   // If modification must be done, reload the instance with dependencies to allow complete stix generation
   if (impactedInputs.length > 0 && patchInputs.length === 0) {
-    throw UnsupportedError('[OPENCTI] Upsert will produce only internal modification', { element, input: updatePatch });
+    throw UnsupportedError('[OPENCTI] Upsert will produce only internal modification', { element, impact: impactedInputs });
   }
   const isUpdated = impactedInputs.length > 0 || rawRelations.length > 0;
   // Manage update_at
