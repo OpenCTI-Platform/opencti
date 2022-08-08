@@ -136,3 +136,10 @@ h1 {
 .md iframe.textinsert {
     background-color: transparent !important;
 }
+
+.MuiIconButton-label !important {
+    width: 100%;
+    display: flex;
+    align-items: inherit;
+    justify-content: inherit;
+}
