@@ -13,8 +13,8 @@ import {
   distributionEntities,
   internalLoadById,
   listThroughGetFrom,
-  storeFullLoadById,
   storeLoadById,
+  storeLoadByIdWithRefs,
   timeSeriesEntities,
   updateAttribute,
 } from '../database/middleware';
@@ -34,7 +34,13 @@ import {
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions,
 } from '../schema/stixCyberObservable';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  INPUT_CREATED_BY,
+  INPUT_LABELS,
+  INPUT_MARKINGS
+} from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
@@ -145,18 +151,10 @@ const createIndicatorFromObservable = async (user, input, observable) => {
 };
 
 export const promoteObservableToIndicator = async (user, observableId) => {
-  const observable = await storeFullLoadById(user, observableId);
-  const objectLabel = observable.i_relations_from && observable.i_relations_from['object-label']
-    ? observable.i_relations_from['object-label'].map((n) => n.internal_id)
-    : [];
-  const objectMarking = observable.i_relations_from && observable.i_relations_from['object-marking']
-    ? observable.i_relations_from['object-marking'].map((n) => n.internal_id)
-    : [];
-  const createdBy = observable.i_relations_from
-    && observable.i_relations_from['created-by']
-    && observable.i_relations_from['created-by'].length > 0
-    ? observable.i_relations_from['created-by'].map((n) => n.internal_id)[0]
-    : [];
+  const observable = await storeLoadByIdWithRefs(user, observableId);
+  const objectLabel = (observable[INPUT_LABELS] ?? []).map((n) => n.internal_id);
+  const objectMarking = (observable[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
+  const createdBy = observable[INPUT_CREATED_BY]?.internal_id;
   await createIndicatorFromObservable(user, { objectLabel, objectMarking, createdBy }, observable);
   return observable;
 };

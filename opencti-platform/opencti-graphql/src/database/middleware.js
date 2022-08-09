@@ -200,7 +200,13 @@ import {
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles, storeFileConverter, upload } from './file-storage';
-import { BYPASS, BYPASS_REFERENCE, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  BYPASS_REFERENCE,
+  filterElementsAccordingToUser,
+  isUserCanAccessElement,
+  SYSTEM_USER
+} from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
   FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION,
@@ -436,7 +442,7 @@ export const storeLoadById = async (user, id, type, args = {}) => {
 const transformRawRelationsToAttributes = (data) => {
   return R.mergeAll(Object.entries(R.groupBy((a) => a.i_relation.entity_type, data)).map(([k, v]) => ({ [k]: v })));
 };
-const loadElementDependencies = async (user, element, args = {}) => {
+const loadElementMetaDependencies = async (user, element, args = {}) => {
   const { dependencyTypes = [ABSTRACT_STIX_RELATIONSHIP] } = args;
   const { onlyMarking = true, fullResolve = false } = args;
   const elementId = element.internal_id;
@@ -454,7 +460,7 @@ const loadElementDependencies = async (user, element, args = {}) => {
   const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true });
   const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
   if (fromRelations.length > 0) {
-    // Build the flatten view inside the data for stix meta
+    // Build flatten view inside the data for stix meta
     const metaRels = fromRelations.filter((r) => isStixEmbeddedRelationship(r.entity_type));
     const grouped = R.groupBy((a) => STIX_EMBEDDED_RELATION_TO_FIELD[a.entity_type], metaRels);
     const entries = Object.entries(grouped);
@@ -478,17 +484,28 @@ const loadElementDependencies = async (user, element, args = {}) => {
   }
   return data;
 };
-const loadAnyWithDependencies = async (user, element, args = {}) => {
-  const depsPromise = loadElementDependencies(user, element, args);
+const loadElementWithDependencies = async (user, element, args = {}) => {
+  const depsPromise = loadElementMetaDependencies(user, element, args);
   const isRelation = element.base_type === BASE_TYPE_RELATION;
   if (isRelation) {
     const relOpts = { onlyMarking: true, fullResolve: false };
+    // Load the relation from and to directly with the system user
+    // Access right must be checked by hand in this case.
     // eslint-disable-next-line no-use-before-define
-    const fromPromise = loadByIdWithDependencies(user, element.fromId, element.fromType, relOpts);
+    const fromPromise = loadByIdWithDependencies(SYSTEM_USER, element.fromId, element.fromType, relOpts);
     // eslint-disable-next-line no-use-before-define
-    const toPromise = loadByIdWithDependencies(user, element.toId, element.toType, relOpts);
+    const toPromise = loadByIdWithDependencies(SYSTEM_USER, element.toId, element.toType, relOpts);
     const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
-    return R.mergeRight(element, { from, to, ...deps });
+    // Check relations consistency
+    if (isEmptyField(from)) throw UnsupportedError(`Cannot convert relation without a resolved from: ${element.fromId}`);
+    if (isEmptyField(to)) throw UnsupportedError(`Cannot convert relation without a resolved to: ${element.toId}`);
+    // Check relations marking access.
+    if (isUserCanAccessElement(user, from) && isUserCanAccessElement(user, to)) {
+      return R.mergeRight(element, { from, to, ...deps });
+    }
+    // Relation is accessible but access rights is not align with the user asking for the information
+    // In this case the element is considered as not existing
+    return undefined;
   }
   const deps = await depsPromise;
   return R.mergeRight(element, { ...deps });
@@ -496,7 +513,7 @@ const loadAnyWithDependencies = async (user, element, args = {}) => {
 const loadByIdWithDependencies = async (user, id, type, args = {}) => {
   const element = await internalLoadById(user, id, { type });
   if (!element) return null;
-  return loadAnyWithDependencies(user, element, args);
+  return loadElementWithDependencies(user, element, args);
 };
 // Dangerous call because get everything related. (Limited to merging)
 export const storeFullLoadById = async (user, id, type = null) => {
@@ -515,6 +532,12 @@ export const stixLoadById = async (user, id, opts = {}) => {
     return convertStoreToStix(instance);
   }
   return undefined;
+};
+export const stixLoadByIds = async (user, ids, opts = {}) => {
+  const instances = await Promise.map(ids, (id) => stixLoadById(user, id, opts), {
+    concurrency: ES_MAX_CONCURRENCY,
+  });
+  return instances.filter((i) => isNotEmptyField(i));
 };
 export const stixLoadByIdStringify = async (user, id) => {
   const data = await stixLoadById(user, id);
@@ -1172,7 +1195,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // Return extra deleted stix relations
   return { updatedRelations, dependencyDeletions };
 };
-const computeParticipants = (entities) => {
+const computeMergeParticipants = (entities) => {
   const participants = [];
   for (let i = 0; i < entities.length; i += 1) {
     const entity = entities[i];
@@ -1201,16 +1224,19 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
       sourceEntityIds,
     });
   }
-  // targetEntity and sourceEntities must be fully resolved elements
-  const { locks = [] } = opts;
-  const targetEntityPromise = storeFullLoadById(user, targetEntityId, ABSTRACT_STIX_CORE_OBJECT);
-  const sourceEntitiesPromise = Promise.all(sourceEntityIds.map((sourceId) => storeFullLoadById(user, sourceId)));
-  const [target, sources] = await Promise.all([targetEntityPromise, sourceEntitiesPromise]);
-  if (!target) {
-    throw FunctionalError('Cannot merge the other objects, Stix-Object cannot be found.');
+  // targetEntity and sourceEntities must be accessible
+  const mergedIds = [targetEntityId, ...sourceEntityIds];
+  const mergedInstances = await internalFindByIds(user, mergedIds);
+  if (mergedIds.length !== mergedInstances.length) {
+    throw FunctionalError('Cannot access all entities for merging');
   }
   // We need to lock all elements not locked yet.
-  const participantIds = computeParticipants([target, ...sources]).filter((e) => !locks.includes(e));
+  // Entities must be fully loaded with admin user to resolve/move all dependencies
+  const targetEntityPromise = storeFullLoadById(SYSTEM_USER, targetEntityId, ABSTRACT_STIX_CORE_OBJECT);
+  const sourceEntitiesPromise = Promise.all(sourceEntityIds.map((sourceId) => storeFullLoadById(SYSTEM_USER, sourceId)));
+  const [target, sources] = await Promise.all([targetEntityPromise, sourceEntitiesPromise]);
+  const { locks = [] } = opts;
+  const participantIds = computeMergeParticipants([target, ...sources]).filter((e) => !locks.includes(e));
   let lock;
   try {
     // Lock the participants that will be merged
@@ -2281,7 +2307,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
   // -------------------------------------------------------------------
   if (isUpdated) {
     // Resolve dependencies.
-    const resolvedInstance = await loadAnyWithDependencies(user, element, {
+    const resolvedInstance = await loadElementWithDependencies(user, element, {
       dependencyTypes: [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP],
       onlyMarking: false,
       fullResolve: false,

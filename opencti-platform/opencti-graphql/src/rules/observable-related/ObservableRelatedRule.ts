@@ -9,9 +9,8 @@ import { listAllRelations } from '../../database/middleware-loader';
 import type { StixRelation } from '../../types/stix-sro';
 import type { Event } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import type { BasicStoreRelation } from '../../types/store';
+import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
-import type { StixObject } from '../../types/stix-common';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
@@ -72,7 +71,7 @@ const ruleRelatedObservableBuilder = () => {
     return events;
   };
   // Contract
-  const clean = async (element: StixObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
+  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
     return deleteInferredRuleElement(def.id, element, deletedDependencies) as Promise<Array<Event>>;
   };
   const insert = async (element: StixRelation): Promise<Array<Event>> => {

@@ -17,7 +17,7 @@ import type { RuleRuntime } from '../../types/rules';
 import type { StixObject, StixDomainObject } from '../../types/stix-common';
 import type { StixIndicator, StixObservedData } from '../../types/stix-sdo';
 import type { StixRelation } from '../../types/stix-sro';
-import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { Event } from '../../types/event';
@@ -175,7 +175,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
     return events;
   };
   // Contract
-  const clean = async (element: StixObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
+  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
     const cleanPromiseEvents = deleteInferredRuleElement(def.id, element, deletedDependencies);
     return cleanPromiseEvents as unknown as Promise<Array<Event>>;
   };
