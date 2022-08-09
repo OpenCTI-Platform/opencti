@@ -6,6 +6,7 @@ import type {
   BasicStoreEntity,
   BasicStoreObject,
   BasicStoreRelation,
+  StoreCyberObservable,
   StoreEntity,
   StoreRelation
 } from '../types/store';
@@ -43,6 +44,20 @@ export const defaultValue = (element: BasicStoreObject) => {
     return observableValue(n);
   }
   return '';
+};
+
+const entityDescription = (element: StoreEntity | StoreCyberObservable) => {
+  if (!element) return '-';
+  const entityType = element.entity_type;
+  if (isStixDomainObject(entityType)) {
+    const n: BasicStoreEntity = element as BasicStoreEntity;
+    return n.description;
+  }
+  if (isStixCyberObservable(entityType)) {
+    const n: BasicStoreCyberObservable = element as BasicStoreCyberObservable;
+    return n.x_opencti_description;
+  }
+  return '-';
 };
 
 export const resolveLink = (type: string) => {
@@ -292,7 +307,7 @@ export const relationshipToHtml = (url: string, entry: StoreRelation) => {
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
                     <i>${entry.relationship_type}</i><br>
-                    ${truncate(entry.description, 60)}
+                    ${truncate(entry.description ?? '-', 60)}
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 35%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
                     <span style="color: #999999">${entry.to.entity_type}</span><br>
@@ -304,14 +319,12 @@ export const relationshipToHtml = (url: string, entry: StoreRelation) => {
   `;
 };
 
-export const entityToHtml = (url: string, entry: StoreEntity) => {
-  const fullUrl = `${url + resolveLink(entry.entity_type)}/${entry.id}`;
+export const entityToHtml = (url: string, entry: StoreEntity | StoreCyberObservable) => {
+  const fullUrl = `${url + resolveLink(entry.entity_type)}/${entry.internal_id}`;
   const author = entry.createdBy?.name ?? 'Unknown';
   return `
         <p style="padding:0; margin:0; line-height:140%; font-size:18px;">
-            <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">New <i>${
-  entry.entity_type
-}</i> entity</a>
+            <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">New <i>${entry.entity_type}</i> entity</a>
         </p>
         <p style="color: #999999; margin: 0;">By ${author}, ${prepareDate(entry.created_at)}</p>
         <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse:collapse; margin-top: 10pt; font-size: 10pt;">
@@ -322,7 +335,7 @@ export const entityToHtml = (url: string, entry: StoreEntity) => {
             </tr>
             <tr>
                 <td bgcolor="#ffffff" style="padding:0; width: 100%; text-align:center; background:#ffffff; background-color:#ffffff;" valign="top">
-                    ${truncate(entry.description, 60)}
+                    ${truncate(entityDescription(entry), 60)}
                 </td>
             </tr>
         </table>
@@ -336,10 +349,7 @@ export const technicalRelationToHtml = (url: string, entry: StoreRelation) => {
   return `
             <tr>
                 <td bgcolor="#ffffff" style="padding:0; width: 40%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
-                    <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">${truncate(
-  defaultValue(entry.from),
-  80
-)}.</a>
+                    <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">${truncate(defaultValue(entry.from), 80)}.</a>
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
                     ${truncate(defaultValue(entry.from), 60)}
