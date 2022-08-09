@@ -497,8 +497,12 @@ const loadElementWithDependencies = async (user, element, args = {}) => {
     const toPromise = loadByIdWithDependencies(SYSTEM_USER, element.toId, element.toType, relOpts);
     const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
     // Check relations consistency
-    if (isEmptyField(from)) throw UnsupportedError(`Cannot convert relation without a resolved from: ${element.fromId}`);
-    if (isEmptyField(to)) throw UnsupportedError(`Cannot convert relation without a resolved to: ${element.toId}`);
+    if (isEmptyField(from)) {
+      throw UnsupportedError(`Cannot convert relation ${element.id} without a resolved from: ${element.fromId}`);
+    }
+    if (isEmptyField(to)) {
+      throw UnsupportedError(`Cannot convert relation ${element.id} without a resolved to: ${element.toId}`);
+    }
     // Check relations marking access.
     if (isUserCanAccessElement(user, from) && isUserCanAccessElement(user, to)) {
       return R.mergeRight(element, { from, to, ...deps });
