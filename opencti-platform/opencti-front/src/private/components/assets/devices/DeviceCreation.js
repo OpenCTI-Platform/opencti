@@ -42,6 +42,7 @@ import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/extern
 import Loader from '../../../../components/Loader';
 import { toastGenericError } from "../../../../utils/bakedToast";
 import DeviceCreationDetails from './DeviceCreationDetails';
+import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -125,6 +126,7 @@ class DeviceCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       open: false,
       onSubmit: false,
       displayCancel: false,
@@ -139,8 +141,8 @@ class DeviceCreation extends Component {
     const adaptedValues = evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
-        ipv4_address: () => values.ipv4_address.length > 0 ? values.ipv4_address.map((address) => { return {ip_address_value: address } }) : [],
-        ipv6_address: () => values.ipv6_address.length > 0 ? values.ipv6_address.map((address) => { return {ip_address_value: address } }) : [],
+        ipv4_address: () => values.ipv4_address.length > 0 ? values.ipv4_address.map((address) => { return { ip_address_value: address } }) : [],
+        ipv6_address: () => values.ipv6_address.length > 0 ? values.ipv6_address.map((address) => { return { ip_address_value: address } }) : [],
       },
       values,
     );
@@ -164,9 +166,9 @@ class DeviceCreation extends Component {
         this.props.history.push('/defender HQ/assets/devices');
       },
       onError: (err) => {
-        console.error(err);
         toastGenericError("Failed to create Device");
-        this.props.history.push('/defender HQ/assets/devices');
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors))
+        this.setState({ error: ErrorResponse });
       }
     });
     // commitMutation({
@@ -391,6 +393,10 @@ class DeviceCreation extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <ErrorBox
+          error={this.state.error}
+          pathname='/defender HQ/assets/devices'
+        />
       </div>
     );
   }

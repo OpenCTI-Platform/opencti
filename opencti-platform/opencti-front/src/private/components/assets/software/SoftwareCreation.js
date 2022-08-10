@@ -41,6 +41,7 @@ import Loader from '../../../../components/Loader';
 import SoftwareCreationDetails from './SoftwareCreationDetails';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import { toastGenericError } from "../../../../utils/bakedToast";
+import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -155,9 +156,9 @@ class SoftwareCreation extends Component {
         this.props.history.push('/defender HQ/assets/software');
       },
       onError: (err) => {
-        console.error(err);
         toastGenericError('Failed to create Software');
-        this.props.history.push('/defender HQ/assets/software');
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors))
+        this.setState({ error: ErrorResponse });
       }
     });
     // commitMutation({
@@ -359,6 +360,10 @@ class SoftwareCreation extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <ErrorBox
+          error={this.state.error}
+          pathname='/defender HQ/assets/software'
+        />
       </div>
     );
   }
