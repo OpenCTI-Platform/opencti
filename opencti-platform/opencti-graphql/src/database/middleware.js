@@ -497,11 +497,14 @@ const loadElementWithDependencies = async (user, element, args = {}) => {
     const toPromise = loadByIdWithDependencies(SYSTEM_USER, element.toId, element.toType, relOpts);
     const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
     // Check relations consistency
-    if (isEmptyField(from)) {
-      throw UnsupportedError(`Cannot convert relation ${element.id} without a resolved from: ${element.fromId}`);
-    }
-    if (isEmptyField(to)) {
-      throw UnsupportedError(`Cannot convert relation ${element.id} without a resolved to: ${element.toId}`);
+    if (isEmptyField(from) || isEmptyField(to)) {
+      const validFrom = isEmptyField(from) ? 'invalid' : 'valid';
+      const validTo = isEmptyField(to) ? 'invalid' : 'valid';
+      const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
+      logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
+      // Auto deletion of the invalid relation
+      await elDeleteElements(SYSTEM_USER, [element], storeLoadByIdWithRefs);
+      return null;
     }
     // Check relations marking access.
     if (isUserCanAccessElement(user, from) && isUserCanAccessElement(user, to)) {
@@ -509,7 +512,7 @@ const loadElementWithDependencies = async (user, element, args = {}) => {
     }
     // Relation is accessible but access rights is not align with the user asking for the information
     // In this case the element is considered as not existing
-    return undefined;
+    return null;
   }
   const deps = await depsPromise;
   return R.mergeRight(element, { ...deps });
