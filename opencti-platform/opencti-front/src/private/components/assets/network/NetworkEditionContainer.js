@@ -94,6 +94,9 @@ const styles = (theme) => ({
 const networkValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   asset_type: Yup.string().required(t('This field is required')),
+  network_id: Yup.string().required(t('This field is required')),
+  network_name: Yup.string().required(t('This field is required')),
+  is_scanned: Yup.boolean().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
 });

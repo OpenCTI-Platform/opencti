@@ -43,7 +43,7 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: 255,
     backgroundColor: theme.palette.background.nav,
-    backgroundImage: `url(${window.BASE_PATH}/static/Darklight_CyioLogo-Lock-Up.png)`,
+    backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: '50% 70%;',
   },
