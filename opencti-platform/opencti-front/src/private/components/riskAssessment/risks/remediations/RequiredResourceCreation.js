@@ -49,6 +49,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/C
 import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import ErrorBox from '../../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   item: {
@@ -156,6 +157,7 @@ class RequiredResourceCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       open: false,
       close: false,
       resourceName: '',
@@ -220,8 +222,9 @@ class RequiredResourceCreation extends Component {
         }
       },
       onError: (err) => {
-        console.error(err);
         toastGenericError('Failed to create Required Resource');
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        this.setState({ error: ErrorResponse });
       },
     });
     // commitMutation({
@@ -548,6 +551,10 @@ class RequiredResourceCreation extends Component {
               </Form>
             )}
           </Formik>
+          <ErrorBox
+            error={this.state.error}
+            pathname={this.props.history.location.pathname}
+          />
           <Dialog
             open={this.state.close}
             keepMounted={true}

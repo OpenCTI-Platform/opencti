@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
+import { withRouter } from 'react-router-dom';
 import {
   compose,
   evolve,
@@ -52,6 +53,7 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import TaskType from '../../../common/form/TaskType';
 import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import ErrorBox from '../../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -127,6 +129,7 @@ class RelatedTaskPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       anchorEl: null,
       displayUpdate: false,
       displayDelete: false,
@@ -219,14 +222,19 @@ class RelatedTaskPopover extends Component {
       variables: {
         id: this.props.relatedTaskId,
       },
-      onCompleted: (data) => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
-        this.props.refreshQuery();
+      onCompleted: (data, error) => {
+        if (error) {
+          this.setState({ error });
+        } else {
+          this.setState({ deleting: false });
+          this.handleCloseDelete();
+          this.props.refreshQuery();
+        }
       },
       onError: (err) => {
-        console.error(err);
         toastGenericError('Failed to delete Related Task');
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        this.setState({ error: ErrorResponse });
       },
     });
     // commitMutation({
@@ -702,6 +710,10 @@ class RelatedTaskPopover extends Component {
               </Form>
             )}
           </Formik>
+          <ErrorBox
+            error={this.state.error}
+            pathname={this.props.history.location.pathname}
+          />
         </Dialog>
         <Dialog
           open={this.state.displayDelete}
@@ -751,9 +763,10 @@ RelatedTaskPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
   handleRemove: PropTypes.func,
   data: PropTypes.object,
   relatedTaskId: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(RelatedTaskPopover);
+export default compose(withRouter, inject18n, withStyles(styles))(RelatedTaskPopover);

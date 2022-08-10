@@ -43,6 +43,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/C
 import TaskType from '../../../common/form/TaskType';
 import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
 import { toastGenericError } from "../../../../../utils/bakedToast";
+import ErrorBox from '../../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -166,6 +167,7 @@ class RelatedTaskCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       open: false,
       close: false,
       timing: {},
@@ -221,7 +223,8 @@ class RelatedTaskCreation extends Component {
       },
       onError: (err) => {
         toastGenericError("Failed to create related task")
-        console.error(err);
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        this.setState({ error: ErrorResponse });
       }
     });
     // commitMutation({
@@ -261,7 +264,8 @@ class RelatedTaskCreation extends Component {
       },
       onError: (err) => {
         toastGenericError("Failed to Add related task")
-        console.error(err);
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        this.setState({ error: ErrorResponse });
       }
     });
   }
@@ -763,6 +767,10 @@ class RelatedTaskCreation extends Component {
               </Form>
             )}
           </Formik>
+          <ErrorBox
+            error={this.state.error}
+            pathname={this.props.history.location.pathname}
+          />
           <Dialog
             open={this.state.close}
             keepMounted={true}

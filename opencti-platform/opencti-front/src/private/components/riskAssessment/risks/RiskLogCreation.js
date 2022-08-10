@@ -45,6 +45,7 @@ import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
 import { toastGenericError } from "../../../../utils/bakedToast";
+import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -139,6 +140,7 @@ class RiskLogCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       open: false,
       onSubmit: false,
       displayCancel: false,
@@ -167,7 +169,7 @@ class RiskLogCreation extends Component {
         event_start: () => values.event_start === null ? null : parse(values.event_start).format(),
         event_end: () => values.event_end === null ? null : parse(values.event_end).format(),
         entry_type: () => values.entry_type.toString().split(),
-        logged_by: () => values.logged_by.length > 0 && [{'party': values.logged_by}],
+        logged_by: () => values.logged_by.length > 0 && [{ 'party': values.logged_by }],
       },
       values,
     );
@@ -183,8 +185,9 @@ class RiskLogCreation extends Component {
         this.props.refreshQuery();
       },
       onError: (err) => {
-        console.error('riskLogCreationValueError', err)
-        toastGenericError("Failed to create Risk Log")
+        toastGenericError("Failed to create Risk Log");
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        this.setState({ error: ErrorResponse });
         setSubmitting(false);
       },
     });
@@ -617,6 +620,10 @@ class RiskLogCreation extends Component {
               </Form>
             )}
           </Formik>
+          <ErrorBox
+            error={this.state.error}
+            pathname={`/activities/risk assessment/risks/${riskId}/tracking`}
+          />
         </Dialog>
         <Dialog
           open={this.state.displayCancel}

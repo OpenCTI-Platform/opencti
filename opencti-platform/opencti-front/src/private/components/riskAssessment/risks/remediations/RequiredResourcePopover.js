@@ -2,6 +2,7 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import {
   compose,
@@ -53,6 +54,7 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import ErrorBox from '../../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -149,6 +151,7 @@ class RequiredResourcePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       anchorEl: null,
       displayUpdate: false,
       displayDelete: false,
@@ -228,15 +231,20 @@ class RequiredResourcePopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        this.handleCloseUpdate();
-        this.props.refreshQuery();
+      onCompleted: (data, error) => {
+        if (error) {
+          this.setState({ error });
+        } else {
+          setSubmitting(false);
+          resetForm();
+          this.handleCloseUpdate();
+          this.props.refreshQuery();
+        }
       },
       onError: (err) => {
-        console.error(err);
         toastGenericError('Failed to update Required Resource');
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        this.setState({ error: ErrorResponse });
       },
     });
   }
@@ -582,6 +590,10 @@ class RequiredResourcePopover extends Component {
               </Form>
             )}
           </Formik>
+          <ErrorBox
+            error={this.state.error}
+            pathname={this.props.history.location.pathname}
+          />
         </Dialog>
         <Dialog
           open={this.state.displayDelete}
@@ -628,6 +640,7 @@ RequiredResourcePopover.propTypes = {
   externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
+  history: PropTypes.object,
   t: PropTypes.func,
   handleRemove: PropTypes.func,
   refreshQuery: PropTypes.func,
@@ -635,4 +648,4 @@ RequiredResourcePopover.propTypes = {
   requiredResourceId: PropTypes.string,
 };
 
-export default R.compose(inject18n, withStyles(styles))(RequiredResourcePopover);
+export default R.compose(withRouter, inject18n, withStyles(styles))(RequiredResourcePopover);
