@@ -22,7 +22,6 @@ import {
   Call,
   Visibility,
   DeveloperBoard,
-  Mic,
   PlaceOutlined,
   StorageOutlined,
   StayCurrentPortrait,
@@ -38,7 +37,6 @@ import {
   ViewColumn,
   Wifi,
   Storage,
-  Router,
 } from '@material-ui/icons';
 import {
   MicrosoftWindows,

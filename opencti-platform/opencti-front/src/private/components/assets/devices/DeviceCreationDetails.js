@@ -60,21 +60,6 @@ const styles = (theme) => ({
   },
 });
 
-const deviceMutationFieldPatch = graphql`
-  mutation DeviceCreationDetailsFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-    $commitMessage: String
-  ) {
-    threatActorEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
-        ...DeviceCreationDetails_device
-        # ...Device_device
-      }
-    }
-  }
-`;
-
 const deviceCreationDetailsFocus = graphql`
   mutation DeviceCreationDetailsFocusMutation(
     $id: ID!

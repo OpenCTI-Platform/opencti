@@ -15,8 +15,6 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
 import { hexToRGB } from '../../../../../utils/Colors';
 import { truncate } from '../../../../../utils/String';
-import ItemIcon from '../../../../../components/ItemIcon';
-import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import EntitiesLabelsPopover from './EntitiesLabelsPopover';
 
 const styles = (theme) => ({
@@ -61,7 +59,6 @@ class EntityLabelLineComponent extends Component {
       node,
       selectAll,
       dataColumns,
-      onLabelClick,
       onToggleEntity,
       selectedElements,
     } = this.props;

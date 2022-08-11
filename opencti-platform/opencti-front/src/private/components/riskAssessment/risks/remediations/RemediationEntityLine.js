@@ -15,16 +15,9 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import Button from '@material-ui/core/Button';
-import Tooltip from '@material-ui/core/Tooltip';
 import * as R from 'ramda';
-import { AutoFix } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
-import ItemConfidence from '../../../../../components/ItemConfidence';
 import RemediationPopover from './RemediationPopover';
-import { resolveLink } from '../../../../../utils/Entity';
-import ItemIcon from '../../../../../components/ItemIcon';
-import { defaultValue } from '../../../../../utils/Graph';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { truncate } from '../../../../../utils/String';
 
 const styles = (theme) => ({
@@ -73,47 +66,15 @@ const styles = (theme) => ({
 class RemediationEntityLineComponent extends Component {
   render() {
     const {
-      fsd,
       t,
       fldt,
       history,
       classes,
-      dataColumns,
-      riskData,
       riskId,
       node,
       paginationOptions,
-      displayRelation,
     } = this.props;
-    const remediationTiming = R.pipe(
-      R.pathOr([], ['tasks']),
-      R.mergeAll,
-    )(node);
-    const remediationSource = R.pipe(
-      R.pathOr([], ['origins']),
-      R.mergeAll,
-      R.path(['origin_actors']),
-      R.mergeAll,
-    )(node);
-    let restricted = false;
-    let targetEntity = null;
-    if (node.from && node.from.id === riskId) {
-      targetEntity = node.to;
-    } else if (node.to && node.to.id === riskId) {
-      targetEntity = node.from;
-    } else {
-      restricted = true;
-    }
-    if (targetEntity === null) {
-      restricted = true;
-    }
-    // eslint-disable-next-line no-nested-ternary
-    // const link = !restricted
-    //   ? targetEntity.parent_types.includes('stix-core-relationship')
-    //     ? `/dashboard/observations/observables/${riskId}/knowledge/relations/${node.id}`
-    //     : `${resolveLink(targetEntity.entity_type)}/${targetEntity.id
-    //     }/knowledge/relations/${node.id}`
-    //   : null;
+
     const SourceOfDetection = R.pipe(
       R.pathOr([], ['origins']),
       R.mergeAll,
@@ -127,7 +88,6 @@ class RemediationEntityLineComponent extends Component {
         button={true}
         component={Link}
         to={`/activities/risk assessment/risks/${riskId}/remediation/${node.id}`}
-      // disabled={restricted}
       >
         <ListItemText
           primary={
@@ -192,7 +152,6 @@ class RemediationEntityLineComponent extends Component {
             paginationOptions={paginationOptions}
             history={history}
             riskId={riskId}
-          // disabled={restricted}
           />
         </ListItemSecondaryAction>
       </ListItem>

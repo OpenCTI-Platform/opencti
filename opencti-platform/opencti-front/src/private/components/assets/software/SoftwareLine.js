@@ -60,7 +60,6 @@ class SoftwareLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-
     return (
       <ListItem
         classes={{ root: classes.item }}

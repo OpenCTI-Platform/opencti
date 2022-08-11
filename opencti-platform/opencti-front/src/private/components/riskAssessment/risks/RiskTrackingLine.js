@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer, createFragmentContainer } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
+import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
@@ -15,42 +12,20 @@ import FlagOutlinedIcon from '@material-ui/icons/FlagOutlined';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import Grid from '@material-ui/core/Grid';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 import LaunchIcon from '@material-ui/icons/Launch';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
-import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
-import { interval } from 'rxjs';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
-import { commitMutation } from '../../../../relay/environment';
-// import AddExternalReferences from './AddExternalReferences';
-// import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
-import Security, {
-  KNOWLEDGE_KNENRICHMENT,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../../utils/Security';
-// import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
-import FileLine from '../../common/files/FileLine';
-import { FIVE_SECONDS } from '../../../../utils/Time';
-import RiskTrackingLogEdition from './RiskTrackingLogEdition';
-import FileUploader from '../../common/files/FileUploader';
 import RiskTrackingPopover from './RiskTrackingPopover';
-import RiskLogCreation from './RiskLogCreation';
-
-const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   paper: {
@@ -190,7 +165,7 @@ class RiskTrackingLineContainer extends Component {
     this.setState(openedState);
   }
 
-  handleClick(e) {
+  handleClick() {
     this.setState({
       value: !this.state.value,
     });
@@ -256,7 +231,6 @@ class RiskTrackingLineContainer extends Component {
       refreshQuery,
       riskStatusResponse,
     } = this.props;
-    const { expanded, displayUpdate } = this.state;
     const riskTrackingLoggedBy = R.pipe(
       R.pathOr([], ['logged_by']),
       R.mergeAll,

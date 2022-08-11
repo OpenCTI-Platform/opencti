@@ -6,9 +6,7 @@ import { Formik, Form, Field } from 'formik';
 import {
   compose,
   evolve,
-  mergeAll,
   map,
-  path,
   pipe,
   dissoc,
   assoc,
@@ -16,11 +14,8 @@ import {
 } from 'ramda';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
-import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
-import AddIcon from '@material-ui/icons/Add';
 import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -42,10 +37,6 @@ import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import { dateFormat, parse } from '../../../../../utils/Time';
 import { adaptFieldValue } from '../../../../../utils/String';
-import SelectField from '../../../../../components/SelectField';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
-import CyioExternalReferenceEdition from '../../../analysis/external_references/CyioExternalReferenceEdition';
-import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import MarkDownField from '../../../../../components/MarkDownField';
@@ -260,11 +251,9 @@ class RelatedTaskPopover extends Component {
     const {
       classes,
       t,
-      externalReferenceId,
       handleRemove,
       remediationId,
       refreshQuery,
-      relatedTaskData,
       data,
     } = this.props;
     const initialValues = R.pipe(

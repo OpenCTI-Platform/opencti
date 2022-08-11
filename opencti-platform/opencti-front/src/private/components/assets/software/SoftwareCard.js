@@ -99,7 +99,6 @@ class SoftwareCardComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea

@@ -2,9 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
   compose,
-  pipe,
-  pathOr,
-  map,
 } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
@@ -17,7 +14,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
-import ItemIcon from '../../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import EntitiesNotesPopover from './EntitiesNotesPopover';
 
