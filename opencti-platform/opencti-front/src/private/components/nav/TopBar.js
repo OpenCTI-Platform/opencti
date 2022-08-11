@@ -19,7 +19,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
-import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
 import TopMenuAnalysis from './TopMenuAnalysis';
@@ -136,7 +135,7 @@ const logoutMutation = graphql`
 `;
 
 const TopBar = ({
-  t, classes, location, history, keyword, theme,
+  t, classes, location, history, theme,
 }) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
   const handleOpenMenu = (event) => {
@@ -155,14 +154,6 @@ const TopBar = ({
         localStorage.removeItem('token');
       },
     });
-  };
-  const handleSearch = (searchKeyword) => {
-    if (searchKeyword.length > 0) {
-      // With need to double encode because of react router.
-      // Waiting for history 5.0 integrated to react router.
-      const encodeKey = encodeURIComponent(encodeURIComponent(searchKeyword));
-      history.push(`/dashboard/search/${encodeKey}`);
-    }
   };
   return (
     <AppBar

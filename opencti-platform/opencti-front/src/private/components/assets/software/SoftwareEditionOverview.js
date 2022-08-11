@@ -165,7 +165,7 @@ class SoftwareEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeCreatedBy(name, value) {
+  handleChangeCreatedBy(value) {
     if (!this.props.enableReferences) {
       commitMutation({
         mutation: softwareMutationFieldPatch,
@@ -177,7 +177,7 @@ class SoftwareEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeObjectMarking(name, values) {
+  handleChangeObjectMarking(values) {
     if (!this.props.enableReferences) {
       const { software } = this.props;
       const currentMarkingDefinitions = R.pipe(

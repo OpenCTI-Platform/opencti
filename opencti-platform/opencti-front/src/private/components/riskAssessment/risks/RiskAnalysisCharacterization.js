@@ -5,30 +5,17 @@ import * as PropTypes from 'prop-types';
 import {
   compose,
   pathOr,
-  map,
   path,
   mergeAll,
   pipe,
 } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import LaunchIcon from '@material-ui/icons/Launch';
 import Grid from '@material-ui/core/Grid';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
-import Chip from '@material-ui/core/Chip';
-import { InformationOutline, Information } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import ItemAuthor from '../../../../components/ItemAuthor';
-import ItemMarking from '../../../../components/ItemMarking';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '506px',
     minHeight: '100%',
@@ -54,7 +41,7 @@ const styles = (theme) => ({
 class RiskAnalysisCharacterizationComponent extends Component {
   render() {
     const {
-      t, fldt, classes, risk,
+      t, classes, risk,
     } = this.props;
     const riskAnalysisCharacterization = pipe(
       pathOr([], ['characterizations']),

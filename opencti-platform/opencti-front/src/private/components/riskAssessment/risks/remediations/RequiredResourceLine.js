@@ -9,25 +9,12 @@ import {
   pathOr,
   mergeAll,
 } from 'ramda';
-import { Link } from 'react-router-dom';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Typography from '@material-ui/core/Typography';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert } from '@material-ui/icons';
-import Skeleton from '@material-ui/lab/Skeleton';
 import Grid from '@material-ui/core/Grid';
 import CardContent from '@material-ui/core/CardContent';
 import GroupIcon from '@material-ui/icons/Group';
 import Tooltip from '@material-ui/core/Tooltip';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import IconButton from '@material-ui/core/IconButton';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
@@ -36,17 +23,9 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
-import Button from '@material-ui/core/Button';
-import * as R from 'ramda';
-import { AutoFix, Information } from 'mdi-material-ui';
+import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
-import ItemConfidence from '../../../../../components/ItemConfidence';
-import RemediationPopover from './RemediationPopover';
-import { resolveLink } from '../../../../../utils/Entity';
-import ItemIcon from '../../../../../components/ItemIcon';
 import RequiredResourcePopover from './RequiredResourcePopover';
-import { defaultValue } from '../../../../../utils/Graph';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import CyioCoreobjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
@@ -170,18 +149,13 @@ class RequiredResourceLineComponent extends Component {
 
   render() {
     const {
-      fsd,
       t,
-      fldt,
       classes,
       refreshQuery,
       data,
       remediationId,
-      displayRelation,
-      entityId,
       requiredResourceId,
     } = this.props;
-    const { expanded } = this.state;
     const requiredResourceNode = pipe(
       pathOr([], ['subjects']),
       map((value) => ({

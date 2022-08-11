@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { interval } from 'rxjs';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
@@ -10,14 +9,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../../components/i18n';
-import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import {
   RemediationEntityLine,
-  RemediationEntityLineDummy,
 } from './RemediationEntityLine';
-import { TEN_SECONDS } from '../../../../../utils/Time';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     listStyle: 'none',
     height: '100%',
@@ -34,10 +30,6 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
   },
 });
-
-const interval$ = interval(TEN_SECONDS);
-
-const nbOfRowsToLoad = 50;
 
 class RemediationEntitiesLines extends Component {
   // componentDidMount() {
@@ -57,8 +49,6 @@ class RemediationEntitiesLines extends Component {
       t,
       risk,
       riskId,
-      entityLink,
-      displayRelation,
     } = this.props;
     const RemediationEntitiesLogEdges = R.pathOr([], ['remediations'], risk);
     return (
@@ -100,7 +90,7 @@ class RemediationEntitiesLines extends Component {
           />
         </ListItem>
         {(RemediationEntitiesLogEdges.length > 0 ? (RemediationEntitiesLogEdges.map(
-          (remediationEdge, key) => <RemediationEntityLine
+          (remediationEdge) => <RemediationEntityLine
             node={remediationEdge}
             riskData={risk}
             key={remediationEdge.id}

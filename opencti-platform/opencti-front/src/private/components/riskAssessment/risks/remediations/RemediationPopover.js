@@ -19,7 +19,6 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
-// import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 import RemediationDetailsPopover from './RemediationDetailsPopover';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
@@ -247,9 +246,8 @@ class RemediationPopover extends Component {
           environment={QueryRendererDarkLight}
           query={remediationPopoverQuery}
           variables={{ id: cyioCoreRelationshipId }}
-          render={({ error, props, retry }) => {
+          render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             if (props) {

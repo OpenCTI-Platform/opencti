@@ -8,22 +8,14 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
-import Chip from '@material-ui/core/Chip';
-import Button from '@material-ui/core/Button';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
-import { InformationOutline, Information } from 'mdi-material-ui';
+import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import ItemAuthor from '../../../../components/ItemAuthor';
-import ItemMarking from '../../../../components/ItemMarking';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 
 const styles = (theme) => ({
@@ -82,7 +74,6 @@ class RiskOverviewComponent extends Component {
     const {
       t, fldt, classes, risk, refreshQuery,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>

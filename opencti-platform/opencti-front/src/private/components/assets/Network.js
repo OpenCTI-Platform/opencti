@@ -6,7 +6,6 @@ import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
-import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -23,10 +22,8 @@ import NetworkLines, {
 } from './network/NetworkLines';
 import NetworkCreation from './network/NetworkCreation';
 import NetworkDeletion from './network/NetworkDeletion';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
-import ErrorNotFound from '../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from "../../../utils/bakedToast";
+import { toastGenericError } from "../../../utils/bakedToast";
 
 class Network extends Component {
   constructor(props) {
@@ -256,7 +253,6 @@ class Network extends Component {
       openExports,
       selectedElements,
       numberOfElements,
-      openNetworkCreation,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {

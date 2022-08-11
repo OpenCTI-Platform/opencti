@@ -52,7 +52,6 @@ const styles = (theme) => ({
 class EntityTaskLineComponent extends Component {
   render() {
     const {
-      t,
       fd,
       classes,
       history,

@@ -3,8 +3,6 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer as QR } from 'react-relay';
-import Typography from '@material-ui/core/Typography';
-import { QueryRenderer } from '../../../../../relay/environment';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -21,11 +19,9 @@ import EntitiesResponsiblePartiesLines, {
   entitiesResponsiblePartiesLinesQuery,
 } from './EntitiesResponsiblePartiesLines';
 import EntitiesResponsiblePartiesCreation from './EntitiesResponsiblePartiesCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
 import EntitiesResponsiblePartiesDeletion from './EntitiesResponsiblePartiesDeletion';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 import RoleEntityEdition from './ResponsiblePartyEntityEdition';
 
 class ResponsiblePartiesEntities extends Component {
@@ -174,7 +170,7 @@ class ResponsiblePartiesEntities extends Component {
       selectAll,
     } = this.state;
     const {
-      t, history,
+      history,
     } = this.props;
     const dataColumns = {
       type: {
@@ -236,7 +232,6 @@ class ResponsiblePartiesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             return (
@@ -271,12 +266,8 @@ class ResponsiblePartiesEntities extends Component {
       numberOfElements,
     } = this.state;
     const {
-      t, history,
+      history,
     } = this.props;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       type: {
         label: 'Type',
@@ -352,7 +343,6 @@ class ResponsiblePartiesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             return (
@@ -392,7 +382,6 @@ class ResponsiblePartiesEntities extends Component {
       filters: finalFilters,
       filterMode: 'and',
     };
-    const { location } = this.props;
     return (
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}

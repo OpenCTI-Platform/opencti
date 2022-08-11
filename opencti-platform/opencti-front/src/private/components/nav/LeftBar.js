@@ -101,8 +101,7 @@ const LeftBar = ({
           });
           localStorage.setItem('currentOrg', res.data.clients.find((obj) => obj.client_id === clientId).name);
           setCurrentOrg(res.data.clients.find((obj) => obj.client_id === clientId).name);
-        }).catch((error) => {
-          console.error(error);
+        }).catch(() => {
           toastGenericError('Failed to get user information');
         });
     }
