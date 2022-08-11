@@ -6,36 +6,26 @@ import * as Yup from 'yup';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { Formik, Form, Field } from 'formik';
-// import { createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
-import AppBar from '@material-ui/core/AppBar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import { adaptFieldValue } from '../../../../utils/String';
-import { commitMutation } from '../../../../relay/environment';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-import { insertNode } from '../../../../utils/Store';
 import { dateFormat, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
-import DeviceEditionOverview from './DeviceEditionOverview';
 import DeviceEditionDetails from './DeviceEditionDetails';
 import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
 
@@ -311,7 +301,6 @@ class DeviceEditionContainer extends Component {
         >
           {({
             submitForm,
-            handleReset,
             isSubmitting,
             setFieldValue,
             values,

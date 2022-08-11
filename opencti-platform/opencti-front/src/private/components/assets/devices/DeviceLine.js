@@ -11,12 +11,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import DeviceIcon from '@material-ui/icons/Devices';
-import WindowsIcon from '@material-ui/icons/LaptopWindows';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
@@ -57,7 +53,6 @@ const styles = (theme) => ({
 class DeviceLineComponent extends Component {
   render() {
     const {
-      fd,
       classes,
       node,
       selectAll,
