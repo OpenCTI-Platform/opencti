@@ -95,8 +95,12 @@ const networkCreationMutation = graphql`
   }
 `;
 
-const deviceValidation = (t) => Yup.object().shape({
+const networkValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  asset_type: Yup.string().required(t('This field is required')),
+  network_id: Yup.string().required(t('This field is required')),
+  network_name: Yup.string().required(t('This field is required')),
+  is_scanned: Yup.boolean().required(t('This field is required')),
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -224,7 +228,7 @@ class NetworkCreation extends Component {
             ending_address: '',
             is_scanned: false,
           }}
-          validationSchema={deviceValidation(t)}
+          validationSchema={networkValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
