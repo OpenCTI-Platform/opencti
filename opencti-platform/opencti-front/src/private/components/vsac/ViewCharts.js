@@ -384,7 +384,7 @@ class ViewCharts extends Component {
             {analysises &&
               Object.entries(analysises).map(([id, analysis]) => {
                 return (
-                  <MenuItem onClick={handleClose}>
+                  <MenuItem>
                     <ListItem key={analysis.id}>
                       <ListItemText
                         id={analysis.id}
