@@ -150,6 +150,7 @@ class ViewCharts extends Component {
       High: '#E28120',
       Severe: '#A33611',
       Critical: '#7F0909',
+      Informational: '#00bcd4',
     };
 
     const handleTabChange = (event, newValue) => {
