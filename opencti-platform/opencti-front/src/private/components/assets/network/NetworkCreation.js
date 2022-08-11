@@ -40,6 +40,7 @@ import Loader from '../../../../components/Loader';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import NetworkCreationDetails from './NetworkCreationDetails';
 import { dayStartDate, parse } from '../../../../utils/Time';
+import { toastGenericError } from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   container: {
@@ -108,8 +109,12 @@ const networkCreationMutation = graphql`
   }
 `;
 
-const deviceValidation = (t) => Yup.object().shape({
+const networkValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  asset_type: Yup.string().required(t('This field is required')),
+  network_id: Yup.string().required(t('This field is required')),
+  network_name: Yup.string().required(t('This field is required')),
+  is_scanned: Yup.boolean().required(t('This field is required')),
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -149,7 +154,7 @@ class NetworkCreation extends Component {
     }
     const adaptedValues = R.evolve(
       {
-        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        release_date: () => values.release_date === null ? null : values.release_date.toISOString(),
       },
       values,
     );
@@ -157,7 +162,7 @@ class NetworkCreation extends Component {
       R.dissoc('starting_address'),
       R.dissoc('ending_address'),
       R.dissoc('labels'),
-      // R.assoc('network_ipv4_address_range', network_ipv4_address_range),
+      R.assoc('network_ipv4_address_range', network_ipv4_address_range),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: networkCreationMutation,
@@ -171,7 +176,11 @@ class NetworkCreation extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/network');
       },
-      onError: (err) => console.log('NetworkCreationDarkLightMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to Create Network');
+        this.props.history.push('/defender HQ/assets/network');
+      }
     });
     // commitMutation({
     //   mutation: deviceCreationOverviewMutation,
@@ -228,7 +237,7 @@ class NetworkCreation extends Component {
             vendor_name: '',
             release_date: null,
             operational_status: '',
-            implementation_point: '',
+            implementation_point: 'internal',
             network_id: '',
             network_name: '',
             labels: [],
@@ -236,7 +245,7 @@ class NetworkCreation extends Component {
             ending_address: '',
             is_scanned: false,
           }}
-          validationSchema={deviceValidation(t)}
+          validationSchema={networkValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >

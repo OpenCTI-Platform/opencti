@@ -328,6 +328,7 @@ const RequiredResourcesLines = createFragmentContainer(
             name
             description
             subjects {
+              subject_type
               subject_ref {
                 __typename
                 ... on Component {

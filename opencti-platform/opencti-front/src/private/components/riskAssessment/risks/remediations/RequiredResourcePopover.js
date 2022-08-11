@@ -161,6 +161,17 @@ class RequiredResourcePopover extends Component {
     };
   }
 
+  componentDidMount() {
+    const requiredResourceNode = R.pipe(
+      R.pathOr([], ['subjects']),
+      R.map((value) => ({
+        resource_type: value.subject_type
+      })),
+      R.mergeAll,
+    )(this.props.data);
+    this.setState({ resourceName: requiredResourceNode.resource_type });
+  }
+
   handleResourceTypeFieldChange(resourceType) {
     this.setState({ resourceName: resourceType });
   }
@@ -192,18 +203,17 @@ class RequiredResourcePopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const subjects = (values.resource_type || values.resource) ? [{
-      subject_type: values.resource_type,
-      subject_ref: values.resource,
-    }] : []
-    // this.setState({
-    // });
+    const subjects = (values.resource_type === '' && values.resource === '')
+      ? []
+      : [JSON.stringify({
+        subject_type: values.resource_type,
+        subject_ref: values.resource,
+      })];
 
     const finalValues = pipe(
-      dissoc('resource_type'),
-      dissoc('resource'),
       dissoc('id'),
-      // assoc('remediation_id', this.props.remediationId),
+      dissoc('resource'),
+      dissoc('resource_type'),
       assoc('subjects', subjects),
       toPairs,
       map((n) => ({
@@ -289,10 +299,8 @@ class RequiredResourcePopover extends Component {
     const requiredResourceNode = R.pipe(
       R.pathOr([], ['subjects']),
       R.map((value) => ({
-        name: value.subject_ref.name,
-        description: value.subject_ref.description,
-        resource_type: value.subject_ref.party_type,
-        resource: value.subject_ref.asset_type,
+        resource_type: value.subject_type,
+        resource: value.subject_ref.id,
       })),
       R.mergeAll,
     )(data);
@@ -300,8 +308,8 @@ class RequiredResourcePopover extends Component {
       R.assoc('id', data.id || ''),
       R.assoc('name', data?.name || ''),
       R.assoc('description', data?.description || ''),
-      R.assoc('resource_type', data.resource_type || ''),
-      R.assoc('resource', data.resource || ''),
+      R.assoc('resource_type', requiredResourceNode.resource_type || ''),
+      R.assoc('resource', requiredResourceNode.resource || ''),
       R.pick([
         'id',
         'name',
