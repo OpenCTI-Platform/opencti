@@ -12,7 +12,7 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesResponsiblePartiessCards, {
+import EntitiesResponsiblePartiesCards, {
   entitiesResponsiblePartiesCardsQuery,
 } from './EntitiesResponsiblePartiesCards';
 import EntitiesResponsiblePartiesLines, {
@@ -172,7 +172,7 @@ class ResponsiblePartiesEntities extends Component {
       selectAll,
     } = this.state;
     const {
-      t,
+      t, history,
     } = this.props;
     const dataColumns = {
       type: {
@@ -237,9 +237,10 @@ class ResponsiblePartiesEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesResponsiblePartiessCards
+              <EntitiesResponsiblePartiesCards
                 data={props}
                 extra={props}
+                history={history}
                 selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
@@ -267,7 +268,7 @@ class ResponsiblePartiesEntities extends Component {
       numberOfElements,
     } = this.state;
     const {
-      t,
+      t, history,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -353,6 +354,7 @@ class ResponsiblePartiesEntities extends Component {
             return (
               <EntitiesResponsiblePartiesLines
                 data={props}
+                history={history}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
                 initialLoading={props === null}

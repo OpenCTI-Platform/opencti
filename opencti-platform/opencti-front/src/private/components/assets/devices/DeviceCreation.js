@@ -164,6 +164,7 @@ class DeviceCreation extends Component {
       onError: (err) => {
         console.error(err);
         toastGenericError("Failed to create Device");
+        this.props.history.push('/defender HQ/assets/devices');
       }
     });
     // commitMutation({

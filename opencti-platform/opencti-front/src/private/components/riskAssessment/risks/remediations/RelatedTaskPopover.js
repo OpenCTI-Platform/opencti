@@ -5,7 +5,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import {
   compose,
-  pathOr,
+  evolve,
   mergeAll,
   map,
   path,
@@ -129,8 +129,6 @@ class RelatedTaskPopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
-      responsible_roles: [],
-      associated_activities: [],
       timing: {},
     };
   }
@@ -162,27 +160,36 @@ class RelatedTaskPopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    this.setState({
-      responsible_roles: values.responsible_roles,
-      associated_activities: values.associated_activities,
-      timing: {
-        within_date_range: {
-          start_date: values.start_date === null ? null : parse(values.start_date),
-          end_date: values.end_date === null ? null : parse(values.end_date),
-        }
+    const adaptedValues = evolve(
+      {
+        associated_activities: () => {
+          if (values.associated_activities.length > 0) {
+            values.associated_activities.map((value) => (
+              JSON.stringify({ 'activity_id': value })
+            ))
+          } else {
+            return []
+          }
+        },
       },
-    });
+      values,
+    );
+    const timing = {
+      within_date_range: {
+        start_date: values.start_date === null ? null : parse(values.start_date),
+        end_date: values.end_date === null ? null : parse(values.end_date),
+      }
+    }
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      assoc('responsible_role', this.state.responsible_roles),
-      assoc('timings', this.state.timing),
+      assoc('timings', JSON.stringify(timing)),
       toPairs,
       map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
       })),
-    )(values);
+    )(adaptedValues);
     commitMutation({
       mutation: relatedTaskEditionQuery,
       variables: {

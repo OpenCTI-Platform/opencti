@@ -85,7 +85,7 @@ class PortsField extends Component {
       this.setState({
         port: {
           ...this.state.port,
-          port_number: value ? value : '',
+          port_number: value ? parseInt(value) : '',
         },
       })
     }

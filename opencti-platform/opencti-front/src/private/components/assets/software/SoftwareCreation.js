@@ -38,6 +38,7 @@ import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_obje
 import Loader from '../../../../components/Loader';
 import SoftwareCreationDetails from './SoftwareCreationDetails';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
+import { toastGenericError } from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   container: {
@@ -151,6 +152,11 @@ class SoftwareCreation extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/software');
       },
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create Software');
+        this.props.history.push('/defender HQ/assets/software');
+      }
     });
     // commitMutation({
     //   mutation: softwareCreationMutation,
@@ -300,7 +306,7 @@ class SoftwareCreation extends Component {
                       stixCoreObjectId={software.id}
                     /> */}
                   <div>
-                    <CyioCoreObjectAssetCreationExternalReferences disableAdd={true}/>
+                    <CyioCoreObjectAssetCreationExternalReferences disableAdd={true} />
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -308,7 +314,7 @@ class SoftwareCreation extends Component {
                 </Grid>
               </Grid>
               <div>
-                <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' disableAdd={true}/>
+                <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' disableAdd={true} />
               </div>
             </>
           )}

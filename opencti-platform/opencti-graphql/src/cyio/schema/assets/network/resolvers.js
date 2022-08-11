@@ -8,6 +8,7 @@ import {
   deleteNetworkAssetQuery,
   selectAllNetworks,
   selectNetworkQuery,
+  detachFromNetworkQuery,
   networkPredicateMap,
 } from './sparql-query.js';
 import {
@@ -58,6 +59,11 @@ const networkResolvers = {
 
           if (asset.id === undefined || asset.id == null) {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'; skipping`);
+            continue;
+          }
+
+          if (asset.network_id === undefined || asset.network_id == null) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'network_id'; skipping`);
             continue;
           }
 
@@ -316,7 +322,7 @@ const networkResolvers = {
     },
     editNetworkAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id'];
+      let editSelect = ['id','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -324,27 +330,178 @@ const networkResolvers = {
       let response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
-        queryId: "Select Hardware asset",
+        queryId: "Select Network asset",
         singularizeSchema
-      })
+      });
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
-      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      // retrieve the IRI of the Network Asset
+      const iri = response[0].iri;
+
+      // determine operation, if missing
       for (let editItem of input) {
-        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+        if (editItem.operation !== undefined) continue;
+        if (!response[0].hasOwnProperty(editItem.key)) {
+          editItem.operation = 'add';
+        } else {
+          editItem.operation = 'replace';
+        }
       }
-      // END WORKAROUND
+
+      // Push an edit to update the modified time of the object
+      const timestamp = new Date().toISOString();
+      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      input.push(update);
+
+      // obtain the IRIs for the referenced objects so that if one doesn't 
+      // exists we have created anything yet.  For complex objects that are
+      // private to this object, remove them (if needed) and add the new instances
+      for (let editItem  of input) {
+        let value, objType, objArray, iris=[], fieldType;
+        let relationshipQuery, query;
+        for (value of editItem.value) {
+          let rangeIri;
+          switch(editItem.key) {
+            case 'network_address_range':
+            case 'network_ipv4_address_range':
+            case 'network_ipv6_address_range':
+              fieldType = 'complex';
+              let networkRange = JSON.parse(value);
+              rangeIri = `<${response[0][editItem.key]}>`;
+
+              // need to remove existing complex object(s)
+              if (editItem.operation !== 'add') {
+                query = selectIPAddressRange(rangeIri);
+                let result = await dataSources.Stardog.queryById({
+                  dbName,
+                  sparqlQuery: query,
+                  queryId: "Select IP Address Range",
+                  singularizeSchema
+                });
+                if (result.length === 0) throw new UserInputError(`Entity ${id} does not have a network range specified.`);
+                const rangeId = (Array.isArray(result[0].id) ? result[0].id[0] : result[0].id);
+                let start = (Array.isArray(result[0].starting_ip_address) ? result[0].starting_ip_address[0] : result[0].starting_ip_address);
+                let end = (Array.isArray(result[0].ending_ip_address) ? result[0].ending_ip_address[0] : result[0].ending_ip_address);
+
+                // detach the IP Address Range from Network Asset
+                try {
+                  query = detachFromNetworkQuery(id,'network_address_range', rangeIri);
+                  await dataSources.Stardog.delete({
+                    dbName,
+                    sparqlQuery: query,
+                    queryId: "Detaching IP Address Range from Network Asset"
+                  });
+                } catch (e) {
+                  console.log(e)
+                  throw e
+                }    
+                // delete starting IP Address object (if exists)
+                if (start.includes('IpV4') || start.includes('IpV6')) {
+                  if (!start.startsWith('<')) start = `<${start}>`;
+                  try {
+                    let ipQuery = deleteIpQuery(start);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: ipQuery,
+                      queryId: "Delete Start IP"
+                    });    
+                  } catch (e) {
+                    console.log(e)
+                    throw e
+                  }    
+                }
+                // delete ending IP Address object (if exists)
+                if (end.includes('IpV4') || end.includes('IpV6')) {
+                  if (!end.startsWith('<')) end = `<${end}>`;
+                  try {
+                    let ipQuery = deleteIpQuery(end);
+                    await dataSources.Stardog.delete({
+                      dbName,
+                      sparqlQuery: ipQuery,
+                      queryId: "Delete End IP"
+                    });  
+                  } catch (e) {
+                    console.log(e)
+                    throw e
+                  }    
+                }
+                // delete the IP Address range
+                try {
+                  const deleteIpRange = deleteIpAddressRange(`<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${rangeId}>`);
+                  await dataSources.Stardog.delete({
+                    dbName,
+                    sparqlQuery: deleteIpRange,
+                    queryId: "Delete IP Range"
+                  });        
+                } catch (e) {
+                  console.log(e)
+                  throw e
+                }    
+              }
+              // Need to add new complex object(s)
+              if (editItem.operation !== 'delete') {
+                let startAddr = networkRange.starting_ip_address;
+                let endAddr = networkRange.ending_ip_address;
+                let entityType = (startAddr.ip_address_value.includes(':') ? 'ipv6-addr' : 'ipv4-addr');
+
+                const { ipIris: startIris, query: startQuery } = insertIPQuery([startAddr], (entityType === 'ipv4-addr' ? 4 : 6));
+                const { ipIris: endIris, query: endQuery } = insertIPQuery([endAddr], (entityType === 'ipv4-addr' ? 4 : 6));
+                const startIri = startIris[0], endIri = endIris[0];
+
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: startQuery,
+                  queryId: "Create Starting IP Address for Network Asset"
+                });
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: endQuery,
+                  queryId: "Create Ending IP Address for Network Asset"
+                });
+                const { iri: rangeIri, query:rangeQuery } = insertIPAddressRangeQuery(startIri, endIri);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: rangeQuery,
+                  queryId: "Create IP Address Range to Network Asset"
+                });
+                const relQuery = insertIPAddressRangeRelationship(iri, rangeIri);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: relQuery,
+                  queryId: "Add IP Address Range to Network Asset"
+                });                
+              }
+              // set operation value to indicate to skip processing it
+              editItem.operation = 'skip';
+              break;
+            default:
+              fieldType = 'simple';
+              break;
+          }
+
+          if (fieldType === 'id') {
+            // do nothing
+          }
+        }
+        if (iris.length > 0) editItem.value = iris;
+      }
+
+      // build composite update query for all edit items
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Network-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Network",
         input,
         networkPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Network Asset"
-      });
+      );
+      if (query != null) {
+        await dataSources.Stardog.edit({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Update Network Asset"
+        });
+      }
+
+      // retrieve the updated contents
       const selectQuery = selectNetworkQuery(id, selectMap.getNode("editNetworkAsset"));
       let result;
       try {
@@ -367,8 +524,8 @@ const networkResolvers = {
     network_address_range: async (parent, _, {dbName, dataSources},) => {
       let item = parent.netaddr_range_iri;
       if (item === undefined) return null;
-      var sparqlQuery = selectIPAddressRange(`<${item}>`)
-      var reducer = getReducer('NETADDR-RANGE');
+      let sparqlQuery = selectIPAddressRange(`<${item}>`);
+      let reducer = getReducer('NETADDR-RANGE');
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,

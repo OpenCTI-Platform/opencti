@@ -172,7 +172,7 @@ class TasksEntities extends Component {
       selectAll,
     } = this.state;
     const {
-      t,
+      t, history,
     } = this.props;
     const dataColumns = {
       type: {
@@ -237,6 +237,7 @@ class TasksEntities extends Component {
               <EntitiesTasksCards
                 data={props}
                 extra={props}
+                history={history}
                 selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
@@ -264,7 +265,7 @@ class TasksEntities extends Component {
       numberOfElements,
     } = this.state;
     const {
-      t,
+      t, history,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -345,6 +346,7 @@ class TasksEntities extends Component {
             return (
               <EntitiesTasksLines
                 data={props}
+                history={history}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
                 initialLoading={props === null}

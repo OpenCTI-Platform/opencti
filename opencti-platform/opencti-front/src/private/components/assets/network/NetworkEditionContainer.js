@@ -92,6 +92,9 @@ const styles = (theme) => ({
 const networkValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   asset_type: Yup.string().required(t('This field is required')),
+  network_id: Yup.string().required(t('This field is required')),
+  network_name: Yup.string().required(t('This field is required')),
+  is_scanned: Yup.boolean().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
 });
@@ -142,7 +145,7 @@ class NetworkEditionContainer extends Component {
     };
     const adaptedValues = R.evolve(
       {
-        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        release_date: () => values.release_date === null ? null : values.release_date.toISOString(),
       },
       values,
     );
@@ -160,7 +163,7 @@ class NetworkEditionContainer extends Component {
       R.dissoc('id'),
       R.dissoc('starting_address'),
       R.dissoc('ending_address'),
-      R.assoc('network_ipv4_address_range', network_ipv4_address_range),
+      R.assoc('network_ipv4_address_range', JSON.stringify(network_ipv4_address_range)),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
@@ -180,7 +183,7 @@ class NetworkEditionContainer extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/network');
       },
-      onError: (err) => console.log('NetworkEditionDarkLightMutationError', err),
+      onError: (err) => console.error(err),
     });
     // commitMutation({
     //   mutation: deviceCreationOverviewMutation,

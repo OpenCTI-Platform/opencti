@@ -139,7 +139,7 @@ class RemediationDetailsPopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const sourceValues = R.pickAll(['actor_ref', 'actor_ref'], values);
+    const sourceValues = R.pickAll(['actor_ref', 'actor_type'], values);
 
     const adaptedValues = R.evolve(
       {
@@ -151,7 +151,7 @@ class RemediationDetailsPopover extends Component {
     const finalValues = R.pipe(
       R.dissoc('actor_type'),
       R.dissoc('actor_ref'),
-      R.assoc('origins', { origin_actors: [sourceValues] }),
+      R.assoc('origins', JSON.stringify([{ origin_actors: [sourceValues] }])),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],

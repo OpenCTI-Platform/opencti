@@ -97,7 +97,7 @@ class AddressField extends Component {
       t, fldt, classes, name, title, helperText,
     } = this.props;
     const {
-      error,
+      error, ipAddress,
     } = this.state;
     return (
       <>
@@ -121,7 +121,7 @@ class AddressField extends Component {
           disabled={true}
           multiline={true}
           rows="3"
-          value={this.state.ipAddress}
+          value={ipAddress}
           className={classes.textField}
           InputProps={{
             className: classes.inputTextField,
@@ -130,7 +130,6 @@ class AddressField extends Component {
         />
         <Dialog
           open={this.state.open}
-          onClose={() => this.setState({ open: false })}
           fullWidth={true}
           maxWidth='sm'
         >
@@ -164,7 +163,7 @@ class AddressField extends Component {
             <div className={classes.scrollBg}>
               <div className={classes.scrollDiv}>
                 <div className={classes.scrollObj}>
-                  {this.state.ipAddress.map((address, key) => (
+                  {ipAddress.map((address, key) => (
                     <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography>
                         {address}
@@ -186,6 +185,7 @@ class AddressField extends Component {
               {t('Cancel')}
             </Button>
             <Button
+              disabled={!ipAddress.length}
               variant='contained'
               onClick={this.handleSubmit.bind(this)}
               color="primary"

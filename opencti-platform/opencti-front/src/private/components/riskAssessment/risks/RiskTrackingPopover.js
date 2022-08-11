@@ -5,6 +5,7 @@ import * as PropTypes from 'prop-types';
 import {
   compose,
   dissoc,
+  evolve,
   assoc,
   pipe,
 } from 'ramda';
@@ -150,19 +151,19 @@ class RiskTrackingPopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    if(values.logged_by.length > 0){
-      this.setState({
-        logged_by: [{'party': values.logged_by}],
-      })
-    }
+    const adaptedValues = evolve(
+      {
+        logged_by: () => values.logged_by.length > 0 && [JSON.stringify({'party': values.logged_by})],
+      },
+      values,
+    );
     const finalValues = R.pipe(
-      R.assoc('logged_by', this.state.logged_by),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
       })),
-    )(values);
+    )(adaptedValues);
     commitMutation({
       mutation: RiskTrackingEditionQuery,
       variables: {
@@ -266,7 +267,7 @@ class RiskTrackingPopover extends Component {
       R.assoc('description', node?.description || ''),
       R.assoc('event_start', dateFormat(node?.event_start)),
       R.assoc('event_end', dateFormat(node?.event_end)),
-      R.assoc('logged_by', riskTrackingLoggedBy?.name || []),
+      R.assoc('logged_by', riskTrackingLoggedBy?.party?.id || []),
       R.assoc('status_change', node?.status_change || ''),
       R.assoc('related_responses', riskStatusResponse.map((value) => value.id) || []),
       R.pick([

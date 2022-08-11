@@ -104,6 +104,7 @@ class EntitiesRolesPopover extends Component {
             <CyioCoreObjectLabelsView
               menuItemName='Add Labels'
               labels={node.labels}
+              history={history}
               marginTop={0}
               id={node.id}
               typename={node.__typename}
@@ -117,6 +118,7 @@ class EntitiesRolesPopover extends Component {
 
 EntitiesRolesPopover.propTypes = {
   node: PropTypes.object,
+  history: PropTypes.object,
   handleOpenMenu: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,

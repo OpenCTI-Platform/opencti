@@ -140,7 +140,6 @@ class RiskLogCreation extends Component {
       open: false,
       onSubmit: false,
       displayCancel: false,
-      logged_by: [],
     };
   }
 
@@ -161,16 +160,12 @@ class RiskLogCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    if (values.logged_by.length > 0) {
-      this.setState({
-        logged_by: [{ 'party': values.logged_by }],
-      })
-    }
     const adaptedValues = evolve(
       {
         event_start: () => values.event_start === null ? null : parse(values.event_start).format(),
         event_end: () => values.event_end === null ? null : parse(values.event_end).format(),
         entry_type: () => values.entry_type.toString().split(),
+        logged_by: () => values.logged_by.length > 0 && [{'party': values.logged_by}],
       },
       values,
     );
@@ -181,7 +176,7 @@ class RiskLogCreation extends Component {
     commitMutation({
       mutation: RiskLogCreationMutation,
       variables: {
-        input: finalValues,
+        input: adaptedValues,
       },
       setSubmitting,
       onCompleted: (response) => {
