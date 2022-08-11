@@ -4,9 +4,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -59,59 +58,143 @@ class ErrorBox extends Component {
     return FieldName[0];
   }
 
-  render() {
+  renderBadUserInput() {
     const {
       t, classes, history, pathname, error,
     } = this.props;
     return (
       <>
-        <Dialog
-          open={Object.keys(error).length}
-          fullWidth={true}
-          maxWidth='md'
-        >
-          <DialogTitle classes={{ root: classes.dialogTitle }}>
-            {t('ERROR')}
-          </DialogTitle>
-          <DialogContent style={{ overflow: 'hidden' }}>
-            <Typography style={{ marginBottom: '20px' }}>
-              Sorry. Something went wrong and DarkLight Support has been notified. Please try again or contact <strong style={{ color: '#075AD3' }}>Support@darklight.ai</strong> for assistance.
-            </Typography>
+        <DialogTitle classes={{ root: classes.dialogTitle }}>
+          {t('ERROR')}
+        </DialogTitle>
+        <DialogContent style={{ overflow: 'hidden' }}>
+          <Typography style={{ marginBottom: '20px' }}>
+            Sorry. Something went wrong and DarkLight Support has been notified. Please try again or contact <strong style={{ color: '#075AD3' }}>Support@darklight.ai</strong> for assistance.
+          </Typography>
+          <List>
             {Object.keys(error).length && error.map((value, key) => {
-              if (value.extensions.code.includes('BAD_USER_INPUT')) {
-                return (
-                  <>
-                    <Accordion
-                      disableGutters
-                      square
-                      key={key}
-                    >
-                      <AccordionSummary>
-                        <Typography variant='h2'>
-                          {t(value.extensions.code)}
-                        </Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        {this.handleErrorResponse(value.message)}
-                      </AccordionDetails>
-                    </Accordion>
-                  </>
-                );
-              }
-              return <></>;
+              return (
+                <ListItem
+                  divider
+                  key={key}
+                >
+                  {this.handleErrorResponse(value.message)}
+                </ListItem>
+              );
             })}
-          </DialogContent>
-          <DialogActions className={classes.dialogAction}>
-            <Button
-              variant='outlined'
-              onClick={() => history.push(pathname)}
-            >
-              {t('Cancel')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          </List>
+        </DialogContent>
+        <DialogActions className={classes.dialogAction}>
+          <Button
+            variant='outlined'
+            onClick={() => history.push(pathname)}
+          >
+            {t('Cancel')}
+          </Button>
+        </DialogActions>
       </>
     );
+  }
+
+  renderInternalServerError() {
+    const {
+      t, classes, history, pathname,
+    } = this.props;
+    return (
+      <>
+        <DialogTitle classes={{ root: classes.dialogTitle }}>
+          {t('ERROR')}
+        </DialogTitle>
+        <DialogContent style={{ overflow: 'hidden' }}>
+          <Typography style={{ marginBottom: '20px' }}>
+            Sorry. Something went wrong and DarkLight Support has been notified. Please try again or contact <strong style={{ color: '#075AD3' }}>Support@darklight.ai</strong> for assistance.
+          </Typography>
+        </DialogContent>
+        <DialogActions className={classes.dialogAction}>
+          <Button
+            variant='outlined'
+            onClick={() => history.push(pathname)}
+          >
+            {t('Cancel')}
+          </Button>
+        </DialogActions>
+      </>
+    );
+  }
+
+  renderUnauthenticated() {
+    const {
+      t, classes, history, pathname,
+    } = this.props;
+    return (
+      <>
+        <DialogTitle classes={{ root: classes.dialogTitle }}>
+          {t('ERROR')}
+        </DialogTitle>
+        <DialogContent style={{ overflow: 'hidden' }}>
+          <Typography style={{ marginBottom: '20px' }}>
+            Sorry, you need to be Authenticated to do this. You are not logged in.
+          </Typography>
+        </DialogContent>
+        <DialogActions className={classes.dialogAction}>
+          <Button
+            variant='outlined'
+            onClick={() => history.push(pathname)}
+          >
+            {t('Cancel')}
+          </Button>
+        </DialogActions>
+      </>
+    );
+  }
+
+  renderForbidden() {
+    const {
+      t, classes, history, pathname,
+    } = this.props;
+    return (
+      <>
+        <DialogTitle classes={{ root: classes.dialogTitle }}>
+          {t('ERROR')}
+        </DialogTitle>
+        <DialogContent style={{ overflow: 'hidden' }}>
+          <Typography style={{ marginBottom: '20px' }}>
+            Sorry, you are not authorized to perform this operation. Please contact your admin for assistance.
+          </Typography>
+        </DialogContent>
+        <DialogActions className={classes.dialogAction}>
+          <Button
+            variant='outlined'
+            onClick={() => history.push(pathname)}
+          >
+            {t('Cancel')}
+          </Button>
+        </DialogActions>
+      </>
+    );
+  }
+
+  render() {
+    const {
+      error,
+    } = this.props;
+    return (
+      <Dialog
+        open={Object.keys(error).length}
+        fullWidth={true}
+        maxWidth='md'
+      >
+        {(Object.keys(error).length
+          && error.every((value) => value.extensions.code.includes('BAD_USER_INPUT'))) && this.renderBadUserInput()}
+        {(Object.keys(error).length
+          && error.every((value) => value.extensions.code.includes('GRAPHQL_PARSE_FAILED') || value.extensions.code.includes('GRAPHQL_VALIDATION_FAILED') || value.extensions.code.includes('INTERNAL_SERVER_ERROR'))) && this.renderInternalServerError()}
+        {(Object.keys(error).length
+          && error.every((value) => value.extensions.code.includes('UNAUTHENTICATED'))) && this.renderUnauthenticated()}
+        {(Object.keys(error).length
+          && error.every((value) => value.extensions.code.includes('FORBIDDEN'))) && this.renderForbidden()}
+      </Dialog>
+    );
+
   }
 }
 
