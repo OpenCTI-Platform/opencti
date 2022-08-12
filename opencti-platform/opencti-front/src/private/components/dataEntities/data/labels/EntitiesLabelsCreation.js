@@ -1,31 +1,21 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
-import * as R from 'ramda';
-import { compose, evolve } from 'ramda';
+import { compose } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import { Information } from 'mdi-material-ui';
-import Typography from '@material-ui/core/Typography';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
-import { dayStartDate, parse } from '../../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
-import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
 import ColorPickerField from '../../../../../components/ColorPickerField';
-import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
@@ -105,14 +95,13 @@ class EntitiesLabelsCreation extends Component {
         input: values,
       },
       setSubmitting,
-      onCompleted: (data) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
         this.props.history.push('/data/entities/labels');
       },
-      onError: (err) => {
-        console.error(err);
+      onError: () => {
         toastGenericError('Failed to create a label');
       },
     });
@@ -154,8 +143,6 @@ class EntitiesLabelsCreation extends Component {
       t,
       classes,
       openDataCreation,
-      open,
-      history,
     } = this.props;
     return (
       <>
@@ -181,8 +168,6 @@ class EntitiesLabelsCreation extends Component {
               submitForm,
               handleReset,
               isSubmitting,
-              setFieldValue,
-              values,
             }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Label')}</DialogTitle>

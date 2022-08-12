@@ -2,9 +2,9 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import {
-  map, filter, head, compose, pathOr,
+  map, filter, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -12,7 +12,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import { CheckCircle, WorkOutline } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
@@ -21,8 +20,6 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import rehypeRaw from 'rehype-raw';
-import { commitMutation } from '../../../../relay/environment';
-import ItemMarking from '../../../../components/ItemMarking';
 import Typography from '@material-ui/core/Typography';
 
 const styles = (theme) => ({

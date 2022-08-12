@@ -10,7 +10,6 @@ import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -179,7 +178,7 @@ class NetworkEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeObjectMarking(name, values) {
+  handleChangeObjectMarking(values) {
     if (!this.props.enableReferences) {
       const { network } = this.props;
       const currentMarkingDefinitions = R.pipe(

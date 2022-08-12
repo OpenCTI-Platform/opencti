@@ -4,17 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
-import DeviceCreationOverview from './DeviceCreationOverview';
-import DeviceCreationDetails from './DeviceCreationDetails';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
@@ -58,14 +48,12 @@ class DeviceCreationContainer extends Component {
     this.state = { currentTab: 0 };
   }
 
-  handleChangeTab(event, value) {
+  handleChangeTab(value) {
     this.setState({ currentTab: value });
   }
 
   render() {
-    const {
-      t, classes, handleClose, device,
-    } = this.props;
+    const { classes } = this.props;
     // const { editContext } = device;
     return (
       <div>

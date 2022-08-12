@@ -2,36 +2,25 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import * as Yup from 'yup';
 import * as R from 'ramda';
-import { Formik, Form, Field } from 'formik';
+import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import Switch from '@material-ui/core/Switch';
 import Paper from '@material-ui/core/Paper';
-import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { Information } from 'mdi-material-ui';
-import AddIcon from '@material-ui/icons/Add';
 import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import SelectField from '../../../../components/SelectField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { dateFormat, parse } from '../../../../utils/Time';
-import DatePickerField from '../../../../components/DatePickerField';
-import CommitMessage from '../../common/form/CommitMessage';
-import { adaptFieldValue } from '../../../../utils/String';
 import InstalledAsset from '../../common/form/InstalledAsset';
-import ItemIcon from '../../../../components/ItemIcon';
 import PortsField from '../../common/form/PortsField';
 import AddressField from '../../common/form/AddressField';
 import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../utils/Network';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -88,9 +77,7 @@ class DeviceEditionDetailsComponent extends Component {
       classes,
       values,
       isSubmitting,
-      device,
       setFieldValue,
-      enableReferences,
     } = this.props;
     return (
       <div>

@@ -4,12 +4,10 @@ import { Link } from 'react-router-dom';
 import {
   compose,
   pipe,
-  map,
   pathOr,
   mergeAll,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
-import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -19,23 +17,10 @@ import {
   Checkbox,
 } from '@material-ui/core';
 import CardActionArea from '@material-ui/core/CardActionArea';
-import CardActions from '@material-ui/core/CardActions';
-import CardMedia from '@material-ui/core/CardMedia';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import IconButton from '@material-ui/core/IconButton';
-import Avatar from '@material-ui/core/Avatar';
-import { StarBorderOutlined } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import {
-  addBookmark,
-  deleteBookMark,
-} from '../../common/stix_domain_objects/StixDomainObjectBookmark';
-import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
 
@@ -124,14 +109,11 @@ class RiskCardComponent extends Component {
   render() {
     const {
       t,
-      fsd,
       classes,
       node,
       history,
       selectAll,
       onToggleEntity,
-      bookmarksIds,
-      onLabelClick,
       selectedElements,
     } = this.props;
     const riskData = pipe(
@@ -142,7 +124,6 @@ class RiskCardComponent extends Component {
       pathOr([], ['remediations']),
       mergeAll,
     )(node);
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import Skeleton from '@material-ui/lab/Skeleton';
 import ListItemText from '@material-ui/core/ListItemText';
 import List from '@material-ui/core/List';
@@ -11,13 +10,8 @@ import Paper from '@material-ui/core/Paper';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
-import { QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
-import ListLines from '../../../../../components/list_lines/ListLines';
 import RemediationEntitiesLines from './RemediationEntitiesLines';
-import StixCoreRelationshipCreationFromEntity from '../../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
-import AddRemediation from './AddRemediation';
 
 const styles = () => ({
   paper: {
@@ -81,12 +75,10 @@ class RemediationEntities extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
     const {
       entityId,
       classes,
       history,
-      t,
       riskId,
     } = this.props;
     const dataColumns = {
@@ -250,9 +242,8 @@ class RemediationEntities extends Component {
       sortBy,
       orderAsc,
       searchTerm,
-      relationReversed,
     } = this.state;
-    const { classes, t, entityId } = this.props;
+    const { classes, entityId } = this.props;
     const paginationOptions = {
       elementId: entityId,
       search: searchTerm,

@@ -69,11 +69,8 @@ class ResourceTypeField extends Component {
       style,
       variant,
       classes,
-      onChange,
-      onFocus,
       handleResourceType,
       containerstyle,
-      editContext,
       disabled,
       helperText,
     } = this.props;

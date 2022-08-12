@@ -1,8 +1,6 @@
 import React from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
 import IconButton from '@material-ui/core/IconButton';
 import {
   Add,
@@ -13,9 +11,6 @@ import { withStyles } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
 import RemediationEntities from './remediations/RemediationEntities';
-import { QueryRenderer } from '../../../../relay/environment';
-import RiskDeletion from './RiskDeletion';
-import AddRemediation from './remediations/AddRemediation';
 import RemediationCreation from './remediations/RemediationCreation';
 import TopMenuRisk from '../../nav/TopMenuRisk';
 // import StixCyberObservableLinks, {
@@ -41,11 +36,6 @@ const Remediations = (props) => {
     history,
   } = props;
   const [openCreation, setOpenCreation] = React.useState(false);
-  const paginationOptions = {
-    elementId: remediation.id,
-    orderBy: 'created_at',
-    orderMode: 'desc',
-  };
 
   const handleCreation = () => {
     setOpenCreation(true);

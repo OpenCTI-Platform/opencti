@@ -160,7 +160,7 @@ export default createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables({ count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
         first: fragmentVariables.first,
