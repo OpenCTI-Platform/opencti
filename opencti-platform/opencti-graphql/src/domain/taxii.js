@@ -1,11 +1,15 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { elIndex, elPaginate, ES_MAX_CONCURRENCY } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
+import { elIndex, elPaginate } from '../database/engine';
+import {
+  INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_STIX_INDICES
+} from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, storeLoadById, stixLoadById, updateAttribute } from '../database/middleware';
+import { deleteElementById, storeLoadById, updateAttribute, stixLoadByIds } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -98,13 +102,12 @@ const collectionQuery = async (user, collectionId, args) => {
 };
 export const restCollectionStix = async (user, id, args) => {
   const { edges, pageInfo } = await collectionQuery(user, id, args);
-  const objects = await Promise.map(edges, (e) => stixLoadById(user, e.node.internal_id), {
-    concurrency: ES_MAX_CONCURRENCY,
-  });
+  const edgeIds = edges.map((e) => e.node.internal_id);
+  const instances = await stixLoadByIds(user, edgeIds);
   return {
     more: pageInfo.hasNextPage,
     next: R.last(edges)?.cursor || '',
-    objects,
+    objects: instances,
   };
 };
 export const restCollectionManifest = async (user, id, args) => {

@@ -75,6 +75,7 @@ interface StoreMarkingDefinition extends StoreBase {
 
 interface StoreLabel extends StoreBase {
   value: string;
+  color: string;
 }
 
 interface StoreKillChainPhases extends StoreBase {
@@ -173,8 +174,6 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_CREATED_BY]: BasicStoreEntity;
   [INPUT_DOMAIN_FROM]: BasicStoreObject;
   [INPUT_DOMAIN_TO]: BasicStoreObject;
-  [INPUT_DOMAIN_FROM]: Array<BasicStoreEntity>;
-  [INPUT_DOMAIN_TO]: Array<BasicStoreEntity>;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
 }

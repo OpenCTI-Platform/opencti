@@ -23,7 +23,7 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { elList } from '../database/middleware-loader';
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
-import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity } from '../types/store';
+import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity, StoreObject } from '../types/store';
 import type { AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-common';
@@ -251,7 +251,7 @@ export const rulesCleanHandler = async (instances: Array<BasicStoreCommon>, rule
       const rule = rules[ruleIndex];
       const isElementCleanable = isNotEmptyField(instance[`${RULE_PREFIX}${rule.id}`]);
       if (isElementCleanable) {
-        const processingElement: StixCoreObject = await storeLoadByIdWithRefs(RULE_MANAGER_USER, instance.internal_id);
+        const processingElement: StoreObject = await storeLoadByIdWithRefs(RULE_MANAGER_USER, instance.internal_id);
         // In case of "inference of inference", element can be recursively cleanup by the deletion system
         if (processingElement) {
           const derivedEvents = await rule.clean(processingElement, deletedDependencies);

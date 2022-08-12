@@ -6,13 +6,12 @@ import type { StixRelation, StixSighting } from '../../types/stix-sro';
 import type { Event } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import type { BasicStoreRelation } from '../../types/store';
+import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
 import { computeAverage } from '../../database/utils';
 import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { listAllRelations, RelationOptions } from '../../database/middleware-loader';
-import type { StixObject } from '../../types/stix-common';
 import { RELATION_INDICATES, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT,
@@ -129,7 +128,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     return applyFromStixRelation(rel);
   };
   // Contract
-  const clean = async (element: StixObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
+  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
     return deleteInferredRuleElement(def.id, element, deletedDependencies) as Promise<Array<Event>>;
   };
   const insert = async (element: StixRelation): Promise<Array<Event>> => {

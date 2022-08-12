@@ -14,7 +14,7 @@ import {
   EVENT_TYPE_INIT,
   EVENT_TYPE_UPDATE
 } from '../database/rabbitmq';
-import { internalLoadById, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
+import { internalLoadById, stixLoadById, stixLoadByIds, storeLoadByIdWithRefs } from '../database/middleware';
 import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import {
   generateCreateMessage,
@@ -138,8 +138,7 @@ const createSeeMiddleware = () => {
       missingElements.push(...missingIds);
       // Resolve every missing element
       const uniqueIds = R.uniq(missingIds);
-      const elementResolver = (id) => stixLoadById(req.session.user, id,);
-      const resolvedElements = await Promise.map(uniqueIds, elementResolver, { concurrency: ES_MAX_CONCURRENCY });
+      const resolvedElements = await stixLoadByIds(req.session.user, uniqueIds);
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
         const newMissing = await resolveMissingReferences(req, streamFilters, parentRefs, cache);

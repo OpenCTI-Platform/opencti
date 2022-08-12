@@ -4,7 +4,13 @@ import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_USER_SUBSCRIPTION } from '../schema/internalObject';
-import { deleteElementById, storeFullLoadById, internalLoadById, storeLoadById, updateAttribute } from '../database/middleware';
+import {
+  deleteElementById,
+  internalLoadById,
+  storeLoadById,
+  updateAttribute,
+  storeLoadByIdWithRefs
+} from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { baseUrl, BUS_TOPICS } from '../config/conf';
@@ -42,7 +48,7 @@ import {
   relationshipToHtml,
   sectionFooter,
   sectionHeader,
-  technicalElementToHtml
+  technicalRelationToHtml
 } from '../utils/mailData';
 import { getParentTypes } from '../schema/schemaUtils';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
@@ -289,11 +295,9 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     // eslint-disable-next-line no-restricted-syntax
     for (const containerEntry of R.take(10, data.containersData)) {
-      const fullContainer = await storeFullLoadById(
-        user,
-        containerEntry.fromId ? containerEntry.fromId : containerEntry.id,
-        containerEntry.fromType ? containerEntry.fromType : containerEntry.entity_type
-      );
+      const elementId = containerEntry.fromId ? containerEntry.fromId : containerEntry.id;
+      const type = containerEntry.fromType ? containerEntry.fromType : containerEntry.entity_type;
+      const fullContainer = await storeLoadByIdWithRefs(user, elementId, { type });
       htmlData += containerToHtml(baseUrl, fullContainer);
     }
     htmlData += sectionFooter(footerNumber, 'containers');
@@ -307,7 +311,7 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     // eslint-disable-next-line no-restricted-syntax
     for (const entity of R.take(10, data.entitiesData)) {
-      const fullEntity = await storeFullLoadById(user, entity.id, ABSTRACT_STIX_CORE_OBJECT);
+      const fullEntity = await storeLoadByIdWithRefs(user, entity.id, { type: ABSTRACT_STIX_CORE_OBJECT });
       htmlData += entityToHtml(baseUrl, fullEntity);
     }
     htmlData += sectionFooter(footerNumber, 'entities');
@@ -321,7 +325,7 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     // eslint-disable-next-line no-restricted-syntax
     for (const relationship of R.take(10, data.knowledgeData)) {
-      const fullRelationship = await storeFullLoadById(user, relationship.id, ABSTRACT_STIX_CORE_RELATIONSHIP);
+      const fullRelationship = await storeLoadByIdWithRefs(user, relationship.id, { type: ABSTRACT_STIX_CORE_RELATIONSHIP });
       htmlData += relationshipToHtml(baseUrl, fullRelationship);
     }
     htmlData += sectionFooter(footerNumber, 'relationships');
@@ -338,12 +342,9 @@ export const generateDigestForSubscription = async (subscription) => {
     `;
     // eslint-disable-next-line no-restricted-syntax
     for (const technicalRelationship of R.take(10, data.technicalData)) {
-      const fullTechnicalRelationship = await storeFullLoadById(
-        user,
-        technicalRelationship.id,
-        ABSTRACT_STIX_CORE_RELATIONSHIP
-      );
-      htmlData += technicalElementToHtml(baseUrl, fullTechnicalRelationship);
+      const opts = { type: ABSTRACT_STIX_CORE_RELATIONSHIP };
+      const fullTechnicalRelationship = await storeLoadByIdWithRefs(user, technicalRelationship.id, opts);
+      htmlData += technicalRelationToHtml(baseUrl, fullTechnicalRelationship);
     }
     htmlData += `
          </table>

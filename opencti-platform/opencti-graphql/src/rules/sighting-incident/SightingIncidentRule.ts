@@ -17,7 +17,6 @@ import type { StixIndicator } from '../../types/stix-sdo';
 import type { StixSighting } from '../../types/stix-sro';
 import type { Event } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import type { StixObject } from '../../types/stix-common';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
@@ -105,7 +104,7 @@ const ruleSightingIncidentBuilder = () => {
     return events;
   };
   // Contract
-  const clean = async (element: StixObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
+  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
     return deleteInferredRuleElement(def.id, element, deletedDependencies) as Promise<Array<Event>>;
   };
   const insert = async (element: StixIndicator | StixSighting): Promise<Array<Event>> => {

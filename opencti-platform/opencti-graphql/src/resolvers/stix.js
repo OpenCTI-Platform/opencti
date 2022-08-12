@@ -1,12 +1,9 @@
 import { stixDelete } from '../domain/stix';
-import { stixLoadById } from '../database/middleware';
+import { stixLoadByIdStringify } from '../database/middleware';
 
 const stixResolvers = {
   Query: {
-    stix: async (_, { id }, { user }) => {
-      const data = await stixLoadById(user, id);
-      return JSON.stringify(data);
-    }
+    stix: async (_, { id }, { user }) => stixLoadByIdStringify(user, id)
   },
   Mutation: {
     stixEdit: (_, { id }, { user }) => ({
