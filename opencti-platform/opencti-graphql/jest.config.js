@@ -7,6 +7,7 @@ module.exports = {
     '\\.(js|ts)$': ['esbuild-jest', { sourcemap: true }],
     '\\.graphql$': 'jest-transform-graphql',
   },
+  transformIgnorePatterns: ['node_modules/(?!set-interval-async)'],
   reporters: ['default', ['jest-junit', { outputDirectory: './test-results/jest/', outputName: 'results.xml' }]],
   collectCoverageFrom: ['src/**/*.js', 'src/**/*.ts'],
   coveragePathIgnorePatterns: [
