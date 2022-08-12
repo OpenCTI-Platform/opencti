@@ -55,7 +55,7 @@ a {
 /* Sections become presentation sections */
 .md h1, .md .nonumberh1 {
     page-break-before: always;
-    width: 1100px;
+    width: 100%;
     text-align: left;
     padding-bottom: 24px;
     margin-top: -20px;
@@ -133,13 +133,305 @@ h1 {
     vertical-align: text-top;
 }
 
-.md iframe.textinsert {
-    background-color: transparent !important;
+.MuiDrawer-paper {
+    width: 255px;
+    min-height: 100vh;
+    background-color: #075AD3 !important;
+    background-repeat: no-repeat;
+    background-position: 50% 70%;
 }
 
-.MuiIconButton-label !important {
-    width: 100%;
-    display: flex;
-    align-items: inherit;
-    justify-content: inherit;
+.MuiIconButton-root {
+    flex: 0 0 auto;
+    color: #fff;
+    padding: 12px;
+    overflow: visible;
+    font-size: 1.5rem;
+    text-align: center;
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    border-radius: 50%;
 }
+
+.MuiButton-label {
+    width: 100%;
+    display: inherit;
+    align-items: left;
+    justify-content: center;
+}
+
+jss16 {
+    width: 255px;
+    height: 64px;
+    margin-left: -24px;
+    padding-top: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: #075AD3;
+}
+
+.jss17 {
+    cursor: pointer;
+    height: 20px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.jss19 {
+    right: 5px;
+    height: 100%;
+    position: absolute;
+    vertical-align: middle;
+}
+
+.jss193 {
+    float: left;
+    padding: 7px;
+    min-width: 0px;
+    margin-right: 15px;
+}
+
+.jss237 {
+    width: 295px;
+    padding: 14px 18px 12px 18px;
+    min-width: 285px;
+    margin-top: 5px;
+}
+
+.jss547 {
+    cursor: pointer;
+    height: 20px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.jss477 {
+    height: 64px;
+    margin: -25px -24px 20px -24px;
+    padding: 24px;
+    background-color: #1F2842;
+}
+
+.TopMenuAssets-button-232 {
+    padding: 4px 25px;
+    min-width: 20px;
+    min-height: 20px;
+    margin-right: 8px;
+    border-radius: 8px 8px 0px 0px;
+    text-transform: none;
+}
+
+.MuiButton-root {
+    color: #fff;
+    padding: 6px 16px;
+    font-size: 0.875rem;
+    min-width: 64px;
+    box-sizing: border-box;
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.75;
+    border-radius: 4px;
+    letter-spacing: 0.02857em;
+    text-transform: none;
+}
+
+* {
+    font-size: 100%;
+    font-family: "Roboto", sans-serif;
+    scrollbar-width: thin;
+  }
+  
+  :focus {
+    outline: 0;
+  }
+  
+  @keyframes autofill {
+    100% {
+      background: transparent;
+      color: inherit;
+    }
+  }
+  
+  @keyframes loading {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  @-webkit-keyframes autofill {
+    100% {
+      background: transparent;
+      color: inherit;
+    }
+  }
+  
+  a,
+  a:hover,
+  a:visited,
+  a:focus {
+    text-decoration: none;
+  }
+  
+  pre {
+    padding: 10px;
+    font-family: Consolas, monaco, monospace;
+    font-size: 12px;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+    font-weight: 400;
+  }
+  
+  code {
+    font-family: Consolas, monaco, monospace;
+    padding: 3px;
+    font-size: 12px;
+    font-weight: 400;
+  }
+  
+  span.raw {
+    white-space: pre-line;
+  }
+  
+  ul.rc-tree {
+    margin: 0;
+    padding: 0;
+  }
+  
+  ul.rc-tree li {
+    list-style-type: none;
+    vertical-align: middle;
+  }
+  
+  div.clearfix {
+    margin: 0;
+    padding: 0;
+    clear: both;
+  }
+  
+  div.break {
+    word-break: break-word;
+  }
+  
+  .recharts-legend-item-text,
+  .recharts-polar-angle-axis-tick-value,
+  .recharts-text,
+  .recharts-layer {
+    font-size: 11px;
+    font-family: Roboto, sans-serif;
+  }
+  
+  .recharts-cartesian-axis-tick {
+    font-size: 10px;
+    font-family: Roboto, sans-serif;
+  }
+  
+  div.markdown p {
+    margin: 0 0 10px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .leaflet-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+  }
+  
+  .react-grid-item > .react-resizable-handle::after {
+    border-right: 2px solid rgba(255, 255, 255, 0.4) !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
+  }
+  
+  .layout {
+    max-width: 100%;
+    margin-bottom: 80px !important;
+  }
+  
+  .force-graph-container {
+    overflow: hidden !important;
+  }
+  
+  .force-graph-container .graph-tooltip {
+    position: absolute;
+    text-align: center;
+    overflow: hidden !important;
+    transform: translate(-50%, 25px);
+    font-size: 12px !important;
+    padding: 8px !important;
+    border-radius: 3px;
+    color: #eee;
+    background: rgba(0, 0, 0, 0.65);
+    visibility: hidden; /* by default */
+    display: block;
+    unicode-bidi: embed;
+    white-space: pre;
+  }
+  
+  .timerange {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .react_time_range__rail__inner {
+    background-color: transparent !important;
+  }
+  
+  .custom-file-input{
+    width: 100%;
+    height: 100px;
+    padding: 40px 0px;
+    text-align: center;
+    text-align-last: center;
+  }
+  
+  
+  .scansListItem{
+    border-bottom: 1px solid rgba(255,255,255,.25);
+  }
+  .scansListItem:hover{
+    cursor: pointer;
+  }
+  .NoResults{
+    color: #F9B406;
+  }
+  .Invalid{
+    color: #CE202C;
+  }
+  
+  .AnalysisLoader{
+    width: 370px;
+    height: 370px;
+    display: flex;
+    justify-content: center; 
+    padding-top:  150px;
+  }
+  .NoDisplay{
+    display: none;
+  }
+
+  .TopMenuAssets-button-544 {
+    padding: 4px 25px;
+    min-width: 20px;
+    min-height: 20px;
+    margin-right: 8px;
+    border-radius: 8px 8px 0px 0px;
+    text-transform: none;
+}
+  
+.CyioListLines-views-195 {
+    width: 295px;
+    padding: 14px 18px 12px 18px;
+    min-width: 285px;
+    margin-top: 5px;
+}
+
+.CyioListLines-iconButton-197 {
+    float: left;
+    padding: 7px;
+    min-width: 0px;
+    margin-right: 15px;
+}
+
