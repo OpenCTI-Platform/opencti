@@ -2443,15 +2443,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch@npm:7.17.0":
-  version: 7.17.0
-  resolution: "@elastic/elasticsearch@npm:7.17.0"
+"@elastic/elasticsearch@npm:8.2.1":
+  version: 8.2.1
+  resolution: "@elastic/elasticsearch@npm:8.2.1"
   dependencies:
-    debug: ^4.3.1
-    hpagent: ^0.1.1
+    "@elastic/transport": ^8.2.0
+    tslib: ^2.4.0
+  checksum: 1664f840ed6c2930e1fbb2995748d731f93f1d002f9044238738d7a99b685b4a9888a386c4ac2a390c164240fc9c50b6559cb63f064773344279a8b5ab604f97
+  languageName: node
+  linkType: hard
+
+"@elastic/transport@npm:^8.2.0":
+  version: 8.2.0
+  resolution: "@elastic/transport@npm:8.2.0"
+  dependencies:
+    debug: ^4.3.4
+    hpagent: ^1.0.0
     ms: ^2.1.3
     secure-json-parse: ^2.4.0
-  checksum: 08113bcb14203c5700e6575cb720aa32f5573a1776e13b78bf101ffeae46308c3664b94f16f7e2c5ec26e14c459d8d1491e234940e635cddfe3ee61a52fb51f9
+    tslib: ^2.4.0
+    undici: ^5.1.1
+  checksum: edcb7b57e458d13bf1e9a7ebc0686c2d576d41e57dc160576026824ccbddad3bec867bae2eda69b4c898d36b260f655d0a735817d56a24979c4f5d2a6b15b4e4
   languageName: node
   linkType: hard
 
@@ -4113,6 +4125,13 @@ __metadata:
   version: 2.4.2
   resolution: "@types/bcryptjs@npm:2.4.2"
   checksum: 220dade7b0312b41e23ccfb15f2ddde7804eb3c7ef41db41a6c49054be1e19a15eb3dd8c8ef196494f0866307cce22ad6f3f272941387124707d81dc66155bbc
+  languageName: node
+  linkType: hard
+
+"@types/bluebird@npm:3.5.36":
+  version: 3.5.36
+  resolution: "@types/bluebird@npm:3.5.36"
+  checksum: efe7484e1f6c3443c083f052efb7688b461a9f43899b1891c10b1faf92e4932d686265d10c3e02b8c8fe0c8c371774e6a55ff6eec5e79525390a1ddeee7eb41b
   languageName: node
   linkType: hard
 
@@ -8891,6 +8910,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hpagent@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "hpagent@npm:1.0.0"
+  checksum: 911a9ba612747f5c9403fb60c1abd0c47a27fa634826caad9aecad41b899533489da36c92758b5cd83576e2bf9e84e23a4374a40aa513106d5450f62856c4b2d
+  languageName: node
+  linkType: hard
+
 "html-encoding-sniffer@npm:^2.0.1":
   version: 2.0.1
   resolution: "html-encoding-sniffer@npm:2.0.1"
@@ -11977,7 +12003,7 @@ __metadata:
     "@aws-sdk/lib-storage": 3.145.0
     "@aws-sdk/property-provider": 3.127.0
     "@babel/preset-typescript": 7.18.6
-    "@elastic/elasticsearch": 7.17.0
+    "@elastic/elasticsearch": 8.2.1
     "@graphql-codegen/cli": 2.11.6
     "@graphql-codegen/introspection": 2.2.1
     "@graphql-codegen/typescript": 2.7.3
@@ -11988,6 +12014,7 @@ __metadata:
     "@luckycatfactory/esbuild-graphql-loader": 3.7.0
     "@opensearch-project/opensearch": 2.0.0
     "@types/bcryptjs": 2.4.2
+    "@types/bluebird": 3.5.36
     "@types/dot-object": 2.1.2
     "@types/express": 4.17.13
     "@types/jest": 28.1.6
@@ -14612,7 +14639,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^5.8.0":
+"undici@npm:^5.1.1, undici@npm:^5.8.0":
   version: 5.8.2
   resolution: "undici@npm:5.8.2"
   checksum: 726e04bb37e2e285b4f632600c792efc9eaa5e06e37f9f34338352ac5e1dbd8ae3cdd12dd8761abfecffc5f200d1c7b91b41efb3a31c4e804ea341e5808ddfcf

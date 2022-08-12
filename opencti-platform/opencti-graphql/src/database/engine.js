@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
-import { Promise } from 'bluebird';
+import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
 import { readFileSync } from 'node:fs';
@@ -119,7 +119,11 @@ const searchConfiguration = {
   maxRetries: conf.get('elasticsearch:max_retries') || 3,
   requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
   sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
-  ssl: {
+  ssl: { // For Opensearch 2+ and Elastic 7
+    ca,
+    rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
+  },
+  tls: { // For Elastic 8+
     ca,
     rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
   },
@@ -130,6 +134,17 @@ const openClient = new OpenClient(searchConfiguration);
 let isRuntimeSortingEnable = false;
 let el = openClient;
 
+// The OpenSearch/ELK Body Parser (oebp)
+// Starting ELK8+, response are no longer inside a body envelop
+// Query wrapping is still accepted in ELK8
+const oebp = (queryResult) => {
+  if (el instanceof ElkClient) {
+    return queryResult;
+  }
+  return queryResult.body;
+};
+
+// Look for the engine version with OpenSearch client
 export const searchEngineVersion = () => {
   return openClient
     .info()
@@ -242,7 +257,7 @@ const buildMarkingRestriction = (user) => {
 
 export const elIndexExists = async (indexName) => {
   const existIndex = await el.indices.exists({ index: indexName });
-  return existIndex.body === true;
+  return oebp(existIndex) === true;
 };
 const elCreateIndexTemplate = async () => {
   await el.cluster
@@ -428,30 +443,29 @@ const elCreateIndexTemplate = async () => {
 };
 export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
   await elCreateIndexTemplate();
-  return Promise.all(
-    indexesToCreate.map((index) => {
-      const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
-      return el.indices.exists({ index: indexName }).then((result) => {
-        if (result.body === false) {
-          return el.indices.create({ index: indexName, body: { aliases: { [index]: {} } } }).catch((e) => {
-            throw DatabaseError('Error creating index', { error: e });
-          });
-        }
-        /* istanbul ignore next */
-        return result;
-      });
-    })
-  );
+  const createdIndices = [];
+  for (let i = 0; i < indexesToCreate.length; i += 1) {
+    const index = indexesToCreate[i];
+    const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
+    const isExist = await el.indices.exists({ index: indexName }).then((r) => oebp(r));
+    if (!isExist) {
+      const createdIndex = await el.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
+      createdIndices.push(oebp(createdIndex));
+    }
+  }
+  return createdIndices;
 };
 export const elDeleteIndexes = async (indexesToDelete) => {
   return Promise.all(
     indexesToDelete.map((index) => {
-      return el.indices.delete({ index }).catch((err) => {
+      return el.indices.delete({ index })
+        .then((response) => oebp(response))
+        .catch((err) => {
         /* istanbul ignore next */
-        if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-          logApp.error('[SEARCH ENGINE] Delete indices fail', { error: err });
-        }
-      });
+          if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
+            logApp.error('[SEARCH ENGINE] Delete indices fail', { error: err });
+          }
+        });
     })
   );
 };
@@ -654,7 +668,7 @@ export const elCount = (user, indexName, options = {}) => {
   return el
     .count(query)
     .then((data) => {
-      return data.body.count;
+      return oebp(data).count;
     })
     .catch((err) => {
       throw DatabaseError('Count data fail', { error: err, query });
@@ -729,7 +743,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
   return el
     .search(query)
     .then((data) => {
-      const { buckets } = data.body.aggregations.genres;
+      const { buckets } = oebp(data).aggregations.genres;
       return R.map((b) => {
         let label = b.key;
         if (typeof label === 'number') {
@@ -865,8 +879,8 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
     throw DatabaseError('Find by from and to fail', { error: e, query });
   });
   const hits = [];
-  for (let index = 0; index < data.body.hits.hits.length; index += 1) {
-    const hit = data.body.hits.hits[index];
+  for (let index = 0; index < oebp(data).hits.hits.length; index += 1) {
+    const hit = oebp(data).hits.hits[index];
     hits.push(elDataConverter(hit));
   }
   return hits;
@@ -964,8 +978,8 @@ export const elFindByIds = async (user, ids, opts = {}) => {
       const data = await el.search(query).catch((err) => {
         throw DatabaseError('Error loading ids', { error: err, query });
       });
-      for (let j = 0; j < data.body.hits.hits.length; j += 1) {
-        const hit = data.body.hits.hits[j];
+      for (let j = 0; j < oebp(data).hits.hits.length; j += 1) {
+        const hit = oebp(data).hits.hits[j];
         const element = elDataConverter(hit);
         elasticHits[element.internal_id] = element;
       }
@@ -1109,7 +1123,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
     .search(query)
     .then(async (data) => {
       if (field === 'internal_id') {
-        const { buckets } = data.body.aggregations.connections.filtered.genres;
+        const { buckets } = oebp(data).aggregations.connections.filtered.genres;
         const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
         return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
       }
@@ -1128,8 +1142,8 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
         R.uniq(),
         R.filter((f) => !isAbstract(f)),
         R.map((u) => u.toLowerCase())
-      )(data.body.hits.hits);
-      const { buckets } = data.body.aggregations.connections.filtered.genres;
+      )(oebp(data).hits.hits);
+      const { buckets } = oebp(data).aggregations.connections.filtered.genres;
       const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
       return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
     })
@@ -1262,7 +1276,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
   };
   logApp.debug('[SEARCH ENGINE] histogramCount', { query });
   return el.search(query).then((data) => {
-    const { buckets } = data.body.aggregations.count_over_time;
+    const { buckets } = oebp(data).aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
     return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
   });
@@ -1583,10 +1597,10 @@ export const elPaginate = async (user, indexName, options = {}) => {
   return el
     .search(query)
     .then((data) => {
-      const convertedHits = R.map((n) => elDataConverter(n), data.body.hits.hits);
+      const convertedHits = R.map((n) => elDataConverter(n), oebp(data).hits.hits);
       if (connectionFormat) {
         const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
-        return buildPagination(first, searchAfter, nodeHits, data.body.hits.total.value);
+        return buildPagination(first, searchAfter, nodeHits, oebp(data).hits.total.value);
       }
       return convertedHits;
     })
@@ -1690,7 +1704,7 @@ export const elAttributeValues = async (user, field, opts = {}) => {
     body,
   };
   const data = await el.search(query);
-  const { buckets } = data.body.aggregations.values;
+  const { buckets } = oebp(data).aggregations.values;
   const values = (buckets ?? []).map((n) => n.key);
   const nodeElements = values.map((val) => ({ node: { id: val, key: field, value: val } }));
   return buildPagination(0, null, nodeElements, nodeElements.length);
@@ -1701,8 +1715,8 @@ export const elBulk = async (args) => {
   return el
     .bulk(args)
     .then((result) => {
-      if (result.body.errors) {
-        const errors = result.body.items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
+      if (oebp(result).errors) {
+        const errors = oebp(result).items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
         throw DatabaseError('Error executing bulk indexing', { errors });
       }
       return result;
@@ -1800,7 +1814,7 @@ const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
   if (foundRelations.length > 0) {
     const groups = R.splitEvery(MAX_SPLIT, foundRelations);
     const concurrentFetch = (gIds) => getRelatedRelations(user, gIds, elements, level + 1, cache);
-    await Promise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
+    await BluePromise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
 };
 export const getRelationsToRemove = async (user, elements) => {
@@ -1881,7 +1895,7 @@ export const elDeleteElements = async (user, elements, stixLoadById) => {
   const opts = { concurrency: ES_MAX_CONCURRENCY };
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
   const stixRelations = relations.filter((r) => isStixRelationShipExceptMeta(r.relationship_type));
-  const dependencyDeletions = await Promise.map(stixRelations, (r) => stixLoadById(user, r.internal_id), opts);
+  const dependencyDeletions = await BluePromise.map(stixRelations, (r) => stixLoadById(user, r.internal_id), opts);
   // Compute the id that needs to be remove from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   const cleanupRelations = relations.concat(basicCleanup);
@@ -1902,7 +1916,7 @@ export const elDeleteElements = async (user, elements, stixLoadById) => {
     currentRelationsDelete += deletions.length;
     logApp.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
   };
-  await Promise.map(groupsOfDeletions, concurrentDeletions, opts);
+  await BluePromise.map(groupsOfDeletions, concurrentDeletions, opts);
   // Remove the elements
   await elDeleteInstanceIds(elements);
   // Update all rel connections that will remain
@@ -1913,7 +1927,7 @@ export const elDeleteElements = async (user, elements, stixLoadById) => {
     currentRelationsCount += relsToClean.length;
     logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
   };
-  await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, opts);
+  await BluePromise.map(groupsOfRelsFromTo, concurrentRelsFromTo, opts);
   // Return the relations deleted because of the entity deletion
   return dependencyDeletions;
 };
@@ -2186,5 +2200,5 @@ export const elUpdateElement = async (instance) => {
 export const getStats = () => {
   return el.indices
     .stats({ index: READ_PLATFORM_INDICES }) //
-    .then((result) => result.body._all.total);
+    .then((result) => oebp(result)._all.total);
 };

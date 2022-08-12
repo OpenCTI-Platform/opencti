@@ -53,12 +53,12 @@ describe('Elasticsearch configuration test', () => {
     // Create index
     const createdIndices = await elCreateIndexes(['test_index']);
     expect(createdIndices.length).toEqual(1);
-    expect(R.head(createdIndices).body.acknowledged).toBeTruthy();
-    expect(R.head(createdIndices).body.index).toEqual('test_index-000001');
+    expect(R.head(createdIndices).acknowledged).toBeTruthy();
+    expect(R.head(createdIndices).index).toEqual('test_index-000001');
     // Remove index
     const deletedIndices = await elDeleteIndexes(['test_index-000001']);
     expect(deletedIndices.length).toEqual(1);
-    expect(R.head(deletedIndices).body.acknowledged).toBeTruthy();
+    expect(R.head(deletedIndices).acknowledged).toBeTruthy();
   });
 });
 
@@ -134,7 +134,7 @@ describe('Elasticsearch computation', () => {
       'Stix-Domain-Object',
       'entity_type',
       '2019-01-01T00:00:00Z',
-      new Date(mostRecentMalware.created_at).getTime() - 1,
+      new Date(mostRecentMalware.created_at).toISOString(),
       [
         {
           type: 'name',
@@ -231,7 +231,7 @@ describe('Elasticsearch computation', () => {
       'created_at',
       'day',
       '2019-09-29T00:00:00.000Z',
-      new Date().getTime(),
+      new Date().toISOString(),
       [],
       []
     );

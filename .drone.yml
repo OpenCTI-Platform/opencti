@@ -96,11 +96,12 @@ steps:
 
 services:
   - name: redis
-    image: redis:7.0.0
+    image: redis:7.0.4
   - name: elastic
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.3
     environment:
       discovery.type: single-node
+      xpack.security.enabled: false
       ES_JAVA_OPTS: -Xms2g -Xmx2g
   - name: minio
     image: minio/minio:RELEASE.2022-05-19T18-20-59Z
