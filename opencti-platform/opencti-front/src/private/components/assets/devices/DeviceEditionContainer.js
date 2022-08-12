@@ -28,6 +28,7 @@ import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCore
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import DeviceEditionDetails from './DeviceEditionDetails';
 import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
+import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -94,6 +95,7 @@ class DeviceEditionContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       open: false,
       onSubmit: false,
       displayCancel: false,
@@ -154,11 +156,15 @@ class DeviceEditionContainer extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data) => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        this.props.history.push('/defender HQ/assets/devices');
+      onCompleted: (data, error) => {
+        if (error) {
+          this.setState({ error });
+        } else {
+          setSubmitting(false);
+          resetForm();
+          this.handleClose();
+          this.props.history.push('/defender HQ/assets/devices');
+        }
       },
     });
     // commitMutation({
@@ -446,6 +452,10 @@ class DeviceEditionContainer extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <ErrorBox
+          error={this.state.error}
+          pathname='/defender HQ/assets/devices'
+        />
       </div>
     );
   }
