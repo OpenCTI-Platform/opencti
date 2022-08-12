@@ -12,7 +12,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
-import ItemIcon from '../../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import EntitiesLocationsPopover from './EntitiesLocationsPopover';
 

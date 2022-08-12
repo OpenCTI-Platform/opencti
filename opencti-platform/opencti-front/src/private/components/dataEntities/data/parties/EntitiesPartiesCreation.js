@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { compose, evolve } from 'ramda';
+import { compose } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -15,13 +15,11 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import { FormControlLabel } from '@material-ui/core';
 import graphql from 'babel-plugin-relay/macro';
-import { dayStartDate, parse } from '../../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TaskType from '../../../common/form/TaskType';
 import SelectField from '../../../../../components/SelectField';
@@ -33,7 +31,7 @@ import DataAddressField from '../../../common/form/DataAddressField';
 import EmailAddressField from '../../../common/form/EmailAddressField';
 import NewAddressField from '../../../common/form/NewAddressField';
 import LocationField from '../../../common/form/LocationField';
-import { ipv6AddrRegex, telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
+import { telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -139,16 +137,13 @@ class EntitiesPartiesCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.props.handlePartyCreation();
         this.props.history.push('/data/entities/parties');
       },
-      onError: (err) => {
-        console.error(err);
-        return toastGenericError('Failed to create party');
-      },
+      onError: () => toastGenericError('Failed to create party'),
     });
     // commitMutation({
     //   mutation: entitiesPartiesCreationMutation,
@@ -187,9 +182,6 @@ class EntitiesPartiesCreation extends Component {
       t,
       classes,
       openDataCreation,
-      handlePartyCreation,
-      open,
-      history,
     } = this.props;
     return (
       <>

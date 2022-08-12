@@ -3,11 +3,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  map, filter, head, compose,
+  compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
 import Dialog from '@material-ui/core/Dialog';
 import Button from '@material-ui/core/Button';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -17,18 +16,13 @@ import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { ConnectionHandler } from 'relay-runtime';
-import ListItem from '@material-ui/core/ListItem';
 import KeyboardArrowDownOutlinedIcon from '@material-ui/icons/KeyboardArrowDownOutlined';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 import { Add } from '@material-ui/icons';
-import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import CyioExternalReferenceCreation from './CyioExternalReferenceCreation';
 import CyioAddExternalReferencesLines, {
   cyioAddExternalReferencesLinesQuery,
-  cyioExternalReferenceMutationRelationDelete,
   cyioExternalReferenceLinesMutationRelationAdd,
 } from './CyioAddExternalReferencesLines';
 

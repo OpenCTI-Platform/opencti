@@ -4,11 +4,9 @@ import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
 import Button from '@material-ui/core/Button';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
@@ -16,12 +14,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
-import Loader from '../../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../../utils/Security';
+import { commitMutation } from '../../../../../relay/environment';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
@@ -110,14 +103,13 @@ class EntitiesLabelsDeletion extends Component {
       variables: {
         id: this.props.id,
       },
-      onCompleted: (data) => {
+      onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
         this.handleCloseDelete();
         this.props.history.push('/data/entities/labels');
       },
-      onError: (err) => {
-        console.error(err);
+      onError: () => {
         toastGenericError('Failed to delete label');
       },
     });

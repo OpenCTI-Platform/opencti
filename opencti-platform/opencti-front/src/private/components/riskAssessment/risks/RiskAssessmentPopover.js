@@ -16,16 +16,13 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import { adaptFieldValue } from '../../../../utils/String';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
-import SelectField from '../../../../components/SelectField';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
 import RiskStatus from '../../common/form/RiskStatus';
 import { toastGenericError } from "../../../../utils/bakedToast";
 
@@ -160,7 +157,7 @@ class RiskAssessmentPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleCloseRiskLevel();
@@ -188,7 +185,7 @@ class RiskAssessmentPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleCloseRiskDeadline();
@@ -263,9 +260,7 @@ class RiskAssessmentPopover extends Component {
       classes,
       t,
       history,
-      node,
       nodeId,
-      riskNode,
     } = this.props;
     return (
       <div className={classes.container}>

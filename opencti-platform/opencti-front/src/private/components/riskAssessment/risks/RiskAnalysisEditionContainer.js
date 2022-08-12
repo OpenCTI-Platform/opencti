@@ -11,16 +11,12 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
-import AppBar from '@material-ui/core/AppBar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { commitMutation } from '../../../../relay/environment';
 import { dateFormat, parse } from '../../../../utils/Time';
@@ -28,13 +24,11 @@ import { adaptFieldValue } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
 import RiskAnalysisEditionCharacterization from './RiskAnalysisEditionCharacterization';
 import RiskAnalysisThreats from './RiskAnalysisThreats';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     margin: 0,
   },
@@ -90,7 +84,7 @@ const riskAnalysisEditionMutation = graphql`
   }
 `;
 
-const riskValidation = (t) => Yup.object().shape({
+const riskValidation = () => Yup.object().shape({
   // name: Yup.string().required(t('This field is required')),
   // asset_type: Yup.array().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
@@ -266,10 +260,7 @@ class RiskAnalysisEditionContainer extends Component {
         >
           {({
             submitForm,
-            handleReset,
             isSubmitting,
-            setFieldValue,
-            values,
           }) => (
             <>
               <div className={classes.header}>

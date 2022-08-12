@@ -16,12 +16,8 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-// import { noteEditionQuery } from './NoteEdition';
+import { commitMutation } from '../../../../relay/environment';
 import CyioNoteEditionContainer from './CyioNoteEditionContainer';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {

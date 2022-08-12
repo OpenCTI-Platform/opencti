@@ -4,26 +4,22 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import Switch from '@material-ui/core/Switch';
 import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import DatePickerField from '../../../../components/DatePickerField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import { dateFormat, parse } from '../../../../utils/Time';
-import CommitMessage from '../../common/form/CommitMessage';
+import { parse } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',

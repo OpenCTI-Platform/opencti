@@ -181,7 +181,6 @@ class RiskPopover extends Component {
             query={riskEditionQuery}
             variables={{ id }}
             render={({ props }) => {
-              console.log('RiskEditionContainer', props);
               if (props) {
                 return (
                   <RiskEditionContainer

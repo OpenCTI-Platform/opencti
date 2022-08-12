@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-// import { ConnectionHandler } from 'relay-runtime';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
@@ -17,13 +14,11 @@ import MoreVertOutlined from '@material-ui/icons/MoreVertOutlined';
 import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
-import { truncate } from '../../../../utils/String';
-// import { commitMutation } from '../../../../relay/environment';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import RiskObservationPopover, { riskObservationPopoverQuery } from './RiskObservationPopover';
 import { QueryRenderer } from '../../../../relay/environment';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -142,7 +137,7 @@ class RiskObservationLineContainer extends Component {
 
   render() {
     const {
-      t, classes, risk, fldt, observation, observationId,
+      t, classes, fldt, observation, observationId,
     } = this.props;
     return (
       <>
@@ -215,8 +210,7 @@ class RiskObservationLineContainer extends Component {
               render={({ error, props }) => {
                 if (error) {
                   return (
-                    toastGenericError('Failed to get risk observation Details'),
-                    console.error(error)
+                    toastGenericError('Failed to get risk observation Details')
                   );
                 }
                 if (props) {

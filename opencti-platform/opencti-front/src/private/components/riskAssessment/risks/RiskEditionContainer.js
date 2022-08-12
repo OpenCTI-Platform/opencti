@@ -11,16 +11,12 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
-import AppBar from '@material-ui/core/AppBar';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { commitMutation } from '../../../../relay/environment';
 import { dateFormat, parse } from '../../../../utils/Time';
@@ -28,13 +24,11 @@ import { adaptFieldValue } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
 import RiskEditionOverview from './RiskEditionOverview';
 import RiskEditionDetails from './RiskEditionDetails';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     margin: 0,
   },
@@ -229,10 +223,8 @@ class RiskEditionContainer extends Component {
       t,
       classes,
       riskId,
-      handleClose,
       risk,
     } = this.props;
-    console.log('RiskEditionPropsData', risk);
     const relatedRisksEdges = R.pipe(
       R.pathOr([], ['related_risks', 'edges']),
       R.map((value) => ({
@@ -348,9 +340,7 @@ class RiskEditionContainer extends Component {
         >
           {({
             submitForm,
-            handleReset,
             isSubmitting,
-            setFieldValue,
             values,
           }) => (
             <>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose, propOr, map } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -15,14 +15,8 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import rehypeRaw from 'rehype-raw';
-import Chip from '@material-ui/core/Chip';
-import { InformationOutline, Information } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../../components/i18n';
-import ItemAuthor from '../../../../../components/ItemAuthor';
-import ItemMarking from '../../../../../components/ItemMarking';
-import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   paper: {
@@ -90,10 +84,8 @@ class RemediationGeneralOverviewComponent extends Component {
     const {
       t,
       fd,
-      fldt,
       classes,
       remediation,
-      risk,
     } = this.props;
     const remediationOriginData = R.pipe(
       R.pathOr([], ['origins']),

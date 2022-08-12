@@ -4,9 +4,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
-import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -68,7 +65,6 @@ class SoftwareEdition extends Component {
 
   render() {
     const {
-      classes,
       softwareId,
       history,
     } = this.props;

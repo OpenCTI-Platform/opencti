@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
@@ -13,16 +12,11 @@ import DeviceDetails from './DeviceDetails';
 import DeviceEdition from './DeviceEdition';
 import DevicePopover from './DevicePopover';
 import DeviceDeletion from './DeviceDeletion';
-import DeviceCreation from './DeviceCreation';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioDomainObjectAssetOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetOverview';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
   container: {

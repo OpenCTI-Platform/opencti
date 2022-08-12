@@ -1,46 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import {
-  compose,
-  pipe,
-  pluck,
-  assoc,
-} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer, QueryRenderer as QR } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import * as Yup from 'yup';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
-import Markdown from 'react-markdown';
 import Tooltip from '@material-ui/core/Tooltip';
-import FormControl from '@material-ui/core/FormControl';
-import AddIcon from '@material-ui/icons/Add';
-import Cancel from '@material-ui/icons/Cancel';
-import Button from '@material-ui/core/Button';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import { IconButton } from '@material-ui/core';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import { SubscriptionFocus } from '../../../../../components/Subscription';
-import { commitMutation } from '../../../../../relay/environment';
-import CreatedByField from '../../../common/form/CreatedByField';
-import ObjectLabelField from '../../../common/form/ObjectLabelField';
 import DatePickerField from '../../../../../components/DatePickerField';
-import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../../components/MarkDownField';
-import SelectField from '../../../../../components/SelectField';
-import ConfidenceField from '../../../common/form/ConfidenceField';
-// import AssetTaglist from '../../../common/form/AssetTaglist';
-import AssetType from '../../../common/form/AssetType';
-// import Ports from '../../../common/form/Ports';
-import CommitMessage from '../../../common/form/CommitMessage';
-import { adaptFieldValue } from '../../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -87,12 +59,6 @@ class RemediationEditionGeneralOverviewComponent extends Component {
     const {
       t,
       classes,
-      remediation,
-      context,
-      values,
-      onSubmit,
-      setFieldValue,
-      enableReferences,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">

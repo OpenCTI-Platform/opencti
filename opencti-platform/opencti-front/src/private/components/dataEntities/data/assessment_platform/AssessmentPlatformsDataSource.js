@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer as QR } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../../relay/environment';
 import {
@@ -14,11 +13,8 @@ import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
 import EntitiesCreation from '../EntitiesCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
 import EntitiesDeletion from '../EntitiesDeletion';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
 
 class AssessementPlatformsDataSource extends Component {
   constructor(props) {
@@ -242,10 +238,6 @@ class AssessementPlatformsDataSource extends Component {
     const {
       t,
     } = this.props;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       type: {
         label: 'Type',
@@ -322,7 +314,6 @@ class AssessementPlatformsDataSource extends Component {
   render() {
     const {
       view,
-      sortBy,
       orderAsc,
       searchTerm,
       filters,

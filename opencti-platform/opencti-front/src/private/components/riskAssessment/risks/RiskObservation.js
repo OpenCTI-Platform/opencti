@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import Skeleton from '@material-ui/lab/Skeleton';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import List from '@material-ui/core/List';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -74,9 +73,7 @@ class RiskObservation extends Component {
       t,
       risk,
       classes,
-      cyioCoreObjectId,
     } = this.props;
-    const RiskObservationEdges = pathOr([], ['related_observations', 'edges'], risk);
     return (
       <div style={{ marginTop: '50px', height: '500px' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -90,8 +87,7 @@ class RiskObservation extends Component {
             render={({ error, props }) => {
               if (error) {
                 return (
-                  toastGenericError('Failed to get risk observation'),
-                  console.error(error)
+                  toastGenericError('Failed to get risk observation')
                 );
               }
               if (props) {

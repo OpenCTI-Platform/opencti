@@ -6,20 +6,9 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
-import Skeleton from '@material-ui/lab/Skeleton';
-import { QueryRenderer as QR } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
 import CyioAddExternalReferences from './CyioAddExternalReferences';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   paper: {

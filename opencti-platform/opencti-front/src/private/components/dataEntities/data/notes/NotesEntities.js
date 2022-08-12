@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -19,11 +18,9 @@ import EntitiesNotesLines, {
   entitiesNotesLinesQuery,
 } from './EntitiesNotesLines';
 import EntitiesNotesCreation from './EntitiesNotesCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
 import EntitiesNotesDeletion from './EntitiesNotesDeletion';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 import NoteEntityEdition from './NoteEntityEdition';
 
 class ResponsiblePartiesEntities extends Component {
@@ -171,9 +168,6 @@ class ResponsiblePartiesEntities extends Component {
       selectedElements,
       selectAll,
     } = this.state;
-    const {
-      t,
-    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -230,7 +224,6 @@ class ResponsiblePartiesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             return (
@@ -263,13 +256,6 @@ class ResponsiblePartiesEntities extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    const {
-      t,
-    } = this.props;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       type: {
         label: 'Type',
@@ -339,7 +325,6 @@ class ResponsiblePartiesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             return (
@@ -378,7 +363,6 @@ class ResponsiblePartiesEntities extends Component {
       filters: finalFilters,
       filterMode: 'and',
     };
-    const { location } = this.props;
     const { me } = this.props.me;
     return (
       <div>

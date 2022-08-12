@@ -9,28 +9,18 @@ import { Formik, Form, Field } from 'formik';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import NoteAddIcon from '@material-ui/icons/NoteAdd';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import IconButton from '@material-ui/core/IconButton';
 import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
-import AddIcon from '@material-ui/icons/Add';
-import { MoreVertOutlined } from '@material-ui/icons';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation } from '../../../../../relay/environment';
-import { dateFormat, parse } from '../../../../../utils/Time';
+import { parse } from '../../../../../utils/Time';
 import { adaptFieldValue } from '../../../../../utils/String';
-import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
-import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
@@ -180,8 +170,6 @@ class RemediationDetailsPopover extends Component {
     const {
       classes,
       t,
-      disabled,
-      risk,
       remediation,
     } = this.props;
     const SourceOfDetection = R.pipe(

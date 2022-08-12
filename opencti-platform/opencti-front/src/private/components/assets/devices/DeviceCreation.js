@@ -5,18 +5,11 @@ import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { compose, evolve } from 'ramda';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
 import {
-  Add,
-  Edit,
   Close,
-  Delete,
-  ArrowBack,
-  AddCircleOutline,
   CheckCircleOutline,
 } from '@material-ui/icons';
 import Dialog from '@material-ui/core/Dialog';
@@ -28,16 +21,13 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { parse } from '../../../../utils/Time';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import DeviceCreationOverview from './DeviceCreationOverview';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
-import Loader from '../../../../components/Loader';
 import { toastGenericError } from "../../../../utils/bakedToast";
 import DeviceCreationDetails from './DeviceCreationDetails';
 
@@ -211,9 +201,6 @@ class DeviceCreation extends Component {
     const {
       t,
       classes,
-      deviceId,
-      open,
-      history,
     } = this.props;
     return (
       <div className={classes.container}>

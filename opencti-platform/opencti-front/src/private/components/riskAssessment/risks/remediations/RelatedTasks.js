@@ -11,10 +11,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
-import { QueryRenderer } from '../../../../../relay/environment';
 import RelatedTasksLines, {
   RelatedTasksLinesQuery,
 } from './RelatedTasksLines';
+import { QueryRenderer } from '../../../../../relay/environment';
 
 const styles = (theme) => ({
   paper: {
@@ -54,7 +54,7 @@ class RelatedTasks extends Component {
       <QueryRenderer
         query={RelatedTasksLinesQuery}
         variables={{ id: remediationId }}
-        render={({ props, error, retry }) => {
+        render={({ props, retry }) => {
           if (props) {
             return (
               <RelatedTasksLines

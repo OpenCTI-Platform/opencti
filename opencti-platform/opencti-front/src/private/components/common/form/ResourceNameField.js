@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
 import { Field } from 'formik';
 import * as R from 'ramda';
-import { ListItem } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import ItemIcon from '../../../../components/ItemIcon';
 import { fetchQuery } from '../../../../relay/environment';
 
 const styles = () => ({
@@ -217,18 +215,13 @@ class ResourceNameField extends Component {
 
   render() {
     const {
-      t,
       name,
       classes,
       size,
       label,
       style,
       variant,
-      onChange,
-      onFocus,
-      resourceTypename,
       containerstyle,
-      editContext,
       disabled,
       helperText,
     } = this.props;

@@ -2,9 +2,7 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  Route, Redirect, withRouter, Switch,
-} from 'react-router-dom';
+import { Route, withRouter, Switch } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
@@ -12,15 +10,7 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Software from './Software';
-import SoftwareKnowledge from './SoftwareKnowledge';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import FileManager from '../../common/files/FileManager';
-import SoftwarePopover from './SoftwarePopover';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
@@ -97,7 +87,7 @@ class RootSoftware extends Component {
         <QueryRenderer
           query={softwareQuery}
           variables={{ id: softwareId }}
-          render={({ error, props, retry }) => {
+          render={({ props, retry }) => {
             if (props) {
               if (props.softwareAsset) {
                 return (

@@ -21,10 +21,8 @@ import SoftwareLines, {
 } from './software/SoftwareLines';
 import SoftwareCreation from './software/SoftwareCreation';
 import SoftwareDeletion from './software/SoftwareDeletion';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
-import ErrorNotFound from '../../../components/ErrorNotFound';
-import {toastSuccess, toastGenericError} from "../../../utils/bakedToast";
+import {toastGenericError} from "../../../utils/bakedToast";
 
 class Software extends Component {
   constructor(props) {
@@ -169,7 +167,7 @@ class Software extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
     }
@@ -255,7 +253,6 @@ class Software extends Component {
       openExports,
       selectedElements,
       numberOfElements,
-      openSoftwareCreation,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {

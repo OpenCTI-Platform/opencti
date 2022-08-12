@@ -6,12 +6,8 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import {
   compose,
-  dissoc,
-  assoc,
   evolve,
-  pipe,
 } from 'ramda';
-import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -27,7 +23,6 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
 import Slide from '@material-ui/core/Slide';
 import { Add, Close } from '@material-ui/icons';
@@ -37,8 +32,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { insertNode } from '../../../../utils/Store';
-import { dateFormat, parse } from '../../../../utils/Time';
+import { parse } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
@@ -159,7 +153,7 @@ class RiskLogCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting }) {
     const adaptedValues = evolve(
       {
         event_start: () => values.event_start === null ? null : parse(values.event_start).format(),
@@ -222,7 +216,7 @@ class RiskLogCreation extends Component {
   }
 
   renderClassic() {
-    const { t, classes, data } = this.props;
+    const { t, classes } = this.props;
 
     return (
       <div>
@@ -328,7 +322,7 @@ class RiskLogCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display, riskStatusResponse, riskId
+      t, classes, display, riskStatusResponse, riskId
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>

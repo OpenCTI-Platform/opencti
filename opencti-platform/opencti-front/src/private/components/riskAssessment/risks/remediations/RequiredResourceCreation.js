@@ -6,12 +6,9 @@ import { Formik, Form, Field } from 'formik';
 import {
   compose,
   dissoc,
-  map,
-  pathOr,
   assoc,
   pipe,
 } from 'ramda';
-import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -19,8 +16,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
-import MenuItem from '@material-ui/core/MenuItem';
-import AddIcon from '@material-ui/icons/Add';
 import Typography from '@material-ui/core/Typography';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -29,19 +24,10 @@ import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  List,
-  ListItem,
-  ListItemText,
-  ListSubheader,
-  Paper,
-} from '@material-ui/core';
 import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
-import SelectField from '../../../../../components/SelectField';
-import { insertNode } from '../../../../../utils/Store';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import ResourceNameField from '../../../common/form/ResourceNameField';
@@ -184,7 +170,7 @@ class RequiredResourceCreation extends Component {
     this.setState({ close: false, resourceName: '' });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting }) {
     const subjects = (values.resource_type === '' && values.resource === '')
       ? []
       : [{
@@ -357,11 +343,8 @@ class RequiredResourceCreation extends Component {
       t,
       classes,
       refreshQuery,
-      inputValue,
       display,
       remediationId,
-      requiredResourceData,
-      selectedElements,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>

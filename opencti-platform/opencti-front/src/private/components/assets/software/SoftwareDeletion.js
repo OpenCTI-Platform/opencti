@@ -6,27 +6,17 @@ import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
 import Button from '@material-ui/core/Button';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
 import Slide from '@material-ui/core/Slide';
 import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import SoftwareEditionContainer from './SoftwareEditionContainer';
-import { softwareEditionQuery, softwareEditionDarkLightQuery } from './SoftwareEdition';
-import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {

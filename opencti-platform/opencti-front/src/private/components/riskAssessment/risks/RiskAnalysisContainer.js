@@ -5,36 +5,22 @@ import PropTypes from 'prop-types';
 import {
   compose,
   pipe,
-  map,
   pathOr,
   mergeAll,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAnalysisThreats from './RiskAnalysisThreats';
 import RiskAnalysisEdition from './RiskAnalysisEdition';
 import RiskPopover from './RiskPopover';
 import RiskDeletion from './RiskDeletion';
-import RiskCreation from './RiskCreation';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import RiskAnalysisCharacterization from './RiskAnalysisCharacterization';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import TopMenuRisk from '../../nav/TopMenuRisk';
 
 const styles = () => ({
@@ -78,8 +64,6 @@ class RiskAnalysisContainerComponent extends Component {
       risk,
       history,
       refreshQuery,
-      t,
-      riskId,
       location,
     } = this.props;
     const riskCharacterizations = pipe(

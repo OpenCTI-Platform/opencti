@@ -1,31 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import { compose } from 'ramda';
-import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Drawer from '@material-ui/core/Drawer';
 import {
   Add,
 } from '@material-ui/icons';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import graphql from 'babel-plugin-relay/macro';
-import { dayStartDate, parse } from '../../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
-import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
-import RemediationCreationGeneral from './RemediationCreationGeneral';
 import RemediationCreation from './RemediationCreation';
-import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioCoreObjectLatestHistory';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioCoreObjectAssetCreationExternalReferences from '../../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
-import Loader from '../../../../../components/Loader';
-// import RemediationCreationDetails from './RemediationCreationDetails';
 
 const styles = (theme) => ({
   container: {
@@ -141,7 +126,7 @@ class AddRemediation extends Component {
         input: values,
       },
       setSubmitting,
-      onCompleted: (data) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
@@ -183,11 +168,7 @@ class AddRemediation extends Component {
 
   render() {
     const {
-      t,
       classes,
-      remediationId,
-      open,
-      history,
     } = this.props;
     return (
       <div className={classes.container}>

@@ -3,18 +3,11 @@ import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { compose, evolve } from 'ramda';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
 import {
-  Add,
-  Edit,
   Close,
-  Delete,
-  ArrowBack,
-  AddCircleOutline,
   CheckCircleOutline,
 } from '@material-ui/icons';
 import Typography from '@material-ui/core/Typography';
@@ -26,16 +19,9 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { parse } from '../../../../utils/Time';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import RiskCreationOverview from '../../riskAssessment/risks/RiskCreationOverview';
-import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
-import Loader from '../../../../components/Loader';
-import RiskCreationDetails from '../../riskAssessment/risks/RiskCreationDetails';
 import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
@@ -141,13 +127,12 @@ class EntitiesCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
-      onError: (err) => {
-        console.error(err);
+      onError: () => {
         toastGenericError('Failed to create entity');
       },
     });
@@ -169,9 +154,6 @@ class EntitiesCreation extends Component {
     const {
       t,
       classes,
-      riskId,
-      open,
-      history,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -185,10 +167,7 @@ class EntitiesCreation extends Component {
         >
           {({
             submitForm,
-            handleReset,
             isSubmitting,
-            setFieldValue,
-            values,
           }) => (
             <>
               <div className={classes.header}>

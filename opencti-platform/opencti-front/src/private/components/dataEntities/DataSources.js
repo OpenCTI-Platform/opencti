@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer as QR } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
-import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -13,12 +11,9 @@ import {
 import inject18n from '../../../components/i18n';
 import CyioListCards from '../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../components/list_lines/CyioListLines';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import DataSourceCreation from './data/DataSourceCreation';
 import DataSourceDeletion from './data/DataSourceDeletion';
-import ErrorNotFound from '../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from '../../../utils/bakedToast';
 
 class DataSources extends Component {
   constructor(props) {
@@ -231,10 +226,6 @@ class DataSources extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       type: {
         label: 'Type',

@@ -9,23 +9,16 @@ import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
   compose,
-  map,
-  pathOr,
   pipe,
   pick,
 } from 'ramda';
 import * as Yup from 'yup';
 import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
 import TextField from '../../../../components/TextField';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
-import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
-// import { SubscriptionFocus } from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -182,7 +175,6 @@ class CyioNoteEditionOverviewComponent extends Component {
     const {
       t,
       note,
-      refreshQuery,
       classes,
     } = this.props;
     // const createdBy = pathOr(null, ['createdBy', 'name'], note) === null

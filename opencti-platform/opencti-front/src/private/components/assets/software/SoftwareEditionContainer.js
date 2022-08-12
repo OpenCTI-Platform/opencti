@@ -17,18 +17,12 @@ import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { dateFormat, parse } from '../../../../utils/Time';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
-import SoftwareEditionOverview from './SoftwareEditionOverview';
 import SoftwareEditionDetails from './SoftwareEditionDetails';
 import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
@@ -124,7 +118,7 @@ class SoftwareEditionContainer extends Component {
     };
   }
 
-  handleChangeTab(event, value) {
+  handleChangeTab(value) {
     this.setState({ currentTab: value });
   }
 
@@ -149,7 +143,7 @@ class SoftwareEditionContainer extends Component {
       },
       values,
     );
-    Object.keys(totalInitial).forEach((key, j) => {
+    Object.keys(totalInitial).forEach((key) => {
       if (Array.isArray(adaptedValues[key])) {
         if (adaptedValues[key].some((value, i) => value !== totalInitial[key][i])) {
           filteredValue[key] = adaptedValues[key];
@@ -218,7 +212,6 @@ class SoftwareEditionContainer extends Component {
     const {
       t, classes, handleClose, software, refreshQuery,
     } = this.props;
-    const { editContext } = software;
     const initialValues = R.pipe(
       R.assoc('id', software?.id || ''),
       R.assoc('asset_id', software?.asset_id || ''),
@@ -269,10 +262,7 @@ class SoftwareEditionContainer extends Component {
         >
           {({
             submitForm,
-            handleReset,
             isSubmitting,
-            setFieldValue,
-            values,
           }) => (
             <>
               <div className={classes.header}>

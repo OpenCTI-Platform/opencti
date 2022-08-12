@@ -176,8 +176,7 @@ class LabelCreation extends Component {
           this.handleClose();
         }
       },
-      onError: (err) => {
-        console.error(err);
+      onError: () => {
         toastGenericError('Failed to create New Label');
       },
     });

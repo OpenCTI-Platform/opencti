@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -19,11 +18,9 @@ import EntitiesExternalReferencesLines, {
   entitiesExternalReferencesLinesQuery,
 } from './EntitiesExternalReferencesLines';
 import EntitiesExternalReferencesCreation from './EntitiesExternalReferencesCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
 import EntitiesExternalReferencesDeletion from './EntitiesExternalReferencesDeletion';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 import ExternalReferenceEntityEdition from './ExternalReferenceEntityEdition';
 
 class ExternalReferencesEntities extends Component {
@@ -174,9 +171,6 @@ class ExternalReferencesEntities extends Component {
       selectedElements,
       selectAll,
     } = this.state;
-    const {
-      t,
-    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -233,7 +227,6 @@ class ExternalReferencesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             return (
@@ -266,13 +259,6 @@ class ExternalReferencesEntities extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    const {
-      t,
-    } = this.props;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       type: {
         label: 'Type',
@@ -342,7 +328,6 @@ class ExternalReferencesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Request Failed');
             }
             return (
@@ -381,7 +366,6 @@ class ExternalReferencesEntities extends Component {
       filters: finalFilters,
       filterMode: 'and',
     };
-    const { location } = this.props;
     return (
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}

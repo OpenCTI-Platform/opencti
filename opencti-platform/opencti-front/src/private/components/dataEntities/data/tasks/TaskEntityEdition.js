@@ -3,12 +3,9 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
-import Menu from '@material-ui/core/Menu';
 import Slide from '@material-ui/core/Slide';
-import { MoreVertOutlined } from '@material-ui/icons';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+import { QueryRenderer } from '../../../../../relay/environment';
 import TaskEntityEditionContainer from './TaskEntityEditionContainer';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
@@ -96,7 +93,7 @@ class TaskEntityEdition extends Component {
 
   render() {
     const {
-      classes, t, displayEdit, handleDisplayEdit, history, taskId,
+      classes, displayEdit, handleDisplayEdit, history, taskId,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -105,7 +102,6 @@ class TaskEntityEdition extends Component {
           variables={{ id: taskId }}
           render={({ error, props, retry }) => {
             if (error) {
-              console.error(error);
               toastGenericError('Failed to edit Task');
             }
             if (props) {

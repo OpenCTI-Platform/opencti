@@ -223,13 +223,12 @@ class Export extends Component {
         options: finalValues,
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
-      onError: (err) => {
-        console.error(err);
+      onError: () => {
         toastGenericError('Failed to Generate Sar Report');
       },
     });
@@ -241,7 +240,7 @@ class Export extends Component {
 
   render() {
     const {
-      t, classes, location, history, keyword, theme,
+      t, classes,
     } = this.props;
     const exportTypeListData = pathOr(
       [],
@@ -567,10 +566,10 @@ class Export extends Component {
                           inputProps={{ 'aria-label': 'ant design' }}
                         />
                         <Typography>
-                          {t('Migrating Factors')}
+                          {t('Mitigating Factors')}
                         </Typography>
                         <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
-                          <Tooltip title={t('Migrating Factors')} >
+                          <Tooltip title={t('Mitigating Factors')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
