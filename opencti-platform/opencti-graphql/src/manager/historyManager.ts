@@ -110,7 +110,7 @@ const historyStreamHandler = async (streamEvents: Array<StreamEvent>) => {
 
 const initHistoryManager = () => {
   const WAIT_TIME_ACTION = 2000;
-  let scheduler: SetIntervalAsyncTimer;
+  let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let syncListening = true;
   const wait = (ms: number) => {
