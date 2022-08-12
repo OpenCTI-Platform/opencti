@@ -165,7 +165,6 @@ const Login = ({ classes, theme, settings, type }) => {
       )}
       {isAuthForm && (
           <Paper variant="outlined">
-            {type}
             <LoginForm />
           </Paper>
       )}
