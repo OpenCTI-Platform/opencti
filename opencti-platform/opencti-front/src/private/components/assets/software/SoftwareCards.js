@@ -8,10 +8,6 @@ import { pathOr } from 'ramda';
 import CyioListCardsContent from '../../../../components/list_cards/CyioListCardsContent';
 import { SoftwareCardDummy, SoftwareCard } from './SoftwareCard';
 import { setNumberOfElements } from '../../../../utils/Number';
-import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectBookmarks, {
-  stixDomainObjectBookmarksQuery,
-} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 
 const nbOfCardsToLoad = 50;
 
@@ -178,7 +174,7 @@ export default createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables({ count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
         first: fragmentVariables.first,

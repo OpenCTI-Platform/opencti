@@ -1133,7 +1133,7 @@ class Filters extends Component {
 
   renderDialogFilters() {
     const {
-      t, classes, theme, disabled,
+      t, classes, disabled,
     } = this.props;
     const { open, filters } = this.state;
     return (

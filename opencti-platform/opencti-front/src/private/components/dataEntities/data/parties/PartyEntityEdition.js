@@ -3,14 +3,10 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
-import Menu from '@material-ui/core/Menu';
 import { QueryRenderer as QR } from 'react-relay';
 import Slide from '@material-ui/core/Slide';
-import { MoreVertOutlined } from '@material-ui/icons';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
-import { commitMutation } from '../../../../../relay/environment';
 import PartyEntityEditionContainer from './PartyEntityEditionContainer';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
@@ -128,7 +124,7 @@ class RoleEntityEdition extends Component {
 
   render() {
     const {
-      classes, t, displayEdit, handleDisplayEdit, history, partyId,
+      classes, displayEdit, handleDisplayEdit, history, partyId,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -136,9 +132,8 @@ class RoleEntityEdition extends Component {
           environment={QueryRendererDarkLight}
           query={partyEntityEditionQuery}
           variables={{ id: partyId }}
-          render={({ error, props, retry }) => {
+          render={({ error, props }) => {
             if (error) {
-              console.error(error);
               return toastGenericError('Failed to edit Party');
             }
             if (props) {

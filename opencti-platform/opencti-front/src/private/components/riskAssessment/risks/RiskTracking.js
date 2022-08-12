@@ -11,13 +11,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import Skeleton from '@material-ui/lab/Skeleton';
-import RiskEdition from './RiskEdition';
 import RiskPopover from './RiskPopover';
-import RiskDeletion from './RiskDeletion';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
-import { QueryRenderer } from '../../../../relay/environment';
 import RiskTrackingLines, {
   RiskTrackingLinesQuery,
 } from './RiskTrackingLines';
@@ -84,7 +81,6 @@ class RiskTracking extends Component {
           variables={{ id: riskId }}
           render={({ props, retry, error }) => {
             if (error) {
-              console.error(error);
               return toastGenericError('Failed to get Tracking Data');
             }
             if (props) {

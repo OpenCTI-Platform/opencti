@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import CyioCoreObjectNotesCards, {
-// cyioCoreObjectNotesCardsQuery,
-} from './CyioCoreObjectNotesCards';
+import CyioCoreObjectNotesCards from './CyioCoreObjectNotesCards';
 import StixCoreRelationshipNotesCards, {
   stixCoreRelationshipNotesCardsQuery,
 } from './StixCoreRelationshipNotesCards';

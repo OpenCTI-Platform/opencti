@@ -150,6 +150,7 @@ class ViewCharts extends Component {
       High: '#E28120',
       Severe: '#A33611',
       Critical: '#7F0909',
+      Informational: '#00bcd4',
     };
 
     const handleTabChange = (event, newValue) => {
@@ -384,7 +385,7 @@ class ViewCharts extends Component {
             {analysises &&
               Object.entries(analysises).map(([id, analysis]) => {
                 return (
-                  <MenuItem onClick={handleClose}>
+                  <MenuItem>
                     <ListItem key={analysis.id}>
                       <ListItemText
                         id={analysis.id}

@@ -5,33 +5,24 @@ import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-// import { createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
-import AppBar from '@material-ui/core/AppBar';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
-import { RelayProfiler } from 'relay-runtime';
+import { commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { adaptFieldValue } from '../../../../utils/String';
 import { dateFormat, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
-import NetworkEditionOverview from './NetworkEditionOverview';
 import NetworkEditionDetails from './NetworkEditionDetails';
 import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetEditionOverview';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
@@ -94,6 +85,9 @@ const styles = (theme) => ({
 const networkValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   asset_type: Yup.string().required(t('This field is required')),
+  network_id: Yup.string().required(t('This field is required')),
+  network_name: Yup.string().required(t('This field is required')),
+  is_scanned: Yup.boolean().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
 });
@@ -127,7 +121,7 @@ class NetworkEditionContainer extends Component {
     };
   }
 
-  handleChangeTab(event, value) {
+  handleChangeTab(value) {
     this.setState({ currentTab: value });
   }
 
@@ -227,7 +221,7 @@ class NetworkEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, network, refreshQuery,
+      t, classes, network, refreshQuery,
     } = this.props;
     // const { editContext } = network;
     const initialValues = R.pipe(
@@ -278,13 +272,7 @@ class NetworkEditionContainer extends Component {
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
+          {({ submitForm, isSubmitting }) => (
             <>
               <div className={classes.header}>
                 <div>

@@ -4,29 +4,18 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import * as Yup from 'yup';
 import * as R from 'ramda';
-import { Formik, Form, Field } from 'formik';
+import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import Switch from '@material-ui/core/Switch';
 import Paper from '@material-ui/core/Paper';
-import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { Information } from 'mdi-material-ui';
-import AddIcon from '@material-ui/icons/Add';
 import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import SwitchField from '../../../../components/SwitchField';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/SelectField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { dateFormat, parse } from '../../../../utils/Time';
-import DatePickerField from '../../../../components/DatePickerField';
-import CommitMessage from '../../common/form/CommitMessage';
-import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -105,11 +94,6 @@ class NetworkCreationDetailsComponent extends Component {
     const {
       t,
       classes,
-      network,
-      context,
-      enableReferences,
-      onSubmit,
-      setFieldValue,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>

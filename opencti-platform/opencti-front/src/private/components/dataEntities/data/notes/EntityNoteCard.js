@@ -3,12 +3,8 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import {
   compose,
-  map,
-  pipe,
-  pathOr,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
-import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -20,20 +16,8 @@ import {
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import IconButton from '@material-ui/core/IconButton';
-import Avatar from '@material-ui/core/Avatar';
-import { StarBorderOutlined } from '@material-ui/icons';
-import ComputerIcon from '@material-ui/icons/Devices';
 import Skeleton from '@material-ui/lab/Skeleton';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
-import StixCoreObjectLabels from '../../../common/stix_core_objects/StixCoreObjectLabels';
-import {
-  addBookmark,
-  deleteBookMark,
-} from '../../../common/stix_domain_objects/StixDomainObjectBookmark';
-import { truncate } from '../../../../../utils/String';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import EntitiesNotesPopover from './EntitiesNotesPopover';
 
@@ -130,7 +114,6 @@ class EntityNoteCardComponent extends Component {
       selectAll,
       history,
       onToggleEntity,
-      bookmarksIds,
       onLabelClick,
       selectedElements,
     } = this.props;

@@ -18,8 +18,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import {
   Edit,
   Share,
-  ArrowDownward,
-  ArrowUpward,
   ArrowDropDown,
   ArrowDropUp,
   AppsOutlined,
@@ -39,7 +37,6 @@ import notes from '../../resources/images/entities/Notes.svg';
 import parties from '../../resources/images/entities/parties.svg';
 import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
 import externalReferenceIcon from '../../resources/images/entities/externalReferenceIcon.svg';
-import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
@@ -213,7 +210,7 @@ class CyioListLines extends Component {
     window.removeEventListener('scroll', this.handleScroll.bind(this));
   }
 
-  handleScroll(event) {
+  handleScroll() {
     this.setState({ scrollValue: window.pageYOffset });
   }
 
@@ -227,7 +224,7 @@ class CyioListLines extends Component {
 
   renderHeaderElement(field, label, width, isSortable) {
     const {
-      classes, t, sortBy, orderAsc, handleToggleSelectAll,
+      classes, t, sortBy, orderAsc,
     } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (
@@ -263,10 +260,7 @@ class CyioListLines extends Component {
   render() {
     const {
       t,
-      sortBy,
-      orderAsc,
       classes,
-      handleSearch,
       handleChangeView,
       disableCards,
       handleAddFilter,
@@ -280,7 +274,6 @@ class CyioListLines extends Component {
       noBottomPadding,
       dataColumns,
       secondaryAction,
-      keyword,
       filters,
       disabled,
       bottomNav,
@@ -291,7 +284,6 @@ class CyioListLines extends Component {
       handleNewCreation,
       noHeaders,
       iconExtension,
-      searchVariant,
       selectedDataEntity,
       OperationsComponent,
       message,

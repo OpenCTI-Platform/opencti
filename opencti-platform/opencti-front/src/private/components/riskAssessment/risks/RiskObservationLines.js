@@ -3,11 +3,11 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import { commitMutation as CM, createPaginationContainer, QueryRenderer as QR } from 'react-relay';
+import { createPaginationContainer } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import RiskObservationLine from './RiskObservationLine';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -41,13 +41,11 @@ class RiskObservationLinesContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, risk, fldt,
-    } = this.props;
+    const { risk } = this.props;
     const RelatedObservations = R.pathOr([], ['related_observations', 'edges'], risk);
     return (
       <div>
-        {RelatedObservations.map((observation, i) => (
+        {RelatedObservations.map((observation) => (
           <RiskObservationLine
             key={observation.node.id}
             observationId={observation.node.id}
@@ -119,7 +117,7 @@ export const RiskObservationLinesContainerComponent = createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables({ count, cursor }, fragmentVariables) {
       return {
         first: fragmentVariables.first,
         offset: fragmentVariables.offset,
