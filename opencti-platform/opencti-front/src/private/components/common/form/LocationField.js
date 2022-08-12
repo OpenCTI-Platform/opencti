@@ -21,7 +21,6 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { Dialog, DialogContent, DialogActions } from '@material-ui/core';
 import { fetchQuery } from '../../../../relay/environment';
-import NewTextField from '../../../../components/TextField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 

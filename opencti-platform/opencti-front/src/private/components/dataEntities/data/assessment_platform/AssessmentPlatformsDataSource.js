@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import Typography from '@material-ui/core/Typography';
-import { QueryRenderer } from '../../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
