@@ -13,7 +13,6 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
-import { QueryRenderer } from '../../../../../relay/environment';
 import RequiredResourcesLines, {
   requiredResourcesLinesQuery,
 } from './RequiredResourcesLines';
@@ -55,7 +54,7 @@ class RequiredResources extends Component {
         environment={QueryRendererDarkLight}
         query={requiredResourcesLinesQuery}
         variables={{ id: remediationId }}
-        render={({ props, error, retry }) => {
+        render={({ props, retry }) => {
           if (props) {
             return (
               <RequiredResourcesLines

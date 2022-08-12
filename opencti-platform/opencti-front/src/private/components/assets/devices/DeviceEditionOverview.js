@@ -13,24 +13,15 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
-import Cancel from '@material-ui/icons/Cancel';
-import Button from '@material-ui/core/Button';
-import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByField from '../../common/form/CreatedByField';
 import AssetType from '../../common/form/AssetType';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -164,7 +155,7 @@ class DeviceEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeCreatedBy(name, value) {
+  handleChangeCreatedBy(value) {
     if (!this.props.enableReferences) {
       commitMutation({
         mutation: deviceMutationFieldPatch,
@@ -176,7 +167,7 @@ class DeviceEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeObjectMarking(name, values) {
+  handleChangeObjectMarking(values) {
     if (!this.props.enableReferences) {
       const { device } = this.props;
       const currentMarkingDefinitions = R.pipe(
@@ -221,8 +212,6 @@ class DeviceEditionOverviewComponent extends Component {
       t,
       classes,
       device,
-      context,
-      enableReferences,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     const createdBy = R.pathOr(null, ['createdBy', 'name'], device) === null

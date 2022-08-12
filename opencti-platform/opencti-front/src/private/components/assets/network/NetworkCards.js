@@ -8,10 +8,6 @@ import { pathOr } from 'ramda';
 import CyioListCardsContent from '../../../../components/list_cards/CyioListCardsContent';
 import { NetworkCard, NetworkCardDummy } from './NetworkCard';
 import { setNumberOfElements } from '../../../../utils/Number';
-import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectBookmarks, {
-  stixDomainObjectBookmarksQuery,
-} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 
 const nbOfCardsToLoad = 50;
 

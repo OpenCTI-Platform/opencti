@@ -24,19 +24,14 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import AddIcon from '@material-ui/icons/Add';
-import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import DatePickerField from '../../../../../components/DatePickerField';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
-import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import SelectField from '../../../../../components/SelectField';
 import MarkDownField from '../../../../../components/MarkDownField';
-import { insertNode } from '../../../../../utils/Store';
 import { dateFormat, parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
@@ -184,7 +179,7 @@ class RelatedTaskCreation extends Component {
     this.setState({ open: false, fieldName: '' });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting }) {
     const adaptedValues = evolve(
       {
         associated_activities: () => {
@@ -392,7 +387,7 @@ class RelatedTaskCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, refreshQuery, display, remediationId, relatedTaskData,
+      t, classes, refreshQuery, display, remediationId,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>

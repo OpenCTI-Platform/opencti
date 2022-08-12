@@ -6,7 +6,6 @@ import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer as QR } from 'react-relay';
 import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
-import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -22,11 +21,9 @@ import DevicesLines, {
   devicesLinesQuery,
 } from './devices/DevicesLines';
 import DeviceCreation from './devices/DeviceCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import DeviceDeletion from './devices/DeviceDeletion';
-import ErrorNotFound from '../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from "../../../utils/bakedToast";
+import { toastGenericError } from "../../../utils/bakedToast";
 
 class Devices extends Component {
   constructor(props) {
@@ -262,7 +259,6 @@ class Devices extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
     }

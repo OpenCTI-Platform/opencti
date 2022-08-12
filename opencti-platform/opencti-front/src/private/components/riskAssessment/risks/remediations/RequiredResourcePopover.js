@@ -5,11 +5,7 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import {
-  compose,
-  pathOr,
-  mergeAll,
   map,
-  path,
   pipe,
   dissoc,
   assoc,
@@ -17,16 +13,11 @@ import {
 } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
-import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
-import AddIcon from '@material-ui/icons/Add';
-import ListItem from '@material-ui/core/ListItem';
-import List from '@material-ui/core/List';
 import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -39,15 +30,10 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight, { fetchDarklightQuery } from '../../../../../relay/environmentDarkLight';
+import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import TextField from '../../../../../components/TextField';
-import { dateFormat, parse } from '../../../../../utils/Time';
 import { adaptFieldValue } from '../../../../../utils/String';
-import SelectField from '../../../../../components/SelectField';
-// import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
-import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import MarkDownField from '../../../../../components/MarkDownField';
@@ -299,10 +285,8 @@ class RequiredResourcePopover extends Component {
       t,
       handleRemove,
       refreshQuery,
-      inputValue,
       remediationId,
       data,
-      requiredResourceId,
     } = this.props;
     const requiredResourceNode = R.pipe(
       R.pathOr([], ['subjects']),

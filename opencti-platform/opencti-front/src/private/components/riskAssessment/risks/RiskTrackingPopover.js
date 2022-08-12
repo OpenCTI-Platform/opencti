@@ -4,14 +4,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
   compose,
-  dissoc,
   evolve,
-  assoc,
-  pipe,
 } from 'ramda';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
 import Typography from '@material-ui/core/Typography';
 import Menu from '@material-ui/core/Menu';
@@ -36,11 +32,8 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-// import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
-import Loader from '../../../../components/Loader';
 import MarkDownField from '../../../../components/MarkDownField';
-import { dateFormat, parse } from '../../../../utils/Time';
+import { dateFormat } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
@@ -155,7 +148,7 @@ class RiskTrackingPopover extends Component {
     this.setState({ displayCancel: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(values, { setSubmitting }) {
     const adaptedValues = evolve(
       {
         logged_by: () => values.logged_by.length > 0 && [JSON.stringify({ 'party': values.logged_by })],
@@ -261,9 +254,7 @@ class RiskTrackingPopover extends Component {
     const {
       classes,
       t,
-      externalReferenceId,
       handleRemove,
-      handleOpenUpdate,
       node,
       riskStatusResponse,
     } = this.props;

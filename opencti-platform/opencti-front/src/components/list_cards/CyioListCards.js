@@ -14,8 +14,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import {
   Share,
   Edit,
-  ArrowDownward,
-  ArrowUpward,
   AddCircleOutline,
   FormatListBulleted,
 } from '@material-ui/icons';
@@ -30,7 +28,6 @@ import parties from '../../resources/images/entities/parties.svg';
 import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
 import labels from '../../resources/images/entities/labelsImage.svg';
 import externalReferenceIcon from '../../resources/images/entities/externalReferenceIcon.svg';
-import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
@@ -152,23 +149,18 @@ class CyioListCards extends Component {
     const {
       t,
       classes,
-      handleSearch,
       handleChangeView,
       handleAddFilter,
       handleRemoveFilter,
       openExports,
-      dataColumns,
       OperationsComponent,
       handleDisplayEdit,
       selectedElements,
       disabled,
-      keyword,
       filterEntityType,
       selectedDataEntity,
       filters,
       selectAll,
-      sortBy,
-      orderAsc,
       children,
       handleNewCreation,
       numberOfElements,

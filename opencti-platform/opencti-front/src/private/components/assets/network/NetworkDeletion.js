@@ -6,29 +6,18 @@ import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
 import Button from '@material-ui/core/Button';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import Typography from '@material-ui/core/Typography';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
 import Slide from '@material-ui/core/Slide';
 import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import NetworkEditionContainer from './NetworkEditionContainer';
-import { networkEditionQuery, networkEditionDarkLightQuery } from './NetworkEdition';
-import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -145,7 +134,7 @@ class NetworkDeletion extends Component {
       variables: {
         id: this.props.id,
       },
-      onCompleted: (data) => {
+      onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
         this.props.history.push('/defender HQ/assets/network');

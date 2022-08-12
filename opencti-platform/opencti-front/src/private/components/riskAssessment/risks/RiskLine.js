@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import {
   compose,
   pipe,
-  map,
   pathOr,
   mergeAll,
 } from 'ramda';
@@ -16,16 +15,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import LayersIcon from '@material-ui/icons/Layers';
 import Button from '@material-ui/core/Button';
-import WindowsIcon from '@material-ui/icons/LaptopWindows';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { KeyboardArrowRight, MoreVert, PublicOutlined } from '@material-ui/icons';
-import IconButton from '@material-ui/core/IconButton';
-import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import ItemIcon from '../../../../components/ItemIcon';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
 
 const styles = (theme) => ({
@@ -79,8 +71,6 @@ class RiskLineComponent extends Component {
       history,
       node,
       selectAll,
-      dataColumns,
-      onLabelClick,
       onToggleEntity,
       selectedElements,
     } = this.props;
@@ -88,18 +78,17 @@ class RiskLineComponent extends Component {
       pathOr([], ['related_risks', 'edges']),
       mergeAll,
     )(node);
-    const riskRemediation = pipe(
-      pathOr([], ['remediations']),
-      mergeAll,
-    )(node);
-    const riskCharacterization = pipe(
-      pathOr([], ['characterizations']),
-      mergeAll,
-    )(node);
+    // const riskRemediation = pipe(
+    //   pathOr([], ['remediations']),
+    //   mergeAll,
+    // )(node);
+    // const riskCharacterization = pipe(
+    //   pathOr([], ['characterizations']),
+    //   mergeAll,
+    // )(node);
     // const riskCharacterization = pathOr(null, ['node', 'characterizations', 0], riskData);
     // const riskRemediation = pathOr([], ['node', 'remediations', 0], riskData);
     // console.log('RiskLineData', riskCharacterization, riskRemediation);
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
 
     return (
       <ListItem

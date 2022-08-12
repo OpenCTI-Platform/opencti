@@ -7,7 +7,7 @@ import { withTheme, withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
 import Slide from '@material-ui/core/Slide';
 import {
-  List, ListItem, Button, IconButton,
+  List, ListItem,
 } from '@material-ui/core';
 import Popover from '@material-ui/core/Popover';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
@@ -65,7 +65,7 @@ class CyioCoreObjectLabels extends Component {
     this.handleWindowChange();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate() {
     if (this.state.windowWidth !== window.innerWidth) {
       this.handleWindowChange();
     }

@@ -6,15 +6,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ShieldPlus, TextSearch } from 'mdi-material-ui';
 import NoteRoundedIcon from '@material-ui/icons/NoteRounded';
-import ManageSearchIcon from '@material-ui/icons/SearchOutlined';
-import AddModeratorIcon from '@material-ui/icons/AddToQueueRounded';
 import HistoryIcon from '@material-ui/icons/History';
 import TopBarBreadcrumbs from './TopBarBreadcrumbs';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/Security';
 
 const styles = (theme) => ({
   button: {
@@ -49,7 +43,6 @@ class TopMenuRisk extends Component {
       classes,
       risk,
       remediation,
-      breadcrumbs,
     } = this.props;
     return (
       <>

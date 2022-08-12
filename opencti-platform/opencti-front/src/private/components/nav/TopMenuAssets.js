@@ -4,8 +4,6 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { PublicOutlined, LaptopChromebookOutlined } from '@material-ui/icons';
-import { DiamondOutline, ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import deviceIcon from '../../../resources/images/assets/deviceIcon.svg';
 import networkIcon from '../../../resources/images/assets/networkIcon.svg';
