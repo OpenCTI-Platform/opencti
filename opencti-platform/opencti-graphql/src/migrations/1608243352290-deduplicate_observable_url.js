@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { searchClient, ES_IGNORE_THROTTLED } from '../database/engine';
+import { ES_IGNORE_THROTTLED, elRawSearch } from '../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { mergeEntities, patchAttribute } from '../database/middleware';
 import { generateStandardId } from '../schema/identifier';
@@ -29,8 +29,8 @@ export const up = async (next) => {
       },
     },
   };
-  const duplicates = await searchClient().search(query);
-  const { buckets } = duplicates.body.aggregations.url.duplicateUri;
+  const duplicates = await elRawSearch(query);
+  const { buckets } = duplicates.aggregations.url.duplicateUri;
   logApp.info(`[MIGRATION] Merging ${buckets.length} URL`);
   // end region
   // For each duplicate, merge all entities into one.
@@ -53,8 +53,8 @@ export const up = async (next) => {
         sort: [{ 'internal_id.keyword': 'desc' }],
       },
     };
-    const data = await searchClient().search(findQuery);
-    const urlsToMerge = data.body.hits.hits;
+    const data = await elRawSearch(findQuery);
+    const urlsToMerge = data.hits.hits;
     const target = R.head(urlsToMerge)._source;
     // 1. Update the standard_id of the target
     const { element: updatedTarget } = await patchAttribute(SYSTEM_USER, target.internal_id, target.entity_type, {

@@ -134,16 +134,6 @@ const openClient = new OpenClient(searchConfiguration);
 let isRuntimeSortingEnable = false;
 let el = openClient;
 
-// The OpenSearch/ELK Body Parser (oebp)
-// Starting ELK8+, response are no longer inside a body envelop
-// Query wrapping is still accepted in ELK8
-const oebp = (queryResult) => {
-  if (el instanceof ElkClient) {
-    return queryResult;
-  }
-  return queryResult.body;
-};
-
 // Look for the engine version with OpenSearch client
 export const searchEngineVersion = () => {
   return openClient
@@ -193,6 +183,17 @@ export const searchEngineInit = async () => {
 };
 export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
 export const searchClient = () => el;
+
+// The OpenSearch/ELK Body Parser (oebp)
+// Starting ELK8+, response are no longer inside a body envelop
+// Query wrapping is still accepted in ELK8
+const oebp = (queryResult) => {
+  if (el instanceof ElkClient) {
+    return queryResult;
+  }
+  return queryResult.body;
+};
+export const elRawSearch = (query) => el.search(query).then((r) => oebp(r));
 
 const buildMarkingRestriction = (user) => {
   const must = [];
@@ -740,10 +741,9 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
     },
   };
   logApp.debug('[SEARCH ENGINE] aggregationCount', { query });
-  return el
-    .search(query)
+  return elRawSearch(query)
     .then((data) => {
-      const { buckets } = oebp(data).aggregations.genres;
+      const { buckets } = data.aggregations.genres;
       return R.map((b) => {
         let label = b.key;
         if (typeof label === 'number') {
@@ -875,12 +875,12 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
       },
     },
   };
-  const data = await el.search(query).catch((e) => {
+  const data = await elRawSearch(query).catch((e) => {
     throw DatabaseError('Find by from and to fail', { error: e, query });
   });
   const hits = [];
-  for (let index = 0; index < oebp(data).hits.hits.length; index += 1) {
-    const hit = oebp(data).hits.hits[index];
+  for (let index = 0; index < data.hits.hits.length; index += 1) {
+    const hit = data.hits.hits[index];
     hits.push(elDataConverter(hit));
   }
   return hits;
@@ -975,11 +975,11 @@ export const elFindByIds = async (user, ids, opts = {}) => {
         },
       };
       logApp.debug('[SEARCH ENGINE] elInternalLoadById', { query });
-      const data = await el.search(query).catch((err) => {
+      const data = await elRawSearch(query).catch((err) => {
         throw DatabaseError('Error loading ids', { error: err, query });
       });
-      for (let j = 0; j < oebp(data).hits.hits.length; j += 1) {
-        const hit = oebp(data).hits.hits[j];
+      for (let j = 0; j < data.hits.hits.length; j += 1) {
+        const hit = data.hits.hits[j];
         const element = elDataConverter(hit);
         elasticHits[element.internal_id] = element;
       }
@@ -1119,11 +1119,10 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
     },
   };
   logApp.debug('[SEARCH ENGINE] aggregationRelationsCount', { query });
-  return el
-    .search(query)
+  return elRawSearch(query)
     .then(async (data) => {
       if (field === 'internal_id') {
-        const { buckets } = oebp(data).aggregations.connections.filtered.genres;
+        const { buckets } = data.aggregations.connections.filtered.genres;
         const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
         return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
       }
@@ -1142,8 +1141,8 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
         R.uniq(),
         R.filter((f) => !isAbstract(f)),
         R.map((u) => u.toLowerCase())
-      )(oebp(data).hits.hits);
-      const { buckets } = oebp(data).aggregations.connections.filtered.genres;
+      )(data.hits.hits);
+      const { buckets } = data.aggregations.connections.filtered.genres;
       const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
       return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
     })
@@ -1275,8 +1274,8 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
     },
   };
   logApp.debug('[SEARCH ENGINE] histogramCount', { query });
-  return el.search(query).then((data) => {
-    const { buckets } = oebp(data).aggregations.count_over_time;
+  return elRawSearch(query).then((data) => {
+    const { buckets } = data.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
     return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
   });
@@ -1594,13 +1593,12 @@ export const elPaginate = async (user, indexName, options = {}) => {
     body,
   };
   logApp.debug('[SEARCH ENGINE] paginate', { query });
-  return el
-    .search(query)
+  return elRawSearch(query)
     .then((data) => {
-      const convertedHits = R.map((n) => elDataConverter(n), oebp(data).hits.hits);
+      const convertedHits = R.map((n) => elDataConverter(n), data.hits.hits);
       if (connectionFormat) {
         const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
-        return buildPagination(first, searchAfter, nodeHits, oebp(data).hits.total.value);
+        return buildPagination(first, searchAfter, nodeHits, data.hits.total.value);
       }
       return convertedHits;
     })
@@ -1703,8 +1701,8 @@ export const elAttributeValues = async (user, field, opts = {}) => {
     ignore_throttled: ES_IGNORE_THROTTLED,
     body,
   };
-  const data = await el.search(query);
-  const { buckets } = oebp(data).aggregations.values;
+  const data = await elRawSearch(query);
+  const { buckets } = data.aggregations.values;
   const values = (buckets ?? []).map((n) => n.key);
   const nodeElements = values.map((val) => ({ node: { id: val, key: field, value: val } }));
   return buildPagination(0, null, nodeElements, nodeElements.length);
@@ -1715,8 +1713,9 @@ export const elBulk = async (args) => {
   return el
     .bulk(args)
     .then((result) => {
-      if (oebp(result).errors) {
-        const errors = oebp(result).items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
+      const data = oebp(result);
+      if (data.errors) {
+        const errors = data.items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
         throw DatabaseError('Error executing bulk indexing', { errors });
       }
       return result;

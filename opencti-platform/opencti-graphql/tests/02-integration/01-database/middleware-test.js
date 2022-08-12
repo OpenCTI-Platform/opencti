@@ -17,7 +17,12 @@ import {
   createEntity,
 } from '../../../src/database/middleware';
 import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
-import { searchClient, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
+import {
+  elFindByIds,
+  elLoadById,
+  ES_IGNORE_THROTTLED,
+  elRawSearch
+} from '../../../src/database/engine';
 import { ADMIN_USER } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -741,8 +746,8 @@ const isOneOfThisIdsExists = async (ids) => {
       },
     },
   };
-  const looking = await searchClient().search(query);
-  const numberOfResult = looking.body.hits.total.value;
+  const looking = await elRawSearch(query);
+  const numberOfResult = looking.hits.total.value;
   return numberOfResult > 0;
 };
 

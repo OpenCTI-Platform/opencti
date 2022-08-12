@@ -1,13 +1,13 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import {
-  searchClient,
   elLoadById,
   elDeleteInstanceIds,
   elIndex,
   elPaginate,
   elUpdate,
   ES_IGNORE_THROTTLED,
+  elRawSearch,
 } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { READ_INDEX_HISTORY, isNotEmptyField, INDEX_HISTORY } from '../database/utils';
@@ -147,16 +147,12 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
     if (searchAfter) {
       body = { ...body, search_after: [searchAfter] };
     }
-    const worksToDelete = await searchClient()
-      .search({ index: READ_INDEX_HISTORY, ignore_throttled: ES_IGNORE_THROTTLED, body })
+    const worksToDelete = await elRawSearch({ index: READ_INDEX_HISTORY, ignore_throttled: ES_IGNORE_THROTTLED, body })
       .catch((e) => {
         throw DatabaseError('Error searching for works to delete', { error: e });
       });
 
-    const {
-      hits,
-      total: { value: valTotal },
-    } = worksToDelete.body.hits;
+    const { hits, total: { value: valTotal } } = worksToDelete.hits;
     if (totalToDelete === null) totalToDelete = valTotal;
     if (hits.length === 0) {
       hasNextPage = false;

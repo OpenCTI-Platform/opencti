@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { searchClient, ES_IGNORE_THROTTLED } from '../database/engine';
+import { ES_IGNORE_THROTTLED, elRawSearch } from '../database/engine';
 import { logApp } from '../config/conf';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { deleteElementById } from '../database/middleware';
@@ -37,11 +37,8 @@ const computeMissingRelationsForType = async (relationType) => {
       track_total_hits: true,
       body,
     };
-    const queryRelations = await searchClient().search(query);
-    const {
-      hits,
-      total: { value: valTotal },
-    } = queryRelations.body.hits;
+    const queryRelations = await elRawSearch(query);
+    const { hits, total: { value: valTotal } } = queryRelations.hits;
     if (hits.length === 0) {
       hasNextPage = false;
     } else {
@@ -66,8 +63,8 @@ const computeMissingRelationsForType = async (relationType) => {
           },
         },
       };
-      const data = await searchClient().search(findQuery);
-      const resolvedConns = data.body.hits.hits.map((i) => i._source);
+      const data = await elRawSearch(findQuery);
+      const resolvedConns = data.hits.hits.map((i) => i._source);
       const resolvedIds = resolvedConns.map((r) => r.internal_id);
       const relationsToRemove = hits
         .map((h) => h._source)
