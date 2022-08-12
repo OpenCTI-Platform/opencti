@@ -32,6 +32,13 @@ const styles = (theme) => ({
     justifyContent: 'flex-start',
     padding: '0px 0 20px 22px',
   },
+  iframe: {
+    width: '100%',
+    border: 'none',
+    height: '700px',
+    overflowX: 'hidden',
+    overflowY: 'scroll',
+  },
 });
 
 class AboutModal extends Component {
@@ -93,21 +100,13 @@ class AboutModal extends Component {
       AboutLocationPath = '/static/docs/pages/settings/index.md.html';
     }
     if (AboutLocationPath) {
-      fetch(AboutLocationPath)
-        .then((response) => response.text())
-        .then((data) => {
-          this.setState({ htmlFormatData: data, open: true });
-          const script = document.createElement('script');
-          script.src = '/static/docs/_markdeep/markdeep.min.js';
-          script.async = true;
-          document.querySelector('.staticData').appendChild(script);
-        });
+      this.setState({ htmlFormatData: AboutLocationPath, open: true });
     }
   }
 
   render() {
     const {
-      t, classes, location, history, keyword, theme,
+      t, classes,
     } = this.props;
     return (
       <>
@@ -127,9 +126,12 @@ class AboutModal extends Component {
           classes={{ paper: classes.dialogRoot }}
         >
           <DialogContent classes={{ root: classes.dialogContent }}>
-            <div
-              className='staticData'
-              dangerouslySetInnerHTML={{ __html: this.state.htmlFormatData }}
+            <iframe
+              scrolling='no'
+              className={classes.iframe}
+              src={this.state.htmlFormatData}
+              height='700px'
+              width='100%'
             />
           </DialogContent>
           <DialogActions className={classes.dialogActions}>
