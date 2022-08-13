@@ -13,7 +13,6 @@ import {
 } from '../database/middleware';
 import { SYSTEM_USER } from '../utils/access';
 import { buildInputDataFromStix } from '../database/stix';
-import { sleep } from '../../tests/utils/testQuery';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { addStixCyberObservable } from '../domain/stixCyberObservable';
@@ -89,6 +88,7 @@ import { rawFilesListing } from '../database/file-storage';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
+import { wait } from '../database/utils';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const WAIT_TIME_ACTION = 2000;
@@ -323,7 +323,7 @@ const syncManagerInstance = (syncId) => {
             logApp.error('[OPENCTI] Sync error processing event', { error: e });
           }
         }
-        await sleep(10);
+        await wait(10);
       }
     },
     isRunning: () => run,
@@ -371,7 +371,7 @@ const initSyncManager = () => {
   const processingLoop = async () => {
     while (syncListening) {
       await processStep();
-      await sleep(WAIT_TIME_ACTION);
+      await wait(WAIT_TIME_ACTION);
     }
     // Stopping
     // eslint-disable-next-line no-restricted-syntax

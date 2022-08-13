@@ -1,7 +1,6 @@
 import { logApp } from '../config/conf';
-import { searchClient } from '../database/engine';
+import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_DATA_INDICES } from '../database/utils';
-import { DatabaseError } from '../config/errors';
 
 export const up = async (next) => {
   const entities = [
@@ -14,26 +13,20 @@ export const up = async (next) => {
   logApp.info('[MIGRATION] Starting 1652114181368-entities_rename.js');
   for (let index = 0; index < entities.length; index += 1) {
     const { source, destination } = entities[index];
-    logApp.info(`[MIGRATION] Renaming entity ${source}`);
-    await searchClient()
-      .updateByQuery({ index: READ_DATA_INDICES,
-        refresh: true,
-        body: {
-          script: {
-            params: { name: destination },
-            source: 'ctx._source.entity_type = params.name;',
-          },
-          query: {
-            bool: {
-              must: [
-                { term: { 'entity_type.keyword': { value: source } } },
-              ],
-            },
-          },
-        } })
-      .catch((err) => {
-        throw DatabaseError('Error updating elastic', { error: err });
-      });
+    const updateQuery = {
+      script: {
+        params: { name: destination },
+        source: 'ctx._source.entity_type = params.name;',
+      },
+      query: {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': { value: source } } },
+          ],
+        },
+      },
+    };
+    await elUpdateByQueryForMigration(`[MIGRATION] Renaming entity ${source}`, READ_DATA_INDICES, updateQuery);
   }
   logApp.info('[MIGRATION] 1652114181368-entities_rename.js finished');
   next();

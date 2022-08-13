@@ -12,6 +12,7 @@ import {
   generateMergeMessage,
   isEmptyField,
   isInferredIndex,
+  waitInSec,
 } from './utils';
 import { isStixData } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
@@ -51,12 +52,6 @@ const REDIS_EXPIRE_TIME = 90;
 const MAX_RETRY_COMMAND = 10;
 
 const isStreamPublishable = (instance: StoreObject) => INCLUDE_INFERENCES || !isInferredIndex(instance._index);
-
-const sleep = (ms: number) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-};
 
 const redisOptions = (database: number): RedisOptions => ({
   keyPrefix: REDIS_PREFIX,
@@ -607,7 +602,7 @@ export const createStreamProcessor = (user: AuthUser, provider: string, callback
       }
     } catch (err) {
       logApp.error(`Error in redis streams read for ${provider}`, { error: err });
-      await sleep(2000);
+      await waitInSec(2);
     }
     return streamListening;
   };

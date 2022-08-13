@@ -1,4 +1,4 @@
-import { searchClient } from '../database/engine';
+import { elRawDeleteByQuery } from '../database/engine';
 import { READ_ENTITIES_INDICES } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 
@@ -7,15 +7,13 @@ export const up = async (next) => {
     match: { entity_type: 'Attribute' },
   };
   // Clean all current platform attributes
-  await searchClient()
-    .deleteByQuery({
-      index: READ_ENTITIES_INDICES,
-      refresh: true,
-      body: { query },
-    })
-    .catch((err) => {
-      throw DatabaseError('Error cleaning the attribute', { error: err });
-    });
+  await elRawDeleteByQuery({
+    index: READ_ENTITIES_INDICES,
+    refresh: true,
+    body: { query },
+  }).catch((err) => {
+    throw DatabaseError('Error cleaning the attribute', { error: err });
+  });
   next();
 };
 

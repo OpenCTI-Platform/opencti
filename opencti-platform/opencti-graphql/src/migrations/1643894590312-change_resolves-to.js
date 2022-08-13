@@ -1,9 +1,8 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { BULK_TIMEOUT, searchClient, elBulk, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
+import { BULK_TIMEOUT, elBulk, elUpdateByQueryForMigration, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import { logApp } from '../config/conf';
-import { DatabaseError } from '../config/errors';
 
 export const up = async (next) => {
   const start = new Date().getTime();
@@ -34,37 +33,31 @@ export const up = async (next) => {
         connection.role = params.targetRoleTo;
       }
   }`;
-  logApp.info('[MIGRATION] Migrating all relationships connections');
   const startMigrateRelationships = new Date().getTime();
-  await searchClient()
-    .updateByQuery({
-      index: READ_RELATIONSHIPS_INDICES,
-      refresh: true,
-      body: {
-        script: {
-          source,
-          params: {
-            type: 'resolves-to',
-            targetType: 'obs_resolves-to',
-            roleFrom: 'resolves-to_from',
-            targetRoleFrom: 'obs_resolves-to_from',
-            roleTo: 'resolves-to_to',
-            targetRoleTo: 'obs_resolves-to_to',
-          },
-        },
-        query: {
-          bool: {
-            must: [{ match_phrase: { relationship_type: 'resolves-to' } }],
-          },
-        },
+  const updateQuery = {
+    script: {
+      source,
+      params: {
+        type: 'resolves-to',
+        targetType: 'obs_resolves-to',
+        roleFrom: 'resolves-to_from',
+        targetRoleFrom: 'obs_resolves-to_from',
+        roleTo: 'resolves-to_to',
+        targetRoleTo: 'obs_resolves-to_to',
       },
-    })
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err });
-    });
-  logApp.info(
-    `[MIGRATION] Migrating all relationships connections done in ${new Date() - startMigrateRelationships} ms`
+    },
+    query: {
+      bool: {
+        must: [{ match_phrase: { relationship_type: 'resolves-to' } }],
+      },
+    },
+  };
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Migrating relationships connections',
+    READ_RELATIONSHIPS_INDICES,
+    updateQuery
   );
+  logApp.info(`[MIGRATION] Migrating all relationships connections done in ${new Date() - startMigrateRelationships} ms`);
   next();
 };
 

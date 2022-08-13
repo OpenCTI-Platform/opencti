@@ -60,10 +60,5 @@ export const serverFromUser = (user = ADMIN_USER) => {
   });
 };
 
-export const sleep = (ms) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-};
 const adminApolloServer = serverFromUser();
 export const queryAsAdmin = (request) => adminApolloServer.executeOperation(request);

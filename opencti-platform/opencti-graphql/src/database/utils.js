@@ -339,3 +339,11 @@ export const computeAverage = (numbers) => {
   const sum = numbers.reduce((a, b) => a + b, 0);
   return Math.round(sum / numbers.length || 0);
 };
+
+export const wait = (ms) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+export const waitInSec = (sec) => wait(sec * 1000);

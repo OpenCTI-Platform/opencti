@@ -19,6 +19,7 @@ import {
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
+  waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, logApp } from '../config/conf';
@@ -182,7 +183,6 @@ export const searchEngineInit = async () => {
   return true;
 };
 export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
-export const searchClient = () => el;
 
 // The OpenSearch/ELK Body Parser (oebp)
 // Starting ELK8+, response are no longer inside a body envelop
@@ -194,6 +194,32 @@ const oebp = (queryResult) => {
   return queryResult.body;
 };
 export const elRawSearch = (query) => el.search(query).then((r) => oebp(r));
+export const elRawDeleteByQuery = (query) => el.deleteByQuery(query).then((r) => oebp(r));
+export const elRawUpdateByQuery = (query) => el.updateByQuery(query).then((r) => oebp(r));
+const elGetTask = (taskId) => el.tasks.get({ task_id: taskId }).then((r) => oebp(r));
+export const elUpdateByQueryForMigration = async (message, index, body) => {
+  logApp.info(`${message} started`);
+  // Execute the update by query in async mode
+  const queryAsync = await elRawUpdateByQuery({ index,
+    refresh: true,
+    wait_for_completion: false,
+    body
+  }).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
+  // Wait 10 seconds for task to initialize
+  await waitInSec(10);
+  // Monitor the task until completion
+  let taskStatus = await elGetTask(queryAsync.task);
+  while (!taskStatus.completed) {
+    const { total, updated } = taskStatus.task.status;
+    logApp.info(`${message} in progress - ${updated}/${total}`);
+    await waitInSec(5);
+    taskStatus = await elGetTask(queryAsync.task);
+  }
+  const timeSec = Math.round(taskStatus.task.running_time_in_nanos / 1e9);
+  logApp.info(`${message} done in ${timeSec} seconds`);
+};
 
 const buildMarkingRestriction = (user) => {
   const must = [];

@@ -1,7 +1,6 @@
 import { logApp } from '../config/conf';
-import { searchClient } from '../database/engine';
+import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_DATA_INDICES } from '../database/utils';
-import { DatabaseError } from '../config/errors';
 
 export const up = async (next) => {
   logApp.info('[MIGRATION] Starting 1652175522433-main_observable_rename.js');
@@ -15,50 +14,46 @@ export const up = async (next) => {
   ];
   for (let index = 0; index < entities.length; index += 1) {
     const { source, destination } = entities[index];
-    logApp.info(`[MIGRATION] Migrating main observable ${source}`);
-    await searchClient()
-      .updateByQuery({ index: READ_DATA_INDICES,
-        refresh: true,
-        body: {
-          script: {
-            params: { name: destination },
-            source: 'ctx._source.x_opencti_main_observable_type = params.name;',
-          },
-          query: {
-            bool: {
-              must: [
-                { term: { 'x_opencti_main_observable_type.keyword': { value: source } } },
-              ],
-            },
-          },
-        } })
-      .catch((err) => {
-        throw DatabaseError('Error updating elastic', { error: err });
-      });
+    const updateQuery = {
+      script: {
+        params: { name: destination },
+        source: 'ctx._source.x_opencti_main_observable_type = params.name;',
+      },
+      query: {
+        bool: {
+          must: [
+            { term: { 'x_opencti_main_observable_type.keyword': { value: source } } },
+          ],
+        },
+      },
+    };
+    await elUpdateByQueryForMigration(
+      `[MIGRATION] Renaming main observable ${source}`,
+      READ_DATA_INDICES,
+      updateQuery
+    );
   }
   // Migrate pattern attribute.
   for (let index = 0; index < entities.length; index += 1) {
     const { source, destination } = entities[index];
-    logApp.info(`[MIGRATION] Migrating pattern [${source.toLowerCase()}:value = *****]`);
-    await searchClient()
-      .updateByQuery({ index: READ_DATA_INDICES,
-        refresh: true,
-        body: {
-          script: {
-            params: { from: source.toLowerCase(), to: destination.toLowerCase() },
-            source: 'ctx._source.pattern = ctx._source.pattern.replace(params.from, params.to)',
-          },
-          query: {
-            wildcard: {
-              'pattern.keyword': {
-                value: `[${source.toLowerCase()}:value*`
-              }
-            }
+    const updateQuery = {
+      script: {
+        params: { from: source.toLowerCase(), to: destination.toLowerCase() },
+        source: 'ctx._source.pattern = ctx._source.pattern.replace(params.from, params.to)',
+      },
+      query: {
+        wildcard: {
+          'pattern.keyword': {
+            value: `[${source.toLowerCase()}:value*`
           }
-        } })
-      .catch((err) => {
-        throw DatabaseError('Error updating elastic', { error: err });
-      });
+        }
+      }
+    };
+    await elUpdateByQueryForMigration(
+      `[MIGRATION] Migrating pattern [${source.toLowerCase()}:value = *****]`,
+      READ_DATA_INDICES,
+      updateQuery
+    );
   }
   logApp.info('[MIGRATION] 1652175522433-main_observable_rename.js finished');
   next();

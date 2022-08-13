@@ -1,5 +1,5 @@
 import { DatabaseError } from '../config/errors';
-import { searchClient } from '../database/engine';
+import { elRawDeleteByQuery } from '../database/engine';
 import { READ_INDEX_HISTORY } from '../database/utils';
 
 export const up = async (next) => {
@@ -7,15 +7,13 @@ export const up = async (next) => {
     match: { entity_type: 'Work' },
   };
   // Clean all current platform works
-  await searchClient()
-    .deleteByQuery({
-      index: READ_INDEX_HISTORY,
-      refresh: true,
-      body: { query },
-    })
-    .catch((err) => {
-      throw DatabaseError('Error cleaning the work', { error: err });
-    });
+  await elRawDeleteByQuery({
+    index: READ_INDEX_HISTORY,
+    refresh: true,
+    body: { query },
+  }).catch((err) => {
+    throw DatabaseError('Error cleaning the work', { error: err });
+  });
   next();
 };
 
