@@ -26,6 +26,18 @@ const settingsResolvers = {
   },
   Settings: {
     platform_providers: () => PROVIDERS,
+    platform_menu: () => [
+      // Activities
+      { id: 'analysis', name: 'Analysis', category: 'Activities' },
+      { id: 'events', name: 'Events', category: 'Activities' },
+      { id: 'observations', name: 'Observations', category: 'Activities' },
+      // Knowledge
+      { id: 'threats', name: 'Threats', category: 'Knowledge' },
+      { id: 'arsenal', name: 'Arsenal', category: 'Knowledge' },
+      { id: 'entities', name: 'Entities', category: 'Knowledge' },
+      // Disinformation
+      { id: 'channels', name: 'Channel', category: 'Disinformation' }
+    ],
     platform_modules: () => getModules(),
     platform_map_tile_server_dark: () => nconf.get('app:map_tile_server_dark'),
     platform_map_tile_server_light: () => nconf.get('app:map_tile_server_light'),
