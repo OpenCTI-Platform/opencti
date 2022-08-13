@@ -6,7 +6,8 @@ import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCore
 import { RULE_PREFIX } from '../../src/schema/general';
 import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRule';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import { ADMIN_USER, FIVE_MINUTES, TEN_SECONDS, sleep } from '../utils/testQuery';
+import { ADMIN_USER, FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
+import { wait } from '../../src/database/utils';
 
 const RULE = RULE_PREFIX + AttributionUseRule.id;
 const APT41 = 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084';
@@ -50,13 +51,13 @@ describe('Attribute use rule when merging', () => {
       // 02. Create require relation
       // APT41 -> uses -> Paradise (start: 2020-02-28T23:00:00.000Z, stop: 2020-02-29T23:00:00.000Z, confidence: 30)
       await createRelation(SYSTEM_USER, { fromId: APT41, toId: secondThreat.id, relationship_type: RELATION_ATTRIBUTED_TO });
-      await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
+      await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterLiveRelations = await getInferences(RELATION_USES);
       expect(afterLiveRelations.length).toBe(2);
       // 03. Merge the two threat
       await mergeEntities(ADMIN_USER, threat.internal_id, [secondThreat.internal_id]);
       // After this merge, only MY TREAT ACTOR will remains
-      await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
+      await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterMergeRelations = await getInferences(RELATION_USES);
       expect(afterMergeRelations.length).toBe(1);
       // Disable the rule

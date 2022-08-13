@@ -1,7 +1,7 @@
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
 // 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
 
-import { FIVE_MINUTES, sleep, TEN_SECONDS } from '../utils/testQuery';
+import { FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
 import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSightingRule';
 import { RULE_PREFIX } from '../../src/schema/general';
 import { shutdownModules, startModules } from '../../src/modules';
@@ -11,6 +11,7 @@ import { SYSTEM_USER } from '../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../src/schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../src/schema/stixSightingRelationship';
 import { RELATION_BASED_ON } from '../../src/schema/stixCoreRelationship';
+import { wait } from '../../src/database/utils';
 
 const RULE = RULE_PREFIX + RuleObserveSighting.id;
 const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
@@ -22,7 +23,7 @@ const CBRICKSDOC = 'indicator--c5c0c0f9-dfa1-5b7d-a12a-ea95072d3e45'; // indicat
 
 describe('Observed sighting rule', () => {
   const assertInferencesSize = async (expected) => {
-    await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
+    await wait(TEN_SECONDS); // let some time to rule manager to create the elements
     const inferences = await getInferences(STIX_SIGHTING_RELATIONSHIP);
     expect(inferences.length).toBe(expected);
     return inferences;

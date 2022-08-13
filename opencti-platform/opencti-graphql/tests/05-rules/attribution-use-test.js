@@ -6,7 +6,8 @@ import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCore
 import { RULE_PREFIX } from '../../src/schema/general';
 import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRule';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import { FIVE_MINUTES, TEN_SECONDS, sleep } from '../utils/testQuery';
+import { FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
+import { wait } from '../../src/database/utils';
 
 const RULE = RULE_PREFIX + AttributionUseRule.id;
 const APT41 = 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084';
@@ -62,7 +63,7 @@ describe('Attribute use rule', () => {
         relationship_type: RELATION_USES,
         objectMarking: [TLP_WHITE_ID],
       });
-      await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
+      await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       // Check the inferences
       const afterLiveRelations = await getInferences(RELATION_USES);
       expect(afterLiveRelations.length).toBe(2);

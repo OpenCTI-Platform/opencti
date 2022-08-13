@@ -1,5 +1,5 @@
 import { shutdownModules, startModules } from '../../src/modules';
-import { FIVE_MINUTES, TEN_SECONDS, sleep } from '../utils/testQuery';
+import { FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
 import { createRelation, internalDeleteElementById, internalLoadById } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_LOCATED_AT } from '../../src/schema/stixCoreRelationship';
@@ -9,6 +9,7 @@ import { RULE_PREFIX } from '../../src/schema/general';
 import { FROM_START_STR, UNTIL_END_STR } from '../../src/utils/format';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
+import { wait } from '../../src/database/utils';
 
 const RULE = RULE_PREFIX + LocatedAtLocatedRule.id;
 const FRANCE = 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d';
@@ -78,7 +79,7 @@ describe('Located at located rule', () => {
         relationship_type: RELATION_LOCATED_AT,
         objectMarking: [TLP_WHITE_ID],
       });
-      await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
+      await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       // Check the inferences
       const afterLiveRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterLiveRelations.length).toBe(5);
@@ -102,17 +103,17 @@ describe('Located at located rule', () => {
       expect(parisToEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       // Remove the relation must remove the inferences
       await internalDeleteElementById(SYSTEM_USER, parisLocatedToFrance.internal_id);
-      await sleep(TEN_SECONDS); // let some time to rule manager to delete the elements
+      await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterRelDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRelDeletionRelations.length).toBe(3);
       // Recreate the relation
       await createRelation(SYSTEM_USER, { fromId: paris.id, toId: FRANCE, relationship_type: RELATION_LOCATED_AT });
-      await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
+      await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterRecreationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRecreationRelations.length).toBe(5);
       // Remove the city
       await internalDeleteElementById(SYSTEM_USER, paris.internal_id);
-      await sleep(TEN_SECONDS); // let some time to rule manager to delete the elements
+      await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterParisDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterParisDeletionRelations.length).toBe(3);
       // Disable the rule

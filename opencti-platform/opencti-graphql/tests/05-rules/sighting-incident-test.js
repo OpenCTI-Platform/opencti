@@ -3,7 +3,7 @@
 // '`targets` **identity B**.';
 
 import * as R from 'ramda';
-import { FIVE_MINUTES, TEN_SECONDS, sleep } from '../utils/testQuery';
+import { FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
 import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences } from '../utils/rule-utils';
 import { internalLoadById, patchAttribute } from '../../src/database/middleware';
@@ -13,13 +13,14 @@ import RuleSightingIncident from '../../src/rules/sighting-incident/SightingInci
 import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../src/schema/stixCoreRelationship';
 import { listRelations } from '../../src/database/middleware-loader';
 import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
+import { wait } from '../../src/database/utils';
 
 const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const ONE_CLAP = 'indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752'; // indicator A
 
 describe('Sighting incident rule', () => {
   const assertInferencesSize = async (type, expected) => {
-    await sleep(TEN_SECONDS); // let some time to rule manager to create the elements
+    await wait(TEN_SECONDS); // let some time to rule manager to create the elements
     const inferences = await getInferences(type);
     expect(inferences.length).toBe(expected);
     return inferences;

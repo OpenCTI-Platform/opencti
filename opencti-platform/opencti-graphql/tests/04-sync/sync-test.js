@@ -9,7 +9,6 @@ import {
   executeExternalQuery,
   FIFTEEN_MINUTES,
   PYTHON_PATH, RAW_EVENTS_SIZE,
-  sleep,
   SYNC_DIRECT_START_REMOTE_URI,
   SYNC_LIVE_EVENTS_SIZE,
   SYNC_LIVE_START_REMOTE_URI,
@@ -26,6 +25,7 @@ import { FROM_START_STR, now } from '../../src/utils/format';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
 import { convertStoreToStix } from '../../src/database/stix-converter';
+import { wait } from '../../src/database/utils';
 
 const STAT_QUERY = `query stats {
       about {
@@ -201,7 +201,7 @@ describe('Database sync testing', () => {
       const syncId = synchronizer.synchronizerAdd.id;
       await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
       // Wait 2 min sync to consume all the stream
-      await sleep(120000);
+      await wait(120000);
       // Stop and check
       await shutdownModules();
       // Post check
