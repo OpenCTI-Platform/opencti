@@ -1,5 +1,8 @@
 overwrite: true
-schema: "./config/schema/opencti.graphql"
+schema:
+  - "./config/schema/opencti.graphql"
+  - "./src/**/*.graphql":
+      includeSources: true
 documents: null
 generates:
   src/generated/graphql.ts:
@@ -8,6 +11,9 @@ generates:
       - "typescript-resolvers"
     config:
       useTypeImports: true
+      useIndexSignature: true
+      mappers:
+        Channel: ../modules/channel/channel-types#BasicStoreEntityChannel
   ./graphql.schema.json:
     plugins:
       - "introspection"

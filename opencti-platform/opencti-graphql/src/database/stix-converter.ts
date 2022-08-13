@@ -19,12 +19,15 @@ import {
   INPUT_ENCAPSULATED_BY,
   INPUT_ENCAPSULATES,
   INPUT_FROM,
-  INPUT_IMAGE, INPUT_LINKED,
-  INPUT_OPENED_CONNECTION, INPUT_OPERATING_SYSTEM,
+  INPUT_IMAGE,
+  INPUT_LINKED,
+  INPUT_OPENED_CONNECTION,
+  INPUT_OPERATING_SYSTEM,
   INPUT_PARENT,
   INPUT_PARENT_DIRECTORY,
   INPUT_RAW_EMAIL,
-  INPUT_RESOLVES_TO, INPUT_SAMPLE,
+  INPUT_RESOLVES_TO,
+  INPUT_SAMPLE,
   INPUT_SENDER,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
@@ -70,7 +73,7 @@ import {
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation
+  isStixDomainObjectLocation,
 } from '../schema/stixDomainObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -111,6 +114,7 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import { FROM_START, UNTIL_END } from '../utils/format';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -144,7 +148,7 @@ const isValidStix = (data: S.StixObject): boolean => {
   // TODO @JRI @SAM
   return !R.isEmpty(data);
 };
-const cleanObject = <T>(data: T): T => {
+export const cleanObject = <T>(data: T): T => {
   const obj: T = { ...data };
   // eslint-disable-next-line no-restricted-syntax
   for (const key in data) {
@@ -164,6 +168,16 @@ const cleanObject = <T>(data: T): T => {
     }
   }
   return obj;
+};
+const cleanDate = (date: Date | undefined) => {
+  if (date === undefined) {
+    return undefined;
+  }
+  const time = date.getTime();
+  if (time === FROM_START || time === UNTIL_END) {
+    return undefined;
+  }
+  return date;
 };
 
 // Extensions
@@ -200,7 +214,7 @@ const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
 };
 
 // Builders
-const buildStixObject = (instance: BasicStoreCommon): S.StixObject => {
+export const buildStixObject = (instance: BasicStoreCommon): S.StixObject => {
   return {
     id: instance.standard_id,
     spec_version: '2.1',
@@ -925,12 +939,13 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
     description: instance.description,
     source_ref: instance.from?.standard_id,
     target_ref: instance.to?.standard_id,
-    start_time: instance.start_time,
-    stop_time: instance.stop_time,
+    start_time: cleanDate(instance.start_time),
+    stop_time: cleanDate(instance.stop_time),
     external_references: buildExternalReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
+        extension_type: 'new-sro',
         source_ref: instance.from?.internal_id,
         source_type: instance.from?.entity_type,
         target_ref: instance.to?.internal_id,
@@ -946,8 +961,8 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
   return {
     ...stixRelationship,
     description: instance.description,
-    first_seen: instance.first_seen,
-    last_seen: instance.last_seen,
+    first_seen: cleanDate(instance.first_seen),
+    last_seen: cleanDate(instance.last_seen),
     count: instance.attribute_count,
     sighting_of_ref: instance.from?.standard_id,
     where_sighted_refs: instance.to?.standard_id ? [instance.to?.standard_id] : [],
@@ -1069,8 +1084,15 @@ const convertEmailMimePartToStix = (instance: StoreCyberObservable): SCO.StixEma
 };
 
 // CONVERTERS
+export type ConvertFn<T extends StoreEntity> = (instance: T) => S.StixObject;
+const stixDomainConverters = new Map<string, ConvertFn<any>>();
+export const registerStixDomainConverter = <T extends StoreEntity>(type: string, convertFn: ConvertFn<T>) => {
+  stixDomainConverters.set(type, convertFn);
+};
+
 const convertToStix = (instance: StoreObject): S.StixObject => {
   const type = instance.entity_type;
+  // If not found try with classic
   if (!isStixObject(type) && !isStixRelationship(type)) {
     throw UnsupportedError(`Type ${type} cannot be converted to Stix`, { instance });
   }
@@ -1094,6 +1116,14 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
   // SDO: domains
   if (isStixDomainObject(type)) {
     const basic = instance as StoreEntity;
+    // First try in registered converters
+    if (stixDomainConverters.has(type)) {
+      const externalConverter = stixDomainConverters.get(type);
+      if (!externalConverter) {
+        throw UnsupportedError(`Converter for type ${type} was declared without a conversion function`);
+      }
+      return externalConverter(basic);
+    }
     // ENTITY_TYPE_IDENTITY_INDIVIDUAL,
     // ENTITY_TYPE_IDENTITY_ORGANIZATION,
     // ENTITY_TYPE_IDENTITY_SECTOR,

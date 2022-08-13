@@ -61,7 +61,8 @@ import {
   idGenFromData,
   INTERNAL_FROM_FIELD,
   INTERNAL_TO_FIELD,
-  isFieldContributingToStandardId, isStandardIdDowngraded,
+  isFieldContributingToStandardId,
+  isStandardIdDowngraded,
   isStandardIdUpgraded,
   LAST_OBSERVED,
   LAST_SEEN,
@@ -90,8 +91,7 @@ import {
   checkStixCyberObservableRelationshipMapping,
   cleanStixIds,
   STIX_SPEC_VERSION,
-  stixCyberObservableRelationshipsMapping,
-  stixCyberObservableTypeFields,
+  stixCyberObservableFieldsForType,
 } from './stix';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -121,7 +121,8 @@ import {
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import {
-  CYBER_OBSERVABLE_FIELD_TO_META_RELATION, INPUT_FROM,
+  CYBER_OBSERVABLE_FIELD_TO_META_RELATION,
+  INPUT_FROM,
   isStixCyberObservableRelationship,
   MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
   STIX_ATTRIBUTE_TO_CYBER_RELATIONS,
@@ -137,12 +138,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_ATTRIBUTE_TO_META_RELATIONS,
 } from '../schema/stixMetaRelationship';
-import {
-  ENTITY_TYPE_STATUS,
-  internalObjectsFieldsToBeUpdated,
-  isDatedInternalObject,
-  isInternalObject,
-} from '../schema/internalObject';
+import { ENTITY_TYPE_STATUS, isDatedInternalObject, isInternalObject, } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
@@ -151,9 +147,9 @@ import {
   dateForEndAttributes,
   dateForLimitsAttributes,
   dateForStartAttributes,
-  dictAttributes,
   isDateAttribute,
-  isDictionaryAttribute, isModifiedObject,
+  isDictionaryAttribute,
+  isModifiedObject,
   isMultipleAttribute,
   isNumericAttribute,
   isUpdatedAtObject,
@@ -172,16 +168,14 @@ import {
   isStixDomainObject,
   isStixObjectAliased,
   resolveAliasesField,
-  stixDomainObjectFieldsToBeUpdated,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_LABEL, isStixMetaObject, stixMetaObjectsFieldsToBeUpdated } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
-  stixCyberObservableFieldsToBeUpdated,
 } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import {
@@ -781,7 +775,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   const isMultiple = isMultipleAttribute(key);
   let finalVal;
   let finalKey = key;
-  if (dictAttributes[key]) {
+  if (isDictionaryAttribute(key)) {
     throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
   }
   // region rebuild input values consistency
@@ -792,7 +786,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       throw UnsupportedError('Multiple path follow is not supported', { rawInput });
     }
     const [baseKey, targetKey] = splitKey;
-    if (!dictAttributes[baseKey]) {
+    if (!isDictionaryAttribute(baseKey)) {
       throw UnsupportedError('Path update only available for dictionary attributes', { rawInput });
     }
     finalKey = baseKey;
@@ -2014,6 +2008,7 @@ const buildRelationInput = (input) => {
   return { relation: relationAttributes };
 };
 const buildInnerRelation = (from, to, type) => {
+  checkRelationConsistency(type, from, to);
   const targets = Array.isArray(to) ? to : [to];
   if (!to || R.isEmpty(targets)) return [];
   const relations = [];
@@ -2035,7 +2030,7 @@ const buildInnerRelation = (from, to, type) => {
       parent_types: getParentTypes(relation.entity_type),
       ...relation,
     };
-    relations.push({ relation: basicRelation });
+    relations.push(basicRelation);
   }
   return relations;
 };
@@ -2213,26 +2208,26 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
   }
   // Upsert entities
   if (isInternalObject(type) && forceUpdate) {
-    const fields = internalObjectsFieldsToBeUpdated[type];
+    const fields = schemaTypes.getUpsertAttributes(type);
     const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixDomainObject(type) && forceUpdate) {
-    const fields = stixDomainObjectFieldsToBeUpdated[type];
+    const fields = schemaTypes.getUpsertAttributes(type);
     const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixMetaObject(type) && forceUpdate) {
-    const fields = stixMetaObjectsFieldsToBeUpdated[type];
+    const fields = schemaTypes.getUpsertAttributes(type);
     const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   // Upsert SCOs
   if (isStixCyberObservable(type) && forceUpdate) {
-    const fields = stixCyberObservableFieldsToBeUpdated[type];
+    const fields = schemaTypes.getUpsertAttributes(type);
     const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
@@ -2251,7 +2246,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
   const buildInstanceRelTo = (to, relType) => buildInnerRelation(element, to, relType);
   // region cyber observable
   // -- Upsert multiple refs specific for cyber observable
-  const obsInputFields = stixCyberObservableTypeFields()[type] || [];
+  const obsInputFields = stixCyberObservableFieldsForType(type);
   for (let fieldIndex = 0; fieldIndex < obsInputFields.length; fieldIndex += 1) {
     const inputField = obsInputFields[fieldIndex];
     if (updatePatch[inputField] && MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.includes(inputField)) {
@@ -2260,13 +2255,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
       const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), updatePatch[inputField]);
       const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
       if (instancesToCreate.length > 0) {
-        const newRelations = instancesToCreate.map((to) => {
-          const authorizedRelationTypes = stixCyberObservableRelationshipsMapping[`${type}_${to.entity_type}`];
-          if (!authorizedRelationTypes.includes(relType)) {
-            throw UnsupportedError(`${relType} is not allowed for this`);
-          }
-          return R.head(buildInstanceRelTo(to, relType)).relation;
-        });
+        const newRelations = instancesToCreate.map((to) => R.head(buildInstanceRelTo(to, relType)));
         rawRelations.push(...newRelations);
         patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
         createdTargets.push({ key: inputField, instances: instancesToCreate });
@@ -2287,9 +2276,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
       const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), updatePatch[inputField]);
       const relType = STIX_ATTRIBUTE_TO_META_RELATIONS[stixField];
       if (instancesToCreate.length > 0) {
-        const newRelations = instancesToCreate.map((to) => {
-          return R.head(buildInstanceRelTo(to, relType)).relation;
-        });
+        const newRelations = instancesToCreate.map((to) => R.head(buildInstanceRelTo(to, relType)));
         rawRelations.push(...newRelations);
         patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
         createdTargets.push({ key: inputField, instances: instancesToCreate });
@@ -2510,7 +2497,7 @@ const buildRelationData = async (input, opts = {}) => {
     type: TRX_CREATION,
     element: created,
     previous: null,
-    relations: relToCreate.map((r) => r.relation)
+    relations: relToCreate
   };
 };
 export const createRelationRaw = async (user, input, opts = {}) => {
@@ -2536,6 +2523,8 @@ export const createRelationRaw = async (user, input, opts = {}) => {
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(user, input, relationshipType);
   const { from, to } = resolvedInput;
+  // Check consistency
+  checkRelationConsistency(relationshipType, from, to);
   // In some case from and to can be resolved to the same element (because of automatic merging)
   if (from.internal_id === to.internal_id) {
     /* istanbul ignore next */
@@ -2555,8 +2544,6 @@ export const createRelationRaw = async (user, input, opts = {}) => {
       throw UnsupportedError('Cant add another relation on single ref', { error: errorData });
     }
   }
-  // Check consistency
-  checkRelationConsistency(relationshipType, from, to);
   // Build lock ids
   const inputIds = getInputIds(relationshipType, resolvedInput);
   if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
@@ -2788,7 +2775,7 @@ const buildEntityData = async (user, input, type, opts = {}) => {
       )(data);
     }
   }
-  // Create the input
+  // Create the meta relationships (ref, refs)
   const relToCreate = [];
   if (isStixCoreObject(type)) {
     const inputFields = STIX_META_RELATIONSHIPS_INPUTS;
@@ -2801,22 +2788,14 @@ const buildEntityData = async (user, input, type, opts = {}) => {
     }
   }
   if (isStixCyberObservable(type)) {
-    const inputFields = stixCyberObservableTypeFields()[type] || [];
+    const inputFields = stixCyberObservableFieldsForType(type);
     for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
       const inputField = inputFields[fieldIndex];
       if (input[inputField]) {
         const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
         const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
         const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
-        const newRelations = instancesToCreate
-          .map((to) => {
-            const authorizedRelationTypes = stixCyberObservableRelationshipsMapping[`${type}_${to.entity_type}`];
-            if (!authorizedRelationTypes.includes(relType)) {
-              throw UnsupportedError(`${relType} is not allowed for this`);
-            }
-            return buildInnerRelation(data, input[inputField], relType);
-          })
-          .flat();
+        const newRelations = buildInnerRelation(data, instancesToCreate, relType);
         relToCreate.push(...newRelations);
       }
     }
@@ -2841,7 +2820,7 @@ const buildEntityData = async (user, input, type, opts = {}) => {
     element: created,
     message: generateCreateMessage(created),
     previous: null,
-    relations: relToCreate.map((r) => r.relation), // Added meta relationships
+    relations: relToCreate, // Added meta relationships
   };
 };
 export const createEntityRaw = async (user, input, type, opts = {}) => {

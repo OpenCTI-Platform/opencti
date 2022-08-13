@@ -62,7 +62,7 @@ export const isInternalObject = (type) => R.includes(type, INTERNAL_OBJECTS) || 
 export const isDatedInternalObject = (type) => R.includes(type, DATED_INTERNAL_OBJECTS);
 export const isHistoryObject = (type) => R.includes(type, HISTORY_OBJECTS);
 
-export const internalObjectsAttributes = {
+const internalObjectsAttributes = {
   [ENTITY_TYPE_SETTINGS]: [
     'internal_id',
     'standard_id',
@@ -249,9 +249,9 @@ export const internalObjectsAttributes = {
     'no_dependencies',
   ],
 };
+R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), internalObjectsAttributes);
 
-export const internalObjectsFieldsToBeUpdated = {
+const internalObjectsFieldsToBeUpdated = {
   [ENTITY_TYPE_RULE]: ['active'],
 };
-
-R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), internalObjectsAttributes);
+R.forEachObjIndexed((value, key) => schemaTypes.registerUpsertAttributes(key, value), internalObjectsFieldsToBeUpdated);

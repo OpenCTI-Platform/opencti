@@ -55,13 +55,10 @@ const STIX_DOMAIN_OBJECT_CONTAINERS: Array<string> = [
   ENTITY_TYPE_CONTAINER_REPORT,
 ];
 
-const CONTAINER_OBJECTS = 'object_refs';
-export const CONTAINER_REFS_TO_FIELDS: { [k: string]: string } = {
-  [CONTAINER_OBJECTS]: 'objects',
-};
-
 schemaTypes.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
-export const isStixDomainObjectContainer = (type: string): boolean => R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
+export const isStixDomainObjectContainer = (type: string): boolean => {
+  return R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
+};
 
 const STIX_DOMAIN_OBJECT_IDENTITIES: Array<string> = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -70,7 +67,9 @@ const STIX_DOMAIN_OBJECT_IDENTITIES: Array<string> = [
   ENTITY_TYPE_IDENTITY_SYSTEM,
 ];
 schemaTypes.register(ENTITY_TYPE_IDENTITY, STIX_DOMAIN_OBJECT_IDENTITIES);
-export const isStixDomainObjectIdentity = (type: string): boolean => R.includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
+export const isStixDomainObjectIdentity = (type: string): boolean => {
+  return R.includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
+};
 
 const STIX_DOMAIN_OBJECT_LOCATIONS: Array<string> = [
   ENTITY_TYPE_LOCATION_CITY,
@@ -79,7 +78,9 @@ const STIX_DOMAIN_OBJECT_LOCATIONS: Array<string> = [
   ENTITY_TYPE_LOCATION_POSITION,
 ];
 schemaTypes.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATIONS);
-export const isStixDomainObjectLocation = (type: string): boolean => R.includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
+export const isStixDomainObjectLocation = (type: string): boolean => {
+  return R.includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
+};
 
 const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -106,12 +107,18 @@ const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_VULNERABILITY,
   ENTITY_TYPE_INCIDENT,
 ];
+export const registerStixDomainType = (type: string) => {
+  STIX_DOMAIN_OBJECTS.push(type);
+};
+
 schemaTypes.register(ABSTRACT_STIX_DOMAIN_OBJECT, STIX_DOMAIN_OBJECTS);
-export const isStixDomainObject = (type: string): boolean => R.includes(type, STIX_DOMAIN_OBJECTS)
+export const isStixDomainObject = (type: string): boolean => {
+  return R.includes(type, STIX_DOMAIN_OBJECTS)
   || isStixDomainObjectIdentity(type)
   || isStixDomainObjectLocation(type)
   || isStixDomainObjectContainer(type)
   || type === ABSTRACT_STIX_DOMAIN_OBJECT;
+};
 
 const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
   ENTITY_TYPE_COURSE_OF_ACTION,
@@ -125,7 +132,12 @@ const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_VULNERABILITY,
 ];
-export const isStixObjectAliased = (type: string): boolean => R.includes(type, STIX_DOMAIN_OBJECT_ALIASED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
+export const registerStixDomainAliased = (type: string) => {
+  STIX_DOMAIN_OBJECT_ALIASED.push(type);
+};
+export const isStixObjectAliased = (type: string): boolean => {
+  return R.includes(type, STIX_DOMAIN_OBJECT_ALIASED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
+};
 export const resolveAliasesField = (type: string): string => {
   if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
     return ATTRIBUTE_ALIASES_OPENCTI;
@@ -145,7 +157,7 @@ export const stixDomainObjectOptions = {
   },
 };
 
-export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
+const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
   [ENTITY_TYPE_ATTACK_PATTERN]: [
     'name',
     'revoked',
@@ -236,8 +248,9 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
   ],
   [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective', 'confidence', 'aliases'],
 };
+R.forEachObjIndexed((value, key) => schemaTypes.registerUpsertAttributes(key, value), stixDomainObjectFieldsToBeUpdated);
 
-export const stixDomainObjectsAttributes: { [k: string]: Array<string> } = {
+const stixDomainObjectsAttributes: { [k: string]: Array<string> } = {
   [ENTITY_TYPE_ATTACK_PATTERN]: [
     'internal_id',
     'standard_id',

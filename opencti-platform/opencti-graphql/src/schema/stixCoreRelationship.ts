@@ -7,6 +7,7 @@ import {
   RELATION_OBJECT_MARKING
 } from './stixMetaRelationship';
 
+// region Standard STIX core
 export const RELATION_DELIVERS = 'delivers';
 export const RELATION_TARGETS = 'targets';
 export const RELATION_USES = 'uses';
@@ -42,12 +43,17 @@ export const RELATION_DERIVED_FROM = 'derived-from';
 export const RELATION_DUPLICATE_OF = 'duplicate-of';
 export const RELATION_BELONGS_TO = 'belongs-to';
 export const RELATION_RESOLVES_TO = 'resolves-to';
+// endregion
+
+// region Extended relationships
 export const RELATION_PART_OF = 'part-of'; // Extension (OpenCTI)
 export const RELATION_COOPERATES_WITH = 'cooperates-with'; // Extension (OpenCTI)
 export const RELATION_PARTICIPATES_IN = 'participates-in'; // Extension (OpenCTI)
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
 export const RELATION_DETECTS = 'detects'; // Extension (MITRE)
+// endregion
+
 export const STIX_CORE_RELATIONSHIPS = [
   RELATION_DELIVERS,
   RELATION_TARGETS,
@@ -91,9 +97,11 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_RESOLVES_TO,
   RELATION_DETECTS,
 ];
+
 schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
-export const isStixCoreRelationship = (type: string): boolean => R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
-// endregion
+export const isStixCoreRelationship = (type: string): boolean => {
+  return R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
+};
 
 export const stixCoreRelationshipOptions = {
   StixCoreRelationshipsFilter: {
@@ -105,7 +113,6 @@ export const stixCoreRelationshipOptions = {
     hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
   },
 };
-
 export const stixCoreRelationshipsAttributes = [
   'internal_id',
   'standard_id',
