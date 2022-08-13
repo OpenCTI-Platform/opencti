@@ -1,5 +1,5 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type {StixId, StixObject, StixOpenctiExtensionSDO} from '../../types/stix-common';
+import type { StixId, StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 export const ENTITY_TYPE_CHANNEL = 'Channel';
