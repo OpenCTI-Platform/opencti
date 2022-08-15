@@ -5,12 +5,12 @@ import {
 import PropTypes from 'prop-types';
 import Button from '@material-ui/core/Button';
 import { updateScan } from '../../../../services/scan.service';
+import { toastAxiosError, toastSuccess } from '../../../../utils/bakedToast';
 
 const UpdateScan = (props) => {
   const [newName, setNewName] = useState(null);
   const [handling, setHandling] = useState(false);
   const [errors, setErrors] = useState({ name: 'value is required' });
-  const [submitError, setSubmitError] = useState(null);
   const [validForm, setValidForm] = useState(false);
 
   function handleOnClose(success) {
@@ -34,12 +34,13 @@ const UpdateScan = (props) => {
     updateScan(props.scan.id, props.clientId, { scan_name: newName })
       .then(() => {
         setHandling(false);
+        toastSuccess('Scan updated');
         handleOnClose(true);
       })
       .catch((err) => {
         console.error(err);
+        toastAxiosError('Failed to update scan');
         setHandling(false);
-        setSubmitError('failed to submit changes');
       });
   }
 
@@ -61,9 +62,6 @@ const UpdateScan = (props) => {
               <TextField variant={'filled'} label={'Name'} onChange={(e) => handleNameChange(e.target.value)}/>
             </FormControl>
           </FormGroup>
-          {
-            submitError && <Typography variant={'caption'} sx={{ color: 'crimson' }}> submitError</Typography>
-          }
         </CardContent>
         <CardActions style={{ justifyContent: 'right' }}>
           <Button
