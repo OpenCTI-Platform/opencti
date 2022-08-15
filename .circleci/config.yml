@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   slack: circleci/slack@4.8.3
+  ms-teams: opub/ms-teams-orb@1.0.3  
 jobs:
   build_frontend:
     working_directory: ~/opencti
@@ -24,6 +25,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc
       - persist_to_workspace:
           root: ~/
           paths:
@@ -50,6 +53,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
       - persist_to_workspace:
           root: ~/
           paths:
@@ -74,6 +79,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
       - persist_to_workspace:
           root: ~/
           paths:
@@ -106,6 +113,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   package_rolling_musl:
     working_directory: ~/opencti_musl
@@ -132,6 +141,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   deploy_demo:
     working_directory: ~/opencti
@@ -173,6 +184,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   deploy_reference:
     working_directory: ~/opencti
@@ -214,6 +227,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   deploy_testing:
     working_directory: ~/opencti
@@ -255,6 +270,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   deploy_club:
     working_directory: ~/opencti
@@ -296,6 +313,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   deploy_lab:
     working_directory: ~/opencti
@@ -337,6 +356,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   docker_build_platform:
     working_directory: ~/opencti_docker
@@ -374,6 +395,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   docker_build_worker:
     working_directory: ~/opencti_docker
@@ -410,6 +433,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   docker_build_platform_rolling:
     working_directory: ~/opencti_docker
@@ -447,6 +472,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   docker_build_worker_rolling:
     working_directory: ~/opencti_docker
@@ -483,6 +510,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   notify_rolling:
     docker:
@@ -491,6 +520,8 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
   notify:
     docker:
@@ -499,6 +530,8 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
+      - ms-teams/report:
+          webhook_url: https://filigranio.webhook.office.com/webhookb2/120a7e19-15b9-4413-aba7-9d72c93da301@f2a29c7e-5230-41d3-b5d1-4b6e2c4e6b7c/CircleCI/d2d3a7d550b84bc08f6b79f0a3f9358f/c83dc43d-f2b7-46c7-b606-a1ae391318cc          
 
 workflows:
   opencti:
