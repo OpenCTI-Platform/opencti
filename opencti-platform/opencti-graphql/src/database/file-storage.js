@@ -168,7 +168,6 @@ export function isFileObjectExcluded(id) {
 }
 
 export async function rawFilesListing(user, directory, recursive = false) {
-  let truncated = true;
   let pageMarker;
   const objects = [];
   const requestParams = {
@@ -176,17 +175,19 @@ export async function rawFilesListing(user, directory, recursive = false) {
     Prefix: directory || undefined,
     Delimiter: recursive ? undefined : '/'
   };
+  let truncated = true;
   while (truncated) {
-    const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
-    if (!response.Contents) {
+    try {
+      const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
+      objects.push(...(response.Contents ?? []));
+      truncated = response.IsTruncated;
+      if (truncated) {
+        pageMarker = response.Contents.slice(-1)[0].Key;
+        requestParams.Marker = pageMarker;
+      }
+    } catch (err) {
+      logApp.error('[FILE STORAGE] Error loading files list', { error: err });
       truncated = false;
-      break;
-    }
-    objects.push(...response.Contents);
-    truncated = response.IsTruncated;
-    if (truncated) {
-      pageMarker = response.Contents.slice(-1)[0].Key;
-      requestParams.Marker = pageMarker;
     }
   }
   return Promise.all(objects
