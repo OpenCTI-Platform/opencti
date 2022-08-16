@@ -28,6 +28,7 @@ import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objec
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -113,6 +114,7 @@ class NetworkEditionContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       currentTab: 0,
       open: false,
       onSubmit: false,
@@ -170,11 +172,15 @@ class NetworkEditionContainer extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data) => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        this.props.history.push('/defender HQ/assets/network');
+      onCompleted: (data, error) => {
+        if (error) {
+          this.setState({ error });
+        } else {
+          setSubmitting(false);
+          resetForm();
+          this.handleClose();
+          this.props.history.push('/defender HQ/assets/network');
+        }
       },
       onError: (err) => console.error(err),
     });
@@ -411,6 +417,10 @@ class NetworkEditionContainer extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <ErrorBox
+          error={this.state.error}
+          pathname='/defender HQ/assets/devices'
+        />
       </div>
     );
   }

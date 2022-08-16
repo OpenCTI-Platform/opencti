@@ -550,8 +550,6 @@ export function convertAssetToInventoryItem(asset) {
       case 'object_type':
       case 'entity_type':
       case 'standard_id':
-      case 'created':
-      case 'modified':
       case 'links':
       case 'labels':
       case 'remarks':
@@ -563,6 +561,10 @@ export function convertAssetToInventoryItem(asset) {
       // case 'installed_os_id':
       // case 'installed_software_id':
           continue;
+      case 'created':
+      case 'modified':
+        if (value instanceof Date ) value = value.toISOString();
+        break;
       case 'is_scanned':
       case 'allows_authenticated_scans':
         value = (value === true ? 'yes' : 'no');
