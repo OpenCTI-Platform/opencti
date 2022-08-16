@@ -12,7 +12,6 @@ import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import {
   DashboardOutlined,
-  TabSharp,
   Language,
 } from '@material-ui/icons';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';

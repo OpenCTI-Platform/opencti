@@ -50,6 +50,7 @@ describe('Network Asset Tests', () => {
     const singleNetworkAsset = `query networkAsset($id: ID!) {
       networkAsset(id:$id){
         id
+      }
     }`;
     const variables = { id: networkAssetId };
     const result = await submitOperation(singleNetworkAsset, variables);

@@ -21,6 +21,20 @@ import {
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, {dbName, dataSources, selectMap})  => {
+      // TODO: WORKAROUND to remove argument fields with null or empty values
+      if (args !== undefined) {
+        for (const [key, value] of Object.entries(args)) {
+          if (Array.isArray(args[key]) && args[key].length === 0) {
+            delete args[key];
+            continue;
+          }
+          if (value === null || value.length === 0) {
+            delete args[key];
+          }
+        }
+      }
+      // END WORKAROUND
+      
       const selectionList = selectMap.getNode("node");
       const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, undefined, args);
       const reducer = getReducer('SOFTWARE');
@@ -113,9 +127,9 @@ const softwareResolvers = {
         }
       }
     },
-    softwareAsset: async ( _, args, {dbName, dataSources, selectMap} ) => {
+    softwareAsset: async ( _, {id}, {dbName, dataSources, selectMap} ) => {
       const selectionList = selectMap.getNode("softwareAsset");
-      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, args.id);
+      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, id);
       const reducer = getReducer('SOFTWARE');
       const response = await dataSources.Stardog.queryById({
         dbName,

@@ -1,6 +1,7 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Switch, Redirect } from 'react-router-dom';
+import { Switch } from 'react-router-dom';
 import Faq from './Faq';
 import About from './About';
 import HowTo from './HowTo';
@@ -12,7 +13,7 @@ import { BoundaryRoute } from '../Error';
 
 class Root extends Component {
   render() {
-    const { me } = this.props;
+    // const { me } = this.props;
     return (
       <Switch>
         <BoundaryRoute

@@ -80,9 +80,8 @@ const componentResolvers = {
             continue
           }
 
-          // TODO: WORKAROUND missing component type 
-          if (component.component_type === undefined) {
-            console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${component.iri} missing required field 'component_type'; fixing`);
+        // Determine the proper component type for the asset
+        if (component.component_type === undefined) {
             switch(component.asset_type) {
               case 'software':
               case 'operating-system':
@@ -100,7 +99,6 @@ const componentResolvers = {
                 if (component.component_type === undefined) continue;
             }
           }
-          // END WORKAROUND
 
           // TODO: WORKAROUND missing component type 
           if (!component.hasOwnProperty('operational_status')) {
