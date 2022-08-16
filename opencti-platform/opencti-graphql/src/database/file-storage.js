@@ -140,7 +140,7 @@ export function storeFileConverter(user, file) {
 
 export async function loadFile(user, filename) {
   try {
-    const object = await s3Client.send(new s3.GetObjectCommand({
+    const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
       Key: filename
     }));
