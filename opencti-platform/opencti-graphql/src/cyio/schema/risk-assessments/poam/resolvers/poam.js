@@ -1289,6 +1289,8 @@ const poamResolvers = {
 
       // compose name to include version and patch level
       for (let component of response) {
+        // filter out network assets
+        if (component.asset_type === 'network') continue;
         let name = component.name;
         if (component.hasOwnProperty('vendor_name')) {
           if (!component.name.startsWith(component.vendor_name)) name = `${component.vendor_name} ${component.name}`;
@@ -1313,10 +1315,32 @@ const poamResolvers = {
           continue;
         }
 
+        // Determine the proper component type for the asset
+        if (component.component_type === undefined) {
+          switch(component.asset_type) {
+            case 'software':
+            case 'operating-system':
+            case 'application-software':
+              component.component_type = 'software';
+              break;
+            case 'network':
+              component.component_type = 'network';
+              break;
+            default:
+              console.error(`[CYIO] UNKNOWN-COMPONENT Unknown component type '${item.component_type}' for object ${item.iri}`);        
+              console.error(`[CYIO] UNKNOWN-TYPE Unknown asset type '${item.asset_type}' for object ${item.iri}`);        
+              if (component.iri.includes('Software')) item.component_type = 'software';
+              if (component.iri.includes('Network')) item.component_type = 'network';
+              if (component.component_type === undefined) continue;
+          }
+        }
+
+        // TODO: WORKAROUND missing component type 
         if (!component.hasOwnProperty('operational_status')) {
           console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${component.iri} missing field 'operational_status'; fixing`);
           component.operational_status = 'operational';
         }
+        // END WORKAROUND
 
         // filter out non-matching entries if a filter is to be applied
         if ('filters' in args && args.filters != null && args.filters.length > 0) {
