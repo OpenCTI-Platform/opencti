@@ -11,7 +11,7 @@ const styles = (theme) => ({
     margin: '-25px -24px 20px -24px',
     padding: '24px',
     height: '64px',
-    backgroundColor: '#1F2842',
+    backgroundColor: theme.palette.background.paper,
   },
   title: {
     float: 'left',
@@ -39,7 +39,6 @@ class HowTo extends Component {
 
   render() {
     const {
-      location,
       classes,
     } = this.props;
     return (

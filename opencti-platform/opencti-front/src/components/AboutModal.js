@@ -16,13 +16,6 @@ import IconButton from '@material-ui/core/IconButton';
 import inject18n from './i18n';
 
 const styles = (theme) => ({
-  dialogRoot: {
-    overflowY: 'scroll',
-    overflowX: 'hidden',
-  },
-  dialogContent: {
-    overflowY: 'hidden',
-  },
   popoverDialog: {
     fontSize: '18px',
     lineHeight: '24px',
@@ -33,11 +26,9 @@ const styles = (theme) => ({
     padding: '0px 0 20px 22px',
   },
   iframe: {
-    width: '100%',
     border: 'none',
     height: '700px',
-    overflowX: 'hidden',
-    overflowY: 'scroll',
+    width: '100%',
   },
 });
 
@@ -127,11 +118,9 @@ class AboutModal extends Component {
         >
           <DialogContent classes={{ root: classes.dialogContent }}>
             <iframe
-              scrolling='no'
+              scrolling='auto'
               className={classes.iframe}
               src={this.state.htmlFormatData}
-              height='700px'
-              width='100%'
             />
           </DialogContent>
           <DialogActions className={classes.dialogActions}>

@@ -365,34 +365,32 @@ const TopBar = ({
                 </IconButton>
               </Tooltip>
             </Security>
-            <Tooltip title={t('Dashboard')}>
-              <IconButton
-                component={Link}
-                to='/dashboard'
-                classes={{ root: classes.button }}
-              >
-                <DashboardIcon fontSize="default" />
-              </IconButton>
-            </Tooltip>
-            <AboutModal
-              history={history}
-              location={location}
-            />
-            <Tooltip title={t('Find in Page')}>
-              <IconButton
-                component={Link}
-                disabled={true}
-                classes={{ root: classes.button }}
-              >
-                <FindInPageIcon fontSize="default" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t('Data Import')}>
+            <>
+              <Tooltip title={t('Dashboard')}>
+                <IconButton
+                  component={Link}
+                  to='/dashboard'
+                  classes={{ root: classes.button }}
+                >
+                  <DashboardIcon fontSize="default" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t('Find in Page')}>
+                <IconButton
+                  component={Link}
+                  disabled={true}
+                  classes={{ root: classes.button }}
+                >
+                  <FindInPageIcon fontSize="default" />
+                </IconButton>
+              </Tooltip>
+              <AboutModal
+                history={history}
+                location={location}
+              />
               <ExportPoam />
-            </Tooltip>
-            <Tooltip title={t('Add Note')}>
               <Export />
-            </Tooltip>
+            </>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}

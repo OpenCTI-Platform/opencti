@@ -2,11 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import parse from 'html-react-parser';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import rehypeRaw from 'rehype-raw';
 import Typography from '@material-ui/core/Typography';
 import * as R from 'ramda';
 import inject18n from '../../../components/i18n';
@@ -16,7 +11,7 @@ const styles = (theme) => ({
     margin: '-25px -24px 20px -24px',
     padding: '24px',
     height: '64px',
-    backgroundColor: '#1F2842',
+    backgroundColor: theme.palette.background.paper,
   },
   title: {
     float: 'left',
@@ -40,7 +35,6 @@ class About extends Component {
 
   render() {
     const {
-      location,
       classes,
     } = this.props;
 
