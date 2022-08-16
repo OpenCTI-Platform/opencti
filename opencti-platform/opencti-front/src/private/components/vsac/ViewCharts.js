@@ -145,13 +145,15 @@ class ViewCharts extends Component {
     } = this.state;
 
     const COLORS = {
-      Low: '#FCCF7E',
-      Medium: '#F9B406',
-      High: '#E28120',
-      Severe: '#A33611',
-      Critical: '#7F0909',
-      Informational: '#00bcd4',
+      Low: '#FFD773',
+      Medium: '#FFB000',
+      High: '#F17B00',
+      Severe: '#FF4100',
+      Critical: '#FF0000',
+      Informational: '#FFEBBC',
     };
+
+    const colorsForTrendingChart = ['#325B9B','#0083E8','#00A6F6','#0089C4','#00B2B9','#00B6AA','#00D7A1','#00D760'];
 
     const handleTabChange = (event, newValue) => {
       this.setState({ tabValue: newValue });
@@ -733,7 +735,7 @@ class ViewCharts extends Component {
                       <YAxis dataKey="value" tick={{ fill: 'white' }} />
                       <Tooltip />
                       <Legend wrapperStyle={{ bottom: -20 }} />
-                      {trendingChatData.map((s) => (
+                      {trendingChatData.map((s,index) => (
                         <Line
                           dataKey="value"
                           data={s.data}
@@ -741,6 +743,7 @@ class ViewCharts extends Component {
                           key={s.name}
                           dot={{ r: 8 }}
                           activeDot={{ r: 8 }}
+                          stroke={colorsForTrendingChart[index]}
                         />
                       ))}
                     </LineChart>
