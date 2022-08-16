@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   slack: circleci/slack@4.8.3
-  ms-teams: opub/ms-teams-orb@1.0.3  
+  ms-teams: cloudradar-monitoring/ms-teams@0.0.1
 jobs:
   build_frontend:
     working_directory: ~/opencti
