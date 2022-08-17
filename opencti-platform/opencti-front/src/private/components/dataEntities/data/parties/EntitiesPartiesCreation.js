@@ -340,28 +340,28 @@ class EntitiesPartiesCreation extends Component {
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
-                      <div style={{ marginBottom: '10px' }}>
+                      <div>
                         <Typography
                           variant="h3"
                           color="textSecondary"
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Short Name')}
+                          {t('Party Type')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Short Name')} >
+                          <Tooltip title={t('Patry Name')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={TextField}
-                          name="short_name"
+                        <TaskType
+                          name='party_type'
+                          taskType='PartyType'
                           fullWidth={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
                         />
                       </div>
                     </Grid>
@@ -395,14 +395,14 @@ class EntitiesPartiesCreation extends Component {
                   </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
-                      <div>
+                    <div style={{ marginBottom: '10px' }}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Party Type')}
+                          {t('Short Name')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                           <Tooltip title={t('Short Name')} >
@@ -410,13 +410,13 @@ class EntitiesPartiesCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <TaskType
-                          name='party_type'
-                          taskType='PartyType'
+                        <Field
+                          component={TextField}
+                          name="short_name"
                           fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
+                          size="small"
                           containerstyle={{ width: '100%' }}
+                          variant='outlined'
                         />
                       </div>
                       <div style={{ marginTop: '10px' }}>
