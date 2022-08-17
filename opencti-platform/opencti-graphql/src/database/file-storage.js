@@ -1,6 +1,7 @@
 import * as s3 from '@aws-sdk/client-s3';
 import * as R from 'ramda';
 import { Upload } from '@aws-sdk/lib-storage';
+import { Promise as BluePromise } from 'bluebird';
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
 import conf, { booleanConf, logApp, logAudit } from '../config/conf';
@@ -43,14 +44,6 @@ const credentialProvider = (init) => memoize(
   (credentials) => credentials.expiration !== undefined
 );
 
-const s3Client = new s3.S3Client({
-  region: bucketRegion,
-  endpoint: getEndpoint(),
-  forcePathStyle: true,
-  credentialDefaultProvider: credentialProvider,
-  tls: useSslConnection
-});
-
 const getEndpoint = () => {
   // If using AWS S3, unset the endpoint to let the library choose the best endpoint
   if (clientEndpoint === 's3.amazonaws.com') {
@@ -58,6 +51,14 @@ const getEndpoint = () => {
   }
   return `${(useSslConnection ? 'https' : 'http')}://${clientEndpoint}:${clientPort}`;
 };
+
+const s3Client = new s3.S3Client({
+  region: bucketRegion,
+  endpoint: getEndpoint(),
+  forcePathStyle: true,
+  credentialDefaultProvider: credentialProvider,
+  tls: useSslConnection
+});
 
 export const initializeBucket = async () => {
   try {
@@ -167,7 +168,7 @@ export const isFileObjectExcluded = (id) => {
 
 export const rawFilesListing = async (user, directory, recursive = false) => {
   let pageMarker;
-  const objects = [];
+  const storageObjects = [];
   const requestParams = {
     Bucket: bucketName,
     Prefix: directory || undefined,
@@ -177,7 +178,7 @@ export const rawFilesListing = async (user, directory, recursive = false) => {
   while (truncated) {
     try {
       const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
-      objects.push(...(response.Contents ?? []));
+      storageObjects.push(...(response.Contents ?? []));
       truncated = response.IsTruncated;
       if (truncated) {
         pageMarker = response.Contents.slice(-1)[0].Key;
@@ -188,9 +189,9 @@ export const rawFilesListing = async (user, directory, recursive = false) => {
       truncated = false;
     }
   }
-  return Promise.all(objects
-    .filter((obj) => !isFileObjectExcluded(obj.Key))
-    .map((obj) => loadFile(user, obj.Key)));
+  const filteredObjects = storageObjects.filter((obj) => !isFileObjectExcluded(obj.Key));
+  // Load file metadata with 5 // call maximum
+  return BluePromise.map(filteredObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
 
 export const upload = async (user, path, fileUpload, meta = {}) => {
