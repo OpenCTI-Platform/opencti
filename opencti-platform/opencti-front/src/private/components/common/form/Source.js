@@ -38,10 +38,6 @@ const SourceActorTypeQuery = graphql`
   }
 `;
 
-const componentFilter = [];
-
-componentFilter.push({ key: 'asset_type', values: 'software' });
-
 const ComponentListQuery = graphql`
   query SourceComponentListQuery{
     componentList(filters: [
@@ -122,13 +118,12 @@ class Source extends Component {
           },
         });
       });
-    this.handleThisChange('', this.props.values.actor_type);
+    this.handleThisChange(this.props.values.actor_type);
   }
 
   handleThisChange = (value) => {
     let queryType;
     let queryInfo;
-
     if (value) {
       switch (value) {
         case 'tool':
@@ -197,7 +192,6 @@ class Source extends Component {
         <Field
           component={SelectField}
           name='actor_type'
-          onChange={this.handleThisChange.bind(this)}
           label={label}
           fullWidth={true}
           containerstyle={containerstyle}
@@ -208,9 +202,17 @@ class Source extends Component {
           helperText={helperText}
         >
           {actorTypeList.map(
-            (et) => et.label && (
-              <Tooltip title={et.label} value={et.value} key={et.label}>
-                <MenuItem value={et.value}>{et.value}
+            (et) => et.value && (
+              <Tooltip
+                title={et.label}
+                value={et.value}
+                key={et.label}
+                onClick={() => this.handleThisChange(et.value)}
+              >
+                <MenuItem
+                  value={et.value}
+                >
+                  {et.value}
                 </MenuItem>
               </Tooltip>
             ),
