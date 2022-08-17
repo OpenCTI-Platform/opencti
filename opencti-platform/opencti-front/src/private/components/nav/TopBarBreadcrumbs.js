@@ -17,11 +17,8 @@ import {
   InsertChartOutlined,
   Info,
 } from '@material-ui/icons';
-import NoteAddIcon from '@material-ui/icons/NoteAdd';
-import PublishIcon from '@material-ui/icons/Publish';
 import FindInPageIcon from '@material-ui/icons/FindInPage';
 import DashboardIcon from '@material-ui/icons/Dashboard';
-import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
 import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -30,7 +27,7 @@ import graphql from 'babel-plugin-relay/macro';
 import Typography from '@material-ui/core/Typography';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import inject18n from '../../../components/i18n';
-import SearchInput from '../../../components/SearchInput';
+import Grid from '@material-ui/core/Grid';
 import { commitMutation } from '../../../relay/environment';
 import Security, {
   KNOWLEDGE,
@@ -275,43 +272,55 @@ const TopBarBreadcrumbs = ({
                 </IconButton>
               </Tooltip>
             </Security>
-            <>
-              <Tooltip title={t('Dashboard')}>
+            <Grid container={true} spacing={0}>
+              <Grid item={true} xs='auto'>
+                <Tooltip title={t('Dashboard')}>
+                  <IconButton
+                    component={Link}
+                    to='/dashboard'
+                    classes={{ root: classes.button }}
+                  >
+                    <DashboardIcon fontSize="default" />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <AboutModal
+                  history={history}
+                  location={location}
+                />
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <Tooltip title={t('Find in Page')}>
+                  <IconButton
+                    disabled={true}
+                    component={Link}
+                    classes={{ root: classes.button }}
+                  >
+                    <FindInPageIcon fontSize="default" />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <ExportPoam />
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <Export />
+              </Grid>
+              <Grid item={true} xs='auto'>
                 <IconButton
-                  component={Link}
-                  to='/dashboard'
+                  size="medium"
                   classes={{ root: classes.button }}
+                  aria-owns={menuOpen.open ? 'menu-appbar' : null}
+                  aria-haspopup="true"
+                  onClick={handleOpenMenu}
+                  color="inherit"
+                  data-cy='menu'
                 >
-                  <DashboardIcon fontSize="default" />
+                  <AccountCircleOutlined fontSize="default" />
                 </IconButton>
-              </Tooltip>
-              <Tooltip title={t('Find in Page')}>
-                <IconButton
-                  disabled={true}
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
-                  <FindInPageIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
-              <AboutModal
-                history={history}
-                location={location}
-              />
-              <ExportPoam />
-              <Export />
-            </>
-            <IconButton
-              size="medium"
-              classes={{ root: classes.button }}
-              aria-owns={menuOpen.open ? 'menu-appbar' : null}
-              aria-haspopup="true"
-              onClick={handleOpenMenu}
-              color="inherit"
-              data-cy='menu'
-            >
-              <AccountCircleOutlined fontSize="default" />
-            </IconButton>
+              </Grid>
+            </Grid>
             <Menu
               id="menu-appbar"
               style={{ marginTop: 40, zIndex: 2100 }}

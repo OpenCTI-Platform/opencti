@@ -15,6 +15,7 @@ import FindInPageIcon from '@material-ui/icons/FindInPage';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import Menu from '@material-ui/core/Menu';
 import Divider from '@material-ui/core/Divider';
+import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
@@ -173,9 +174,10 @@ const TopBar = ({
             || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'
-            || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
+            || location.pathname.match('/dashboard/analysis/[a-z_]+$'))
+            && (
               <TopMenuAnalysis />
-          )}
+            )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -189,9 +191,10 @@ const TopBar = ({
             '/dashboard/analysis/external_references/',
           ) && <TopMenuExternalReference />}
           {(location.pathname === '/dashboard/events'
-            || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
+            || location.pathname.match('/dashboard/events/[a-z_]+$'))
+            && (
               <TopMenuEvents />
-          )}
+            )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuIncident />
           )}
@@ -202,9 +205,10 @@ const TopBar = ({
             <TopMenuEvents />
           )}
           {(location.pathname === '/dashboard/observations'
-            || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
+            || location.pathname.match('/dashboard/observations/[a-z_]+$'))
+            && (
               <TopMenuObservations />
-          )}
+            )}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
           ) && <TopMenuIndicator />}
@@ -218,9 +222,10 @@ const TopBar = ({
             <TopMenuArtifact />
           )}
           {(location.pathname === '/dashboard/threats'
-            || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
+            || location.pathname.match('/dashboard/threats/[a-z_]+$'))
+            && (
               <TopMenuThreats />
-          )}
+            )}
           {location.pathname.includes('/dashboard/threats/threat_actors/') && (
             <TopMenuThreatActor />
           )}
@@ -231,9 +236,10 @@ const TopBar = ({
             <TopMenuCampaign />
           )}
           {(location.pathname === '/dashboard/arsenal'
-            || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
+            || location.pathname.match('/dashboard/arsenal/[a-z_]+$'))
+            && (
               <TopMenuArsenal />
-          )}
+            )}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && (
             <TopMenuMalware />
           )}
@@ -250,9 +256,10 @@ const TopBar = ({
             '/dashboard/arsenal/vulnerabilities/',
           ) && <TopMenuVulnerability />}
           {(location.pathname === '/dashboard/entities'
-            || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
+            || location.pathname.match('/dashboard/entities/[a-z_]+$'))
+            && (
               <TopMenuEntities />
-          )}
+            )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
           )}
@@ -365,42 +372,54 @@ const TopBar = ({
                 </IconButton>
               </Tooltip>
             </Security>
-            <>
-              <Tooltip title={t('Dashboard')}>
+            <Grid container={true} spacing={0}>
+              <Grid item={true} xs='auto'>
+                <Tooltip title={t('Dashboard')}>
+                  <IconButton
+                    component={Link}
+                    to='/dashboard'
+                    classes={{ root: classes.button }}
+                  >
+                    <DashboardIcon fontSize="default" />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <AboutModal
+                  history={history}
+                  location={location}
+                />
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <Tooltip title={t('Find in Page')}>
+                  <IconButton
+                    disabled={true}
+                    component={Link}
+                    classes={{ root: classes.button }}
+                  >
+                    <FindInPageIcon fontSize="default" />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <ExportPoam />
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <Export />
+              </Grid>
+              <Grid item={true} xs='auto'>
                 <IconButton
-                  component={Link}
-                  to='/dashboard'
+                  size="medium"
                   classes={{ root: classes.button }}
+                  aria-owns={menuOpen.open ? 'menu-appbar' : null}
+                  aria-haspopup="true"
+                  onClick={handleOpenMenu}
+                  color="inherit"
                 >
-                  <DashboardIcon fontSize="default" />
+                  <AccountCircleOutlined fontSize="default" />
                 </IconButton>
-              </Tooltip>
-              <Tooltip title={t('Find in Page')}>
-                <IconButton
-                  component={Link}
-                  disabled={true}
-                  classes={{ root: classes.button }}
-                >
-                  <FindInPageIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
-              <AboutModal
-                history={history}
-                location={location}
-              />
-              <ExportPoam />
-              <Export />
-            </>
-            <IconButton
-              size="medium"
-              classes={{ root: classes.button }}
-              aria-owns={menuOpen.open ? 'menu-appbar' : null}
-              aria-haspopup="true"
-              onClick={handleOpenMenu}
-              color="inherit"
-            >
-              <AccountCircleOutlined fontSize="default" />
-            </IconButton>
+              </Grid>
+            </Grid>
             <Menu
               id="menu-appbar"
               style={{ marginTop: 40, zIndex: 2100 }}

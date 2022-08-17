@@ -131,7 +131,7 @@ class AboutModal extends Component {
               variant="outlined"
               size="small"
             >
-              {t('Cancel')}
+              {t('Close')}
             </Button>
           </DialogActions>
         </Dialog>
