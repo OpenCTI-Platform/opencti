@@ -38,6 +38,8 @@ import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
 import { toastGenericError } from '../../../../utils/bakedToast';
+import ErrorBox from '../../common/form/ErrorBox';
+
 const styles = (theme) => ({
   container: {
     margin: 0,
@@ -102,6 +104,7 @@ class RiskTrackingPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       anchorEl: null,
       displayUpdate: false,
       displayCancel: false,
@@ -124,7 +127,7 @@ class RiskTrackingPopover extends Component {
     this.handleClose();
   }
 
-  handleCloseEditUpdate(){
+  handleCloseEditUpdate() {
     this.setState({ displayUpdate: false });
   }
 
@@ -148,7 +151,7 @@ class RiskTrackingPopover extends Component {
   onSubmit(values, { setSubmitting }) {
     const adaptedValues = evolve(
       {
-        logged_by: () => values.logged_by.length > 0 && [JSON.stringify({'party': values.logged_by})],
+        logged_by: () => values.logged_by.length > 0 && [JSON.stringify({ 'party': values.logged_by })],
       },
       values,
     );
@@ -166,14 +169,19 @@ class RiskTrackingPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        this.handleCloseEditUpdate();
-        this.props.refreshQuery();
+      onCompleted: (data, error) => {
+        if (error) {
+          this.setState({ error });
+        } else {
+          setSubmitting(false);
+          this.handleCloseEditUpdate();
+          this.props.refreshQuery();
+        }
       },
       onError: (err) => {
-        console.error(err);
         toastGenericError('Request Failed');
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        this.setState({ error: ErrorResponse });
       },
     });
 
@@ -625,6 +633,10 @@ class RiskTrackingPopover extends Component {
               </Form>
             )}
           </Formik>
+          <ErrorBox
+            error={this.state.error}
+            pathname={`/activities/risk assessment/risks/${this.props.riskId}/tracking`}
+          />
         </Dialog>
         <Dialog
           open={this.state.displayCancel}

@@ -27,7 +27,7 @@ import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
 import { toastGenericError } from "../../../../../utils/bakedToast";
-
+import ErrorBox from '../../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -97,6 +97,7 @@ class RemediationDetailsPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: {},
       anchorEl: null,
       details: false,
       close: false,
@@ -156,13 +157,21 @@ class RemediationDetailsPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data) => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation/`);
+      onCompleted: (data, error) => {
+        if (error) {
+          this.setState({ error });
+        } else {
+          setSubmitting(false);
+          resetForm();
+          this.handleClose();
+          this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
+        }
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        toastGenericError('Request Failed');
+        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        this.setState({ error: ErrorResponse });
+      },
     });
     this.setState({ onSubmit: true });
   }
@@ -445,11 +454,15 @@ class RemediationDetailsPopover extends Component {
               </Form>
             )}
           </Formik>
+          <ErrorBox
+            error={this.state.error}
+            pathname={this.props.history.location.pathname}
+          />
         </Dialog>
         <Dialog
           open={this.state.close}
           keepMounted={true}
-          // TransitionComponent={Transition}
+        // TransitionComponent={Transition}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>
