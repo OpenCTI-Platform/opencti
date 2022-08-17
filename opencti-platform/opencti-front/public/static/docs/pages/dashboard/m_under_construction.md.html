@@ -1,8 +1,384 @@
 <meta charset="utf-8" lang="en">
 
 
-# ![](../../_img/icon.svg width="30px") Under Construction
-  We’re working hard to make Cyio’s information as comprehensive as possible.
+**Internal Scan - Monthly 1 (January)**
+
+# Executive Summary
+> (Note: Paragraphs written in this blockquote style indicate those the report author should edit or remove before publishing.)
+>
+> The Executive Summary consists of an overview of the scan&#39s results. This part of the report offers a glimpse of the results of the scan, how well or poorly the performances of the applications and systems are during the scan. The severity of the vulnerabilities discovered can be identified by highlighting the overall risk level of an organization. These levels can be low, medium, high, or critical.
+>
+> The Executive Summary has critical sections, and these include Remediation Summary, Testing Narrative, Assessment Findings Summary, Assessment Scope, and Objectives Summary.
+>
+> The Executive Summary phase clearly explains the number and severity of detected vulnerabilities without overwhelming the reader with many details. To make the information understandable, the vulnerabilities discovered are graphically enumerated. Pertinent information is clearly identified, such as the name of servers scanned, and dates and times of the scan, among others.
+>
+> This part of the vulnerability assessment report gives a bigger picture. This provides information about the overall risk level, how many vulnerabilities the organization is facing, kinds of issues that need to be addressed, and how crucial it is to address the uncovered vulnerabilities.
+>
+> The executive summary also makes clear what kind of danger an organization may be encountering and which weaknesses to prioritize and address first.
+
+# Assessment Overview
+The execution of a vulnerability assessment is a critical component of compliance with the [NIST Cybersecurity Framework](https://doi.org/10.6028/NIST.CSWP.04162018). 
+
+The continuous performance of vulnerability assessments is in accordance with the PROTECT function, as described in **PR.IP-12** of the **Information Protection Processes and Procedures (PR.IP)** Category.
+
+## Assessment Methodology
+This vulnerability assessment was performed by analyzing the vulnerability scan **"Internal Scan - Monthly 1 (January)"** performed on **January 02, 2021 22:21 PM** as provided by **Example.org**.  The analysis process is based on the IDENTIFY function of the [NIST Cybersecurity Framework](https://doi.org/10.6028/NIST.CSWP.04162018). 
+
+The assessment identifies in accordance with the IDENTIFY and RESPOND functions of the NIST Cybersecurity Framework:
+
+* **Asset Management (ID.AM)**: identify physical devices, systems, and software discovered within the scan as targets assets
+* **Risk Assessment (ID.RA)**: identify vulnerabilities associated with above identified assets
+* **Mitigation (RS.MI)**: mitigations are identified for vulnerabilities identified
+
+### Assessment Tools
+The assessment of vulnerabilities described in this report is based upon the results of a vulnerability scan performed with the Nessus scanner from Tenable.  The exported data of the vulnerability scan was then submitted to the the Cyio Vulnerability Scan Analysis Capability (VSAC), produced by DarkLight, Inc., for further analysis.  This analysis process leveraged information from a number of authoritative data sources in drawing conclusions.
+## Benchmarking Comparisons
+
+This comparisons against industry benchmarks and as well as others in the same industry-sector provides a means to gauge how Example.org compares in relationship.
+
+### 2020 Top 25 Weaknesses
+The [CWE Top 25 Most Dangerous Software Weaknesses](https://cwe.mitre.org/top25/archive/2020/2020_cwe_top25.html) is a "demonstrative list of the most common and impactful issues experienced over the previous two calendar years. These weaknesses are dangerous because they are often easy to find, exploit, and can allow adversaries to completely take over a system, steal data, or prevent an application from working."  A weakness provides a means to classify the causes of software security vulnerabilities as they are found in code, design, or system architecture.
+
+|Rank|ID|Name|Score|
+|:---:|:---|:----|---:|
+|1|CWE-787|Out-of-bounds Write|65.93|
+|2|CWE-79|Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')|46.84|
+|3|CWE-125|Out-of-bounds Read|24.9|
+|4|CWE-20|Improper Input Validation|20.47|
+|5|CWE-78|Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')|19.55|
+|6|CWE-89|Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')|19.54|
+|7|CWE-416|Use After Free|16.83|
+|8|CWE-22|Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')|14.69|
+|9|CWE-352|Cross-Site Request Forgery (CSRF)|14.46|
+|10|CWE-434|Unrestricted Upload of File with Dangerous Typ|8.45|
+|11|CWE-306|Missing Authentication for Critical Function|7.93|
+|12|CWE-190|Integer Overflow or Wraparound|7.12|
+|13|CWE-502|Deserialization of Untrusted Data|6.71|
+|14|CWE-287|Improper Authentication|6.58|
+|15|CWE-476|NULL Pointer Dereference|6.54|
+|16|CWE-798|Use of Hard-coded Credentials|6.27|
+|17|CWE-119|Improper Restriction of Operations within the Bounds of a Memory Buffer|5.84|
+|18|CWE-862|Missing Authorization|5.47|
+|19|CWE-276|Incorrect Default Permissions|5.09|
+|20|CWE-200|Exposure of Sensitive Information to an Unauthorized Actor|4.74|
+|21|CWE-522|Insufficiently Protected Credentials|4.21|
+|22|CWE-732|Incorrect Permission Assignment for Critical Resource|4.2|
+|23|CWE-611|Improper Restriction of XML External Entity Reference|4.02|
+|24|CWE-918|Server-Side Request Forgery (SSRF)|3.78|
+|25|CWE-77|Improper Neutralization of Special Elements used in a Command ('Command Injection')|3.58|
+
+This chart shows the number of vulnerabilities present in the current analysis for each of the Top 25 Weaknesses.
+
+<img src="images/top25_chart-8c555be1-48b9-4753-9077-5ab6fb84d985.svg"/>
+
+
+
+
+# Assessment Findings
+
+The results from the analysis of the scan **"Internal Scan - Monthly 1 (January)"** from **January 02, 2021 22:21 PM UTC** are listed below. Vulnerability severity ratings are labeled according to the **nvd** scoring system as seen in the following chart.
+
+ 
+<img src="images/nvd_score_system.svg" width="65%"/> 
+
+
+## Vulnerability Breakdown
+Analysis of the vulnerability scan **"Internal Scan - Monthly 1 (January)"** characterized and classified the identified vulnerabilities into levels of severity based on the nvd scoring system as a means to provide an indication of the security risks that could have significant impact on mission-critical applications used for day-to-day business operations.
+
+### By Severity
+The Vulnerabilities by Severity chart below illustrates the distribution of the vulnerabilities in the analysis based on the severity rating assigned to the vulnerabilities.
+
+The severity rating of a vulnerability is based on a number of factors such as the level of impact a successful exploit can have on an organization, the easy by which an attacker is able to successfully perform the exploit, the level of skill required by an attacker to successfully perform the the exploit, and whether organization, industries in which they operate, or geography in which they are located is actively being targeted by adversaries. 
+
+ 
+
+
+|Total Vulnerabilities| Critical Severity|High Severity|Medium Severity|Low Severity|
+|-------------------:|-------------------:|-------------------:|-------------------:|-------------------:|
+|42 | 1 |  16 |  18 |  7 | 
+
+
+<img src="images/severity_chart-fa500440-03d0-46c2-ae1d-a0c079ac226c.svg"/> 
+
+### By Category
+The vulnerability category chart below illustrates the distribution of the vulnerabilities identified by the analysis.  Each vulnerability identified is categorized into the following types of vulnerability:
+
+* **_Defect-based Vulnerabilities_**, often called *fault* vulnerabilities, are vulnerabilities focused on errors or other flaws in the source code that are specific to one or more versions of one or more products that can be exploited by an adversary.
+
+* **_Misconfiguration-based Vulnerabilities_** are those vulnerabilities focused on installation and configuration issues that can be exploited by adversary.  For example, the configuration of a weak cryptographic algorithm used by a secure protocol might allow an adversary to perform a Man-in-the-Middle-Attack from which they can then send oversized buffers to a vulnerable product as a means of denying service or as a step to execute malicious code to elevate privileges.
+
+* **_Unsupported Product-based Vulnerabilities_** are those vulnerabilities focused on the existence of products (software or hardware) that present a vulnerability risk due to the fact that the vendor no longer provides support, typically meaning that the vendor will no longer provide remedies to successful exploits against the product.  As a result, the enterprise is left with few actions: *rip-n-replace* the vulnerable product or institute some form of mitigation that reduces, but not eliminates, the potential risk posed by the unsupported product. 
+
+
+|Category | Count | Percentage |
+|:---|---:|---:|
+| Defect | 32 | 78.05% |
+| Configuration | 9 | 21.95% |
+
+
+### Vulnerabilities By Year
+The chart below illustrates the distribution of vulnerability instances, identified by the scan of the environment, that occurred for one or more vulnerabilities that were published in a given year by one or more authoritative sources of vulnerability information, such a the [U.S. National Vulnerability Database (NVD)](https://nvd.nist.gov/), operated by the [National Institute of Standards and Technology (NIST)](https://www.nist.gov/).
+
+This distribution is often useful in determining the effectiveness of an organization's vulnerability management program. A chart that shows a high number of instances of years prior to the last 2 or 3, tends to indicate that an organization's vulnerability management program is not proactively addressing newly-found vulnerabilities quickly. There are many reasons that could be the cause for this.
+
+<img src="images/vulnerabilities_by_year_chart-208834ff-e668-4660-819d-5e21d2ddf4de.svg"/> 
+
+
+### Most Vulnerable Hosts (Top 5)
+The Most Vulnerable Hosts chart illustrates the vulnerabilities identified by analysis of the scan from the perspective of "where" in the environment the vulnerabilities are located within the scanned environment. The chart uses a stacked-bar approach to show hosts that have the highest number of vulnerabilities, as well as an indication of the severity of the vulnerabilities on that host.
+
+This view enables those individuals responsible for remediation and mitigation activities to take into consideration the hosts on which the vulnerabilities were identified when putting together a plan of action to address each vulnerability.
+
+<img src="images/top_vuln_hosts-d2c3d0a1-e2bf-49e8-960b-d1f1328c8e1f.svg"/> 
+
+The table below provides details for the top 5 hosts with the most vulnerability both by count and % of vulnerabilities across the entire organization.
+
+
+ | IP Address | Hostname | MAC Address |Critical Severity   | High Severity       | Medium Severity     | Low Severity| % of Org Vulnerabilities |
+|:------------------|:---------|:----------------|-------:|-------:|-------:|-------:|--------:|------------------------:|
+| 202.36.122.18 |   |   |  0 |  3 |  2 |  0 |   7.94% 
+| 202.27.114.116 |  CASNA |  00:0C:29:44:E4:9A |  0 |  2 |  2 |  1 |   7.94% 
+| 202.27.114.72 |  KKTFS2015 |  00:0C:29:31:1E:87 |  0 |  1 |  1 |  2 |   6.35% 
+| 202.27.114.73 |  KKIIS01 |  00:0C:29:EC:D4:91 |  1 |  0 |  3 |  0 |   6.35% 
+| 202.27.114.215 |  KKVSECJUMP01 |  00:50:56:99:85:64 |  0 |  2 |  1 |  1 |   6.35% 
+
+
+### Most Vulnerable Products (Top 5)
+The Most Vulnerable Products chart illustrates the vulnerabilities identified by analysis of the scan from the perspective of "which products" are to be considered the most vulnerable based on the pervasiveness within the environment. The chart uses a stacked-bar approach to show products that have the highest number of vulnerabilities, as well as an indication of the severity of the vulnerabilities for that product.
+
+This view enables those individuals responsible for remediation and mitigation activities to take into consideration the products which have the most vulnerabilities when putting together a plan of action to address each vulnerability.
+
+![Most Vulnerable Product](images/top_vuln_products-3157084a-e807-47d5-a073-2ee52be891d2.svg) 
+
+The table below provides details for the 5 products with the most vulnerability both by count and % of vulnerabilities across the entire organization.
+ | Product  | Critical Severity   | High Severity       | Medium Severity     | Low Severity| % of Org Vulnerabilities |
+|:------------------|:----------------|-------:|-------:|-------:|-------:|---------:|--------:|
+| Undetermined by Scanner |  0 |  5 |  13 |  24 |   43.75% 
+| (OS) Microsoft Windows |  0 |  7 |  3 |  3 |   13.54% 
+| (OS) Hp Integrated Lights-Out Firmware |  0 |  8 |  4 |  0 |   12.50% 
+| (OS) Vmware Esxi |  0 |  0 |  7 |  0 |   7.29% 
+| Microsoft Windows Defender |  0 |  4 |  0 |  0 |   4.17% 
+
+
+## Assessment Details
+### Critical Severity Vulnerabilities
+
+
+Analysis of the submitted scan of the environment identified None unique vulnerabilities with a severity rating of critical.  Vulnerabilities with a severity rating of critical require immediate attention.  
+
+Vulnerabilities with this severity rating tend to be due to a high level of impact on an organization if successfully exploited, relatively easy to exploit by attacker, or are representative of an organization, industry sectors in which they operate, or geography in which they are located actively being targeted by adversaries. 
+
+
+A table of the 1 vulnerabilities with a severity rating of critical (9 - 10) is provided below:
+
+|Vulnerability |Category     | Description       | Count        |
+|:------------|:-----------:|:-----------------|-----------------:|
+|tenb-73756|Configuration|According to its self-reported version number, the installation of Microsoft SQL Server on the remote host is no longer supported.<br><br>Lack of support implies that no new security patches for the product will be released by the vendor. As a result, it is likely to contain security vulnerabilities.|1|
+
+
+### High Severity Vulnerabilities
+
+
+Analysis of the submitted scan of the environment identified None unique vulnerabilities with a severity rating of high.  Vulnerabilities with a severity rating of high require immediate attention.  
+
+Vulnerabilities with this severity rating tend to be due to a high level of impact on an organization if successfully exploited, relatively easy to exploit by attacker, or are representative of an organization, industry sectors in which they operate, or geography in which they are located actively being targeted by adversaries. 
+
+
+A table of the top 5 vulnerabilities with a severity rating of high (7 - 8) is provided below:
+
+|Vulnerability |Category     | Description       | Count        |
+|:------------|:-----------:|:-----------------|-----------------:|
+|CVE-2018-7117|Defect|A remote Cross-Site Scripting in HPE iLO 5 Web User Interface vulnerability was identified in HPE Integrated Lights-Out 5 (iLO 5) for Gen10 ProLiant Servers earlier than version v1.40.|4|
+|CVE-2013-4786|Defect|The IPMI 2.0 specification supports RMCP+ Authenticated Key-Exchange Protocol (RAKP) authentication, which allows remote attackers to obtain password hashes and conduct offline password guessing attacks by obtaining the HMAC from a RAKP message 2 response from a BMC.|3|
+|CVE-2020-1163|Defect|An elevation of privilege vulnerability exists in Windows Defender that leads arbitrary file deletion on the system.To exploit the vulnerability, an attacker would first have to log on to the system, aka 'Microsoft Windows Defender Elevation of Privilege Vulnerability'. This CVE ID is unique from CVE-2020-1170.|2|
+|CVE-2020-1170|Defect|An elevation of privilege vulnerability exists in Windows Defender that leads arbitrary file deletion on the system.To exploit the vulnerability, an attacker would first have to log on to the system, aka 'Microsoft Windows Defender Elevation of Privilege Vulnerability'. This CVE ID is unique from CVE-2020-1163.|2|
+|CVE-2019-11983|Defect|A remote buffer overflow vulnerability was identified in HPE Integrated Lights-Out 4 (iLO 4) earlier than v2.61b for Gen9 servers and Integrated Lights-Out 5 (iLO 5) for Gen10 Servers earlier than version v1.39.|2|
+
+
+### Medium Severity Vulnerabilities
+
+
+Analysis of the submitted scan of the environment identified None unique vulnerabilities with a severity rating of medium.  Vulnerabilities with a severity rating of medium require attention in a timely manner even though they are not as urgent as the other vulnerabilities.
+
+Vulnerabilities with this severity rating tend to provide information to attackers that may assist them in mounting subsequent attacks on your enterprise.
+
+
+A table of the top 5 vulnerabilities with a severity rating of medium (4 - 6) is provided below:
+
+|Vulnerability |Category     | Description       | Count        |
+|:------------|:-----------:|:-----------------|-----------------:|
+|tenb-51192|Configuration|The server's X.509 certificate cannot be trusted. This situation can occur in three different ways, in which the chain of trust can be broken, as stated below :<br><br>  - First, the top of the certificate chain sent by the     server might not be descended from a known public     certificate authority. This can occur either when the     top of the chain is an unrecognized, self-signed     certificate, or when intermediate certificates are     missing that would connect the top of the certificate     chain to a known public certificate authority.<br><br>  - Second, the certificate chain may contain a certificate     that is not valid at the time of the scan. This can     occur either when the scan occurs before one of the     certificate's 'notBefore' dates, or after one of the     certificate's 'notAfter' dates.<br><br>  - Third, the certificate chain may contain a signature     that either didn't match the certificate's information     or could not be verified. Bad signatures can be fixed by     getting the certificate with the bad signature to be     re-signed by its issuer. Signatures that could not be     verified are the result of the certificate's issuer     using a signing algorithm that Nessus either does not     support or does not recognize.<br><br>If the remote host is a public host in production, any break in the chain makes it more difficult for users to verify the authenticity and identity of the web server. This could make it easier to carry out man-in-the-middle attacks against the remote host.|5|
+|CVE-2018-7117|Defect|A remote Cross-Site Scripting in HPE iLO 5 Web User Interface vulnerability was identified in HPE Integrated Lights-Out 5 (iLO 5) for Gen10 ProLiant Servers earlier than version v1.40.|4|
+|CVE-2019-5518|Defect|VMware ESXi (6.7 before ESXi670-201903001, 6.5 before ESXi650-201903001, 6.0 before ESXi600-201903001), Workstation (15.x before 15.0.4, 14.x before 14.1.7), Fusion (11.x before 11.0.3, 10.x before 10.1.6) contain an out-of-bounds read/write vulnerability in the virtual USB 1.1 UHCI (Universal Host Controller Interface). Exploitation of this issue requires an attacker to have access to a virtual machine with a virtual USB controller present. This issue may allow a guest to execute code on the host.|3|
+|CVE-2019-5519|Defect|VMware ESXi (6.7 before ESXi670-201903001, 6.5 before ESXi650-201903001, 6.0 before ESXi600-201903001), Workstation (15.x before 15.0.4, 14.x before 14.1.7), Fusion (11.x before 11.0.3, 10.x before 10.1.6) contain a Time-of-check Time-of-use (TOCTOU) vulnerability in the virtual USB 1.1 UHCI (Universal Host Controller Interface). Exploitation of this issue requires an attacker to have access to a virtual machine with a virtual USB controller present. This issue may allow a guest to execute code on the host.|3|
+|tenb-104743|Configuration|The remote service accepts connections encrypted using TLS 1.0. TLS 1.0 has a number of cryptographic design flaws. Modern implementations of TLS 1.0 mitigate these problems, but newer versions of TLS like 1.2 and 1.3 are designed against these flaws and should be used whenever possible.<br><br>As of March 31, 2020, Endpoints that aren���t enabled for TLS 1.2 and higher will no longer function properly with major web browsers and major vendors.<br><br>PCI DSS v3.2 requires that TLS 1.0 be disabled entirely by June 30, 2018, except for POS POI terminals (and the SSL/TLS termination points to which they connect) that can be verified as not being susceptible to any known exploits.|3|
+
+
+### Low Severity Vulnerabilities
+
+
+Analysis of the submitted scan of the environment identified None unique vulnerabilities with a severity rating of low.  Vulnerabilities with a severity rating of low require attention but may not increase risk if addressing them are postponed for a small amount of time.
+
+Vulnerabilities with this severity rating tend to provide information to attackers that may assist them in mounting subsequent attacks on your enterprise.
+
+
+A table of the top 5 vulnerabilities with a severity rating of low (1 - 3) is provided below:
+
+|Vulnerability |Category     | Description       | Count        |
+|:------------|:-----------:|:-----------------|-----------------:|
+|CVE-1999-0524|Defect|ICMP information such as (1) netmask and (2) timestamp is allowed from arbitrary hosts.|20|
+|CVE-2015-6161|Defect|Microsoft Internet Explorer 7 through 11 and Microsoft Edge allow remote attackers to bypass the ASLR protection mechanism via a crafted web site, aka "Microsoft Browser ASLR Bypass."|3|
+|CVE-2015-4000|Defect|The TLS protocol 1.2 and earlier, when a DHE_EXPORT ciphersuite is enabled on a server but not on a client, does not properly convey a DHE_EXPORT choice, which allows man-in-the-middle attackers to conduct cipher-downgrade attacks by rewriting a ClientHello with DHE replaced by DHE_EXPORT and then rewriting a ServerHello with DHE_EXPORT replaced by DHE, aka the "Logjam" issue.|1|
+|CVE-2012-4929|Defect|The TLS protocol 1.2 and earlier, as used in Mozilla Firefox, Google Chrome, Qt, and other products, can encrypt compressed data without properly obfuscating the length of the unencrypted data, which allows man-in-the-middle attackers to obtain plaintext HTTP headers by observing length differences during a series of guesses in which a string in an HTTP request potentially matches an unknown string in an HTTP header, aka a "CRIME" attack.|1|
+|CVE-2012-4930|Defect|The SPDY protocol 3 and earlier, as used in Mozilla Firefox, Google Chrome, and other products, can perform TLS encryption of compressed data without properly obfuscating the length of the unencrypted data, which allows man-in-the-middle attackers to obtain plaintext HTTP headers by observing length differences during a series of guesses in which a string in an HTTP request potentially matches an unknown string in an HTTP header, aka a "CRIME" attack.|1|
+
+
+
+
+# Recommendations
+Recommendations in this report are based on the available findings from the analysis of the Internal Scan - Monthly 1 (January) vulnerability scan.
+
+Vulnerability scanning is only one tool to assess the security posture of a network. The results should not be interpreted as definitive measurement of the security posture of the Example.org enterprise. Other elements used to assess the current security posture would include policy review, a review of internal security controls and procedures, or internal red teaming/penetration testing. 
+
+## Remediation Details
+The table below contains a prioritized list of the most impactful remediation actions for the vulnerabilities identified in the scope of the scan. 
+Each recommended remediation action is targeted to remove or eliminate the potential threat that would result by a successful exploit of the vulnerability. The ranking of a remediation action takes into consideration the set of vulnerabilities it remediates, the severity of the vulnerability based on its CVSS scores, the ease and likelihood that the vulnerability can be successfully exploited, and prevalence of the vulnerability within the environment.
+
+A table of the top 8 remediations is provided below:
+
+| Action to Take       |Vulnerabilities| Count           | Hosts Impacted                  |
+|:--------------------|-------------:|---------------:|:-------------------------------|
+|Microsoft has released the following security updates to address this issue:<br>  -KB4532095<br>  -KB4532097<br>  -KB4532098<br>  -KB4535288<br>  -KB4535706|1|1| 202.27.114.28 
+|Microsoft has released a set of patches for Windows 2003, Vista, 2008, 7, 2008 R2, 8.1, and 2012 R2.|2|1| 202.27.114.116 
+|There is no patch for this vulnerability; it is an inherent problem with the specification for IPMI v2.0. Suggested mitigations include :<br><br>  - Disabling IPMI over LAN if it is not needed.<br><br>  - Using strong passwords to limit the successfulness of     off-line dictionary attacks.<br><br>  - Using Access Control Lists (ACLs) or isolated networks     to limit access to your IPMI management interfaces.|3|3| 202.36.122.16 ,  202.36.122.31 ,  202.36.122.22 
+|Contact the Certificate Authority to have the SSL certificate reissued.|1|1| 202.20.110.3 
+|Disable the SNMP service on the remote host if you do not use it.<br>Either filter incoming UDP packets going to this port, or change the default community string.|1|1| 202.36.122.22 
+|Microsoft has released a set of patches for Windows Vista, 2008, 7, 2008 R2, 8, RT, 2012, 8.1, RT 8.1, 2012 R2, and 10.|1|1| 202.27.114.116 
+|Microsoft has released a set of patches for Windows Vista, 2008, 7, 2008 R2, 8, RT, 2012, 8.1, RT 8.1, 2012 R2, and 10.<br><br>Refer to KB3125869 for additional information.|3|3| 202.27.114.29 ,  202.27.114.72 ,  202.27.114.89 
+|Disable compression and / or the SPDY service.|2|1| 202.49.114.30 
+
+# Appendix
+
+## Vulnerability Details
+
+### Critical
+
+|Vulnerability |Category     | Description       | Count        |
+|:------------|:-----------:|:-----------------|-----------------:|
+|tenb-73756|Configuration|According to its self-reported version number, the installation of Microsoft SQL Server on the remote host is no longer supported.<br><br>Lack of support implies that no new security patches for the product will be released by the vendor. As a result, it is likely to contain security vulnerabilities.|1|
+
+### High
+
+|Vulnerability |Category     | Description       | Count        |
+|:------------|:-----------:|:-----------------|-----------------:|
+|CVE-2020-0618|Defect|A remote code execution vulnerability exists in Microsoft SQL Server Reporting Services when it incorrectly handles page requests, aka 'Microsoft SQL Server Reporting Services Remote Code Execution Vulnerability'.|1|
+|CVE-2020-1163|Defect|An elevation of privilege vulnerability exists in Windows Defender that leads arbitrary file deletion on the system.To exploit the vulnerability, an attacker would first have to log on to the system, aka 'Microsoft Windows Defender Elevation of Privilege Vulnerability'. This CVE ID is unique from CVE-2020-1170.|2|
+|CVE-2020-1170|Defect|An elevation of privilege vulnerability exists in Windows Defender that leads arbitrary file deletion on the system.To exploit the vulnerability, an attacker would first have to log on to the system, aka 'Microsoft Windows Defender Elevation of Privilege Vulnerability'. This CVE ID is unique from CVE-2020-1163.|2|
+|CVE-2015-2369|Defect|Untrusted search path vulnerability in Windows Media Device Manager in Microsoft Windows Server 2003 SP2, Windows Vista SP2, Windows Server 2008 SP2 and R2 SP1, and Windows 7 SP1 allows local users to gain privileges via a Trojan horse DLL in the current working directory, as demonstrated by a directory that contains a .rtf file, aka "DLL Planting Remote Code Execution Vulnerability."|1|
+|CVE-2018-8599|Defect|An elevation of privilege vulnerability exists when the Diagnostics Hub Standard Collector Service improperly impersonates certain file operations, aka "Diagnostics Hub Standard Collector Service Elevation of Privilege Vulnerability." This affects Microsoft Visual Studio, Windows Server 2019, Windows Server 2016, Windows 10, Windows 10 Servers.|1|
+|CVE-2020-17128|Defect|Microsoft Excel Remote Code Execution Vulnerability This CVE ID is unique from CVE-2020-17122, CVE-2020-17123, CVE-2020-17125, CVE-2020-17127, CVE-2020-17129.|1|
+|CVE-2015-2368|Defect|Untrusted search path vulnerability in Microsoft Windows 7 SP1, Windows Server 2008 R2 SP1, Windows 8.1, Windows Server 2012 R2, and Windows RT 8.1 allows local users to gain privileges via a Trojan horse DLL in the current working directory, aka "Windows DLL Remote Code Execution Vulnerability."|1|
+|CVE-2020-17122|Defect|Microsoft Excel Remote Code Execution Vulnerability This CVE ID is unique from CVE-2020-17123, CVE-2020-17125, CVE-2020-17127, CVE-2020-17128, CVE-2020-17129.|1|
+|CVE-2013-4786|Defect|The IPMI 2.0 specification supports RMCP+ Authenticated Key-Exchange Protocol (RAKP) authentication, which allows remote attackers to obtain password hashes and conduct offline password guessing attacks by obtaining the HMAC from a RAKP message 2 response from a BMC.|3|
+|CVE-1999-0517|Defect|An SNMP community name is the default (e.g. public), null, or missing.|1|
+|CVE-2020-0640|Defect|A remote code execution vulnerability exists when Internet Explorer improperly accesses objects in memory, aka 'Internet Explorer Memory Corruption Vulnerability'.|1|
+|CVE-2016-2183|Defect|The DES and Triple DES ciphers, as used in the TLS, SSH, and IPSec protocols and other protocols and products, have a birthday bound of approximately four billion blocks, which makes it easier for remote attackers to obtain cleartext data via a birthday attack against a long-duration encrypted session, as demonstrated by an HTTPS session using Triple DES in CBC mode, aka a "Sweet32" attack.|1|
+|CVE-2004-2761|Defect|The MD5 Message-Digest Algorithm is not collision resistant, which makes it easier for context-dependent attackers to conduct spoofing attacks, as demonstrated by attacks on the use of MD5 in the signature algorithm of an X.509 certificate.|1|
+|CVE-2018-7117|Defect|A remote Cross-Site Scripting in HPE iLO 5 Web User Interface vulnerability was identified in HPE Integrated Lights-Out 5 (iLO 5) for Gen10 ProLiant Servers earlier than version v1.40.|4|
+|CVE-2019-11983|Defect|A remote buffer overflow vulnerability was identified in HPE Integrated Lights-Out 4 (iLO 4) earlier than v2.61b for Gen9 servers and Integrated Lights-Out 5 (iLO 5) for Gen10 Servers earlier than version v1.39.|2|
+|CVE-2019-11982|Defect|A remote cross site scripting vulnerability was identified in HPE Integrated Lights-Out 4 (iLO 4) earlier than v2.61b for Gen9 servers and Integrated Lights-Out 5 (iLO 5) for Gen10 Servers earlier than version v1.39.|2|
+
+### Medium
+
+|Vulnerability |Category     | Description       | Count        |
+|:------------|:-----------:|:-----------------|-----------------:|
+|CVE-2019-5518|Defect|VMware ESXi (6.7 before ESXi670-201903001, 6.5 before ESXi650-201903001, 6.0 before ESXi600-201903001), Workstation (15.x before 15.0.4, 14.x before 14.1.7), Fusion (11.x before 11.0.3, 10.x before 10.1.6) contain an out-of-bounds read/write vulnerability in the virtual USB 1.1 UHCI (Universal Host Controller Interface). Exploitation of this issue requires an attacker to have access to a virtual machine with a virtual USB controller present. This issue may allow a guest to execute code on the host.|3|
+|CVE-2019-5519|Defect|VMware ESXi (6.7 before ESXi670-201903001, 6.5 before ESXi650-201903001, 6.0 before ESXi600-201903001), Workstation (15.x before 15.0.4, 14.x before 14.1.7), Fusion (11.x before 11.0.3, 10.x before 10.1.6) contain a Time-of-check Time-of-use (TOCTOU) vulnerability in the virtual USB 1.1 UHCI (Universal Host Controller Interface). Exploitation of this issue requires an attacker to have access to a virtual machine with a virtual USB controller present. This issue may allow a guest to execute code on the host.|3|
+|tenb-51192|Configuration|The server's X.509 certificate cannot be trusted. This situation can occur in three different ways, in which the chain of trust can be broken, as stated below :<br><br>  - First, the top of the certificate chain sent by the     server might not be descended from a known public     certificate authority. This can occur either when the     top of the chain is an unrecognized, self-signed     certificate, or when intermediate certificates are     missing that would connect the top of the certificate     chain to a known public certificate authority.<br><br>  - Second, the certificate chain may contain a certificate     that is not valid at the time of the scan. This can     occur either when the scan occurs before one of the     certificate's 'notBefore' dates, or after one of the     certificate's 'notAfter' dates.<br><br>  - Third, the certificate chain may contain a signature     that either didn't match the certificate's information     or could not be verified. Bad signatures can be fixed by     getting the certificate with the bad signature to be     re-signed by its issuer. Signatures that could not be     verified are the result of the certificate's issuer     using a signing algorithm that Nessus either does not     support or does not recognize.<br><br>If the remote host is a public host in production, any break in the chain makes it more difficult for users to verify the authenticity and identity of the web server. This could make it easier to carry out man-in-the-middle attacks against the remote host.|5|
+|tenb-104743|Configuration|The remote service accepts connections encrypted using TLS 1.0. TLS 1.0 has a number of cryptographic design flaws. Modern implementations of TLS 1.0 mitigate these problems, but newer versions of TLS like 1.2 and 1.3 are designed against these flaws and should be used whenever possible.<br><br>As of March 31, 2020, Endpoints that aren���t enabled for TLS 1.2 and higher will no longer function properly with major web browsers and major vendors.<br><br>PCI DSS v3.2 requires that TLS 1.0 be disabled entirely by June 30, 2018, except for POS POI terminals (and the SSL/TLS termination points to which they connect) that can be verified as not being susceptible to any known exploits.|3|
+|CVE-2018-6972|Defect|VMware ESXi (6.7 before ESXi670-201806401-BG, 6.5 before ESXi650-201806401-BG, 6.0 before ESXi600-201806401-BG and 5.5 before ESXi550-201806401-BG), Workstation (14.x before 14.1.2), and Fusion (10.x before 10.1.2) contain a denial-of-service vulnerability due to NULL pointer dereference issue in RPC handler. Successful exploitation of this issue may allow attackers with normal user privileges to crash their VMs.|1|
+|tenb-57582|Configuration|The X.509 certificate chain for this service is not signed by a recognized certificate authority.  If the remote host is a public host in production, this nullifies the use of SSL as anyone could establish a man-in-the-middle attack against the remote host. <br><br>Note that this plugin does not check for certificate chains that end in a certificate that is not self-signed, but is signed by an unrecognized certificate authority.|2|
+|CVE-2018-7117|Defect|A remote Cross-Site Scripting in HPE iLO 5 Web User Interface vulnerability was identified in HPE Integrated Lights-Out 5 (iLO 5) for Gen10 ProLiant Servers earlier than version v1.40.|4|
+|CVE-2020-11023|Defect|In jQuery versions greater than or equal to 1.0.3 and before 3.5.0, passing HTML containing &laquo;option&raquo; elements from untrusted sources - even after sanitizing it - to one of jQuery's DOM manipulation methods (i.e. .html(), .append(), and others) may execute untrusted code. This problem is patched in jQuery 3.5.0.|1|
+|CVE-2020-11022|Defect|In jQuery versions greater than or equal to 1.2 and before 3.5.0, passing HTML from untrusted sources - even after sanitizing it - to one of jQuery's DOM manipulation methods (i.e. .html(), .append(), and others) may execute untrusted code. This problem is patched in jQuery 3.5.0.|1|
+|CVE-2020-17020|Defect|Microsoft Word Security Feature Bypass Vulnerability|1|
+|CVE-2020-29075|Defect|Acrobat Reader DC versions 2020.013.20066 (and earlier), 2020.001.30010 (and earlier) and 2017.011.30180 (and earlier) are affected by an information exposure vulnerability, that could enable an attacker to get a DNS interaction and track if the user has opened or closed a PDF file when loaded from the filesystem without a prompt. User interaction is required to exploit this vulnerability.|1|
+|tenb-26928|Configuration|The remote host supports the use of SSL ciphers that offer weak encryption.<br><br>Note: This is considerably easier to exploit if the attacker is on the same physical network.|1|
+|CVE-2020-14179|Defect|Affected versions of Atlassian Jira Server and Data Center allow remote, unauthenticated attackers to view custom field names and custom SLA names via an Information Disclosure vulnerability in the /secure/QueryComponent!Default.jspa endpoint. The affected versions are before version 8.5.8, and from version 8.6.0 before 8.11.1.|1|
+|CVE-2020-16937|Defect|An information disclosure vulnerability exists when the .NET Framework improperly handles objects in memory, aka '.NET Framework Information Disclosure Vulnerability'.|2|
+|CVE-2015-2423|Defect|Microsoft Windows Vista SP2, Windows Server 2008 SP2 and R2 SP1, Windows 7 SP1, Windows 8, Windows 8.1, Windows Server 2012 Gold and R2, Windows RT Gold and 8.1, Windows 10, Excel 2007 SP3, PowerPoint 2007 SP3, Visio 2007 SP3, Word 2007 SP3, Office 2010 SP2, Excel 2010 SP2, PowerPoint 2010 SP2, Visio 2010 SP2, Word 2010 SP2, Excel 2013 SP1, PowerPoint 2013 SP1, Visio 2013 SP1, Word 2013 SP1, Excel 2013 RT SP1, PowerPoint 2013 RT SP1, Visio 2013 RT SP1, Word 2013 RT SP1, and Internet Explorer 7 through 11 allow remote attackers to gain privileges and obtain sensitive information via a crafted command-line parameter to an Office application or Notepad, as demonstrated by a transition from Low Integrity to Medium Integrity, aka "Unsafe Command Line Parameter Passing Vulnerability."|1|
+|CVE-2020-14183|Defect|Affected versions of Jira Server & Data Center allow a remote attacker with limited (non-admin) privileges to view a Jira instance's Support Entitlement Number (SEN) via an Information Disclosure vulnerability in the HTTP Response headers. The affected versions are before version 7.13.18, from version 8.0.0 before 8.5.9, and from version 8.6.0 before 8.12.1.|1|
+|tenb-57690|Configuration|The remote Terminal Services service is not configured to use strong cryptography. <br><br>Using weak cryptography with this service may allow an attacker to eavesdrop on the communications more easily and obtain screenshots and/or keystrokes.|1|
+|tenb-58453|Configuration|The remote Terminal Services is not configured to use Network Level Authentication (NLA) only. NLA uses the Credential Security Support Provider (CredSSP) protocol to perform strong server authentication either through TLS/SSL or Kerberos mechanisms, which protect against man-in-the-middle attacks. In addition to improving authentication, NLA also helps protect the remote computer from malicious users and software by completing user authentication before a full RDP connection is established.|1|
+
+### Low
+
+|Vulnerability |Category     | Description       | Count        |
+|:------------|:-----------:|:-----------------|-----------------:|
+|CVE-2015-4000|Defect|The TLS protocol 1.2 and earlier, when a DHE_EXPORT ciphersuite is enabled on a server but not on a client, does not properly convey a DHE_EXPORT choice, which allows man-in-the-middle attackers to conduct cipher-downgrade attacks by rewriting a ClientHello with DHE replaced by DHE_EXPORT and then rewriting a ServerHello with DHE_EXPORT replaced by DHE, aka the "Logjam" issue.|1|
+|CVE-2015-6161|Defect|Microsoft Internet Explorer 7 through 11 and Microsoft Edge allow remote attackers to bypass the ASLR protection mechanism via a crafted web site, aka "Microsoft Browser ASLR Bypass."|3|
+|CVE-2012-4929|Defect|The TLS protocol 1.2 and earlier, as used in Mozilla Firefox, Google Chrome, Qt, and other products, can encrypt compressed data without properly obfuscating the length of the unencrypted data, which allows man-in-the-middle attackers to obtain plaintext HTTP headers by observing length differences during a series of guesses in which a string in an HTTP request potentially matches an unknown string in an HTTP header, aka a "CRIME" attack.|1|
+|CVE-2012-4930|Defect|The SPDY protocol 3 and earlier, as used in Mozilla Firefox, Google Chrome, and other products, can perform TLS encryption of compressed data without properly obfuscating the length of the unencrypted data, which allows man-in-the-middle attackers to obtain plaintext HTTP headers by observing length differences during a series of guesses in which a string in an HTTP request potentially matches an unknown string in an HTTP header, aka a "CRIME" attack.|1|
+|tenb-71049|Configuration|The remote SSH server is configured to allow either MD5 or 96-bit MAC algorithms, both of which are considered weak.<br><br>Note that this plugin only checks for the options of the SSH server, and it does not check for vulnerable software versions.|1|
+|tenb-30218|Configuration|The encryption setting used by the remote Terminal Services service is not FIPS-140 compliant.|1|
+|CVE-1999-0524|Defect|ICMP information such as (1) netmask and (2) timestamp is allowed from arbitrary hosts.|20|
+
+
+
+## Host Details
+
+
+ | IP Address | Hostname | MAC Address |Critical Severity   | High Severity       | Medium Severity     | Low Severity| % of Org Vulnerabilities |
+|:------------------|:---------|:----------------|-------:|-------:|-------:|-------:|--------:|------------------------:|
+| 202.36.122.18 |   |   |  0 |  3 |  2 |  0 |   7.94% 
+| 202.27.114.116 |  CASNA |  00:0C:29:44:E4:9A |  0 |  2 |  2 |  1 |   7.94% 
+| 202.27.114.72 |  KKTFS2015 |  00:0C:29:31:1E:87 |  0 |  1 |  1 |  2 |   6.35% 
+| 202.27.114.73 |  KKIIS01 |  00:0C:29:EC:D4:91 |  1 |  0 |  3 |  0 |   6.35% 
+| 202.27.114.215 |  KKVSECJUMP01 |  00:50:56:99:85:64 |  0 |  2 |  1 |  1 |   6.35% 
+| 202.1.16.2 |   |   |  0 |  0 |  2 |  1 |   4.76% 
+| 202.27.114.28 |  KKTRIWESTDEV |  00:0C:29:FE:4F:9F |  0 |  2 |  1 |  0 |   4.76% 
+| 202.27.114.90 |  KKSECSRV01 |  00:0C:29:36:4B:B6 |  0 |  0 |  2 |  1 |   4.76% 
+| 202.27.114.30 |  AE01KK-DUSS001 |  00:50:56:99:C9:BF |  0 |  2 |  1 |  0 |   4.76% 
+| 202.49.114.30 |   |   |  0 |  0 |  0 |  3 |   4.76% 
+| 202.37.235.75 |   |   |  0 |  0 |  3 |  0 |   4.76% 
+| 202.27.114.110 |  AE01KK-PADC002 |  00:50:56:99:A5:02 |  0 |  1 |  1 |  1 |   4.76% 
+| 202.27.114.29 |  KKSNMID |  00:0C:29:01:CF:9D |  0 |  0 |  1 |  2 |   4.76% 
+| 202.49.114.25 |   |   |  0 |  0 |  3 |  0 |   4.76% 
+| 202.20.110.3 |   |   |  0 |  1 |  1 |  1 |   4.76% 
+| 202.36.122.16 |   |   |  0 |  1 |  1 |  0 |   3.17% 
+| 202.36.122.31 |   |   |  0 |  1 |  1 |  0 |   3.17% 
+| 202.36.122.22 |   |  74:E6:E2:FC:D8:30 |  0 |  2 |  0 |  0 |   3.17% 
+| 202.20.110.1 |   |   |  0 |  0 |  0 |  2 |   3.17% 
+| 202.1.16.3 |   |   |  0 |  0 |  0 |  1 |   1.59% 
+| 202.27.114.89 |  KKHDWEBPROD1 |  00:0C:29:7D:33:B8 |  0 |  0 |  0 |  1 |   1.59% 
+| 202.36.160.252 |   |   |  0 |  0 |  0 |  1 |   1.59% 
+## Product Details
+
+
+ | Product  | Critical Severity   | High Severity       | Medium Severity     | Low Severity| % of Org Vulnerabilities |
+|:------------------|:----------------|-------:|-------:|-------:|-------:|---------:|--------:|
+| Undetermined by Scanner |  0 |  5 |  13 |  24 |   43.75% 
+| (OS) Microsoft Windows |  0 |  7 |  3 |  3 |   13.54% 
+| (OS) Hp Integrated Lights-Out Firmware |  0 |  8 |  4 |  0 |   12.50% 
+| (OS) Vmware Esxi |  0 |  0 |  7 |  0 |   7.29% 
+| Microsoft Windows Defender |  0 |  4 |  0 |  0 |   4.17% 
+| Microsoft Ie |  0 |  0 |  0 |  3 |   3.12% 
+| Microsoft .Net Framework |  0 |  0 |  2 |  0 |   2.08% 
+| Microsoft Office |  0 |  2 |  0 |  0 |   2.08% 
+| Microsoft Sql Server |  1 |  1 |  0 |  0 |   2.08% 
+| Atlassian Jira |  0 |  0 |  2 |  0 |   2.08% 
+| Ietf Md5 |  0 |  1 |  0 |  0 |   1.04% 
+| Microsoft Visual Studio |  0 |  1 |  0 |  0 |   1.04% 
+| Microsoft Word |  0 |  0 |  1 |  0 |   1.04% 
+| Microsoft Remote Desktop Protocol |  0 |  0 |  1 |  0 |   1.04% 
+| Adobe Acrobat Reader |  0 |  0 |  1 |  0 |   1.04% 
+| Openssl Openssl |  0 |  0 |  0 |  1 |   1.04% 
+| Ietf X.509 Certificate |  0 |  1 |  0 |  0 |   1.04% 
+
+<script>markdeepOptions = {tocStyle: 'long'};</script>
+<link rel="stylesheet" href="markdeep/company-whitepaper.css">
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
+      
  
  <link rel="stylesheet" href="../../_markdeep/modal.css?"><script>markdeepOptions={tocStyle:'none'}</script>
  <script src="../../_markdeep/markdeep.min.js?" charset="utf-8"></script>
