@@ -51,15 +51,15 @@ const s3Client = new s3.S3Client({
   tls: useSslConnection
 });
 
-function getEndpoint() {
+const getEndpoint = () => {
   // If using AWS S3, unset the endpoint to let the library choose the best endpoint
   if (clientEndpoint === 's3.amazonaws.com') {
     return undefined;
   }
   return `${(useSslConnection ? 'https' : 'http')}://${clientEndpoint}:${clientPort}`;
-}
+};
 
-export async function initializeBucket() {
+export const initializeBucket = async () => {
   try {
     await s3Client.send(new s3.CreateBucketCommand({
       Bucket: bucketName
@@ -74,13 +74,11 @@ export async function initializeBucket() {
     }
     throw err;
   }
-}
+};
 
-export async function isStorageAlive() {
-  return initializeBucket();
-}
+export const isStorageAlive = () => initializeBucket();
 
-export async function deleteFile(user, id) {
+export const deleteFile = async (user, id) => {
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
@@ -88,18 +86,18 @@ export async function deleteFile(user, id) {
   }));
   await deleteWorkForFile(user, id);
   return true;
-}
+};
 
-export async function deleteFiles(user, ids) {
+export const deleteFiles = async (user, ids) => {
   logApp.debug(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
   for (let i = 0; i < ids.length; i += 1) {
     const id = ids[i];
     await deleteFile(user, id);
   }
   return true;
-}
+};
 
-export async function downloadFile(id) {
+export const downloadFile = async (id) => {
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
@@ -110,35 +108,35 @@ export async function downloadFile(id) {
     logApp.info('[OPENCTI] Cannot retrieve file from S3', { error: err });
     return null;
   }
-}
+};
 
-function streamToString(stream) {
+const streamToString = (stream) => {
   return new Promise((resolve, reject) => {
     const chunks = [];
     stream.on('data', (chunk) => chunks.push(chunk));
     stream.on('error', reject);
     stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
   });
-}
+};
 
-export async function getFileContent(id) {
+export const getFileContent = async (id) => {
   const object = await s3Client.send(new s3.GetObjectCommand({
     Bucket: bucketName,
     Key: id
   }));
   return streamToString(object.Body);
-}
+};
 
-export function storeFileConverter(user, file) {
+export const storeFileConverter = (user, file) => {
   return {
     id: file.id,
     name: file.name,
     version: file.metaData.version,
     mime_type: file.metaData.mimetype,
   };
-}
+};
 
-export async function loadFile(user, filename) {
+export const loadFile = async (user, filename) => {
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
@@ -160,14 +158,14 @@ export async function loadFile(user, filename) {
     }
     throw err;
   }
-}
+};
 
-export function isFileObjectExcluded(id) {
+export const isFileObjectExcluded = (id) => {
   const fileName = id.includes('/') ? R.last(id.split('/')) : id;
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
-}
+};
 
-export async function rawFilesListing(user, directory, recursive = false) {
+export const rawFilesListing = async (user, directory, recursive = false) => {
   let pageMarker;
   const objects = [];
   const requestParams = {
@@ -193,9 +191,9 @@ export async function rawFilesListing(user, directory, recursive = false) {
   return Promise.all(objects
     .filter((obj) => !isFileObjectExcluded(obj.Key))
     .map((obj) => loadFile(user, obj.Key)));
-}
+};
 
-export async function upload(user, path, fileUpload, meta = {}) {
+export const upload = async (user, path, fileUpload, meta = {}) => {
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
   const readStream = createReadStream();
   const metadata = { ...meta };
@@ -230,9 +228,9 @@ export async function upload(user, path, fileUpload, meta = {}) {
     metaData: { ...fullMetadata, messages: [], errors: [] },
     uploadStatus: 'complete'
   };
-}
+};
 
-export async function filesListing(user, first, path, entityId = null) {
+export const filesListing = async (user, first, path, entityId = null) => {
   const files = await rawFilesListing(user, path);
   const inExport = await loadExportWorksAsProgressFiles(user, path);
   const allFiles = R.concat(inExport, files);
@@ -242,12 +240,12 @@ export async function filesListing(user, first, path, entityId = null) {
     fileNodes = R.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
   }
   return buildPagination(first, null, fileNodes, allFiles.length);
-}
+};
 
-export async function deleteAllFiles(user, path) {
+export const deleteAllFiles = async (user, path) => {
   const files = await rawFilesListing(user, path);
   const inExport = await loadExportWorksAsProgressFiles(user, path);
   const allFiles = R.concat(inExport, files);
   const ids = allFiles.map((file) => file.id);
   return deleteFiles(user, ids);
-}
+};
