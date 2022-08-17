@@ -1,6 +1,6 @@
 import submitOperation from '../../config';
 
-const hardwareAssetList = `query softwareAssetListQuery {
+const hardwareAssetList = `query hardwareAssetListQuery {
     hardwareAssetList(first: 1, offset: 0) {
       pageInfo {
         startCursor
@@ -48,6 +48,7 @@ describe('Hardware Asset Tests', () => {
     const singleHardwareAsset = `query hardwareAsset($id: ID!) {
       hardwareAsset(id:$id){
         id
+      }
     }`;
     const variables = { id: hardwareAssetId };
     const result = await submitOperation(singleHardwareAsset, variables);
