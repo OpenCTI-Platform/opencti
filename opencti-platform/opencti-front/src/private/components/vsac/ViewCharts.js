@@ -749,6 +749,7 @@ class ViewCharts extends Component {
                         type="category"
                         allowDuplicatedCategory={false}
                         tick={{ fill: 'white' }}
+                        interval={"preserveStartEnd"}
                       />
                       <YAxis dataKey="value" tick={{ fill: 'white' }} />
                       <Tooltip />

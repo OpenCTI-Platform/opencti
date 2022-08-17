@@ -29,6 +29,20 @@ import {
 const networkResolvers = {
   Query: {
     networkAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
+      // TODO: WORKAROUND to remove argument fields with null or empty values
+      if (args !== undefined) {
+        for (const [key, value] of Object.entries(args)) {
+          if (Array.isArray(args[key]) && args[key].length === 0) {
+            delete args[key];
+            continue;
+          }
+          if (value === null || value.length === 0) {
+            delete args[key];
+          }
+        }
+      }
+      // END WORKAROUND
+
       const sparqlQuery = selectAllNetworks(selectMap.getNode("node"), args);
       let reducer = getReducer('NETWORK')
       const response = await dataSources.Stardog.queryAll({
