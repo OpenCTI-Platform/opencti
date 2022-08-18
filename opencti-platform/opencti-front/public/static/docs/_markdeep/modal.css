@@ -47,7 +47,7 @@ body#md {
     page-break-before: always;
     width: 100%;
     text-align: left;
-    margin-left: -10px;
+    margin-left: -10gpx;
     padding-bottom: 20px;
     border: none;
     color: var(--accent-color);
