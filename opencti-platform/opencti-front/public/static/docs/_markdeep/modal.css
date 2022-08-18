@@ -32,7 +32,10 @@ body#md {
 
 /* Disable section numbering */
 .md h1:before {content: ""}
-.md h2:before {content: ""}
+.md h2:before {
+    content: "";
+    margin-left: -10px;
+}
 
 .md svg.diagram {
     zoom: 150%;
