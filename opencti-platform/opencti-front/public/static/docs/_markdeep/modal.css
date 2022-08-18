@@ -8,6 +8,7 @@
     font-size:  36px;
     font-weight: bold;
     counter-increment: page;
+    text-align: left;
 }
 
 .md div.subtitle {
@@ -46,7 +47,7 @@ body#md {
     page-break-before: always;
     width: 100%;
     text-align: left;
-    margin-left: -15px;
+    margin-left: -10px;
     padding-bottom: 20px;
     border: none;
     color: var(--accent-color);
