@@ -13,6 +13,7 @@ const networkAssetList = `query networkAssetListQuery {
           entity_type
           created
           modified
+          network_id
         }
       }
     }
@@ -23,7 +24,6 @@ describe('Network Asset Tests', () => {
   let networkAssetId = '';
   it('Return network asset list', async () => {
     const result = await submitOperation(networkAssetList);
-
     expect(typeof { value: result.data.networkAssetList.edges[0] }).toBe('object');
   });
 
@@ -31,8 +31,9 @@ describe('Network Asset Tests', () => {
     const createNetworkAsset = `mutation createNetworkAsset($input: NetworkAssetAddInput) {
       createNetworkAsset(input: $input){
         id
-    }
-  }`;
+      }
+    }`;
+
     const variables = {
       input: {
         name: 'Testing Network Asset',
@@ -46,6 +47,7 @@ describe('Network Asset Tests', () => {
 
     expect(typeof { value: result.data }).toBe('object');
   });
+
   it('Return a single network asset', async () => {
     const singleNetworkAsset = `query networkAsset($id: ID!) {
       networkAsset(id:$id){

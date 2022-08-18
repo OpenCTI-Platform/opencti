@@ -253,7 +253,7 @@ node {
         echo "Updating K8s image tag to new sha value \'${sha}\'..."
 
         sh label: 'Kubesec Scan', script: '''
-          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/opencti.yaml
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/*.yaml || true
         '''
       }
     } catch (Exception e) {
