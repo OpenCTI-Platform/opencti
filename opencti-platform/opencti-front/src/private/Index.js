@@ -19,6 +19,7 @@ import RootArsenal from './components/arsenal/Root';
 import RootEntities from './components/entities/Root';
 import RootSettings from './components/settings/Root';
 import RootData from './components/data/Root';
+import RootAbout from './components/about/Root';
 import RootWorkspaces from './components/workspaces/Root';
 import Profile from './components/Profile';
 import Message from '../components/Message';
@@ -103,6 +104,7 @@ const Index = (me) => {
             path="/data"
             render={(routeProps) => <RootDataEntities {...routeProps} me={me} />}
           />
+          <BoundaryRoute path="/about" component={RootAbout} />
           <BoundaryRoute path="/activities/vulnerability assessment" component={RootVSAC} />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/events" component={RootEvents} />
