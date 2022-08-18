@@ -280,28 +280,33 @@ class Devices extends Component {
       },
       ip_address_value: {
         label: 'IP Address',
-        width: '12%',
+        width: '10%',
         isSortable: true,
       },
       fqdn: {
         label: 'FQDN',
-        width: '12%',
+        width: '10%',
         isSortable: false,
       },
       installed_os_name: {
         label: 'OS',
-        width: '8%',
+        width: '5%',
         isSortable: true,
       },
       network_id: {
         label: 'Network ID',
-        width: '12%',
+        width: '10%',
         isSortable: true,
       },
       label_name: {
         label: 'Label',
         width: '20%',
         isSortable: true,
+      },
+      last_scanned: {
+        label: 'Scanned',
+        width: '8%',
+        isSortable: false,
       },
     };
     return (
