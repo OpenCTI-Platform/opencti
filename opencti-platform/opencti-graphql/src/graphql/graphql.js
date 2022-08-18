@@ -23,6 +23,7 @@ const createApolloServer = () => {
   const apolloServer = new ApolloServer({
     schema,
     introspection: true,
+    persistedQueries: false,
     async context({ req, res, connection }) {
       // For websocket connection.
       if (connection) {
