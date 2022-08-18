@@ -1,6 +1,5 @@
 /* eslint-disable */
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
 import { Switch } from 'react-router-dom';
 import Faq from './Faq';
 import About from './About';
@@ -13,7 +12,6 @@ import { BoundaryRoute } from '../Error';
 
 class Root extends Component {
   render() {
-    // const { me } = this.props;
     return (
       <Switch>
         <BoundaryRoute
@@ -55,9 +53,5 @@ class Root extends Component {
     );
   }
 }
-
-Root.propTypes = {
-  me: PropTypes.object,
-};
 
 export default Root;
