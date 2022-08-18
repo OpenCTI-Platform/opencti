@@ -26,6 +26,16 @@ node {
     }
   }
 
+  office365ConnectorSend(
+    status: 'Starting',
+    color: '0080FF',
+    webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+    message: "Build starting",
+    factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
+                      [name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
+                      [name: "Image", template: "${registry}/${product}:${tag}"]]
+  )
+
   // Check version, yarn install, etc.
   stage('Setup') {
     dir('opencti-platform') {
@@ -51,14 +61,6 @@ node {
           default:
             break
         }
-
-        // Send message to Teams that the build is starting
-        office365ConnectorSend(
-          webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-          message: 'Build started',
-          factDefinitions: [[name: 'Commit', template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
-                            [name: 'Version', template: "${version}"]]
-        )
 
         if (fileExists('config/schema/compiled.graphql')) {
           sh 'rm config/schema/compiled.graphql'
@@ -133,6 +135,12 @@ node {
           }
         }
       } catch (Exception e) {
+        office365ConnectorSend(
+          status: 'Tests Failed',
+          color: 'FF8000',
+          webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+          message: "${e}"
+        )
         throw e
       } finally {
         junit 'opencti-platform/opencti-graphql/test-results/jest/results.xml'
@@ -171,6 +179,12 @@ node {
             }
           }
         } catch (Exception e) {
+          office365ConnectorSend(
+            status: 'Integration Tests Failed',
+            color: 'FF8000',
+            webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+            message: "${e}"
+          )
           throw e
         } finally {
           sh 'docker run --rm -v $PWD:/e2e -w /e2e --network docker_default --entrypoint chown cypress/included:10.3.0 -R 997:995 . || true'
@@ -187,29 +201,33 @@ node {
       }
     }
   }, deploy: {
-    stage('Deploy') {
-      if (commitMessage.contains('ci:deploy')) {
-        switch (branch) {
-          case 'master':
-          case 'prod':
+    if (commitMessage.contains('ci:deploy')) {
+      switch (branch) {
+        case 'master':
+        case 'prod':
+          stage('Deploying to production') {
             echo 'Deploying to production...'
             build '/deploy/OpenCTI Frontend/main'
-            break
-          case 'staging':
+          }
+          break
+        case 'staging':
+          stage('Deploying to staging') {
             echo 'Deploying to staging...'
             build '/deploy/OpenCTI Frontend/staging'
-            break
-          case 'develop':
+          }
+          break
+        case 'develop':
+          stage('Deploying to develop') {
             echo 'Deploying to develop...'
             build '/deploy/OpenCTI Frontend/dev'
-            break
-          default:
-            echo 'Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag...'
-            break
-        }
-      } else {
-        echo 'No \'ci:deploy\' flag detected in commit message; skipping...'
+          }
+          break
+        default:
+          echo 'Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag...'
+          break
       }
+    } else {
+      echo 'No \'ci:deploy\' flag detected in commit message; skipping...'
     }
   }
 
