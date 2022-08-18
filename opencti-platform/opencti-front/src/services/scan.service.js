@@ -3,7 +3,6 @@ import { scanAxios } from "../utils/axios";
 import updateFileName from "../utils/s3FileName";
 import {toastAxiosError} from "../utils/bakedToast";
 
-
 export const createScan = async (params, clientID, passedConfig) => {
   const bodyParams = {
     path: updateFileName(params.fileId || params.file), // compatability for new file id over file name
@@ -66,11 +65,12 @@ export const fetchScan = async (id, clientID) => {
   }
 };
 
-export const updateScanName = async (id, clientID, params) => {
+export const updateScan = async (id, clientID, params) => {
   try {
-    const response = scanAxios.put(`vsa/scans/${id}`, params, {
+    const response = scanAxios.patch(`vsa/scans/${id}`, params, {
       headers: {
         "X-Cyio-Client": clientID,
+        "Content-Type": "application/vnd.dl.vsa.scan+json;version=3"
       },
     });
     return await response;
