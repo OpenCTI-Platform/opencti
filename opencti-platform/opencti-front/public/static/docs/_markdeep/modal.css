@@ -6,6 +6,7 @@
 
 .md div.title {
     font-size:  36px;
+    margin-left: -4px;
     font-weight: bold;
     counter-increment: page;
     text-align: left;

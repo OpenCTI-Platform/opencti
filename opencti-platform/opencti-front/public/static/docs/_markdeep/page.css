@@ -6,6 +6,7 @@
 
 div.title {
     font-size:  24px;
+    margin-left: -4px;
     font-weight: bold;
     counter-increment: page;
 }
