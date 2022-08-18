@@ -143,7 +143,9 @@ node {
         )
         throw e
       } finally {
-        junit 'opencti-platform/opencti-graphql/test-results/jest/results.xml'
+        sh 'pwd'
+        sh 'tree .'
+        junit testResults: 'opencti-platform/opencti-graphql/test-results/jest/results.xml', skipPublishingChecks: true
       }
     }
   }
@@ -251,7 +253,7 @@ node {
         echo "Updating K8s image tag to new sha value \'${sha}\'..."
 
         sh label: 'Kubesec Scan', script: '''
-          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < k8s/cyio/opencti/opencti.yaml
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/opencti.yaml
         '''
       }
     } catch (Exception e) {
