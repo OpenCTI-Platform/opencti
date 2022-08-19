@@ -94,17 +94,24 @@ steps:
         exclude:
           - pull_request
 
-  - name: teams
-    image: kuperiu/drone-teams
-    secrets: 
-      -
-        source: "teams_webhook"
-        target: "teams_webhook"
+  - name: teams-failure
+    image: diyfr/drone_plugin_teams
+    secrets : [teams_webhook]
+    content:
+      title: "Job Failed.\U0001F534"
+      text: "Drone CI workflow has failed for the step **${DRONE_FAILED_STEPS}**"
+      themeColor: "d11515"
     when:
-      status: [success, failure]
-      event:
-        exclude:
-          - pull_request    
+      status: [failure]
+  - name: teams-success
+    image: diyfr/drone_plugin_teams
+    secrets : [teams_webhook]
+    content:
+      title: "Job Succeeded.\U0001F7E2"
+      text: "Drone CI workflow has succeeded."
+      themeColor: "d11515"
+    when:
+      status: [success]
 
 services:
   - name: redis

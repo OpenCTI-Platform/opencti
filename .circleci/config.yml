@@ -56,7 +56,7 @@ jobs:
           template: basic_fail_1
       - ms-teams/report:
           only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
+          webhook_url: $MS_TEAMS_WEBHOOK_URL          
       - persist_to_workspace:
           root: ~/
           paths:
@@ -544,7 +544,6 @@ jobs:
       - ms-teams/report:
           only_on_fail: false
           webhook_url: $MS_TEAMS_WEBHOOK_URL
-
   notify:
     docker:
       - image: "cimg/base:stable"
