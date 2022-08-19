@@ -91,7 +91,7 @@ class PortsField extends Component {
     };
   }
 
-  componentDidMount() {  
+  componentDidMount() {
     fetchDarklightQuery(protocolsListQuery)
       .toPromise()
       .then((data) => {
@@ -101,7 +101,7 @@ class PortsField extends Component {
             id: n.name,
             name: n.name,
           })),
-        )(data);        
+        )(data);
         this.setState({
           protocols: {
             ...this.state.port.protocols,
@@ -131,7 +131,7 @@ class PortsField extends Component {
   }
 
   handleAddPort() {
-    this.setState({ ports: [...new Map(R.append(this.state.port, this.state.ports).map((item) => [item["port_number"], item])).values()]});
+    this.setState({ ports: [...new Map(R.append(this.state.port, this.state.ports).map((item) => [item["port_number"], item])).values()] });
   }
 
   handleRemovePort(port_number, removeProtocol) {
@@ -139,12 +139,11 @@ class PortsField extends Component {
       port_number: port_number,
       protocols: R.find(R.propEq('port_number', port_number))(this.state.ports).protocols.filter(protocol => protocol !== removeProtocol),
     }
-    this.setState(({ ports }) => ({ports: R.append(portsAfterRemove, ports.filter(port => port.port_number !== port_number))}), () => this.props.setFieldValue(this.props.name, this.state.ports));
+    this.setState(({ ports }) => ({ ports: R.append(portsAfterRemove, ports.filter(port => port.port_number !== port_number)) }), () => this.props.setFieldValue(this.props.name, this.state.ports));
   };
 
   handleSubmit() {
-    console.log(this.state.ports)
-    this.setState({ open: false}, () => this.props.setFieldValue(this.props.name, this.state.ports));
+    this.setState({ open: false }, () => this.props.setFieldValue(this.props.name, this.state.ports));
   }
 
   render() {
@@ -162,7 +161,6 @@ class PortsField extends Component {
       title,
       values,
     } = this.props;
-    console.log(values);
     const protocolList = R.pathOr(
       [],
       ['protocols'],
@@ -170,127 +168,119 @@ class PortsField extends Component {
     );
 
     return (
-    <>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Typography>
-          {t('Ports')}
-        </Typography>
-        <div style={{ float: 'left', margin: '5px 0 0 5px' }}>
-          <Tooltip title={t('Ports')} >
-            <Information fontSize="inherit" color="disabled" />
-          </Tooltip>
+      <>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Typography>
+            {t('Ports')}
+          </Typography>
+          <div style={{ float: 'left', margin: '5px 0 0 5px' }}>
+            <Tooltip title={t('Ports')} >
+              <Information fontSize="inherit" color="disabled" />
+            </Tooltip>
+          </div>
+          <IconButton
+            color="inherit"
+            aria-label="Add"
+            edge="end"
+            onClick={() => this.setState({ open: true })}
+          >
+            <AddIcon fontSize="small" style={{ marginTop: -2 }} />
+          </IconButton>
         </div>
-        <IconButton
-          color="inherit"
-          aria-label="Add"
-          edge="end"      
-          onClick={() => this.setState({ open: true })}
+        <Field
+          component={NewTextField}
+          name={name}
+          fullWidth={true}
+          disabled={true}
+          multiline={true}
+          value={this.state.ports.map((value, i) => {
+            if (value.protocols.length > 1) {
+              return value.protocols.map((protocol) => `${protocol} ${value.port_number}`)
+            }
+            return `${value.protocols} ${value.port_number}`;
+          })}
+          rows="3"
+          className={classes.textField}
+          InputProps={{
+            className: classes.inputTextField,
+          }}
+          variant='outlined'
+        />
+        <Dialog
+          open={this.state.open}
+          fullWidth={true}
+          maxWidth='sm'
         >
-          <AddIcon fontSize="small" style={{ marginTop: -2 }}/>
-        </IconButton>
-      </div>
-      <Field
-        component={NewTextField}
-        name={name}
-        fullWidth={true}
-        disabled={true}
-        multiline={true}
-        rows="3"          
-        className={classes.textField}
-        InputProps={{
-          className: classes.inputTextField,
-        }}
-        variant='outlined'            
-      >
-        {
-          this.state.ports.map((port, key) => (
-                  port.protocols && port.protocols.map((protocol) => (
-                    <>
-                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography>
-                          {`${t(port.port_number)} ${t(protocol)}`}
-                        </Typography>                        
-                      </div>                      
-                    </>              
-                  ))
-          ))
-        }
-      </Field>      
-      <Dialog 
-        open={this.state.open}
-        fullWidth={true}
-        maxWidth='sm'
-      >
-        <DialogContent>
-          {t(`Edit ${title}(es)`)}
-        </DialogContent>
-        <DialogContent>
-        <div style={{ width:'100%',display:'flex', justifyContent: 'space-between'}}>
-          <div style={{ width: '70%',display:'flex', placeItems:'center' }}>
-            <Field
-              component={TextField}
-              // style={{ width: '20%' }}
-              type="number"
-              variant='outlined'
-              value={this.state.port.port_number}
-              onChange={this.handlePortChange.bind(this)}
-              name="port_number"
-              size='small'
-              // fullWidth={true}
-              label={'Number'}
-            />
-            <Field
-              component={SelectField}
-              variant='outlined'
-              size='small'
-              multiple={true}
-              name='protocols'
-              value={this.state.port.protocols}
-              onFocus={onFocus}
-              onChange={this.handlePortChange.bind(this)}
-              label={'Protocol'}              
-              containerstyle={containerstyle}
-            >
-              {
-                protocolList.map((protocol) => (
-                  <MenuItem key={protocol.id} value={protocol.name}>
-                    {t(protocol.name)}
-                  </MenuItem>
-                ))
-              }
-            </Field>
-          </div>
-          <div style={{ width:'30%', display:'flex', alignItems: 'flex-end' }}>
-            <IconButton
-              color="inherit"
-              aria-label="Add"
-              edge="end"
-              disabled={!this.state.port.port_number || this.state.port.protocols.length === 0}
-              onClick={this.handleAddPort.bind(this)}
-            >
-              <AddIcon fontSize="small" />
-            </IconButton>
-          </div>
-        </div>
-          
-          
-        </DialogContent>    
-        <DialogContent>
-          <div className={classes.scrollBg}>
-            <div className={classes.scrollDiv}>
-              <div className={classes.scrollObj}>
-                {this.state.ports.map((port, key) => (
-                  port.protocols && port.protocols.map((protocol) => (
-                    <>
-                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography>
-                          {`${port.port_number && t(port.port_number)} ${t(protocol)}`}
-                        </Typography>
-                        <IconButton onClick={this.handleRemovePort.bind(this, port.port_number, protocol)}>
-                          <Delete />
-                        </IconButton>
-                      </div>
-                      {/* <Chip
+          <DialogContent>
+            {t(`Edit ${title}(es)`)}
+          </DialogContent>
+          <DialogContent>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ width: '70%', display: 'flex', placeItems: 'center' }}>
+                <Field
+                  component={TextField}
+                  type="number"
+                  variant='outlined'
+                  value={this.state.port.port_number}
+                  onChange={this.handlePortChange.bind(this)}
+                  name="port_number"
+                  size='small'
+                  style={{ height: '38.09px', width: '120px', marginRight: '10px' }}
+                  label={'Number'}
+                />
+                <Field
+                  variant='outlined'
+                  size='small'
+                  multiple={true}
+                  name='protocols'
+                  onFocus={onFocus}
+                  label={'Protocol'}
+                  component={SelectField}
+                  style={{ height: '38.09px', width: '120px', marginRight: '10px' }}
+                  containerstyle={containerstyle}
+                  value={this.state.port.protocols}
+                  onChange={this.handlePortChange.bind(this)}
+                >
+                  {
+                    protocolList.map((protocol) => (
+                      <MenuItem key={protocol.id} value={protocol.name}>
+                        {t(protocol.name)}
+                      </MenuItem>
+                    ))
+                  }
+                </Field>
+              </div>
+              <div style={{ width: '30%', display: 'flex', alignItems: 'flex-end' }}>
+                <IconButton
+                  color="inherit"
+                  aria-label="Add"
+                  edge="end"
+                  disabled={!this.state.port.port_number || this.state.port.protocols.length === 0}
+                  onClick={this.handleAddPort.bind(this)}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </div>
+            </div>
+
+
+          </DialogContent>
+          <DialogContent>
+            <div className={classes.scrollBg}>
+              <div className={classes.scrollDiv}>
+                <div className={classes.scrollObj}>
+                  {this.state.ports.map((port, key) => (
+                    port.protocols && port.protocols.map((protocol) => (
+                      <>
+                        <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography>
+                            {`${port.port_number && t(port.port_number)} ${t(protocol)}`}
+                          </Typography>
+                          <IconButton onClick={this.handleRemovePort.bind(this, port.port_number, protocol)}>
+                            <Delete />
+                          </IconButton>
+                        </div>
+                        {/* <Chip
                         key={key}
                         disabled={disabled}
                         classes={{ root: classes.chip }}
@@ -299,30 +289,30 @@ class PortsField extends Component {
                         onDelete={this.handleRemovePort.bind(this, port.port_number, protocol)}
                         deleteIcon={<CancelIcon className={classes.deleteIcon}/>}
                       /> */}
-                    </>              
-                  ))
-                ))}
+                      </>
+                    ))
+                  ))}
+                </div>
               </div>
             </div>
-          </div>         
-        </DialogContent>        
-        <DialogActions className={classes.dialogAction}>
-          <Button
-            variant='outlined'
-            onClick={() => this.setState({ open: false })}
-          >
-            {t('Cancel')}
-          </Button>
-          <Button              
-            variant='contained'
-            onClick={this.handleSubmit.bind(this)}
-            color="primary"
-          >
-            {t('Submit')}
-          </Button>
-        </DialogActions>
-      </Dialog>      
-    </>
+          </DialogContent>
+          <DialogActions className={classes.dialogAction}>
+            <Button
+              variant='outlined'
+              onClick={() => this.setState({ open: false })}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant='contained'
+              onClick={this.handleSubmit.bind(this)}
+              color="primary"
+            >
+              {t('Submit')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
     );
   }
 }
