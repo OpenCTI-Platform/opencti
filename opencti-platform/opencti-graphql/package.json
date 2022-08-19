@@ -27,9 +27,9 @@
     "node": ">= 16.*"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.145.0",
-    "@aws-sdk/credential-provider-node": "3.145.0",
-    "@aws-sdk/lib-storage": "3.145.0",
+    "@aws-sdk/client-s3": "3.150.0",
+    "@aws-sdk/credential-provider-node": "3.150.0",
+    "@aws-sdk/lib-storage": "3.150.0",
     "@aws-sdk/property-provider": "3.127.0",
     "@elastic/elasticsearch": "8.2.1",
     "@graphql-tools/schema": "8.3.14",
