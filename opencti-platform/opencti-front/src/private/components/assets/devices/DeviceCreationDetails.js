@@ -579,6 +579,7 @@ class DeviceCreationDetailsComponent extends Component {
                 title='Ports'
                 name="ports"
                 fullWidth={true}
+                containerstyle={{ width: '100%' }}
               />
             </Grid>
             <Grid item={true} xs={12}>
