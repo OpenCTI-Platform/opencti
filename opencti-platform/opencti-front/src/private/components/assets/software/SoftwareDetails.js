@@ -88,6 +88,24 @@ class SoftwareDetailsComponent extends Component {
                 <div className="clearfix" />
                 {software.cpe_identifier && t(software.cpe_identifier)}
               </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Last Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t('Last Scanned')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {software.last_scanned && t(software.last_scanned)}
+              </div>
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -160,6 +178,7 @@ const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
   software: graphql`
     fragment SoftwareDetails_software on SoftwareAsset {
       id
+      last_scanned
       software_identifier
       license_key
       cpe_identifier
