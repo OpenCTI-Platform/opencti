@@ -188,7 +188,7 @@ class PortsField extends Component {
       <>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Typography>
-            {t('Ports')}
+            {title ? t(`${title}`) : 'Port'}
           </Typography>
           <div style={{ float: 'left', margin: '5px 0 0 5px' }}>
             <Tooltip title={t('Ports')} >
@@ -230,7 +230,7 @@ class PortsField extends Component {
           maxWidth='sm'
         >
           <DialogContent>
-            {t(`Edit ${title}(es)`)}
+            {t(`Edit ${title}(s)`)}
           </DialogContent>
           <DialogContent>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>

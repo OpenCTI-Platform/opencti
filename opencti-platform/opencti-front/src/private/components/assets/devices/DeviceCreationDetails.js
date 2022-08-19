@@ -576,7 +576,7 @@ class DeviceCreationDetailsComponent extends Component {
                 disabled={isSubmitting}
                 values={values}
                 variant='outlined'
-                title='Ports'
+                title='Port'
                 name="ports"
                 fullWidth={true}
                 containerstyle={{ width: '100%' }}
