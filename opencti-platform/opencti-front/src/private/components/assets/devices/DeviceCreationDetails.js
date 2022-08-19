@@ -183,20 +183,6 @@ class DeviceCreationDetailsComponent extends Component {
                 />
               </div>
               <div>
-                <PortsField
-                  setFieldValue={setFieldValue}
-                  disabled={isSubmitting}
-                  values={values}
-                  style={{ height: '38.09px' }}
-                  variant='outlined'
-                  // onChange={this.handlePortChange.bind(this)}
-                  name="ports"
-                  size='small'
-                  fullWidth={true}
-                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                />
-              </div>
-              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -583,6 +569,17 @@ class DeviceCreationDetailsComponent extends Component {
                   fullWidth={true}
                 />
               </div>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <PortsField
+                setFieldValue={setFieldValue}
+                disabled={isSubmitting}
+                values={values}
+                variant='outlined'
+                title='Ports'
+                name="ports"
+                fullWidth={true}
+              />
             </Grid>
             <Grid item={true} xs={12}>
               <AddressField
