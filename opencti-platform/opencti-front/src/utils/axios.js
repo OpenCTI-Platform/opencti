@@ -13,12 +13,10 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const scanAccept = "application/vnd.dl.vsa.scan+json;version=2";
 export const scanAxios = axios.create({
   baseURL: API_URL,
   headers: {
-    ...headers,
-    Accept: scanAccept,
+    ...headers
   },
 });
 

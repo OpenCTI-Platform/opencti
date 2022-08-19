@@ -82,29 +82,27 @@ node {
 
   // Run any tests we can that do not require a build, alongside the build process
   parallel build: {
-    stage('Build') {
-      // if core branches (master, staging, or develop) build; except if the commit says:
-      //   - 'ci:skip' then skip build
-      //   - 'ci:build' then build regardless of branch
-      if (((branch.equals('master') || branch.equals('prod') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
-        dir('opencti-platform') {
-          String buildArgs = '--no-cache --progress=plain .'
-          sha = docker_steps(registry, product, tag, buildArgs)
-        }
-
-        // Send the Teams message to DarkLight Development > DL Builds
-        office365ConnectorSend(
-          status: 'Completed',
-          color: '00FF00',
-          webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-          message: "New image built and pushed!",
-          factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
-                            [name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
-                            [name: "Image", template: "${registry}/${product}:${tag}"]]
-        )
-      } else {
-        echo 'Skipping build...'
+    // if core branches (master, staging, or develop) build; except if the commit says:
+    //   - 'ci:skip' then skip build
+    //   - 'ci:build' then build regardless of branch
+    if (((branch.equals('master') || branch.equals('prod') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
+      dir('opencti-platform') {
+        String buildArgs = '--no-cache --progress=plain .'
+        sha = docker_steps(registry, product, tag, buildArgs)
       }
+
+      // Send the Teams message to DarkLight Development > DL Builds
+      office365ConnectorSend(
+        status: 'Completed',
+        color: '00FF00',
+        webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+        message: "New image built and pushed!",
+        factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
+                          [name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
+                          [name: "Image", template: "${registry}/${product}:${tag}"]]
+      )
+    } else {
+      echo 'Skipping build...'
     }
   }, test: {
     stage('Test') {
@@ -143,7 +141,7 @@ node {
         )
         throw e
       } finally {
-        junit 'opencti-platform/opencti-graphql/test-results/jest/results.xml'
+        junit testResults: 'opencti-platform/opencti-graphql/test-results/jest/results.xml', skipPublishingChecks: true
       }
     }
   }
@@ -251,7 +249,10 @@ node {
         echo "Updating K8s image tag to new sha value \'${sha}\'..."
 
         sh label: 'Kubesec Scan', script: '''
-          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < k8s/cyio/opencti/opencti.yaml
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/opencti.yaml || true
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/elasticsearch.yaml || true
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/rabbitmq.yaml || true
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/redis.yaml || true
         '''
       }
     } catch (Exception e) {
