@@ -10,7 +10,7 @@ abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underli
 b,strong{font-weight:bolder}dfn{font-style:italic}mark{background:#ff0;color:#000}
 small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}
 sub{bottom:-0.25em}sup{top:-0.5em}figure{margin:1em 40px}img{border-style:none}
-code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}hr{box-sizing:content-box;height:0;overflow:visible}
+code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}hr{box-sizing:content-box;height:0;overflow:visible;clear:both;visibility:hidden}
 button,input,select,textarea,optgroup{display: flex; flex-direction: row; align-items: flex-start; padding: 0px; font:inherit;margin:0}optgroup{font-weight:bold}
 button,input{overflow:visible}button,select{text-transform:none}
 button,[type=button],[type=reset],[type=submit]{-webkit-appearance:button}
@@ -234,25 +234,3 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .w3-border-pale-red,.w3-hover-border-pale-red:hover{border-color:#ffe7e7!important}.w3-border-pale-green,.w3-hover-border-pale-green:hover{border-color:#e7ffe7!important}
 .w3-border-pale-yellow,.w3-hover-border-pale-yellow:hover{border-color:#ffffcc!important}.w3-border-pale-blue,.w3-hover-border-pale-blue:hover{border-color:#e7ffff!important}
 
-.w3-theme-l5 {color:#000 !important; background-color:#06102D !important}
-.w3-theme-l4 {color:#000 !important; background-color:#06102D !important}
-.w3-theme-l3 {color:#fff !important; background-color:#06102D !important}
-.w3-theme-l2 {color:#fff !important; background-color:#06102D !important}
-.w3-theme-l1 {color:#fff !important; background-color:#06102D !important}
-.w3-theme-d1 {color:#fff !important; background-color:#06102D !important}
-.w3-theme-d2 {color:#fff !important; background-color:#06102D !important}
-.w3-theme-d3 {color:#fff !important; background-color:#06102D !important}
-.w3-theme-d4 {color:#fff !important; background-color:#06102D !important}
-.w3-theme-d5 {color:#fff !important; background-color:#06102D !important}
-
-.w3-theme-light {color:#000 !important; background-color:#06102D !important}
-.w3-theme-dark {color:#fff !important; background-color:#06102D !important}
-.w3-theme-action {color:#fff !important; background-color:#06102D !important}
-
-.w3-theme {color:#fff !important; background-color:#06102D !important}
-.w3-text-theme {color:#06102D !important}
-.w3-border-theme {border-color:#06102D !important}
-
-.w3-hover-theme:hover {color:#fff !important; background-color:#06102D !important}
-.w3-hover-text-theme:hover {color:#06102D !important}
-.w3-hover-border-theme:hover {border-color:#06102D !important}

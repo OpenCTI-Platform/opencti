@@ -25,6 +25,7 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ImportExportIcon from "@material-ui/icons/ImportExport";
 import CompareIcon from "@material-ui/icons/Compare";
 import ScannerIcon from "@material-ui/icons/Scanner";
+import EditIcon from "@material-ui/icons/Edit";
 import PublishIcon from "@material-ui/icons/Publish";
 import Popover from '@material-ui/core/Popover';
 import Button from "@material-ui/core/Button";
@@ -68,6 +69,7 @@ import Chip from "@material-ui/core/Chip";
 import {toastSuccess} from "../../../utils/bakedToast";
 import DeleteScanVerify from "./modals/DeleteScanVerify";
 import CircularProgress from '@material-ui/core/CircularProgress';
+import UpdateScan from "./modals/UpdateScan";
 
 const classes = {
   root: {
@@ -231,7 +233,7 @@ class Scans extends Component {
         .then((response) => {
           const newScans = response.data;
           if(refreshInBackground){
-            
+
             if(JSON.stringify(this.state.renderScans) !== JSON.stringify(newScans)){
               this.setState({ renderScans: this.sortScans(newScans, this.state.scanSortBy) });
               clearInterval(this.state.refreshIntervalId);
@@ -277,7 +279,7 @@ class Scans extends Component {
                   });
                   if(scatterPlot.length === 0) return;
                   scatterPlotData[analysis.id] = scatterPlot;
-                  
+
                 })
                 .catch((error) => {
                   console.log(error);
@@ -512,7 +514,7 @@ class Scans extends Component {
       this.refreshScans(false)
       this.refreshAnalyses(false)
     }
-    
+
     const renderDialogSwitch = () => {
       switch (this.state.dialogParams.modal) {
         case "New Analysis":
@@ -571,6 +573,17 @@ class Scans extends Component {
               onComplete={this.state.dialogParams.action}
               onClose={handleDialogClose}
             />
+        case "Edit Scan":
+          return <UpdateScan
+            onClose={(success) => {
+              if(success) {
+                this.refreshScans()
+              }
+              handleDialogClose()
+            }}
+            clientId={this.state.client_ID}
+            scan={this.state.dialogParams.scan}
+          />
         default:
           return;
       }
@@ -718,6 +731,17 @@ class Scans extends Component {
                               <MenuItem
                                 onClick={() =>
                                   handleDialogOpen({
+                                    modal: "Edit Scan",
+                                    scan: scan,
+                                  })
+                                }
+                              >
+                                <ListItemIcon><EditIcon fontSize="small"/></ListItemIcon>
+                                Edit Scan
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  handleDialogOpen({
                                     modal: "New Analysis",
                                     id: scan.id,
                                     isScan: true,
@@ -747,7 +771,7 @@ class Scans extends Component {
                             style={{ pointerEvents: 'none'}}
                             open={openedPopoverId === scan.id}
                             anchorEl={popoverAnchorEl}
-                            
+
                             anchorOrigin={{
                               vertical: 'bottom',
                               horizontal: 'center',

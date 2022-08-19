@@ -26,6 +26,16 @@ node {
     }
   }
 
+  office365ConnectorSend(
+    status: 'Starting',
+    color: '0080FF',
+    webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+    message: "Build starting",
+    factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
+                      [name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
+                      [name: "Image", template: "${registry}/${product}:${tag}"]]
+  )
+
   // Check version, yarn install, etc.
   stage('Setup') {
     dir('opencti-platform') {
@@ -52,14 +62,6 @@ node {
             break
         }
 
-        // Send message to Teams that the build is starting
-        office365ConnectorSend(
-          webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-          message: 'Build started',
-          factDefinitions: [[name: 'Commit', template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
-                            [name: 'Version', template: "${version}"]]
-        )
-
         if (fileExists('config/schema/compiled.graphql')) {
           sh 'rm config/schema/compiled.graphql'
         }
@@ -80,29 +82,27 @@ node {
 
   // Run any tests we can that do not require a build, alongside the build process
   parallel build: {
-    stage('Build') {
-      // if core branches (master, staging, or develop) build; except if the commit says:
-      //   - 'ci:skip' then skip build
-      //   - 'ci:build' then build regardless of branch
-      if (((branch.equals('master') || branch.equals('prod') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
-        dir('opencti-platform') {
-          String buildArgs = '--no-cache --progress=plain .'
-          sha = docker_steps(registry, product, tag, buildArgs)
-        }
-
-        // Send the Teams message to DarkLight Development > DL Builds
-        office365ConnectorSend(
-          status: 'Completed',
-          color: '00FF00',
-          webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-          message: "New image built and pushed!",
-          factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
-                            [name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
-                            [name: "Image", template: "${registry}/${product}:${tag}"]]
-        )
-      } else {
-        echo 'Skipping build...'
+    // if core branches (master, staging, or develop) build; except if the commit says:
+    //   - 'ci:skip' then skip build
+    //   - 'ci:build' then build regardless of branch
+    if (((branch.equals('master') || branch.equals('prod') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
+      dir('opencti-platform') {
+        String buildArgs = '--no-cache --progress=plain .'
+        sha = docker_steps(registry, product, tag, buildArgs)
       }
+
+      // Send the Teams message to DarkLight Development > DL Builds
+      office365ConnectorSend(
+        status: 'Completed',
+        color: '00FF00',
+        webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+        message: "New image built and pushed!",
+        factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
+                          [name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
+                          [name: "Image", template: "${registry}/${product}:${tag}"]]
+      )
+    } else {
+      echo 'Skipping build...'
     }
   }, test: {
     stage('Test') {
@@ -133,9 +133,15 @@ node {
           }
         }
       } catch (Exception e) {
+        office365ConnectorSend(
+          status: 'Tests Failed',
+          color: 'FF8000',
+          webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+          message: "${e}"
+        )
         throw e
       } finally {
-        junit 'opencti-platform/opencti-graphql/test-results/jest/results.xml'
+        junit testResults: 'opencti-platform/opencti-graphql/test-results/jest/results.xml', skipPublishingChecks: true
       }
     }
   }
@@ -171,6 +177,12 @@ node {
             }
           }
         } catch (Exception e) {
+          office365ConnectorSend(
+            status: 'Integration Tests Failed',
+            color: 'FF8000',
+            webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+            message: "${e}"
+          )
           throw e
         } finally {
           sh 'docker run --rm -v $PWD:/e2e -w /e2e --network docker_default --entrypoint chown cypress/included:10.3.0 -R 997:995 . || true'
@@ -187,29 +199,33 @@ node {
       }
     }
   }, deploy: {
-    stage('Deploy') {
-      if (commitMessage.contains('ci:deploy')) {
-        switch (branch) {
-          case 'master':
-          case 'prod':
+    if (commitMessage.contains('ci:deploy')) {
+      switch (branch) {
+        case 'master':
+        case 'prod':
+          stage('Deploying to production') {
             echo 'Deploying to production...'
             build '/deploy/OpenCTI Frontend/main'
-            break
-          case 'staging':
+          }
+          break
+        case 'staging':
+          stage('Deploying to staging') {
             echo 'Deploying to staging...'
             build '/deploy/OpenCTI Frontend/staging'
-            break
-          case 'develop':
+          }
+          break
+        case 'develop':
+          stage('Deploying to develop') {
             echo 'Deploying to develop...'
             build '/deploy/OpenCTI Frontend/dev'
-            break
-          default:
-            echo 'Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag...'
-            break
-        }
-      } else {
-        echo 'No \'ci:deploy\' flag detected in commit message; skipping...'
+          }
+          break
+        default:
+          echo 'Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag...'
+          break
       }
+    } else {
+      echo 'No \'ci:deploy\' flag detected in commit message; skipping...'
     }
   }
 
@@ -233,7 +249,10 @@ node {
         echo "Updating K8s image tag to new sha value \'${sha}\'..."
 
         sh label: 'Kubesec Scan', script: '''
-          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < k8s/cyio/opencti/opencti.yaml
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/opencti.yaml || true
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/elasticsearch.yaml || true
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/rabbitmq.yaml || true
+          docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/redis.yaml || true
         '''
       }
     } catch (Exception e) {
