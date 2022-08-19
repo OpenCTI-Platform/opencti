@@ -164,13 +164,17 @@ class ViewCharts extends Component {
     } = this.state;
 
     const COLORS = {
-      Low: '#FCCF7E',
-      Medium: '#F9B406',
-      High: '#E28120',
-      Severe: '#A33611',
-      Critical: '#7F0909',
-      Informational: '#00bcd4',
+      Low: '#FFD773',
+      Medium: '#FFB000',
+      High: '#F17B00',
+      Severe: '#FF4100',
+      Critical: '#FF0000',
+      Informational: '#FFEBBC',
     };
+
+    
+
+    const colorsForTrendingChart = ['#325B9B','#0083E8','#00A6F6','#0089C4','#00B2B9','#00B6AA','#00D7A1','#00D760'];
 
     const handleTabChange = (event, newValue) => {
       this.setState({ tabValue: newValue });
@@ -603,13 +607,13 @@ class ViewCharts extends Component {
                           <Bar
                             stackId="a"
                             dataKey="Informational"
-                            fill="#FCCF7E"
+                            fill="#FFEBBC"
                           />
-                          <Bar stackId="a" dataKey="Low" fill="#FCCF7E" />
-                          <Bar stackId="a" dataKey="Medium" fill="#F9B406" />
-                          <Bar stackId="a" dataKey="High" fill="#E28120" />
-                          <Bar stackId="a" dataKey="Severe" fill="#A33611" />
-                          <Bar stackId="a" dataKey="Critical" fill="#7F0909" />
+                          <Bar stackId="a" dataKey="Low" fill="#FFD773" />
+                          <Bar stackId="a" dataKey="Medium" fill="#FFB000" />
+                          <Bar stackId="a" dataKey="High" fill="#F17B00" />
+                          <Bar stackId="a" dataKey="Severe" fill="#FF4100" />
+                          <Bar stackId="a" dataKey="Critical" fill="#FF0000" />
                         </BarChart>
                       </ResponsiveContainer>
                     </Paper>
@@ -660,13 +664,13 @@ class ViewCharts extends Component {
                           <Bar
                             stackId="a"
                             dataKey="Informational"
-                            fill="#FCCF7E"
+                            fill="#FFEBBC"
                           />
-                          <Bar stackId="a" dataKey="Low" fill="#FCCF7E" />
-                          <Bar stackId="a" dataKey="Medium" fill="#F9B406" />
-                          <Bar stackId="a" dataKey="High" fill="#E28120" />
-                          <Bar stackId="a" dataKey="Severe" fill="#A33611" />
-                          <Bar stackId="a" dataKey="Critical" fill="#7F0909" />
+                          <Bar stackId="a" dataKey="Low" fill="#FFD773" />
+                          <Bar stackId="a" dataKey="Medium" fill="#FFB000" />
+                          <Bar stackId="a" dataKey="High" fill="#F17B00" />
+                          <Bar stackId="a" dataKey="Severe" fill="#FF4100" />
+                          <Bar stackId="a" dataKey="Critical" fill="#FF0000" />
                         </BarChart>
                       </ResponsiveContainer>
                     </Paper>
@@ -712,13 +716,13 @@ class ViewCharts extends Component {
                           <Bar
                             stackId="a"
                             dataKey="Informational"
-                            fill="#FCCF7E"
+                            fill="#FFEBBC"
                           />
-                          <Bar stackId="a" dataKey="Low" fill="#FCCF7E" />
-                          <Bar stackId="a" dataKey="Medium" fill="#F9B406" />
-                          <Bar stackId="a" dataKey="High" fill="#E28120" />
-                          <Bar stackId="a" dataKey="Severe" fill="#A33611" />
-                          <Bar stackId="a" dataKey="Critical" fill="#7F0909" />
+                          <Bar stackId="a" dataKey="Low" fill="#FFD773" />
+                          <Bar stackId="a" dataKey="Medium" fill="#FFB000" />
+                          <Bar stackId="a" dataKey="High" fill="#F17B00" />
+                          <Bar stackId="a" dataKey="Severe" fill="#FF4100" />
+                          <Bar stackId="a" dataKey="Critical" fill="#FF0000" />
                         </BarChart>
                       </ResponsiveContainer>
                     </Paper>
@@ -769,6 +773,7 @@ class ViewCharts extends Component {
                           key={s.name}
                           dot={{ r: 8 }}
                           activeDot={{ r: 8 }}
+                          stroke={colorsForTrendingChart[index]}
                         />
                       ))}
                     </LineChart>

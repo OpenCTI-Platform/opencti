@@ -48,6 +48,7 @@ describe('Software Asset Tests', () => {
     const singleSoftwareAsset = `query softwareAsset($id: ID!) {
       softwareAsset(id:$id){
         id
+      }
     }`;
     const variables = { id: softwareAssetId };
     const result = await submitOperation(singleSoftwareAsset, variables);

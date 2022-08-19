@@ -77,6 +77,7 @@ const styles = (theme) => ({
 
 const NewAddressFieldValidation = (t) => Yup.object().shape({
   address_type: Yup.string().required(t('This field is required')),
+  country_code: Yup.string().required(t('This field is required')),
 });
 
 class NewAddressField extends Component {

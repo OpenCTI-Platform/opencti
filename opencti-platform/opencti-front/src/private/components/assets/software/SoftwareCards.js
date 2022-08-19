@@ -29,9 +29,19 @@ class SoftwareCards extends Component {
   handleSetBookmarkList(bookmarks) {
     this.setState({ bookmarks });
   }
-  handleOffsetChange(){
+
+  handleIncrementedOffsetChange() {
     const incrementedOffset = this.state.offset += nbOfCardsToLoad;
-    this.setState({ offset:incrementedOffset })
+    this.setState({ offset: incrementedOffset })
+    this.props.relay.refetchConnection(nbOfCardsToLoad, null, {
+      offset: this.state.offset,
+      first: nbOfCardsToLoad,
+    })
+  }
+
+  handleDecrementedOffsetChange() {
+    const decrementedOffset = this.state.offset -= nbOfCardsToLoad;
+    this.setState({ offset: decrementedOffset })
     this.props.relay.refetchConnection(nbOfCardsToLoad, null, {
       offset: this.state.offset,
       first: nbOfCardsToLoad,
@@ -49,41 +59,42 @@ class SoftwareCards extends Component {
     } = this.props;
     const { bookmarks, offset } = this.state;
     return (
-    // <QueryRenderer
-    //   query={stixDomainObjectBookmarksQuery}
-    //   variables={{ types: ['Software'] }}
-    //   render={({ props }) => (
-    //     <div>
-    //       <StixDomainObjectBookmarks
-    //         data={props}
-    //         onLabelClick={onLabelClick.bind(this)}
-    //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
-    //       />
-            <CyioListCardsContent
-              initialLoading={initialLoading}
-              loadMore={relay.loadMore.bind(this)}
-              handleOffsetChange={this.handleOffsetChange.bind(this)}
-              hasMore={relay.hasMore.bind(this)}
-              isLoading={relay.isLoading.bind(this)}
-              dataList={pathOr([], ['softwareAssetList', 'edges'], this.props.data)}
-              globalCount={pathOr(
-                nbOfCardsToLoad,
-                ['softwareAssetList', 'pageInfo', 'globalCount'],
-                this.props.data,
-              )}
-              offset={offset}
-              CardComponent={<SoftwareCard />}
-              DummyCardComponent={<SoftwareCardDummy />}
-              selectAll={selectAll}
-              nbOfCardsToLoad={nbOfCardsToLoad}
-              selectedElements={selectedElements}
-              onLabelClick={onLabelClick.bind(this)}
-              onToggleEntity={onToggleEntity.bind(this)}
-              bookmarkList={bookmarks}
-            />
-    //     </div>
-    //   )}
-    // />
+      // <QueryRenderer
+      //   query={stixDomainObjectBookmarksQuery}
+      //   variables={{ types: ['Software'] }}
+      //   render={({ props }) => (
+      //     <div>
+      //       <StixDomainObjectBookmarks
+      //         data={props}
+      //         onLabelClick={onLabelClick.bind(this)}
+      //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
+      //       />
+      <CyioListCardsContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore.bind(this)}
+        handleIncrementedOffsetChange={this.handleIncrementedOffsetChange.bind(this)}
+        handleDecrementedOffsetChange={this.handleDecrementedOffsetChange.bind(this)}
+        hasMore={relay.hasMore.bind(this)}
+        isLoading={relay.isLoading.bind(this)}
+        dataList={pathOr([], ['softwareAssetList', 'edges'], this.props.data)}
+        globalCount={pathOr(
+          nbOfCardsToLoad,
+          ['softwareAssetList', 'pageInfo', 'globalCount'],
+          this.props.data,
+        )}
+        offset={offset}
+        CardComponent={<SoftwareCard />}
+        DummyCardComponent={<SoftwareCardDummy />}
+        selectAll={selectAll}
+        nbOfCardsToLoad={nbOfCardsToLoad}
+        selectedElements={selectedElements}
+        onLabelClick={onLabelClick.bind(this)}
+        onToggleEntity={onToggleEntity.bind(this)}
+        bookmarkList={bookmarks}
+      />
+      //     </div>
+      //   )}
+      // />
     );
   }
 }
