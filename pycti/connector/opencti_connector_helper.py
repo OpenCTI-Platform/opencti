@@ -11,12 +11,12 @@ import threading
 import time
 import traceback
 import uuid
+from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
 
 import pika
 from pika.exceptions import NackError, UnroutableError
 from sseclient import SSEClient
-from queue import Queue
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
