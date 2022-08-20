@@ -5,6 +5,7 @@ import * as R from 'ramda';
 import conf, { booleanConf, configureCA } from '../config/conf';
 import { DatabaseError, UnknownError } from '../config/errors';
 
+export const INTERNAL_SYNC_QUEUE = 'sync';
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
 
@@ -163,6 +164,12 @@ export const rabbitMQIsAlive = async () => {
       throw DatabaseError('RabbitMQ seems down', { error: e.message });
     }
   );
+  // 02. Ensure sync queue exists
+  await registerConnectorQueues(INTERNAL_SYNC_QUEUE, 'Internal sync manager', 'internal', 'sync');
+};
+
+export const pushToSync = (message) => {
+  return send(WORKER_EXCHANGE, pushRouting('sync'), JSON.stringify(message));
 };
 
 export const pushToConnector = (connector, message) => {

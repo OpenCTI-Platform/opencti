@@ -156,26 +156,64 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.processing_count += 1
         content = "Unparseable"
         try:
-            content = base64.b64decode(data["content"]).decode("utf-8")
+            event_type = data["type"] if "type" in data else "bundle"
             types = (
                 data["entities_types"]
                 if "entities_types" in data and len(data["entities_types"]) > 0
                 else None
             )
-            update = data["update"] if "update" in data else False
             processing_count = self.processing_count
             if self.processing_count == PROCESSING_COUNT:
                 processing_count = None  # type: ignore
-            self.api.stix2.import_bundle_from_json(
-                content, update, types, processing_count
-            )
-            # Ack the message
-            cb = functools.partial(self.ack_message, channel, delivery_tag)
-            connection.add_callback_threadsafe(cb)
-            if work_id is not None:
-                self.api.work.report_expectation(work_id, None)
-            self.processing_count = 0
-            return True
+            if event_type == "bundle":
+                content = base64.b64decode(data["content"]).decode("utf-8")
+                update = data["update"] if "update" in data else False
+                self.api.stix2.import_bundle_from_json(
+                    content, update, types, processing_count
+                )
+                # Ack the message
+                cb = functools.partial(self.ack_message, channel, delivery_tag)
+                connection.add_callback_threadsafe(cb)
+                if work_id is not None:
+                    self.api.work.report_expectation(work_id, None)
+                self.processing_count = 0
+                return True
+            elif event_type == "event":
+                event = base64.b64decode(data["content"]).decode("utf-8")
+                event_content = json.loads(event)
+                event_type = event_content["type"]
+                if event_type == "create" or event_type == "update":
+                    bundle = {
+                        "type": "bundle",
+                        "objects": [event_content["data"]],
+                    }
+                    self.api.stix2.import_bundle(
+                        bundle, True, types, processing_count
+                    )
+                elif event_type == "delete":
+                    delete_id = event_content["data"]["id"]
+                    self.api.stix.delete(id=delete_id)
+                elif event_type == "merge":
+                    # Start with a merge
+                    target_id = event_content["data"]["id"]
+                    source_ids = list(map(lambda source: source["id"], event_content["context"]["sources"]))
+                    self.api.stix_core_object.merge(id=target_id, object_ids=source_ids)
+                    # Update the target entity after merge
+                    bundle = {
+                        "type": "bundle",
+                        "objects": [event_content["data"]],
+                    }
+                    self.api.stix2.import_bundle(
+                        bundle, True, types, processing_count
+                    )
+                # Ack the message
+                cb = functools.partial(self.ack_message, channel, delivery_tag)
+                connection.add_callback_threadsafe(cb)
+                self.processing_count = 0
+                return True
+            else:
+                # Unknown type, just move on.
+                return True
         except Timeout as te:
             logging.warning("%s", f"A connection timeout occurred: {{ {te} }}")
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.

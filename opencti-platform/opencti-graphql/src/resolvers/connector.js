@@ -31,12 +31,13 @@ import {
 import { findById as findUserById } from '../domain/user';
 import { redisGetWork, redisUpdateActionExpectation } from '../database/redis';
 import { now } from '../utils/format';
-import { connectors, connectorsForImport } from '../database/repository';
+import { connectors, connectorsForImport, connectorsForWorker } from '../database/repository';
 
 const connectorResolvers = {
   Query: {
     connector: (_, { id }, { user }) => loadConnectorById(user, id),
     connectors: (_, __, { user }) => connectors(user),
+    connectorsForWorker: (_, __, { user }) => connectorsForWorker(user),
     connectorsForExport: (_, __, { user }) => connectorsForExport(user),
     connectorsForImport: (_, __, { user }) => connectorsForImport(user),
     works: (_, args, { user }) => findAll(user, args),

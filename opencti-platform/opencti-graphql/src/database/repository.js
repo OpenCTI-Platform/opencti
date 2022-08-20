@@ -1,6 +1,6 @@
 import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { connectorConfig } from './rabbitmq';
+import { connectorConfig, INTERNAL_SYNC_QUEUE } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 import { listEntities } from './middleware-loader';
@@ -88,6 +88,18 @@ export const completeConnector = (connector) => {
 export const connectors = (user) => {
   return listEntities(user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false })
     .then((elements) => map((conn) => completeConnector(conn), elements));
+};
+
+export const connectorsForWorker = async (user) => {
+  const registeredConnectors = await connectors(user);
+  registeredConnectors.push({
+    id: 'sync',
+    name: 'Internal sync connector',
+    connector_scope: [],
+    config: connectorConfig(INTERNAL_SYNC_QUEUE),
+    active: true
+  });
+  return registeredConnectors;
 };
 
 const filterConnectors = (instances, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {

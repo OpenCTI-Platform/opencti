@@ -19,7 +19,6 @@ describe('Rabbit basic and utils', () => {
     // Just wait one second to let redis client initialize
     const data = await metrics();
     expect(data).not.toBeNull();
-    expect(data.consumers).toEqual(0);
     expect(data.overview.management_version).toEqual(expect.stringMatching(/^3.10\./g));
   });
 });
@@ -38,10 +37,9 @@ describe('Rabbit connector management', () => {
     expect(config.listen_exchange).toEqual('amqp.connector.exchange');
   });
   it('should connector queues available', async () => {
-    // Just wait one second to let redis client initialize
     const data = await metrics();
     expect(data).not.toBeNull();
-    expect(data.queues.length).toEqual(2);
+    expect(data.queues.length).toEqual(4);
     const aggregationMap = new Map(data.queues.map((q) => [q.name, q]));
     expect(aggregationMap.get(`listen_${connectorId}`)).not.toBeUndefined();
     expect(aggregationMap.get(`push_${connectorId}`)).not.toBeUndefined();

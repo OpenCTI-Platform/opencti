@@ -4,91 +4,19 @@ import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
 import conf, { logApp } from '../config/conf';
-import {
-  createRelation,
-  deleteElementById,
-  internalLoadById,
-  mergeEntities,
-  storeLoadById
-} from '../database/middleware';
+import { storeLoadById } from '../database/middleware';
 import { SYSTEM_USER } from '../utils/access';
-import { buildInputDataFromStix } from '../database/stix';
-import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { addStixCyberObservable } from '../domain/stixCyberObservable';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { addStixSightingRelationship } from '../domain/stixSightingRelationship';
-import { addLabel } from '../domain/label';
-import { addExternalReference } from '../domain/externalReference';
-import { addKillChainPhase } from '../domain/killChainPhase';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isStixMetaObject,
-} from '../schema/stixMetaObject';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CAMPAIGN,
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_COURSE_OF_ACTION,
-  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  ENTITY_TYPE_IDENTITY_SECTOR,
-  ENTITY_TYPE_IDENTITY_SYSTEM,
-  ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INDICATOR,
-  ENTITY_TYPE_INFRASTRUCTURE,
-  ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_LOCATION_CITY,
-  ENTITY_TYPE_LOCATION_COUNTRY,
-  ENTITY_TYPE_LOCATION_POSITION,
-  ENTITY_TYPE_LOCATION_REGION,
-  ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
-  ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
-  isStixDomainObject,
-} from '../schema/stixDomainObject';
-import { addCampaign } from '../domain/campaign';
-import { addCity } from '../domain/city';
-import { addCountry } from '../domain/country';
-import { addIncident } from '../domain/incident';
-import { addIndicator } from '../domain/indicator';
-import { addIntrusionSet } from '../domain/intrusionSet';
-import { addMalware } from '../domain/malware';
-import { addMarkingDefinition } from '../domain/markingDefinition';
-import { addNote } from '../domain/note';
-import { addObservedData } from '../domain/observedData';
-import { addOpinion } from '../domain/opinion';
-import { addAttackPattern } from '../domain/attackPattern';
-import { addReport } from '../domain/report';
-import { addCourseOfAction } from '../domain/courseOfAction';
-import { addIndividual } from '../domain/individual';
-import { addOrganization } from '../domain/organization';
-import { addSector } from '../domain/sector';
-import { addSystem } from '../domain/system';
-import { addInfrastructure } from '../domain/infrastructure';
-import { addRegion } from '../domain/region';
-import { addPosition } from '../domain/position';
-import { addThreatActor } from '../domain/threatActor';
-import { addTool } from '../domain/tool';
-import { addVulnerability } from '../domain/vulnerability';
+import { TYPE_LOCK_ERROR } from '../config/errors';
 import Queue from '../utils/queue';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
 import { EVENT_CURRENT_VERSION, lockResource } from '../database/redis';
-import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/stixCoreObject';
-import { rawFilesListing } from '../database/file-storage';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
 import { wait } from '../database/utils';
+import { pushToSync } from '../database/rabbitmq';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const WAIT_TIME_ACTION = 2000;
@@ -153,127 +81,25 @@ const syncManagerInstance = (syncId) => {
     }
     return currentDelay;
   };
-  const handleDeleteEvent = async (user, data) => {
-    const { type } = data.extensions[STIX_EXT_OCTI];
-    logApp.info(`[OPENCTI] Sync deleting element ${type} ${data.id}`);
-    await deleteElementById(user, data.id, type);
-  };
-  const handleMergeEvent = async (user, data, context) => {
-    const sourceIds = context.sources.map((s) => s.id);
-    logApp.info(`[OPENCTI] Sync merging element ${sourceIds} into ${data.id}`);
-    await mergeEntities(user, data.id, sourceIds);
-  };
-  const handleFilesSync = async (user, id, stix) => {
+  const transformDataWithReverseIdAndFilesData = async (data, context) => {
     const { token, uri } = syncElement;
-    const entityType = stix.extensions[STIX_EXT_OCTI].type;
-    const entityFiles = stix.extensions[STIX_EXT_OCTI].files ?? [];
-    const entityDirectory = `import/${entityType}/${id}/`;
-    // Find the files we need to upload/update and files that need to be deleted.
-    const currentFiles = await rawFilesListing(user, entityDirectory);
-    const currentFileIds = currentFiles.map((c) => c.name);
-    const entityFileIds = entityFiles.map((c) => c.name);
-    // Delete files when needed
-    const filesToDelete = currentFileIds.filter((c) => !entityFileIds.includes(c));
-    for (let deleteIndex = 0; deleteIndex < filesToDelete.length; deleteIndex += 1) {
-      const fileToDeleteId = filesToDelete[deleteIndex];
-      const file = R.find((c) => c.name === fileToDeleteId, currentFiles);
-      await stixCoreObjectImportDelete(user, file.id);
+    let processingData = data;
+    // Reverse patch the id if modified
+    const idOperations = (context?.reverse_patch ?? []).filter((patch) => patch.path === '/id');
+    if (idOperations.length > 0) {
+      const { newDocument: stixPreviousID } = jsonpatch.applyPatch(R.clone(data), idOperations);
+      processingData = stixPreviousID;
     }
-    // Add new files if needed
-    const currentFileVersionIds = currentFiles.map((c) => `${c.name}-${c.metaData.version}`);
-    const entityFileVersionIds = entityFiles.map((c) => `${c.name}-${c.version}`);
-    const filesToUpload = entityFileVersionIds.filter((c) => !currentFileVersionIds.includes(c));
-    for (let index = 0; index < filesToUpload.length; index += 1) {
-      const fileToUploadId = filesToUpload[index];
-      const fileToUpload = R.find((c) => `${c.name}-${c.version}` === fileToUploadId, entityFiles);
-      const { uri: fileUri, name, mime_type: mimetype, version } = fileToUpload;
-      const config = { responseType: 'stream', headers: { authorization: `Bearer ${token}` } };
-      const fileStream = await axios.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`, config);
-      const file = { createReadStream: () => fileStream.data, filename: name, mimetype, version };
-      await stixCoreObjectImportPush(user, id, file);
+    // Handle file enrichment
+    const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
+    for (let index = 0; index < entityFiles.length; index += 1) {
+      const entityFile = entityFiles[index];
+      const { uri: fileUri } = entityFile;
+      const config = { responseType: 'arraybuffer', headers: { authorization: `Bearer ${token}` } };
+      const response = await axios.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`, config);
+      entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
     }
-  };
-  const handleCreateEvent = async (user, data) => {
-    const { type } = data.extensions[STIX_EXT_OCTI];
-    const input = buildInputDataFromStix(data);
-    // Then create the elements
-    if (isStixCoreRelationship(type)) {
-      logApp.info(`[OPENCTI] Sync creating relation ${input.relationship_type} ${input.fromId}/${input.toId}`);
-      await createRelation(user, input);
-    } else if (isStixSightingRelationship(type)) {
-      logApp.info(`[OPENCTI] Sync creating sighting ${input.fromId}/${input.toId}`);
-      await addStixSightingRelationship(user, { ...input, relationship_type: input.type });
-    } else if (isStixDomainObject(type) || isStixMetaObject(type)) {
-      let element;
-      logApp.info(`[OPENCTI] Sync creating entity ${type} ${input.stix_id}`);
-      // Stix domains
-      if (type === ENTITY_TYPE_ATTACK_PATTERN) {
-        element = await addAttackPattern(user, input);
-      } else if (type === ENTITY_TYPE_CAMPAIGN) {
-        element = await addCampaign(user, input);
-      } else if (type === ENTITY_TYPE_CONTAINER_NOTE) {
-        element = await addNote(user, input);
-      } else if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-        element = await addObservedData(user, input);
-      } else if (type === ENTITY_TYPE_CONTAINER_OPINION) {
-        element = await addOpinion(user, input);
-      } else if (type === ENTITY_TYPE_CONTAINER_REPORT) {
-        element = await addReport(user, input);
-      } else if (type === ENTITY_TYPE_COURSE_OF_ACTION) {
-        element = await addCourseOfAction(user, input);
-      } else if (type === ENTITY_TYPE_IDENTITY_INDIVIDUAL) {
-        element = await addIndividual(user, input);
-      } else if (type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-        element = await addOrganization(user, input);
-      } else if (type === ENTITY_TYPE_IDENTITY_SECTOR) {
-        element = await addSector(user, input);
-      } else if (type === ENTITY_TYPE_IDENTITY_SYSTEM) {
-        element = await addSystem(user, input);
-      } else if (type === ENTITY_TYPE_INDICATOR) {
-        element = await addIndicator(user, input);
-      } else if (type === ENTITY_TYPE_INFRASTRUCTURE) {
-        element = await addInfrastructure(user, input);
-      } else if (type === ENTITY_TYPE_INTRUSION_SET) {
-        element = await addIntrusionSet(user, input);
-      } else if (type === ENTITY_TYPE_LOCATION_CITY) {
-        element = await addCity(user, input);
-      } else if (type === ENTITY_TYPE_LOCATION_COUNTRY) {
-        element = await addCountry(user, input);
-      } else if (type === ENTITY_TYPE_LOCATION_REGION) {
-        element = await addRegion(user, input);
-      } else if (type === ENTITY_TYPE_LOCATION_POSITION) {
-        element = await addPosition(user, input);
-      } else if (type === ENTITY_TYPE_MALWARE) {
-        element = await addMalware(user, input);
-      } else if (type === ENTITY_TYPE_THREAT_ACTOR) {
-        element = await addThreatActor(user, input);
-      } else if (type === ENTITY_TYPE_TOOL) {
-        element = await addTool(user, input);
-      } else if (type === ENTITY_TYPE_VULNERABILITY) {
-        element = await addVulnerability(user, input);
-      } else if (type === ENTITY_TYPE_INCIDENT) {
-        element = await addIncident(user, input);
-      } else if (type === ENTITY_TYPE_LABEL) {
-        element = await addLabel(user, input);
-      } else if (type === ENTITY_TYPE_EXTERNAL_REFERENCE) {
-        element = await addExternalReference(user, input);
-      } else if (type === ENTITY_TYPE_KILL_CHAIN_PHASE) {
-        element = await addKillChainPhase(user, input);
-      } else if (type === ENTITY_TYPE_MARKING_DEFINITION) {
-        element = await addMarkingDefinition(user, input);
-      } else {
-        throw UnsupportedError(`${type} not handle by synchronizer`);
-      }
-      // Handle files
-      await handleFilesSync(user, element.internal_id, data);
-    } else if (isStixCyberObservable(type)) {
-      logApp.info(`[OPENCTI] Sync creating cyber observable ${type} ${input.stix_id}`);
-      const element = await addStixCyberObservable(user, input);
-      // Handle files
-      await handleFilesSync(user, element.internal_id, data);
-    } else {
-      throw UnsupportedError(`${type} not handle by synchronizer`);
-    }
+    return processingData;
   };
   return {
     id: syncId,
@@ -286,7 +112,6 @@ const syncManagerInstance = (syncId) => {
     start: async () => {
       run = true;
       const sync = await startStreamListening();
-      const user = sync.user_id ? await internalLoadById(SYSTEM_USER, sync.user_id) : SYSTEM_USER;
       let currentDelay = lDelay;
       while (run) {
         const event = eventsQueue.dequeue();
@@ -299,25 +124,11 @@ const syncManagerInstance = (syncId) => {
               const eventDate = utcDate(parseInt(time, 10)).toISOString();
               logApp.info(`[OPENCTI] Sync ${sync.name}: saving state to ${eventDate}`);
               await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
-            } else if (eventType === 'delete') {
-              await handleDeleteEvent(user, data);
-            } else if (eventType === 'create') {
-              await handleCreateEvent(user, data);
-            } else if (eventType === 'update' || eventType === 'merge') {
-              // In case of update, if the standard id is impacted
-              // we need to apply modification on the previous id
-              // standard id will be regenerated according to the other changes
-              let processingData = data;
-              const idOperations = context.reverse_patch.filter((patch) => patch.path === '/id');
-              if (idOperations.length > 0) {
-                const { newDocument: stixPreviousID } = jsonpatch.applyPatch(R.clone(data), idOperations);
-                processingData = stixPreviousID;
-              }
-              if (eventType === 'merge') {
-                await handleMergeEvent(user, processingData, context);
-              } else {
-                await handleCreateEvent(user, processingData);
-              }
+            } else {
+              const syncData = await transformDataWithReverseIdAndFilesData(data, context);
+              const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context });
+              const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
+              await pushToSync({ type: 'event', applicant_id: OPENCTI_SYSTEM_UUID, content });
             }
           } catch (e) {
             logApp.error('[OPENCTI] Sync error processing event', { error: e });

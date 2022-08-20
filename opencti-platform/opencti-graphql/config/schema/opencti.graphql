@@ -8697,6 +8697,7 @@ type Query {
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   connector(id: String!): Connector @auth(for: [MODULES])
   connectors: [Connector] @auth(for: [MODULES])
+  connectorsForWorker: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
   work(id: ID!): Work @auth(for: [MODULES])

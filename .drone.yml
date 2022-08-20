@@ -183,6 +183,20 @@ services:
       - yarn install:python
       - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - NODE_OPTIONS=--max_old_space_size=12288 yarn start
+  - name: opencti-direct-worker
+    image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
+    environment:
+      OPENCTI_URL: http://opencti-direct-start:4300
+      OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      WORKER_LOG_LEVEL: info
+    commands:
+      - sleep 180
+      - apk add build-base git libffi-dev
+      - cp -a opencti-worker /tmp/direct-start-worker
+      - cd /tmp/direct-start-worker
+      - pip3 install -r src/requirements.txt
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - python3 src/worker.py
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
     environment:
