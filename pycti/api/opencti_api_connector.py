@@ -21,7 +21,7 @@ class OpenCTIApiConnector:
         logging.info("Getting connectors ...")
         query = """
             query GetConnectors {
-                connectors {
+                connectorsForWorker {
                     id
                     name
                     config {
@@ -40,7 +40,7 @@ class OpenCTIApiConnector:
             }
         """
         result = self.api.query(query)
-        return result["data"]["connectors"]
+        return result["data"]["connectorsForWorker"]
 
     def ping(self, connector_id: str, connector_state: Any) -> Dict:
         """pings a connector by id and state
