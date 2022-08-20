@@ -203,7 +203,7 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
   [ENTITY_TYPE_LOCATION_COUNTRY]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence', 'x_opencti_aliases'],
   [ENTITY_TYPE_LOCATION_REGION]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence', 'x_opencti_aliases'],
   [ENTITY_TYPE_LOCATION_POSITION]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence', 'x_opencti_aliases'],
-  [ENTITY_TYPE_MALWARE]: ['name', 'revoked', 'description', 'is_family', 'malware_types', 'confidence', 'aliases'],
+  [ENTITY_TYPE_MALWARE]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'is_family', 'malware_types', 'confidence', 'aliases'],
   [ENTITY_TYPE_THREAT_ACTOR]: [
     'name',
     'revoked',

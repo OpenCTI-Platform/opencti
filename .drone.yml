@@ -96,7 +96,9 @@ steps:
 
   - name: teams-failure
     image: diyfr/drone_plugin_teams
-    secrets : [teams_webhook]
+    environment:
+      TEAMS_WEBHOOK:
+        from_secret: teams_webhook
     content:
       title: "Job Failed.\U0001F534"
       text: "Drone CI workflow has failed for the step **${DRONE_FAILED_STEPS}**"
@@ -105,7 +107,9 @@ steps:
       status: [failure]
   - name: teams-success
     image: diyfr/drone_plugin_teams
-    secrets : [teams_webhook]
+    environment:
+      TEAMS_WEBHOOK:
+        from_secret: teams_webhook   
     content:
       title: "Job Succeeded.\U0001F7E2"
       text: "Drone CI workflow has succeeded."
