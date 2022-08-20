@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import os
+import queue
 import signal
 import ssl
 import sys
@@ -15,6 +16,7 @@ from typing import Callable, Dict, List, Optional, Union
 import pika
 from pika.exceptions import NackError, UnroutableError
 from sseclient import SSEClient
+from queue import Queue
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
@@ -266,6 +268,37 @@ class PingAlive(threading.Thread):
         self.exit_event.set()
 
 
+class StreamAlive(threading.Thread):
+    def __init__(self, q) -> None:
+        threading.Thread.__init__(self)
+        self.q = q
+        self.exit_event = threading.Event()
+
+    def run(self) -> None:
+        try:
+            logging.info("Starting stream alive thread")
+            time_since_last_heartbeat = 0
+            while not self.exit_event.is_set():
+                time.sleep(5)
+                try:
+                    self.q.get(block=False)
+                    time_since_last_heartbeat = 0
+                except queue.Empty:
+                    time_since_last_heartbeat = time_since_last_heartbeat + 5
+                    if time_since_last_heartbeat > 45:
+                        logging.error(
+                            "Time since last heartbeat exceeded 45s, stopping the connector"
+                        )
+                        break
+            sys.excepthook(*sys.exc_info())
+        except:
+            sys.excepthook(*sys.exc_info())
+
+    def stop(self) -> None:
+        logging.info("Preparing for clean shutdown")
+        self.exit_event.set()
+
+
 class ListenStream(threading.Thread):
     def __init__(
         self,
@@ -301,13 +334,20 @@ class ListenStream(threading.Thread):
             current_state = self.helper.get_state()
             if current_state is None:
                 current_state = {
-                    "connectorStartTime": self.helper.date_now_z(),
+                    "connectorStartTime": self.helper.connect_live_stream_recover_iso_date
+                    if self.helper.connect_live_stream_recover_iso_date is not None
+                    else self.helper.date_now_z(),
                     "connectorLastEventId": f"{self.start_timestamp}-0"
                     if self.start_timestamp is not None
                     and len(self.start_timestamp) > 0
                     else "-",
                 }
                 self.helper.set_state(current_state)
+
+            # Start the stream alive watchdog
+            q = Queue(maxsize=1)
+            stream_alive = StreamAlive(q)
+            stream_alive.start()
 
             # If URL and token are provided, likely consuming a remote stream
             if self.url is not None and self.token is not None:
@@ -406,6 +446,7 @@ class ListenStream(threading.Thread):
                         f", SSL verify: {self.helper.opencti_ssl_verify}, Listen Delete: {self.helper.connect_live_stream_listen_delete}, No Dependencies: {self.helper.connect_live_stream_no_dependencies})"
                     ),
                 )
+                # Start SSE Client
                 messages = SSEClient(
                     live_stream_url,
                     headers={
@@ -425,11 +466,14 @@ class ListenStream(threading.Thread):
             # Iter on stream messages
             for msg in messages:
                 if self.exit:
+                    stream_alive.stop()
                     break
                 if msg.event == "heartbeat" or msg.event == "connected":
-                    continue
-                if msg.event == "sync":
                     if msg.id is not None:
+                        try:
+                            q.put(msg.event, block=False)
+                        except queue.Full:
+                            pass
                         state = self.helper.get_state()
                         state["connectorLastEventId"] = str(msg.id)
                         self.helper.set_state(state)
@@ -502,6 +546,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             False,
             False,
+        )
+        self.connect_live_stream_recover_iso_date = get_config_variable(
+            "CONNECTOR_LIVE_STREAM_RECOVER_ISO_DATE",
+            ["connector", "live_stream_recover_iso_date"],
+            config,
         )
         self.connect_name = get_config_variable(
             "CONNECTOR_NAME", ["connector", "name"], config
