@@ -6,6 +6,12 @@ services:
     restart: unless-stopped
     ports:
       - 6379:6379
+  opencti-dev-redis-insight:
+    container_name: opencti-dev-redis-insight
+    image: redislabs/redisinsight:latest
+    restart: unless-stopped
+    ports:
+      - 8001:8001
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3
