@@ -465,15 +465,16 @@ class ListenStream(threading.Thread):
                 )
             # Iter on stream messages
             for msg in messages:
+                if msg.id is not None:
+                    try:
+                        q.put(msg.event, block=False)
+                    except queue.Full:
+                        pass
                 if self.exit:
                     stream_alive.stop()
                     break
                 if msg.event == "heartbeat" or msg.event == "connected":
                     if msg.id is not None:
-                        try:
-                            q.put(msg.event, block=False)
-                        except queue.Full:
-                            pass
                         state = self.helper.get_state()
                         state["connectorLastEventId"] = str(msg.id)
                         self.helper.set_state(state)
