@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import { graphql, createFragmentContainer } from "react-relay";
+import { Formik, Form, Field } from "formik";
+import withStyles from "@mui/styles/withStyles";
 import {
   assoc,
   compose,
@@ -13,38 +13,42 @@ import {
   difference,
   head,
   split,
-} from 'ramda';
-import * as Yup from 'yup';
-import inject18n from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
-import StatusField from '../../common/form/StatusField';
+} from "ramda";
+import * as Yup from "yup";
+import inject18n from "../../../../components/i18n";
+import TextField from "../../../../components/TextField";
+import { SubscriptionFocus } from "../../../../components/Subscription";
+import { commitMutation } from "../../../../relay/environment";
+import CreatedByField from "../../common/form/CreatedByField";
+import ObjectMarkingField from "../../common/form/ObjectMarkingField";
+import MarkDownField from "../../../../components/MarkDownField";
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from "../../../../utils/Edition";
+import StatusField from "../../common/form/StatusField";
 
 const styles = (theme) => ({
   drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
+    minHeight: "100vh",
+    width: "50%",
+    position: "fixed",
+    overflow: "hidden",
 
-    transition: theme.transitions.create('width', {
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    padding: '30px 30px 30px 30px',
+    padding: "30px 30px 30px 30px",
   },
   createButton: {
-    position: 'fixed',
+    position: "fixed",
     bottom: 30,
     right: 30,
   },
   importButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 30,
     right: 30,
   },
@@ -106,17 +110,19 @@ const courseOfActionMutationRelationDelete = graphql`
   }
 `;
 
-const courseOfActionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  x_opencti_threat_hunting: Yup.string().nullable(),
-  x_opencti_log_sources: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
+const courseOfActionValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t("This field is required")),
+    description: Yup.string()
+      .min(3, t("The value is too short"))
+      .max(5000, t("The value is too long"))
+      .required(t("This field is required")),
+    x_opencti_threat_hunting: Yup.string().nullable(),
+    x_opencti_log_sources: Yup.string().nullable(),
+    references: Yup.array().required(t("This field is required")),
+    x_opencti_workflow_id: Yup.object(),
+    x_mitre_id: Yup.string().nullable(),
+  });
 
 class CourseOfActionEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
@@ -133,10 +139,10 @@ class CourseOfActionEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     let finalValue = value;
-    if (name === 'x_opencti_log_sources') {
-      finalValue = split('\n', value);
+    if (name === "x_opencti_log_sources") {
+      finalValue = split("\n", value);
     }
-    if (name === 'x_opencti_workflow_id') {
+    if (name === "x_opencti_workflow_id") {
       finalValue = value.value;
     }
     courseOfActionValidation(this.props.t)
@@ -146,7 +152,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
           mutation: courseOfActionMutationFieldPatch,
           variables: {
             id: this.props.courseOfAction.id,
-            input: { key: name, value: finalValue ?? '' },
+            input: { key: name, value: finalValue ?? "" },
           },
         });
       })
@@ -159,7 +165,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
         mutation: courseOfActionMutationFieldPatch,
         variables: {
           id: this.props.courseOfAction.id,
-          input: { key: 'createdBy', value: value.value || '' },
+          input: { key: "createdBy", value: value.value || "" },
         },
       });
     }
@@ -168,11 +174,11 @@ class CourseOfActionEditionOverviewComponent extends Component {
   handleChangeObjectMarking(name, values) {
     const { courseOfAction } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
+      pathOr([], ["objectMarking", "edges"]),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-      })),
+      }))
     )(courseOfAction);
 
     const added = difference(values, currentMarkingDefinitions);
@@ -185,7 +191,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
           id: this.props.courseOfAction.id,
           input: {
             toId: head(added).value,
-            relationship_type: 'object-marking',
+            relationship_type: "object-marking",
           },
         },
       });
@@ -197,7 +203,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
         variables: {
           id: this.props.courseOfAction.id,
           toId: head(removed).value,
-          relationship_type: 'object-marking',
+          relationship_type: "object-marking",
         },
       });
     }
@@ -209,19 +215,21 @@ class CourseOfActionEditionOverviewComponent extends Component {
     const objectMarking = convertMarkings(courseOfAction);
     const status = convertStatus(t, courseOfAction);
     const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      assoc('x_opencti_workflow_id', status),
+      assoc("createdBy", createdBy),
+      assoc("objectMarking", objectMarking),
+      assoc("x_opencti_workflow_id", status),
       pick([
-        'name',
-        'description',
-        'x_opencti_threat_hunting',
-        'x_opencti_log_sources',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
+        "name",
+        "description",
+        "x_mitre_id",
+        "x_opencti_threat_hunting",
+        "x_opencti_log_sources",
+        "createdBy",
+        "killChainPhases",
+        "objectMarking",
+        "x_opencti_workflow_id",
+        "x_mitre_id",
+      ])
     )(courseOfAction);
     return (
       <Formik
@@ -231,12 +239,12 @@ class CourseOfActionEditionOverviewComponent extends Component {
         onSubmit={() => true}
       >
         {({ setFieldValue }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form style={{ margin: "20px 0 20px 0" }}>
             <Field
               component={TextField}
               variant="standard"
               name="name"
-              label={t('Name')}
+              label={t("Name")}
               fullWidth={true}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
@@ -245,9 +253,22 @@ class CourseOfActionEditionOverviewComponent extends Component {
               }
             />
             <Field
+              component={TextField}
+              variant="standard"
+              name="x_mitre_id"
+              label={t("External ID")}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="x_mitre_id" />
+              }
+            />
+            <Field
               component={MarkDownField}
               name="description"
-              label={t('Description')}
+              label={t("Description")}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -261,7 +282,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
             <Field
               component={MarkDownField}
               name="x_opencti_threat_hunting"
-              label={t('Threat hunting techniques')}
+              label={t("Threat hunting techniques")}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -279,7 +300,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
               component={TextField}
               variant="standard"
               name="x_opencti_log_sources"
-              label={t('Log sources (1 / line)')}
+              label={t("Log sources (1 / line)")}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -294,24 +315,24 @@ class CourseOfActionEditionOverviewComponent extends Component {
               }
             />
             {courseOfAction.workflowEnabled && (
-                <StatusField
-                    name="x_opencti_workflow_id"
-                    type="Course-Of-Action"
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onChange={this.handleSubmitField.bind(this)}
-                    setFieldValue={setFieldValue}
-                    style={{ marginTop: 20 }}
-                    helpertext={
-                      <SubscriptionFocus
-                          context={context}
-                          fieldName="x_opencti_workflow_id"
-                      />
-                    }
-                />
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="Course-Of-Action"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
+                }
+              />
             )}
             <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={{ marginTop: 20, width: "100%" }}
               setFieldValue={setFieldValue}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -320,7 +341,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={{ marginTop: 20, width: "100%" }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
@@ -354,6 +375,7 @@ const CourseOfActionEditionOverview = createFragmentContainer(
         description
         x_opencti_threat_hunting
         x_opencti_log_sources
+        x_mitre_id
         createdBy {
           ... on Identity {
             id
@@ -381,10 +403,10 @@ const CourseOfActionEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
+  }
 );
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
+  withStyles(styles, { withTheme: true })
 )(CourseOfActionEditionOverview);
