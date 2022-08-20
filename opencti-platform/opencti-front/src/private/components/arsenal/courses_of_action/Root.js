@@ -14,7 +14,7 @@ import CourseOfActionPopover from './CourseOfActionPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -99,6 +99,15 @@ class RootCourseOfAction extends Component {
                       )}
                     />
                     <Route
+                      path="/dashboard/arsenal/courses_of_action/:courseOfActionId/knowledge"
+                      render={(routeProps) => (
+                        <CourseOfActionKnowledge
+                          {...routeProps}
+                          courseOfAction={props.courseOfAction}
+                        />
+                      )}
+                    />
+                    <Route
                       exact
                       path="/dashboard/arsenal/courses_of_action/:courseOfActionId/files"
                       render={(routeProps) => (
@@ -131,16 +140,6 @@ class RootCourseOfAction extends Component {
                             stixCoreObjectId={courseOfActionId}
                           />
                         </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/arsenal/courses_of_action/:courseOfActionId/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={courseOfActionId}
-                          {...routeProps}
-                        />
                       )}
                     />
                   </Switch>

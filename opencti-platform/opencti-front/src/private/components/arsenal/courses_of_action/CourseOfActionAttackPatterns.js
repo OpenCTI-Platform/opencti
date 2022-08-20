@@ -11,8 +11,13 @@ import Avatar from '@mui/material/Avatar';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import { LinkOff } from '@mui/icons-material';
+import {
+  ExpandLessOutlined,
+  ExpandMoreOutlined,
+  LinkOff,
+} from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
+import * as R from 'ramda';
 import { truncate } from '../../../../utils/String';
 import AddCoursesOfAction from './AddAttackPatterns';
 import { addAttackPatternsLinesMutationRelationDelete } from './AddAttackPatternsLines';
@@ -40,6 +45,17 @@ const styles = (theme) => ({
 });
 
 class CourseOfActionAttackPatternComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      expanded: false,
+    };
+  }
+
+  handleToggleExpand() {
+    this.setState({ expanded: !this.state.expanded });
+  }
+
   removeAttackPattern(attackPatternEdge) {
     commitMutation({
       mutation: addAttackPatternsLinesMutationRelationDelete,
@@ -64,6 +80,9 @@ class CourseOfActionAttackPatternComponent extends Component {
 
   render() {
     const { t, classes, courseOfAction } = this.props;
+    const { expanded } = this.state;
+    const attackPatternsEdges = courseOfAction.attackPatterns.edges;
+    const expandable = attackPatternsEdges.length > 7;
     return (
       <div style={{ marginTop: 20 }}>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -73,43 +92,56 @@ class CourseOfActionAttackPatternComponent extends Component {
           courseOfActionId={courseOfAction.id}
           courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
         />
+        <div style={{ float: 'right', marginRight: 15 }}>
+          {expandable && (
+            <IconButton
+              color="primary"
+              size="large"
+              onClick={this.handleToggleExpand.bind(this)}
+            >
+              {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
+            </IconButton>
+          )}
+        </div>
         <div className="clearfix" />
         <List classes={{ root: classes.list }}>
-          {courseOfAction.attackPatterns.edges.map((attackPatternEdge) => {
-            const attackPattern = attackPatternEdge.node;
-            return (
-              <ListItem
-                key={attackPattern.id}
-                dense={true}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/arsenal/attack_patterns/${attackPattern.id}`}
-              >
-                <ListItemIcon>
-                  <Avatar classes={{ root: classes.avatar }}>
-                    {attackPattern.name.substring(0, 1)}
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText
-                  primary={attackPattern.name}
-                  secondary={truncate(attackPattern.description, 60)}
-                />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    aria-label="Remove"
-                    onClick={this.removeAttackPattern.bind(
-                      this,
-                      attackPatternEdge,
-                    )}
-                    size="large"
-                  >
-                    <LinkOff />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            );
-          })}
+          {R.take(expanded ? 200 : 7, attackPatternsEdges).map(
+            (attackPatternEdge) => {
+              const attackPattern = attackPatternEdge.node;
+              return (
+                <ListItem
+                  key={attackPattern.id}
+                  dense={true}
+                  divider={true}
+                  button={true}
+                  component={Link}
+                  to={`/dashboard/arsenal/attack_patterns/${attackPattern.id}`}
+                >
+                  <ListItemIcon>
+                    <Avatar classes={{ root: classes.avatar }}>
+                      {attackPattern.name.substring(0, 1)}
+                    </Avatar>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={attackPattern.name}
+                    secondary={truncate(attackPattern.description, 60)}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={this.removeAttackPattern.bind(
+                        this,
+                        attackPatternEdge,
+                      )}
+                      size="large"
+                    >
+                      <LinkOff />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              );
+            },
+          )}
         </List>
       </div>
     );
