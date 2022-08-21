@@ -312,6 +312,20 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (
+      this.props.targetEntities
+      && this.props.targetEntities.length > 0
+      && !R.equals(this.props.targetEntities, prevProps.targetEntities)
+    ) {
+      this.setState({
+        open: true,
+        step: 1,
+        targetEntities: this.props.targetEntities,
+      });
+    }
+  }
+
   handleOpen() {
     this.setState({ open: true });
   }
@@ -962,6 +976,7 @@ StixCoreRelationshipCreationFromEntity.propTypes = {
   defaultStopTime: PropTypes.string,
   isEntitiesView: PropTypes.bool,
   entitiesViewPaginationKey: PropTypes.string,
+  targetEntities: PropTypes.array,
 };
 
 export default R.compose(

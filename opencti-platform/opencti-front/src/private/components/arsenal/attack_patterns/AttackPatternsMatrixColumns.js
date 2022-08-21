@@ -4,7 +4,14 @@ import * as R from 'ramda';
 import { graphql, createRefetchContainer } from 'react-relay';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Menu from '@mui/material/Menu';
+import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
+import { ListItemIcon, ListItemText } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import { attackPatternsLinesQuery } from './AttackPatternsLines';
 import { computeLevel } from '../../../../utils/Number';
@@ -17,12 +24,13 @@ const styles = (theme) => ({
     overflow: 'scroll',
     whiteSpace: 'nowrap',
     paddingBottom: 20,
-    minWidth: 'calc(100vw - 243px)',
-    minHeight: 'calc(100vh - 230px)',
-    width: 'calc(100vw - 243px)',
-    height: 'calc(100vh - 230px)',
-    maxWidth: 'calc(100vw - 243px)',
-    maxHeight: 'calc(100vh - 320px)',
+    minWidth: 'calc(100vw - 235px)',
+    minHeight: 'calc(100vh - 220px)',
+    width: 'calc(100vw - 235px)',
+    height: 'calc(100vh - 220px)',
+    maxWidth: 'calc(100vw - 235px)',
+    maxHeight: 'calc(100vh - 220px)',
+    position: 'relative',
   },
   containerWithMarginRight: {
     margin: '15px 0 -24px 0',
@@ -30,11 +38,25 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 430px)',
-    minHeight: 'calc(100vh - 260px)',
+    minHeight: 'calc(100vh - 200px)',
     width: 'calc(100vw - 430px)',
-    height: 'calc(100vh - 260px)',
+    height: 'calc(100vh - 200px)',
     maxWidth: 'calc(100vw - 430px)',
-    maxHeight: 'calc(100vh - 260px)',
+    maxHeight: 'calc(100vh - 200px)',
+    position: 'relative',
+  },
+  containerWithMarginRightNoBar: {
+    margin: '15px 0 -24px 0',
+    overflow: 'scroll',
+    whiteSpace: 'nowrap',
+    paddingBottom: 20,
+    minWidth: 'calc(100vw - 430px)',
+    minHeight: 'calc(100vh - 200px)',
+    width: 'calc(100vw - 430px)',
+    height: 'calc(100vh - 200px)',
+    maxWidth: 'calc(100vw - 430px)',
+    maxHeight: 'calc(100vh - 200px)',
+    position: 'relative',
   },
   header: {
     borderBottom: theme.palette.divider,
@@ -69,11 +91,22 @@ const styles = (theme) => ({
     whiteSpace: 'normal',
     backgroundColor: theme.palette.background.paper,
     verticalAlign: 'top',
+    position: 'relative',
     cursor: 'pointer',
   },
   name: {
     fontSize: 10,
     fontWeight: 400,
+  },
+  switchKillChain: {
+    position: 'fixed',
+    left: 200,
+    bottom: 40,
+    backgroundColor: theme.palette.background.paper,
+    padding: '0 10px 2px 10px',
+    zIndex: 1000,
+    borderRadius: 5,
+    border: `1px solid ${theme.palette.primary.main}`,
   },
 });
 
@@ -115,7 +148,22 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       currentColorsReversed: false,
       currentKillChain: 'mitre-attack',
       hover: {},
+      anchorEl: null,
+      menuElement: null,
     };
+  }
+
+  handleOpen(element, event) {
+    this.setState({ anchorEl: event.currentTarget, menuElement: element });
+  }
+
+  handleClose() {
+    this.setState({ anchorEl: null, menuElement: null });
+  }
+
+  localHandleAdd(element) {
+    this.handleClose();
+    this.props.handleAdd(element);
   }
 
   handleToggleHover(elementId) {
@@ -169,8 +217,10 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       currentKillChain,
       currentColorsReversed,
       currentModeOnlyActive,
+      hideBar,
+      handleAdd,
     } = this.props;
-    const { hover } = this.state;
+    const { hover, menuElement } = this.state;
     let changeKillChain = handleChangeKillChain;
     if (typeof changeKillChain !== 'function') {
       changeKillChain = this.handleChangeKillChain;
@@ -277,18 +327,42 @@ class AttackPatternsMatrixColumnsComponent extends Component {
     return (
       <div
         className={
-          marginRight ? classes.containerWithMarginRight : classes.container
+          // eslint-disable-next-line no-nested-ternary
+          marginRight
+            ? hideBar
+              ? classes.containerWithMarginRightNoBar
+              : classes.containerWithMarginRight
+            : classes.container
         }
       >
-        <AttackPtternsMatrixBar
-          currentModeOnlyActive={modeOnlyActive}
-          handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
-          currentColorsReversed={modeColorsReversed}
-          handleToggleColorsReversed={toggleColorsReversed.bind(this)}
-          currentKillChain={killChain}
-          handleChangeKillChain={changeKillChain.bind(this)}
-          killChains={killChains}
-        />
+        {hideBar ? (
+          <div className={classes.switchKillChain}>
+            <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+              <InputLabel>{t('Kill chain')}</InputLabel>
+              <Select
+                size="small"
+                value={killChain}
+                onChange={changeKillChain.bind(this)}
+              >
+                {killChains.map((killChainName) => (
+                  <MenuItem key={killChainName} value={killChainName}>
+                    {killChainName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        ) : (
+          <AttackPtternsMatrixBar
+            currentModeOnlyActive={modeOnlyActive}
+            handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
+            currentColorsReversed={modeColorsReversed}
+            handleToggleColorsReversed={toggleColorsReversed.bind(this)}
+            currentKillChain={killChain}
+            handleChangeKillChain={changeKillChain.bind(this)}
+            killChains={killChains}
+          />
+        )}
         <div
           id="container"
           style={{ width: attackPatternsOfPhases.length * 161 }}
@@ -313,42 +387,62 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                   const level = isHover && a.level !== 0 ? a.level - 1 : a.level;
                   const position = isHover && level === 0 ? 2 : 1;
                   return (
-                    <Link
+                    <div
                       key={a.id}
-                      to={`/dashboard/arsenal/attack_patterns/${a.id}`}
-                    >
-                      <div
-                        className={classes.element}
-                        style={{
-                          border: `1px solid ${
-                            modeColorsReversed
-                              ? colorsReversed(theme.palette.background.accent)[
-                                level
-                              ][0]
-                              : colors(theme.palette.background.accent)[
-                                level
-                              ][0]
-                          }`,
-                          backgroundColor: modeColorsReversed
+                      className={classes.element}
+                      style={{
+                        border: `1px solid ${
+                          modeColorsReversed
                             ? colorsReversed(theme.palette.background.accent)[
                               level
-                            ][position]
-                            : colors(theme.palette.background.accent)[level][
-                              position
-                            ],
-                        }}
-                        onMouseEnter={this.handleToggleHover.bind(this, a.id)}
-                        onMouseLeave={this.handleToggleHover.bind(this, a.id)}
-                      >
-                        <div className={classes.name}>{a.name}</div>
-                      </div>
-                    </Link>
+                            ][0]
+                            : colors(theme.palette.background.accent)[level][0]
+                        }`,
+                        backgroundColor: modeColorsReversed
+                          ? colorsReversed(theme.palette.background.accent)[
+                            level
+                          ][position]
+                          : colors(theme.palette.background.accent)[level][
+                            position
+                          ],
+                      }}
+                      onMouseEnter={this.handleToggleHover.bind(this, a.id)}
+                      onMouseLeave={this.handleToggleHover.bind(this, a.id)}
+                      onClick={this.handleOpen.bind(this, a)}
+                    >
+                      <div className={classes.name}>{a.name}</div>
+                    </div>
                   );
                 })}
               </div>
             ))}
           </div>
         </div>
+        <Menu
+          anchorEl={this.state.anchorEl}
+          open={Boolean(this.state.anchorEl)}
+          onClose={this.handleClose.bind(this)}
+          disableAutoFocusItem={true}
+        >
+          <MenuItem
+            component={Link}
+            to={`/dashboard/arsenal/attack_patterns/${menuElement?.id}`}
+            target="_blank"
+          >
+            <ListItemIcon>
+              <InfoOutlined fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>{t('View')}</ListItemText>
+          </MenuItem>
+          {handleAdd && (
+            <MenuItem onClick={this.localHandleAdd.bind(this, menuElement)}>
+              <ListItemIcon>
+                <AddCircleOutlineOutlined fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{t('Add')}</ListItemText>
+            </MenuItem>
+          )}
+        </Menu>
       </div>
     );
   }
@@ -369,6 +463,8 @@ AttackPatternsMatrixColumnsComponent.propTypes = {
   currentKillChain: PropTypes.bool,
   currentColorsReversed: PropTypes.bool,
   currentModeOnlyActive: PropTypes.bool,
+  hideBar: PropTypes.bool,
+  handleAdd: PropTypes.func,
 };
 
 export const attackPatternsMatrixColumnsQuery = graphql`
@@ -412,6 +508,8 @@ const AttackPatternsMatrixColumns = createRefetchContainer(
           edges {
             node {
               id
+              entity_type
+              parent_types
               name
               description
               isSubAttackPattern
@@ -448,5 +546,6 @@ const AttackPatternsMatrixColumns = createRefetchContainer(
 export default R.compose(
   inject18n,
   withTheme,
+  withRouter,
   withStyles(styles),
 )(AttackPatternsMatrixColumns);

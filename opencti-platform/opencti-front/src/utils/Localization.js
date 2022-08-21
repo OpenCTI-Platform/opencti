@@ -1483,7 +1483,7 @@ const i18n = {
       'Other STIX IDs': '其它STIX IDs',
       // Interface
       Login: '登录',
-      'Two-factor Verification': '兩因素驗證',
+      'Two-factor authentication': '两因素身份验证',
       'Use 2FA authentication': '使用 2FA 身份驗證',
       Search: '搜索',
       Active: '活跃',

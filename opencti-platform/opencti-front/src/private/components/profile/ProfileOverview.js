@@ -348,7 +348,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
-                    variant="outlined"
+                    variant="standard"
                     name="firstname"
                     label={t('Firstname')}
                     fullWidth={true}

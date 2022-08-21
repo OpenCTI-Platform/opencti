@@ -32,6 +32,8 @@ class AttackPatternsMatrix extends Component {
       currentKillChain,
       currentColorsReversed,
       currentModeOnlyActive,
+      hideBar,
+      handleAdd,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -55,6 +57,8 @@ class AttackPatternsMatrix extends Component {
                   currentKillChain={currentKillChain}
                   currentColorsReversed={currentColorsReversed}
                   currentModeOnlyActive={currentModeOnlyActive}
+                  hideBar={hideBar}
+                  handleAdd={handleAdd}
                 />
               );
             }
@@ -80,6 +84,8 @@ AttackPatternsMatrix.propTypes = {
   currentKillChain: PropTypes.bool,
   currentColorsReversed: PropTypes.bool,
   currentModeOnlyActive: PropTypes.bool,
+  hideBar: PropTypes.bool,
+  handleAdd: PropTypes.func,
 };
 
 export default compose(

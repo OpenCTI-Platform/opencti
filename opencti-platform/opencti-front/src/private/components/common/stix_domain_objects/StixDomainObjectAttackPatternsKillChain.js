@@ -4,12 +4,18 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql, createRefetchContainer } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined, ViewColumnOutlined } from '@mui/icons-material';
+import {
+  ViewListOutlined,
+  ViewColumnOutlined,
+  InvertColorsOffOutlined,
+  FilterAltOutlined,
+} from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { last, map, toPairs } from 'ramda';
 import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -75,6 +81,27 @@ const styles = (theme) => ({
 });
 
 class StixDomainObjectAttackPatternsKillChainComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      currentModeOnlyActive: false,
+      currentColorsReversed: false,
+      targetEntities: [],
+    };
+  }
+
+  handleToggleModeOnlyActive() {
+    this.setState({ currentModeOnlyActive: !this.state.currentModeOnlyActive });
+  }
+
+  handleToggleColorsReversed() {
+    this.setState({ currentColorsReversed: !this.state.currentColorsReversed });
+  }
+
+  handleAdd(entity) {
+    this.setState({ targetEntities: [entity] });
+  }
+
   render() {
     const {
       t,
@@ -93,6 +120,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       defaultStartTime,
       defaultStopTime,
     } = this.props;
+    const { currentColorsReversed, currentModeOnlyActive, targetEntities } = this.state;
     let csvData = null;
     if (currentView === 'courses-of-action') {
       csvData = R.pipe(
@@ -110,6 +138,44 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               keyword={searchTerm}
               onSubmit={handleSearch.bind(this)}
             />
+          </div>
+          <div
+            style={{ float: 'left', display: 'flex', margin: '-6px 4px 0 0' }}
+          >
+            <Tooltip
+              title={
+                currentModeOnlyActive
+                  ? t('Display the whole matrix')
+                  : t('Display only used techniques')
+              }
+            >
+              <span>
+                <IconButton
+                  color={currentModeOnlyActive ? 'secondary' : 'primary'}
+                  onClick={this.handleToggleModeOnlyActive.bind(this)}
+                  size="large"
+                >
+                  <FilterAltOutlined fontSize="medium" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip
+              title={
+                currentColorsReversed
+                  ? t('Disable invert colors')
+                  : t('Enable invert colors')
+              }
+            >
+              <span>
+                <IconButton
+                  color={currentColorsReversed ? 'secondary' : 'primary'}
+                  onClick={this.handleToggleColorsReversed.bind(this)}
+                  size="large"
+                >
+                  <InvertColorsOffOutlined fontSize="medium" />
+                </IconButton>
+              </span>
+            </Tooltip>
           </div>
           <Filters
             availableFilterKeys={[
@@ -222,6 +288,15 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               data={data}
               entityLink={entityLink}
               searchTerm={searchTerm}
+              handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+                this,
+              )}
+              handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
+                this,
+              )}
+              currentColorsReversed={currentColorsReversed}
+              currentModeOnlyActive={currentModeOnlyActive}
+              handleAdd={this.handleAdd.bind(this)}
             />
           )}
           {currentView === 'courses-of-action' && (
@@ -244,6 +319,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               paginationOptions={paginationOptions}
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}
+              targetEntities={targetEntities}
             />
           </Security>
         </div>
