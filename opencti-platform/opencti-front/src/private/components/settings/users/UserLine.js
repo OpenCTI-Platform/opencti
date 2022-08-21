@@ -91,11 +91,15 @@ class UserLineComponent extends Component {
                 {node.lastname}
               </div>
               <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.otp.width }}
+                className={classes.bodyItem}
+                style={{ width: dataColumns.otp.width }}
               >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  {node.otp_activated ? <Security fontSize="small" /> : <HorizontalRule fontSize="small" /> }
+                  {node.otp_activated ? (
+                    <Security fontSize="small" />
+                  ) : (
+                    <HorizontalRule fontSize="small" />
+                  )}
                 </ListItemIcon>
               </div>
               <div
@@ -205,14 +209,14 @@ class UserLineDummyComponent extends Component {
                 />
               </div>
               <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.otp.width }}
+                className={classes.bodyItem}
+                style={{ width: dataColumns.otp.width }}
               >
                 <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width={40}
-                    height="100%"
+                  animation="wave"
+                  variant="rectangular"
+                  width={40}
+                  height="100%"
                 />
               </div>
               <div

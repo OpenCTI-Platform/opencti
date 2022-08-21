@@ -15,7 +15,11 @@ import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -145,7 +149,8 @@ class CityEditionOverviewComponent extends Component {
       variables: {
         id: this.props.city.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -313,20 +318,20 @@ class CityEditionOverviewComponent extends Component {
               }
             />
             {city.workflowEnabled && (
-                <StatusField
-                    name="x_opencti_workflow_id"
-                    type="City"
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onChange={this.handleSubmitField.bind(this)}
-                    setFieldValue={setFieldValue}
-                    style={{ marginTop: 20 }}
-                    helpertext={
-                      <SubscriptionFocus
-                          context={context}
-                          fieldName="x_opencti_workflow_id"
-                      />
-                    }
-                />
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="City"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
+                }
+              />
             )}
             <CreatedByField
               name="createdBy"

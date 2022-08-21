@@ -314,7 +314,10 @@ class IndicatorEditionOverviewComponent extends Component {
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
       R.assoc('x_opencti_workflow_id', status),
-      R.assoc('x_mitre_platforms', R.propOr([], 'x_mitre_platforms', indicator)),
+      R.assoc(
+        'x_mitre_platforms',
+        R.propOr([], 'x_mitre_platforms', indicator),
+      ),
       R.assoc('indicator_types', R.propOr([], 'indicator_types', indicator)),
       R.assoc('valid_from', buildDate(indicator.valid_from)),
       R.assoc('valid_until', buildDate(indicator.valid_until)),

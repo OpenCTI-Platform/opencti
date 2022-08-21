@@ -320,18 +320,22 @@ class StixSightingRelationshipContainer extends Component {
                       stixSightingRelationship.objectMarking.edges,
                     )}
                   {stixSightingRelationship.x_opencti_inferences === null && (
-                      <div>
-                        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
-                          {t('Author')}
-                        </Typography>
-                        <ItemAuthor
-                            createdBy={R.propOr(
-                              null,
-                              'createdBy',
-                              stixSightingRelationship,
-                            )}
-                        />
-                      </div>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Author')}
+                      </Typography>
+                      <ItemAuthor
+                        createdBy={R.propOr(
+                          null,
+                          'createdBy',
+                          stixSightingRelationship,
+                        )}
+                      />
+                    </div>
                   )}
                   <Typography
                     variant="h3"
@@ -355,19 +359,24 @@ class StixSightingRelationshipContainer extends Component {
                     {t('Processing status')}
                   </Typography>
                   <ItemStatus
-                      status={stixSightingRelationship.status}
-                      disabled={!stixSightingRelationship.workflowEnabled}
+                    status={stixSightingRelationship.status}
+                    disabled={!stixSightingRelationship.workflowEnabled}
                   />
-                  <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
                     {t('Confidence level')}
                   </Typography>
                   <ItemConfidence
-                      confidence={stixSightingRelationship.confidence}
+                    confidence={stixSightingRelationship.confidence}
                   />
                   <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}>
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
                     {t('Creation date (in this platform)')}
                   </Typography>
                   {fldt(stixSightingRelationship.created_at)}
@@ -427,9 +436,7 @@ class StixSightingRelationshipContainer extends Component {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Count')}
                   </Typography>
-                  <span>
-                    {n(stixSightingRelationship.attribute_count)}
-                  </span>
+                  <span>{n(stixSightingRelationship.attribute_count)}</span>
                   {stixSightingRelationship.x_opencti_inferences === null && (
                     <div>
                       <Typography

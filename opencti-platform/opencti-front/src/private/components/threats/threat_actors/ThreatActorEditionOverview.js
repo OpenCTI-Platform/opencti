@@ -18,7 +18,11 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -148,7 +152,8 @@ class ThreatActorEditionOverviewComponent extends Component {
       variables: {
         id: this.props.threatActor.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -246,7 +251,10 @@ class ThreatActorEditionOverviewComponent extends Component {
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
       R.assoc('x_opencti_workflow_id', status),
-      R.assoc('threat_actor_types', threatActor.threat_actor_types ? threatActor.threat_actor_types : []),
+      R.assoc(
+        'threat_actor_types',
+        threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
+      ),
       R.pick([
         'name',
         'threat_actor_types',

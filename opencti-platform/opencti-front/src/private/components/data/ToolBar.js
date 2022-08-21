@@ -1062,21 +1062,27 @@ class ToolBar extends Component {
             </Tooltip>
             <UserContext.Consumer>
               {({ helper }) => {
-                const label = helper.isRuleEngineEnable() ? 'Rule rescan' : 'Rule rescan (engine is disabled)';
-                const buttonDisable = !helper.isRuleEngineEnable() || numberOfSelectedElements === 0
-                    || this.state.processing;
-                return <Tooltip title={t(label)}>
-                  <span>
-                    <IconButton
+                const label = helper.isRuleEngineEnable()
+                  ? 'Rule rescan'
+                  : 'Rule rescan (engine is disabled)';
+                const buttonDisable = !helper.isRuleEngineEnable()
+                  || numberOfSelectedElements === 0
+                  || this.state.processing;
+                return (
+                  <Tooltip title={t(label)}>
+                    <span>
+                      <IconButton
                         aria-label="update"
                         disabled={buttonDisable}
                         onClick={this.handleOpenRescan.bind(this)}
                         color="primary"
-                        size="large">
-                      <AutoFix />
-                    </IconButton>
-                  </span>
-                </Tooltip>;
+                        size="large"
+                      >
+                        <AutoFix />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                );
               }}
             </UserContext.Consumer>
             <Tooltip title={t('Merge')}>
@@ -1600,20 +1606,20 @@ class ToolBar extends Component {
           </div>
         </Drawer>
         <Drawer
-            open={this.state.displayRescan}
-            anchor="right"
-            elevation={1}
-            sx={{ zIndex: 1202 }}
-            classes={{ paper: classes.drawerPaper }}
-            onClose={this.handleCloseRescan.bind(this)}
+          open={this.state.displayRescan}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseRescan.bind(this)}
         >
           <div className={classes.header}>
             <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={this.handleCloseRescan.bind(this)}
-                size="large"
-                color="primary"
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleCloseRescan.bind(this)}
+              size="large"
+              color="primary"
             >
               <CloseOutlined fontSize="small" color="primary" />
             </IconButton>
@@ -1621,23 +1627,22 @@ class ToolBar extends Component {
           </div>
           <div className={classes.container}>
             <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              variant="h4"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
             >
               {t('Selected rules')}
             </Typography>
             <Alert severity="warning" style={{ marginTop: 20 }}>
-              {t(
-                'Element will be rescan with all compatible activated rules',
-              )}
+              {t('Element will be rescan with all compatible activated rules')}
             </Alert>
             <div className={classes.buttons}>
               <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={this.handleLaunchRescan.bind(this)}
-                  classes={{ root: classes.button }}>
+                variant="contained"
+                color="secondary"
+                onClick={this.handleLaunchRescan.bind(this)}
+                classes={{ root: classes.button }}
+              >
                 {t('Rescan')}
               </Button>
             </div>

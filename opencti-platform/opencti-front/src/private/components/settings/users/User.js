@@ -283,12 +283,21 @@ class UserComponent extends Component {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('2FA Status')}
                   </Typography>
-                  { user.otp_activated ? <span>Activated</span> : <span>Disable</span>}
-                  { user.otp_activated && <IconButton color="secondary" onClick={this.otpUserDeactivation.bind(this)}
-                                  aria-label="Delete all" size="large">
-                        <DeleteForeverOutlined fontSize="small"/>
-                      </IconButton>
-                  }
+                  {user.otp_activated ? (
+                    <span>Activated</span>
+                  ) : (
+                    <span>Disable</span>
+                  )}
+                  {user.otp_activated && (
+                    <IconButton
+                      color="secondary"
+                      onClick={this.otpUserDeactivation.bind(this)}
+                      aria-label="Delete all"
+                      size="large"
+                    >
+                      <DeleteForeverOutlined fontSize="small" />
+                    </IconButton>
+                  )}
                 </Grid>
                 <Grid item={true} xs={12}>
                   <Typography variant="h3" gutterBottom={true}>

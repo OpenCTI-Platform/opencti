@@ -18,11 +18,7 @@ const Root = () => (
       path="/dashboard/data"
       render={() => <Redirect to="/dashboard/data/entities" />}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/data/entities"
-      component={Entities}
-    />
+    <BoundaryRoute exact path="/dashboard/data/entities" component={Entities} />
     <BoundaryRoute
       exact
       path="/dashboard/data/relationships"

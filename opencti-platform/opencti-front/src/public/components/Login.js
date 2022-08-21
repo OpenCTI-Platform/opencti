@@ -157,26 +157,30 @@ const Login = ({ classes, theme, settings, type }) => {
   }
   const marginTop = dimension.height / 2 - loginHeight / 2 - 200;
 
-  const loginScreen = () => <div>
+  const loginScreen = () => (
+    <div>
       {loginMessage && loginMessage.length > 0 && (
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            <Markdown>{loginMessage}</Markdown>
-          </Paper>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Markdown>{loginMessage}</Markdown>
+        </Paper>
       )}
       {isAuthForm && (
-          <Paper variant="outlined">
-            <LoginForm />
-          </Paper>
+        <Paper variant="outlined">
+          <LoginForm />
+        </Paper>
       )}
       {isAuthButtons && renderExternalAuth(authSSOs)}
       {providers.length === 0 && (
-          <div>No authentication provider available</div>
+        <div>No authentication provider available</div>
       )}
-    </div>;
+    </div>
+  );
 
-  const otpScreen = () => <div>
-    <OTPForm />
-  </div>;
+  const otpScreen = () => (
+    <div>
+      <OTPForm />
+    </div>
+  );
 
   return (
     <div className={classes.container} style={{ marginTop }}>
@@ -189,7 +193,7 @@ const Login = ({ classes, theme, settings, type }) => {
         alt="logo"
         className={classes.logo}
       />
-      { type === '2FA' ? otpScreen() : loginScreen() }
+      {type === '2FA' ? otpScreen() : loginScreen()}
     </div>
   );
 };

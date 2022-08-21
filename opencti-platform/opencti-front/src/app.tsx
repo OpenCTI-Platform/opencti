@@ -17,7 +17,10 @@ const App = () => (
       <AuthBoundaryComponent>
         <RedirectManager>
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace={true} />} />
+            <Route
+              path="/"
+              element={<Navigate to="/dashboard" replace={true} />}
+            />
             <Route path="/dashboard/*" element={<RootPrivate />} />
           </Routes>
         </RedirectManager>

@@ -249,7 +249,7 @@ class IndicatorsRightBar extends Component {
             return <div />;
           }}
         />
-      </Drawer >
+      </Drawer>
     );
   }
 }

@@ -161,10 +161,13 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
       finalFilters = R.filter((n) => n.key !== 'toId', finalFilters);
     }
     if (paginationOptions.fromTypes) {
-      finalFilters = R.append({
-        key: 'fromTypes',
-        values: paginationOptions.fromTypes,
-      }, finalFilters);
+      finalFilters = R.append(
+        {
+          key: 'fromTypes',
+          values: paginationOptions.fromTypes,
+        },
+        finalFilters,
+      );
     } else {
       finalFilters = R.filter((n) => n.key !== 'fromTypes', finalFilters);
     }

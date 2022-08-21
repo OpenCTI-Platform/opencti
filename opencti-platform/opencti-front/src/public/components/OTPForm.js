@@ -21,9 +21,9 @@ const otpMutation = graphql`
 `;
 
 const logoutMutation = graphql`
-    mutation OTPFormLogoutMutation {
-        logout
-    }
+  mutation OTPFormLogoutMutation {
+    logout
+  }
 `;
 
 const OTPForm = () => {
@@ -59,35 +59,37 @@ const OTPForm = () => {
       <h2>{t('Two-factor Verification')}</h2>
       <div>
         <OtpInput
-            value={code}
-            onChange={handleChange}
-            numInputs={OPT_CODE_SIZE}
-            isDisabled={inputDisable}
-            separator={<span style={{ width: '8px' }}></span>}
-            isInputNum={true}
-            shouldAutoFocus={true}
-            inputStyle={{
-              border: '1px solid transparent',
-              borderRadius: '8px',
-              width: '54px',
-              height: '54px',
-              fontSize: '16px',
-              color: '#000',
-              fontWeight: '400',
-              caretColor: 'blue',
-            }}
-            focusStyle={{
-              border: '1px solid #CFD3DB',
-              outline: 'none',
-            }}
+          value={code}
+          onChange={handleChange}
+          numInputs={OPT_CODE_SIZE}
+          isDisabled={inputDisable}
+          separator={<span style={{ width: '8px' }}></span>}
+          isInputNum={true}
+          shouldAutoFocus={true}
+          inputStyle={{
+            border: '1px solid transparent',
+            borderRadius: '8px',
+            width: '54px',
+            height: '54px',
+            fontSize: '16px',
+            color: '#000',
+            fontWeight: '400',
+            caretColor: 'blue',
+          }}
+          focusStyle={{
+            border: '1px solid #CFD3DB',
+            outline: 'none',
+          }}
         />
-          <Button type="submit"
-              variant="contained"
-              color="primary"
-              onClick={handleLogout}
-              style={{ marginTop: 30 }}>
-              {t('Cancel')}
-          </Button>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          onClick={handleLogout}
+          style={{ marginTop: 30 }}
+        >
+          {t('Cancel')}
+        </Button>
       </div>
     </div>
   );

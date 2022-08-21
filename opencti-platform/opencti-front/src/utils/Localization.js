@@ -28,7 +28,7 @@ const i18n = {
       // Interface
       Login: "Nom d'utilisateur",
       'Two-factor Verification': 'Vérification à deux facteurs',
-      'Use 2FA authentication': 'Utiliser l\'authentification à deux facteurs',
+      'Use 2FA authentication': "Utiliser l'authentification à deux facteurs",
       Search: 'Rechercher',
       Active: 'Actif',
       'Last update': 'Dernière mise à jour',

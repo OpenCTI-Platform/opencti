@@ -24,7 +24,11 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -311,20 +315,20 @@ class AttackPatternEditionOverviewComponent extends Component {
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
             {attackPattern.workflowEnabled && (
-                <StatusField
-                    name="x_opencti_workflow_id"
-                    type="Attack-Pattern"
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onChange={this.handleSubmitField.bind(this)}
-                    setFieldValue={setFieldValue}
-                    style={{ marginTop: 20 }}
-                    helpertext={
-                      <SubscriptionFocus
-                          context={context}
-                          fieldName="x_opencti_workflow_id"
-                      />
-                    }
-                />
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="Attack-Pattern"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
+                }
+              />
             )}
             <CreatedByField
               name="createdBy"

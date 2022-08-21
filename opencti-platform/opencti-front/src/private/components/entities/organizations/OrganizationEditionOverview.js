@@ -26,7 +26,11 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
@@ -160,7 +164,8 @@ class OrganizationEditionOverviewComponent extends Component {
       variables: {
         id: this.props.organization.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -377,20 +382,20 @@ class OrganizationEditionOverviewComponent extends Component {
               <MenuItem value="F">{t('reliability_F')}</MenuItem>
             </Field>
             {organization.workflowEnabled && (
-                <StatusField
-                    name="x_opencti_workflow_id"
-                    type="Organization"
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onChange={this.handleSubmitField.bind(this)}
-                    setFieldValue={setFieldValue}
-                    style={{ marginTop: 20 }}
-                    helpertext={
-                      <SubscriptionFocus
-                          context={context}
-                          fieldName="x_opencti_workflow_id"
-                      />
-                    }
-                />
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="Organization"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
+                }
+              />
             )}
             <CreatedByField
               name="createdBy"

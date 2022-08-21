@@ -310,10 +310,7 @@ class StixDomainObjectHeader extends Component {
                     needs={[KNOWLEDGE_KNUPDATE]}
                     key={label}
                     placeholder={
-                      <Chip
-                        classes={{ root: classes.alias }}
-                        label={label}
-                      />
+                      <Chip classes={{ root: classes.alias }} label={label} />
                     }
                   >
                     <Chip

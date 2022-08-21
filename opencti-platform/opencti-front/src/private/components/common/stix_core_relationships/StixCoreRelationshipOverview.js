@@ -191,7 +191,15 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   render() {
-    const { t, fldt, nsdt, classes, theme, stixCoreRelationship, paddingRight } = this.props;
+    const {
+      t,
+      fldt,
+      nsdt,
+      classes,
+      theme,
+      stixCoreRelationship,
+      paddingRight,
+    } = this.props;
     const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
@@ -360,31 +368,36 @@ class StixCoreRelationshipContainer extends Component {
                       stixCoreRelationship.objectMarking.edges,
                     )}
                   {stixCoreRelationship.x_opencti_inferences === null && (
-                      <div>
-                        <Typography
-                            variant="h3"
-                            gutterBottom={true}
-                            style={{ marginTop: 20 }}>
-                          {t('Author')}
-                        </Typography>
-                        <ItemAuthor
-                            createdBy={R.propOr(
-                              null,
-                              'createdBy',
-                              stixCoreRelationship,
-                            )}
-                        />
-                      </div>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Author')}
+                      </Typography>
+                      <ItemAuthor
+                        createdBy={R.propOr(
+                          null,
+                          'createdBy',
+                          stixCoreRelationship,
+                        )}
+                      />
+                    </div>
                   )}
-                  <Typography variant="h3"
+                  <Typography
+                    variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}>
+                    style={{ marginTop: 20 }}
+                  >
                     {t('Creation date')}
                   </Typography>
                   {nsdt(stixCoreRelationship.created)}
-                  <Typography variant="h3"
+                  <Typography
+                    variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}>
+                    style={{ marginTop: 20 }}
+                  >
                     {t('Modification date')}
                   </Typography>
                   {nsdt(stixCoreRelationship.updated_at)}
@@ -394,28 +407,31 @@ class StixCoreRelationshipContainer extends Component {
                     {t('Processing status')}
                   </Typography>
                   <ItemStatus
-                      status={stixCoreRelationship.status}
-                      disabled={!stixCoreRelationship.workflowEnabled}
+                    status={stixCoreRelationship.status}
+                    disabled={!stixCoreRelationship.workflowEnabled}
                   />
                   <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
                   >
                     {t('Confidence level')}
                   </Typography>
-                  <ItemConfidence confidence={stixCoreRelationship.confidence} />
+                  <ItemConfidence
+                    confidence={stixCoreRelationship.confidence}
+                  />
                   <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}>
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
                     {t('Creation date (in this platform)')}
                   </Typography>
                   {fldt(stixCoreRelationship.created_at)}
                   <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
                   >
                     {t('Creator')}
                   </Typography>
@@ -433,20 +449,28 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Start time')}
               </Typography>
               {nsdt(stixCoreRelationship.start_time)}
-              <Typography variant="h3" style={{ marginTop: 20 }} gutterBottom={true}>
+              <Typography
+                variant="h3"
+                style={{ marginTop: 20 }}
+                gutterBottom={true}
+              >
                 {t('Stop time')}
               </Typography>
               {nsdt(stixCoreRelationship.stop_time)}
               {stixCoreRelationship.x_opencti_inferences === null && (
                 <div>
-                  <Typography variant="h3"
+                  <Typography
+                    variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}>
+                    style={{ marginTop: 20 }}
+                  >
                     {t('Description')}
                   </Typography>
-                  <Markdown remarkPlugins={[remarkGfm, remarkParse]}
+                  <Markdown
+                    remarkPlugins={[remarkGfm, remarkParse]}
                     parserOptions={{ commonmark: true }}
-                    className="markdown">
+                    className="markdown"
+                  >
                     {stixCoreRelationship.description}
                   </Markdown>
                 </div>

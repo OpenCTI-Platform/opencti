@@ -7,10 +7,10 @@ import inject18n from './i18n';
 const ErrorNotFound = (props) => {
   const { t } = props;
   return (
-      <Alert severity="info">
-        <AlertTitle>{t('Error')}</AlertTitle>
-        {t('This page is not found on this OpenCTI application.')}
-      </Alert>
+    <Alert severity="info">
+      <AlertTitle>{t('Error')}</AlertTitle>
+      {t('This page is not found on this OpenCTI application.')}
+    </Alert>
   );
 };
 

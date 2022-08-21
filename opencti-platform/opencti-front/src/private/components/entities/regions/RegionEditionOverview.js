@@ -21,7 +21,11 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
@@ -133,7 +137,10 @@ class RegionEditionOverviewComponent extends Component {
       .then(() => {
         commitMutation({
           mutation: regionMutationFieldPatch,
-          variables: { id: this.props.region.id, input: { key: name, value: finalValue ?? '' } },
+          variables: {
+            id: this.props.region.id,
+            input: { key: name, value: finalValue ?? '' },
+          },
         });
       })
       .catch(() => false);
@@ -198,7 +205,13 @@ class RegionEditionOverviewComponent extends Component {
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
       assoc('x_opencti_workflow_id', status),
-      pick(['name', 'description', 'createdBy', 'objectMarking', 'x_opencti_workflow_id']),
+      pick([
+        'name',
+        'description',
+        'createdBy',
+        'objectMarking',
+        'x_opencti_workflow_id',
+      ]),
     )(region);
     return (
       <div>
@@ -240,20 +253,20 @@ class RegionEditionOverviewComponent extends Component {
                 }
               />
               {region.workflowEnabled && (
-                  <StatusField
-                      name="x_opencti_workflow_id"
-                      type="Region"
-                      onFocus={this.handleChangeFocus.bind(this)}
-                      onChange={this.handleSubmitField.bind(this)}
-                      setFieldValue={setFieldValue}
-                      style={{ marginTop: 20 }}
-                      helpertext={
-                        <SubscriptionFocus
-                            context={context}
-                            fieldName="x_opencti_workflow_id"
-                        />
-                      }
-                  />
+                <StatusField
+                  name="x_opencti_workflow_id"
+                  type="Region"
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={this.handleSubmitField.bind(this)}
+                  setFieldValue={setFieldValue}
+                  style={{ marginTop: 20 }}
+                  helpertext={
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="x_opencti_workflow_id"
+                    />
+                  }
+                />
               )}
               <CreatedByField
                 name="createdBy"

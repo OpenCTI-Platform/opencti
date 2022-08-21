@@ -27,13 +27,7 @@ const styles = (theme) => ({
 
 class StixCoreRelationshipsExports extends Component {
   render() {
-    const {
-      classes,
-      paginationOptions,
-      open,
-      handleToggle,
-      context,
-    } = this.props;
+    const { classes, paginationOptions, open, handleToggle, context } = this.props;
     return (
       <Drawer
         variant="persistent"
@@ -53,7 +47,7 @@ class StixCoreRelationshipsExports extends Component {
               handleToggle={handleToggle.bind(this)}
               data={props}
               paginationOptions={paginationOptions}
-              exportEntityType='stix-core-relationship'
+              exportEntityType="stix-core-relationship"
               isOpen={open}
               context={context}
             />
