@@ -3062,6 +3062,10 @@ enum IndividualsFilter {
   markedBy
   labelledBy
   x_opencti_workflow_id
+  description
+  contact_information
+  x_opencti_firstname
+  x_opencti_lastname
 }
 input IndividualsFiltering {
   key: IndividualsFilter!
@@ -3197,6 +3201,8 @@ enum OrganizationsFilter {
   markedBy
   labelledBy
   x_opencti_workflow_id
+  description
+  contact_information
   revoked
 }
 input OrganizationsFiltering {

@@ -4748,14 +4748,18 @@ export type IndividualEditMutationsRelationDeleteArgs = {
 
 export enum IndividualsFilter {
   Aliases = 'aliases',
+  ContactInformation = 'contact_information',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Description = 'description',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
+  XOpenctiFirstname = 'x_opencti_firstname',
+  XOpenctiLastname = 'x_opencti_lastname',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -8390,9 +8394,11 @@ export enum OrganizationReliability {
 
 export enum OrganizationsFilter {
   Aliases = 'aliases',
+  ContactInformation = 'contact_information',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Description = 'description',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',

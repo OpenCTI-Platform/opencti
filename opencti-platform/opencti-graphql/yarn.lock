@@ -3808,9 +3808,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 18.7.6
-  resolution: "@types/node@npm:18.7.6"
-  checksum: 5122988c325eda8d1f5cbe4494916036aae1758f9d5bb2d8139a800b8bad1540fbb167cd3c759da9a5cb4600cd3507609ac7969747113c1549a3e4320a17b1a9
+  version: 18.7.8
+  resolution: "@types/node@npm:18.7.8"
+  checksum: e0125efefa896083c05f549d93166109959ffdd68cb626aad0d660c0ce9de888fe405b4763b4a3c3e0968560409c272413e0ad07204522543c688e162a617ecb
   languageName: node
   linkType: hard
 
@@ -5330,9 +5330,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001370":
-  version: 1.0.30001378
-  resolution: "caniuse-lite@npm:1.0.30001378"
-  checksum: 19f1774da1f62d393ddde55dc091eb3e4f5c5b0ce43f9a9d20e75307a0f329cf8591c836a35a9f6f9fd7c27db7a75e0682245a194acec2e2ba1bc25ef1c3300c
+  version: 1.0.30001380
+  resolution: "caniuse-lite@npm:1.0.30001380"
+  checksum: a106a63dfc6f49271bff16820cda81ca87c0afa7bd0a7b542e31cec250bca8b4d29ec2daff5ac1e4d9ee58b9edef9ee6c1fb852ebd371a794f5c67d36184ede6
   languageName: node
   linkType: hard
 
@@ -7631,9 +7631,9 @@ __metadata:
   linkType: hard
 
 "flatted@npm:^3.1.0":
-  version: 3.2.6
-  resolution: "flatted@npm:3.2.6"
-  checksum: 33b87aa88dfa40ca6ee31d7df61712bbbad3d3c05c132c23e59b9b61d34631b337a18ff2b8dc5553acdc871ec72b741e485f78969cf006124a3f57174de29a0e
+  version: 3.2.7
+  resolution: "flatted@npm:3.2.7"
+  checksum: 427633049d55bdb80201c68f7eb1cbd533e03eac541f97d3aecab8c5526f12a20ccecaeede08b57503e772c769e7f8680b37e8d482d1e5f8d7e2194687f9ea35
   languageName: node
   linkType: hard
 
@@ -7691,12 +7691,12 @@ __metadata:
   linkType: hard
 
 "formdata-node@npm:^4.3.1":
-  version: 4.3.3
-  resolution: "formdata-node@npm:4.3.3"
+  version: 4.4.0
+  resolution: "formdata-node@npm:4.4.0"
   dependencies:
     node-domexception: 1.0.0
-    web-streams-polyfill: 4.0.0-beta.1
-  checksum: ad5f627e694a977edb1986c4b351c863196ee409e460c644adcb242bfc78ca9faa4877cba8113a71cecc0f0e21320d3c3d0acac95445817e014001ce147ba362
+    web-streams-polyfill: 4.0.0-beta.2
+  checksum: e0b7b8a2312aeee9d006d49e91119dc94d1baaeb0cb505c202f2bee109137b2441639eb23c344b20a1e5654cdc40cba2f7e062f5398b7cc89b5625643c428243
   languageName: node
   linkType: hard
 
@@ -8201,11 +8201,11 @@ __metadata:
   linkType: hard
 
 "graphql-ws@npm:^5.4.1":
-  version: 5.10.0
-  resolution: "graphql-ws@npm:5.10.0"
+  version: 5.10.1
+  resolution: "graphql-ws@npm:5.10.1"
   peerDependencies:
     graphql: ">=0.11 <=16"
-  checksum: 6a5ead12ecfc6a448ac2828d981349288591c82a6f8ae0552a866c05fc17eb498325522c7d20c9169e9263799f78b085ecfda2dffb84a7b4ec2fc85c10ce1a0d
+  checksum: ad8eb8a6823a32a7bd9bc6ec73a0b244f503e50318ef5db1312f1d09c5f0b0e4505ad75b08f06e4c40c6935cf5170444b19347b7b83222b4e1af01401418cb91
   languageName: node
   linkType: hard
 
@@ -14302,10 +14302,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-streams-polyfill@npm:4.0.0-beta.1":
-  version: 4.0.0-beta.1
-  resolution: "web-streams-polyfill@npm:4.0.0-beta.1"
-  checksum: 94c21d3aba1c26e5942bb210ffd60c6990cbc750d34bdf548ed93ed845f0a6eac89cdae1dd0195afaba15fbcf4aaca9e397ee40fa4d1f2c191d04d43717bd065
+"web-streams-polyfill@npm:4.0.0-beta.2":
+  version: 4.0.0-beta.2
+  resolution: "web-streams-polyfill@npm:4.0.0-beta.2"
+  checksum: 6f847e5227c4df574e3d10624d9496c9a6e70b9730430f088975403c28e2be10f0dd5e79c6108ae2e30687e2c9c440be1e7867a859383e1af39e737207b0167f
   languageName: node
   linkType: hard
 
