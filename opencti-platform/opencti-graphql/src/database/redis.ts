@@ -568,7 +568,7 @@ const processStreamResult = async (user: AuthUser, results: Array<any>, callback
   return lastEventId;
 };
 
-const WAIT_TIME = 15000;
+export const STREAM_BATCH_TIME = 15000;
 const MAX_RANGE_MESSAGES = 100;
 
 export interface StreamProcessor {
@@ -591,7 +591,7 @@ export const createStreamProcessor = (user: AuthUser, provider: string, callback
     }
     try {
       // Consume the data stream
-      const streamResult = await client.xread('COUNT', maxRange, 'BLOCK', WAIT_TIME, 'STREAMS', REDIS_STREAM_NAME, startEventId);
+      const streamResult = await client.xread('COUNT', maxRange, 'BLOCK', STREAM_BATCH_TIME, 'STREAMS', REDIS_STREAM_NAME, startEventId);
       // Process the event results
       if (streamResult && streamResult.length > 0) {
         const [, results] = streamResult[0];

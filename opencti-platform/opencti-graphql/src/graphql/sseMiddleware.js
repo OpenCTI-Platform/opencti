@@ -4,7 +4,7 @@ import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
 import conf, { basePath, booleanConf, logApp } from '../config/conf';
 import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
-import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
+import { createStreamProcessor, EVENT_CURRENT_VERSION, STREAM_BATCH_TIME } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { findById, streamCollectionGroups } from '../domain/stream';
 import {
@@ -74,6 +74,7 @@ const isEventGranted = (event, user) => {
 };
 
 const createBroadcastClient = (channel) => {
+  let lastHeartbeat;
   return {
     id: channel.id,
     userId: channel.userId,
@@ -87,7 +88,14 @@ const createBroadcastClient = (channel) => {
       }
     },
     sendHeartbeat: (eventId) => {
-      channel.sendEvent(eventId, 'heartbeat', new Date());
+      // Debounce the heartbeat to STREAM_BATCH_TIME
+      const now = new Date().getTime();
+      if (lastHeartbeat === undefined || (now - lastHeartbeat) > STREAM_BATCH_TIME) {
+        const [idTime] = eventId.split('-');
+        const idDate = utcDate(parseInt(idTime, 10)).toISOString();
+        channel.sendEvent(eventId, 'heartbeat', idDate);
+        lastHeartbeat = now;
+      }
     },
     sendConnected: (streamInfo) => {
       channel.sendEvent(undefined, 'connected', streamInfo);
