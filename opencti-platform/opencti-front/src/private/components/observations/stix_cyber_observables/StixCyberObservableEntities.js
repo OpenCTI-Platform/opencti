@@ -212,6 +212,7 @@ class StixCyberObservableEntities extends Component {
               'Country',
               'City',
               'Position',
+              'Attack-Pattern',
             ]}
             targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
             defaultStartTime={defaultStartTime}

@@ -100,6 +100,7 @@ class RootAttackPattern extends Component {
               'vulnerabilities',
               'malwares',
               'sightings',
+              'observables',
             ]}
           />
         </Route>
