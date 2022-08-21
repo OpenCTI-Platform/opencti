@@ -3,6 +3,8 @@ import { graphql } from 'react-relay';
 import OtpInput from 'react-otp-input';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
+import Alert from '@mui/material/Alert';
 import { commitMutation } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
 
@@ -10,7 +12,9 @@ const OPT_CODE_SIZE = 6;
 
 const useStyles = makeStyles(() => ({
   otp: {
-    padding: 15,
+    textAlign: 'center',
+    width: '100%',
+    padding: 20,
   },
 }));
 
@@ -28,8 +32,10 @@ const logoutMutation = graphql`
 
 const OTPForm = () => {
   const classes = useStyles();
+  const theme = useTheme();
   const { t } = useFormatter();
   const [code, setCode] = useState('');
+  const [error, setError] = useState(null);
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data) => setCode(data);
   const handleLogout = () => {
@@ -47,7 +53,9 @@ const OTPForm = () => {
         input: { code },
       },
       onError: () => {
-        window.location.reload();
+        setInputDisable(false);
+        setCode('');
+        setError(t('The code is not correct'));
       },
       onCompleted: () => {
         window.location.reload();
@@ -56,41 +64,60 @@ const OTPForm = () => {
   }
   return (
     <div className={classes.otp}>
-      <h2>{t('Two-factor Verification')}</h2>
-      <div>
+      {error ? (
+        <Alert
+          severity="error"
+          variant="outlined"
+          style={{ margin: '0 0 20px 0' }}
+        >
+          {error}
+        </Alert>
+      ) : (
+        <Alert
+          severity="info"
+          variant="outlined"
+          style={{ margin: '0 0 20px 0' }}
+        >
+          {t('Type the code generated in your application')}
+        </Alert>
+      )}
+      <div style={{ marginLeft: 9 }}>
         <OtpInput
           value={code}
           onChange={handleChange}
           numInputs={OPT_CODE_SIZE}
           isDisabled={inputDisable}
-          separator={<span style={{ width: '8px' }}></span>}
           isInputNum={true}
           shouldAutoFocus={true}
           inputStyle={{
-            border: '1px solid transparent',
-            borderRadius: '8px',
+            outline: 'none',
+            border: `1px solid rgba(${
+              theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
+            },.15)`,
+            borderRadius: 4,
             width: '54px',
             height: '54px',
             fontSize: '16px',
-            color: '#000',
             fontWeight: '400',
-            caretColor: 'blue',
+            backgroundColor: 'transparent',
+            margin: '0 5px 0 5px',
+            color: theme.palette.text.primary,
           }}
           focusStyle={{
-            border: '1px solid #CFD3DB',
+            border: `2px solid ${theme.palette.primary.main}`,
             outline: 'none',
           }}
         />
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          onClick={handleLogout}
-          style={{ marginTop: 30 }}
-        >
-          {t('Cancel')}
-        </Button>
       </div>
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        onClick={handleLogout}
+        style={{ marginTop: 30 }}
+      >
+        {t('Cancel')}
+      </Button>
     </div>
   );
 };

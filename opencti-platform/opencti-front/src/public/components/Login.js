@@ -16,7 +16,7 @@ const styles = (theme) => ({
   container: {
     textAlign: 'center',
     margin: '0 auto',
-    width: 400,
+    width: 450,
   },
   appBar: {
     borderTopLeftRadius: '10px',
@@ -144,7 +144,9 @@ const Login = ({ classes, theme, settings, type }) => {
   const isAuthButtons = authSSOs.length > 0;
   const isLoginMessage = loginMessage && loginMessage.length > 0;
   let loginHeight = 280;
-  if (isAuthButtons && isAuthForm && isLoginMessage) {
+  if (type === '2FA') {
+    loginHeight = 350;
+  } else if (isAuthButtons && isAuthForm && isLoginMessage) {
     loginHeight = 400;
   } else if (isAuthButtons && isAuthForm) {
     loginHeight = 350;
@@ -177,9 +179,9 @@ const Login = ({ classes, theme, settings, type }) => {
   );
 
   const otpScreen = () => (
-    <div>
+    <Paper variant="outlined">
       <OTPForm />
-    </div>
+    </Paper>
   );
 
   return (

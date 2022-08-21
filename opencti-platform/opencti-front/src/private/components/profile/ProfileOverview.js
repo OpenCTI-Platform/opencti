@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
@@ -15,14 +15,16 @@ import { Link } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { SendClockOutline } from 'mdi-material-ui';
+import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItem from '@mui/material/ListItem';
 import Alert from '@mui/material/Alert';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Dialog from '@mui/material/Dialog';
 import OtpInput from 'react-otp-input';
+import DialogTitle from '@mui/material/DialogTitle';
+import { makeStyles, useTheme } from '@mui/styles';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -31,7 +33,7 @@ import {
   MESSAGING$,
   QueryRenderer,
 } from '../../../relay/environment';
-import { OPENCTI_ADMIN_UUID, UserContext } from '../../../utils/Security';
+import { OPENCTI_ADMIN_UUID } from '../../../utils/Security';
 import UserSubscriptionCreation from './UserSubscriptionCreation';
 import UserSubscriptionPopover from './UserSubscriptionPopover';
 import Loader from '../../../components/Loader';
@@ -48,6 +50,12 @@ const styles = () => ({
     position: 'relative',
   },
 });
+
+const useStyles = makeStyles(() => ({
+  button: {
+    marginTop: 20,
+  },
+}));
 
 const profileOverviewFieldPatch = graphql`
   mutation ProfileOverviewFieldPatchMutation(
@@ -116,17 +124,24 @@ const passwordValidation = (t) => Yup.object().shape({
 
 const Otp = ({ closeFunction, secret, uri }) => {
   const { t } = useFormatter();
-  const { me, settings } = useContext(UserContext);
-  const userTheme = me.theme === 'default' ? settings.platform_theme : me.theme;
+  const classes = useStyles();
+  const theme = useTheme();
   const [otpQrImage, setOtpQrImage] = useState('');
   const [code, setCode] = useState('');
+  const [error, setError] = useState(null);
   const handleChange = (data) => setCode(data);
   const activateOtp = () => {
     commitMutation({
       mutation: validateOtpPatch,
       variables: { input: { secret, code } },
-      onError: () => setCode(''),
-      onCompleted: () => closeFunction(),
+      onError: () => {
+        setCode('');
+        return setError(t('The code is not correct'));
+      },
+      onCompleted: () => {
+        setError(null);
+        return closeFunction();
+      },
     });
   };
   useEffect(() => {
@@ -134,7 +149,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
       uri,
       {
         color: {
-          dark: userTheme === 'dark' ? '#FFFFFF' : '#000000',
+          dark: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
           light: '#0000', // Transparent background
         },
       },
@@ -146,39 +161,61 @@ const Otp = ({ closeFunction, secret, uri }) => {
         setOtpQrImage(imageUrl);
       },
     );
-  }, [uri, userTheme]);
+  }, [uri, theme]);
   return (
-    <div>
-      <div style={{ textAlign: 'center' }}>
-        <img src={otpQrImage} style={{ marginLeft: -15, width: 265 }} alt="" />
-      </div>
+    <div style={{ textAlign: 'center' }}>
+      <img src={otpQrImage} style={{ width: 265 }} alt="" />
+      {error ? (
+        <Alert
+          severity="error"
+          variant="outlined"
+          style={{ margin: '0 0 15px 0' }}
+        >
+          {error}
+        </Alert>
+      ) : (
+        <Alert
+          severity="info"
+          variant="outlined"
+          style={{ margin: '0 0 15px 0' }}
+        >
+          {t('Type the code generated in your application')}
+        </Alert>
+      )}
       <OtpInput
         value={code}
         onChange={handleChange}
         numInputs={6}
-        separator={<span style={{ width: '8px' }}></span>}
         isInputNum={true}
         shouldAutoFocus={true}
         inputStyle={{
-          border: '1px solid transparent',
-          borderRadius: '8px',
+          outline: 'none',
+          border: `1px solid rgba(${
+            theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
+          },.15)`,
+          borderRadius: 4,
+          boxSizing: 'border-box',
           width: '54px',
           height: '54px',
           fontSize: '16px',
-          color: '#000',
           fontWeight: '400',
-          caretColor: 'blue',
+          backgroundColor: 'transparent',
+          margin: '0 5px 0 5px',
+          color: theme.palette.text.primary,
         }}
-        focusStyle={{ border: '1px solid #CFD3DB', outline: 'none' }}
+        focusStyle={{
+          border: `2px solid ${theme.palette.primary.main}`,
+          outline: 'none',
+        }}
       />
       <Button
+        classes={{ root: classes.button }}
         variant="contained"
         type="button"
-        color="primary"
-        style={{ marginTop: 20 }}
+        color="secondary"
         onClick={activateOtp}
       >
-        {t('Activate')}
+        {t('Enable')}
       </Button>
     </div>
   );
@@ -190,13 +227,11 @@ const OtpComponent = ({ closeFunction }) => (
     render={({ props }) => {
       if (props) {
         return (
-          <div>
-            <Otp
-              closeFunction={closeFunction}
-              secret={props.otpGeneration.secret}
-              uri={props.otpGeneration.uri}
-            />
-          </div>
+          <Otp
+            closeFunction={closeFunction}
+            secret={props.otpGeneration.secret}
+            uri={props.otpGeneration.uri}
+          />
         );
       }
       return <Loader />;
@@ -272,16 +307,10 @@ const ProfileOverviewComponent = (props) => {
         keepMounted={false}
         onClose={() => setDisplay2FA(false)}
       >
+        <DialogTitle style={{ textAlign: 'center' }}>
+          {t('Enable two-factor authentication')}
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            <Typography
-              style={{ textAlign: 'center' }}
-              variant="h1"
-              gutterBottom={true}
-            >
-              {t('Activate your 2FA authentication')}
-            </Typography>
-          </DialogContentText>
           <OtpComponent closeFunction={() => setDisplay2FA(false)} />
         </DialogContent>
       </Dialog>
@@ -319,7 +348,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="firstname"
                     label={t('Firstname')}
                     fullWidth={true}
@@ -383,30 +412,6 @@ const ProfileOverviewComponent = (props) => {
                     style={{ marginTop: 20 }}
                     onSubmit={handleSubmitField}
                   />
-                  <div style={{ marginTop: 20 }}>
-                    {useOtp && (
-                      <Button
-                        variant="outlined"
-                        type="button"
-                        color="primary"
-                        onClick={disableOtp}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Disable Two-factor authentication')}
-                      </Button>
-                    )}
-                    {!useOtp && (
-                      <Button
-                        variant="contained"
-                        type="button"
-                        color="primary"
-                        onClick={() => setDisplay2FA(true)}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Activate Two-factor authentication')}
-                      </Button>
-                    )}
-                  </div>
                 </Form>
               )}
             </Formik>
@@ -483,9 +488,38 @@ const ProfileOverviewComponent = (props) => {
         </Grid>
         <Grid item={true} xs={6}>
           <Paper classes={{ root: classes.panel }} variant="outlined">
-            <Typography variant="h1" gutterBottom={true}>
-              {t('Password')}
+            <Typography
+              variant="h1"
+              gutterBottom={true}
+              style={{ float: 'left' }}
+            >
+              {t('Authentication')}
             </Typography>
+            <div style={{ float: 'right', marginTop: -5 }}>
+              {useOtp && (
+                <Button
+                  type="button"
+                  color="primary"
+                  startIcon={<NoEncryptionOutlined />}
+                  onClick={disableOtp}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Disable two-factor authentication')}
+                </Button>
+              )}
+              {!useOtp && (
+                <Button
+                  type="button"
+                  color="secondary"
+                  startIcon={<LockOutlined />}
+                  onClick={() => setDisplay2FA(true)}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Enable two-factor authentication')}
+                </Button>
+              )}
+            </div>
+            <div className="clearfix" />
             <Formik
               enableReinitialize={true}
               initialValues={{
