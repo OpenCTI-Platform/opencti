@@ -1092,8 +1092,8 @@ const i18n = {
       'Total indicators': "Nombre d'indicateurs",
       'Total direct relations': 'Nombre de relations directes',
       'Top Labels (3 last months)': 'Top Labels (3 derniers mois)',
-      'Last ingested analysis (creation date in the platform)':
-        'Dernières analyses ajoutées (date de création dans la plateforme)',
+      'Last ingested reports (creation date in the platform)':
+        'Derniers rapports ajoutés (date de création dans la plateforme)',
       'Distribution of entities': 'Distribution des entités',
       'Entities distribution': 'Distribution des entités',
       'Distribution of opinions': 'Distribution des opinions',
@@ -2465,8 +2465,8 @@ const i18n = {
       'Total indicators': '攻击指标总数',
       'Total direct relations': '直接关系总数',
       'Top Labels (3 last months)': '最多标签(最近3个月)',
-      'Last ingested analysis (creation date in the platform)':
-        '上次引入的分析(在平台中的创建日期)',
+      'Last ingested reports (creation date in the platform)':
+        '上次摄取的报告（平台中的创建日期）',
       'Distribution of entities': '实体分布',
       'Entities distribution': '实体分布',
       'Distribution of opinions': '意见分布',

@@ -495,14 +495,6 @@ const LastIngestedAnalysis = () => {
             ... on Report {
               name
             }
-            ... on Note {
-              attribute_abstract
-              content
-            }
-            ... on Opinion {
-              opinion
-              explanation
-            }
             createdBy {
               ... on Identity {
                 id
@@ -527,7 +519,7 @@ const LastIngestedAnalysis = () => {
     first: 8,
     orderBy: 'created_at',
     orderMode: 'desc',
-    types: ['Report', 'Note', 'Opinion'],
+    types: ['Report'],
   });
   const objects = data.stixDomainObjects;
   if (objects.edges.length === 0) {
@@ -816,7 +808,7 @@ const DefaultDashboard = ({ timeField }) => {
       <Grid container={true} spacing={3} style={{ marginTop: 5 }}>
         <Grid item={true} xs={8}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Last ingested analysis (creation date in the platform)')}
+            {t('Last ingested reports (creation date in the platform)')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
