@@ -72,7 +72,9 @@ const DateTimePickerField = (props) => {
         onAccept={internalOnAccept}
         onChange={internalOnChange}
         views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-        inputFormat={dateTimeFormatsMapWithSeconds[intl.locale]}
+        inputFormat={
+          dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'
+        }
         renderInput={(params) => (
           <TextField
             {...params}
@@ -97,7 +99,7 @@ const DateTimePickerField = (props) => {
       onAccept={internalOnAccept}
       onChange={internalOnChange}
       views={['year', 'month', 'day', 'hours', 'minutes']}
-      inputFormat={dateTimeFormatsMap[intl.locale]}
+      inputFormat={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
       renderInput={(params) => (
         <TextField
           {...params}

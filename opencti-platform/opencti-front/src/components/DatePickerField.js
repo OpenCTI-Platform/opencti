@@ -63,7 +63,7 @@ const DatePickerField = (props) => {
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
-      inputFormat={dateFormatsMap[intl.locale]}
+      inputFormat={dateFormatsMap[intl.locale] || 'yyyy-MM-dd'}
       renderInput={(params) => (
         <TextField
           {...params}
