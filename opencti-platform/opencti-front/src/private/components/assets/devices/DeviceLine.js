@@ -11,7 +11,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -157,10 +156,13 @@ class DeviceLineComponent extends Component {
                   labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
                 /> */}
-              </div>              
+              </div>
             </div>
           }
-        />        
+        />
+        {/* <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon> */}
       </ListItem>
     );
   }
@@ -183,7 +185,7 @@ const DeviceLineFragment = createFragmentContainer(
         id
         name
         asset_id
-        asset_type        
+        asset_type
         ipv4_address{
           ip_address_value
         }
@@ -343,13 +345,13 @@ class DeviceLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>              
+              </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        {/* <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRight />
-        </ListItemIcon>
+        </ListItemIcon> */}
       </ListItem>
     );
   }

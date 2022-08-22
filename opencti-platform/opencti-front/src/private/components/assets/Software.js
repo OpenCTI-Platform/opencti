@@ -271,7 +271,7 @@ class Software extends Component {
       },
       vendor_name: {
         label: 'Vendor',
-        width: '8%',
+        width: '10%',
         isSortable: true,
       },
       version: {
@@ -281,17 +281,17 @@ class Software extends Component {
       },
       cpe_identifier: {
         label: 'CPE ID',
-        width: '17%',
+        width: '19%',
         isSortable: true,
       },
       software_identifier: {
         label: 'SWID',
-        width: '12%',
+        width: '15%',
         isSortable: true,
       },
       label_name: {
         label: 'Labels',
-        width: '20%',
+        width: '23%',
         isSortable: true,
       },
     };

@@ -277,22 +277,22 @@ class Devices extends Component {
       },
       ip_address_value: {
         label: 'IP Address',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       fqdn: {
         label: 'FQDN',
-        width: '10%',
+        width: '12%',
         isSortable: false,
       },
       installed_os_name: {
         label: 'OS',
-        width: '5%',
+        width: '8%',
         isSortable: true,
       },
       network_id: {
         label: 'Network ID',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       label_name: {

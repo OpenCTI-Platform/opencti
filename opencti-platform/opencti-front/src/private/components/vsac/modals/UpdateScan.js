@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Card, CardActions, CardContent, CardHeader, FormControl, FormGroup, Paper, TextField,
+  Card, CardActions, CardContent, CardHeader, FormControl, FormGroup, Paper, TextField, Typography,
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import Button from '@material-ui/core/Button';
@@ -37,7 +37,8 @@ const UpdateScan = (props) => {
         toastSuccess('Scan updated');
         handleOnClose(true);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error(err);
         toastAxiosError('Failed to update scan');
         setHandling(false);
       });
