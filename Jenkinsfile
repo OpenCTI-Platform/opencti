@@ -178,10 +178,10 @@ node {
           }
         } catch (Exception e) {
           office365ConnectorSend(
-            status: 'Integration Tests Failed',
+            error: "${e}",
             color: 'FF8000',
             webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-            message: "${e}"
+            message: "Integration Tests Failed"
           )
           throw e
         } finally {
@@ -204,19 +204,16 @@ node {
         case 'master':
         case 'prod':
           stage('Deploying to production') {
-            echo 'Deploying to production...'
             build '/deploy/OpenCTI Frontend/main'
           }
           break
         case 'staging':
           stage('Deploying to staging') {
-            echo 'Deploying to staging...'
             build '/deploy/OpenCTI Frontend/staging'
           }
           break
         case 'develop':
           stage('Deploying to develop') {
-            echo 'Deploying to develop...'
             build '/deploy/OpenCTI Frontend/dev'
           }
           break
@@ -229,25 +226,18 @@ node {
     }
   }
 
-  stage('Update K8s') {
-    try {
-      dir('k8s-tmp') {
-        checkout([
-          changelog: false,
-          poll: false,
-          $class: 'GitSCM',
-          branches: [[name: '*/main']],
-          extensions: [],
-          userRemoteConfigs: [[credentialsId: 'c4b687fd-69dc-4913-b28a-45a061914f60', url: 'https://github.com/champtc/k8s']]
-        ])
+  try {
+    dir('k8s-tmp') {
+      checkout([
+        changelog: false,
+        poll: false,
+        $class: 'GitSCM',
+        branches: [[name: '*/main']],
+        extensions: [],
+        userRemoteConfigs: [[credentialsId: 'c4b687fd-69dc-4913-b28a-45a061914f60', url: 'https://github.com/champtc/k8s']]
+      ])
 
-        // Manuall set the SHA until builds are turned back on
-        // TODO: Remove
-        sha = sh(returnStdout: true, script: 'docker images --no-trunc --quiet docker.darklight.ai/opencti:develop')
-
-        sh 'ls -la'
-        echo "Updating K8s image tag to new sha value \'${sha}\'..."
-
+      stage('KubeSec Scan') {
         sh label: 'Kubesec Scan', script: '''
           docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/opencti.yaml || true
           docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/elasticsearch.yaml || true
@@ -255,11 +245,17 @@ node {
           docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < cyio/opencti/redis.yaml || true
         '''
       }
-    } catch (Exception e) {
-      echo "${e}"
-      currentBuild.result = 'SUCCESS'
-      return
+
+      stage('Version Bump') {
+        echo "Updating K8s image tag to new sha value \'${sha}\'"
+        def data = readYaml file: 'cyio/opencti/opencti.yaml'
+        echo '$data'
+      }
     }
+  } catch (Exception e) {
+    echo "${e}"
+    currentBuild.result = 'SUCCESS'
+    return
   }
 }
 
