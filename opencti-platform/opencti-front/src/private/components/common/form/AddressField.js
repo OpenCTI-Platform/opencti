@@ -112,7 +112,7 @@ class AddressField extends Component {
             </Tooltip>
           </div>
           <IconButton size='small' onClick={() => this.setState({ open: true })}>
-            <Edit fontSize='small'/>
+            <AddIcon fontSize='small'/>
           </IconButton>
         </div>
         <Field
