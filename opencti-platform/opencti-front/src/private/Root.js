@@ -33,24 +33,19 @@ const rootPrivateQuery = graphql`
   }
 `;
 
-const clearToken = () => {
-  localStorage.removeItem('token');
-};
-
 const Root = () => (
   <AuthBoundaryComponent>
     <QueryRenderer
       query={rootPrivateQuery}
       variables={{}}
       render={(data) => {
-        const { props } = data;
+        const { props, retry } = data;
         // Check in conjunction with query renderer. Rather than throwing an error for failed root
         // query pass the empty data and do the login render here since query render can't do
         // redirect or render stuff.
         if (props === null) {
-          return <RootPublic/>;
+          return <RootPublic />;
         }
-        clearToken();
         if (props) {
           if (props.me && props.me.access_token) {
             const token = props.me.access_token;
@@ -63,7 +58,7 @@ const Root = () => (
               <ConnectedThemeProvider settings={props.settings}>
                 <CssBaseline />
                 <ConnectedIntlProvider settings={props.settings}>
-                  <Index me={props.me} />
+                  <Index retry={retry} me={props.me} />
                 </ConnectedIntlProvider>
               </ConnectedThemeProvider>
             </UserContext.Provider>

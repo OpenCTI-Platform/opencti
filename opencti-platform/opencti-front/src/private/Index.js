@@ -27,6 +27,7 @@ import { NoMatch, BoundaryRoute } from './components/Error';
 import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
 import { getAccount } from '../services/account.service';
 import FeatureFlag from '../components/feature/FeatureFlag';
+import { toastInfo } from '../utils/bakedToast';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -71,13 +72,18 @@ const Index = (me) => {
         }
       });
     }
+    setInterval(() => {
+      toastInfo('Token has been refreshed');
+      localStorage.removeItem('token');
+      me.retry();
+    }, 1800000);
   }, [clientId]);
 
   const classes = useStyles();
   return (
     <div className={classes.root}>
       <TopBarBreadcrumbs />
-      <LeftBar clientId={clientId} setClientId={setClientId}/>
+      <LeftBar clientId={clientId} setClientId={setClientId} />
       <Message />
       <main className={classes.content} style={{ paddingRight: 24 }}>
         <div className={classes.toolbar} />
@@ -142,6 +148,7 @@ const Index = (me) => {
 Index.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
+  retry: PropTypes.func,
   me: PropTypes.object,
 };
 
