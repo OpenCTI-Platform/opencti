@@ -2008,9 +2008,9 @@ const buildRelationInput = (input) => {
   return { relation: relationAttributes };
 };
 const buildInnerRelation = (from, to, type) => {
-  checkRelationConsistency(type, from, to);
   const targets = Array.isArray(to) ? to : [to];
   if (!to || R.isEmpty(targets)) return [];
+  checkRelationConsistency(type, from, to);
   const relations = [];
   for (let i = 0; i < targets.length; i += 1) {
     const target = targets[i];
