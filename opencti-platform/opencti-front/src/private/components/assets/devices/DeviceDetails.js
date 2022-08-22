@@ -493,24 +493,6 @@ class DeviceDetailsComponent extends Component {
                 {device.cpe_identifier
                   && t(device.cpe_identifier)}
               </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Last Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Last Scanned')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device.last_scanned
-                  && t(device.last_scanned)}
-              </div>
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -665,7 +647,6 @@ const DeviceDetails = createFragmentContainer(
         hostname
         default_gateway
         motherboard_id
-        last_scanned
         installation_id
         netbios_name
         is_virtual

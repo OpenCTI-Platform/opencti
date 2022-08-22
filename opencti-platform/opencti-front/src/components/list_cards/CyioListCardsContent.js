@@ -103,7 +103,7 @@ class CyioListCardsContent extends Component {
     window.removeEventListener('scroll', this.handleScroll.bind(this));
   }
 
-  handleScroll() {
+  handleScroll(event) {
     this.setState({ scrollValue: window.pageYOffset });
   }
 

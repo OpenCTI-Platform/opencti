@@ -12,7 +12,6 @@ import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import Switch from '@material-ui/core/Switch';
 
 const styles = () => ({
   paper: {
@@ -89,41 +88,6 @@ class SoftwareDetailsComponent extends Component {
                 <div className="clearfix" />
                 {software.cpe_identifier && t(software.cpe_identifier)}
               </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
-                  <Tooltip title={t('Scanned')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Switch disabled defaultChecked={software?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Last Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                  <Tooltip
-                    title={t('Last Scanned')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {software.last_scanned && t(software.last_scanned)}
-              </div>
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -196,7 +160,6 @@ const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
   software: graphql`
     fragment SoftwareDetails_software on SoftwareAsset {
       id
-      last_scanned
       software_identifier
       license_key
       cpe_identifier
