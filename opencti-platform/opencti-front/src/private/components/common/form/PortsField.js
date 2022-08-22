@@ -21,6 +21,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { Dialog, DialogContent, DialogActions, Button } from '@material-ui/core';
 import NewTextField from '../../../../components/TextField';
 import Delete from '@material-ui/icons/Delete';
+import { Edit } from '@material-ui/icons';
 
 const styles = (theme) => ({
   chip: {
@@ -196,12 +197,10 @@ class PortsField extends Component {
             </Tooltip>
           </div>
           <IconButton
-            color="inherit"
-            aria-label="Add"
-            edge="end"
+            size='small'
             onClick={() => this.setState({ open: true })}
           >
-            <AddIcon fontSize="small" style={{ marginTop: -2 }} />
+            <Edit fontSize='small'/>
           </IconButton>
         </div>
         <Field
@@ -210,8 +209,7 @@ class PortsField extends Component {
           fullWidth={true}
           disabled={true}
           multiline={true}
-          value={this.state.ports.map((value) => {
-            console.log(value)
+          value={this.state.ports.map((value) => {           
             if (value.protocols.length > 1) {
               return value.protocols.map((protocol) => `${protocol} ${value.port_number}`)
             }
@@ -311,7 +309,7 @@ class PortsField extends Component {
               {t('Cancel')}
             </Button>
             <Button
-              disabled={this.state.port.port_number === '' || this.state.port.protocols.length === 0}
+              disabled={!this.state.ports.length}
               variant='contained'
               onClick={this.handleSubmit.bind(this)}
               color="primary"

@@ -88,7 +88,7 @@ class DeviceEditionDetailsComponent extends Component {
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
-                <div style={{ marginBottom: '122px' }}>
+                <div>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -160,20 +160,6 @@ class DeviceEditionDetailsComponent extends Component {
                     name="motherboard_id"
                     size='small'
                     fullWidth={true}
-                  />
-                </div>
-                <div>
-                  <PortsField
-                    setFieldValue={setFieldValue}
-                    values={values}
-                    disabled={isSubmitting}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    // onChange={this.handlePortChange.bind(this)}
-                    name="ports"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                   />
                 </div>
                 <div>
@@ -553,6 +539,20 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
+              </Grid>
+              <Grid item={true} xs={12}>
+                <PortsField
+                  setFieldValue={setFieldValue}
+                  values={values}
+                  disabled={isSubmitting}
+                  style={{ height: '38.09px' }}
+                  variant='outlined'
+                  // onChange={this.handlePortChange.bind(this)}
+                  name="ports"
+                  size='small'
+                  fullWidth={true}
+                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                />
               </Grid>
               <Grid item={true} xs={12}>
                 <AddressField

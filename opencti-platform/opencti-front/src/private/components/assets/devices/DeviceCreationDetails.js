@@ -102,7 +102,7 @@ class DeviceCreationDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <div style={{ marginBottom: '119px' }}>
+              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
