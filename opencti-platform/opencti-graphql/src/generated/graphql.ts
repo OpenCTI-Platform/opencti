@@ -3201,7 +3201,9 @@ export type Group = BasicObject & InternalObject & {
 };
 
 export type GroupAddInput = {
+  auto_new_marking?: InputMaybe<Scalars['Boolean']>;
   clientMutationId?: InputMaybe<Scalars['String']>;
+  default_assignation?: InputMaybe<Scalars['Boolean']>;
   description?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
 };

@@ -986,6 +986,8 @@ type Group implements InternalObject & BasicObject {
 input GroupAddInput {
   name: String!
   description: String
+  default_assignation: Boolean
+  auto_new_marking: Boolean
   clientMutationId: String
 }
 
