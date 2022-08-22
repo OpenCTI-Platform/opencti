@@ -146,7 +146,7 @@ class PortsField extends Component {
     const portsAfterRemove = {
       port_number: port_number,
       protocols: R.find(R.propEq('port_number', port_number))(this.state.ports).protocols.filter(protocol => protocol !== removeProtocol),
-    }
+    }    
     this.setState(({ ports }) => ({ ports: R.append(portsAfterRemove, ports.filter(port => port.port_number !== port_number)) }), () => this.props.setFieldValue(this.props.name, this.state.ports));
   };
 
@@ -209,11 +209,15 @@ class PortsField extends Component {
           fullWidth={true}
           disabled={true}
           multiline={true}
-          value={this.state.ports.map((value) => {           
+          value={this.state.ports.map((value) => {
+            console.log(value);                                  
+            if(!value.protocols.length){
+              return [];
+            }           
             if (value.protocols.length > 1) {
-              return value.protocols.map((protocol) => `${protocol} ${value.port_number}`)
-            }
-            return `${value.protocols} ${value.port_number}`;
+              return value.protocols && value.protocols.map((protocol) => `${protocol} ${value.port_number}`)            
+            }     
+            return [`${value.protocols} ${value.port_number}`];      
           })}
           rows="3"
           className={classes.textField}
