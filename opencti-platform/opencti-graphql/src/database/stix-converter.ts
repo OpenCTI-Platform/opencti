@@ -114,7 +114,7 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
-import { FROM_START, UNTIL_END } from '../utils/format';
+import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -169,12 +169,20 @@ export const cleanObject = <T>(data: T): T => {
   }
   return obj;
 };
-const cleanDate = (date: Date | undefined) => {
+const cleanDate = (date: Date | string | undefined): string | undefined => {
   if (date === undefined) {
     return undefined;
   }
-  const time = date.getTime();
-  if (time === FROM_START || time === UNTIL_END) {
+  // date type from graphql
+  if (date instanceof Date) {
+    const time = date.getTime();
+    if (time === FROM_START || time === UNTIL_END) {
+      return undefined;
+    }
+    return date.toISOString();
+  }
+  // date string from the database
+  if (date === FROM_START_STR || date === UNTIL_END_STR) {
     return undefined;
   }
   return date;
