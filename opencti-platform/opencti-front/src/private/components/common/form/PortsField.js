@@ -63,10 +63,10 @@ const styles = (theme) => ({
     fontFamily: 'sans-serif',
     padding: '0px',
     textAlign: 'left',
-  }, 
+  },
   dialogAction: {
     margin: '15px 20px 15px 0',
-  }, 
+  },
 });
 
 
@@ -137,8 +137,8 @@ class PortsField extends Component {
 
   handleAddPort() {
     this.setState({ ports: [...new Map(R.append(this.state.port, this.state.ports).map((item) => [item["port_number"], item])).values()] });
-    this.setState({ 
-      port: { port_number: '', protocols: [] },           
+    this.setState({
+      port: { port_number: '', protocols: [] },
     })
   }
 
@@ -146,22 +146,23 @@ class PortsField extends Component {
     const portsAfterRemove = {
       port_number: port_number,
       protocols: R.find(R.propEq('port_number', port_number))(this.state.ports).protocols.filter(protocol => protocol !== removeProtocol),
-    }    
+    }
     this.setState(({ ports }) => ({ ports: R.append(portsAfterRemove, ports.filter(port => port.port_number !== port_number)) }), () => this.props.setFieldValue(this.props.name, this.state.ports));
   };
 
   handleSubmit() {
-    this.setState({ 
+    this.setState({
+      ports: this.state.ports.filter((port) => port.protocols.length !== 0),
       port: { port_number: '', protocols: [] },
-      open: false      
-    },() => this.props.setFieldValue(this.props.name, this.state.ports));      
+      open: false
+    }, () => this.props.setFieldValue(this.props.name, this.state.ports));
   }
 
   handleCancel() {
-    this.setState({ 
+    this.setState({
       port: { port_number: '', protocols: [] },
-      open: false      
-    })    
+      open: false
+    })
   }
 
   render() {
@@ -184,7 +185,6 @@ class PortsField extends Component {
       ['protocols'],
       this.state.protocols,
     );
-
     return (
       <>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -200,7 +200,7 @@ class PortsField extends Component {
             size='small'
             onClick={() => this.setState({ open: true })}
           >
-            <Edit fontSize='small'/>
+            <Edit fontSize='small' />
           </IconButton>
         </div>
         <Field
@@ -210,14 +210,13 @@ class PortsField extends Component {
           disabled={true}
           multiline={true}
           value={this.state.ports.map((value) => {
-            console.log(value);                                  
-            if(!value.protocols.length){
+            if (!value.protocols.length) {
               return [];
-            }           
+            }
             if (value.protocols.length > 1) {
-              return value.protocols && value.protocols.map((protocol) => `${protocol} ${value.port_number}`)            
-            }     
-            return [`${value.protocols} ${value.port_number}`];      
+              return value.protocols && value.protocols.map((protocol) => `${protocol} ${value.port_number}`)
+            }
+            return [`${value.protocols} ${value.port_number}`];
           })}
           rows="3"
           className={classes.textField}
@@ -245,7 +244,7 @@ class PortsField extends Component {
                   onChange={this.handlePortChange.bind(this)}
                   name="port_number"
                   size='small'
-                  style={{ height: '38.09px', width: '120px', marginRight: '10px' }}                  
+                  style={{ height: '38.09px', width: '120px', marginRight: '10px' }}
                 />
                 <Field
                   component={SelectField}
@@ -253,10 +252,10 @@ class PortsField extends Component {
                   size='small'
                   multiple={true}
                   name='protocols'
-                  onFocus={onFocus}                               
+                  onFocus={onFocus}
                   value={this.state.port.protocols}
-                  onChange={this.handlePortChange.bind(this)}  
-                  style={{ height: '38.09px', width: '120px', marginRight: '10px' }}                
+                  onChange={this.handlePortChange.bind(this)}
+                  style={{ height: '38.09px', width: '120px', marginRight: '10px' }}
                 >
                   {
                     protocolList.map((protocol) => (
@@ -267,14 +266,14 @@ class PortsField extends Component {
                   }
                 </Field>
               </div>
-              <div style={{ width: '30%'}}>
+              <div style={{ width: '30%' }}>
                 <IconButton
                   color="inherit"
                   aria-label="Add"
                   edge="end"
                   disabled={!this.state.port.port_number || this.state.port.protocols.length === 0}
                   onClick={this.handleAddPort.bind(this)}
-                  style={{marginLeft: "130px"}}
+                  style={{ marginLeft: "130px" }}
                 >
                   <AddIcon fontSize="small" />
                 </IconButton>
@@ -297,7 +296,7 @@ class PortsField extends Component {
                           <IconButton onClick={this.handleRemovePort.bind(this, port.port_number, protocol)}>
                             <Delete />
                           </IconButton>
-                        </div>                        
+                        </div>
                       </>
                     ))
                   ))}
