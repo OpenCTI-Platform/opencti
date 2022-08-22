@@ -167,7 +167,6 @@ export const isFileObjectExcluded = (id) => {
 };
 
 export const rawFilesListing = async (user, directory, recursive = false) => {
-  let pageMarker;
   const storageObjects = [];
   const requestParams = {
     Bucket: bucketName,
@@ -181,8 +180,7 @@ export const rawFilesListing = async (user, directory, recursive = false) => {
       storageObjects.push(...(response.Contents ?? []));
       truncated = response.IsTruncated;
       if (truncated) {
-        pageMarker = response.Contents.slice(-1)[0].Key;
-        requestParams.Marker = pageMarker;
+        requestParams.ContinuationToken = response.NextContinuationToken;
       }
     } catch (err) {
       logApp.error('[FILE STORAGE] Error loading files list', { error: err });
