@@ -82,6 +82,8 @@ class ViewCharts extends Component {
     const analysesMap = {}
     this.props.location.state?.analyses.forEach((a) => analysesMap[a.id] = a);
     this.state = {
+      trendingData: [],
+      trendingName: '',
       tabValue: 0,
       anchorEl: false,
       clientId: localStorage.getItem('client_id'),
@@ -126,6 +128,23 @@ class ViewCharts extends Component {
       });
   }
 
+  handleTrendingClick(s) {
+    const { value } = s;
+    const { trendingData } = this.state;
+    if (trendingData.includes(value)) {
+      this.setState({ trendingData: trendingData.filter((k) => k !== value) })
+    } else {
+      this.setState({ trendingData: [...trendingData, value] });
+    }
+  }
+
+  handleMouseEnter(s) {
+    const { value } = s;
+    this.setState({ trendingName: value });
+  }
+  handleMouseLeave() {
+    this.setState({ trendingName: '' });
+  }
 
   render() {
 
@@ -344,7 +363,7 @@ class ViewCharts extends Component {
       }
     };
 
-   const CustomTooltip = ({ active, payload, label }) => {
+    const CustomTooltip = ({ active, payload, label }) => {
       if (active) {
         return (
           <div
@@ -365,6 +384,7 @@ class ViewCharts extends Component {
       }
       return null;
     };
+    const { trendingName, trendingData } = this.state;
 
     return (
       <div>
@@ -737,11 +757,18 @@ class ViewCharts extends Component {
                       />
                       <YAxis dataKey="value" tick={{ fill: 'white' }} />
                       <Tooltip />
-                      <Legend wrapperStyle={{ bottom: -20 }} />
-                      {trendingChatData.map((s,index) => (
+                      <Legend
+                        onClick={this.handleTrendingClick.bind(this)}
+                        onMouseEnter={this.handleMouseEnter.bind(this)}
+                        onMouseLeave={this.handleMouseLeave.bind(this)}
+                        wrapperStyle={{ bottom: -20 }}
+                      />
+                      {trendingChatData.map((s) => (
                         <Line
                           dataKey="value"
+                          isAnimationActive={trendingName === s.name ? false : true}
                           data={s.data}
+                          hide={trendingData.includes(s.name) && true}
                           name={s.name}
                           key={s.name}
                           dot={{ r: 8 }}
