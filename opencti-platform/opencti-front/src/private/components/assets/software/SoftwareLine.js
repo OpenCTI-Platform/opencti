@@ -132,12 +132,6 @@ class SoftwareLineComponent extends Component {
                   onClick={onLabelClick.bind(this)}
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_scanned.width }}
-              >
-                {node.last_scanned && node.last_scanned}
-              </div>
             </div>
           }
         />
@@ -160,8 +154,7 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
     fragment SoftwareLine_node on SoftwareAsset {
       id
       name
-      asset_type
-      last_scanned
+      asset_type      
       labels {
         __typename
         id
@@ -306,17 +299,6 @@ class SoftwareDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.label_name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_scanned.width }}
               >
                 <Skeleton
                   animation="wave"

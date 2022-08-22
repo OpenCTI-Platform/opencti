@@ -157,19 +157,10 @@ class DeviceLineComponent extends Component {
                   labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
                 /> */}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_scanned.width }}
-              >
-                {node.last_scanned && fd(node.last_scanned)}
-              </div>
+              </div>              
             </div>
           }
-        />
-        {/* <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon> */}
+        />        
       </ListItem>
     );
   }
@@ -192,8 +183,7 @@ const DeviceLineFragment = createFragmentContainer(
         id
         name
         asset_id
-        asset_type
-        last_scanned
+        asset_type        
         ipv4_address{
           ip_address_value
         }
@@ -353,18 +343,7 @@ class DeviceLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_scanned.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
+              </div>              
             </div>
           }
         />

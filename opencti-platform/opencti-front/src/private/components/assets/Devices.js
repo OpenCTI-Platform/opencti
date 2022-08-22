@@ -303,11 +303,6 @@ class Devices extends Component {
         width: '20%',
         isSortable: true,
       },
-      last_scanned: {
-        label: 'Scanned',
-        width: '8%',
-        isSortable: false,
-      },
     };
     return (
       <CyioListLines
