@@ -9,7 +9,7 @@ import { Information } from 'mdi-material-ui';
 import graphql from 'babel-plugin-relay/macro'
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const LoggedByQuery = graphql`
 query LoggedByQuery{
@@ -33,7 +33,7 @@ class RelatedResponse extends Component {
     }
   }
   componentDidMount() {
-    fetchDarklightQuery(LoggedByQuery)
+    fetchQuery(LoggedByQuery)
       .toPromise()
       .then((data) => {
         const loggedByEntities = R.pipe(

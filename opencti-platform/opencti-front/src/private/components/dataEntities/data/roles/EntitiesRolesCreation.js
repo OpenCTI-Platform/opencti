@@ -15,8 +15,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
@@ -93,7 +92,7 @@ class EntitiesRolesCreation extends Component {
     const finalValues = R.pipe(
       R.assoc('name', values.name),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: entitiesRolesCreationMutation,
       variables: {
         input: finalValues,

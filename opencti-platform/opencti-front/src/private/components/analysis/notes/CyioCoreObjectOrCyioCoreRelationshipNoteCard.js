@@ -25,9 +25,8 @@ import IconButton from '@material-ui/core/IconButton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import rehypeRaw from 'rehype-raw';
-import { commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 import CyioNotePopover from './CyioNotePopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { toastGenericError } from '../../../../utils/bakedToast';
@@ -130,7 +129,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
   }
 
   removeNote(noteId) {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: cyioCoreObjectOrCyioCoreRelationshipNoteCardRemove,
       variables: {
         toId: noteId,

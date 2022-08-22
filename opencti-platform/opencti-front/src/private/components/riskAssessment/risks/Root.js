@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter, Switch } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
+import {
+  QueryRenderer,
+} from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Risk from './Risk';
 import Loader from '../../../../components/Loader';
@@ -71,8 +72,7 @@ class RootRisk extends Component {
             ]}
           />
         </Route>
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={riskQuery}
           variables={{ id: riskId }}
           render={({ props, retry }) => {

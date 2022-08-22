@@ -18,9 +18,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { ConnectionHandler } from 'relay-runtime';
 import KeyboardArrowDownOutlinedIcon from '@material-ui/icons/KeyboardArrowDownOutlined';
 import { Add } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import CyioExternalReferenceCreation from './CyioExternalReferenceCreation';
 import CyioAddExternalReferencesLines, {
   cyioAddExternalReferencesLinesQuery,
@@ -122,7 +121,7 @@ class CyioAddExternalReferences extends Component {
     } = this.props;
     if (this.state.totalExternalReference.length > 0) {
       this.state.totalExternalReference.map((externalReference) => (
-        CM(environmentDarkLight, {
+        commitMutation({
           mutation: cyioExternalReferenceLinesMutationRelationAdd,
           variables: {
             toId: externalReference.id,
@@ -152,7 +151,7 @@ class CyioAddExternalReferences extends Component {
         })
       ));
     } else {
-      CM(environmentDarkLight, {
+      commitMutation({
         mutation: cyioExternalReferenceLinesMutationRelationAdd,
         variables: {
           toId: createExternalRef.id,
@@ -305,8 +304,7 @@ class CyioAddExternalReferences extends Component {
             </div>
             <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
               <div className={classes.collapse}>
-                <QR
-                  environment={environmentDarkLight}
+                <QueryRenderer
                   query={cyioAddExternalReferencesLinesQuery}
                   variables={{
                     search: this.state.search,

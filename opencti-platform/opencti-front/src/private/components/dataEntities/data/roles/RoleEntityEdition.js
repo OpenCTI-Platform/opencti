@@ -3,10 +3,9 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
-import { QueryRenderer as QR } from 'react-relay';
 import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../../components/i18n';
-import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
+import { QueryRenderer } from '../../../../../relay/environment';
 import RoleEntityEditionContainer from './RoleEntityEditionContainer';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
@@ -80,8 +79,7 @@ class RoleEntityEdition extends Component {
     } = this.props;
     return (
       <div className={classes.container}>
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={roleEntityEditionQuery}
           variables={{ id: responsibilityId }}
           render={({ error, props }) => {

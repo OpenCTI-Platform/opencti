@@ -4,9 +4,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter, Switch} from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
-import { requestSubscription } from '../../../../relay/environment';
+import {
+  QueryRenderer,
+  requestSubscription,
+} from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Network from './Network';
 import Loader from '../../../../components/Loader';
@@ -105,9 +106,7 @@ class RootNetwork extends Component {
             ]}
           />
         </Route>
-        {/* <QueryRenderer */}
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={networkQuery}
           variables={{ id: networkId }}
           render={({ error, props, retry }) => {

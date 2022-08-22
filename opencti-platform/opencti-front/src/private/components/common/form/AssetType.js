@@ -8,7 +8,7 @@ import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const assetTypeQuery = graphql`
  query AssetTypeQuery(
@@ -33,7 +33,7 @@ class AssetType extends Component {
     }
   }
   componentDidMount() {
-    fetchDarklightQuery(assetTypeQuery, {
+    fetchQuery(assetTypeQuery, {
       type: `${this.props.assetType}AssetTypes`,
     })
       .toPromise()

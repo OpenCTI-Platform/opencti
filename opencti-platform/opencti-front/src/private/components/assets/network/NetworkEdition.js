@@ -5,9 +5,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import NetworkEditionContainer from './NetworkEditionContainer';
 import { networkEditionOverviewFocus } from './NetworkEditionOverview';
@@ -69,8 +67,7 @@ class NetworkEdition extends Component {
     const { networkId, history } = this.props;
     return (
       <div>
-        <QR
-          environment={environmentDarkLight}
+        <QueryRenderer
           query={networkEditionQuery}
           variables={{ id: networkId }}
           render={({ props, retry }) => {

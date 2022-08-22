@@ -24,8 +24,7 @@ import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
@@ -186,7 +185,7 @@ class RequiredResourceCreation extends Component {
       assoc('remediation_id', this.props.remediationId),
       assoc('subjects', subjects),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: RequiredResourceCreationMutation,
       variables: {
         input: finalValues,

@@ -8,8 +8,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Paper from '@material-ui/core/Paper';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
+import { QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import RemediationEntitiesLines from './RemediationEntitiesLines';
 
@@ -120,8 +119,7 @@ class RemediationEntities extends Component {
     };
     return (
       <>
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={remediationEntitiesQuery}
           variables={{ id: entityId }}
           render={({ props }) => {

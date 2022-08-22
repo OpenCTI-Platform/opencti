@@ -16,10 +16,9 @@ import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
 import { adaptFieldValue } from '../../../../../utils/String';
 import { dateFormat, parse } from '../../../../../utils/Time';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
@@ -144,7 +143,7 @@ class RemediationEditionContainer extends Component {
       }))
     )(adaptedValues);
     // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
-    CM(environmentDarkLight, {
+    commitMutation({
       // mutation: remediationEditionMutation,
       variables: {
         id: this.props.risk?.id,

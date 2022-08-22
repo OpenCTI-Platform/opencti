@@ -19,8 +19,7 @@ import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import { FormControlLabel } from '@material-ui/core';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TaskType from '../../../common/form/TaskType';
 import SelectField from '../../../../../components/SelectField';
@@ -132,7 +131,7 @@ class EntitiesPartiesCreation extends Component {
       R.dissoc('external_identifiers'),
       R.dissoc('member_of_organizations'),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: entitiesPartiesCreationMutation,
       variables: {
         input: finalValues,

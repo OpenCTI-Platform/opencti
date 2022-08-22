@@ -15,9 +15,7 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
-// import { commitMutation } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -116,7 +114,7 @@ class CyioExternalReferenceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: cyioExternalReferenceCreationMutation,
       variables: {
         input: values,

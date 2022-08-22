@@ -17,9 +17,9 @@ import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { adaptFieldValue } from '../../../../utils/String';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { dateFormat, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
@@ -149,7 +149,7 @@ class DeviceEditionContainer extends Component {
         'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(adaptedValues);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: deviceEditionMutation,
       variables: {
         id: this.props.device?.id,

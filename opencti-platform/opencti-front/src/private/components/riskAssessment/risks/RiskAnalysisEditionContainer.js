@@ -5,6 +5,8 @@ import * as Yup from 'yup';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer } from 'react-relay';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -16,8 +18,7 @@ import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../relay/environment';
 import { dateFormat, parse } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
@@ -142,7 +143,7 @@ class RiskAnalysisEditionContainer extends Component {
       })),
     )(adaptedValues);
     // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: riskAnalysisEditionMutation,
       variables: {
         id: this.props.risk?.id,

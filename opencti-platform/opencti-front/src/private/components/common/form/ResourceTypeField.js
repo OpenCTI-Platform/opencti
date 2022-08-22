@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const styles = () => ({
   resourceTypeField: {
@@ -41,7 +41,7 @@ class ResourceTypeField extends Component {
   }
 
   componentDidMount() {
-    fetchDarklightQuery(ResourceTypeFieldQuery)
+    fetchQuery(ResourceTypeFieldQuery)
       .toPromise()
       .then((data) => {
         const resourceTypeEntities = R.pipe(

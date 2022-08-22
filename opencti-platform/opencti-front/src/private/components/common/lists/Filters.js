@@ -18,7 +18,6 @@ import Chip from '@material-ui/core/Chip';
 import { withRouter } from 'react-router-dom';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
-import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identityCreationIdentitiesSearchQuery } from '../identities/IdentityCreation';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
@@ -35,7 +34,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 import { statusFieldStatusesSearchQuery } from '../form/StatusField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 import { dateFormatRegex } from '../../../../utils/Network';
 
 const styles = (theme) => ({
@@ -135,7 +134,7 @@ class Filters extends Component {
     }
     switch (filterKey) {
       case 'asset_type_or':
-        fetchDarklightQuery(itAssetFiltersAssetTypeFieldQuery, {
+        fetchQuery(itAssetFiltersAssetTypeFieldQuery, {
           type: `${this.props.filterEntityType}AssetTypes`,
           search: event && event.target.value !== 0 ? event.target.value : '',
         })
@@ -181,7 +180,7 @@ class Filters extends Component {
           nameQuery = riskFiltersNameQuery;
           namePath = ['risks', 'edges'];
         }
-        fetchDarklightQuery(nameQuery, {
+        fetchQuery(nameQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
         })
           .toPromise()
@@ -206,7 +205,7 @@ class Filters extends Component {
           });
         break;
       case 'risk_level':
-        fetchDarklightQuery(RiskFiltersQuery, {
+        fetchQuery(RiskFiltersQuery, {
           type: 'RiskLevel',
         })
           .toPromise()
@@ -231,7 +230,7 @@ class Filters extends Component {
           });
         break;
       case 'risk_status':
-        fetchDarklightQuery(RiskFiltersQuery, {
+        fetchQuery(RiskFiltersQuery, {
           type: 'RiskStatus',
         })
           .toPromise()
@@ -256,7 +255,7 @@ class Filters extends Component {
           });
         break;
       case 'lifecycle':
-        fetchDarklightQuery(RiskFiltersQuery, {
+        fetchQuery(RiskFiltersQuery, {
           type: 'RiskLifeCyclePhase',
         })
           .toPromise()
@@ -281,7 +280,7 @@ class Filters extends Component {
           });
         break;
       case 'response_type':
-        fetchDarklightQuery(RiskFiltersQuery, {
+        fetchQuery(RiskFiltersQuery, {
           type: 'ResponseType',
         })
           .toPromise()
@@ -306,7 +305,7 @@ class Filters extends Component {
           });
         break;
       case 'vendor_name_or':
-        fetchDarklightQuery(itAssetFiltersSoftwareFieldsQuery, {
+        fetchQuery(itAssetFiltersSoftwareFieldsQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
         })
           .toPromise()
@@ -332,7 +331,7 @@ class Filters extends Component {
         break;
       case 'label_name':
         // eslint-disable-next-line no-case-declarations
-        fetchDarklightQuery(labelsSearchQuery, {
+        fetchQuery(labelsSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
         })
           .toPromise()

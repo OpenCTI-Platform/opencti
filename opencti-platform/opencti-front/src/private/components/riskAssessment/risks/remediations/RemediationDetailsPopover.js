@@ -16,9 +16,8 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Slide from '@material-ui/core/Slide';
-import { commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../../components/i18n';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../../relay/environment';
 import { parse } from '../../../../../utils/Time';
 import { adaptFieldValue } from '../../../../../utils/String';
 import TextField from '../../../../../components/TextField';
@@ -150,7 +149,7 @@ class RemediationDetailsPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(adaptedValues);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: remediationEditionMutation,
       variables: {
         id: this.props.cyioCoreRelationshipId,

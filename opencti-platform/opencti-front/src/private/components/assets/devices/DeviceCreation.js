@@ -5,18 +5,11 @@ import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { compose, evolve } from 'ramda';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
 import {
-  Add,
-  Edit,
   Close,
-  Delete,
-  ArrowBack,
-  AddCircleOutline,
   CheckCircleOutline,
 } from '@material-ui/icons';
 import Dialog from '@material-ui/core/Dialog';
@@ -28,9 +21,8 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { parse } from '../../../../utils/Time';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
@@ -149,7 +141,7 @@ class DeviceCreation extends Component {
       R.dissoc('port_number'),
       R.assoc('asset_type', values.asset_type),
     )(adaptedValues);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: deviceCreationMutation,
       variables: {
         input: finalValues,

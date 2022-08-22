@@ -4,8 +4,6 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-// import { QueryRenderer as QR } from 'react-relay';
-// import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { QueryRenderer } from '../../../../relay/environment';
 import CyioCoreObjectExternalReferencesLines, {

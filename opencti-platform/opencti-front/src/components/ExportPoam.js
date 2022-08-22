@@ -5,7 +5,6 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   compose,
 } from 'ramda';
-import { commitMutation as CM } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -22,7 +21,7 @@ import inject18n from './i18n';
 import SelectField from './SelectField';
 import OscalModalTypeList from '../private/components/common/form/OscalModalTypeList';
 import OscalMediaTypeList from '../private/components/common/form/OscalMediaTypeList';
-import environmentDarkLight from '../relay/environmentDarkLight';
+import { commitMutation } from '../relay/environment';
 import { toastGenericError } from '../utils/bakedToast';
 
 const styles = (theme) => ({
@@ -113,7 +112,7 @@ class ExportPoam extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: ExportPoamMutation,
       variables: {
         model: this.state.selectedOscalType,

@@ -8,7 +8,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro'
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const RiskStatusQuery = graphql`
  query RiskStatusQuery{
@@ -30,7 +30,7 @@ class RiskStatus extends Component {
     }
   }
   componentDidMount() {
-    fetchDarklightQuery(RiskStatusQuery)
+    fetchQuery(RiskStatusQuery)
       .toPromise()
       .then((data) => {
         const riskStatusEntities = R.pipe(

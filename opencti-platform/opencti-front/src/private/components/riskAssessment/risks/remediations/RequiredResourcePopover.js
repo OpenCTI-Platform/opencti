@@ -29,8 +29,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import { adaptFieldValue } from '../../../../../utils/String';
@@ -210,7 +209,7 @@ class RequiredResourcePopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: requiredResourcePopoverEditionMutation,
       variables: {
         id: this.props.data.id,
@@ -237,7 +236,7 @@ class RequiredResourcePopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: requiredResourcePopoverDeletionMutation,
       variables: {
         id: this.props.requiredResourceId,

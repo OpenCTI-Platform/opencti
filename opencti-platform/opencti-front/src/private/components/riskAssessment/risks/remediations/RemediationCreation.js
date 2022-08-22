@@ -17,11 +17,8 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Slide from '@material-ui/core/Slide';
-import {
-  commitMutation as CM,
-} from 'react-relay';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import ResponseType from '../../../common/form/ResponseType';
@@ -153,7 +150,7 @@ class RemediationCreation extends Component {
       R.assoc('origins', [{ origin_actors: [adaptedValues] }])
     )(values);
 
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: remediationCreationMutation,
       variables: {
         input: finalValues,

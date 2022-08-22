@@ -18,8 +18,7 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
@@ -152,7 +151,7 @@ class NetworkCreation extends Component {
       R.dissoc('labels'),
       R.assoc('network_ipv4_address_range', network_ipv4_address_range),
     )(adaptedValues);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: networkCreationMutation,
       variables: {
         input: finalValues,

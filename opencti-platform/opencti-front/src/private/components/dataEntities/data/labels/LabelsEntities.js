@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
+import { QueryRenderer } from '../../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -217,8 +216,7 @@ class RolesEntities extends Component {
           'label_name',
         ]}
       >
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={entitiesLabelsCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
@@ -314,8 +312,7 @@ class RolesEntities extends Component {
           'label_name',
         ]}
       >
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={entitiesLabelsLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {

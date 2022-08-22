@@ -12,12 +12,11 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import MoreVertOutlined from '@material-ui/icons/MoreVertOutlined';
 import Slide from '@material-ui/core/Slide';
-import { QueryRenderer as QR } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import RiskObservationPopover, { riskObservationPopoverQuery } from './RiskObservationPopover';
+import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = () => ({
   paper: {
@@ -205,8 +204,7 @@ class RiskObservationLineContainer extends Component {
             keepMounted={true}
             classes={{ paper: classes.drawerPaper }}
           >
-            <QR
-              environment={environmentDarkLight}
+            <QueryRenderer
               query={riskObservationPopoverQuery}
               variables={{ id: this.state.observationId }}
               render={({ error, props }) => {

@@ -10,12 +10,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import RelatedTasksLines, {
   RelatedTasksLinesQuery,
 } from './RelatedTasksLines';
+import { QueryRenderer } from '../../../../../relay/environment';
 
 const styles = (theme) => ({
   paper: {
@@ -52,9 +51,7 @@ class RelatedTasks extends Component {
       fromType,
     } = this.props;
     return (
-      // <QueryRenderer
-      <QR
-        environment={QueryRendererDarkLight}
+      <QueryRenderer
         query={RelatedTasksLinesQuery}
         variables={{ id: remediationId }}
         render={({ props, retry }) => {

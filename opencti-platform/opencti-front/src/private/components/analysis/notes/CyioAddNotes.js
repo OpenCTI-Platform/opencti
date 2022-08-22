@@ -14,10 +14,9 @@ import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 import KeyboardArrowDownOutlinedIcon from '@material-ui/icons/KeyboardArrowDownOutlined';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { Add } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { QueryRenderer } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import CyioNoteCreation from './CyioNoteCreation';
 import CyioAddNotesLines, { cyioAddNotesLinesQuery, cyioNoteLinesMutationRelationAdd } from './CyioAddNotesLines';
 
@@ -110,7 +109,7 @@ class CyioAddNotes extends Component {
     // };
     if (this.state.totalNotes.length > 0) {
       this.state.totalNotes.map((note) => (
-        CM(environmentDarkLight, {
+        commitMutation({
           mutation: cyioNoteLinesMutationRelationAdd,
           variables: {
             toId: note.id,
@@ -140,7 +139,7 @@ class CyioAddNotes extends Component {
         })
       ));
     } else {
-      CM(environmentDarkLight, {
+      commitMutation({
         mutation: cyioNoteLinesMutationRelationAdd,
         variables: {
           toId: createNote.id,
@@ -295,8 +294,7 @@ class CyioAddNotes extends Component {
             </div>
             <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
               <div className={classes.collapse}>
-                <QR
-                  environment={environmentDarkLight}
+                <QueryRenderer
                   query={cyioAddNotesLinesQuery}
                   variables={{
                     search: this.state.search,
