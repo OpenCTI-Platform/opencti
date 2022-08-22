@@ -131,11 +131,6 @@ class SoftwareLineComponent extends Component {
                   labels={node.labels}
                   onClick={onLabelClick.bind(this)}
                 />
-                {/* <StixCoreObjectLabels
-                  variant="inList"
-                  labels={objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                /> */}
               </div>
             </div>
           }
@@ -159,7 +154,7 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
     fragment SoftwareLine_node on SoftwareAsset {
       id
       name
-      asset_type
+      asset_type      
       labels {
         __typename
         id
