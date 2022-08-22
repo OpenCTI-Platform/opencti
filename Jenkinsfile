@@ -199,17 +199,23 @@ node {
       }
     }
   }, deploy: {
-    if (commitMessage.contains('ci:deploy')) {
+    if (commitMessage.contains('ci:skip')) {
+      echo 'Skip flag detected, skipping deployment...'
+    } else {
       switch (branch) {
         case 'master':
         case 'prod':
-          stage('Deploying to production') {
-            build '/deploy/OpenCTI Frontend/main'
+          if (commitMessage.contains('ci:deploy') {
+            stage('Deploying to production') {
+              build '/deploy/OpenCTI Frontend/main'
+            }
           }
           break
         case 'staging':
-          stage('Deploying to staging') {
-            build '/deploy/OpenCTI Frontend/staging'
+          if (commitMessage.contains('ci:deploy') {
+            stage('Deploying to staging') {
+              build '/deploy/OpenCTI Frontend/staging'
+            }
           }
           break
         case 'develop':
@@ -221,8 +227,6 @@ node {
           echo 'Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag...'
           break
       }
-    } else {
-      echo 'No \'ci:deploy\' flag detected in commit message; skipping...'
     }
   }
 
