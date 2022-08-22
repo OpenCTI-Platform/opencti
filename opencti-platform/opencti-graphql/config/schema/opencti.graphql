@@ -623,6 +623,7 @@ input SynchronizerAddInput {
   token: String! @constraint(minLength: 2)
   stream_id: String! @constraint(minLength: 2)
   user_id: String
+  recover: DateTime
   current_state: DateTime
   listen_deletion: Boolean!
   no_dependencies: Boolean!

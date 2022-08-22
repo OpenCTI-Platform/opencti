@@ -32,6 +32,8 @@ const syncManagerInstance = (syncId) => {
   let eventSource;
   let syncElement;
   let run = true;
+  let lastState;
+  let lastStateSaveTime;
   const handleEvent = (event) => {
     const { type, data, lastEventId } = event;
     const { data: stixData, context, version } = JSON.parse(data);
@@ -101,6 +103,18 @@ const syncManagerInstance = (syncId) => {
     }
     return processingData;
   };
+  const saveCurrentState = async (sync, eventId) => {
+    const currentTime = new Date().getTime();
+    const [time] = eventId.split('-');
+    const dateTime = parseInt(time, 10);
+    const eventDate = utcDate(dateTime).toISOString();
+    if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
+      logApp.info(`[OPENCTI] Sync ${sync.name}: saving state to ${eventDate}`);
+      await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
+      lastState = dateTime;
+      lastStateSaveTime = currentTime;
+    }
+  };
   return {
     id: syncId,
     stop: () => {
@@ -112,6 +126,7 @@ const syncManagerInstance = (syncId) => {
     start: async () => {
       run = true;
       const sync = await startStreamListening();
+      lastState = sync.current_state;
       let currentDelay = lDelay;
       while (run) {
         const event = eventsQueue.dequeue();
@@ -120,15 +135,13 @@ const syncManagerInstance = (syncId) => {
             currentDelay = manageBackPressure(sync, currentDelay);
             const { id: eventId, type: eventType, data, context } = event;
             if (eventType === 'heartbeat') {
-              const [time] = eventId.split('-');
-              const eventDate = utcDate(parseInt(time, 10)).toISOString();
-              logApp.info(`[OPENCTI] Sync ${sync.name}: saving state to ${eventDate}`);
-              await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
+              await saveCurrentState(sync, eventId);
             } else {
               const syncData = await transformDataWithReverseIdAndFilesData(data, context);
               const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context });
               const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
               await pushToSync({ type: 'event', applicant_id: OPENCTI_SYSTEM_UUID, content });
+              await saveCurrentState(sync, eventId);
             }
           } catch (e) {
             logApp.error('[OPENCTI] Sync error processing event', { error: e });
