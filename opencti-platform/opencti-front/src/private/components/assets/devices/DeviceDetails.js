@@ -446,6 +446,24 @@ class DeviceDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
+                  {t('Last Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Last Scanned')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device.last_scanned
+                  && t(device.last_scanned)}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
                   {t('Host Name')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
@@ -644,6 +662,7 @@ const DeviceDetails = createFragmentContainer(
         baseline_configuration_name
         bios_id
         is_scanned
+        last_scanned
         hostname
         default_gateway
         motherboard_id

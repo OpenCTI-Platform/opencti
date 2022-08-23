@@ -99,6 +99,23 @@ class NetworkDetailsComponent extends Component {
                 <div className="clearfix" />
                 <Switch disabled defaultChecked={network?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
               </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Last Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                  <Tooltip title={t('Last Scanned')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {network.last_scanned && t(network.last_scanned)}
+              </div>
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -175,6 +192,7 @@ const NetworkDetails = createFragmentContainer(
         network_name
         network_id
         is_scanned
+        last_scanned
         implementation_point
         network_address_range {
           ending_ip_address{
