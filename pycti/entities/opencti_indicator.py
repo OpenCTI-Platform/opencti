@@ -584,7 +584,7 @@ class Indicator:
                 else False,
                 x_mitre_platforms=stix_object["x_mitre_platforms"]
                 if "x_mitre_platforms" in stix_object
-                else False,
+                else None,
                 x_opencti_main_observable_type=stix_object[
                     "x_opencti_main_observable_type"
                 ]
