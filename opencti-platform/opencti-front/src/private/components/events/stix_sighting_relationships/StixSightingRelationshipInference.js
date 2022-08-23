@@ -65,7 +65,11 @@ class StixSightingRelationshipInference extends Component {
   handleLinkClick(link) {
     const permalink = `${resolveLink(link.source.entity_type)}/${
       link.source_id
-    }/knowledge/relations/${link.id}`;
+    }/knowledge/${
+      link.entity_type === 'stix-sighting-relationship'
+        ? 'sightings'
+        : 'relations'
+    }/${link.id}`;
     this.props.history.push(permalink);
   }
 

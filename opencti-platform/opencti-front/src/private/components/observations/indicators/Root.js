@@ -173,20 +173,26 @@ class RootIndicator extends Component {
                       exact
                       path="/dashboard/observations/indicators/:indicatorId/knowledge/relations/:relationId"
                       render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={indicatorId}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <IndicatorHeader indicator={props.indicator} />
+                          <StixCoreRelationship
+                            entityId={indicatorId}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route
                       exact
                       path="/dashboard/observations/indicators/:indicatorId/knowledge/sightings/:sightingId"
                       render={(routeProps) => (
-                        <StixSightingRelationship
-                          entityId={indicatorId}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <IndicatorHeader indicator={props.indicator} />
+                          <StixSightingRelationship
+                            entityId={indicatorId}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                   </div>
