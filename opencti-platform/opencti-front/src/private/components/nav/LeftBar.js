@@ -13,19 +13,13 @@ import Drawer from '@mui/material/Drawer';
 import Collapse from '@mui/material/Collapse';
 import {
   DashboardOutlined,
-  AssignmentOutlined,
-  LayersOutlined,
   ExpandLess,
   ExpandMore,
 } from '@mui/icons-material';
 import {
   CogOutline,
   Database,
-  Binoculars,
-  FlaskOutline,
   FolderTableOutline,
-  Timetable,
-  Brain,
   GlobeModel,
 } from 'mdi-material-ui';
 import * as R from 'ramda';
