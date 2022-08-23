@@ -17,8 +17,6 @@ import DialogContent from '@material-ui/core/DialogContent';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
@@ -100,7 +98,7 @@ class EntitiesNotesCreation extends Component {
     const finalValues = R.pipe(
       R.assoc('authors', values.authors),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: entitiesNotesCreationMutation,
       variables: {
         input: finalValues,

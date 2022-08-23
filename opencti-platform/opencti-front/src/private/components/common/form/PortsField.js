@@ -16,7 +16,7 @@ import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 
 const styles = (theme) => ({
@@ -61,7 +61,7 @@ class PortsField extends Component {
   }
 
   componentDidMount() {
-    fetchDarklightQuery(protocolsListQuery)
+    fetchQuery(protocolsListQuery)
       .toPromise()
       .then((data) => {
         const protocols = R.pipe(

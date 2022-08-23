@@ -8,7 +8,7 @@ import { Information } from 'mdi-material-ui';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const ResponsiblePartiesQuery = graphql`
 query ResponsiblePartiesQuery {
@@ -39,7 +39,7 @@ class ResponsibleParties extends Component {
     };
   }
   componentDidMount() {
-    fetchDarklightQuery(ResponsiblePartiesQuery)
+    fetchQuery(ResponsiblePartiesQuery)
       .toPromise()
       .then((data) => {
         const ResponsiblePartiesEntities = R.pipe(

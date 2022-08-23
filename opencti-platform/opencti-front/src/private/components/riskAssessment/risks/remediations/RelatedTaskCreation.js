@@ -26,9 +26,8 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import DatePickerField from '../../../../../components/DatePickerField';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
@@ -165,7 +164,6 @@ class RelatedTaskCreation extends Component {
       error: {},
       open: false,
       close: false,
-      timing: {},
       start_date: '',
       end_date: null,
     };
@@ -205,7 +203,7 @@ class RelatedTaskCreation extends Component {
       dissoc('end_date'),
       assoc('timing', timing),
     )(adaptedValues);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: RelatedTaskCreationMutation,
       variables: {
         input: finalValues,
@@ -245,7 +243,7 @@ class RelatedTaskCreation extends Component {
     // });
   }
   handleAddReferenceMutation(taskResponse) {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: RelatedTaskCreationAddReferenceMutation,
       variables: {
         toId: taskResponse.id,

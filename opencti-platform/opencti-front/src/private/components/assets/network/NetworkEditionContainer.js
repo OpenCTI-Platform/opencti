@@ -5,6 +5,8 @@ import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import { createFragmentContainer } from 'react-relay';
+import { compose } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -17,8 +19,6 @@ import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { adaptFieldValue } from '../../../../utils/String';
 import { dateFormat, parse } from '../../../../utils/Time';
@@ -165,7 +165,7 @@ class NetworkEditionContainer extends Component {
         'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(filteredValue);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: networkEditionMutation,
       variables: {
         id: this.props.network.id,

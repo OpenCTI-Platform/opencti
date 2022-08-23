@@ -4,9 +4,8 @@ import {
   Route, withRouter, Switch,
 } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import {
+  QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
 import TopBar from '../../../nav/TopBar';
@@ -88,9 +87,7 @@ class RootRemediation extends Component {
             ]}
           />
         </Route>
-        {/* <QueryRenderer */}
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={remediationQuery}
           variables={{ id: remediationId }}
           render={({ props, retry }) => {

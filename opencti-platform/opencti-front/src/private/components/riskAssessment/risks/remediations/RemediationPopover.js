@@ -4,7 +4,6 @@ import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
 import Menu from '@material-ui/core/Menu';
-import { QueryRenderer as QR } from 'react-relay';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -17,8 +16,8 @@ import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
-import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
-import { commitMutation } from '../../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+// import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 import RemediationDetailsPopover from './RemediationDetailsPopover';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
@@ -242,8 +241,7 @@ class RemediationPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <QR
-          environment={QueryRendererDarkLight}
+        <QueryRenderer
           query={remediationPopoverQuery}
           variables={{ id: cyioCoreRelationshipId }}
           render={({ error, props }) => {

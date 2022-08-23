@@ -7,8 +7,8 @@ import {
   Add,
 } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
-import { commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import graphql from 'babel-plugin-relay/macro';
+import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import RemediationCreation from './RemediationCreation';
 
@@ -111,7 +111,7 @@ class AddRemediation extends Component {
     //   assoc('objectMarking', pluck('value', values.objectMarking)),
     //   assoc('objectLabel', pluck('value', values.objectLabel)),
     // )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       // mutation: remediationCreationMutation,
       // const adaptedValues = evolve(
       //   {

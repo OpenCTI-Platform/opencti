@@ -7,7 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import graphql from 'babel-plugin-relay/macro'
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const OperationalStatusFieldQuery = graphql`
  query OperationalStatusFieldQuery{
@@ -28,7 +28,7 @@ class OperationalStatusField extends Component {
     }
   }
   componentDidMount() {
-    fetchDarklightQuery(OperationalStatusFieldQuery)
+    fetchQuery(OperationalStatusFieldQuery)
       .toPromise()
       .then((data) => {
         const operationalStatusEntities = R.pipe(

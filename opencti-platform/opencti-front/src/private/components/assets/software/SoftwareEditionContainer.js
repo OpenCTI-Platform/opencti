@@ -6,6 +6,8 @@ import graphql from 'babel-plugin-relay/macro';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer } from 'react-relay';
+import { compose } from 'ramda';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
@@ -17,9 +19,8 @@ import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
 import { dateFormat, parse } from '../../../../utils/Time';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SoftwareEditionDetails from './SoftwareEditionDetails';
@@ -162,7 +163,7 @@ class SoftwareEditionContainer extends Component {
         'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(filteredValue);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: softwareEditionMutation,
       variables: {
         id: this.props.software.id,

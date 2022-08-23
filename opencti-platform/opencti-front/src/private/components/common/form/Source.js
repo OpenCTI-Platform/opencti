@@ -7,7 +7,7 @@ import graphql from 'babel-plugin-relay/macro';
 import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   chip: {
@@ -99,7 +99,7 @@ class Source extends Component {
   }
 
   componentDidMount() {
-    fetchDarklightQuery(SourceActorTypeQuery)
+    fetchQuery(SourceActorTypeQuery)
       .toPromise()
       .then((data) => {
         const actorTypeEntities = R.pathOr([], ['__type', 'enumValues']).length > 0
@@ -141,7 +141,7 @@ class Source extends Component {
         default:
         //
       }
-      fetchDarklightQuery(queryType)
+      fetchQuery(queryType)
         .toPromise()
         .then((data) => {
           const oscalEntities = R.pathOr([], [queryInfo, 'edges'], data).length > 0

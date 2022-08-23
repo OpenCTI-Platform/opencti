@@ -11,12 +11,11 @@ import DialogContent from '@material-ui/core/DialogContent';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import ColorPickerField from '../../../../../components/ColorPickerField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import { commitMutation } from '../../../../../relay/environment';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -89,7 +88,7 @@ class EntitiesLabelsCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: entitiesLabelsCreationMutation,
       variables: {
         input: values,

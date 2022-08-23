@@ -8,7 +8,7 @@ import { Information } from 'mdi-material-ui';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 
 const OscalMediaTypeListQuery = graphql`
   query OscalMediaTypeListQuery {
@@ -32,7 +32,7 @@ class OscalMediaTypeList extends Component {
   }
 
   componentDidMount() {
-    fetchDarklightQuery(OscalMediaTypeListQuery)
+    fetchQuery(OscalMediaTypeListQuery)
       .toPromise()
       .then((data) => {
         const OscalMediaTypeEntities = R.pipe(

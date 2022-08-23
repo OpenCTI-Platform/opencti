@@ -3,9 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
-import { commitMutation } from '../../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import RemediationEditionContainer from './RemediationEditionContainer';
 import Loader from '../../../../../components/Loader';
@@ -94,8 +92,7 @@ class RemediationEdition extends Component {
           onClose={this.handleClose.bind(this)}
         > */}
         <div>
-        <QR
-          environment={environmentDarkLight}
+        <QueryRenderer
           query={remediationEditionQuery}
           variables={{ id: riskId }}
           render={({ props }) => {

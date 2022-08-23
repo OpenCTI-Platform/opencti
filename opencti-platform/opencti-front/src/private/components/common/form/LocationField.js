@@ -20,7 +20,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { Dialog, DialogContent, DialogActions } from '@material-ui/core';
-import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 
@@ -102,7 +102,7 @@ class LocationField extends Component {
   }
 
   searchData = () => {
-    fetchDarklightQuery(LocationFieldSearchQuery, {
+    fetchQuery(LocationFieldSearchQuery, {
       orderedBy: 'name',
       orderMode: 'asc',
     })
