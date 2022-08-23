@@ -27,7 +27,7 @@ const styles = () => ({
 class SoftwareDetailsComponent extends Component {
   render() {
     const {
-      fld, t, classes, software,
+      fld, t, classes, software, fd,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -122,7 +122,7 @@ class SoftwareDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {software.last_scanned && t(software.last_scanned)}
+                {software.last_scanned && fd(software.last_scanned)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>

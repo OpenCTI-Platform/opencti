@@ -228,6 +228,7 @@ class NetworkCreation extends Component {
             starting_address: '',
             ending_address: '',
             is_scanned: false,
+            last_scanned:'',
           }}
           validationSchema={networkValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

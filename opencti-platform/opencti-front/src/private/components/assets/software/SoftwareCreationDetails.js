@@ -15,6 +15,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { commitMutation } from '../../../../relay/environment';
+import SwitchField from '../../../../components/SwitchField';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -173,6 +175,33 @@ class SoftwareCreationDetailsComponent extends Component {
                   // }
                   />
                 </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Scanned')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Scanned')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography>No</Typography>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="is_scanned"
+                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                      inputProps={{ 'aria-label': 'ant design' }}
+                    />
+                    <Typography>Yes</Typography>
+                  </div>
+                </div>
               </Grid>
               <Grid item={true} xs={6}>
                 <div>
@@ -242,6 +271,32 @@ class SoftwareCreationDetailsComponent extends Component {
                     name="implementation_point"
                     size='small'
                     fullWidth={true}
+                  />
+                </div>                
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Last Scan')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Last Scan')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={DatePickerField}
+                    variant='outlined'
+                    name="last_scanned"
+                    size='small'
+                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
                   />
                 </div>
               </Grid>

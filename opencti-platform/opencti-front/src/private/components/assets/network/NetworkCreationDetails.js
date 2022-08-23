@@ -16,6 +16,7 @@ import inject18n from '../../../../components/i18n';
 import SwitchField from '../../../../components/SwitchField';
 import TextField from '../../../../components/TextField';
 import { commitMutation } from '../../../../relay/environment';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -174,7 +175,33 @@ class NetworkCreationDetailsComponent extends Component {
                       inputProps={{ 'aria-label': 'ant design' }}
                     />
                     <Typography>Yes</Typography>
+                  </div>                  
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Last Scan')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Last Scan')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
                   </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={DatePickerField}
+                    variant='outlined'
+                    name="last_scanned"
+                    size='small'
+                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />
                 </div>
               </Grid>
               <Grid item={true} xs={6}>

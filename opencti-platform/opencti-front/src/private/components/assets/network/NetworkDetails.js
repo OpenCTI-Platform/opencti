@@ -36,7 +36,7 @@ const styles = (theme) => ({
 
 class NetworkDetailsComponent extends Component {
   render() {
-    const { t, classes, network } = this.props;
+    const { t, classes, network,fd } = this.props;
     const ntadr = network.network_address_range;
     const startingAddress = ntadr?.starting_ip_address && ntadr.starting_ip_address?.ip_address_value;
     const endingAddress = ntadr?.ending_ip_address && ntadr.ending_ip_address?.ip_address_value;
@@ -114,7 +114,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {network.last_scanned && t(network.last_scanned)}
+                {network.last_scanned && fd(network.last_scanned)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>

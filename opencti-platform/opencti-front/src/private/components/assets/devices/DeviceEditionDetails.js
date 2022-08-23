@@ -19,6 +19,7 @@ import InstalledAsset from '../../common/form/InstalledAsset';
 import PortsField from '../../common/form/PortsField';
 import AddressField from '../../common/form/AddressField';
 import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../utils/Network';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = () => ({
   paper: {
@@ -486,6 +487,32 @@ class DeviceEditionDetailsComponent extends Component {
                     />
                     <Typography>Yes</Typography>
                   </div>
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Last Scan')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Last Scan')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={DatePickerField}
+                    variant='outlined'
+                    name="last_scanned"
+                    size='small'
+                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />
                 </div>
                 <div>
                   <Typography

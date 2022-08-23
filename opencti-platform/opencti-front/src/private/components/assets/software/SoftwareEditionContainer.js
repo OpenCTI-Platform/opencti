@@ -237,6 +237,8 @@ class SoftwareEditionContainer extends Component {
       R.assoc('cpe_identifier', software?.cpe_identifier || ''),
       R.assoc('installation_id', software?.installation_id || ''),
       R.assoc('implementation_point', software?.implementation_point || ''),
+      R.assoc('is_scanned', software?.is_scanned),      
+      R.assoc('last_scanned', software?.last_scanned || ''),
       R.pick([
         'id',
         'asset_id',
@@ -256,6 +258,8 @@ class SoftwareEditionContainer extends Component {
         'cpe_identifier',
         'installation_id',
         'implementation_point',
+        'is_scanned',
+        'last_scanned',
       ]),
     )(software);
     return (

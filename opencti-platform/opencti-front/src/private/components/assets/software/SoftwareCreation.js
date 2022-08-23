@@ -212,6 +212,8 @@ class SoftwareCreation extends Component {
             implementation_point: 'external',
             labels: [],
             asset_type: 'software',
+            is_scanned: false,
+            last_scanned:'',
           }}
           validationSchema={softwareValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

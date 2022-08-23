@@ -234,6 +234,7 @@ class DeviceCreation extends Component {
             is_virtual: false,
             is_publicly_accessible: false,
             is_scanned: false,
+            last_scanned:'',
             baseline_configuration_name: '',
             bios_id: '',
             hostname: '',

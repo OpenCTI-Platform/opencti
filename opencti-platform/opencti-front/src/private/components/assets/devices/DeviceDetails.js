@@ -66,6 +66,7 @@ class DeviceDetailsComponent extends Component {
       classes,
       device,
       history,
+      fd,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -455,7 +456,7 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {device.last_scanned
-                  && t(device.last_scanned)}
+                  && fd(device.last_scanned)}
               </div>
               <div>
                 <Typography
