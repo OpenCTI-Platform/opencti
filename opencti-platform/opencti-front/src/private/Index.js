@@ -27,7 +27,6 @@ import { NoMatch, BoundaryRoute } from './components/Error';
 import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
 import { getAccount } from '../services/account.service';
 import FeatureFlag from '../components/feature/FeatureFlag';
-import { toastInfo } from '../utils/bakedToast';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -72,11 +71,14 @@ const Index = (me) => {
         }
       });
     }
-    setInterval(() => {
-      toastInfo('Token has been refreshed');
-      localStorage.removeItem('token');
-      me.retry();
-    }, 1800000);
+    const jwtToken = JSON.parse(atob(me.me.access_token.split('.')[1]));
+    const expiration = jwtToken.exp * 1000 - Date.now();
+    if (expiration >= 0) {
+      setTimeout(() => {
+        localStorage.removeItem('token');
+        me.retry();
+      }, expiration);
+    }
   }, [clientId]);
 
   const classes = useStyles();
