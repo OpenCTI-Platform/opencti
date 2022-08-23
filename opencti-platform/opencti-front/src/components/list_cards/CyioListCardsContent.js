@@ -77,7 +77,7 @@ class CyioListCardsContent extends Component {
       && this.props.offset > 0) {
       window.scrollTo(0, 3000);
       this.props.handleDecrementedOffsetChange();
-      this.setState({ newDataList: this.state.newDataList.slice(-50) });
+      this.setState({ newDataList: this.state.newDataList.slice(-this.props.dataList.length) });
     }
     if (this.state.loadedData !== (this.props.dataList.length + this.props.offset)
       && ((this.props.globalCount - this.state.loadedData) > 0)
@@ -103,7 +103,7 @@ class CyioListCardsContent extends Component {
     window.removeEventListener('scroll', this.handleScroll.bind(this));
   }
 
-  handleScroll(event) {
+  handleScroll() {
     this.setState({ scrollValue: window.pageYOffset });
   }
 
