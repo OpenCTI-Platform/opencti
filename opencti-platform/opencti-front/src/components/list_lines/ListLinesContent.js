@@ -97,7 +97,7 @@ class ListLinesContent extends Component {
     window.removeEventListener('scroll', this.handleScroll.bind(this));
   }
 
-  handleScroll(event) {
+  handleScroll() {
     this.setState({ scrollValue: window.pageYOffset });
   }
 
