@@ -71,8 +71,9 @@ import DeleteScanVerify from "./modals/DeleteScanVerify";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import UpdateScan from "./modals/UpdateScan";
 import { Box, Card } from "@material-ui/core";
+import { withTheme, withStyles } from '@material-ui/core/styles';
 
-const classes = {
+const styles = (theme) => ({
   root: {
     flexGrow: 1,
   },
@@ -170,8 +171,12 @@ const classes = {
     overflow: "hidden",
     textOverflow: "ellipsis",
     textAlign: "left",
-  },   
-};
+  },  
+  popoverContainer: { width: '40rem' ,padding:"3%", backgroundColor: 'rgb(56,64,87)'} ,
+  popoverItems: {margin:"1% 0"},
+  popoverHeader: {color: 'rgb(146,150,163)', marginBottom: '0.5em'}
+
+})
 
 const ScanSortBy = {
   UploadDate: 0,
@@ -325,7 +330,7 @@ class Scans extends Component {
 
   render() {
 
-    const { t } = this.props;
+    const { t, classes } = this.props;
     const {
       client_ID,
       loadingScans,
@@ -786,66 +791,66 @@ class Scans extends Component {
                             onClose={handlePopoverClose}
                             disableRestoreFocus
                           >
-                            <Box sx={{ width: '40rem' ,padding:"3%", backgroundColor: 'rgb(56,64,87)'}}>
+                            <Box className={classes.popoverContainer}>
                               <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-                                <Grid item xs={6} style={{margin:"1% 0"}}>                              
-                                  <Typography gutterBottom variant="body2" component="div" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}}>
+                                <Grid item xs={6} className={classes.popoverItems}>                              
+                                  <Typography gutterBottom variant="body2" component="div" className={classes.popoverHeader}>
                                     Report Name 
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.report_name}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     Policy Name  
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.policy_name}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     Scan Date  
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.report_date}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     Uploaded  
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.upload_date}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     Total Vulnerabilities 
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.total_cve}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     Unique Vulnerabilities 
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.unique_cve}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     Total Records 
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.record_count_total}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     With vulnerabilities                                
                                   </Typography>
                                   <Typography component="div" variant="h5">
@@ -857,16 +862,16 @@ class Scans extends Component {
                                       )}%)`} 
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                   Total Hosts
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.host_count_total}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     With vulnerabilities                                
                                   </Typography>
                                   <Typography component="div" variant="h5">
@@ -875,8 +880,8 @@ class Scans extends Component {
                                       ` (${percentage(scan.host_count, scan.host_count_total)}%)`}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} style={{margin:"1% 0"}}> 
-                                  <Typography gutterBottom variant="body2" style={{color: 'rgb(146,150,163)', marginBottom: '0.5em'}} component="div">
+                                <Grid item xs={6} className={classes.popoverItems}> 
+                                  <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
                                     Cyio Analysis  
                                   </Typography>
                                   <Typography component="div" variant="h5">
@@ -884,31 +889,7 @@ class Scans extends Component {
                                   </Typography>
                                 </Grid>                            
                               </Grid>                            
-                            </Box>
-                            {/* <List>
-                              <ListItem>Report Name: {scan.report_name} </ListItem>
-                              <ListItem>Policy Name: {scan.policy_name} </ListItem>
-                              <ListItem>Scan Date: {scan.report_date}</ListItem>
-                              <ListItem>Uploaded: {scan.upload_date}</ListItem>
-                              <ListItem>Total Vulnerabilities: {scan.total_cve}</ListItem>
-                              <ListItem>Unique Vulnerabilities: {scan.unique_cve}</ListItem>
-                              <ListItem>Total Records: {scan.record_count_total}</ListItem>
-                              <ListItem>...with vulnerabilities:
-                                {scan.vulnerability_count}
-                                {scan.record_count_total > 0 &&
-                                  ` (${percentage(
-                                    scan.vulnerability_count,
-                                    scan.record_count_total
-                                  )}%)`}
-                              </ListItem>
-                              <ListItem>Total Hosts: {scan.host_count_total}</ListItem>
-                              <ListItem>...with vulnerabilities:
-                                {scan.host_count}
-                                {scan.host_count_total > 0 &&
-                                  ` (${percentage(scan.host_count, scan.host_count_total)}%)`}
-                              </ListItem>
-                              <ListItem>Cyio Analysis {scan.analysis_count}</ListItem>
-                            </List> */}
+                            </Box>                            
                           </Popover>
                         </ListItem>
 
@@ -1264,4 +1245,4 @@ Scans.propTypes = {
   onChangeOpenExports: PropTypes.func,
 };
 
-export default R.compose(inject18n, withRouter)(Scans);
+export default R.compose(inject18n, withRouter,withTheme, withStyles(styles))(Scans);
