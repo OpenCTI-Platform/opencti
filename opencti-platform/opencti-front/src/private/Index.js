@@ -72,9 +72,9 @@ const Index = (me) => {
       });
     }
     const jwtToken = JSON.parse(atob(me.me.access_token.split('.')[1]));
-    const expiration = jwtToken.exp * 1000 - Date.now();
+    const expiration = (jwtToken.exp * 1000) - Date.now();
     if (expiration >= 0) {
-      setTimeout(() => {
+      setInterval(() => {
         localStorage.removeItem('token');
         me.retry();
       }, expiration);

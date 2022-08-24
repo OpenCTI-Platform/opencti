@@ -33,6 +33,10 @@ const rootPrivateQuery = graphql`
   }
 `;
 
+const clearToken = () => {
+  localStorage.removeItem('token');
+};
+
 const Root = () => (
   <AuthBoundaryComponent>
     <QueryRenderer
@@ -46,6 +50,7 @@ const Root = () => (
         if (props === null) {
           return <RootPublic />;
         }
+        clearToken();
         if (props) {
           if (props.me && props.me.access_token) {
             const token = props.me.access_token;
