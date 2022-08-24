@@ -36,7 +36,7 @@ const styles = (theme) => ({
 
 class NetworkDetailsComponent extends Component {
   render() {
-    const { t, classes, network,fd } = this.props;
+    const { t, classes, network,fldt } = this.props;
     const ntadr = network.network_address_range;
     const startingAddress = ntadr?.starting_ip_address && ntadr.starting_ip_address?.ip_address_value;
     const endingAddress = ntadr?.ending_ip_address && ntadr.ending_ip_address?.ip_address_value;
@@ -98,24 +98,7 @@ class NetworkDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Switch disabled defaultChecked={network?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Last Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                  <Tooltip title={t('Last Scanned')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {network.last_scanned && fd(network.last_scanned)}
-              </div>
+              </div>              
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -151,6 +134,23 @@ class NetworkDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 { endingAddress }
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20  }}
+                >
+                  {t('Last Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Last Scanned')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {network.last_scanned && fldt(network.last_scanned)}
               </div>
               <div>
                 <Typography

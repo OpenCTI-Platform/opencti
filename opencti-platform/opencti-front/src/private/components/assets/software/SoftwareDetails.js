@@ -27,7 +27,7 @@ const styles = () => ({
 class SoftwareDetailsComponent extends Component {
   render() {
     const {
-      fld, t, classes, software, fd,
+       t, classes, software,fldt
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -105,25 +105,7 @@ class SoftwareDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Switch disabled defaultChecked={software?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Last Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                  <Tooltip
-                    title={t('Last Scanned')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {software.last_scanned && fd(software.last_scanned)}
-              </div>
+              </div>              
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -176,6 +158,24 @@ class SoftwareDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {software.implementation_point && t(software.implementation_point)}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Last Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t('Last Scanned')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {software.last_scanned && fldt(software.last_scanned)}
               </div>
             </Grid>
           </Grid>

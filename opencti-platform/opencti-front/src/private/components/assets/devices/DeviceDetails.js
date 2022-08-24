@@ -65,8 +65,8 @@ class DeviceDetailsComponent extends Component {
       t,
       classes,
       device,
-      history,
-      fd,
+      history,      
+      fldt
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -212,7 +212,7 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {device?.netbios_name && t(device.netbios_name)}
-              </div>
+              </div>              
               <div>
                 <Typography
                   variant="h3"
@@ -229,6 +229,23 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Switch disabled color="primary" defaultChecked={device?.is_virtual} size="small" />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Scanned')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Switch disabled color="primary" defaultChecked={device?.is_scanned} size="small" />
               </div>
               <div>
                 <Typography
@@ -401,42 +418,7 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device?.bios_id
                   && t(device.bios_id)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Scanned')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Switch disabled color="primary" defaultChecked={device?.is_scanned} size="small" />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Last Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Last Scanned')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device.last_scanned
-                  && fd(device.last_scanned)}
-              </div>
+              </div>             
               <div>
                 <Typography
                   variant="h3"
@@ -454,7 +436,7 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device?.hostname
                   && t(device.hostname)}
-              </div>
+              </div>              
               <div>
                 <Typography
                   variant="h3"
@@ -472,6 +454,24 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device?.default_gateway
                   && t(device.default_gateway)}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Last Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Last Scanned')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device.last_scanned
+                  && fldt(device.last_scanned)}
               </div>
               <div>
                 <Typography

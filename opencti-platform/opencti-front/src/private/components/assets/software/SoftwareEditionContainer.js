@@ -142,6 +142,7 @@ class SoftwareEditionContainer extends Component {
     const adaptedValues = R.evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        last_scanned: () => values.last_scanned === null ? null : parse(values.last_scanned).format(),
       },
       values,
     );
@@ -238,7 +239,7 @@ class SoftwareEditionContainer extends Component {
       R.assoc('installation_id', software?.installation_id || ''),
       R.assoc('implementation_point', software?.implementation_point || ''),
       R.assoc('is_scanned', software?.is_scanned),      
-      R.assoc('last_scanned', software?.last_scanned || ''),
+      R.assoc('last_scanned', dateFormat(software?.last_scanned)),
       R.pick([
         'id',
         'asset_id',

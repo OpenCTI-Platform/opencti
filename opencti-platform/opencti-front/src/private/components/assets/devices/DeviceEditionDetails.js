@@ -237,6 +237,33 @@ class DeviceEditionDetailsComponent extends Component {
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
+                    {t('Scanned')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Scanned')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography>No</Typography>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="is_scanned"
+                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                      inputProps={{ 'aria-label': 'ant design' }}
+                    />
+                    <Typography>Yes</Typography>
+                  </div>
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
                     {t('Virtual')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
@@ -446,33 +473,6 @@ class DeviceEditionDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                   />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Scanned')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Scanned')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography>No</Typography>
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="is_scanned"
-                      containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
-                      inputProps={{ 'aria-label': 'ant design' }}
-                    />
-                    <Typography>Yes</Typography>
-                  </div>
                 </div>
                 <div>
                   <Typography

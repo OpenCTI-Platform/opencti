@@ -123,6 +123,7 @@ class SoftwareCreation extends Component {
     const adaptedValues = evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        last_scanned: () => values.last_scanned === null ? null : parse(values.last_scanned).format(),
       },
       values,
     );
@@ -213,7 +214,7 @@ class SoftwareCreation extends Component {
             labels: [],
             asset_type: 'software',
             is_scanned: false,
-            last_scanned:'',
+            last_scanned: null,
           }}
           validationSchema={softwareValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
