@@ -4,6 +4,8 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Malwares from './Malwares';
 import RootMalware from './malwares/Root';
+import Channels from './Channels';
+import RootChannel from './channels/Root';
 import AttackPatterns from './AttackPatterns';
 import RootAttackPattern from './attack_patterns/Root';
 import RootCourseOfAction from './courses_of_action/Root';
@@ -31,6 +33,15 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/arsenal/malwares/:malwareId"
           render={(routeProps) => <RootMalware {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/arsenal/channels"
+          component={Channels}
+        />
+        <BoundaryRoute
+          path="/dashboard/arsenal/channels/:channelId"
+          render={(routeProps) => <RootChannel {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

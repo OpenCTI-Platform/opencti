@@ -4,13 +4,12 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { BugReportOutlined } from '@mui/icons-material';
 import {
-  LockPattern,
-  ProgressWrench,
-  Application,
-  Biohazard,
-} from 'mdi-material-ui';
+  BugReportOutlined,
+  SurroundSoundOutlined,
+  WebAssetOutlined,
+} from '@mui/icons-material';
+import { LockPattern, ProgressWrench, Biohazard } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -49,6 +48,25 @@ class TopMenuArsenal extends Component {
         >
           <Biohazard className={classes.icon} fontSize="small" />
           {t('Malwares')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/arsenal/channels"
+          variant={
+            location.pathname === '/dashboard/arsenal/channels'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/arsenal/channels'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <SurroundSoundOutlined className={classes.icon} fontSize="small" />
+          {t('Channels')}
         </Button>
         <Button
           component={Link}
@@ -104,7 +122,7 @@ class TopMenuArsenal extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Application className={classes.icon} fontSize="small" />
+          <WebAssetOutlined className={classes.icon} fontSize="small" />
           {t('Tools')}
         </Button>
         <Button

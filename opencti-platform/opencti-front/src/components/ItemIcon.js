@@ -19,7 +19,8 @@ import {
   Visibility,
   PlaceOutlined,
   StorageOutlined,
-  TerminalOutlined,
+  WebAssetOutlined,
+  SurroundSoundOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -120,11 +121,15 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Threat-Actor':
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Tool':
-      return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
+      return <WebAssetOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Vulnerability':
       return <BugReportOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Incident':
       return <Fire style={style} fontSize={fontSize} role="img" />;
+    case 'Channel':
+      return (
+        <SurroundSoundOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

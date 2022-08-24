@@ -43,7 +43,7 @@ const styles = (theme) => ({
   },
 });
 
-class ToolLineComponent extends Component {
+class ChannelLineComponent extends Component {
   render() {
     const { fd, classes, node, dataColumns, onLabelClick } = this.props;
     return (
@@ -52,7 +52,7 @@ class ToolLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/arsenal/tools/${node.id}`}
+        to={`/dashboard/arsenal/channels/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <WebAssetOutlined />
@@ -99,7 +99,7 @@ class ToolLineComponent extends Component {
   }
 }
 
-ToolLineComponent.propTypes = {
+ChannelLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -107,9 +107,9 @@ ToolLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
+const ChannelLineFragment = createFragmentContainer(ChannelLineComponent, {
   node: graphql`
-    fragment ToolLine_node on Tool {
+    fragment ChannelLine_node on Channel {
       id
       name
       created
@@ -127,12 +127,12 @@ const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
   `,
 });
 
-export const ToolLine = compose(
+export const ChannelLine = compose(
   inject18n,
   withStyles(styles),
-)(ToolLineFragment);
+)(ChannelLineFragment);
 
-class ToolLineDummyComponent extends Component {
+class ChannelLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -203,12 +203,12 @@ class ToolLineDummyComponent extends Component {
   }
 }
 
-ToolLineDummyComponent.propTypes = {
+ChannelLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const ToolLineDummy = compose(
+export const ChannelLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(ToolLineDummyComponent);
+)(ChannelLineDummyComponent);

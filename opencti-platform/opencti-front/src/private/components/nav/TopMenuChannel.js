@@ -34,13 +34,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuTool extends Component {
+class TopMenuChannel extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { toolId },
+        params: { channelId },
       },
       classes,
     } = this.props;
@@ -48,14 +48,14 @@ class TopMenuTool extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/arsenal/tools"
+          to="/dashboard/arsenal/channels"
           variant="contained"
           size="small"
           color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <WebAssetOutlined className={classes.icon} fontSize="small" />
-          {t('Tools')}
+          {t('Channels')}
         </Button>
         <ArrowForwardIosOutlined
           color="primary"
@@ -63,15 +63,15 @@ class TopMenuTool extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/arsenal/tools/${toolId}`}
+          to={`/dashboard/arsenal/channels/${channelId}`}
           variant={
-            location.pathname === `/dashboard/arsenal/tools/${toolId}`
+            location.pathname === `/dashboard/arsenal/channels/${channelId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/arsenal/tools/${toolId}`
+            location.pathname === `/dashboard/arsenal/channels/${channelId}`
               ? 'secondary'
               : 'primary'
           }
@@ -81,10 +81,10 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/tools/${toolId}/knowledge`}
+          to={`/dashboard/arsenal/channels/${channelId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/arsenal/tools/${toolId}/knowledge`,
+              `/dashboard/arsenal/channels/${channelId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -92,7 +92,7 @@ class TopMenuTool extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/arsenal/tools/${toolId}/knowledge`,
+              `/dashboard/arsenal/channels/${channelId}/knowledge`,
             )
               ? 'secondary'
               : 'primary'
@@ -103,15 +103,17 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/tools/${toolId}/analysis`}
+          to={`/dashboard/arsenal/channels/${channelId}/analysis`}
           variant={
-            location.pathname === `/dashboard/arsenal/tools/${toolId}/analysis`
+            location.pathname
+            === `/dashboard/arsenal/channels/${channelId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/arsenal/tools/${toolId}/analysis`
+            location.pathname
+            === `/dashboard/arsenal/channels/${channelId}/analysis`
               ? 'secondary'
               : 'primary'
           }
@@ -121,10 +123,10 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/tools/${toolId}/indicators`}
+          to={`/dashboard/arsenal/channels/${channelId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/arsenal/tools/${toolId}/indicators`,
+              `/dashboard/arsenal/channels/${channelId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -132,7 +134,7 @@ class TopMenuTool extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/arsenal/tools/${toolId}/indicators`,
+              `/dashboard/arsenal/channels/${channelId}/indicators`,
             )
               ? 'secondary'
               : 'primary'
@@ -144,15 +146,17 @@ class TopMenuTool extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/arsenal/tools/${toolId}/files`}
+            to={`/dashboard/arsenal/channels/${channelId}/files`}
             variant={
-              location.pathname === `/dashboard/arsenal/tools/${toolId}/files`
+              location.pathname
+              === `/dashboard/arsenal/channels/${channelId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname === `/dashboard/arsenal/tools/${toolId}/files`
+              location.pathname
+              === `/dashboard/arsenal/channels/${channelId}/files`
                 ? 'secondary'
                 : 'primary'
             }
@@ -163,15 +167,17 @@ class TopMenuTool extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/tools/${toolId}/history`}
+          to={`/dashboard/arsenal/channels/${channelId}/history`}
           variant={
-            location.pathname === `/dashboard/arsenal/tools/${toolId}/history`
+            location.pathname
+            === `/dashboard/arsenal/channels/${channelId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/arsenal/tools/${toolId}/history`
+            location.pathname
+            === `/dashboard/arsenal/channels/${channelId}/history`
               ? 'secondary'
               : 'primary'
           }
@@ -184,7 +190,7 @@ class TopMenuTool extends Component {
   }
 }
 
-TopMenuTool.propTypes = {
+TopMenuChannel.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -192,4 +198,8 @@ TopMenuTool.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(TopMenuTool);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(TopMenuChannel);
