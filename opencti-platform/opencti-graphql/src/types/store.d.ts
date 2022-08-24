@@ -194,6 +194,7 @@ interface StoreProxyEntity extends BasicStoreCommon {
 interface BasicStoreEntity extends StoreProxyEntity {
   id: string;
   name: string;
+  spec_version: string;
   content_type: string;
   content_disposition: string;
   body: string;

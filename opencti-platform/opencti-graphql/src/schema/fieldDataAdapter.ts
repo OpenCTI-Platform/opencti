@@ -169,11 +169,11 @@ export const booleanAttributes = [
   'include_header',
   'otp_activated',
 ];
+export const dictAttributes = ['hashes'];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
-export const dictAttributes: { [k: string]: { key: string, value: string } } = { hashes: { key: 'algorithm', value: 'hash' } };
 
 export const isJsonAttribute = (key: string): boolean => jsonAttributes.includes(key);
-export const isDictionaryAttribute = (key: string): boolean => dictAttributes[key] !== undefined;
+export const isDictionaryAttribute = (key: string): boolean => dictAttributes.includes(key);
 export const isBooleanAttribute = (key: string): boolean => booleanAttributes.includes(key);
 export const isNumericAttribute = (key: string): boolean => numericAttributes.includes(key);
 export const isDateAttribute = (key: string): boolean => dateAttributes.includes(key);

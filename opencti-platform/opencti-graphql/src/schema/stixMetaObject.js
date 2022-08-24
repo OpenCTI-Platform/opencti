@@ -12,7 +12,7 @@ schemaTypes.register(ABSTRACT_STIX_META_OBJECT, STIX_META_OBJECT);
 
 export const isStixMetaObject = (type) => R.includes(type, STIX_META_OBJECT) || type === ABSTRACT_STIX_META_OBJECT;
 
-export const stixMetaObjectsAttributes = {
+const stixMetaObjectsAttributes = {
   [ENTITY_TYPE_MARKING_DEFINITION]: [
     'internal_id',
     'standard_id',
@@ -84,12 +84,12 @@ export const stixMetaObjectsAttributes = {
     'x_opencti_order',
   ],
 };
+R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), stixMetaObjectsAttributes);
 
-export const stixMetaObjectsFieldsToBeUpdated = {
+const stixMetaObjectsFieldsToBeUpdated = {
   [ENTITY_TYPE_MARKING_DEFINITION]: ['definition'],
   [ENTITY_TYPE_LABEL]: ['value', 'color'],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: ['description'],
   [ENTITY_TYPE_KILL_CHAIN_PHASE]: ['x_opencti_order'],
 };
-
-R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), stixMetaObjectsAttributes);
+R.forEachObjIndexed((value, key) => schemaTypes.registerUpsertAttributes(key, value), stixMetaObjectsFieldsToBeUpdated);

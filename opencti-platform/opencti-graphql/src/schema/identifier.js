@@ -21,7 +21,6 @@ import * as C from './stixCyberObservable';
 import { isStixCyberObservable, isStixCyberObservableHashedObservable } from './stixCyberObservable';
 import {
   BASE_TYPE_RELATION,
-  getStaticIdFromData,
   OASIS_NAMESPACE,
   OPENCTI_NAMESPACE,
   OPENCTI_PLATFORM_UUID
@@ -64,7 +63,23 @@ export const X_WORKFLOW_ID = 'x_opencti_workflow_id';
 export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
-const stixCyberObservableContribution = {
+
+const MARKING_TLP_WHITE = '613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const MARKING_TLP_GREEN = '34098fce-860f-48ae-8e50-ebd3cc5e41da';
+const MARKING_TLP_AMBER = 'f88d31f6-486f-44da-b317-01333bde0b82';
+const MARKING_TLP_RED = '5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
+const STATIC_STANDARD_IDS = [
+  { id: MARKING_TLP_WHITE, data: { definition_type: 'TLP', definition: 'TLP:WHITE' } },
+  { id: MARKING_TLP_GREEN, data: { definition_type: 'TLP', definition: 'TLP:GREEN' } },
+  { id: MARKING_TLP_AMBER, data: { definition_type: 'TLP', definition: 'TLP:AMBER' } },
+  { id: MARKING_TLP_RED, data: { definition_type: 'TLP', definition: 'TLP:RED' } }
+];
+const getStaticIdFromData = (data) => {
+  const findStatic = R.find((s) => R.equals(s.data, data), STATIC_STANDARD_IDS);
+  return findStatic?.id;
+};
+
+const stixBaseCyberObservableContribution = {
   definition: {
     // Observables
     [C.ENTITY_AUTONOMOUS_SYSTEM]: [{ src: 'number' }], // number
@@ -128,7 +143,7 @@ const stixCyberObservableContribution = {
     },
   },
 };
-const stixEntityContribution = {
+const stixBaseEntityContribution = {
   definition: {
     // Internal
     [I.ENTITY_TYPE_SETTINGS]: () => OPENCTI_PLATFORM_UUID,
@@ -207,8 +222,18 @@ const stixEntityContribution = {
     },
   },
 };
+const identifierContributions = [stixBaseCyberObservableContribution, stixBaseEntityContribution];
+export const registerModelIdentifier = (identifier) => {
+  identifierContributions.push(identifier);
+};
+
 const resolveContribution = (type) => {
-  return isStixCyberObservable(type) ? stixCyberObservableContribution : stixEntityContribution;
+  const finder = (c) => Object.keys(c.definition).includes(type);
+  const ident = identifierContributions.find(finder);
+  if (!ident) {
+    throw UnsupportedError(`Type ${type} has not available resolution`);
+  }
+  return ident;
 };
 export const idGen = (type, raw, data, namespace) => {
   // If empty data, generate an error message
@@ -344,11 +369,9 @@ const isStandardIdChanged = (previous, updated, operation) => {
   const numberOfUpgrade = patch.filter((p) => p.op === operation).length;
   return numberOfOperations === numberOfUpgrade;
 };
-
 export const isStandardIdUpgraded = (previous, updated) => {
   return isStandardIdChanged(previous, updated, UPDATE_OPERATION_ADD);
 };
-
 export const isStandardIdDowngraded = (previous, updated) => {
   return isStandardIdChanged(previous, updated, UPDATE_OPERATION_REMOVE);
 };

@@ -95,7 +95,7 @@ export const stixCyberObservableOptions = {
   },
 };
 
-export const stixCyberObservableFieldsToBeUpdated = {
+const stixCyberObservableFieldsToBeUpdated = {
   [ENTITY_AUTONOMOUS_SYSTEM]: ['x_opencti_description', 'x_opencti_score', 'number', 'name', 'rir'],
   [ENTITY_DIRECTORY]: ['x_opencti_description', 'x_opencti_score', 'path', 'path_enc', 'ctime', 'mtime', 'atime'],
   [ENTITY_DOMAIN_NAME]: ['x_opencti_description', 'x_opencti_score', 'value'],
@@ -248,8 +248,9 @@ export const stixCyberObservableFieldsToBeUpdated = {
   [ENTITY_TEXT]: ['x_opencti_description', 'x_opencti_score', 'value'],
   [ENTITY_USER_AGENT]: ['x_opencti_description', 'x_opencti_score', 'value'],
 };
+R.forEachObjIndexed((value, key) => schemaTypes.registerUpsertAttributes(key, value), stixCyberObservableFieldsToBeUpdated);
 
-export const stixCyberObservablesAttributes = {
+const stixCyberObservablesAttributes = {
   [ENTITY_AUTONOMOUS_SYSTEM]: [
     'internal_id',
     'standard_id',

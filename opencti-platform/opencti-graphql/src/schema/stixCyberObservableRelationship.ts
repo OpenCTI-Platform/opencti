@@ -285,7 +285,4 @@ export const stixCyberObservableRelationshipsAttributes = [
   'i_stop_time_month',
   'i_stop_time_year',
 ];
-R.map(
-  (stixCyberObservableRelationshipType) => schemaTypes.registerAttributes(stixCyberObservableRelationshipType, stixCyberObservableRelationshipsAttributes),
-  STIX_CYBER_OBSERVABLE_RELATIONSHIPS
-);
+R.map((obsType) => schemaTypes.registerAttributes(obsType, stixCyberObservableRelationshipsAttributes), STIX_CYBER_OBSERVABLE_RELATIONSHIPS);

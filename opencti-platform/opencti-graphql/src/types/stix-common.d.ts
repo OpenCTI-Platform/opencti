@@ -31,7 +31,7 @@ interface StixFileExtension {
 }
 
 interface StixOpenctiExtension {
-  extension_type : 'property-extension' | 'new-sdo';
+  extension_type : 'property-extension' | 'new-sdo' | 'new-sro';
   id: v4 | undefined;
   files: Array<StixFileExtension>;
   aliases: Array<string>;

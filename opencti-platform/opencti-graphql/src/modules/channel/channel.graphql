@@ -1,0 +1,152 @@
+enum ChannelType {
+    radio
+    press
+}
+type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    # StixObject
+    x_opencti_stix_ids: [String]
+    is_inferred: Boolean!
+    spec_version: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    # inferences
+    x_opencti_inferences: [Inference]
+    # StixCoreObject
+    createdBy: Identity
+    objectMarking: MarkingDefinitionConnection
+    objectLabel: LabelConnection
+    externalReferences(first: Int): ExternalReferenceConnection
+    reports(first: Int): ReportConnection
+    notes(first: Int): NoteConnection
+    opinions(first: Int): OpinionConnection
+    observedData(first: Int): ObservedDataConnection
+    stixCoreRelationships(
+        first: Int
+        after: ID
+        orderBy: StixCoreRelationshipsOrdering
+        orderMode: OrderingMode
+        fromId: String
+        toId: String
+        fromTypes: [String]
+        toTypes: [String]
+        relationship_type: String
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): StixCoreRelationshipConnection
+    # StixDomainObject
+    revoked: Boolean!
+    confidence: Int
+    lang: String
+    created: DateTime
+    modified: DateTime
+    x_opencti_graph_data: String
+    # Channel
+    name: String!
+    description: String
+    type: ChannelType
+    aliases: [String]
+    # Technical
+    creator: User
+    toStix: String
+    importFiles(first: Int): FileConnection
+    pendingFiles(first: Int): FileConnection
+    exportFiles(first: Int): FileConnection
+    editContext: [EditUserContext]
+    connectors(onlyAlive: Boolean): [Connector]
+    jobs(first: Int): [Work]
+    status: Status
+    workflowEnabled: Boolean
+}
+
+# Ordering
+enum ChannelsOrdering {
+    name
+    type
+    created
+    modified
+    created_at
+    updated_at
+    objectMarking
+    objectLabel
+    x_opencti_workflow_id
+}
+
+# Filtering
+enum ChannelsFilter {
+    name
+    aliases
+    type
+    created
+    modified
+    created_at
+    updated_at
+    createdBy
+    markedBy
+    labelledBy
+    x_opencti_workflow_id
+}
+input ChannelsFiltering {
+    key: ChannelsFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type ChannelConnection {
+    pageInfo: PageInfo!
+    edges: [ChannelEdge]
+}
+type ChannelEdge {
+    cursor: String!
+    node: Channel!
+}
+
+# Queries
+type Query {
+    channel(id: String!): Channel @auth(for: [KNOWLEDGE])
+    channels(
+        first: Int
+        after: ID
+        orderBy: ChannelsOrdering
+        orderMode: OrderingMode
+        filters: [ChannelsFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): ChannelConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input ChannelAddInput {
+    stix_id: String
+    x_opencti_stix_ids: [String]
+    name: String! @constraint(minLength: 2)
+    description: String!
+    type: ChannelType
+    aliases: [String]
+    confidence: Int
+    createdBy: String
+    objectMarking: [String]
+    objectLabel: [String]
+    created: DateTime
+    modified: DateTime
+    clientMutationId: String
+    update: Boolean
+}
+type Mutation {
+    channelAdd(input: ChannelAddInput!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
+}

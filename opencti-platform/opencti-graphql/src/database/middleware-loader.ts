@@ -32,6 +32,7 @@ interface ListFilter<T extends BasicStoreCommon> {
   orderBy?: string | Array<string> | null,
   orderMode?: 'asc' | 'desc' | undefined | null,
   filters?: Array<Filter> | null;
+  filterMode?: 'and' | 'or' | undefined | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
 }
 
