@@ -22,6 +22,7 @@ import {
 export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json';
 export interface ModuleDefinition<T extends StoreEntity> {
   type: {
+    id: string;
     name: string;
     aliased: boolean;
     category: 'StixDomainEntity';
@@ -44,18 +45,11 @@ export interface ModuleDefinition<T extends StoreEntity> {
     multiple: boolean;
     upsert: boolean;
   }>;
-  relations: {
-    sources: Array<{
-      name: string;
-      targets: Array<string>;
-      type: 'StixCoreRelationship' | 'StixCyberObservableRelationship';
-    }>;
-    targets: Array<{
-      name: string;
-      sources: Array<string>;
-      type: 'StixCoreRelationship' | 'StixCyberObservableRelationship';
-    }>
-  };
+  relations: Array<{
+    name: string;
+    targets: Array<string>;
+    type: 'StixCoreRelationship' | 'StixCyberObservableRelationship';
+  }>;
   converter: ConvertFn<T>;
 }
 
@@ -89,7 +83,7 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   multipleAttributes.push(...multipleAttrs); // --- multipleAttributes
   jsonAttributes.push(...attrsForType('json')); // --- jsonAttributes
   // Register relations
-  definition.relations.sources.forEach((source) => {
+  definition.relations.forEach((source) => {
     if (source.type === 'StixCoreRelationship' && !STIX_CORE_RELATIONSHIPS.includes(source.type)) {
       STIX_CORE_RELATIONSHIPS.push(source.name);
     }
@@ -100,19 +94,6 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
       const key: `${string}_${string}` = `${definition.type.name}_${target}`;
       const mapping = source.type === 'StixCoreRelationship' ? coreRels : obsRels;
       mapping[key] = [...(mapping[key] ?? []), source.name];
-    });
-  });
-  definition.relations.targets.forEach((target) => {
-    if (target.type === 'StixCoreRelationship' && !STIX_CORE_RELATIONSHIPS.includes(target.type)) {
-      STIX_CORE_RELATIONSHIPS.push(target.name);
-    }
-    if (target.type === 'StixCyberObservableRelationship' && !STIX_CYBER_OBSERVABLE_RELATIONSHIPS.includes(target.type)) {
-      STIX_CYBER_OBSERVABLE_RELATIONSHIPS.push(target.name);
-    }
-    target.sources.forEach((source) => {
-      const key: `${string}_${string}` = `${source}_${definition.type.name}`;
-      const mapping = target.type === 'StixCoreRelationship' ? coreRels : obsRels;
-      mapping[key] = [...(mapping[key] ?? []), target.name];
     });
   });
 };

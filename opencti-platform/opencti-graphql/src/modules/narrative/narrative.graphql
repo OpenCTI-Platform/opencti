@@ -1,8 +1,4 @@
-enum ChannelType {
-    radio
-    press
-}
-type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
@@ -54,10 +50,9 @@ type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixOb
     created: DateTime
     modified: DateTime
     x_opencti_graph_data: String
-    # Channel
+    # Narrative
     name: String!
     description: String
-    type: ChannelType
     aliases: [String]
     # Technical
     creator: User
@@ -73,7 +68,7 @@ type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixOb
 }
 
 # Ordering
-enum ChannelsOrdering {
+enum NarrativesOrdering {
     name
     type
     created
@@ -86,7 +81,7 @@ enum ChannelsOrdering {
 }
 
 # Filtering
-enum ChannelsFilter {
+enum NarrativesFilter {
     name
     aliases
     type
@@ -99,44 +94,43 @@ enum ChannelsFilter {
     labelledBy
     x_opencti_workflow_id
 }
-input ChannelsFiltering {
-    key: ChannelsFilter!
+input NarrativesFiltering {
+    key: NarrativesFilter!
     values: [String]
     operator: String
     filterMode: FilterMode
 }
 
 # Relay connections
-type ChannelConnection {
+type NarrativeConnection {
     pageInfo: PageInfo!
-    edges: [ChannelEdge]
+    edges: [NarrativeEdge]
 }
-type ChannelEdge {
+type NarrativeEdge {
     cursor: String!
-    node: Channel!
+    node: Narrative!
 }
 
 # Queries
 type Query {
-    channel(id: String!): Channel @auth(for: [KNOWLEDGE])
-    channels(
+    narrative(id: String!): Narrative @auth(for: [KNOWLEDGE])
+    narratives(
         first: Int
         after: ID
-        orderBy: ChannelsOrdering
+        orderBy: NarrativesOrdering
         orderMode: OrderingMode
-        filters: [ChannelsFiltering!]
+        filters: [NarrativesFiltering!]
         filterMode: FilterMode
         search: String
-    ): ChannelConnection @auth(for: [KNOWLEDGE])
+    ): NarrativeConnection @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
-input ChannelAddInput {
+input NarrativeAddInput {
     stix_id: String
     x_opencti_stix_ids: [String]
     name: String! @constraint(minLength: 2)
     description: String!
-    type: ChannelType
     aliases: [String]
     confidence: Int
     createdBy: String
@@ -148,5 +142,5 @@ input ChannelAddInput {
     update: Boolean
 }
 type Mutation {
-    channelAdd(input: ChannelAddInput!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeAdd(input: NarrativeAddInput!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
 }

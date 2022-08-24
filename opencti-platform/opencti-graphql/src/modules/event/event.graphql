@@ -1,8 +1,7 @@
-enum ChannelType {
-    radio
-    press
+enum EventCategory {
+    meeting
 }
-type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
@@ -54,10 +53,12 @@ type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixOb
     created: DateTime
     modified: DateTime
     x_opencti_graph_data: String
-    # Channel
+    # Event
     name: String!
     description: String
-    type: ChannelType
+    category: EventCategory
+    start_date: DateTime
+    end_date: DateTime
     aliases: [String]
     # Technical
     creator: User
@@ -73,9 +74,8 @@ type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixOb
 }
 
 # Ordering
-enum ChannelsOrdering {
+enum EventsOrdering {
     name
-    type
     created
     modified
     created_at
@@ -86,10 +86,10 @@ enum ChannelsOrdering {
 }
 
 # Filtering
-enum ChannelsFilter {
+enum EventsFilter {
     name
     aliases
-    type
+    channel_types
     created
     modified
     created_at
@@ -99,44 +99,46 @@ enum ChannelsFilter {
     labelledBy
     x_opencti_workflow_id
 }
-input ChannelsFiltering {
-    key: ChannelsFilter!
+input EventsFiltering {
+    key: EventsFilter!
     values: [String]
     operator: String
     filterMode: FilterMode
 }
 
 # Relay connections
-type ChannelConnection {
+type EventConnection {
     pageInfo: PageInfo!
-    edges: [ChannelEdge]
+    edges: [EventEdge]
 }
-type ChannelEdge {
+type EventEdge {
     cursor: String!
-    node: Channel!
+    node: Event!
 }
 
 # Queries
 type Query {
-    channel(id: String!): Channel @auth(for: [KNOWLEDGE])
-    channels(
+    event(id: String!): Event @auth(for: [KNOWLEDGE])
+    events(
         first: Int
         after: ID
-        orderBy: ChannelsOrdering
+        orderBy: EventsOrdering
         orderMode: OrderingMode
-        filters: [ChannelsFiltering!]
+        filters: [EventsFiltering!]
         filterMode: FilterMode
         search: String
-    ): ChannelConnection @auth(for: [KNOWLEDGE])
+    ): EventConnection @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
-input ChannelAddInput {
+input EventAddInput {
     stix_id: String
     x_opencti_stix_ids: [String]
     name: String! @constraint(minLength: 2)
     description: String!
-    type: ChannelType
+    category: EventCategory
+    start_date: DateTime
+    end_date: DateTime
     aliases: [String]
     confidence: Int
     createdBy: String
@@ -148,5 +150,5 @@ input ChannelAddInput {
     update: Boolean
 }
 type Mutation {
-    channelAdd(input: ChannelAddInput!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
+    eventAdd(input: EventAddInput!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
 }

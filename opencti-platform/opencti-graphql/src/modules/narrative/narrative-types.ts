@@ -2,27 +2,24 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
-export const ENTITY_TYPE_CHANNEL = 'Channel';
+export const ENTITY_TYPE_NARRATIVE = 'Narrative';
 
 // region Database types
-export interface BasicStoreEntityChannel extends BasicStoreEntity {
+export interface BasicStoreEntityNarrative extends BasicStoreEntity {
   name: string;
   description: string;
-  type: 'radio' | 'press';
 }
 
-export interface StoreEntityChannel extends StoreEntity {
+export interface StoreEntityNarrative extends StoreEntity {
   name: string;
   description: string;
-  type: 'radio' | 'press';
 }
 // endregion
 
 // region Stix type
-export interface StixChannel extends StixDomainObject {
+export interface StixNarrative extends StixDomainObject {
   name: string;
   description: string;
-  type: 'radio' | 'press';
   aliases: Array<string>;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

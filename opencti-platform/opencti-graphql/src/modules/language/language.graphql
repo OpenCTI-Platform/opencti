@@ -1,0 +1,95 @@
+type Language implements BasicObject {
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    created_at: DateTime!
+    updated_at: DateTime!
+    # Language
+    name: String!
+    aliases: [String]
+    # StixCoreObject
+    createdBy: Identity
+    stixCoreRelationships(
+        first: Int
+        after: ID
+        orderBy: StixCoreRelationshipsOrdering
+        orderMode: OrderingMode
+        fromId: String
+        toId: String
+        fromTypes: [String]
+        toTypes: [String]
+        relationship_type: String
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): StixCoreRelationshipConnection
+    # Technical
+    creator: User
+    toStix: String
+    editContext: [EditUserContext]
+}
+
+# Ordering
+enum LanguagesOrdering {
+    name
+}
+
+# Filtering
+enum LanguagesFilter {
+    name
+}
+input LanguagesFiltering {
+    key: LanguagesFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type LanguageConnection {
+    pageInfo: PageInfo!
+    edges: [LanguageEdge]
+}
+type LanguageEdge {
+    cursor: String!
+    node: Language!
+}
+
+# Queries
+type Query {
+    language(id: String!): Language @auth(for: [KNOWLEDGE])
+    languages(
+        first: Int
+        after: ID
+        orderBy: LanguagesOrdering
+        orderMode: OrderingMode
+        filters: [LanguagesFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): LanguageConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input LanguageAddInput {
+    stix_id: String
+    name: String!
+    aliases: [String]
+    created: DateTime
+    createdBy: String
+    modified: DateTime
+    clientMutationId: String
+    update: Boolean
+}
+type Mutation {
+    languageAdd(input: LanguageAddInput!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+}

@@ -278,7 +278,7 @@ const buildEmailBodyMultipart = (instance: StoreCyberObservable): Array<SCO.Stix
 };
 
 // General
-const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
+export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
   return {
     ...buildStixObject(instance),
     created: instance.created,

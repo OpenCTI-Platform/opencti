@@ -11,15 +11,23 @@ import {
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION,
-  ENTITY_TYPE_THREAT_ACTOR
 } from '../../schema/stixDomainObject';
 import channelResolvers from './channel-resolver';
 import { ENTITY_TYPE_CHANNEL, StoreEntityChannel } from './channel-types';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
+import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
+import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
+
+const RELATION_AMPLIFY = 'amplifies';
 
 const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
-  type: { name: ENTITY_TYPE_CHANNEL, category: 'StixDomainEntity', aliased: true },
+  type: {
+    id: 'channels',
+    name: ENTITY_TYPE_CHANNEL,
+    category: 'StixDomainEntity',
+    aliased: true
+  },
   graphql: {
     schema: channelTypeDefs,
     resolver: channelResolvers,
@@ -37,26 +45,16 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
   attributes: [
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'channel_type', type: 'string', multiple: false, upsert: true },
-    // { name: 'channel_languages', type: 'string', multiple: true, upsert: true },
+    { name: 'type', type: 'string', multiple: false, upsert: true },
   ],
-  relations: {
-    sources: [
-      // { name: 'published', type: 'StixCoreRelationship', targets: ['ENTITY_TYPE_CONTENT'] },
-      { name: RELATION_TARGETS,
-        type: 'StixCoreRelationship',
-        targets: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR,
-          ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION] },
-      { name: RELATION_USES, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_INFRASTRUCTURE] },
-      { name: 'amplifies', type: 'StixCoreRelationship', targets: [ENTITY_TYPE_CHANNEL] }
-    ],
-    targets: [
-      { name: 'hosts', type: 'StixCoreRelationship', sources: [ENTITY_TYPE_INFRASTRUCTURE] },
-      { name: 'controls', type: 'StixCoreRelationship', sources: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION] },
-      { name: 'uses', type: 'StixCoreRelationship', sources: [ENTITY_TYPE_THREAT_ACTOR] },
-      // is-amplified-by??
-    ]
-  },
+  relations: [
+    { name: RELATION_TARGETS,
+      type: 'StixCoreRelationship',
+      targets: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR,
+        ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION] },
+    { name: RELATION_USES, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_INFRASTRUCTURE, ENTITY_TYPE_LANGUAGE, ENTITY_TYPE_NARRATIVE] },
+    { name: RELATION_AMPLIFY, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_CHANNEL] }
+  ],
   converter: convertChannelToStix
 };
 

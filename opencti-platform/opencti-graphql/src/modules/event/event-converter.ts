@@ -1,14 +1,14 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { buildStixDomain, cleanObject } from '../../database/stix-converter';
-import type { StixChannel, StoreEntityChannel } from './channel-types';
+import type { StixEvent, StoreEntityEvent } from './event-types';
 
-const convertChannelToStix = (instance: StoreEntityChannel): StixChannel => {
+const convertEventToStix = (instance: StoreEntityEvent): StixEvent => {
   const stixDomainObject = buildStixDomain(instance);
   return {
     ...stixDomainObject,
     name: instance.name,
     description: instance.description,
-    type: instance.type,
+    category: instance.category,
     aliases: instance.x_opencti_aliases ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
@@ -19,4 +19,4 @@ const convertChannelToStix = (instance: StoreEntityChannel): StixChannel => {
   };
 };
 
-export default convertChannelToStix;
+export default convertEventToStix;

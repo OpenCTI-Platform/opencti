@@ -14,6 +14,9 @@ generates:
       useIndexSignature: true
       mappers:
         Channel: ../modules/channel/channel-types#BasicStoreEntityChannel
+        Language: ../modules/language/language-types#BasicStoreEntityLanguage
+        Event: ../modules/event/event-types#BasicStoreEntityEvent
+        Narrative: ../modules/narrative/narrative-types#BasicStoreEntityNarrative
   ./graphql.schema.json:
     plugins:
       - "introspection"
