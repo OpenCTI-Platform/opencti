@@ -17,7 +17,7 @@ import IndicateSightedRule from '../rules/indicate-sighted/IndicateSightedRule';
 import SightingObservableRule from '../rules/sighting-observable/SightingObservableRule';
 import SightingIndicatorRule from '../rules/sighting-indicator/SightingIndicatorRule';
 import { BUS_TOPICS, DEV_MODE, ENABLED_RULE_ENGINE } from '../config/conf';
-import { getConfigCache } from '../manager/cacheManager';
+import { getEntitiesFromCache } from '../manager/cacheManager';
 import type { AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
@@ -48,7 +48,7 @@ if (DEV_MODE) {
 }
 
 export const getRules = async (): Promise<Array<RuleRuntime>> => {
-  const rules = await getConfigCache<BasicRuleEntity>(ENTITY_TYPE_RULE);
+  const rules = await getEntitiesFromCache<BasicRuleEntity>(ENTITY_TYPE_RULE);
   return RULES_DECLARATION.map((def: RuleRuntime) => {
     const esRule = rules.find((e) => e.internal_id === def.id);
     const isActivated = esRule?.active === true;

@@ -12,11 +12,13 @@ import { elIndexElements } from '../database/engine';
 import { EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import { listEntities } from '../database/middleware-loader';
-import type { StoreProxyEntity } from '../types/store';
+import type { BasicRuleEntity, StoreProxyEntity } from '../types/store';
 import { BASE_TYPE_ENTITY } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-common';
+import { getEntitiesFromCache } from './cacheManager';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -36,12 +38,23 @@ interface HistoryData extends StoreProxyEntity {
   entity_type: 'History';
   user_id: string | undefined;
   applicant_id: string | undefined;
-  context_data: HistoryContext
+  context_data: HistoryContext;
+  'rel_object-marking.internal_id': Array<string>;
 }
 
 export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
+  }
+  const markings = await getEntitiesFromCache<BasicRuleEntity>(ENTITY_TYPE_MARKING_DEFINITION);
+  const markingsById = new Map();
+  for (let i = 0; i < markings.length; i += 1) {
+    const marking = markings[i];
+    const ids = [marking.standard_id, ...(marking.x_opencti_stix_ids ?? [])];
+    for (let index = 0; index < ids.length; index += 1) {
+      const id = ids[index];
+      markingsById.set(id, marking.internal_id);
+    }
   }
   // Build the history data
   const historyElements: Array<HistoryData> = events.map((event) => {
@@ -70,6 +83,7 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
+    const eventMarkingRefs = (event.data.data?.object_marking_refs ?? []).map((stixId) => markingsById.get(stixId));
     const data:HistoryData = {
       _index: INDEX_HISTORY,
       internal_id: event.id,
@@ -82,7 +96,8 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
       user_id: event.data.origin?.user_id,
       applicant_id: event.data.origin?.applicant_id,
       timestamp: eventDate,
-      context_data: contextData
+      context_data: contextData,
+      'rel_object-marking.internal_id': eventMarkingRefs
     };
     return data;
   });

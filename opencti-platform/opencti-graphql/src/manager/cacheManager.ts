@@ -11,10 +11,11 @@ import { SYSTEM_USER } from '../utils/access';
 import { UnsupportedError } from '../config/errors';
 import type { BasicStoreEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
 import { EntityOptions, listEntities } from '../database/middleware-loader';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 let cache: any = {};
 
-export const getConfigCache = async<T extends BasicStoreEntity>(type: string): Promise<Array<T>> => {
+export const getEntitiesFromCache = async<T extends BasicStoreEntity>(type: string): Promise<Array<T>> => {
   const fromCache = cache[type];
   if (!fromCache) {
     throw UnsupportedError(`${type} is not supported in cache configuration`);
@@ -49,6 +50,12 @@ const platformRules = async () => {
   };
   return { values: await reloadRules(), fn: reloadRules };
 };
+const platformMarkings = async () => {
+  const reloadMarkings = async () => {
+    return listEntities(SYSTEM_USER, [ENTITY_TYPE_MARKING_DEFINITION], { connectionFormat: false });
+  };
+  return { values: await reloadMarkings(), fn: reloadMarkings };
+};
 
 const initCacheManager = () => {
   let subscribeIdentifier: number;
@@ -59,6 +66,7 @@ const initCacheManager = () => {
       cache[ENTITY_TYPE_STATUS] = await workflowStatuses();
       cache[ENTITY_TYPE_CONNECTOR] = await platformConnectors();
       cache[ENTITY_TYPE_RULE] = await platformRules();
+      cache[ENTITY_TYPE_MARKING_DEFINITION] = await platformMarkings();
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
       subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {

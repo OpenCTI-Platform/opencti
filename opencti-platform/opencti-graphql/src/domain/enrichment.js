@@ -3,12 +3,12 @@ import { map } from 'ramda';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { connectorsEnrichment } from '../database/repository';
-import { getConfigCache } from '../manager/cacheManager';
+import { getEntitiesFromCache } from '../manager/cacheManager';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
 export const createEntityAutoEnrichment = async (user, stixCoreObjectId, scope) => {
   // Get the list of compatible connectors
-  const connectors = await getConfigCache(ENTITY_TYPE_CONNECTOR);
+  const connectors = await getEntitiesFromCache(ENTITY_TYPE_CONNECTOR);
   const targetConnectors = connectorsEnrichment(connectors, scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(

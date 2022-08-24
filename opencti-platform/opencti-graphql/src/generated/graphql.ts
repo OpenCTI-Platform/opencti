@@ -9109,15 +9109,6 @@ export type PageInfo = {
   startCursor: Scalars['String'];
 };
 
-export type PlatformMenu = {
-  __typename?: 'PlatformMenu';
-  category: Scalars['String'];
-  icon: Scalars['String'];
-  icon_library: Scalars['String'];
-  id: Scalars['ID'];
-  name: Scalars['String'];
-};
-
 export type Position = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Position';
   city?: Maybe<City>;
@@ -12130,7 +12121,6 @@ export type Settings = BasicObject & InternalObject & {
   platform_login_message?: Maybe<Scalars['String']>;
   platform_map_tile_server_dark?: Maybe<Scalars['String']>;
   platform_map_tile_server_light?: Maybe<Scalars['String']>;
-  platform_menu?: Maybe<Array<Maybe<PlatformMenu>>>;
   platform_modules?: Maybe<Array<Maybe<Module>>>;
   platform_providers?: Maybe<Array<Maybe<Provider>>>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']>;
@@ -17177,7 +17167,6 @@ export type ResolversTypes = ResolversObject<{
   OtpElement: ResolverTypeWrapper<OtpElement>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
-  PlatformMenu: ResolverTypeWrapper<PlatformMenu>;
   Position: ResolverTypeWrapper<Position>;
   PositionAddInput: PositionAddInput;
   PositionConnection: ResolverTypeWrapper<PositionConnection>;
@@ -17711,7 +17700,6 @@ export type ResolversParentTypes = ResolversObject<{
   OtpElement: OtpElement;
   OverviewMetrics: OverviewMetrics;
   PageInfo: PageInfo;
-  PlatformMenu: PlatformMenu;
   Position: Position;
   PositionAddInput: PositionAddInput;
   PositionConnection: PositionConnection;
@@ -20776,15 +20764,6 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type PlatformMenuResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformMenu'] = ResolversParentTypes['PlatformMenu']> = ResolversObject<{
-  category?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  icon?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  icon_library?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type PositionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Position'] = ResolversParentTypes['Position']> = ResolversObject<{
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -21497,7 +21476,6 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  platform_menu?: Resolver<Maybe<Array<Maybe<ResolversTypes['PlatformMenu']>>>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<Maybe<ResolversTypes['Module']>>>, ParentType, ContextType>;
   platform_providers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Provider']>>>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -23266,7 +23244,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   OtpElement?: OtpElementResolvers<ContextType>;
   OverviewMetrics?: OverviewMetricsResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
-  PlatformMenu?: PlatformMenuResolvers<ContextType>;
   Position?: PositionResolvers<ContextType>;
   PositionConnection?: PositionConnectionResolvers<ContextType>;
   PositionEdge?: PositionEdgeResolvers<ContextType>;
