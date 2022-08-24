@@ -4,6 +4,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import { Promise as BluePromise } from 'bluebird';
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
+import mime from 'mime-types';
 import conf, { booleanConf, logApp, logAudit } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { UPLOAD_ACTION } from '../config/audit';
@@ -195,6 +196,7 @@ export const rawFilesListing = async (user, directory, recursive = false) => {
 export const upload = async (user, path, fileUpload, meta = {}) => {
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
   const readStream = createReadStream();
+  const fileMime = mime.lookup(filename) || mimetype;
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
@@ -204,7 +206,7 @@ export const upload = async (user, path, fileUpload, meta = {}) => {
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(filename),
-    mimetype,
+    mimetype: fileMime,
     encoding,
   };
   const s3Upload = new Upload({
