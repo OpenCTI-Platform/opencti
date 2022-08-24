@@ -205,14 +205,14 @@ node {
       switch (branch) {
         case 'master':
         case 'prod':
-          if (commitMessage.contains('ci:deploy') {
+          if (commitMessage.contains('ci:deploy')) {
             stage('Deploying to production') {
               build '/deploy/OpenCTI Frontend/main'
             }
           }
           break
         case 'staging':
-          if (commitMessage.contains('ci:deploy') {
+          if (commitMessage.contains('ci:deploy')) {
             stage('Deploying to staging') {
               build '/deploy/OpenCTI Frontend/staging'
             }
