@@ -1,9 +1,8 @@
 import React from 'react';
-import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
+import makeStyles from '@mui/styles/makeStyles';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     width: '100vh',
     height: 'calc(100vh-180px)',
@@ -35,45 +34,31 @@ const styles = () => ({
   loaderCircle: {
     display: 'inline-block',
   },
-});
+}));
 
-const Loader = (props) => {
-  const { classes, variant, withRightPadding } = props;
+const Loader = ({ variant, withRightPadding }) => {
+  const classes = useStyles();
   return (
-    <div
-      className={
+    <div className={
         variant === 'inElement' ? classes.containerInElement : classes.container
       }
       style={
         variant === 'inElement'
           ? { paddingRight: withRightPadding ? 200 : 0 }
           : {}
-      }
-    >
-      <div
-        className={
+      }>
+      <div className={
           variant === 'inElement' ? classes.loaderInElement : classes.loader
         }
         style={
           variant !== 'inElement'
             ? { paddingRight: withRightPadding ? 100 : 0 }
             : {}
-        }
-      >
-        <CircularProgress
-          size={variant === 'inElement' ? 40 : 80}
-          thickness={1}
-          className={classes.loaderCircle}
-        />
+        }>
+        <CircularProgress size={variant === 'inElement' ? 40 : 80} thickness={1} className={classes.loaderCircle}/>
       </div>
     </div>
   );
 };
 
-Loader.propTypes = {
-  classes: PropTypes.object.isRequired,
-  variant: PropTypes.string,
-  withRightPadding: PropTypes.bool,
-};
-
-export default withStyles(styles)(Loader);
+export default Loader;

@@ -1,3 +1,6 @@
+import { fileUri } from '../relay/environment';
+import LogoText from '../static/images/logo_text.png';
+
 export default (
   logo = null,
   background = null,
@@ -7,7 +10,7 @@ export default (
   secondary = null,
   accent = null,
 ) => ({
-  logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
+  logo: logo || fileUri(LogoText),
   palette: {
     mode: 'dark',
     primary: { main: primary || '#00b1ff' },

@@ -68,7 +68,7 @@ const createHttpServer = async () => {
     },
     {
       server: httpServer,
-      path: apolloServer.graphqlPath,
+      path: `${basePath}${apolloServer.graphqlPath}`,
     }
   );
   apolloServer.plugins.push({

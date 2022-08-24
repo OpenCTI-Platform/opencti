@@ -7,8 +7,8 @@ import Button from '@mui/material/Button';
 import { Google, KeyOutline, Facebook, Github } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@mui/material/Paper';
-import { APP_BASE_PATH } from '../../relay/environment';
-import logo from '../../resources/images/logo.png';
+import { APP_BASE_PATH, fileUri } from '../../relay/environment';
+import logo from '../../static/images/logo.png';
 import LoginForm from './LoginForm';
 import OTPForm from './OTPForm';
 
@@ -126,8 +126,7 @@ const Login = ({ classes, theme, settings, type }) => {
           size="small"
           component="a"
           href={`${APP_BASE_PATH}/auth/${value.provider}`}
-          className={renderExternalAuthClassName(value.provider)}
-        >
+          className={renderExternalAuthClassName(value.provider)}>
           {renderExternalAuthButton(value.provider)}
           {value.name}
         </Button>
@@ -183,18 +182,9 @@ const Login = ({ classes, theme, settings, type }) => {
       <OTPForm />
     </Paper>
   );
-
   return (
     <div className={classes.container} style={{ marginTop }}>
-      <img
-        src={`${
-          loginLogo && loginLogo.length > 0
-            ? loginLogo
-            : `/${window.BASE_PATH ? `${window.BASE_PATH}/` : ''}${logo}`
-        }`}
-        alt="logo"
-        className={classes.logo}
-      />
+      <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo}/>
       {type === '2FA' ? otpScreen() : loginScreen()}
     </div>
   );

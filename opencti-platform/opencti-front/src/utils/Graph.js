@@ -1,35 +1,35 @@
 import * as R from 'ramda';
 import SpriteText from 'three-spritetext';
 import { fromB64, toB64, truncate } from './String';
-import KillChainPhase from '../resources/images/entities/kill-chain-phase.svg';
-import MarkingDefinition from '../resources/images/entities/marking-definition.svg';
-import Label from '../resources/images/entities/label.svg';
-import ExternalReference from '../resources/images/entities/external-reference.svg';
-import AttackPattern from '../resources/images/entities/attack-pattern.svg';
-import Campaign from '../resources/images/entities/campaign.svg';
-import Note from '../resources/images/entities/note.svg';
-import ObservedData from '../resources/images/entities/observed-data.svg';
-import Opinion from '../resources/images/entities/opinion.svg';
-import Report from '../resources/images/entities/report.svg';
-import CourseOfAction from '../resources/images/entities/course-of-action.svg';
-import Individual from '../resources/images/entities/individual.svg';
-import Organization from '../resources/images/entities/organization.svg';
-import Sector from '../resources/images/entities/sector.svg';
-import System from '../resources/images/entities/system.svg';
-import Indicator from '../resources/images/entities/indicator.svg';
-import Infrastructure from '../resources/images/entities/infrastructure.svg';
-import IntrusionSet from '../resources/images/entities/intrusion-set.svg';
-import City from '../resources/images/entities/city.svg';
-import Country from '../resources/images/entities/country.svg';
-import Region from '../resources/images/entities/region.svg';
-import Position from '../resources/images/entities/position.svg';
-import Malware from '../resources/images/entities/malware.svg';
-import ThreatActor from '../resources/images/entities/threat-actor.svg';
-import Tool from '../resources/images/entities/tool.svg';
-import Vulnerability from '../resources/images/entities/vulnerability.svg';
-import Incident from '../resources/images/entities/incident.svg';
-import StixCyberObservable from '../resources/images/entities/stix-cyber-observable.svg';
-import relationship from '../resources/images/entities/relationship.svg';
+import KillChainPhase from '../static/images/entities/kill-chain-phase.svg';
+import MarkingDefinition from '../static/images/entities/marking-definition.svg';
+import Label from '../static/images/entities/label.svg';
+import ExternalReference from '../static/images/entities/external-reference.svg';
+import AttackPattern from '../static/images/entities/attack-pattern.svg';
+import Campaign from '../static/images/entities/campaign.svg';
+import Note from '../static/images/entities/note.svg';
+import ObservedData from '../static/images/entities/observed-data.svg';
+import Opinion from '../static/images/entities/opinion.svg';
+import Report from '../static/images/entities/report.svg';
+import CourseOfAction from '../static/images/entities/course-of-action.svg';
+import Individual from '../static/images/entities/individual.svg';
+import Organization from '../static/images/entities/organization.svg';
+import Sector from '../static/images/entities/sector.svg';
+import System from '../static/images/entities/system.svg';
+import Indicator from '../static/images/entities/indicator.svg';
+import Infrastructure from '../static/images/entities/infrastructure.svg';
+import IntrusionSet from '../static/images/entities/intrusion-set.svg';
+import City from '../static/images/entities/city.svg';
+import Country from '../static/images/entities/country.svg';
+import Region from '../static/images/entities/region.svg';
+import Position from '../static/images/entities/position.svg';
+import Malware from '../static/images/entities/malware.svg';
+import ThreatActor from '../static/images/entities/threat-actor.svg';
+import Tool from '../static/images/entities/tool.svg';
+import Vulnerability from '../static/images/entities/vulnerability.svg';
+import Incident from '../static/images/entities/incident.svg';
+import StixCyberObservable from '../static/images/entities/stix-cyber-observable.svg';
+import relationship from '../static/images/entities/relationship.svg';
 import { itemColor } from './Colors';
 import themeDark from '../components/ThemeDark';
 import {
@@ -43,20 +43,11 @@ import {
   timestamp,
 } from './Time';
 import { isDateStringNone, isNone } from '../components/i18n';
+import { fileUri } from '../relay/environment';
 
 const genImage = (src) => {
   const img = new Image();
-  if (
-    window.BASE_PATH
-    && window.BASE_PATH.length > 0
-    && window.BASE_PATH.startsWith('/')
-  ) {
-    img.src = `${window.BASE_PATH}/${src.replaceAll('../', '')}`;
-  } else if (window.BASE_PATH && window.BASE_PATH.length > 0) {
-    img.src = `/${window.BASE_PATH}/${src.replaceAll('../', '')}`;
-  } else {
-    img.src = `/${src.replaceAll('../', '')}`;
-  }
+  img.src = fileUri(src);
   return img;
 };
 

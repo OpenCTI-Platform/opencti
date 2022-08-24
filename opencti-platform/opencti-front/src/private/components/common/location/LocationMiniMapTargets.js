@@ -15,10 +15,11 @@ import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
-import countries from '../../../../resources/geo/countries.json';
+import countries from '../../../../static/geo/countries.json';
 import inject18n from '../../../../components/i18n';
 import { UserContext } from '../../../../utils/Security';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { fileUri } from '../../../../relay/environment';
+import CityOrange from '../../../../static/images/leaflet/city_orange.png';
 
 const styles = () => ({
   paper: {
@@ -43,8 +44,8 @@ const colors = [
 ];
 
 const pointerIcon = new L.Icon({
-  iconUrl: `${APP_BASE_PATH}/static/city_orange.png`,
-  iconRetinaUrl: `${APP_BASE_PATH}/static/city_orange.png`,
+  iconUrl: fileUri(CityOrange),
+  iconRetinaUrl: fileUri(CityOrange),
   iconAnchor: [5, 55],
   popupAnchor: [10, -44],
   iconSize: [25, 25],

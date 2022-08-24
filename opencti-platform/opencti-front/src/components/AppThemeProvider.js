@@ -1,17 +1,13 @@
 import React, { useContext, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
-import {
-  createTheme,
-  ThemeProvider,
-  StyledEngineProvider,
-} from '@mui/material/styles';
+import { createTheme, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 import { UserContext } from '../utils/Security';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
-
-const getFaviconEl = () => document.getElementById('favicon');
+import { APP_BASE_PATH, fileUri } from '../relay/environment';
+import favImage from '../static/images/favicon.png';
 
 const AppThemeProvider = (props) => {
   const { children } = props;
@@ -21,15 +17,10 @@ const AppThemeProvider = (props) => {
     ['settings', 'platform_title'],
     props,
   );
-  const platformFavicon = R.pathOr(
-    `/${window.BASE_PATH ? `${window.BASE_PATH}/` : ''}static/favicon.png`,
-    ['settings', 'platform_favicon'],
-    props,
-  );
   useEffect(() => {
     document.title = platformTitle;
-    const favicon = getFaviconEl();
-    favicon.href = platformFavicon;
+    document.getElementById('favicon').href = R.pathOr(fileUri(favImage), ['settings', 'platform_favicon'], props);
+    document.getElementById('manifest').href = `${APP_BASE_PATH}/static/ext/manifest.json`;
   }, []);
   const platformThemeSettings = R.pathOr(
     null,

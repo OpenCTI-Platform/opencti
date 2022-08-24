@@ -104,7 +104,6 @@ const createApp = async (app) => {
   }
 
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
-  app.use(`${basePath}/media`, express.static(path.join(__dirname, '../public/static/media')));
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));

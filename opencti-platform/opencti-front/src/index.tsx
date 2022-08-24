@@ -3,8 +3,8 @@ import 'typeface-roboto';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
-import './resources/css/index.css';
-import './resources/css/leaflet.css';
+import './static/css/index.css';
+import './static/css/leaflet.css';
 import 'react-grid-layout/css/styles.css';
 import 'react-mde/lib/styles/css/react-mde-all.css';
 import * as serviceWorker from './config/serviceWorker';
@@ -21,9 +21,8 @@ const Loading = () => (
       width: '100%',
       height: '100%',
       backgroundColor: ThemeDark().palette.background.default,
-    }}
-  >
-    <Loader />
+    }}>
+    <Loader variant={'container'} withRightPadding={false} />
   </div>
 );
 

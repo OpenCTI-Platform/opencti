@@ -12,6 +12,7 @@ esbuild
     logLevel: "info",
     plugins: [RelayPlugin],
     entryPoints: ["src/index.tsx"],
+    publicPath: '/',
     bundle: true,
     loader: {
       ".js": "jsx",
@@ -22,8 +23,8 @@ esbuild
       ".ttf": "dataurl",
       ".eot": "dataurl",
     },
-    assetNames: "static/media/[name]-[hash]",
-    entryNames: "static/[ext]/opencti-[hash]",
+    assetNames: "[dir]/[name]-[hash]",
+    entryNames: "static/[ext]/[name]-[hash]",
     target: ["chrome58"],
     minify: true,
     keepNames: false,
@@ -35,10 +36,7 @@ esbuild
   })
   .then(() => {
     // region Copy public files to build
-    fsExtra.copySync("./builder/public/", buildPath, {
-      recursive: true,
-      overwrite: true,
-    });
+    fsExtra.copySync("./src/static/ext", buildPath + '/static/ext', { recursive: true, overwrite: true });
     // endregion
     // region Generate index.html
     const cssStaticFiles = fs.readdirSync(buildPath + "static/css");
@@ -61,6 +59,7 @@ esbuild
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title></title>
         <link id="favicon" rel="shortcut icon" href="">
+        <link id="manifest" rel="manifest" href="">
         ${jsImport}
         ${cssImport}
         </head>
@@ -71,6 +70,7 @@ esbuild
     </html>`;
     fs.writeFileSync(buildPath + "index.html", indexHtml);
     // endregion
+
     // region Move build directory to api public directory
     if (!keep) {
         fsExtra.moveSync(buildPath, "../opencti-graphql/public/", {
