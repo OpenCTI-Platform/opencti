@@ -68,11 +68,6 @@ node {
         sh 'yarn install'
       }
       dir('opencti-front') { // Frontend
-        // TODO: investigate
-        // Hardcode the endpoints for now, should use envionment variables
-        dir('src/relay') {
-          sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
-        }
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
         sh 'yarn install'
         sh 'yarn run schema-compile'
