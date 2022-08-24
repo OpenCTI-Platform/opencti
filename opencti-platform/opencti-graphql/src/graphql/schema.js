@@ -2,6 +2,8 @@ import { GraphQLDateTime } from 'graphql-scalars';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
+import { printSchema } from 'graphql';
+import fs from 'fs';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -66,6 +68,7 @@ import userSubscriptionResolvers from '../resolvers/userSubscription';
 import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
+import { DEV_MODE } from '../config/conf';
 
 const schemaTypeDefs = [globalTypeDefs];
 
@@ -172,6 +175,10 @@ const createSchema = () => {
   });
   schema = constraintDirective()(schema);
   schema = authDirectiveTransformer(schema);
+  if (DEV_MODE) {
+    const globalSchema = printSchema(schema);
+    fs.writeFileSync('../opencti-front/relay.schema.graphql', globalSchema);
+  }
   return schema;
 };
 
