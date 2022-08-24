@@ -151,28 +151,7 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {device?.motherboard_id && t(device.motherboard_id)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Ports')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Ports')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.ports && device.ports.map((port, key) => (
-                  port.protocols && port.protocols.map((protocol) => (
-                    <Chip key={key} classes={{ root: classes.chip }} label={`${port.port_number && t(port.port_number)} ${protocol && t(protocol)}`} color="primary" />
-                  ))
-                ))}
-              </div>
+              </div>              
               <div>
                 <Typography
                   variant="h3"
@@ -515,6 +494,36 @@ class DeviceDetailsComponent extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 20 }}
+              >
+                {t('Ports')}
+              </Typography>
+              <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <Tooltip title={t('Ports')}>
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    {device?.ports && device.ports.map((port, key) => (
+                      port.protocols && port.protocols.map((protocol) => (                        
+                        <div key={key}>
+                        <div className="clearfix" />
+                          {port.port_number && t(port.port_number)} {protocol && t(protocol)}
+                        </div>                                           
+                      ))
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Grid>
             <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
