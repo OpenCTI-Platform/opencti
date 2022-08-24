@@ -27,11 +27,6 @@ const rootPrivateQuery = graphql`
       platform_map_tile_server_light
       platform_hidden_types
       platform_theme
-      platform_menu {
-        id
-        name
-        category
-      }
       platform_feature_flags {
         id
         enable

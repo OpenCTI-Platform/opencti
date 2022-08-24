@@ -8648,6 +8648,8 @@ export type PageInfo = {
 export type PlatformMenu = {
   __typename?: 'PlatformMenu';
   category: Scalars['String'];
+  icon: Scalars['String'];
+  icon_library: Scalars['String'];
   id: Scalars['ID'];
   name: Scalars['String'];
 };
@@ -20079,6 +20081,8 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type PlatformMenuResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformMenu'] = ResolversParentTypes['PlatformMenu']> = ResolversObject<{
   category?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  icon?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  icon_library?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

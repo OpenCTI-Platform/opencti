@@ -13,16 +13,21 @@ import Drawer from '@mui/material/Drawer';
 import Collapse from '@mui/material/Collapse';
 import {
   DashboardOutlined,
+  AssignmentOutlined,
+  LayersOutlined,
   ExpandLess,
   ExpandMore,
 } from '@mui/icons-material';
 import {
   CogOutline,
   Database,
+  Binoculars,
+  FlaskOutline,
   FolderTableOutline,
+  Timetable,
+  Brain,
   GlobeModel,
 } from 'mdi-material-ui';
-import * as R from 'ramda';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE,
@@ -78,10 +83,9 @@ const styles = (theme) => ({
 });
 
 const LeftBar = ({ t, location, classes, theme }) => {
-  const [open, setOpen] = useState({ activities: true, knowledge: true, disinformation: true });
+  const [open, setOpen] = useState({ activities: true, knowledge: true });
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
-  const { me, settings } = useContext(UserContext);
-  const menusPerCategory = R.groupBy((menu) => menu.category, settings.platform_menu);
+  const { me } = useContext(UserContext);
   let toData;
   if (granted(me, [KNOWLEDGE])) {
     toData = '/dashboard/data/entities';
@@ -91,84 +95,248 @@ const LeftBar = ({ t, location, classes, theme }) => {
     toData = '/dashboard/data/taxii';
   }
   return (
-    <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
-      <Toolbar />
-      <MenuList component="nav">
-        <MenuItem component={Link} to="/dashboard" selected={location.pathname === '/dashboard'}
-          dense={true} classes={{ root: classes.menuItem }}>
-          <ListItemIcon style={{ minWidth: 30 }}>
-            <DashboardOutlined fontSize="small" color="primary" />
-          </ListItemIcon>
-          <ListItemText classes={{ primary: classes.menuItemText }} primary={t('Dashboard')}/>
-        </MenuItem>
-        <Security needs={[KNOWLEDGE]}>
-          { Object.entries(menusPerCategory).map(([category, menus]) => <div key={`list_${category}`}>
-               {/* eslint-disable-next-line max-len */}
-              <MenuItem key={`menu_${category}`} dense={true} classes={{ root: classes.menuItem }} onClick={() => toggle(category)}>
+    <UserContext.Consumer>
+      {({ helper }) => {
+        const hideThreats = helper.isEntityTypeHidden('Threats')
+          || (helper.isEntityTypeHidden('Threat-Actor')
+            && helper.isEntityTypeHidden('Intrusion-Set')
+            && helper.isEntityTypeHidden('Campaign'));
+        return (
+          <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
+            <Toolbar />
+            <MenuList component="nav">
+              <MenuItem
+                component={Link}
+                to="/dashboard"
+                selected={location.pathname === '/dashboard'}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
                 <ListItemIcon style={{ minWidth: 30 }}>
-                  <GlobeModel fontSize="small" color="primary" />
+                  <DashboardOutlined fontSize="small" color="primary" />
                 </ListItemIcon>
-                {/* eslint-disable-next-line max-len */}
-                <ListItemText classes={{ primary: classes.menuItemText }} primary={t(category)}/>
-                {open.disinformation ? <ExpandLess /> : <ExpandMore />}
+                <ListItemText
+                  classes={{ primary: classes.menuItemText }}
+                  primary={t('Dashboard')}
+                />
               </MenuItem>
-              <Collapse key={`collapse_${category}`} in={open.disinformation}>
-                <MenuList component="nav" disablePadding={true}>
-                { menus.map((menu) => <MenuItem key={menu.id} component={Link} to={`/dashboard/${menu.id}`}
-                                   selected={location.pathname.includes(`/dashboard/${menu.id}`)} dense={true}
-                                   classes={{ root: classes.menuItemNested }}>
-                    {/* eslint-disable-next-line max-len */}
-                    <ListItemIcon style={{ minWidth: 30, color: theme.palette.text.secondary }}>
-                      <FolderTableOutline fontSize="small" color="inherit" />
-                    </ListItemIcon>
-                    {/* eslint-disable-next-line max-len */}
-                    <ListItemText classes={{ primary: classes.menuItemNestedText }} primary={t(menu.name)}/>
-                  </MenuItem>)}
-                </MenuList>
-              </Collapse>
-            </div>)}
-        </Security>
-      </MenuList>
-      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-        <Divider />
-        <MenuList component="nav" disablePadding={true}>
-          <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-            <MenuItem
-              component={Link}
-              to={toData}
-              selected={location.pathname.includes('/dashboard/data')}
-              dense={true}
-              classes={{ root: classes.menuItem }}>
-              <ListItemIcon style={{ minWidth: 30 }}>
-                <Database fontSize="small" color="primary" />
-              </ListItemIcon>
-              <ListItemText
-                classes={{ primary: classes.menuItemText }}
-                primary={t('Data')}
-              />
-            </MenuItem>
-          </Security>
-          <Security needs={[SETTINGS]}>
-            <MenuItem
-              component={Link}
-              to="/dashboard/settings"
-              selected={location.pathname.includes('/dashboard/settings')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              style={{ marginBottom: 50 }}
+              <Security needs={[KNOWLEDGE]}>
+                <MenuItem
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                  onClick={() => toggle('activities')}
+                >
+                  <ListItemIcon style={{ minWidth: 30 }}>
+                    <Brain fontSize="small" color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t('Activities')}
+                  />
+                  {open.activities ? <ExpandLess /> : <ExpandMore />}
+                </MenuItem>
+                <Collapse in={open.activities}>
+                  <MenuList component="nav" disablePadding={true}>
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/analysis"
+                      selected={location.pathname.includes(
+                        '/dashboard/analysis',
+                      )}
+                      dense={true}
+                      classes={{ root: classes.menuItemNested }}
+                    >
+                      <ListItemIcon
+                        style={{
+                          minWidth: 30,
+                          color: theme.palette.text.secondary,
+                        }}
+                      >
+                        <AssignmentOutlined fontSize="small" color="inherit" />
+                      </ListItemIcon>
+                      <ListItemText
+                        classes={{ primary: classes.menuItemNestedText }}
+                        primary={t('Analysis')}
+                      />
+                    </MenuItem>
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/events"
+                      selected={location.pathname.includes('/dashboard/events')}
+                      dense={true}
+                      classes={{ root: classes.menuItemNested }}
+                    >
+                      <ListItemIcon
+                        style={{
+                          minWidth: 30,
+                          color: theme.palette.text.secondary,
+                        }}
+                      >
+                        <Timetable fontSize="small" color="inherit" />
+                      </ListItemIcon>
+                      <ListItemText
+                        classes={{ primary: classes.menuItemNestedText }}
+                        primary={t('Events')}
+                      />
+                    </MenuItem>
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/observations"
+                      selected={location.pathname.includes(
+                        '/dashboard/observations',
+                      )}
+                      dense={true}
+                      classes={{ root: classes.menuItemNested }}
+                    >
+                      <ListItemIcon
+                        style={{
+                          minWidth: 30,
+                          color: theme.palette.text.secondary,
+                        }}
+                      >
+                        <Binoculars fontSize="small" color="inherit" />
+                      </ListItemIcon>
+                      <ListItemText
+                        classes={{ primary: classes.menuItemNestedText }}
+                        primary={t('Observations')}
+                      />
+                    </MenuItem>
+                  </MenuList>
+                </Collapse>
+                <MenuItem
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                  onClick={() => toggle('knowledge')}
+                >
+                  <ListItemIcon style={{ minWidth: 30 }}>
+                    <GlobeModel fontSize="small" color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t('Knowledge')}
+                  />
+                  {open.knowledge ? <ExpandLess /> : <ExpandMore />}
+                </MenuItem>
+                <Collapse in={open.knowledge}>
+                  <MenuList component="nav" disablePadding={true}>
+                    {!hideThreats && (
+                      <MenuItem
+                        component={Link}
+                        to="/dashboard/threats"
+                        selected={location.pathname.includes(
+                          '/dashboard/threats',
+                        )}
+                        dense={true}
+                        classes={{ root: classes.menuItemNested }}
+                      >
+                        <ListItemIcon
+                          style={{
+                            minWidth: 30,
+                            color: theme.palette.text.secondary,
+                          }}
+                        >
+                          <FlaskOutline fontSize="small" color="inherit" />
+                        </ListItemIcon>
+                        <ListItemText
+                          classes={{ primary: classes.menuItemNestedText }}
+                          primary={t('Threats')}
+                        />
+                      </MenuItem>
+                    )}
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/arsenal"
+                      selected={location.pathname.includes(
+                        '/dashboard/arsenal',
+                      )}
+                      dense={true}
+                      classes={{ root: classes.menuItemNested }}
+                    >
+                      <ListItemIcon
+                        style={{
+                          minWidth: 30,
+                          color: theme.palette.text.secondary,
+                        }}
+                      >
+                        <LayersOutlined fontSize="small" color="inherit" />
+                      </ListItemIcon>
+                      <ListItemText
+                        classes={{ primary: classes.menuItemNestedText }}
+                        primary={t('Arsenal')}
+                      />
+                    </MenuItem>
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/entities"
+                      selected={location.pathname.includes(
+                        '/dashboard/entities',
+                      )}
+                      dense={true}
+                      classes={{ root: classes.menuItemNested }}
+                    >
+                      <ListItemIcon
+                        style={{
+                          minWidth: 30,
+                          color: theme.palette.text.secondary,
+                        }}
+                      >
+                        <FolderTableOutline fontSize="small" color="inherit" />
+                      </ListItemIcon>
+                      <ListItemText
+                        classes={{ primary: classes.menuItemNestedText }}
+                        primary={t('Entities')}
+                      />
+                    </MenuItem>
+                  </MenuList>
+                </Collapse>
+              </Security>
+            </MenuList>
+            <Security
+              needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}
             >
-              <ListItemIcon style={{ minWidth: 30 }}>
-                <CogOutline fontSize="small" color="primary" />
-              </ListItemIcon>
-              <ListItemText
-                classes={{ primary: classes.menuItemText }}
-                primary={t('Settings')}
-              />
-            </MenuItem>
-          </Security>
-        </MenuList>
-      </Security>
-    </Drawer>
+              <Divider />
+              <MenuList component="nav" disablePadding={true}>
+                <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+                  <MenuItem
+                    component={Link}
+                    to={toData}
+                    selected={location.pathname.includes('/dashboard/data')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon style={{ minWidth: 30 }}>
+                      <Database fontSize="small" color="primary" />
+                    </ListItemIcon>
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t('Data')}
+                    />
+                  </MenuItem>
+                </Security>
+                <Security needs={[SETTINGS]}>
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/settings"
+                    selected={location.pathname.includes('/dashboard/settings')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                    style={{ marginBottom: 50 }}
+                  >
+                    <ListItemIcon style={{ minWidth: 30 }}>
+                      <CogOutline fontSize="small" color="primary" />
+                    </ListItemIcon>
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t('Settings')}
+                    />
+                  </MenuItem>
+                </Security>
+              </MenuList>
+            </Security>
+          </Drawer>
+        );
+      }}
+    </UserContext.Consumer>
   );
 };
 

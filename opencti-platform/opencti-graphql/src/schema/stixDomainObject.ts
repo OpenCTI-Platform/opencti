@@ -195,9 +195,11 @@ const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
     'valid_from',
     'valid_until',
     'confidence',
+    'indicator_types',
     'x_opencti_score',
     'x_opencti_detection',
-    'indicator_types',
+    'x_mitre_platforms',
+    'x_opencti_main_observable_type',
   ],
   [ENTITY_TYPE_INFRASTRUCTURE]: ['name', 'revoked', 'description', 'confidence', 'aliases'],
   [ENTITY_TYPE_INTRUSION_SET]: [
