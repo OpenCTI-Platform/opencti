@@ -61,6 +61,7 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const stix = event.data.data;
+    const eventMarkingRefs = (event.data.data?.object_marking_refs ?? []).map((stixId) => markingsById.get(stixId));
     const contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,
@@ -75,15 +76,18 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
       const rel: StixRelation = stix as StixRelation;
       contextData.from_id = rel.extensions[STIX_EXT_OCTI].source_ref;
       contextData.to_id = rel.extensions[STIX_EXT_OCTI].target_ref;
+      eventMarkingRefs.push(...(rel.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs ?? []));
+      eventMarkingRefs.push(...(rel.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs ?? []));
     }
     if (stix.type === 'sighting') {
       const sighting: StixSighting = stix as StixSighting;
       contextData.from_id = sighting.extensions[STIX_EXT_OCTI].sighting_of_ref;
       contextData.to_id = R.head(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs);
+      eventMarkingRefs.push(...(sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs ?? []));
+      eventMarkingRefs.push(...(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs ?? []));
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    const eventMarkingRefs = (event.data.data?.object_marking_refs ?? []).map((stixId) => markingsById.get(stixId));
     const data:HistoryData = {
       _index: INDEX_HISTORY,
       internal_id: event.id,

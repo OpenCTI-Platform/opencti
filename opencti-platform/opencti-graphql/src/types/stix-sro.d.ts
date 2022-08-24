@@ -8,8 +8,10 @@ import { StixKillChainPhase } from './stix-common';
 interface RelationExtension extends StixOpenctiExtension {
   extension_type : 'property-extension' | 'new-sro';
   source_ref: string;
+  source_ref_object_marking_refs: Array<string>;
   source_type: string;
   target_ref: string;
+  target_ref_object_marking_refs: Array<string>;
   target_type: string;
   kill_chain_phases: Array<StixKillChainPhase>;
 }
@@ -29,9 +31,11 @@ interface StixRelation extends StixRelationshipObject {
 // description, first_seen, last_seen, count, sighting_of_ref, observed_data_refs, where_sighted_refs, summary
 interface SightingExtension extends StixOpenctiExtension {
   sighting_of_ref: StixId;
+  sighting_of_ref_object_marking_refs: Array<string>;
   sighting_of_type: string;
   where_sighted_refs: Array<StixId>;
   where_sighted_types: Array<string>;
+  where_sighted_refs_object_marking_refs: Array<string>;
   negative: boolean;
 }
 interface StixSighting extends StixRelationshipObject {

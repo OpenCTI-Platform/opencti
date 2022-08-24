@@ -144,7 +144,7 @@ interface StoreRawRelation extends StoreProxyRelation {
   relationship_type: string;
   description: string;
   summary: string;
-  // inputs
+  // rels
   [RELATION_OBJECT_MARKING]: Array<string>;
   // date
   first_seen: Date;
@@ -246,6 +246,7 @@ interface BasicStoreEntity extends StoreProxyEntity {
   x_opencti_inferences: Array<StoreRule> | undefined;
   // rels
   [RELATION_CREATED_BY]: string;
+  [RELATION_OBJECT_MARKING]: Array<string>;
   // Array
   x_mitre_permissions_required: Array<string>;
   x_mitre_platforms: Array<string>;
