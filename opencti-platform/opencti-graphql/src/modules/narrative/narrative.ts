@@ -29,6 +29,7 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative> = {
   },
   attributes: [
     { name: 'name', type: 'string', multiple: false, upsert: true },
+    { name: 'narrative_types', type: 'string', multiple: true, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
   ],
   relations: [],

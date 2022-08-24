@@ -14,7 +14,7 @@ export interface BasicStoreEntityEvent extends BasicStoreEntity {
 export interface StoreEntityEvent extends StoreEntity {
   name: string;
   description: string;
-  category: 'meeting';
+  event_types: Array<string>;
 }
 // endregion
 

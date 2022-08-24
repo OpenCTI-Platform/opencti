@@ -66,6 +66,8 @@ import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
+import TopMenuChannel from './TopMenuChannel';
+import TopMenuNarrative from './TopMenuNarrative';
 
 const styles = (theme) => ({
   appBar: {
@@ -240,6 +242,12 @@ const TopBar = ({
           )}
           {location.pathname.includes('/dashboard/arsenal/tools/') && (
             <TopMenuTool />
+          )}
+          {location.pathname.includes('/dashboard/arsenal/channels/') && (
+            <TopMenuChannel />
+          )}
+          {location.pathname.includes('/dashboard/arsenal/narratives/') && (
+            <TopMenuNarrative />
           )}
           {location.pathname.includes(
             '/dashboard/arsenal/attack_patterns/',

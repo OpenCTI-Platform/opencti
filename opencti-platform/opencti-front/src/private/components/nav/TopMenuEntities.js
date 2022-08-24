@@ -11,6 +11,7 @@ import {
   MapOutlined,
   PlaceOutlined,
   StorageOutlined,
+  EventOutlined,
 } from '@mui/icons-material';
 import { CityVariantOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
@@ -108,6 +109,25 @@ class TopMenuTechniques extends Component {
         >
           <PlaceOutlined className={classes.icon} fontSize="small" />
           {t('Positions')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/entities/events"
+          variant={
+            location.pathname === '/dashboard/entities/events'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/entities/events'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <EventOutlined className={classes.icon} fontSize="small" />
+          {t('Events')}
         </Button>
         <Button
           component={Link}

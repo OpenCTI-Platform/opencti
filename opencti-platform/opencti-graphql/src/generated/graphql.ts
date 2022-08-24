@@ -1079,6 +1079,39 @@ export type ChannelEdge = {
   node: Channel;
 };
 
+export type ChannelEditMutations = {
+  __typename?: 'ChannelEditMutations';
+  contextClean?: Maybe<Channel>;
+  contextPatch?: Maybe<Channel>;
+  delete?: Maybe<Scalars['ID']>;
+  fieldPatch?: Maybe<Channel>;
+  relationAdd?: Maybe<StixMetaRelationship>;
+  relationDelete?: Maybe<Channel>;
+};
+
+
+export type ChannelEditMutationsContextPatchArgs = {
+  input?: InputMaybe<EditContext>;
+};
+
+
+export type ChannelEditMutationsFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']>;
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type ChannelEditMutationsRelationAddArgs = {
+  input?: InputMaybe<StixMetaRelationshipAddInput>;
+};
+
+
+export type ChannelEditMutationsRelationDeleteArgs = {
+  relationship_type: Scalars['String'];
+  toId: Scalars['String'];
+};
+
 export enum ChannelType {
   Press = 'press',
   Radio = 'radio'
@@ -3114,7 +3147,6 @@ export type EmailMimePartTypeAddInput = {
 export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Event';
   aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
-  category?: Maybe<EventCategory>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
   created?: Maybe<Scalars['DateTime']>;
@@ -3125,6 +3157,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   editContext?: Maybe<Array<Maybe<EditUserContext>>>;
   end_date?: Maybe<Scalars['DateTime']>;
   entity_type: Scalars['String'];
+  event_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   id: Scalars['ID'];
@@ -3264,6 +3297,39 @@ export type EventEdge = {
   __typename?: 'EventEdge';
   cursor: Scalars['String'];
   node: Event;
+};
+
+export type EventEditMutations = {
+  __typename?: 'EventEditMutations';
+  contextClean?: Maybe<Event>;
+  contextPatch?: Maybe<Event>;
+  delete?: Maybe<Scalars['ID']>;
+  fieldPatch?: Maybe<Event>;
+  relationAdd?: Maybe<StixMetaRelationship>;
+  relationDelete?: Maybe<Event>;
+};
+
+
+export type EventEditMutationsContextPatchArgs = {
+  input?: InputMaybe<EditContext>;
+};
+
+
+export type EventEditMutationsFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']>;
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type EventEditMutationsRelationAddArgs = {
+  input?: InputMaybe<StixMetaRelationshipAddInput>;
+};
+
+
+export type EventEditMutationsRelationDeleteArgs = {
+  relationship_type: Scalars['String'];
+  toId: Scalars['String'];
 };
 
 export enum EventsFilter {
@@ -6698,6 +6764,7 @@ export type Mutation = {
   campaignAdd?: Maybe<Campaign>;
   campaignEdit?: Maybe<CampaignEditMutations>;
   channelAdd?: Maybe<Channel>;
+  channelEdit?: Maybe<ChannelEditMutations>;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
   containerEdit?: Maybe<ContainerEditMutations>;
@@ -6709,6 +6776,7 @@ export type Mutation = {
   deleteImport?: Maybe<Scalars['Boolean']>;
   deleteTask: Scalars['ID'];
   eventAdd?: Maybe<Event>;
+  eventEdit?: Maybe<EventEditMutations>;
   externalReferenceAdd?: Maybe<ExternalReference>;
   externalReferenceEdit?: Maybe<ExternalReferenceEditMutations>;
   feedAdd?: Maybe<Feed>;
@@ -6744,6 +6812,7 @@ export type Mutation = {
   meEdit?: Maybe<User>;
   meTokenRenew?: Maybe<User>;
   narrativeAdd?: Maybe<Narrative>;
+  narrativeEdit?: Maybe<NarrativeEditMutations>;
   noteAdd?: Maybe<Note>;
   noteEdit?: Maybe<NoteEditMutations>;
   observedDataAdd?: Maybe<ObservedData>;
@@ -6886,6 +6955,11 @@ export type MutationChannelAddArgs = {
 };
 
 
+export type MutationChannelEditArgs = {
+  id: Scalars['ID'];
+};
+
+
 export type MutationCityAddArgs = {
   input?: InputMaybe<CityAddInput>;
 };
@@ -6938,6 +7012,11 @@ export type MutationDeleteTaskArgs = {
 
 export type MutationEventAddArgs = {
   input: EventAddInput;
+};
+
+
+export type MutationEventEditArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -7105,6 +7184,11 @@ export type MutationMeEditArgs = {
 
 export type MutationNarrativeAddArgs = {
   input: NarrativeAddInput;
+};
+
+
+export type MutationNarrativeEditArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -7775,6 +7859,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   lang?: Maybe<Scalars['String']>;
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  narrative_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
@@ -7897,6 +7982,39 @@ export type NarrativeEdge = {
   __typename?: 'NarrativeEdge';
   cursor: Scalars['String'];
   node: Narrative;
+};
+
+export type NarrativeEditMutations = {
+  __typename?: 'NarrativeEditMutations';
+  contextClean?: Maybe<Narrative>;
+  contextPatch?: Maybe<Narrative>;
+  delete?: Maybe<Scalars['ID']>;
+  fieldPatch?: Maybe<Narrative>;
+  relationAdd?: Maybe<StixMetaRelationship>;
+  relationDelete?: Maybe<Narrative>;
+};
+
+
+export type NarrativeEditMutationsContextPatchArgs = {
+  input?: InputMaybe<EditContext>;
+};
+
+
+export type NarrativeEditMutationsFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']>;
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type NarrativeEditMutationsRelationAddArgs = {
+  input?: InputMaybe<StixMetaRelationshipAddInput>;
+};
+
+
+export type NarrativeEditMutationsRelationDeleteArgs = {
+  relationship_type: Scalars['String'];
+  toId: Scalars['String'];
 };
 
 export enum NarrativesFilter {
@@ -16886,6 +17004,7 @@ export type ResolversTypes = ResolversObject<{
   ChannelAddInput: ChannelAddInput;
   ChannelConnection: ResolverTypeWrapper<Omit<ChannelConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ChannelEdge']>>> }>;
   ChannelEdge: ResolverTypeWrapper<Omit<ChannelEdge, 'node'> & { node: ResolversTypes['Channel'] }>;
+  ChannelEditMutations: ResolverTypeWrapper<Omit<ChannelEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Channel']>, contextPatch?: Maybe<ResolversTypes['Channel']>, fieldPatch?: Maybe<ResolversTypes['Channel']>, relationDelete?: Maybe<ResolversTypes['Channel']> }>;
   ChannelType: ChannelType;
   ChannelsFilter: ChannelsFilter;
   ChannelsFiltering: ChannelsFiltering;
@@ -16955,6 +17074,7 @@ export type ResolversTypes = ResolversObject<{
   EventCategory: EventCategory;
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
   EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node: ResolversTypes['Event'] }>;
+  EventEditMutations: ResolverTypeWrapper<Omit<EventEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Event']>, contextPatch?: Maybe<ResolversTypes['Event']>, fieldPatch?: Maybe<ResolversTypes['Event']>, relationDelete?: Maybe<ResolversTypes['Event']> }>;
   EventsFilter: EventsFilter;
   EventsFiltering: EventsFiltering;
   EventsOrdering: EventsOrdering;
@@ -17122,6 +17242,7 @@ export type ResolversTypes = ResolversObject<{
   NarrativeAddInput: NarrativeAddInput;
   NarrativeConnection: ResolverTypeWrapper<Omit<NarrativeConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['NarrativeEdge']>>> }>;
   NarrativeEdge: ResolverTypeWrapper<Omit<NarrativeEdge, 'node'> & { node: ResolversTypes['Narrative'] }>;
+  NarrativeEditMutations: ResolverTypeWrapper<Omit<NarrativeEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Narrative']>, contextPatch?: Maybe<ResolversTypes['Narrative']>, fieldPatch?: Maybe<ResolversTypes['Narrative']>, relationDelete?: Maybe<ResolversTypes['Narrative']> }>;
   NarrativesFilter: NarrativesFilter;
   NarrativesFiltering: NarrativesFiltering;
   NarrativesOrdering: NarrativesOrdering;
@@ -17480,6 +17601,7 @@ export type ResolversParentTypes = ResolversObject<{
   ChannelAddInput: ChannelAddInput;
   ChannelConnection: Omit<ChannelConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ChannelEdge']>>> };
   ChannelEdge: Omit<ChannelEdge, 'node'> & { node: ResolversParentTypes['Channel'] };
+  ChannelEditMutations: Omit<ChannelEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Channel']>, contextPatch?: Maybe<ResolversParentTypes['Channel']>, fieldPatch?: Maybe<ResolversParentTypes['Channel']>, relationDelete?: Maybe<ResolversParentTypes['Channel']> };
   ChannelsFiltering: ChannelsFiltering;
   CitiesFiltering: CitiesFiltering;
   City: City;
@@ -17535,6 +17657,7 @@ export type ResolversParentTypes = ResolversObject<{
   EventAddInput: EventAddInput;
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   EventEdge: Omit<EventEdge, 'node'> & { node: ResolversParentTypes['Event'] };
+  EventEditMutations: Omit<EventEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Event']>, contextPatch?: Maybe<ResolversParentTypes['Event']>, fieldPatch?: Maybe<ResolversParentTypes['Event']>, relationDelete?: Maybe<ResolversParentTypes['Event']> };
   EventsFiltering: EventsFiltering;
   ExternalReference: ExternalReference;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
@@ -17667,6 +17790,7 @@ export type ResolversParentTypes = ResolversObject<{
   NarrativeAddInput: NarrativeAddInput;
   NarrativeConnection: Omit<NarrativeConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['NarrativeEdge']>>> };
   NarrativeEdge: Omit<NarrativeEdge, 'node'> & { node: ResolversParentTypes['Narrative'] };
+  NarrativeEditMutations: Omit<NarrativeEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Narrative']>, contextPatch?: Maybe<ResolversParentTypes['Narrative']>, fieldPatch?: Maybe<ResolversParentTypes['Narrative']>, relationDelete?: Maybe<ResolversParentTypes['Narrative']> };
   NarrativesFiltering: NarrativesFiltering;
   NetworkTraffic: NetworkTraffic;
   NetworkTrafficAddInput: NetworkTrafficAddInput;
@@ -18335,6 +18459,16 @@ export type ChannelEdgeResolvers<ContextType = any, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ChannelEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ChannelEditMutations'] = ResolversParentTypes['ChannelEditMutations']> = ResolversObject<{
+  contextClean?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType>;
+  contextPatch?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, Partial<ChannelEditMutationsContextPatchArgs>>;
+  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  fieldPatch?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<ChannelEditMutationsFieldPatchArgs, 'input'>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<ChannelEditMutationsRelationAddArgs>>;
+  relationDelete?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<ChannelEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type CityResolvers<ContextType = any, ParentType extends ResolversParentTypes['City'] = ResolversParentTypes['City']> = ResolversObject<{
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CityConnectorsArgs>>;
@@ -18952,7 +19086,6 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
 
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  category?: Resolver<Maybe<ResolversTypes['EventCategory']>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<EventConnectorsArgs>>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -18963,6 +19096,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
   end_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  event_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EventExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EventExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -19004,6 +19138,16 @@ export type EventConnectionResolvers<ContextType = any, ParentType extends Resol
 export type EventEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventEdge'] = ResolversParentTypes['EventEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type EventEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventEditMutations'] = ResolversParentTypes['EventEditMutations']> = ResolversObject<{
+  contextClean?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  contextPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, Partial<EventEditMutationsContextPatchArgs>>;
+  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  fieldPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<EventEditMutationsFieldPatchArgs, 'input'>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<EventEditMutationsRelationAddArgs>>;
+  relationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<EventEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20183,6 +20327,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   campaignAdd?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, Partial<MutationCampaignAddArgs>>;
   campaignEdit?: Resolver<Maybe<ResolversTypes['CampaignEditMutations']>, ParentType, ContextType, RequireFields<MutationCampaignEditArgs, 'id'>>;
   channelAdd?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelAddArgs, 'input'>>;
+  channelEdit?: Resolver<Maybe<ResolversTypes['ChannelEditMutations']>, ParentType, ContextType, RequireFields<MutationChannelEditArgs, 'id'>>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<MutationCityAddArgs>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
@@ -20194,6 +20339,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteImport?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationDeleteImportArgs>>;
   deleteTask?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteTaskArgs, 'id'>>;
   eventAdd?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventAddArgs, 'input'>>;
+  eventEdit?: Resolver<Maybe<ResolversTypes['EventEditMutations']>, ParentType, ContextType, RequireFields<MutationEventEditArgs, 'id'>>;
   externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, Partial<MutationExternalReferenceAddArgs>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
   feedAdd?: Resolver<Maybe<ResolversTypes['Feed']>, ParentType, ContextType, RequireFields<MutationFeedAddArgs, 'input'>>;
@@ -20229,6 +20375,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   meEdit?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
   meTokenRenew?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   narrativeAdd?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeAddArgs, 'input'>>;
+  narrativeEdit?: Resolver<Maybe<ResolversTypes['NarrativeEditMutations']>, ParentType, ContextType, RequireFields<MutationNarrativeEditArgs, 'id'>>;
   noteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, Partial<MutationNoteAddArgs>>;
   noteEdit?: Resolver<Maybe<ResolversTypes['NoteEditMutations']>, ParentType, ContextType, RequireFields<MutationNoteEditArgs, 'id'>>;
   observedDataAdd?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, Partial<MutationObservedDataAddArgs>>;
@@ -20374,6 +20521,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  narrative_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NarrativeNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
@@ -20405,6 +20553,16 @@ export type NarrativeConnectionResolvers<ContextType = any, ParentType extends R
 export type NarrativeEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NarrativeEdge'] = ResolversParentTypes['NarrativeEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Narrative'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NarrativeEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['NarrativeEditMutations'] = ResolversParentTypes['NarrativeEditMutations']> = ResolversObject<{
+  contextClean?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType>;
+  contextPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, Partial<NarrativeEditMutationsContextPatchArgs>>;
+  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  fieldPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<NarrativeEditMutationsFieldPatchArgs, 'input'>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<NarrativeEditMutationsRelationAddArgs>>;
+  relationDelete?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<NarrativeEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23096,6 +23254,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Channel?: ChannelResolvers<ContextType>;
   ChannelConnection?: ChannelConnectionResolvers<ContextType>;
   ChannelEdge?: ChannelEdgeResolvers<ContextType>;
+  ChannelEditMutations?: ChannelEditMutationsResolvers<ContextType>;
   City?: CityResolvers<ContextType>;
   CityConnection?: CityConnectionResolvers<ContextType>;
   CityEdge?: CityEdgeResolvers<ContextType>;
@@ -23133,6 +23292,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Event?: EventResolvers<ContextType>;
   EventConnection?: EventConnectionResolvers<ContextType>;
   EventEdge?: EventEdgeResolvers<ContextType>;
+  EventEditMutations?: EventEditMutationsResolvers<ContextType>;
   ExternalReference?: ExternalReferenceResolvers<ContextType>;
   ExternalReferenceConnection?: ExternalReferenceConnectionResolvers<ContextType>;
   ExternalReferenceEdge?: ExternalReferenceEdgeResolvers<ContextType>;
@@ -23221,6 +23381,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Narrative?: NarrativeResolvers<ContextType>;
   NarrativeConnection?: NarrativeConnectionResolvers<ContextType>;
   NarrativeEdge?: NarrativeEdgeResolvers<ContextType>;
+  NarrativeEditMutations?: NarrativeEditMutationsResolvers<ContextType>;
   NetworkTraffic?: NetworkTrafficResolvers<ContextType>;
   Note?: NoteResolvers<ContextType>;
   NoteConnection?: NoteConnectionResolvers<ContextType>;

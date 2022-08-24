@@ -7297,9 +7297,12 @@ type Mutation {
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   channelAdd(input: ChannelAddInput!): Channel
+  channelEdit(id: ID!): ChannelEditMutations
   languageAdd(input: LanguageAddInput!): Language
   eventAdd(input: EventAddInput!): Event
+  eventEdit(id: ID!): EventEditMutations
   narrativeAdd(input: NarrativeAddInput!): Narrative
+  narrativeEdit(id: ID!): NarrativeEditMutations
 }
 
 enum ChannelType {
@@ -7409,6 +7412,15 @@ input ChannelAddInput {
   update: Boolean
 }
 
+type ChannelEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Channel
+  contextPatch(input: EditContext): Channel
+  contextClean: Channel
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(toId: String!, relationship_type: String!): Channel
+}
+
 type Language implements BasicObject {
   id: ID!
   standard_id: String!
@@ -7493,7 +7505,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   x_opencti_graph_data: String
   name: String!
   description: String
-  category: EventCategory
+  event_types: [String]
   start_date: DateTime
   end_date: DateTime
   aliases: [String]
@@ -7570,6 +7582,15 @@ input EventAddInput {
   update: Boolean
 }
 
+type EventEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Event
+  contextPatch(input: EditContext): Event
+  contextClean: Event
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(toId: String!, relationship_type: String!): Event
+}
+
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   id: ID!
   standard_id: String!
@@ -7598,6 +7619,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   x_opencti_graph_data: String
   name: String!
   description: String
+  narrative_types: [String]
   aliases: [String]
   creator: User
   toStix: String
@@ -7668,4 +7690,13 @@ input NarrativeAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+}
+
+type NarrativeEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Narrative
+  contextPatch(input: EditContext): Narrative
+  contextClean: Narrative
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(toId: String!, relationship_type: String!): Narrative
 }

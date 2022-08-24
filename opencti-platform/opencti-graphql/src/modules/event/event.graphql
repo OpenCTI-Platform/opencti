@@ -56,7 +56,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     # Event
     name: String!
     description: String
-    category: EventCategory
+    event_types: [String]
     start_date: DateTime
     end_date: DateTime
     aliases: [String]
@@ -149,6 +149,17 @@ input EventAddInput {
     clientMutationId: String
     update: Boolean
 }
+
+type EventEditMutations {
+    delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Event @auth(for: [KNOWLEDGE_KNUPDATE])
+    contextPatch(input: EditContext): Event @auth(for: [KNOWLEDGE_KNUPDATE])
+    contextClean: Event @auth(for: [KNOWLEDGE_KNUPDATE])
+    relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    relationDelete(toId: String!, relationship_type: String!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
 type Mutation {
     eventAdd(input: EventAddInput!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
+    eventEdit(id: ID!): EventEditMutations
 }

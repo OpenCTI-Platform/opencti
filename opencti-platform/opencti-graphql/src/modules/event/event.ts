@@ -1,8 +1,6 @@
 import channelTypeDefs from './event.graphql';
 import convertEventToStix from './event-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
-import { ENTITY_TYPE_INCIDENT, } from '../../schema/stixDomainObject';
 import channelResolvers from './event-resolver';
 import { ENTITY_TYPE_EVENT, StoreEntityEvent } from './event-types';
 import type { ModuleDefinition } from '../../types/module';
@@ -32,11 +30,11 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent> = {
   attributes: [
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'category', type: 'string', multiple: false, upsert: true },
+    { name: 'event_types', type: 'string', multiple: true, upsert: true },
     { name: 'start_date', type: 'date', multiple: false, upsert: true },
     { name: 'end_date', type: 'date', multiple: false, upsert: true },
   ],
-  relations: [{ name: RELATION_RELATED_TO, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_INCIDENT] }],
+  relations: [],
   converter: convertEventToStix
 };
 

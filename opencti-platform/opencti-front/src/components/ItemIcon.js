@@ -21,6 +21,7 @@ import {
   StorageOutlined,
   WebAssetOutlined,
   SurroundSoundOutlined,
+  EventOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -130,6 +131,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return (
         <SurroundSoundOutlined style={style} fontSize={fontSize} role="img" />
       );
+    case 'Event':
+      return <EventOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

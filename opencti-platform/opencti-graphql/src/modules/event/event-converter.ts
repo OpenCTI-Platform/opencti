@@ -8,7 +8,7 @@ const convertEventToStix = (instance: StoreEntityEvent): StixEvent => {
     ...stixDomainObject,
     name: instance.name,
     description: instance.description,
-    category: instance.category,
+    event_types: instance.event_types,
     aliases: instance.x_opencti_aliases ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

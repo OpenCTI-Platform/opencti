@@ -774,6 +774,8 @@ const DefaultDashboard = ({ timeField }) => {
               'Malware',
               'Tool',
               'Vulnerability',
+              'Channel',
+              'Narrative',
             ]}
             title={t('Top 10 active entities (3 last months)')}
             field="internal_id"

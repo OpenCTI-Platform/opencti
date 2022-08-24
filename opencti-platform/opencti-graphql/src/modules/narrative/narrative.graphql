@@ -53,6 +53,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     # Narrative
     name: String!
     description: String
+    narrative_types: [String]
     aliases: [String]
     # Technical
     creator: User
@@ -141,6 +142,17 @@ input NarrativeAddInput {
     clientMutationId: String
     update: Boolean
 }
+
+type NarrativeEditMutations {
+    delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    contextPatch(input: EditContext): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    contextClean: Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    relationDelete(toId: String!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
 type Mutation {
     narrativeAdd(input: NarrativeAddInput!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeEdit(id: ID!): NarrativeEditMutations
 }

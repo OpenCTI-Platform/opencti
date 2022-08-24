@@ -137,6 +137,7 @@ class StixDomainObjectVictimology extends Component {
                   'Country',
                   'Region',
                   'Position',
+                  'Event',
                 ]}
                 relationshipTypes={['targets']}
                 isRelationReversed={false}

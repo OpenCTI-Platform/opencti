@@ -8,6 +8,7 @@ import {
   BugReportOutlined,
   SurroundSoundOutlined,
   WebAssetOutlined,
+  SpeakerNotesOutlined,
 } from '@mui/icons-material';
 import { LockPattern, ProgressWrench, Biohazard } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
@@ -51,6 +52,25 @@ class TopMenuArsenal extends Component {
         </Button>
         <Button
           component={Link}
+          to="/dashboard/arsenal/attack_patterns"
+          variant={
+            location.pathname === '/dashboard/arsenal/attack_patterns'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/arsenal/attack_patterns'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <LockPattern className={classes.icon} fontSize="small" />
+          {t('Attack patterns')}
+        </Button>
+        <Button
+          component={Link}
           to="/dashboard/arsenal/channels"
           variant={
             location.pathname === '/dashboard/arsenal/channels'
@@ -70,22 +90,22 @@ class TopMenuArsenal extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/arsenal/attack_patterns"
+          to="/dashboard/arsenal/channels"
           variant={
-            location.pathname === '/dashboard/arsenal/attack_patterns'
+            location.pathname === '/dashboard/arsenal/narratives'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/arsenal/attack_patterns'
+            location.pathname === '/dashboard/arsenal/narratives'
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
         >
-          <LockPattern className={classes.icon} fontSize="small" />
-          {t('Attack patterns')}
+          <SpeakerNotesOutlined className={classes.icon} fontSize="small" />
+          {t('Narratives')}
         </Button>
         <Button
           component={Link}

@@ -11,6 +11,8 @@ import Cities from './Cities';
 import RootCity from './cities/Root';
 import Positions from './Positions';
 import RootPosition from './positions/Root';
+import Events from './Events';
+import RootEvent from './events/Root';
 import Organizations from './Organizations';
 import RootOrganization from './organizations/Root';
 import Systems from './Systems';
@@ -67,6 +69,15 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/entities/positions/:positionId"
           render={(routeProps) => <RootPosition {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/entities/events"
+          component={Events}
+        />
+        <BoundaryRoute
+          path="/dashboard/entities/events/:positionId"
+          render={(routeProps) => <RootEvent {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
