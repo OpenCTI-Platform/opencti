@@ -42,7 +42,7 @@ describe('File storage file listing', () => {
     expect(file.metaData).not.toBeNull();
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
-    expect(file.metaData.mimetype).toEqual('text/plain');
+    expect(file.metaData.mimetype).toEqual('application/json');
     list = await filesListing(ADMIN_USER, 25, 'import/global/');
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
