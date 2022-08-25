@@ -1896,7 +1896,7 @@ const i18n = {
       About: '关于',
       General: '通用',
       Versions: '版本',
-      'Event types': "事件类型",
+      'Event types': '事件类型',
       'Platform title': '平台标题',
       'Platform favicon URL': '平台图标 URL',
       'Labels & Attributes': '标签和属性',
