@@ -19,10 +19,7 @@ import retentionManager from './manager/retentionManager';
 import httpServer from './http/httpServer';
 
 // region static graphql modules
-import './modules/channel/channel';
-import './modules/language/language';
-import './modules/event/event';
-import './modules/narrative/narrative';
+import './modules/index';
 // endregion
 
 // region dynamic modules
