@@ -1059,10 +1059,22 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """
 
         allowed_tlps: Dict[str, List[str]] = {
-            "TLP:RED": ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER", "TLP:RED"],
-            "TLP:AMBER": ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER"],
-            "TLP:GREEN": ["TLP:WHITE", "TLP:GREEN"],
-            "TLP:WHITE": ["TLP:WHITE"],
+            "TLP:RED": [
+                "TLP:CLEAR",
+                "TLP:GREEN",
+                "TLP:AMBER",
+                "TLP:AMBER+STRICT",
+                "TLP:RED",
+            ],
+            "TLP:AMBER+STRICT": [
+                "TLP:CLEAR",
+                "TLP:GREEN",
+                "TLP:AMBER",
+                "TLP:AMBER+STRICT",
+            ],
+            "TLP:AMBER": ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER"],
+            "TLP:GREEN": ["TLP:CLEAR", "TLP:GREEN"],
+            "TLP:CLEAR": ["TLP:CLEAR"],
         }
 
         return tlp in allowed_tlps[max_tlp]
