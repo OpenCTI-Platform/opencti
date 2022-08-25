@@ -178,7 +178,7 @@ class RiskTrackingPopover extends Component {
       },
       onError: (err) => {
         toastGenericError('Request Failed');
-        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors));
+        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors));
         this.setState({ error: ErrorResponse });
       },
     });
