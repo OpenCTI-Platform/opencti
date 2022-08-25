@@ -70,6 +70,7 @@ export const MARKING_TLP_AMBER = 'f88d31f6-486f-44da-b317-01333bde0b82';
 export const MARKING_TLP_AMBER_STRICT = '826578e1-40ad-459f-bc73-ede076f81f37';
 export const MARKING_TLP_RED = '5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
 export const STATIC_STANDARD_IDS = [
+  { id: MARKING_TLP_CLEAR, data: { definition_type: 'TLP', definition: 'TLP:WHITE' } },
   { id: MARKING_TLP_CLEAR, data: { definition_type: 'TLP', definition: 'TLP:CLEAR' } },
   { id: MARKING_TLP_GREEN, data: { definition_type: 'TLP', definition: 'TLP:GREEN' } },
   { id: MARKING_TLP_AMBER, data: { definition_type: 'TLP', definition: 'TLP:AMBER' } },
