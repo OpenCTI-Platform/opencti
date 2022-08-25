@@ -78,10 +78,10 @@ const eventValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   event_types: Yup.array().nullable(),
-  start_date: Yup.date()
+  start_time: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
-  end_date: Yup.date()
+  stop_time: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
 });
@@ -113,12 +113,12 @@ class EventCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
       R.assoc(
-        'start_date',
-        values.start_date ? parse(values.start_date).format() : null,
+        'start_time',
+        values.start_time ? parse(values.start_time).format() : null,
       ),
       R.assoc(
-        'end_date',
-        values.end_date ? parse(values.end_date).format() : null,
+        'stop_time',
+        values.stop_time ? parse(values.stop_time).format() : null,
       ),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -191,8 +191,8 @@ class EventCreation extends Component {
                 name: '',
                 description: '',
                 event_types: [],
-                start_date: null,
-                end_date: null,
+                start_time: null,
+                stop_time: null,
                 createdBy: '',
                 objectMarking: [],
                 externalReferences: [],
@@ -235,7 +235,7 @@ class EventCreation extends Component {
                   />
                   <Field
                     component={DateTimePickerField}
-                    name="start_date"
+                    name="start_time"
                     TextFieldProps={{
                       label: t('Start date'),
                       variant: 'standard',
@@ -245,7 +245,7 @@ class EventCreation extends Component {
                   />
                   <Field
                     component={DateTimePickerField}
-                    name="end_date"
+                    name="stop_time"
                     TextFieldProps={{
                       label: t('End date'),
                       variant: 'standard',

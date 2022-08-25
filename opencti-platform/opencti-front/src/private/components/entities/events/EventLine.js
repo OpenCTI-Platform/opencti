@@ -112,10 +112,11 @@ const EventLineFragment = createFragmentContainer(EventLineComponent, {
     fragment EventLine_node on Event {
       id
       name
+      event_types
       created
       modified
-      start_date
-      end_date
+      start_time
+      stop_time
     }
   `,
 });

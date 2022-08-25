@@ -135,6 +135,21 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#1b5e20';
       }
       return '#4caf50';
+    case 'Channel':
+      if (dark) {
+        return '#283593';
+      }
+      return '#3f51b5';
+    case 'Narrative':
+      if (dark) {
+        return '#558b2f';
+      }
+      return '#8bc34a';
+    case 'Language':
+      if (dark) {
+        return '#afb42b';
+      }
+      return '#d4e157';
     case 'Vulnerability':
       if (dark) {
         return '#5d4037';

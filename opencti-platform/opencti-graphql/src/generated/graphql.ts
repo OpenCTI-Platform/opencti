@@ -3151,7 +3151,6 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   creator?: Maybe<User>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<Maybe<EditUserContext>>>;
-  end_date?: Maybe<Scalars['DateTime']>;
   entity_type: Scalars['String'];
   event_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   exportFiles?: Maybe<FileConnection>;
@@ -3174,9 +3173,10 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
-  start_date?: Maybe<Scalars['DateTime']>;
+  start_time?: Maybe<Scalars['DateTime']>;
   status?: Maybe<Status>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  stop_time?: Maybe<Scalars['DateTime']>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
@@ -3267,15 +3267,15 @@ export type EventAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description: Scalars['String'];
-  end_date?: InputMaybe<Scalars['DateTime']>;
   event_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  start_date?: InputMaybe<Scalars['DateTime']>;
+  start_time?: InputMaybe<Scalars['DateTime']>;
   stix_id?: InputMaybe<Scalars['String']>;
+  stop_time?: InputMaybe<Scalars['DateTime']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -19087,7 +19087,6 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
-  end_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   event_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EventExportFilesArgs>>;
@@ -19110,9 +19109,10 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  start_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EventStixCoreRelationshipsArgs>>;
+  stop_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

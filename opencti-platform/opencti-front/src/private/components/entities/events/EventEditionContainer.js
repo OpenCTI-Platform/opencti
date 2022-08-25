@@ -56,7 +56,7 @@ class EventEditionContainer extends Component {
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a event')}
+            {t('Update an event')}
           </Typography>
           <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />

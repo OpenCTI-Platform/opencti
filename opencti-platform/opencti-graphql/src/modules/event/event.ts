@@ -31,8 +31,8 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent> = {
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
     { name: 'event_types', type: 'string', multiple: true, upsert: true },
-    { name: 'start_date', type: 'date', multiple: false, upsert: true },
-    { name: 'end_date', type: 'date', multiple: false, upsert: true },
+    { name: 'start_time', type: 'date', multiple: false, upsert: true },
+    { name: 'stop_time', type: 'date', multiple: false, upsert: true },
   ],
   relations: [],
   converter: convertEventToStix

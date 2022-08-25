@@ -4,8 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined } from '@mui/icons-material';
-import { EventVariantOutline } from 'mdi-material-ui';
+import { ArrowForwardIosOutlined, EventOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -55,7 +54,7 @@ class TopMenuEvent extends Component {
           color="primary"
           classes={{ root: classes.buttonHome }}
         >
-          <EventVariantOutline className={classes.icon} fontSize="small" />
+          <EventOutlined className={classes.icon} fontSize="small" />
           {t('Events')}
         </Button>
         <ArrowForwardIosOutlined

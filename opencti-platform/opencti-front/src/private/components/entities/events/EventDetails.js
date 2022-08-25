@@ -36,14 +36,18 @@ class EventDetailsComponent extends Component {
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown source={event.description} limit={400} />
-              <Typography variant="h3" gutterBottom={true}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Event types')}
               </Typography>
-              {R.propOr(['-'], 'event_types', event).map((narrativeType) => (
+              {R.propOr(['-'], 'event_types', event).map((eventType) => (
                 <Chip
-                  key={narrativeType}
+                  key={eventType}
                   classes={{ root: classes.chip }}
-                  label={narrativeType}
+                  label={eventType}
                 />
               ))}
             </Grid>
@@ -51,7 +55,7 @@ class EventDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Start date')}
               </Typography>
-              {fldt(event.start_date)}
+              {fldt(event.start_time)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -59,7 +63,7 @@ class EventDetailsComponent extends Component {
               >
                 {t('End date')}
               </Typography>
-              {fldt(event.end_date)}
+              {fldt(event.stop_time)}
             </Grid>
           </Grid>
         </Paper>
@@ -81,8 +85,8 @@ const EventDetails = createFragmentContainer(EventDetailsComponent, {
       id
       description
       event_types
-      start_date
-      end_date
+      start_time
+      stop_time
     }
   `,
 });

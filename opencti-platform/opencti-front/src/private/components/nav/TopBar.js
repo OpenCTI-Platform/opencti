@@ -68,6 +68,7 @@ import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 import TopMenuChannel from './TopMenuChannel';
 import TopMenuNarrative from './TopMenuNarrative';
+import TopMenuEvent from './TopMenuEvent';
 
 const styles = (theme) => ({
   appBar: {
@@ -267,6 +268,9 @@ const TopBar = ({
           )}
           {location.pathname.includes('/dashboard/entities/systems/') && (
             <TopMenuSystem />
+          )}
+          {location.pathname.includes('/dashboard/entities/events/') && (
+            <TopMenuEvent />
           )}
           {location.pathname.includes('/dashboard/entities/organizations/') && (
             <TopMenuOrganization />
