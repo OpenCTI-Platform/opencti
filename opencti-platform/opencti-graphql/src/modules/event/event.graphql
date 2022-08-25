@@ -121,7 +121,7 @@ type Query {
         after: ID
         orderBy: EventsOrdering
         orderMode: OrderingMode
-        filters: [EventsFiltering]
+        filters: [EventsFiltering!]
         filterMode: FilterMode
         search: String
     ): EventConnection @auth(for: [KNOWLEDGE])

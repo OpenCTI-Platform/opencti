@@ -60,7 +60,7 @@ export const narrativesLinesQuery = graphql`
     $cursor: ID
     $orderBy: NarrativesOrdering
     $orderMode: OrderingMode
-    $filters: [NarrativesFiltering]
+    $filters: [NarrativesFiltering!]
   ) {
     ...NarrativesLines_data
       @arguments(
@@ -85,7 +85,7 @@ export default createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "NarrativesOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[NarrativesFiltering]" }
+        filters: { type: "[NarrativesFiltering!]" }
       ) {
         narratives(
           search: $search

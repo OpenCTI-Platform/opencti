@@ -9866,7 +9866,7 @@ export type QueryChannelArgs = {
 export type QueryChannelsArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<ChannelsFiltering>>>;
+  filters?: InputMaybe<Array<ChannelsFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<ChannelsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -9964,7 +9964,7 @@ export type QueryEventArgs = {
 export type QueryEventsArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<EventsFiltering>>>;
+  filters?: InputMaybe<Array<EventsFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<EventsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -10302,7 +10302,7 @@ export type QueryNarrativeArgs = {
 export type QueryNarrativesArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<NarrativesFiltering>>>;
+  filters?: InputMaybe<Array<NarrativesFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<NarrativesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;

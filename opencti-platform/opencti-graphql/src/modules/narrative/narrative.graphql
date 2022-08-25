@@ -120,7 +120,7 @@ type Query {
         after: ID
         orderBy: NarrativesOrdering
         orderMode: OrderingMode
-        filters: [NarrativesFiltering]
+        filters: [NarrativesFiltering!]
         filterMode: FilterMode
         search: String
     ): NarrativeConnection @auth(for: [KNOWLEDGE])

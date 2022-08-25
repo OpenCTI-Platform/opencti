@@ -6704,13 +6704,13 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   channel(id: String!): Channel
-  channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: [ChannelsFiltering], filterMode: FilterMode, search: String): ChannelConnection
+  channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: [ChannelsFiltering!], filterMode: FilterMode, search: String): ChannelConnection
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: [LanguagesFiltering!], filterMode: FilterMode, search: String): LanguageConnection
   event(id: String!): Event
-  events(first: Int, after: ID, orderBy: EventsOrdering, orderMode: OrderingMode, filters: [EventsFiltering], filterMode: FilterMode, search: String): EventConnection
+  events(first: Int, after: ID, orderBy: EventsOrdering, orderMode: OrderingMode, filters: [EventsFiltering!], filterMode: FilterMode, search: String): EventConnection
   narrative(id: String!): Narrative
-  narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering], filterMode: FilterMode, search: String): NarrativeConnection
+  narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering!], filterMode: FilterMode, search: String): NarrativeConnection
 }
 
 type Subscription {

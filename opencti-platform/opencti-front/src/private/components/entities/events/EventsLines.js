@@ -59,7 +59,7 @@ export const eventsLinesQuery = graphql`
     $cursor: ID
     $orderBy: EventsOrdering
     $orderMode: OrderingMode
-    $filters: [EventsFiltering]
+    $filters: [EventsFiltering!]
   ) {
     ...EventsLines_data
       @arguments(
@@ -84,7 +84,7 @@ export default createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "EventsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[EventsFiltering]" }
+        filters: { type: "[EventsFiltering!]" }
       ) {
         events(
           search: $search

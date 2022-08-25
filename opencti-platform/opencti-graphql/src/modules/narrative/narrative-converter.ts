@@ -9,6 +9,7 @@ const convertNarrativeToStix = (instance: StoreEntityNarrative): StixNarrative =
     name: instance.name,
     description: instance.description,
     aliases: instance.x_opencti_aliases ?? [],
+    narrative_types: instance.narrative_types ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],

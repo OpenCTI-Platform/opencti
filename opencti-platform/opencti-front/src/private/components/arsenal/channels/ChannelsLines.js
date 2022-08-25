@@ -60,7 +60,7 @@ export const channelsLinesQuery = graphql`
     $cursor: ID
     $orderBy: ChannelsOrdering
     $orderMode: OrderingMode
-    $filters: [ChannelsFiltering]
+    $filters: [ChannelsFiltering!]
   ) {
     ...ChannelsLines_data
       @arguments(
@@ -85,7 +85,7 @@ export default createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "ChannelsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[ChannelsFiltering]" }
+        filters: { type: "[ChannelsFiltering!]" }
       ) {
         channels(
           search: $search
