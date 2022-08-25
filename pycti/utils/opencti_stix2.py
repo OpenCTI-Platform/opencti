@@ -514,9 +514,9 @@ class OpenCTIStix2:
                             title + " (" + str(external_reference["external_id"]) + ")"
                         )
 
-                    if "marking_tlpwhite" in self.mapping_cache:
+                    if "marking_tlpclear" in self.mapping_cache:
                         object_marking_ref_result = self.mapping_cache[
-                            "marking_tlpwhite"
+                            "marking_tlpclear"
                         ]
                     else:
                         object_marking_ref_result = (
@@ -527,7 +527,7 @@ class OpenCTIStix2:
                                 ]
                             )
                         )
-                        self.mapping_cache["marking_tlpwhite"] = {
+                        self.mapping_cache["marking_tlpclear"] = {
                             "id": object_marking_ref_result["id"]
                         }
 
