@@ -385,6 +385,18 @@ class StixDomainObject:
                     }
                 }
             }
+            ... on Channel {
+                name
+                description
+                aliases
+                channel_types
+            }
+            ... on Narrative {
+                name
+                description
+                aliases
+                narrative_types
+            }            
             ... on Vulnerability {
                 name
                 description

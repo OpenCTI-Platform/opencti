@@ -16,6 +16,7 @@ from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.entities.opencti_attack_pattern import AttackPattern
 from pycti.entities.opencti_campaign import Campaign
 from pycti.entities.opencti_course_of_action import CourseOfAction
+from pycti.entities.opencti_event import Event
 from pycti.entities.opencti_external_reference import ExternalReference
 from pycti.entities.opencti_identity import Identity
 from pycti.entities.opencti_incident import Incident
@@ -45,6 +46,8 @@ from pycti.entities.opencti_stix_object_or_stix_relationship import (
 from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelationship
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_tool import Tool
+from pycti.entities.opencti_channel import Channel
+from pycti.entities.opencti_narrative import Narrative
 from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
@@ -157,6 +160,7 @@ class OpenCTIApiClient:
         self.stix_sighting_relationship = StixSightingRelationship(self)
         self.stix_cyber_observable_relationship = StixCyberObservableRelationship(self)
         self.identity = Identity(self)
+        self.event = Event(self)
         self.location = Location(self)
         self.threat_actor = ThreatActor(self)
         self.intrusion_set = IntrusionSet(self)
@@ -165,6 +169,8 @@ class OpenCTIApiClient:
         self.incident = Incident(self)
         self.malware = Malware(self)
         self.tool = Tool(self)
+        self.channel = Channel(self)
+        self.narrative = Narrative(self)
         self.vulnerability = Vulnerability(self)
         self.attack_pattern = AttackPattern(self)
         self.course_of_action = CourseOfAction(self)
