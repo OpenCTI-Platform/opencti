@@ -523,7 +523,7 @@ class OpenCTIStix2:
                             self.opencti.marking_definition.read(
                                 filters=[
                                     {"key": "definition_type", "values": ["TLP"]},
-                                    {"key": "definition", "values": ["TLP:WHITE"]},
+                                    {"key": "definition", "values": ["TLP:CLEAR"]},
                                 ]
                             )
                         )
