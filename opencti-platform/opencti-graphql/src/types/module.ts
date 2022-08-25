@@ -70,6 +70,9 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   registerModelIdentifier(definition.identifier);
   // Register attributes
   const attributes = definition.attributes.map((attr) => attr.name);
+  if (definition.type.aliased) {
+    attributes.push(...['aliases', 'i_aliases_ids']); // Need to be improved to support x_opencti_aliases
+  }
   schemaTypes.registerAttributes(definition.type.name, attributes);
   const upsertAttributes = definition.attributes.filter((attr) => attr.upsert).map((attr) => attr.name);
   schemaTypes.registerUpsertAttributes(definition.type.name, upsertAttributes);

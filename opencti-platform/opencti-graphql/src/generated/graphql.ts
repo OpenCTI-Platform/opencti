@@ -6030,6 +6030,39 @@ export type LanguageEdge = {
   node: Language;
 };
 
+export type LanguageEditMutations = {
+  __typename?: 'LanguageEditMutations';
+  contextClean?: Maybe<Language>;
+  contextPatch?: Maybe<Language>;
+  delete?: Maybe<Scalars['ID']>;
+  fieldPatch?: Maybe<Language>;
+  relationAdd?: Maybe<StixMetaRelationship>;
+  relationDelete?: Maybe<Language>;
+};
+
+
+export type LanguageEditMutationsContextPatchArgs = {
+  input?: InputMaybe<EditContext>;
+};
+
+
+export type LanguageEditMutationsFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']>;
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type LanguageEditMutationsRelationAddArgs = {
+  input?: InputMaybe<StixMetaRelationshipAddInput>;
+};
+
+
+export type LanguageEditMutationsRelationDeleteArgs = {
+  relationship_type: Scalars['String'];
+  toId: Scalars['String'];
+};
+
 export enum LanguagesFilter {
   Aliases = 'aliases',
   Created = 'created',
@@ -6891,6 +6924,7 @@ export type Mutation = {
   labelAdd?: Maybe<Label>;
   labelEdit?: Maybe<LabelEditMutations>;
   languageAdd?: Maybe<Language>;
+  languageEdit?: Maybe<LanguageEditMutations>;
   listTaskAdd: Task;
   locationAdd?: Maybe<Location>;
   locationEdit?: Maybe<LocationEditMutations>;
@@ -7228,6 +7262,11 @@ export type MutationLabelEditArgs = {
 
 export type MutationLanguageAddArgs = {
   input: LanguageAddInput;
+};
+
+
+export type MutationLanguageEditArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -17284,6 +17323,7 @@ export type ResolversTypes = ResolversObject<{
   LanguageAddInput: LanguageAddInput;
   LanguageConnection: ResolverTypeWrapper<Omit<LanguageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LanguageEdge']>>> }>;
   LanguageEdge: ResolverTypeWrapper<Omit<LanguageEdge, 'node'> & { node: ResolversTypes['Language'] }>;
+  LanguageEditMutations: ResolverTypeWrapper<Omit<LanguageEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Language']>, contextPatch?: Maybe<ResolversTypes['Language']>, fieldPatch?: Maybe<ResolversTypes['Language']>, relationDelete?: Maybe<ResolversTypes['Language']> }>;
   LanguagesFilter: LanguagesFilter;
   LanguagesFiltering: LanguagesFiltering;
   LanguagesOrdering: LanguagesOrdering;
@@ -17843,6 +17883,7 @@ export type ResolversParentTypes = ResolversObject<{
   LanguageAddInput: LanguageAddInput;
   LanguageConnection: Omit<LanguageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LanguageEdge']>>> };
   LanguageEdge: Omit<LanguageEdge, 'node'> & { node: ResolversParentTypes['Language'] };
+  LanguageEditMutations: Omit<LanguageEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Language']>, contextPatch?: Maybe<ResolversParentTypes['Language']>, fieldPatch?: Maybe<ResolversParentTypes['Language']>, relationDelete?: Maybe<ResolversParentTypes['Language']> };
   LanguagesFiltering: LanguagesFiltering;
   ListTask: ListTask;
   ListTaskAddInput: ListTaskAddInput;
@@ -20154,6 +20195,16 @@ export type LanguageEdgeResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type LanguageEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['LanguageEditMutations'] = ResolversParentTypes['LanguageEditMutations']> = ResolversObject<{
+  contextClean?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType>;
+  contextPatch?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, Partial<LanguageEditMutationsContextPatchArgs>>;
+  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  fieldPatch?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<LanguageEditMutationsFieldPatchArgs, 'input'>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<LanguageEditMutationsRelationAddArgs>>;
+  relationDelete?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<LanguageEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ListTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['ListTask'] = ResolversParentTypes['ListTask']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<Maybe<ResolversTypes['TaskAction']>>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -20478,6 +20529,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   labelAdd?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, Partial<MutationLabelAddArgs>>;
   labelEdit?: Resolver<Maybe<ResolversTypes['LabelEditMutations']>, ParentType, ContextType, RequireFields<MutationLabelEditArgs, 'id'>>;
   languageAdd?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageAddArgs, 'input'>>;
+  languageEdit?: Resolver<Maybe<ResolversTypes['LanguageEditMutations']>, ParentType, ContextType, RequireFields<MutationLanguageEditArgs, 'id'>>;
   listTaskAdd?: Resolver<ResolversTypes['Task'], ParentType, ContextType, Partial<MutationListTaskAddArgs>>;
   locationAdd?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, Partial<MutationLocationAddArgs>>;
   locationEdit?: Resolver<Maybe<ResolversTypes['LocationEditMutations']>, ParentType, ContextType, RequireFields<MutationLocationEditArgs, 'id'>>;
@@ -23470,6 +23522,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Language?: LanguageResolvers<ContextType>;
   LanguageConnection?: LanguageConnectionResolvers<ContextType>;
   LanguageEdge?: LanguageEdgeResolvers<ContextType>;
+  LanguageEditMutations?: LanguageEditMutationsResolvers<ContextType>;
   ListTask?: ListTaskResolvers<ContextType>;
   Location?: LocationResolvers<ContextType>;
   LocationConnection?: LocationConnectionResolvers<ContextType>;
