@@ -46,6 +46,8 @@ const styles = (theme) => ({
   },
 });
 
+const TYPE_SEARCH_SIZE = 500;
+
 class Search extends Component {
   constructor(props) {
     super(props);
@@ -202,7 +204,7 @@ class Search extends Component {
           variables={{
             search: keyword,
             filters: finalFilters,
-            count: 100,
+            count: TYPE_SEARCH_SIZE,
           }}
           render={({ props }) => {
             if (props) {
@@ -216,7 +218,7 @@ class Search extends Component {
           variables={{
             search: keyword,
             filters: finalFilters,
-            count: 100,
+            count: TYPE_SEARCH_SIZE,
           }}
           render={({ props }) => {
             if (props) {
