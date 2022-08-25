@@ -26,6 +26,7 @@ from pycti.entities.opencti_infrastructure import Infrastructure
 from pycti.entities.opencti_intrusion_set import IntrusionSet
 from pycti.entities.opencti_kill_chain_phase import KillChainPhase
 from pycti.entities.opencti_label import Label
+from pycti.entities.opencti_language import Language
 from pycti.entities.opencti_location import Location
 from pycti.entities.opencti_malware import Malware
 from pycti.entities.opencti_marking_definition import MarkingDefinition
@@ -171,6 +172,7 @@ class OpenCTIApiClient:
         self.tool = Tool(self)
         self.channel = Channel(self)
         self.narrative = Narrative(self)
+        self.language = Language(self)
         self.vulnerability = Vulnerability(self)
         self.attack_pattern = AttackPattern(self)
         self.course_of_action = CourseOfAction(self)
