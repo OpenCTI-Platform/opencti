@@ -48,6 +48,7 @@ describe('Cyio Label Tests', () => {
     const singleCyioLabel = `query queryCyioLabel($id: ID!) {
       cyioLabel(id:$id){
         id
+      }
     }`;
     const variables = { id: currentLabelId };
     const result = await submitOperation(singleCyioLabel, variables);
