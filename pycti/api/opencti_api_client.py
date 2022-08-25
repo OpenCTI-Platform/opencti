@@ -15,6 +15,7 @@ from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.entities.opencti_attack_pattern import AttackPattern
 from pycti.entities.opencti_campaign import Campaign
+from pycti.entities.opencti_channel import Channel
 from pycti.entities.opencti_course_of_action import CourseOfAction
 from pycti.entities.opencti_event import Event
 from pycti.entities.opencti_external_reference import ExternalReference
@@ -28,6 +29,7 @@ from pycti.entities.opencti_label import Label
 from pycti.entities.opencti_location import Location
 from pycti.entities.opencti_malware import Malware
 from pycti.entities.opencti_marking_definition import MarkingDefinition
+from pycti.entities.opencti_narrative import Narrative
 from pycti.entities.opencti_note import Note
 from pycti.entities.opencti_observed_data import ObservedData
 from pycti.entities.opencti_opinion import Opinion
@@ -46,8 +48,6 @@ from pycti.entities.opencti_stix_object_or_stix_relationship import (
 from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelationship
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_tool import Tool
-from pycti.entities.opencti_channel import Channel
-from pycti.entities.opencti_narrative import Narrative
 from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
