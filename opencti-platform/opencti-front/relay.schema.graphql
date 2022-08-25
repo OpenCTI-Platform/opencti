@@ -7664,6 +7664,9 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   description: String
   narrative_types: [String]
   aliases: [String]
+  parentNarratives: NarrativeConnection
+  subNarratives: NarrativeConnection
+  isSubNarrative: Boolean
   creator: User
   toStix: String
   importFiles(first: Int): FileConnection

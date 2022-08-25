@@ -1,106 +1,122 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import {
+  compose,
+  pipe,
+  map,
+  propOr,
+  pathOr,
+  sortBy,
+  toLower,
+  prop,
+  filter,
+  join,
+  assoc,
+} from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
 import { NarrativeLine, NarrativeLineDummy } from './NarrativeLine';
-import { setNumberOfElements } from '../../../../utils/Number';
+import inject18n from '../../../../components/i18n';
 
-const nbOfRowsToLoad = 50;
+const styles = () => ({
+  root: {
+    margin: 0,
+  },
+});
 
-class NarrativesLines extends Component {
-  componentDidUpdate(prevProps) {
-    setNumberOfElements(
-      prevProps,
-      this.props,
-      'narratives',
-      this.props.setNumberOfElements.bind(this),
-    );
-  }
-
+class NarrativesLinesComponent extends Component {
   render() {
-    const { initialLoading, dataColumns, relay, onLabelClick } = this.props;
+    const { data, keyword, classes } = this.props;
+    const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
+    const filterSubnarrative = (n) => n.isSubNarrative === false;
+    const filterByKeyword = (n) => keyword === ''
+      || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || propOr('', 'subnarratives_text', n)
+        .toLowerCase()
+        .indexOf(keyword.toLowerCase()) !== -1;
+    const narratives = pipe(
+      pathOr([], ['narratives', 'edges']),
+      map((n) => n.node),
+      map((n) => assoc(
+        'subnarratives_text',
+        pipe(
+          map((o) => `${o.node.name} ${o.node.description}`),
+          join(' | '),
+        )(pathOr([], ['subNarratives', 'edges'], n)),
+        n,
+      )),
+      filter(filterSubnarrative),
+      filter(filterByKeyword),
+      sortByNameCaseInsensitive,
+    )(data);
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['narratives', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['narratives', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={<NarrativeLine />}
-        DummyLineComponent={<NarrativeLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        onLabelClick={onLabelClick.bind(this)}
-      />
+      <List
+        component="nav"
+        aria-labelledby="nested-list-subheader"
+        className={classes.root}
+      >
+        {data
+          ? map((narrative) => {
+            const subNarratives = pipe(
+              pathOr([], ['subNarratives', 'edges']),
+              map((n) => n.node),
+              filter(filterByKeyword),
+              sortByNameCaseInsensitive,
+            )(narrative);
+            return (
+                <NarrativeLine
+                  key={narrative.id}
+                  node={narrative}
+                  subNarratives={subNarratives}
+                />
+            );
+          }, narratives)
+          : Array.from(Array(20), (e, i) => <NarrativeLineDummy key={i} />)}
+      </List>
     );
   }
 }
 
-NarrativesLines.propTypes = {
+NarrativesLinesComponent.propTypes = {
   classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
+  keyword: PropTypes.string,
   data: PropTypes.object,
-  relay: PropTypes.object,
-  initialLoading: PropTypes.bool,
-  onLabelClick: PropTypes.func,
-  setNumberOfElements: PropTypes.func,
 };
 
 export const narrativesLinesQuery = graphql`
-  query NarrativesLinesPaginationQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-    $orderBy: NarrativesOrdering
-    $orderMode: OrderingMode
-    $filters: [NarrativesFiltering!]
-  ) {
-    ...NarrativesLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+  query NarrativesLinesPaginationQuery($count: Int!, $cursor: ID) {
+    ...NarrativesLines_data @arguments(count: $count, cursor: $cursor)
   }
 `;
 
-export default createPaginationContainer(
-  NarrativesLines,
+const NarrativesLinesFragment = createPaginationContainer(
+  NarrativesLinesComponent,
   {
     data: graphql`
       fragment NarrativesLines_data on Query
       @argumentDefinitions(
-        search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "NarrativesOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[NarrativesFiltering!]" }
       ) {
-        narratives(
-          search: $search
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-          filters: $filters
-        ) @connection(key: "Pagination_narratives") {
+        narratives(first: $count, after: $cursor)
+          @connection(key: "Pagination_narratives") {
           edges {
             node {
               id
               name
               description
-              ...NarrativeLine_node
+              isSubNarrative
+              subNarratives {
+                edges {
+                  node {
+                    id
+                    name
+                    description
+                  }
+                }
+              }
             }
           }
           pageInfo {
@@ -123,16 +139,14 @@ export default createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables(props, { count, cursor }) {
       return {
-        search: fragmentVariables.search,
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-        filters: fragmentVariables.filters,
       };
     },
     query: narrativesLinesQuery,
   },
 );
+
+export default compose(inject18n, withStyles(styles))(NarrativesLinesFragment);

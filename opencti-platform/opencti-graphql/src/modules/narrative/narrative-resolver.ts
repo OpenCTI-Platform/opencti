@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addNarrative, findById, findAll } from './narrative-domain';
+import { addNarrative, findById, findAll,  batchIsSubNarrative, batchParentNarratives, batchSubNarratives  } from './narrative-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
 import {
@@ -9,11 +9,21 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
+import { batchLoader } from '../../database/middleware';
+
+const parentNarrativesLoader = batchLoader(batchParentNarratives);
+const subNarrativesLoader = batchLoader(batchSubNarratives);
+const isSubNarrativeLoader = batchLoader(batchIsSubNarrative);
 
 const narrativeResolvers: Resolvers = {
   Query: {
     narrative: (_, { id }, { user }) => findById(user, id),
     narratives: (_, args, { user }) => findAll(user, args),
+  },
+  Narrative: {
+    parentNarratives: (narrative, _, { user }) => parentNarrativesLoader.load(narrative.id, user),
+    subNarratives: (narrative, _, { user }) => subNarrativesLoader.load(narrative.id, user),
+    isSubNarrative: (narrative, _, { user }) => isSubNarrativeLoader.load(narrative.id, user),
   },
   NarrativesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

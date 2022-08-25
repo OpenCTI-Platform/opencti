@@ -96,6 +96,7 @@ class RootNarrative extends Component {
               'campaigns',
               'incidents',
               'malwares',
+              'channels',
               'attack_patterns',
               'vulnerabilities',
               'observables',

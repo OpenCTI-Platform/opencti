@@ -1,33 +1,46 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRight, SpeakerNotesOutlined } from '@mui/icons-material';
+import {
+  KeyboardArrowRightOutlined,
+  SpeakerNotesOutlined,
+} from '@mui/icons-material';
+import { compose, map } from 'ramda';
+import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
+  item: {},
+  itemNested: {
+    paddingLeft: theme.spacing(4),
   },
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
+  name: {
+    width: '20%',
     height: 20,
-    fontSize: 13,
+    lineHeight: '20px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 5,
+  },
+  description: {
+    width: '70%',
+    height: 20,
+    lineHeight: '20px',
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: '#a5a5a5',
+    fontSize: 12,
   },
   goIcon: {
     position: 'absolute',
@@ -38,103 +51,80 @@ const styles = (theme) => ({
   },
   placeholder: {
     display: 'inline-block',
-    height: '1em',
+    height: '.6em',
     backgroundColor: theme.palette.grey[700],
   },
 });
 
 class NarrativeLineComponent extends Component {
   render() {
-    const { fd, classes, node, dataColumns, onLabelClick } = this.props;
+    const { classes, subNarratives, node, isSubNarrative, t } = this.props;
     return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component={Link}
-        to={`/dashboard/arsenal/narratives/${node.id}`}
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <SpeakerNotesOutlined />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
+      <div>
+        <ListItem
+          classes={{ root: isSubNarrative ? classes.itemNested : classes.item }}
+          divider={true}
+          button={true}
+          component={Link}
+          to={`/dashboard/arsenal/narratives/${node.id}`}
+        >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <SpeakerNotesOutlined
+              fontSize={isSubNarrative ? 'small' : 'medium'}
+            />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <div>
+                <div className={classes.name}>{node.name}</div>
+                <div className={classes.description}>
+                  {node.description?.length > 0
+                    ? node.description
+                    : t('This narrative does not have any description.')}
+                </div>
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={node.objectLabel}
-                  onClick={onLabelClick.bind(this)}
+            }
+          />
+          <ListItemIcon classes={{ root: classes.goIcon }}>
+            <KeyboardArrowRightOutlined />
+          </ListItemIcon>
+        </ListItem>
+        {subNarratives && subNarratives.length > 0 && (
+          <List style={{ margin: 0, padding: 0 }}>
+            {map(
+              (subNarrative) => (
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                <NarrativeLine
+                  key={subNarrative.id}
+                  node={subNarrative}
+                  isSubNarrative={true}
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                {fd(node.created)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                {fd(node.modified)}
-              </div>
-            </div>
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
-      </ListItem>
+              ),
+              subNarratives,
+            )}
+          </List>
+        )}
+      </div>
     );
   }
 }
 
 NarrativeLineComponent.propTypes = {
-  dataColumns: PropTypes.object,
   node: PropTypes.object,
+  isSubNarrative: PropTypes.bool,
+  subNarratives: PropTypes.array,
   classes: PropTypes.object,
   fd: PropTypes.func,
-  onLabelClick: PropTypes.func,
 };
-
-const NarrativeLineFragment = createFragmentContainer(NarrativeLineComponent, {
-  node: graphql`
-    fragment NarrativeLine_node on Narrative {
-      id
-      name
-      created
-      modified
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
-    }
-  `,
-});
 
 export const NarrativeLine = compose(
   inject18n,
   withStyles(styles),
-)(NarrativeLineFragment);
+)(NarrativeLineComponent);
 
 class NarrativeLineDummyComponent extends Component {
   render() {
-    const { classes, dataColumns } = this.props;
+    const { classes } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -147,56 +137,16 @@ class NarrativeLineDummyComponent extends Component {
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-            </div>
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              height={20}
+            />
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );
@@ -204,7 +154,6 @@ class NarrativeLineDummyComponent extends Component {
 }
 
 NarrativeLineDummyComponent.propTypes = {
-  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

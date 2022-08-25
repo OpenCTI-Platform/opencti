@@ -55,6 +55,9 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     description: String
     narrative_types: [String]
     aliases: [String]
+    parentNarratives: NarrativeConnection
+    subNarratives: NarrativeConnection
+    isSubNarrative: Boolean
     # Technical
     creator: User
     toStix: String

@@ -8032,6 +8032,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   externalReferences?: Maybe<ExternalReferenceConnection>;
   id: Scalars['ID'];
   importFiles?: Maybe<FileConnection>;
+  isSubNarrative?: Maybe<Scalars['Boolean']>;
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']>;
@@ -8043,6 +8044,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
+  parentNarratives?: Maybe<NarrativeConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
   reports?: Maybe<ReportConnection>;
@@ -8051,6 +8053,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  subNarratives?: Maybe<NarrativeConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
@@ -20680,6 +20683,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<NarrativeExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NarrativeImportFilesArgs>>;
+  isSubNarrative?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NarrativeJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -20691,6 +20695,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<NarrativeObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NarrativeOpinionsArgs>>;
+  parentNarratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NarrativePendingFilesArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NarrativeReportsArgs>>;
@@ -20699,6 +20704,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NarrativeStixCoreRelationshipsArgs>>;
+  subNarratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

@@ -12,6 +12,10 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
@@ -39,6 +43,12 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+  },
+  createButtonContextual: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
   },
   buttons: {
     marginTop: 20,
@@ -70,7 +80,19 @@ const styles = (theme) => ({
 const narrativeMutation = graphql`
   mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
     narrativeAdd(input: $input) {
-      ...NarrativeLine_node
+      id
+      name
+      description
+      isSubNarrative
+      subNarratives {
+        edges {
+          node {
+            id
+            name
+            description
+          }
+        }
+      }
     }
   }
 `;
@@ -147,7 +169,7 @@ class NarrativeCreation extends Component {
     this.handleClose();
   }
 
-  render() {
+  renderClassic() {
     const { t, classes } = this.props;
     return (
       <div>
@@ -265,6 +287,113 @@ class NarrativeCreation extends Component {
         </Drawer>
       </div>
     );
+  }
+
+  renderContextual() {
+    const { t, classes, display } = this.props;
+    return (
+      <div style={{ display: display ? 'block' : 'none' }}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButtonContextual}
+        >
+          <Add />
+        </Fab>
+        <Dialog
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+          PaperProps={{ elevation: 1 }}
+        >
+          <Formik
+            initialValues={{
+              name: '',
+              description: '',
+              createdBy: '',
+              objectMarking: [],
+              objectLabel: [],
+              externalReferences: [],
+            }}
+            validationSchema={narrativeValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
+          >
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form>
+                <DialogTitle>{t('Create a narrative')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                    detectDuplicate={['Narrative']}
+                  />
+                  <Field
+                    component={MarkDownField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                  >
+                    {t('Create')}
+                  </Button>
+                </DialogActions>
+              </Form>
+            )}
+          </Formik>
+        </Dialog>
+      </div>
+    );
+  }
+
+  render() {
+    const { contextual } = this.props;
+    if (contextual) {
+      return this.renderContextual();
+    }
+    return this.renderClassic();
   }
 }
 

@@ -6,9 +6,10 @@ import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import NarrativeParentNarratives from './NarrativeParentNarratives';
+import NarrativeSubNarratives from './NarrativeSubNarratives';
 
 const styles = (theme) => ({
   paper: {
@@ -44,27 +45,12 @@ class NarrativeDetailsComponent extends Component {
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown source={narrative.description} limit={400} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Narrative version')}
-              </Typography>
-              {narrative.narrative_version}
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Narrative types')}
-              </Typography>
-              {R.propOr(['-'], 'narrative_types', narrative).map(
-                (narrativeType) => (
-                  <Chip
-                    key={narrativeType}
-                    classes={{ root: classes.chip }}
-                    label={narrativeType}
-                  />
-                ),
+              {narrative.isSubNarrative ? (
+                <NarrativeParentNarratives narrative={narrative} />
+              ) : (
+                <NarrativeSubNarratives narrative={narrative} />
               )}
             </Grid>
           </Grid>
@@ -86,6 +72,13 @@ const NarrativeDetails = createFragmentContainer(NarrativeDetailsComponent, {
     fragment NarrativeDetails_narrative on Narrative {
       id
       description
+      isSubNarrative
+      creator {
+        id
+        name
+      }
+      ...NarrativeSubNarratives_narrative
+      ...NarrativeParentNarratives_narrative
     }
   `,
 });

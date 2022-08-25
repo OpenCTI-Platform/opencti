@@ -166,6 +166,20 @@ class NarrativeKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/arsenal/narratives/:narrativeId/knowledge/channels"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={narrative.id}
+                relationshipTypes={['uses']}
+                targetStixDomainObjectTypes={['Channel']}
+                entityLink={link}
+                isRelationReversed={true}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/arsenal/narratives/:narrativeId/knowledge/vulnerabilities"
             render={(routeProps) => (
               <EntityStixCoreRelationships

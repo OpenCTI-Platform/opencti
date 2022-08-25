@@ -22,6 +22,8 @@ import {
   WebAssetOutlined,
   SurroundSoundOutlined,
   EventOutlined,
+  SpeakerNotesOutlined,
+  TranslateOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -133,6 +135,12 @@ const iconSelector = (type, variant, fontSize, color) => {
       );
     case 'Event':
       return <EventOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Narrative':
+      return (
+        <SpeakerNotesOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'Language':
+      return <TranslateOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
