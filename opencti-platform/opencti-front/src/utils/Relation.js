@@ -264,6 +264,7 @@ const relationsTypesMapping = {
   'Channel_Domain-Name': ['publishes'],
   Channel_Hostname: ['publishes'],
   Channel_Email: ['uses'],
+  Channel_Channel: ['amplifies'],
   Hostname_Artifact: ['drops'],
   'Hostname_Attack-Pattern': ['uses'],
   'Hostname_Domain-Name': ['communicates-with'],
@@ -276,10 +277,15 @@ const relationsTypesMapping = {
   'StixFile_Domain-Name': ['communicates-with'],
   StixFile_Vulnerability: ['targets'],
   'StixFile_Attack-Pattern': ['uses'],
+  StixFile_Narrative: ['uses'],
   Software_Vulnerability: ['has'],
   'Artifact_IPv4-Addr': ['communicates-with'],
   'Artifact_IPv6-Addr': ['communicates-with'],
   'Artifact_Domain-Name': ['communicates-with'],
+  Artifact_Narrative: ['uses'],
+  Url_Narrative: ['uses'],
+  'Domain-Name_Narrative': ['uses'],
+  Hostname_Narrative: ['uses'],
   // CUSTOM OPENCTI SRO RELATIONSHIPS
   // DISCUSS IMPLEMENTATION!!
   Indicator_uses: ['indicates'],

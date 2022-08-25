@@ -171,7 +171,7 @@ class ChannelKnowledgeComponent extends Component {
                 relationshipTypes={['amplifies']}
                 targetStixDomainObjectTypes={['Channel']}
                 entityLink={link}
-                isRelationReversed={true}
+                isRelationReversed={false}
                 {...routeProps}
               />
             )}

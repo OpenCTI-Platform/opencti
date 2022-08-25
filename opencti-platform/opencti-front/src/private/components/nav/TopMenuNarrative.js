@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, WebAssetOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined, SpeakerNotesOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -54,7 +54,7 @@ class TopMenuNarrative extends Component {
           color="primary"
           classes={{ root: classes.buttonHome }}
         >
-          <WebAssetOutlined className={classes.icon} fontSize="small" />
+          <SpeakerNotesOutlined className={classes.icon} fontSize="small" />
           {t('Narratives')}
         </Button>
         <ArrowForwardIosOutlined
