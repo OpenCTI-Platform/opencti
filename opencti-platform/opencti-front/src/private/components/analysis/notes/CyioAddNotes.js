@@ -20,7 +20,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { commitMutation } from '../../../../relay/environment';
 import CyioNoteCreation from './CyioNoteCreation';
 import CyioAddNotesLines, { cyioAddNotesLinesQuery, cyioNoteLinesMutationRelationAdd } from './CyioAddNotesLines';
-import { Add } from '@material-ui/icons';
 
 const styles = (theme) => ({
   drawerPaper: {
