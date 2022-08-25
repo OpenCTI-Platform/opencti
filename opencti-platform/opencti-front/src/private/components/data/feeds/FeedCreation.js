@@ -514,7 +514,7 @@ const FeedCreation = (props) => {
                             <MuiTextField
                               variant="standard"
                               name="attribute"
-                              label="Attribute"
+                              label={t('Column')}
                               fullWidth={true}
                               value={feedAttributes[i].attribute}
                               onChange={(event) => handleChangeField(i, event.target.value)
