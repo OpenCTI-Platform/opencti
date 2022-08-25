@@ -227,7 +227,6 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_TOOL}`]: [RELATION_USES],
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_VULNERABILITY}`]: [RELATION_TARGETS],
   // From INDICATOR
-  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [RELATION_BASED_ON],
   [`${ENTITY_TYPE_INDICATOR}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [RELATION_BASED_ON],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [RELATION_INDICATES],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_CAMPAIGN}`]: [RELATION_INDICATES],
@@ -241,7 +240,6 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_TOOL}`]: [RELATION_INDICATES],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_VULNERABILITY}`]: [RELATION_INDICATES],
   // From INFRASTRUCTURE
-  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [RELATION_CONSISTS_OF],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [RELATION_CONSISTS_OF],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_DOMAIN_NAME}`]: [RELATION_COMMUNICATES_WITH],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_IPV4_ADDR}`]: [RELATION_COMMUNICATES_WITH],
@@ -424,34 +422,6 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${RELATION_TARGETS}_${ENTITY_TYPE_LOCATION_POSITION}`]: [RELATION_LOCATED_AT],
 };
 
-export const checkStixCoreRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
-  // RELATED_TO and REVOKED_BY are available for every entity
-  if (relationshipType === RELATION_RELATED_TO || relationshipType === RELATION_REVOKED_BY) {
-    return true;
-  }
-  // If core relationship start or target a cyber observable
-  // All relationships here are a STIX specification extension.
-  if (isStixCyberObservable(toType)) {
-    const mappingElements = stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`];
-    const haveKey = R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, R.keys(stixCoreRelationshipsMapping));
-    const haveAccessibleTarget = R.includes(relationshipType, mappingElements);
-    if (haveKey && haveAccessibleTarget) {
-      return true;
-    }
-  }
-  if (isStixCyberObservable(fromType)) {
-    const mappingElements = stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`];
-    const haveKey = R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, R.keys(stixCoreRelationshipsMapping));
-    const haveAccessibleTarget = R.includes(relationshipType, mappingElements);
-    if (haveKey && haveAccessibleTarget) {
-      return true;
-    }
-  }
-  // Check if combination is valid
-  const targetRelations = stixCoreRelationshipsMapping[`${fromType}_${toType}`] || [];
-  return R.includes(relationshipType, targetRelations);
-};
-
 export const stixCyberObservableRelationshipsMapping = {
   // From DIRECTORY
   [`${ENTITY_DIRECTORY}_${ENTITY_DIRECTORY}`]: [RELATION_CONTAINS],
@@ -507,6 +477,34 @@ export const stixCyberObservableRelationshipsMapping = {
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_WINDOWS_REGISTRY_KEY}`]: [RELATION_CREATOR_USER],
   // From WINDOWS_REGISTRY_KEY
   [`${ENTITY_WINDOWS_REGISTRY_KEY}_${ENTITY_WINDOWS_REGISTRY_VALUE_TYPE}`]: [RELATION_VALUES]
+};
+
+export const checkStixCoreRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
+  // RELATED_TO and REVOKED_BY are available for every entity
+  if (relationshipType === RELATION_RELATED_TO || relationshipType === RELATION_REVOKED_BY) {
+    return true;
+  }
+  // If core relationship start or target a cyber observable
+  // All relationships here are a STIX specification extension.
+  if (isStixCyberObservable(toType)) {
+    const mappingElements = stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] ?? [];
+    const haveKey = R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, R.keys(stixCoreRelationshipsMapping));
+    const haveAccessibleTarget = R.includes(relationshipType, mappingElements);
+    if (haveKey && haveAccessibleTarget) {
+      return true;
+    }
+  }
+  if (isStixCyberObservable(fromType)) {
+    const mappingElements = stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`] ?? [];
+    const haveKey = R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, R.keys(stixCoreRelationshipsMapping));
+    const haveAccessibleTarget = R.includes(relationshipType, mappingElements);
+    if (haveKey && haveAccessibleTarget) {
+      return true;
+    }
+  }
+  // Check if combination is valid
+  const targetRelations = stixCoreRelationshipsMapping[`${fromType}_${toType}`] || [];
+  return R.includes(relationshipType, targetRelations);
 };
 
 // Build map of input fields for all observable types
