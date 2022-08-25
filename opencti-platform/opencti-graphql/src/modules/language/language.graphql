@@ -1,15 +1,25 @@
-type Language implements BasicObject {
+type Language implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
     parent_types: [String]!
+    # StixObject
+    x_opencti_stix_ids: [String]
+    is_inferred: Boolean!
+    spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
-    # Language
-    name: String!
-    aliases: [String]
+    # inferences
+    x_opencti_inferences: [Inference]
     # StixCoreObject
     createdBy: Identity
+    objectMarking: MarkingDefinitionConnection
+    objectLabel: LabelConnection
+    externalReferences(first: Int): ExternalReferenceConnection
+    reports(first: Int): ReportConnection
+    notes(first: Int): NoteConnection
+    opinions(first: Int): OpinionConnection
+    observedData(first: Int): ObservedDataConnection
     stixCoreRelationships(
         first: Int
         after: ID
@@ -33,20 +43,52 @@ type Language implements BasicObject {
         filters: [StixCoreRelationshipsFiltering]
         filterMode: FilterMode
     ): StixCoreRelationshipConnection
+    # StixDomainObject
+    revoked: Boolean!
+    confidence: Int
+    lang: String
+    created: DateTime
+    modified: DateTime
+    x_opencti_graph_data: String
+    # Language
+    name: String!
+    aliases: [String]
     # Technical
     creator: User
     toStix: String
+    importFiles(first: Int): FileConnection
+    pendingFiles(first: Int): FileConnection
+    exportFiles(first: Int): FileConnection
     editContext: [EditUserContext]
+    connectors(onlyAlive: Boolean): [Connector]
+    jobs(first: Int): [Work]
+    status: Status
+    workflowEnabled: Boolean
 }
 
-# Ordering
 enum LanguagesOrdering {
     name
+    created
+    modified
+    created_at
+    updated_at
+    objectMarking
+    objectLabel
+    x_opencti_workflow_id
 }
 
 # Filtering
 enum LanguagesFilter {
     name
+    aliases
+    created
+    modified
+    created_at
+    updated_at
+    createdBy
+    markedBy
+    labelledBy
+    x_opencti_workflow_id
 }
 input LanguagesFiltering {
     key: LanguagesFilter!
@@ -82,10 +124,16 @@ type Query {
 # Mutations
 input LanguageAddInput {
     stix_id: String
-    name: String!
+    x_opencti_stix_ids: [String]
+    name: String! @constraint(minLength: 2)
+    description: String!
     aliases: [String]
-    created: DateTime
+    confidence: Int
     createdBy: String
+    objectMarking: [String]
+    objectLabel: [String]
+    externalReferences: [String]
+    created: DateTime
     modified: DateTime
     clientMutationId: String
     update: Boolean

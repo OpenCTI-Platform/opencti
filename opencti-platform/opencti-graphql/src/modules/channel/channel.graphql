@@ -71,7 +71,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 # Ordering
 enum ChannelsOrdering {
     name
-    type
+    channel_types
     created
     modified
     created_at
@@ -85,7 +85,7 @@ enum ChannelsOrdering {
 enum ChannelsFilter {
     name
     aliases
-    type
+    channel_types
     created
     modified
     created_at

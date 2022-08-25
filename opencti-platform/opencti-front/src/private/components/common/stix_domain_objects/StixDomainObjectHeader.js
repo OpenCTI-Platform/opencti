@@ -129,6 +129,18 @@ export const stixDomainObjectMutation = graphql`
         ... on Tool {
           aliases
         }
+        ... on Channel {
+          aliases
+        }
+        ... on Event {
+          aliases
+        }
+        ... on Narrative {
+          aliases
+        }
+        ... on Language {
+          aliases
+        }
         ... on Incident {
           aliases
         }

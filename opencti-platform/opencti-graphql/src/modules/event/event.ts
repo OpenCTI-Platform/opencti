@@ -5,6 +5,12 @@ import channelResolvers from './event-resolver';
 import { ENTITY_TYPE_EVENT, StoreEntityEvent } from './event-types';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
+import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
+import {
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_LOCATION_REGION
+} from '../../schema/stixDomainObject';
 
 const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent> = {
   type: {
@@ -34,7 +40,11 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent> = {
     { name: 'start_time', type: 'date', multiple: false, upsert: true },
     { name: 'stop_time', type: 'date', multiple: false, upsert: true },
   ],
-  relations: [],
+  relations: [
+    { name: RELATION_LOCATED_AT,
+      type: 'StixCoreRelationship',
+      targets: [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_POSITION] }
+  ],
   converter: convertEventToStix
 };
 

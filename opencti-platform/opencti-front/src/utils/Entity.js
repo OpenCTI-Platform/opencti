@@ -22,6 +22,8 @@ export const resolveLink = (type) => {
       return '/dashboard/entities/sectors';
     case 'System':
       return '/dashboard/entities/systems';
+    case 'Event':
+      return '/dashboard/entities/events';
     case 'Indicator':
       return '/dashboard/observations/indicators';
     case 'Infrastructure':
@@ -42,6 +44,12 @@ export const resolveLink = (type) => {
       return '/dashboard/threats/threat_actors';
     case 'Tool':
       return '/dashboard/arsenal/tools';
+    case 'Channel':
+      return '/dashboard/arsenal/channels';
+    case 'Narrative':
+      return '/dashboard/arsenal/narratives';
+    case 'Language':
+      return '/dashboard/arsenal/narratives/languages';
     case 'Vulnerability':
       return '/dashboard/arsenal/vulnerabilities';
     case 'Incident':

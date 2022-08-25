@@ -761,6 +761,12 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
                   name
                   description
                 }
+                ... on Event {
+                  name
+                  description
+                  start_time
+                  stop_time
+                }
               }
               objectMarking {
                 edges {

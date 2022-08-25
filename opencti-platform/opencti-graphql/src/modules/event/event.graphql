@@ -73,6 +73,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
 # Ordering
 enum EventsOrdering {
     name
+    event_types
     created
     modified
     created_at
@@ -86,7 +87,7 @@ enum EventsOrdering {
 enum EventsFilter {
     name
     aliases
-    channel_types
+    event_types
     created
     modified
     created_at

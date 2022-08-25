@@ -71,7 +71,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
 # Ordering
 enum NarrativesOrdering {
     name
-    type
+    narrative_types
     created
     modified
     created_at
@@ -85,7 +85,7 @@ enum NarrativesOrdering {
 enum NarrativesFilter {
     name
     aliases
-    type
+    narrative_types
     created
     modified
     created_at

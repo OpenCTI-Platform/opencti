@@ -28,13 +28,13 @@ const styles = () => ({
 
 class EventComponent extends Component {
   render() {
-    const { classes, event } = this.props;
+    const { classes, event, enableReferences } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={event}
-          isOpenctiAlias={true}
           PopoverComponent={<EventPopover />}
+          enableReferences={enableReferences}
         />
         <Grid
           container={true}
@@ -139,6 +139,7 @@ const Event = createFragmentContainer(EventComponent, {
         }
       }
       name
+      aliases
       status {
         id
         order

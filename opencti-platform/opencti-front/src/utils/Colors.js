@@ -85,6 +85,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#64dd17';
       }
       return '#76ff03';
+    case 'Event':
+      if (dark) {
+        return '#00695c';
+      }
+      return '#26a69a';
     case 'Indicator':
       if (dark) {
         return '#ff6f00';

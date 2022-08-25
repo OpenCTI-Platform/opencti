@@ -7349,7 +7349,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 
 enum ChannelsOrdering {
   name
-  type
+  channel_types
   created
   modified
   created_at
@@ -7362,7 +7362,7 @@ enum ChannelsOrdering {
 enum ChannelsFilter {
   name
   aliases
-  type
+  channel_types
   created
   modified
   created_at
@@ -7417,28 +7417,68 @@ type ChannelEditMutations {
   relationDelete(toId: String!, relationship_type: String!): Channel
 }
 
-type Language implements BasicObject {
+type Language implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   id: ID!
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
+  spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
   name: String!
   aliases: [String]
-  createdBy: Identity
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   creator: User
   toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
 }
 
 enum LanguagesOrdering {
   name
+  created
+  modified
+  created_at
+  updated_at
+  objectMarking
+  objectLabel
+  x_opencti_workflow_id
 }
 
 enum LanguagesFilter {
   name
+  aliases
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+  x_opencti_workflow_id
 }
 
 input LanguagesFiltering {
@@ -7460,10 +7500,16 @@ type LanguageEdge {
 
 input LanguageAddInput {
   stix_id: String
-  name: String!
+  x_opencti_stix_ids: [String]
+  name: name_String_NotNull_minLength_2!
+  description: String!
   aliases: [String]
-  created: DateTime
+  confidence: Int
   createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
   modified: DateTime
   clientMutationId: String
   update: Boolean
@@ -7515,6 +7561,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
 
 enum EventsOrdering {
   name
+  event_types
   created
   modified
   created_at
@@ -7527,7 +7574,7 @@ enum EventsOrdering {
 enum EventsFilter {
   name
   aliases
-  channel_types
+  event_types
   created
   modified
   created_at
@@ -7628,7 +7675,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
 
 enum NarrativesOrdering {
   name
-  type
+  narrative_types
   created
   modified
   created_at
@@ -7641,7 +7688,7 @@ enum NarrativesOrdering {
 enum NarrativesFilter {
   name
   aliases
-  type
+  narrative_types
   created
   modified
   created_at
