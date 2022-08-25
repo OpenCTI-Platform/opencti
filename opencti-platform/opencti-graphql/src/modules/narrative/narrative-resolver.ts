@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addNarrative, findById, findAll,  batchIsSubNarrative, batchParentNarratives, batchSubNarratives  } from './narrative-domain';
+import { addNarrative, findById, findAll, batchIsSubNarrative, batchParentNarratives, batchSubNarratives } from './narrative-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
 import {
