@@ -16,6 +16,7 @@ import inject18n from '../../../../components/i18n';
 import SwitchField from '../../../../components/SwitchField';
 import TextField from '../../../../components/TextField';
 import { commitMutation } from '../../../../relay/environment';
+import TaskType from '../../common/form/TaskType';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -239,13 +240,14 @@ class NetworkCreationDetailsComponent extends Component {
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="implementation_point"
-                    size='small'
+                  <TaskType
+                    name='implementation_point'
+                    taskType='ImplementationPoint'
                     fullWidth={true}
-                  />
+                    variant='outlined'
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />                  
                 </div>
               </Grid>
             </Grid>

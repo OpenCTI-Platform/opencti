@@ -20,6 +20,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import { adaptFieldValue } from '../../../../utils/String';
+import TaskType from '../../common/form/TaskType';
 
 const styles = () => ({
   paper: {
@@ -319,13 +320,14 @@ class NetworkEditionDetailsComponent extends Component {
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="implementation_point"
-                    size='small'
+                  <TaskType
+                    name='implementation_point'
+                    taskType='ImplementationPoint'
                     fullWidth={true}
-                  />
+                    variant='outlined'
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />                  
                 </div>
               </Grid>
             </Grid>
