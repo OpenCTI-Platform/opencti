@@ -260,6 +260,21 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
                   name
                   description
                 }
+                ... on Event {
+                  name
+                  description
+                }
+                ... on Channel {
+                  name
+                  description
+                }
+                ... on Narrative {
+                  name
+                  description
+                }
+                ... on Language {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -347,6 +362,21 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
                 ... on Incident {
                   name
                   description
+                }
+                ... on Event {
+                  name
+                  description
+                }
+                ... on Channel {
+                  name
+                  description
+                }
+                ... on Narrative {
+                  name
+                  description
+                }
+                ... on Language {
+                  name
                 }
                 ... on StixCyberObservable {
                   observable_value

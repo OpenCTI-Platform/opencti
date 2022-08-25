@@ -91,6 +91,7 @@ class RootChannel extends Component {
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
+              'victimology',
               'threat_actors',
               'intrusion_sets',
               'campaigns',
@@ -100,6 +101,7 @@ class RootChannel extends Component {
               'vulnerabilities',
               'observables',
               'sightings',
+              'channels',
             ]}
           />
         </Route>

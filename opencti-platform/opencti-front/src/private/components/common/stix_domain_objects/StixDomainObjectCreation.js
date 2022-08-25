@@ -48,9 +48,12 @@ const typesWithOpenCTIAliases = [
   'City',
   'Country',
   'Region',
+  'Event',
+  'Channel',
+  'Narrative',
 ];
 
-const typesWithoutAliases = ['Indicator', 'Vulnerability'];
+const typesWithoutAliases = ['Indicator', 'Vulnerability', 'Language'];
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -202,6 +205,21 @@ const stixDomainObjectCreationMutation = graphql`
       ... on Incident {
         name
         description
+      }
+      ... on Event {
+        name
+        description
+      }
+      ... on Channel {
+        name
+        description
+      }
+      ... on Narrative {
+        name
+        description
+      }
+      ... on Language {
+        name
       }
     }
   }
@@ -364,6 +382,18 @@ class StixDomainObjectCreation extends Component {
           || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'Malware'].indexOf(r) >= 0,
           ) && <MenuItem value="Malware">{t('Malware')}</MenuItem>)}
+        {targetStixDomainObjectTypes === undefined
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Channel'].indexOf(r) >= 0,
+          ) && <MenuItem value="Channel">{t('Channel')}</MenuItem>)}
+        {targetStixDomainObjectTypes === undefined
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Narrative'].indexOf(r) >= 0,
+          ) && <MenuItem value="Narrative">{t('Narrative')}</MenuItem>)}
+        {targetStixDomainObjectTypes === undefined
+          || (targetStixDomainObjectTypes.some(
+            (r) => ['Stix-Domain-Object', 'Event'].indexOf(r) >= 0,
+          ) && <MenuItem value="Event">{t('Event')}</MenuItem>)}
         {targetStixDomainObjectTypes === undefined
           || (targetStixDomainObjectTypes.some(
             (r) => ['Stix-Domain-Object', 'Tool'].indexOf(r) >= 0,

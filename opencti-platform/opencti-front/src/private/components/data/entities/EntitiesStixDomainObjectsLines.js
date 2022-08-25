@@ -218,6 +218,25 @@ export const entitiesStixDomainObjectsLinesSearchQuery = graphql`
             aliases
             description
           }
+          ... on Event {
+            name
+            aliases
+            description
+          }
+          ... on Channel {
+            name
+            aliases
+            description
+          }
+          ... on Narrative {
+            name
+            aliases
+            description
+          }
+          ... on Language {
+            name
+            aliases
+          }
           createdBy {
             ... on Identity {
               name

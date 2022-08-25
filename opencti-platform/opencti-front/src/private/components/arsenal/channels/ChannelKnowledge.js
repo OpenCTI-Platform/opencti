@@ -13,6 +13,7 @@ import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_ob
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 
 const styles = () => ({
   container: {
@@ -96,6 +97,17 @@ class ChannelKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/arsenal/channels/:channelId/knowledge/victimology"
+            render={(routeProps) => (
+              <StixDomainObjectVictimology
+                stixDomainObjectId={channel.id}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/arsenal/channels/:channelId/knowledge/threat_actors"
             render={(routeProps) => (
               <EntityStixCoreRelationships
@@ -146,6 +158,20 @@ class ChannelKnowledgeComponent extends Component {
                 targetStixDomainObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/arsenal/channels/:channelId/knowledge/channels"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={channel.id}
+                relationshipTypes={['amplifies']}
+                targetStixDomainObjectTypes={['Channel']}
+                entityLink={link}
+                isRelationReversed={true}
                 {...routeProps}
               />
             )}

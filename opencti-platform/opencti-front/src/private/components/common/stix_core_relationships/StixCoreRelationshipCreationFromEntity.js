@@ -257,6 +257,18 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
       ... on Incident {
         name
       }
+      ... on Event {
+        name
+      }
+      ... on Channel {
+        name
+      }
+      ... on Narrative {
+        name
+      }
+      ... on Language {
+        name
+      }
       ... on StixCyberObservable {
         observable_value
       }

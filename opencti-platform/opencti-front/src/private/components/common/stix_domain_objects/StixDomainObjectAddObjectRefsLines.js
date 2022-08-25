@@ -302,6 +302,21 @@ const StixDomainObjectAddObjectRefsLines = createPaginationContainer(
                 name
                 description
               }
+              ... on Event {
+                name
+                description
+              }
+              ... on Channel {
+                name
+                description
+              }
+              ... on Narrative {
+                name
+                description
+              }
+              ... on Language {
+                name
+              }
             }
           }
         }

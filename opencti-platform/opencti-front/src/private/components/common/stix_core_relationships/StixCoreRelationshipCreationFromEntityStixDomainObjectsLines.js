@@ -330,6 +330,21 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                   name
                   description
                 }
+                ... on Event {
+                  name
+                  description
+                }
+                ... on Channel {
+                  name
+                  description
+                }
+                ... on Narrative {
+                  name
+                  description
+                }
+                ... on Language {
+                  name
+                }
                 ... on ObservedData {
                   objects(first: 1) {
                     edges {
@@ -457,6 +472,23 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                           description
                           first_seen
                           last_seen
+                        }
+                        ... on Event {
+                          name
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on Channel {
+                          name
+                          description
+                        }
+                        ... on Narrative {
+                          name
+                          description
+                        }
+                        ... on Language {
+                          name
                         }
                         ... on StixCyberObservable {
                           observable_value

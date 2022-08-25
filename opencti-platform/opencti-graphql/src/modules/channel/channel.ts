@@ -3,6 +3,7 @@ import convertChannelToStix from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import {
+  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
@@ -10,7 +11,7 @@ import {
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_POSITION,
-  ENTITY_TYPE_LOCATION_REGION,
+  ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
 import channelResolvers from './channel-resolver';
 import { ENTITY_TYPE_CHANNEL, StoreEntityChannel } from './channel-types';
@@ -18,6 +19,7 @@ import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
 import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
+import { ENTITY_TYPE_EVENT } from '../event/event-types';
 
 const RELATION_AMPLIFIES = 'amplifies';
 
@@ -50,9 +52,25 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
   relations: [
     { name: RELATION_TARGETS,
       type: 'StixCoreRelationship',
-      targets: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR,
-        ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION] },
-    { name: RELATION_USES, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_INFRASTRUCTURE, ENTITY_TYPE_LANGUAGE, ENTITY_TYPE_NARRATIVE] },
+      targets: [
+        ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+        ENTITY_TYPE_IDENTITY_ORGANIZATION,
+        ENTITY_TYPE_IDENTITY_SECTOR,
+        ENTITY_TYPE_LOCATION_CITY,
+        ENTITY_TYPE_LOCATION_COUNTRY,
+        ENTITY_TYPE_LOCATION_POSITION,
+        ENTITY_TYPE_LOCATION_REGION,
+        ENTITY_TYPE_EVENT
+      ] },
+    { name: RELATION_USES,
+      type: 'StixCoreRelationship',
+      targets: [
+        ENTITY_TYPE_INFRASTRUCTURE,
+        ENTITY_TYPE_LANGUAGE,
+        ENTITY_TYPE_NARRATIVE,
+        ENTITY_TYPE_ATTACK_PATTERN,
+        ENTITY_TYPE_MALWARE,
+        ENTITY_TYPE_TOOL] },
     { name: RELATION_AMPLIFIES, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_CHANNEL] }
   ],
   converter: convertChannelToStix

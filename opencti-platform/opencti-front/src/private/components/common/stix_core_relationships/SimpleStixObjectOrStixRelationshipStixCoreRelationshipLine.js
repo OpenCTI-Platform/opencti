@@ -297,6 +297,21 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               name
               description
             }
+            ... on Event {
+              name
+              description
+            }
+            ... on Channel {
+              name
+              description
+            }
+            ... on Narrative {
+              name
+              description
+            }
+            ... on Language {
+              name
+            }
             ... on StixCyberObservable {
               id
               entity_type
@@ -477,6 +492,21 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             ... on Incident {
               name
               description
+            }
+            ... on Event {
+              name
+              description
+            }
+            ... on Channel {
+              name
+              description
+            }
+            ... on Narrative {
+              name
+              description
+            }
+            ... on Language {
+              name
             }
             ... on StixCyberObservable {
               id

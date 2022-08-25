@@ -142,9 +142,9 @@ export const itemColor = (type, dark = false, reversed = false) => {
       return '#4caf50';
     case 'Channel':
       if (dark) {
-        return '#283593';
+        return '#ad1457';
       }
-      return '#3f51b5';
+      return '#ec407a';
     case 'Narrative':
       if (dark) {
         return '#558b2f';

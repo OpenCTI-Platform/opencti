@@ -21,6 +21,7 @@ import {
   LinkOutlined,
   WebAssetOutlined,
   TerminalOutlined,
+  SurroundSoundOutlined,
 } from '@mui/icons-material';
 import {
   Gauge,
@@ -476,6 +477,22 @@ class StixCoreObjectKnowledgeBar extends Component {
                   <LockPattern />
                 </ListItemIcon>
                 <ListItemText primary={t('Attack patterns')} />
+              </MenuItem>
+            )}
+            {includes('channels', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/channels`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/channels`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <SurroundSoundOutlined />
+                </ListItemIcon>
+                <ListItemText primary={t('Channels')} />
               </MenuItem>
             )}
             {includes('malwares', availableSections) && (

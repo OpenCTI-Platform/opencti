@@ -7,7 +7,7 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRight, WebAssetOutlined } from '@mui/icons-material';
+import { KeyboardArrowRight, SurroundSoundOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -55,7 +55,7 @@ class ChannelLineComponent extends Component {
         to={`/dashboard/arsenal/channels/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <WebAssetOutlined />
+          <SurroundSoundOutlined />
         </ListItemIcon>
         <ListItemText
           primary={

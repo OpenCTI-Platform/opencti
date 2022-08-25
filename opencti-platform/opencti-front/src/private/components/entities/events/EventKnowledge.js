@@ -96,12 +96,12 @@ class EventKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/entities/events/:eventId/knowledge/countries"
+            path="/dashboard/entities/events/:eventId/knowledge/locations"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['located-at']}
-                targetStixDomainObjectTypes={['Country']}
+                targetStixDomainObjectTypes={['City', 'Country', 'Region']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}

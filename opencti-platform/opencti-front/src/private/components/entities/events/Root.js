@@ -88,9 +88,7 @@ class RootEvent extends Component {
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
-              'organizations',
-              'countries',
-              'regions',
+              'locations',
               'threat_actors',
               'intrusion_sets',
               'campaigns',
