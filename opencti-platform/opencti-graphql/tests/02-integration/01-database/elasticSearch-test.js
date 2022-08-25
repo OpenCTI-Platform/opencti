@@ -542,7 +542,7 @@ describe('Elasticsearch pagination', () => {
     });
     expect(data.edges.length).toEqual(6);
     const markings = R.map((e) => e.node.definition, data.edges);
-    expect(markings[0]).toEqual('TLP:WHITE');
+    expect(markings[0]).toEqual('TLP:CLEAR');
     expect(markings[1]).toEqual('TLP:TEST');
     expect(markings[2]).toEqual('TLP:RED');
     expect(markings[3]).toEqual('TLP:GREEN');
