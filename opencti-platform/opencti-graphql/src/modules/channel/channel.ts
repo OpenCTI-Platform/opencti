@@ -19,7 +19,7 @@ import { registerDefinition } from '../../types/module';
 import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 
-const RELATION_AMPLIFY = 'amplifies';
+const RELATION_AMPLIFIES = 'amplifies';
 
 const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
   type: {
@@ -53,7 +53,7 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
       targets: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR,
         ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION] },
     { name: RELATION_USES, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_INFRASTRUCTURE, ENTITY_TYPE_LANGUAGE, ENTITY_TYPE_NARRATIVE] },
-    { name: RELATION_AMPLIFY, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_CHANNEL] }
+    { name: RELATION_AMPLIFIES, type: 'StixCoreRelationship', targets: [ENTITY_TYPE_CHANNEL] }
   ],
   converter: convertChannelToStix
 };

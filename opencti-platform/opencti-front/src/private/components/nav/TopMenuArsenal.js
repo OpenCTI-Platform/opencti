@@ -12,6 +12,7 @@ import {
 } from '@mui/icons-material';
 import { LockPattern, ProgressWrench, Biohazard } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import { UserContext } from '../../../utils/Security';
 
 const styles = (theme) => ({
   button: {
@@ -30,141 +31,166 @@ class TopMenuArsenal extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
-      <div>
-        <Button
-          component={Link}
-          to="/dashboard/arsenal/malwares"
-          variant={
-            location.pathname === '/dashboard/arsenal/malwares'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/malwares'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Biohazard className={classes.icon} fontSize="small" />
-          {t('Malwares')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/arsenal/attack_patterns"
-          variant={
-            location.pathname === '/dashboard/arsenal/attack_patterns'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/attack_patterns'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <LockPattern className={classes.icon} fontSize="small" />
-          {t('Attack patterns')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/arsenal/channels"
-          variant={
-            location.pathname === '/dashboard/arsenal/channels'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/channels'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <SurroundSoundOutlined className={classes.icon} fontSize="small" />
-          {t('Channels')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/arsenal/channels"
-          variant={
-            location.pathname === '/dashboard/arsenal/narratives'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/narratives'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <SpeakerNotesOutlined className={classes.icon} fontSize="small" />
-          {t('Narratives')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/arsenal/courses_of_action"
-          variant={
-            location.pathname === '/dashboard/arsenal/courses_of_action'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/courses_of_action'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <ProgressWrench className={classes.icon} fontSize="small" />
-          {t('Courses of action')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/arsenal/tools"
-          variant={
-            location.pathname === '/dashboard/arsenal/tools'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/tools'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <WebAssetOutlined className={classes.icon} fontSize="small" />
-          {t('Tools')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/arsenal/vulnerabilities"
-          variant={
-            location.pathname === '/dashboard/arsenal/vulnerabilities'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/vulnerabilities'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <BugReportOutlined className={classes.icon} fontSize="small" />
-          {t('Vulnerabilities')}
-        </Button>
-      </div>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            {!helper.isEntityTypeHidden('Arsenal')
+              && !helper.isEntityTypeHidden('Malware') && (
+                <Button
+                  component={Link}
+                  to="/dashboard/arsenal/malwares"
+                  variant={
+                    location.pathname === '/dashboard/arsenal/malwares'
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname === '/dashboard/arsenal/malwares'
+                      ? 'secondary'
+                      : 'primary'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <Biohazard className={classes.icon} fontSize="small" />
+                  {t('Malwares')}
+                </Button>
+            )}
+            {!helper.isEntityTypeHidden('Attack-Pattern') && (
+              <Button
+                component={Link}
+                to="/dashboard/arsenal/attack_patterns"
+                variant={
+                  location.pathname === '/dashboard/arsenal/attack_patterns'
+                    ? 'contained'
+                    : 'text'
+                }
+                size="small"
+                color={
+                  location.pathname === '/dashboard/arsenal/attack_patterns'
+                    ? 'secondary'
+                    : 'primary'
+                }
+                classes={{ root: classes.button }}
+              >
+                <LockPattern className={classes.icon} fontSize="small" />
+                {t('Attack patterns')}
+              </Button>
+            )}
+            {!helper.isEntityTypeHidden('Channel') && (
+              <Button
+                component={Link}
+                to="/dashboard/arsenal/channels"
+                variant={
+                  location.pathname === '/dashboard/arsenal/channels'
+                    ? 'contained'
+                    : 'text'
+                }
+                size="small"
+                color={
+                  location.pathname === '/dashboard/arsenal/channels'
+                    ? 'secondary'
+                    : 'primary'
+                }
+                classes={{ root: classes.button }}
+              >
+                <SurroundSoundOutlined
+                  className={classes.icon}
+                  fontSize="small"
+                />
+                {t('Channels')}
+              </Button>
+            )}
+            {!helper.isEntityTypeHidden('Narrative') && (
+              <Button
+                component={Link}
+                to="/dashboard/arsenal/narratives"
+                variant={
+                  location.pathname === '/dashboard/arsenal/narratives'
+                    ? 'contained'
+                    : 'text'
+                }
+                size="small"
+                color={
+                  location.pathname === '/dashboard/arsenal/narratives'
+                    ? 'secondary'
+                    : 'primary'
+                }
+                classes={{ root: classes.button }}
+              >
+                <SpeakerNotesOutlined
+                  className={classes.icon}
+                  fontSize="small"
+                />
+                {t('Narratives')}
+              </Button>
+            )}
+            {!helper.isEntityTypeHidden('Course-Of-Action') && (
+              <Button
+                component={Link}
+                to="/dashboard/arsenal/courses_of_action"
+                variant={
+                  location.pathname === '/dashboard/arsenal/courses_of_action'
+                    ? 'contained'
+                    : 'text'
+                }
+                size="small"
+                color={
+                  location.pathname === '/dashboard/arsenal/courses_of_action'
+                    ? 'secondary'
+                    : 'primary'
+                }
+                classes={{ root: classes.button }}
+              >
+                <ProgressWrench className={classes.icon} fontSize="small" />
+                {t('Courses of action')}
+              </Button>
+            )}
+            {!helper.isEntityTypeHidden('Tool') && (
+              <Button
+                component={Link}
+                to="/dashboard/arsenal/tools"
+                variant={
+                  location.pathname === '/dashboard/arsenal/tools'
+                    ? 'contained'
+                    : 'text'
+                }
+                size="small"
+                color={
+                  location.pathname === '/dashboard/arsenal/tools'
+                    ? 'secondary'
+                    : 'primary'
+                }
+                classes={{ root: classes.button }}
+              >
+                <WebAssetOutlined className={classes.icon} fontSize="small" />
+                {t('Tools')}
+              </Button>
+            )}
+            {!helper.isEntityTypeHidden('Vulnerability') && (
+              <Button
+                component={Link}
+                to="/dashboard/arsenal/vulnerabilities"
+                variant={
+                  location.pathname === '/dashboard/arsenal/vulnerabilities'
+                    ? 'contained'
+                    : 'text'
+                }
+                size="small"
+                color={
+                  location.pathname === '/dashboard/arsenal/vulnerabilities'
+                    ? 'secondary'
+                    : 'primary'
+                }
+                classes={{ root: classes.button }}
+              >
+                <BugReportOutlined className={classes.icon} fontSize="small" />
+                {t('Vulnerabilities')}
+              </Button>
+            )}
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 }

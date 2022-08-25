@@ -101,6 +101,22 @@ const LeftBar = ({ t, location, classes, theme }) => {
           || (helper.isEntityTypeHidden('Threat-Actor')
             && helper.isEntityTypeHidden('Intrusion-Set')
             && helper.isEntityTypeHidden('Campaign'));
+        const hideEntities = helper.isEntityTypeHidden('Entities')
+          || (helper.isEntityTypeHidden('Sector')
+            && helper.isEntityTypeHidden('Country')
+            && helper.isEntityTypeHidden('City')
+            && helper.isEntityTypeHidden('Position')
+            && helper.isEntityTypeHidden('Event')
+            && helper.isEntityTypeHidden('Organization')
+            && helper.isEntityTypeHidden('System')
+            && helper.isEntityTypeHidden('Individual'));
+        const hideArsenal = helper.isEntityTypeHidden('Arsenal')
+          || (helper.isEntityTypeHidden('Attack-Pattern')
+            && helper.isEntityTypeHidden('Channel')
+            && helper.isEntityTypeHidden('Narrative')
+            && helper.isEntityTypeHidden('Course-Of-Action')
+            && helper.isEntityTypeHidden('Tool')
+            && helper.isEntityTypeHidden('Vulnerability'));
         return (
           <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
             <Toolbar />
@@ -243,50 +259,57 @@ const LeftBar = ({ t, location, classes, theme }) => {
                         />
                       </MenuItem>
                     )}
-                    <MenuItem
-                      component={Link}
-                      to="/dashboard/arsenal"
-                      selected={location.pathname.includes(
-                        '/dashboard/arsenal',
-                      )}
-                      dense={true}
-                      classes={{ root: classes.menuItemNested }}
-                    >
-                      <ListItemIcon
-                        style={{
-                          minWidth: 30,
-                          color: theme.palette.text.secondary,
-                        }}
+                    {!hideArsenal && (
+                      <MenuItem
+                        component={Link}
+                        to="/dashboard/arsenal"
+                        selected={location.pathname.includes(
+                          '/dashboard/arsenal',
+                        )}
+                        dense={true}
+                        classes={{ root: classes.menuItemNested }}
                       >
-                        <LayersOutlined fontSize="small" color="inherit" />
-                      </ListItemIcon>
-                      <ListItemText
-                        classes={{ primary: classes.menuItemNestedText }}
-                        primary={t('Arsenal')}
-                      />
-                    </MenuItem>
-                    <MenuItem
-                      component={Link}
-                      to="/dashboard/entities"
-                      selected={location.pathname.includes(
-                        '/dashboard/entities',
-                      )}
-                      dense={true}
-                      classes={{ root: classes.menuItemNested }}
-                    >
-                      <ListItemIcon
-                        style={{
-                          minWidth: 30,
-                          color: theme.palette.text.secondary,
-                        }}
+                        <ListItemIcon
+                          style={{
+                            minWidth: 30,
+                            color: theme.palette.text.secondary,
+                          }}
+                        >
+                          <LayersOutlined fontSize="small" color="inherit" />
+                        </ListItemIcon>
+                        <ListItemText
+                          classes={{ primary: classes.menuItemNestedText }}
+                          primary={t('Arsenal')}
+                        />
+                      </MenuItem>
+                    )}
+                    {!hideEntities && (
+                      <MenuItem
+                        component={Link}
+                        to="/dashboard/entities"
+                        selected={location.pathname.includes(
+                          '/dashboard/entities',
+                        )}
+                        dense={true}
+                        classes={{ root: classes.menuItemNested }}
                       >
-                        <FolderTableOutline fontSize="small" color="inherit" />
-                      </ListItemIcon>
-                      <ListItemText
-                        classes={{ primary: classes.menuItemNestedText }}
-                        primary={t('Entities')}
-                      />
-                    </MenuItem>
+                        <ListItemIcon
+                          style={{
+                            minWidth: 30,
+                            color: theme.palette.text.secondary,
+                          }}
+                        >
+                          <FolderTableOutline
+                            fontSize="small"
+                            color="inherit"
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          classes={{ primary: classes.menuItemNestedText }}
+                          primary={t('Entities')}
+                        />
+                      </MenuItem>
+                    )}
                   </MenuList>
                 </Collapse>
               </Security>
