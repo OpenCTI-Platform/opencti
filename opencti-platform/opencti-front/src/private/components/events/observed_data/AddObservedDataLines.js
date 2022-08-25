@@ -162,7 +162,7 @@ class AddObservedDataLinesContainer extends Component {
                       observedData.objectMarking.edges,
                     )
                   ) : (
-                  <ItemMarking label="TLP:WHITE" variant="inList" />
+                  <ItemMarking label="TLP:CLEAR" variant="inList" />
                   )}
               </div>
             </ListItem>

@@ -43,7 +43,7 @@ class CourseOfActionOverviewComponent extends Component {
               courseOfAction.objectMarking.edges,
             )
           ) : (
-            <ItemMarking label="TLP:WHITE" />
+            <ItemMarking label="TLP:CLEAR" />
           )}
           <Typography
             variant="h3"

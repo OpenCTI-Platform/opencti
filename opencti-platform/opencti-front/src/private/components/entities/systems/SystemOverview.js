@@ -46,7 +46,7 @@ class SystemOverviewComponent extends Component {
               system.objectMarking.edges,
             )
           ) : (
-            <ItemMarking label="TLP:WHITE" />
+            <ItemMarking label="TLP:CLEAR" />
           )}
           <Typography
             variant="h3"

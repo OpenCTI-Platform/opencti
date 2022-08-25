@@ -1586,7 +1586,7 @@ class ToolBar extends Component {
                   R.pathOr([], ['objectMarking', 'edges'], keptElement),
                 )
               ) : (
-              <ItemMarking label="TLP:WHITE" />
+              <ItemMarking label="TLP:CLEAR" />
               )}
             <Alert severity="warning" style={{ marginTop: 20 }}>
               {t(

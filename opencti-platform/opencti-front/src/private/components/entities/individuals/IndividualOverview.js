@@ -46,7 +46,7 @@ class IndividualOverviewComponent extends Component {
               individual.objectMarking.edges,
             )
           ) : (
-            <ItemMarking label="TLP:WHITE" />
+            <ItemMarking label="TLP:CLEAR" />
           )}
           <Typography
             variant="h3"

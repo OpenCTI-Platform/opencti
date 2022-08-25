@@ -64,14 +64,16 @@ export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
 
-const MARKING_TLP_WHITE = '613f2e26-407d-48c7-9eca-b8e91df99dc9';
-const MARKING_TLP_GREEN = '34098fce-860f-48ae-8e50-ebd3cc5e41da';
-const MARKING_TLP_AMBER = 'f88d31f6-486f-44da-b317-01333bde0b82';
-const MARKING_TLP_RED = '5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
-const STATIC_STANDARD_IDS = [
-  { id: MARKING_TLP_WHITE, data: { definition_type: 'TLP', definition: 'TLP:WHITE' } },
+export const MARKING_TLP_CLEAR = '613f2e26-407d-48c7-9eca-b8e91df99dc9';
+export const MARKING_TLP_GREEN = '34098fce-860f-48ae-8e50-ebd3cc5e41da';
+export const MARKING_TLP_AMBER = 'f88d31f6-486f-44da-b317-01333bde0b82';
+export const MARKING_TLP_AMBER_STRICT = '826578e1-40ad-459f-bc73-ede076f81f37';
+export const MARKING_TLP_RED = '5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
+export const STATIC_STANDARD_IDS = [
+  { id: MARKING_TLP_CLEAR, data: { definition_type: 'TLP', definition: 'TLP:CLEAR' } },
   { id: MARKING_TLP_GREEN, data: { definition_type: 'TLP', definition: 'TLP:GREEN' } },
   { id: MARKING_TLP_AMBER, data: { definition_type: 'TLP', definition: 'TLP:AMBER' } },
+  { id: MARKING_TLP_AMBER_STRICT, data: { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' } },
   { id: MARKING_TLP_RED, data: { definition_type: 'TLP', definition: 'TLP:RED' } }
 ];
 const getStaticIdFromData = (data) => {

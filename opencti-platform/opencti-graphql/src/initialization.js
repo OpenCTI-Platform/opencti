@@ -178,7 +178,7 @@ const createMarkingDefinitions = async () => {
   // Create marking defs
   await addMarkingDefinition(SYSTEM_USER, {
     definition_type: 'TLP',
-    definition: 'TLP:WHITE',
+    definition: 'TLP:CLEAR',
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
@@ -191,6 +191,12 @@ const createMarkingDefinitions = async () => {
   await addMarkingDefinition(SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
+    x_opencti_color: '#d84315',
+    x_opencti_order: 3,
+  });
+  await addMarkingDefinition(SYSTEM_USER, {
+    definition_type: 'TLP',
+    definition: 'TLP:AMBER+STRICT',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });

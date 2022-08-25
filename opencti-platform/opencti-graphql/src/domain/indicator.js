@@ -28,42 +28,50 @@ import { extractObservablesFromIndicatorPattern } from '../utils/syntax';
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
   File: {
-    'TLP:WHITE-no': 365,
-    'TLP:WHITE-yes': 365,
+    'TLP:CLEAR-no': 365,
+    'TLP:CLEAR-yes': 365,
     'TLP:GREEN-no': 365,
     'TLP:GREEN-yes': 365,
     'TLP:AMBER-yes': 365,
     'TLP:AMBER-no': 365,
+    'TLP:AMBER+STRICT-yes': 365,
+    'TLP:AMBER+STRICT-no': 365,
     'TLP:RED-yes': 365,
     'TLP:RED-no': 365,
   },
   'IPv4-Addr': {
-    'TLP:WHITE-no': 30,
-    'TLP:WHITE-yes': 7,
+    'TLP:CLEAR-no': 30,
+    'TLP:CLEAR-yes': 7,
     'TLP:GREEN-no': 30,
     'TLP:GREEN-yes': 7,
     'TLP:AMBER-yes': 15,
     'TLP:AMBER-no': 60,
+    'TLP:AMBER+STRICT-yes': 15,
+    'TLP:AMBER+STRICT-no': 60,
     'TLP:RED-yes': 120,
     'TLP:RED-no': 120,
   },
   Url: {
-    'TLP:WHITE-no': 60,
-    'TLP:WHITE-yes': 15,
+    'TLP:CLEAR-no': 60,
+    'TLP:CLEAR-yes': 15,
     'TLP:GREEN-no': 60,
     'TLP:GREEN-yes': 15,
     'TLP:AMBER-yes': 30,
     'TLP:AMBER-no': 180,
+    'TLP:AMBER+STRICT-yes': 30,
+    'TLP:AMBER+STRICT-no': 180,
     'TLP:RED-yes': 180,
     'TLP:RED-no': 180,
   },
   default: {
-    'TLP:WHITE-no': 365,
-    'TLP:WHITE-yes': 365,
+    'TLP:CLEAR-no': 365,
+    'TLP:CLEAR-yes': 365,
     'TLP:GREEN-no': 365,
     'TLP:GREEN-yes': 365,
     'TLP:AMBER-yes': 365,
     'TLP:AMBER-no': 365,
+    'TLP:AMBER+STRICT-yes': 365,
+    'TLP:AMBER+STRICT-no': 365,
     'TLP:RED-yes': 365,
     'TLP:RED-no': 365,
   },
@@ -75,7 +83,7 @@ const computeValidUntil = async (user, indicator) => {
     validFrom = moment(indicator.valid_from).utc();
   }
   // get the highest marking definition
-  let markingDefinition = 'TLP:WHITE';
+  let markingDefinition = 'TLP:CLEAR';
   if (indicator.objectMarking && indicator.objectMarking.length > 0) {
     const markingDefinitions = await Promise.all(
       indicator.objectMarking.map((markingDefinitionId) => {
