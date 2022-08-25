@@ -68,12 +68,14 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   registerGraphqlSchema(definition.graphql);
   // Register key identification
   registerModelIdentifier(definition.identifier);
-  // Register attributes
-  const attributes = definition.attributes.map((attr) => attr.name);
+  // Register model attributes
+  const attributes = ['standard_id'];
+  attributes.push(...definition.attributes.map((attr) => attr.name));
   if (definition.type.aliased) {
     attributes.push(...['aliases', 'i_aliases_ids']); // Need to be improved to support x_opencti_aliases
   }
   schemaTypes.registerAttributes(definition.type.name, attributes);
+  // Register upsert attributes
   const upsertAttributes = definition.attributes.filter((attr) => attr.upsert).map((attr) => attr.name);
   schemaTypes.registerUpsertAttributes(definition.type.name, upsertAttributes);
   registerStixDomainConverter(definition.type.name, definition.converter);
