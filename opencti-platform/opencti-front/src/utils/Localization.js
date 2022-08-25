@@ -44,6 +44,10 @@ const i18n = {
         'Souhaitez-vous supprimer cette entité ?',
       'Do you want to delete this user?':
         'Souahitez-vous supprimer cet utilisateur ?',
+      'Do you want to delete this file?':
+        'Souhaitez-vous supprimer ce fichier ?',
+      'Do you want to remove this job?':
+        'Souhaitez-vous supprimer cette tâche ?',
       'Do you want to delete this group?':
         'Souahitez-vous supprimer ce groupe ?',
       'Do you want to delete this threat actor?':
@@ -1519,6 +1523,8 @@ const i18n = {
       'Advanced search': '高级搜索',
       'Global keyword': '全局关键词',
       'Search for a threat...': '搜索威胁...',
+      'Do you want to delete this file?': '你想删除这个文件吗？',
+      'Do you want to remove this job?': '您要删除此作业吗？',
       'Do you want to delete this user?': '是否要删除此用户？',
       'Do you want to delete this group?': '是否要删除此组？',
       'Do you want to delete this threat actor?': '是否要删除此威胁主体？',

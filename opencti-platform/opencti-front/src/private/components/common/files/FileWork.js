@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { propOr, compose } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -18,8 +18,19 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
 import { commitMutation } from '../../../../relay/environment';
+import inject18n from '../../../../components/i18n';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   nested: {
@@ -39,6 +50,14 @@ const fileWorkDeleteMutation = graphql`
 `;
 
 const FileWorkComponent = (props) => {
+  const {
+    t,
+    nsdt,
+    classes,
+    file: { works },
+  } = props;
+  const [deleting, setDeleting] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(null);
   const deleteWork = (workId) => {
     commitMutation({
       mutation: fileWorkDeleteMutation,
@@ -51,14 +70,11 @@ const FileWorkComponent = (props) => {
         const fileStore = store.get(workId);
         fileStore.setValue('deleting', 'status');
       },
+      onCompleted: () => {
+        setDeleting(false);
+      },
     });
   };
-  const {
-    t,
-    nsdt,
-    classes,
-    file: { works },
-  } = props;
   return (
     <List component="div" disablePadding={true}>
       {works
@@ -141,19 +157,48 @@ const FileWorkComponent = (props) => {
                   secondary={secondaryLabel}
                 />
                 <ListItemSecondaryAction>
-                  <IconButton
-                    color="primary"
-                    onClick={() => deleteWork(work.id)}
-                    disabled={work.status === 'deleting'}
-                    size="large"
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
+                  <Tooltip title={t('Delete')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={() => setDisplayDelete(work.id)}
+                        disabled={work.status === 'deleting'}
+                        size="large"
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                 </ListItemSecondaryAction>
               </ListItem>
             </Tooltip>
           );
         })}
+      <Dialog
+        open={displayDelete !== null}
+        PaperProps={{ elevation: 1 }}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={() => setDisplayDelete(null)}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to remove this job?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDisplayDelete(null)} disabled={deleting}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            color="secondary"
+            onClick={() => deleteWork(displayDelete)}
+            disabled={deleting}
+          >
+            {t('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </List>
   );
 };

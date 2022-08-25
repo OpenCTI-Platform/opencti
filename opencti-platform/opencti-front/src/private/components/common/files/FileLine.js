@@ -18,13 +18,24 @@ import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
+import FileWork from './FileWork';
+import inject18n from '../../../../components/i18n';
 import {
   APP_BASE_PATH,
   commitMutation,
   MESSAGING$,
 } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import FileWork from './FileWork';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   item: {
@@ -58,7 +69,35 @@ const FileLineAskDeleteMutation = graphql`
 `;
 
 class FileLineComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      displayRemove: false,
+      displayDelete: false,
+      deleting: false,
+    };
+  }
+
+  handleOpenDelete() {
+    this.setState({ displayDelete: true });
+    this.handleClose();
+  }
+
+  handleCloseDelete() {
+    this.setState({ displayDelete: false });
+  }
+
+  handleOpenRemove() {
+    this.setState({ displayRemove: true });
+    this.handleClose();
+  }
+
+  handleCloseRemove() {
+    this.setState({ displayRemove: false });
+  }
+
   executeRemove(mutation, variables) {
+    this.setState({ deleting: true });
     const { t } = this.props;
     commitMutation({
       mutation,
@@ -74,6 +113,11 @@ class FileLineComponent extends Component {
         fileStore.setValue('progress', 'uploadStatus');
       },
       onCompleted: () => {
+        this.setState({
+          deleting: false,
+          displayDelete: false,
+          displayRemove: false,
+        });
         MESSAGING$.notifySuccess(t('File successfully removed'));
       },
     });
@@ -199,7 +243,8 @@ class FileLineComponent extends Component {
                   <IconButton
                     disabled={isProgress}
                     color={nested ? 'inherit' : 'primary'}
-                    onClick={this.handleRemoveJob.bind(this, file.id)}
+                    onClick={this.handleOpenRemove.bind(this)}
+                    size="large"
                   >
                     <DeleteOutlined />
                   </IconButton>
@@ -211,7 +256,8 @@ class FileLineComponent extends Component {
                   <IconButton
                     disabled={isProgress}
                     color={nested ? 'inherit' : 'primary'}
-                    onClick={this.handleRemoveFile.bind(this, file.id)}
+                    onClick={this.handleOpenDelete.bind(this)}
+                    size="large"
                   >
                     <DeleteOutlined />
                   </IconButton>
@@ -221,6 +267,62 @@ class FileLineComponent extends Component {
           </ListItemSecondaryAction>
         </ListItem>
         <FileWork file={file} />
+        <Dialog
+          open={this.state.displayDelete}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseDelete.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to delete this file?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              disabled={this.state.deleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={this.handleRemoveFile.bind(this, file.id)}
+              disabled={this.state.deleting}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayRemove}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseRemove.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to remove this job?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseRemove.bind(this)}
+              disabled={this.state.deleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={this.handleRemoveJob.bind(this, file.id)}
+              disabled={this.state.deleting}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
