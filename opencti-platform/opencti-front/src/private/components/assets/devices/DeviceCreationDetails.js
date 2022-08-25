@@ -102,7 +102,7 @@ class DeviceCreationDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <div style={{ marginBottom: '119px' }}>
+              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -180,20 +180,6 @@ class DeviceCreationDetailsComponent extends Component {
                 //   fieldName="motherboard_id"
                 //   />
                 // }
-                />
-              </div>
-              <div>
-                <PortsField
-                  setFieldValue={setFieldValue}
-                  disabled={isSubmitting}
-                  values={values}
-                  style={{ height: '38.09px' }}
-                  variant='outlined'
-                  // onChange={this.handlePortChange.bind(this)}
-                  name="ports"
-                  size='small'
-                  fullWidth={true}
-                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                 />
               </div>
               <div>
@@ -583,6 +569,18 @@ class DeviceCreationDetailsComponent extends Component {
                   fullWidth={true}
                 />
               </div>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <PortsField
+                setFieldValue={setFieldValue}
+                disabled={isSubmitting}
+                values={values}
+                variant='outlined'
+                title='Port'
+                name="ports"
+                fullWidth={true}
+                containerstyle={{ width: '100%' }}
+              />
             </Grid>
             <Grid item={true} xs={12}>
               <AddressField

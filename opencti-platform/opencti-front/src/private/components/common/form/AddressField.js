@@ -17,6 +17,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { Dialog, DialogContent, DialogActions } from '@material-ui/core';
 import NewTextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
+import { Edit } from '@material-ui/icons';
 
 const styles = (theme) => ({
   paper: {
@@ -111,7 +112,7 @@ class AddressField extends Component {
             </Tooltip>
           </div>
           <IconButton size='small' onClick={() => this.setState({ open: true })}>
-            <AddIcon />
+            <AddIcon fontSize='small'/>
           </IconButton>
         </div>
         <Field

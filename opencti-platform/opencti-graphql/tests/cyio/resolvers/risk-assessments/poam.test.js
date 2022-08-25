@@ -70,6 +70,7 @@ describe('POAM Tests', () => {
     const singlePoam = `query queryPoam($id: ID!) {
       poam(id:$id){
         id
+      }
     }`;
     const variables = { id: currentPOAM };
     const result = await submitOperation(singlePoam, variables);
@@ -80,6 +81,7 @@ describe('POAM Tests', () => {
     const singlePoam = `query queryPoamItem($id: ID!) {
       poam(id:$id){
         id
+      }
     }`;
     const variables = { id: currentPOAMItem };
     const result = await submitOperation(singlePoam, variables);
