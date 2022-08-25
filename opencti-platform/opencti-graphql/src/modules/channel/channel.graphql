@@ -1,8 +1,4 @@
-enum ChannelType {
-    radio
-    press
-}
-type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
@@ -57,7 +53,7 @@ type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixOb
     # Channel
     name: String!
     description: String
-    type: ChannelType
+    channel_types: [String]
     aliases: [String]
     # Technical
     creator: User
@@ -124,7 +120,7 @@ type Query {
         after: ID
         orderBy: ChannelsOrdering
         orderMode: OrderingMode
-        filters: [ChannelsFiltering!]
+        filters: [ChannelsFiltering]
         filterMode: FilterMode
         search: String
     ): ChannelConnection @auth(for: [KNOWLEDGE])
@@ -136,12 +132,13 @@ input ChannelAddInput {
     x_opencti_stix_ids: [String]
     name: String! @constraint(minLength: 2)
     description: String!
-    type: ChannelType
+    channel_types: [String]
     aliases: [String]
     confidence: Int
     createdBy: String
     objectMarking: [String]
     objectLabel: [String]
+    externalReferences: [String]
     created: DateTime
     modified: DateTime
     clientMutationId: String

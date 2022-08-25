@@ -44,14 +44,6 @@ class ChannelDetailsComponent extends Component {
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown source={channel.description} limit={400} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Channel version')}
-              </Typography>
-              {channel.channel_version}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -84,18 +76,7 @@ const ChannelDetails = createFragmentContainer(ChannelDetailsComponent, {
     fragment ChannelDetails_channel on Channel {
       id
       description
-      channel_version
       channel_types
-      killChainPhases {
-        edges {
-          node {
-            id
-            kill_chain_name
-            phase_name
-            x_opencti_order
-          }
-        }
-      }
     }
   `,
 });

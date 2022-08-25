@@ -8,13 +8,13 @@ export const ENTITY_TYPE_CHANNEL = 'Channel';
 export interface BasicStoreEntityChannel extends BasicStoreEntity {
   name: string;
   description: string;
-  type: 'radio' | 'press';
+  channel_types: Array<string>;
 }
 
 export interface StoreEntityChannel extends StoreEntity {
   name: string;
   description: string;
-  type: 'radio' | 'press';
+  channel_types: Array<string>;
 }
 // endregion
 
@@ -22,7 +22,7 @@ export interface StoreEntityChannel extends StoreEntity {
 export interface StixChannel extends StixDomainObject {
   name: string;
   description: string;
-  type: 'radio' | 'press';
+  channel_types: Array<string>;
   aliases: Array<string>;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

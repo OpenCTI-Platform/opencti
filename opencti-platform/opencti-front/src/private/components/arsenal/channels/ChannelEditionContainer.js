@@ -39,7 +39,7 @@ const styles = (theme) => ({
   },
 });
 
-class ChannellEditionContainer extends Component {
+class ChannelEditionContainer extends Component {
   render() {
     const { t, classes, handleClose, channel } = this.props;
     const { editContext } = channel;
@@ -74,7 +74,7 @@ class ChannellEditionContainer extends Component {
   }
 }
 
-ChannellEditionContainer.propTypes = {
+ChannelEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   channel: PropTypes.object,
@@ -82,7 +82,7 @@ ChannellEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const ChannelEditionFragment = createFragmentContainer(ChannellEditionContainer, {
+const ChannelEditionFragment = createFragmentContainer(ChannelEditionContainer, {
   channel: graphql`
     fragment ChannelEditionContainer_channel on Channel {
       id

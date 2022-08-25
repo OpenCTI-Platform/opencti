@@ -8,7 +8,7 @@ export const ENTITY_TYPE_EVENT = 'Event';
 export interface BasicStoreEntityEvent extends BasicStoreEntity {
   name: string;
   description: string;
-  category: 'meeting';
+  event_types: Array<string>;
 }
 
 export interface StoreEntityEvent extends StoreEntity {
@@ -22,7 +22,7 @@ export interface StoreEntityEvent extends StoreEntity {
 export interface StixEvent extends StixDomainObject {
   name: string;
   description: string;
-  category: 'meeting';
+  event_types: Array<string>;
   aliases: Array<string>;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

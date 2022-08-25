@@ -6082,9 +6082,9 @@ type StixObjectOrStixRelationshipEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Note | ObservedData | Opinion | Report | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Note | ObservedData | Opinion | Report | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | StixCoreRelationship
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | StixCoreRelationship
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -6704,13 +6704,13 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   channel(id: String!): Channel
-  channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: [ChannelsFiltering!], filterMode: FilterMode, search: String): ChannelConnection
+  channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: [ChannelsFiltering], filterMode: FilterMode, search: String): ChannelConnection
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: [LanguagesFiltering!], filterMode: FilterMode, search: String): LanguageConnection
   event(id: String!): Event
-  events(first: Int, after: ID, orderBy: EventsOrdering, orderMode: OrderingMode, filters: [EventsFiltering!], filterMode: FilterMode, search: String): EventConnection
+  events(first: Int, after: ID, orderBy: EventsOrdering, orderMode: OrderingMode, filters: [EventsFiltering], filterMode: FilterMode, search: String): EventConnection
   narrative(id: String!): Narrative
-  narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering!], filterMode: FilterMode, search: String): NarrativeConnection
+  narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering], filterMode: FilterMode, search: String): NarrativeConnection
 }
 
 type Subscription {
@@ -7305,12 +7305,7 @@ type Mutation {
   narrativeEdit(id: ID!): NarrativeEditMutations
 }
 
-enum ChannelType {
-  radio
-  press
-}
-
-type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -7338,7 +7333,7 @@ type Channel implements BasicObject & StixCoreObject & StixDomainObject & StixOb
   x_opencti_graph_data: String
   name: String!
   description: String
-  type: ChannelType
+  channel_types: [String]
   aliases: [String]
   creator: User
   toStix: String
@@ -7400,12 +7395,13 @@ input ChannelAddInput {
   x_opencti_stix_ids: [String]
   name: name_String_NotNull_minLength_2!
   description: String!
-  type: ChannelType
+  channel_types: [String]
   aliases: [String]
   confidence: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  externalReferences: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -7471,10 +7467,6 @@ input LanguageAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-}
-
-enum EventCategory {
-  meeting
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -7568,7 +7560,7 @@ input EventAddInput {
   x_opencti_stix_ids: [String]
   name: name_String_NotNull_minLength_2!
   description: String!
-  category: EventCategory
+  event_types: [String]
   start_date: DateTime
   end_date: DateTime
   aliases: [String]
@@ -7576,6 +7568,7 @@ input EventAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  externalReferences: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -7681,11 +7674,13 @@ input NarrativeAddInput {
   x_opencti_stix_ids: [String]
   name: name_String_NotNull_minLength_2!
   description: String!
+  narrative_types: [String]
   aliases: [String]
   confidence: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  externalReferences: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String

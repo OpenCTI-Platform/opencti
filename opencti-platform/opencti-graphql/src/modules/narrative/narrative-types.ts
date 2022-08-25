@@ -8,11 +8,13 @@ export const ENTITY_TYPE_NARRATIVE = 'Narrative';
 export interface BasicStoreEntityNarrative extends BasicStoreEntity {
   name: string;
   description: string;
+  narrative_types: Array<string>;
 }
 
 export interface StoreEntityNarrative extends StoreEntity {
   name: string;
   description: string;
+  narrative_types: Array<string>;
 }
 // endregion
 
@@ -20,6 +22,7 @@ export interface StoreEntityNarrative extends StoreEntity {
 export interface StixNarrative extends StixDomainObject {
   name: string;
   description: string;
+  narrative_types: Array<string>;
   aliases: Array<string>;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

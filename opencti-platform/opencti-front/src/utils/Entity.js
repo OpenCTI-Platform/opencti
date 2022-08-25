@@ -232,6 +232,24 @@ export const openVocabularies = {
         'A self-replicating, self-contained program that usually executes itself without user intervention.',
     },
   ],
+  'event-type-ov': [
+    {
+      key: 'sport-competition',
+      description: 'Sport competition.',
+    },
+    {
+      key: 'local-election',
+      description: 'Local election.',
+    },
+    {
+      key: 'national-election',
+      description: 'National election.',
+    },
+    {
+      key: 'international-summit',
+      description: 'Internationals summit.',
+    },
+  ],
   'processor-architecture-ov': [
     {
       key: 'alpha',

@@ -67,15 +67,27 @@ class EventLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.event_types.width }}
               >
-                {fd(node.created)}
+                {node.event_types?.join(', ')}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
+                style={{ width: dataColumns.start_date.width }}
               >
-                {fd(node.modified)}
+                {fd(node.start_date)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.end_date.width }}
+              >
+                {fd(node.end_date)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
             </div>
           }
@@ -102,6 +114,8 @@ const EventLineFragment = createFragmentContainer(EventLineComponent, {
       name
       created
       modified
+      start_date
+      end_date
     }
   `,
 });
@@ -140,7 +154,7 @@ class EventLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.event_types.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -151,7 +165,29 @@ class EventLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
+                style={{ width: dataColumns.start_date.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.end_date.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
               >
                 <Skeleton
                   animation="wave"

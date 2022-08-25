@@ -6,6 +6,8 @@ import Malwares from './Malwares';
 import RootMalware from './malwares/Root';
 import Channels from './Channels';
 import RootChannel from './channels/Root';
+import Narratives from './Narratives';
+import RootNarrative from './narratives/Root';
 import AttackPatterns from './AttackPatterns';
 import RootAttackPattern from './attack_patterns/Root';
 import RootCourseOfAction from './courses_of_action/Root';
@@ -42,6 +44,15 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/arsenal/channels/:channelId"
           render={(routeProps) => <RootChannel {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/arsenal/narratives"
+          component={Narratives}
+        />
+        <BoundaryRoute
+          path="/dashboard/arsenal/narratives/:narrativeId"
+          render={(routeProps) => <RootNarrative {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

@@ -120,7 +120,7 @@ type Query {
         after: ID
         orderBy: NarrativesOrdering
         orderMode: OrderingMode
-        filters: [NarrativesFiltering!]
+        filters: [NarrativesFiltering]
         filterMode: FilterMode
         search: String
     ): NarrativeConnection @auth(for: [KNOWLEDGE])
@@ -132,11 +132,13 @@ input NarrativeAddInput {
     x_opencti_stix_ids: [String]
     name: String! @constraint(minLength: 2)
     description: String!
+    narrative_types: [String]
     aliases: [String]
     confidence: Int
     createdBy: String
     objectMarking: [String]
     objectLabel: [String]
+    externalReferences: [String]
     created: DateTime
     modified: DateTime
     clientMutationId: String

@@ -20,6 +20,8 @@ import {
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
+import { buildDate } from '../../../../utils/Time';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -107,12 +109,13 @@ const eventMutationRelationDelete = graphql`
 
 const eventValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  latitude: Yup.number().typeError(t('This field must be a number')),
-  longitude: Yup.number().typeError(t('This field must be a number')),
+  description: Yup.string().nullable(),
+  start_date: Yup.date()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+    .nullable(),
+  end_date: Yup.date()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+    .nullable(),
   x_opencti_workflow_id: Yup.object(),
 });
 
@@ -237,14 +240,16 @@ class EventEditionOverviewComponent extends Component {
     const objectMarking = convertMarkings(event);
     const status = convertStatus(t, event);
     const initialValues = R.pipe(
+      R.assoc('start_date', buildDate(event.start_date)),
+      R.assoc('end_date', buildDate(event.end_date)),
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
       R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'name',
         'description',
-        'latitude',
-        'longitude',
+        'start_date',
+        'end_date',
         'createdBy',
         'objectMarking',
         'x_opencti_workflow_id',
@@ -292,30 +297,34 @@ class EventEditionOverviewComponent extends Component {
               }
             />
             <Field
-              component={TextField}
-              variant="standard"
-              style={{ marginTop: 20 }}
-              name="latitude"
-              label={t('Latitude')}
-              fullWidth={true}
+              component={DateTimePickerField}
+              name="start_date"
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="latitude" />
-              }
+              TextFieldProps={{
+                label: t('Start date'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="start_date" />
+                ),
+              }}
             />
             <Field
-              component={TextField}
-              variant="standard"
-              style={{ marginTop: 20 }}
-              name="longitude"
-              label={t('Longitude')}
-              fullWidth={true}
+              component={DateTimePickerField}
+              name="end_date"
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="longitude" />
-              }
+              TextFieldProps={{
+                label: t('End date'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="end_date" />
+                ),
+              }}
             />
             {event.workflowEnabled && (
               <StatusField
@@ -386,8 +395,8 @@ const EventEditionOverview = createFragmentContainer(
         id
         name
         description
-        latitude
-        longitude
+        start_date
+        end_date
         createdBy {
           ... on Identity {
             id

@@ -1,6 +1,3 @@
-enum EventCategory {
-    meeting
-}
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
     id: ID! # internal_id
     standard_id: String!
@@ -124,7 +121,7 @@ type Query {
         after: ID
         orderBy: EventsOrdering
         orderMode: OrderingMode
-        filters: [EventsFiltering!]
+        filters: [EventsFiltering]
         filterMode: FilterMode
         search: String
     ): EventConnection @auth(for: [KNOWLEDGE])
@@ -136,7 +133,7 @@ input EventAddInput {
     x_opencti_stix_ids: [String]
     name: String! @constraint(minLength: 2)
     description: String!
-    category: EventCategory
+    event_types: [String]
     start_date: DateTime
     end_date: DateTime
     aliases: [String]
@@ -144,6 +141,7 @@ input EventAddInput {
     createdBy: String
     objectMarking: [String]
     objectLabel: [String]
+    externalReferences: [String]
     created: DateTime
     modified: DateTime
     clientMutationId: String

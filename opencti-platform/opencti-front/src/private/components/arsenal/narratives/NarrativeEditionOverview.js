@@ -19,7 +19,6 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -150,7 +149,6 @@ class NarrativeEditionOverviewComponent extends Component {
       R.dissoc('references'),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -205,44 +203,6 @@ class NarrativeEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeKillChainPhases(name, values) {
-    const { narrative } = this.props;
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(narrative);
-
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: narrativeMutationRelationAdd,
-        variables: {
-          id: this.props.narrative.id,
-          input: {
-            toId: head(added).value,
-            relationship_type: 'kill-chain-phase',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: narrativeMutationRelationDelete,
-        variables: {
-          id: this.props.narrative.id,
-          toId: head(removed).value,
-          relationship_type: 'kill-chain-phase',
-        },
-      });
-    }
-  }
-
   handleChangeObjectMarking(name, values) {
     const { narrative } = this.props;
     const currentMarkingDefinitions = pipe(
@@ -286,23 +246,14 @@ class NarrativeEditionOverviewComponent extends Component {
     const createdBy = convertCreatedBy(narrative);
     const objectMarking = convertMarkings(narrative);
     const status = convertStatus(t, narrative);
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(narrative);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
       assoc('x_opencti_workflow_id', status),
       pick([
         'name',
         'description',
         'createdBy',
-        'killChainPhases',
         'objectMarking',
         'x_opencti_workflow_id',
       ]),
@@ -347,18 +298,6 @@ class NarrativeEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
-            <KillChainPhasesField
-              name="killChainPhases"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="killChainPhases"
-                />
-              }
-              onChange={this.handleChangeKillChainPhases.bind(this)}
             />
             {narrative.workflowEnabled && (
               <StatusField
@@ -433,16 +372,6 @@ const NarrativeEditionOverview = createFragmentContainer(
             id
             name
             entity_type
-          }
-        }
-        killChainPhases {
-          edges {
-            node {
-              id
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
           }
         }
         objectMarking {

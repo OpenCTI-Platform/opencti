@@ -8075,26 +8075,28 @@ type StixObjectOrStixRelationshipEdge {
   node: StixObjectOrStixRelationship!
 }
 union StixObjectOrStixRelationship =
-    #### Stix Core Objects
-  ## Stix Meta Objects
   MarkingDefinition
   | Label
   | KillChainPhase
-  | ExternalReference ## Stix Domain Objects
+  | ExternalReference
   | AttackPattern
-  | Campaign # Containers
+  | Campaign
+  | Channel
+  | Event
+  | Narrative
   | Note
   | ObservedData
   | Opinion
   | Report
-  | CourseOfAction # Identity
+  | CourseOfAction
   | Individual
   | Organization
   | Sector
   | System
   | Indicator
   | Infrastructure
-  | IntrusionSet # Location
+  | IntrusionSet
+  | Language
   | City
   | Country
   | Region
@@ -8103,7 +8105,7 @@ union StixObjectOrStixRelationship =
   | ThreatActor
   | Tool
   | Vulnerability
-  | Incident ## Six Cyber Observables
+  | Incident
   | AutonomousSystem
   | Directory
   | DomainName
@@ -8128,7 +8130,7 @@ union StixObjectOrStixRelationship =
   | CryptocurrencyWallet
   | Hostname
   | Text
-  | UserAgent ### Stix Relationships
+  | UserAgent
   | StixCoreRelationship
   | StixMetaRelationship
   | StixSightingRelationship
@@ -8137,23 +8139,27 @@ union StixCoreObjectOrStixCoreRelationship =
     #### Stix Core Objects
   ## Stix Domain Objects
   AttackPattern
-  | Campaign # Containers
+  | Campaign
+  | Channel
+  | Event
   | Note
   | ObservedData
   | Opinion
   | Report
-  | CourseOfAction # Identity
+  | CourseOfAction
   | Individual
   | Organization
   | Sector
   | Indicator
   | Infrastructure
-  | IntrusionSet # Location
+  | IntrusionSet
+  | Language
   | City
   | Country
   | Region
   | Position
   | Malware
+  | Narrative
   | ThreatActor
   | Tool
   | Vulnerability

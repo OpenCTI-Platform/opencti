@@ -19,7 +19,6 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -147,7 +146,6 @@ class ChannelEditionOverviewComponent extends Component {
       R.dissoc('references'),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -202,44 +200,6 @@ class ChannelEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeKillChainPhases(name, values) {
-    const { channel } = this.props;
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(channel);
-
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: channelMutationRelationAdd,
-        variables: {
-          id: this.props.channel.id,
-          input: {
-            toId: head(added).value,
-            relationship_type: 'kill-chain-phase',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: channelMutationRelationDelete,
-        variables: {
-          id: this.props.channel.id,
-          toId: head(removed).value,
-          relationship_type: 'kill-chain-phase',
-        },
-      });
-    }
-  }
-
   handleChangeObjectMarking(name, values) {
     const { channel } = this.props;
     const currentMarkingDefinitions = pipe(
@@ -283,23 +243,14 @@ class ChannelEditionOverviewComponent extends Component {
     const createdBy = convertCreatedBy(channel);
     const objectMarking = convertMarkings(channel);
     const status = convertStatus(t, channel);
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(channel);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
       assoc('x_opencti_workflow_id', status),
       pick([
         'name',
         'description',
         'createdBy',
-        'killChainPhases',
         'objectMarking',
         'x_opencti_workflow_id',
       ]),
@@ -344,18 +295,6 @@ class ChannelEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
-            <KillChainPhasesField
-              name="killChainPhases"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="killChainPhases"
-                />
-              }
-              onChange={this.handleChangeKillChainPhases.bind(this)}
             />
             {channel.workflowEnabled && (
               <StatusField
@@ -430,16 +369,6 @@ const ChannelEditionOverview = createFragmentContainer(
             id
             name
             entity_type
-          }
-        }
-        killChainPhases {
-          edges {
-            node {
-              id
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
           }
         }
         objectMarking {

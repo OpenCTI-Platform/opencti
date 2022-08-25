@@ -76,7 +76,7 @@ class Root extends Component {
           component={Events}
         />
         <BoundaryRoute
-          path="/dashboard/entities/events/:positionId"
+          path="/dashboard/entities/events/:eventId"
           render={(routeProps) => <RootEvent {...routeProps} me={me} />}
         />
         <BoundaryRoute

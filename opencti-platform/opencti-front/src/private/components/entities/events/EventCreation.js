@@ -19,6 +19,9 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import { parse } from '../../../../utils/Time';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -74,11 +77,12 @@ const eventMutation = graphql`
 const eventValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
-  latitude: Yup.number()
-    .typeError(t('This field must be a number'))
+  event_types: Yup.array().nullable(),
+  start_date: Yup.date()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
-  longitude: Yup.number()
-    .typeError(t('This field must be a number'))
+  end_date: Yup.date()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
 });
 
@@ -108,8 +112,14 @@ class EventCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
-      R.assoc('latitude', parseFloat(values.latitude)),
-      R.assoc('longitude', parseFloat(values.longitude)),
+      R.assoc(
+        'start_date',
+        values.start_date ? parse(values.start_date).format() : null,
+      ),
+      R.assoc(
+        'end_date',
+        values.end_date ? parse(values.end_date).format() : null,
+      ),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
@@ -173,15 +183,16 @@ class EventCreation extends Component {
             >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t('Create a event')}</Typography>
+            <Typography variant="h6">{t('Create an event')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
                 name: '',
                 description: '',
-                latitude: '',
-                longitude: '',
+                event_types: [],
+                start_date: null,
+                end_date: null,
                 createdBy: '',
                 objectMarking: [],
                 externalReferences: [],
@@ -206,6 +217,13 @@ class EventCreation extends Component {
                     fullWidth={true}
                     detectDuplicate={['Event']}
                   />
+                  <OpenVocabField
+                    label={t('Event types')}
+                    type="event-type-ov"
+                    name="event_types"
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    multiple={true}
+                  />
                   <Field
                     component={MarkDownField}
                     name="description"
@@ -216,20 +234,24 @@ class EventCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    component={TextField}
-                    variant="standard"
-                    name="latitude"
-                    label={t('Latitude')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    component={DateTimePickerField}
+                    name="start_date"
+                    TextFieldProps={{
+                      label: t('Start date'),
+                      variant: 'standard',
+                      fullWidth: true,
+                      style: { marginTop: 20 },
+                    }}
                   />
                   <Field
-                    component={TextField}
-                    variant="standard"
-                    name="longitude"
-                    label={t('Longitude')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    component={DateTimePickerField}
+                    name="end_date"
+                    TextFieldProps={{
+                      label: t('End date'),
+                      variant: 'standard',
+                      fullWidth: true,
+                      style: { marginTop: 20 },
+                    }}
                   />
                   <CreatedByField
                     name="createdBy"

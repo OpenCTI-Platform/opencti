@@ -38,8 +38,7 @@ const eventQuery = graphql`
     event(id: $id) {
       id
       name
-      x_opencti_aliases
-      x_opencti_graph_data
+      aliases
       ...Event_event
       ...EventKnowledge_event
       ...FileImportViewer_entity

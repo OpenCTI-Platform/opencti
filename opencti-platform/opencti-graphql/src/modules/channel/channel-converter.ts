@@ -8,7 +8,7 @@ const convertChannelToStix = (instance: StoreEntityChannel): StixChannel => {
     ...stixDomainObject,
     name: instance.name,
     description: instance.description,
-    type: instance.type,
+    channel_types: instance.channel_types,
     aliases: instance.x_opencti_aliases ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

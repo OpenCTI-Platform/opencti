@@ -30,7 +30,6 @@ class EventKnowledgeComponent extends Component {
         <StixDomainObjectHeader
           stixDomainObject={event}
           PopoverComponent={<EventPopover />}
-          variant="noaliases"
         />
         <Switch>
           <Route
@@ -249,7 +248,7 @@ const EventKnowledge = createFragmentContainer(EventKnowledgeComponent, {
     fragment EventKnowledge_event on Event {
       id
       name
-      x_opencti_aliases
+      aliases
     }
   `,
 });

@@ -80,7 +80,7 @@ const EventDetails = createFragmentContainer(EventDetailsComponent, {
     fragment EventDetails_event on Event {
       id
       description
-      category
+      event_types
       start_date
       end_date
     }

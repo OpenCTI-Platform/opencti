@@ -106,16 +106,26 @@ class Events extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '60%',
+        width: '30%',
+        isSortable: true,
+      },
+      event_types: {
+        label: 'Types',
+        width: '20%',
+        isSortable: true,
+      },
+      start_date: {
+        label: 'Start date',
+        width: '15%',
+        isSortable: true,
+      },
+      end_date: {
+        label: 'End date',
+        width: '15%',
         isSortable: true,
       },
       created: {
         label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
         width: '15%',
         isSortable: true,
       },
@@ -137,6 +147,8 @@ class Events extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'start_date',
+          'end_date',
           'created_start_date',
           'created_end_date',
           'createdBy',

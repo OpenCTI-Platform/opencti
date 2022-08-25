@@ -45,7 +45,7 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
   attributes: [
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'type', type: 'string', multiple: false, upsert: true },
+    { name: 'channel_types', type: 'string', multiple: true, upsert: true },
   ],
   relations: [
     { name: RELATION_TARGETS,
