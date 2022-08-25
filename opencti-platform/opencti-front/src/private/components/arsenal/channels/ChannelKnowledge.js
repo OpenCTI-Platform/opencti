@@ -226,6 +226,7 @@ class ChannelKnowledgeComponent extends Component {
                 stixCoreObjectId={channel.id}
                 stixCoreObjectLink={link}
                 noRightBar={true}
+                isRelationReversed={true}
                 {...routeProps}
               />
             )}

@@ -73,15 +73,15 @@ class EventLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.start_date.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
-                {fd(node.start_date)}
+                {fd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.end_date.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
-                {fd(node.end_date)}
+                {fd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -166,7 +166,7 @@ class EventLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.start_date.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -177,7 +177,7 @@ class EventLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.end_date.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
                 <Skeleton
                   animation="wave"

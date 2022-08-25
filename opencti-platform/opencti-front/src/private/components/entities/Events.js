@@ -114,12 +114,12 @@ class Events extends Component {
         width: '20%',
         isSortable: true,
       },
-      start_date: {
+      start_time: {
         label: 'Start date',
         width: '15%',
         isSortable: true,
       },
-      end_date: {
+      stop_time: {
         label: 'End date',
         width: '15%',
         isSortable: true,
@@ -149,8 +149,8 @@ class Events extends Component {
         availableFilterKeys={[
           'start_date',
           'end_date',
-          'created_start_date',
-          'created_end_date',
+          'start_time_date',
+          'stop_time_date',
           'createdBy',
         ]}
       >
