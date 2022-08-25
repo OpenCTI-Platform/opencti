@@ -149,16 +149,12 @@ input EventAddInput {
     update: Boolean
 }
 
-type EventEditMutations {
-    delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    contextPatch(input: EditContext): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    contextClean: Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    relationDelete(toId: String!, relationship_type: String!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-}
-
 type Mutation {
     eventAdd(input: EventAddInput!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    eventEdit(id: ID!): EventEditMutations
+    eventDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    eventFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Event @auth(for: [KNOWLEDGE_KNUPDATE])
+    eventContextPatch(id: ID!, input: EditContext!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
+    eventContextClean(id: ID!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
+    eventRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    eventRelationDelete(id: ID!, toId: String!, relationship_type: String!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
 }

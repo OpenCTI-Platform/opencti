@@ -3292,39 +3292,6 @@ export type EventEdge = {
   node: Event;
 };
 
-export type EventEditMutations = {
-  __typename?: 'EventEditMutations';
-  contextClean?: Maybe<Event>;
-  contextPatch?: Maybe<Event>;
-  delete?: Maybe<Scalars['ID']>;
-  fieldPatch?: Maybe<Event>;
-  relationAdd?: Maybe<StixMetaRelationship>;
-  relationDelete?: Maybe<Event>;
-};
-
-
-export type EventEditMutationsContextPatchArgs = {
-  input?: InputMaybe<EditContext>;
-};
-
-
-export type EventEditMutationsFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']>;
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type EventEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
-};
-
-
-export type EventEditMutationsRelationDeleteArgs = {
-  relationship_type: Scalars['String'];
-  toId: Scalars['String'];
-};
-
 export enum EventsFilter {
   Aliases = 'aliases',
   Created = 'created',
@@ -6899,7 +6866,12 @@ export type Mutation = {
   deleteImport?: Maybe<Scalars['Boolean']>;
   deleteTask: Scalars['ID'];
   eventAdd?: Maybe<Event>;
-  eventEdit?: Maybe<EventEditMutations>;
+  eventContextClean?: Maybe<Event>;
+  eventContextPatch?: Maybe<Event>;
+  eventDelete?: Maybe<Scalars['ID']>;
+  eventFieldPatch?: Maybe<Event>;
+  eventRelationAdd?: Maybe<StixMetaRelationship>;
+  eventRelationDelete?: Maybe<Event>;
   externalReferenceAdd?: Maybe<ExternalReference>;
   externalReferenceEdit?: Maybe<ExternalReferenceEditMutations>;
   feedAdd?: Maybe<Feed>;
@@ -7139,8 +7111,40 @@ export type MutationEventAddArgs = {
 };
 
 
-export type MutationEventEditArgs = {
+export type MutationEventContextCleanArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationEventContextPatchArgs = {
+  id: Scalars['ID'];
+  input: EditContext;
+};
+
+
+export type MutationEventDeleteArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationEventFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID'];
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type MutationEventRelationAddArgs = {
+  id: Scalars['ID'];
+  input: StixMetaRelationshipAddInput;
+};
+
+
+export type MutationEventRelationDeleteArgs = {
+  id: Scalars['ID'];
+  relationship_type: Scalars['String'];
+  toId: Scalars['String'];
 };
 
 
@@ -17203,7 +17207,6 @@ export type ResolversTypes = ResolversObject<{
   EventAddInput: EventAddInput;
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
   EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node: ResolversTypes['Event'] }>;
-  EventEditMutations: ResolverTypeWrapper<Omit<EventEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Event']>, contextPatch?: Maybe<ResolversTypes['Event']>, fieldPatch?: Maybe<ResolversTypes['Event']>, relationDelete?: Maybe<ResolversTypes['Event']> }>;
   EventsFilter: EventsFilter;
   EventsFiltering: EventsFiltering;
   EventsOrdering: EventsOrdering;
@@ -17787,7 +17790,6 @@ export type ResolversParentTypes = ResolversObject<{
   EventAddInput: EventAddInput;
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   EventEdge: Omit<EventEdge, 'node'> & { node: ResolversParentTypes['Event'] };
-  EventEditMutations: Omit<EventEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Event']>, contextPatch?: Maybe<ResolversParentTypes['Event']>, fieldPatch?: Maybe<ResolversParentTypes['Event']>, relationDelete?: Maybe<ResolversParentTypes['Event']> };
   EventsFiltering: EventsFiltering;
   ExternalReference: ExternalReference;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
@@ -19272,16 +19274,6 @@ export type EventEdgeResolvers<ContextType = any, ParentType extends ResolversPa
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type EventEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventEditMutations'] = ResolversParentTypes['EventEditMutations']> = ResolversObject<{
-  contextClean?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
-  contextPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, Partial<EventEditMutationsContextPatchArgs>>;
-  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  fieldPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<EventEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<EventEditMutationsRelationAddArgs>>;
-  relationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<EventEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type ExternalReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalReference'] = ResolversParentTypes['ExternalReference']> = ResolversObject<{
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ExternalReferenceConnectorsArgs>>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -20504,7 +20496,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteImport?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationDeleteImportArgs>>;
   deleteTask?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteTaskArgs, 'id'>>;
   eventAdd?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventAddArgs, 'input'>>;
-  eventEdit?: Resolver<Maybe<ResolversTypes['EventEditMutations']>, ParentType, ContextType, RequireFields<MutationEventEditArgs, 'id'>>;
+  eventContextClean?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventContextCleanArgs, 'id'>>;
+  eventContextPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventContextPatchArgs, 'id' | 'input'>>;
+  eventDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationEventDeleteArgs, 'id'>>;
+  eventFieldPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventFieldPatchArgs, 'id' | 'input'>>;
+  eventRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationEventRelationAddArgs, 'id' | 'input'>>;
+  eventRelationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, Partial<MutationExternalReferenceAddArgs>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
   feedAdd?: Resolver<Maybe<ResolversTypes['Feed']>, ParentType, ContextType, RequireFields<MutationFeedAddArgs, 'input'>>;
@@ -23458,7 +23455,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Event?: EventResolvers<ContextType>;
   EventConnection?: EventConnectionResolvers<ContextType>;
   EventEdge?: EventEdgeResolvers<ContextType>;
-  EventEditMutations?: EventEditMutationsResolvers<ContextType>;
   ExternalReference?: ExternalReferenceResolvers<ContextType>;
   ExternalReferenceConnection?: ExternalReferenceConnectionResolvers<ContextType>;
   ExternalReferenceEdge?: ExternalReferenceEdgeResolvers<ContextType>;

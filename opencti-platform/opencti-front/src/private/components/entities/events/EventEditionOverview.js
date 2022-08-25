@@ -56,8 +56,8 @@ const eventMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    eventEdit(id: $id) {
-      fieldPatch(
+      eventFieldPatch(
+        id: $id
         input: $input
         commitMessage: $commitMessage
         references: $references
@@ -66,15 +66,12 @@ const eventMutationFieldPatch = graphql`
         ...Event_event
       }
     }
-  }
 `;
 
 export const eventEditionOverviewFocus = graphql`
   mutation EventEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
-    eventEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    eventContextPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -84,11 +81,9 @@ const eventMutationRelationAdd = graphql`
     $id: ID!
     $input: StixMetaRelationshipAddInput!
   ) {
-    eventEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...EventEditionOverview_event
-        }
+    eventRelationAdd(id: $id, input: $input) {
+      from {
+        ...EventEditionOverview_event
       }
     }
   }
@@ -100,10 +95,8 @@ const eventMutationRelationDelete = graphql`
     $toId: String!
     $relationship_type: String!
   ) {
-    eventEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...EventEditionOverview_event
-      }
+    eventRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+      ...EventEditionOverview_event
     }
   }
 `;

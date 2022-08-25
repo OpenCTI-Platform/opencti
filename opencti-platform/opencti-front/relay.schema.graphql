@@ -7301,7 +7301,12 @@ type Mutation {
   languageAdd(input: LanguageAddInput!): Language
   languageEdit(id: ID!): LanguageEditMutations
   eventAdd(input: EventAddInput!): Event
-  eventEdit(id: ID!): EventEditMutations
+  eventDelete(id: ID!): ID
+  eventFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Event
+  eventContextPatch(id: ID!, input: EditContext!): Event
+  eventContextClean(id: ID!): Event
+  eventRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  eventRelationDelete(id: ID!, toId: String!, relationship_type: String!): Event
   narrativeAdd(input: NarrativeAddInput!): Narrative
   narrativeEdit(id: ID!): NarrativeEditMutations
 }
@@ -7630,15 +7635,6 @@ input EventAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-}
-
-type EventEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Event
-  contextPatch(input: EditContext): Event
-  contextClean: Event
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Event
 }
 
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
