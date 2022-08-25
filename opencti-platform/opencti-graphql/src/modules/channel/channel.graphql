@@ -144,16 +144,13 @@ input ChannelAddInput {
     clientMutationId: String
     update: Boolean
 }
-type ChannelEditMutations {
-    delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    contextPatch(input: EditContext): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    contextClean: Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    relationDelete(toId: String!, relationship_type: String!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-}
 
 type Mutation {
     channelAdd(input: ChannelAddInput!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    channelEdit(id: ID!): ChannelEditMutations
+    channelDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
+    channelContextPatch(id: ID!, input: EditContext!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
+    channelContextClean(id: ID!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
+    channelRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    channelRelationDelete(id: ID!, toId: String!, relationship_type: String!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
 }

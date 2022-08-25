@@ -63,15 +63,14 @@ const narrativeMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    narrativeEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
-        ...NarrativeEditionOverview_narrative
-        ...Narrative_narrative
-      }
+    narrativeFieldPatch(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
+      ...NarrativeEditionOverview_narrative
+      ...Narrative_narrative
     }
   }
 `;
@@ -81,10 +80,8 @@ export const narrativeEditionOverviewFocus = graphql`
     $id: ID!
     $input: EditContext!
   ) {
-    narrativeEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    narrativeContextPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -92,13 +89,11 @@ export const narrativeEditionOverviewFocus = graphql`
 const narrativeMutationRelationAdd = graphql`
   mutation NarrativeEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixMetaRelationshipAddInput!
   ) {
-    narrativeEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...NarrativeEditionOverview_narrative
-        }
+    narrativeRelationAdd(id: $id, input: $input) {
+      from {
+        ...NarrativeEditionOverview_narrative
       }
     }
   }
@@ -110,10 +105,8 @@ const narrativeMutationRelationDelete = graphql`
     $toId: String!
     $relationship_type: String!
   ) {
-    narrativeEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...NarrativeEditionOverview_narrative
-      }
+    narrativeRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+      ...NarrativeEditionOverview_narrative
     }
   }
 `;

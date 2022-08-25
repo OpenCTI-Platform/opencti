@@ -63,25 +63,22 @@ const channelMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    channelEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
-        ...ChannelEditionOverview_channel
-        ...Channel_channel
-      }
+    channelFieldPatch(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
+      ...ChannelEditionOverview_channel
+      ...Channel_channel
     }
   }
 `;
 
 export const channelEditionOverviewFocus = graphql`
   mutation ChannelEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
-    channelEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    channelContextPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -89,13 +86,11 @@ export const channelEditionOverviewFocus = graphql`
 const channelMutationRelationAdd = graphql`
   mutation ChannelEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixMetaRelationshipAddInput!
   ) {
-    channelEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...ChannelEditionOverview_channel
-        }
+    channelRelationAdd(id: $id, input: $input) {
+      from {
+        ...ChannelEditionOverview_channel
       }
     }
   }
@@ -107,10 +102,8 @@ const channelMutationRelationDelete = graphql`
     $toId: String!
     $relationship_type: String!
   ) {
-    channelEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...ChannelEditionOverview_channel
-      }
+    channelRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+      ...ChannelEditionOverview_channel
     }
   }
 `;

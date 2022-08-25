@@ -48,9 +48,7 @@ Transition.displayName = 'TransitionSlide';
 
 const ChannelPopoverDeletionMutation = graphql`
   mutation ChannelPopoverDeletionMutation($id: ID!) {
-    channelEdit(id: $id) {
-      delete
-    }
+    channelDelete(id: $id)
   }
 `;
 

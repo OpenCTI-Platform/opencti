@@ -7297,9 +7297,19 @@ type Mutation {
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   channelAdd(input: ChannelAddInput!): Channel
-  channelEdit(id: ID!): ChannelEditMutations
+  channelDelete(id: ID!): ID
+  channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
+  channelContextPatch(id: ID!, input: EditContext!): Channel
+  channelContextClean(id: ID!): Channel
+  channelRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  channelRelationDelete(id: ID!, toId: String!, relationship_type: String!): Channel
   languageAdd(input: LanguageAddInput!): Language
-  languageEdit(id: ID!): LanguageEditMutations
+  languageDelete(id: ID!): ID
+  languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
+  languageContextPatch(id: ID!, input: EditContext!): Language
+  languageContextClean(id: ID!): Language
+  languageRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  languageRelationDelete(id: ID!, toId: String!, relationship_type: String!): Language
   eventAdd(input: EventAddInput!): Event
   eventDelete(id: ID!): ID
   eventFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Event
@@ -7308,7 +7318,12 @@ type Mutation {
   eventRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
   eventRelationDelete(id: ID!, toId: String!, relationship_type: String!): Event
   narrativeAdd(input: NarrativeAddInput!): Narrative
-  narrativeEdit(id: ID!): NarrativeEditMutations
+  narrativeDelete(id: ID!): ID
+  narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative
+  narrativeContextPatch(id: ID!, input: EditContext!): Narrative
+  narrativeContextClean(id: ID!): Narrative
+  narrativeRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  narrativeRelationDelete(id: ID!, toId: String!, relationship_type: String!): Narrative
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -7414,15 +7429,6 @@ input ChannelAddInput {
   update: Boolean
 }
 
-type ChannelEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Channel
-  contextPatch(input: EditContext): Channel
-  contextClean: Channel
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Channel
-}
-
 type Language implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   id: ID!
   standard_id: String!
@@ -7519,15 +7525,6 @@ input LanguageAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-}
-
-type LanguageEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Language
-  contextPatch(input: EditContext): Language
-  contextClean: Language
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Language
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -7738,13 +7735,4 @@ input NarrativeAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-}
-
-type NarrativeEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Narrative
-  contextPatch(input: EditContext): Narrative
-  contextClean: Narrative
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Narrative
 }

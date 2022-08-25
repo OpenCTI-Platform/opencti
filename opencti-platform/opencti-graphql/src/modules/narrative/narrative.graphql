@@ -145,16 +145,12 @@ input NarrativeAddInput {
     update: Boolean
 }
 
-type NarrativeEditMutations {
-    delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    contextPatch(input: EditContext): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    contextClean: Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    relationDelete(toId: String!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-}
-
 type Mutation {
     narrativeAdd(input: NarrativeAddInput!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeEdit(id: ID!): NarrativeEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeContextPatch(id: ID!, input: EditContext!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeContextClean(id: ID!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeRelationDelete(id: ID!, toId: String!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
 }
