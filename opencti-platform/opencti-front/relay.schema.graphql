@@ -7299,6 +7299,7 @@ type Mutation {
   channelAdd(input: ChannelAddInput!): Channel
   channelEdit(id: ID!): ChannelEditMutations
   languageAdd(input: LanguageAddInput!): Language
+  languageEdit(id: ID!): LanguageEditMutations
   eventAdd(input: EventAddInput!): Event
   eventEdit(id: ID!): EventEditMutations
   narrativeAdd(input: NarrativeAddInput!): Narrative
@@ -7513,6 +7514,15 @@ input LanguageAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+}
+
+type LanguageEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Language
+  contextPatch(input: EditContext): Language
+  contextClean: Language
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(toId: String!, relationship_type: String!): Language
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {

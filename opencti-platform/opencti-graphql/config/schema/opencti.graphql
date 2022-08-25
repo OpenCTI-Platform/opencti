@@ -9853,12 +9853,12 @@ type IdentityEditMutations {
   relationDelete(toId: String!, relationship_type: String!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type IndividualEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Individual
-  contextPatch(input: EditContext): Individual
-  contextClean: Individual
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Individual
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Individual @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type OrganizationEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -10184,7 +10184,7 @@ type Mutation {
   identityAdd(input: IdentityAddInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   identityEdit(id: ID!): IdentityEditMutations
   individualAdd(input: IndividualAddInput): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
-  individualEdit(id: ID!): IndividualEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  individualEdit(id: ID!): IndividualEditMutations
   organizationAdd(input: OrganizationAddInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   organizationEdit(id: ID!): OrganizationEditMutations
   sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])

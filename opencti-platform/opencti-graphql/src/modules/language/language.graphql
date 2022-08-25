@@ -138,6 +138,15 @@ input LanguageAddInput {
     clientMutationId: String
     update: Boolean
 }
+type LanguageEditMutations {
+    delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+    contextPatch(input: EditContext): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+    contextClean: Language @auth(for: [KNOWLEDGE_KNUPDATE])
+    relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    relationDelete(toId: String!, relationship_type: String!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+}
 type Mutation {
     languageAdd(input: LanguageAddInput!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+    languageEdit(id: ID!): LanguageEditMutations
 }

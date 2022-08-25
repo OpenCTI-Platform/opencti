@@ -156,5 +156,5 @@ type NarrativeEditMutations {
 
 type Mutation {
     narrativeAdd(input: NarrativeAddInput!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeEdit(id: ID!): NarrativeEditMutations
+    narrativeEdit(id: ID!): NarrativeEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 }

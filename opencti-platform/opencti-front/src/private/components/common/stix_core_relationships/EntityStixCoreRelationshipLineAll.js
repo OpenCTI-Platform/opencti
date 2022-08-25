@@ -1015,6 +1015,21 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
                 description
               }
+              ... on Event {
+                name
+                description
+              }
+              ... on Channel {
+                name
+                description
+              }
+              ... on Narrative {
+                name
+                description
+              }
+              ... on Language {
+                name
+              }
               ... on StixCyberObservable {
                 id
                 entity_type
@@ -1194,6 +1209,21 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
               ... on Incident {
                 name
                 description
+              }
+              ... on Event {
+                name
+                description
+              }
+              ... on Channel {
+                name
+                description
+              }
+              ... on Narrative {
+                name
+                description
+              }
+              ... on Language {
+                name
               }
               ... on StixCyberObservable {
                 id
