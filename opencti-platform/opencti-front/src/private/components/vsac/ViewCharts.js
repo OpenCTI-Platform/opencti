@@ -763,7 +763,7 @@ class ViewCharts extends Component {
                         onMouseLeave={this.handleMouseLeave.bind(this)}
                         wrapperStyle={{ bottom: -20 }}
                       />
-                      {trendingChatData.map((s) => (
+                      {trendingChatData.map((s, index) => (
                         <Line
                           dataKey="value"
                           isAnimationActive={trendingName === s.name ? false : true}
