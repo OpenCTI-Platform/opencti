@@ -503,6 +503,7 @@ export function convertAssetToComponent(asset) {
         continue;
       case 'created':
       case 'modified':
+      case 'last_scanned':
         if (value instanceof Date ) value = value.toISOString();
         break;
       case 'cpe_identifier':
