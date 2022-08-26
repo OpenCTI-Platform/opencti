@@ -247,7 +247,7 @@ class NetworkEditionContainer extends Component {
       R.assoc('network_name', network?.network_name),
       R.assoc('network_id', network?.network_id),
       R.assoc('is_scanned', network?.is_scanned),      
-      R.assoc('last_scanned', dateFormat(network?.last_scanned)),
+      R.assoc('last_scanned', network?.last_scanned),
       R.assoc('implementation_point', network?.implementation_point),
       R.assoc('starting_address', network?.network_address_range?.starting_ip_address?.ip_address_value || ''),
       R.assoc('ending_address', network?.network_address_range?.ending_ip_address?.ip_address_value || ''),
@@ -492,6 +492,7 @@ const NetworkEditionFragment = createFragmentContainer(
         network_name
         network_id
         is_scanned
+        last_scanned
         implementation_point
         network_address_range {
           ending_ip_address{

@@ -19,7 +19,7 @@ import InstalledAsset from '../../common/form/InstalledAsset';
 import PortsField from '../../common/form/PortsField';
 import AddressField from '../../common/form/AddressField';
 import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../utils/Network';
-import DatePickerField from '../../../../components/DatePickerField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -520,11 +520,11 @@ class DeviceCreationDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Field
-                  component={DatePickerField}
+                  component={DateTimePickerField}
                   variant='outlined'
                   name="last_scanned"
                   size='small'
-                  invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                  invalidDateMessage={t('The value must be a date (YYYY-MM-DD HH:MM)')}
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}

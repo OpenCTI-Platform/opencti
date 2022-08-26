@@ -249,7 +249,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('default_gateway', device?.default_gateway || ''),
       R.assoc('motherboard_id', device?.motherboard_id || ''),
       R.assoc('is_scanned', device?.is_scanned || false),
-      R.assoc('last_scanned', dateFormat(device?.last_scanned)),
+      R.assoc('last_scanned', device?.last_scanned),
       R.assoc('is_virtual', device?.is_virtual || false),
       R.assoc('is_publicly_accessible', device?.is_publicly_accessible || false),
       R.assoc('uri', device?.uri || null),

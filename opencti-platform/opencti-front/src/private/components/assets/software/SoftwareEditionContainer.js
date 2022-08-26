@@ -239,7 +239,7 @@ class SoftwareEditionContainer extends Component {
       R.assoc('installation_id', software?.installation_id || ''),
       R.assoc('implementation_point', software?.implementation_point || ''),
       R.assoc('is_scanned', software?.is_scanned),      
-      R.assoc('last_scanned', dateFormat(software?.last_scanned)),
+      R.assoc('last_scanned', software?.last_scanned),
       R.pick([
         'id',
         'asset_id',
@@ -490,6 +490,8 @@ const SoftwareEditionFragment = createFragmentContainer(
         patch_level
         installation_id
         implementation_point
+        is_scanned
+        last_scanned
         # ...SoftwareEditionOverview_software
         # editContext {
         #   name

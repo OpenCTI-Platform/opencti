@@ -20,7 +20,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import { adaptFieldValue } from '../../../../utils/String';
-import DatePickerField from '../../../../components/DatePickerField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = () => ({
   paper: {
@@ -322,11 +322,11 @@ class NetworkEditionDetailsComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
-                    component={DatePickerField}
+                    component={DateTimePickerField}
                     variant='outlined'
                     name="last_scanned"
                     size='small'
-                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD HH:MM)')}
                     fullWidth={true}
                     style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}

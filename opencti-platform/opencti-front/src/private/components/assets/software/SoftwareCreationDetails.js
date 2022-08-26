@@ -16,7 +16,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { commitMutation } from '../../../../relay/environment';
 import SwitchField from '../../../../components/SwitchField';
-import DatePickerField from '../../../../components/DatePickerField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -289,11 +289,11 @@ class SoftwareCreationDetailsComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
-                    component={DatePickerField}
+                    component={DateTimePickerField}
                     variant='outlined'
                     name="last_scanned"
                     size='small'
-                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD HH:MM)')}
                     fullWidth={true}
                     style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
