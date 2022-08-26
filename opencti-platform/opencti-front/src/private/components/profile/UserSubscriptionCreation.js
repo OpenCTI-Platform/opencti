@@ -569,7 +569,6 @@ class UserSubscriptionCreation extends Component {
                       variant="text"
                       availableFilterKeys={[
                         'entity_type',
-                        'relationship_type',
                         'markedBy',
                         'labelledBy',
                         'createdBy',
