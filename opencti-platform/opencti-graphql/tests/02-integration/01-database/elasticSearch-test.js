@@ -507,7 +507,7 @@ describe('Elasticsearch pagination', () => {
       { key: 'color', operator: undefined, values: [null] },
     ];
     data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(17);
+    expect(data.edges.length).toEqual(18);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
@@ -517,7 +517,7 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with date ordering', async () => {
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { orderBy: 'created', orderMode: 'asc' });
-    expect(data.edges.length).toEqual(56);
+    expect(data.edges.length).toEqual(57);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -540,12 +540,13 @@ describe('Elasticsearch pagination', () => {
       orderBy: 'definition',
       orderMode: 'desc',
     });
-    expect(data.edges.length).toEqual(6);
+    expect(data.edges.length).toEqual(7);
     const markings = R.map((e) => e.node.definition, data.edges);
-    expect(markings[0]).toEqual('TLP:CLEAR');
     expect(markings[1]).toEqual('TLP:TEST');
     expect(markings[2]).toEqual('TLP:RED');
     expect(markings[3]).toEqual('TLP:GREEN');
+    expect(markings[0]).toEqual('TLP:CLEAR');
+    expect(markings[4]).toEqual('TLP:AMBER+STRICT');
     expect(markings[4]).toEqual('TLP:AMBER');
   });
   it('should relation paginate everything', async () => {
