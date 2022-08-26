@@ -282,11 +282,14 @@ class StixCoreObjectStixCyberObservables extends Component {
             secondaryAction={true}
             filters={filters}
             availableFilterKeys={[
+              'toTypes',
+              'relationship_type',
               'markedBy',
               'createdBy',
               'created_start_date',
               'created_end_date',
             ]}
+            availableEntityTypes={['Stix-Cyber-Observable']}
             numberOfElements={numberOfElements}
             noPadding={true}
             disableCards={true}
@@ -401,11 +404,13 @@ class StixCoreObjectStixCyberObservables extends Component {
               iconExtension={true}
               filters={filters}
               availableFilterKeys={[
+                'entity_type',
                 'markedBy',
                 'createdBy',
                 'created_start_date',
                 'created_end_date',
               ]}
+              availableEntityTypes={['Stix-Cyber-Observable']}
               numberOfElements={numberOfElements}
               noPadding={true}
               disableCards={true}

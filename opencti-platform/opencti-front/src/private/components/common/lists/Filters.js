@@ -37,6 +37,35 @@ import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDo
 import { statusFieldStatusesSearchQuery } from '../form/StatusField';
 import { defaultValue } from '../../../../utils/Graph';
 
+export const filtersAllTypesQuery = graphql`
+  query FiltersAllTypesQuery {
+    scoTypes: subTypes(type: "Stix-Cyber-Observable") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+    sdoTypes: subTypes(type: "Stix-Domain-Object") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+    sroTypes: subTypes(type: "stix-core-relationship") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+  }
+`;
+
 const styles = (theme) => ({
   filters: {
     float: 'left',
@@ -822,142 +851,349 @@ class Filters extends Component {
         break;
       case 'entity_type':
         // eslint-disable-next-line no-case-declarations
-        // eslint-disable-next-line no-case-declarations
-        let entitiesTypes = R.pipe(
-          R.map((n) => ({
-            label: t(
-              n.toString()[0] === n.toString()[0].toUpperCase()
-                ? `entity_${n.toString()}`
-                : `relationship_${n.toString()}`,
-            ),
-            value: n,
-            type: n,
-          })),
-          R.sortWith([R.ascend(R.prop('label'))]),
-        )(availableEntityTypes || allEntityTypes);
-        if (this.props.allEntityTypes) {
-          entitiesTypes = R.prepend(
-            { label: t('entity_All'), value: 'all', type: 'entity' },
-            entitiesTypes,
-          );
-        }
-        this.setState({
-          entities: {
-            ...this.state.entities,
-            entity_type: R.union(
+        let entitiesTypes = [];
+        if (
+          availableEntityTypes
+          && !availableEntityTypes.includes('Stix-Cyber-Observable')
+          && !availableEntityTypes.includes('Stix-Domain-Object')
+        ) {
+          entitiesTypes = R.pipe(
+            R.map((n) => ({
+              label: t(
+                n.toString()[0] === n.toString()[0].toUpperCase()
+                  ? `entity_${n.toString()}`
+                  : `relationship_${n.toString()}`,
+              ),
+              value: n,
+              type: n,
+            })),
+            R.sortWith([R.ascend(R.prop('label'))]),
+          )(availableEntityTypes);
+          if (this.props.allEntityTypes) {
+            entitiesTypes = R.prepend(
+              { label: t('entity_All'), value: 'all', type: 'entity' },
               entitiesTypes,
-              this.state.entities.entity_type,
-            ),
-          },
-        });
+            );
+          }
+          this.setState({
+            entities: {
+              ...this.state.entities,
+              entity_type: R.union(
+                entitiesTypes,
+                this.state.entities.entity_type,
+              ),
+            },
+          });
+        } else {
+          fetchQuery(filtersAllTypesQuery)
+            .toPromise()
+            .then((data) => {
+              let result = [];
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('Stix-Cyber-Observable')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['scoTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`entity_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('Stix-Domain-Object')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['sdoTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`entity_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('stix-core-relationship')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['sroTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`relationship_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], result);
+              if (this.props.allEntityTypes) {
+                entitiesTypes = R.prepend(
+                  { label: t('entity_All'), value: 'all', type: 'entity' },
+                  entitiesTypes,
+                );
+              }
+              this.setState({
+                entities: {
+                  ...this.state.entities,
+                  entity_type: R.union(
+                    entitiesTypes,
+                    this.state.entities.entity_type,
+                  ),
+                },
+              });
+            });
+        }
         break;
       case 'fromTypes':
         // eslint-disable-next-line no-case-declarations
-        // eslint-disable-next-line no-case-declarations
-        let fromTypesTypes = R.pipe(
-          R.map((n) => ({
-            label: t(
-              n.toString()[0] === n.toString()[0].toUpperCase()
-                ? `entity_${n.toString()}`
-                : `relationship_${n.toString()}`,
-            ),
-            value: n,
-            type: n,
-          })),
-          R.sortWith([R.ascend(R.prop('label'))]),
-        )(availableEntityTypes || allEntityTypes);
-        if (this.props.allEntityTypes) {
-          fromTypesTypes = R.prepend(
-            { label: t('entity_All'), value: 'all', type: 'entity' },
-            fromTypesTypes,
-          );
+        let fromTypesTypes = [];
+        if (
+          availableEntityTypes
+          && !availableEntityTypes.includes('Stix-Cyber-Observable')
+          && !availableEntityTypes.includes('Stix-Domain-Object')
+        ) {
+          fromTypesTypes = R.pipe(
+            R.map((n) => ({
+              label: t(
+                n.toString()[0] === n.toString()[0].toUpperCase()
+                  ? `entity_${n.toString()}`
+                  : `relationship_${n.toString()}`,
+              ),
+              value: n,
+              type: n,
+            })),
+            R.sortWith([R.ascend(R.prop('label'))]),
+          )(availableEntityTypes);
+          if (this.props.allEntityTypes) {
+            fromTypesTypes = R.prepend(
+              { label: t('entity_All'), value: 'all', type: 'entity' },
+              fromTypesTypes,
+            );
+          }
+          this.setState({
+            entities: {
+              ...this.state.entities,
+              fromTypes: R.union(fromTypesTypes, this.state.entities.fromTypes),
+            },
+          });
+        } else {
+          fetchQuery(filtersAllTypesQuery)
+            .toPromise()
+            .then((data) => {
+              let result = [];
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('Stix-Cyber-Observable')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['scoTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`entity_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('Stix-Domain-Object')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['sdoTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`entity_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              fromTypesTypes = R.sortWith([R.ascend(R.prop('label'))], result);
+              if (this.props.allEntityTypes) {
+                fromTypesTypes = R.prepend(
+                  { label: t('entity_All'), value: 'all', type: 'entity' },
+                  fromTypesTypes,
+                );
+              }
+              this.setState({
+                entities: {
+                  ...this.state.entities,
+                  fromTypes: R.union(
+                    fromTypesTypes,
+                    this.state.entities.fromTypes,
+                  ),
+                },
+              });
+            });
         }
-        this.setState({
-          entities: {
-            ...this.state.entities,
-            fromTypes: R.union(fromTypesTypes, this.state.entities.fromTypes),
-          },
-        });
         break;
       case 'toTypes':
         // eslint-disable-next-line no-case-declarations
-        // eslint-disable-next-line no-case-declarations
-        let toTypesTypes = R.pipe(
-          R.map((n) => ({
-            label: t(
-              n.toString()[0] === n.toString()[0].toUpperCase()
-                ? `entity_${n.toString()}`
-                : `relationship_${n.toString()}`,
-            ),
-            value: n,
-            type: n,
-          })),
-          R.sortWith([R.ascend(R.prop('label'))]),
-        )(availableEntityTypes || allEntityTypes);
-        if (this.props.allEntityTypes) {
-          toTypesTypes = R.prepend(
-            { label: t('entity_All'), value: 'all', type: 'entity' },
-            toTypesTypes,
-          );
+        let toTypesTypes = [];
+        if (
+          availableEntityTypes
+          && !availableEntityTypes.includes('Stix-Cyber-Observable')
+          && !availableEntityTypes.includes('Stix-Domain-Object')
+        ) {
+          toTypesTypes = R.pipe(
+            R.map((n) => ({
+              label: t(
+                n.toString()[0] === n.toString()[0].toUpperCase()
+                  ? `entity_${n.toString()}`
+                  : `relationship_${n.toString()}`,
+              ),
+              value: n,
+              type: n,
+            })),
+            R.sortWith([R.ascend(R.prop('label'))]),
+          )(availableEntityTypes);
+          if (this.props.allEntityTypes) {
+            toTypesTypes = R.prepend(
+              { label: t('entity_All'), value: 'all', type: 'entity' },
+              toTypesTypes,
+            );
+          }
+          this.setState({
+            entities: {
+              ...this.state.entities,
+              toTypes: R.union(toTypesTypes, this.state.entities.toTypes),
+            },
+          });
+        } else {
+          fetchQuery(filtersAllTypesQuery)
+            .toPromise()
+            .then((data) => {
+              let result = [];
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('Stix-Cyber-Observable')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['scoTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`entity_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('Stix-Domain-Object')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['sdoTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`entity_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              toTypesTypes = R.sortWith([R.ascend(R.prop('label'))], result);
+              if (this.props.allEntityTypes) {
+                toTypesTypes = R.prepend(
+                  { label: t('entity_All'), value: 'all', type: 'entity' },
+                  toTypesTypes,
+                );
+              }
+              this.setState({
+                entities: {
+                  ...this.state.entities,
+                  toTypes: R.union(toTypesTypes, this.state.entities.toTypes),
+                },
+              });
+            });
         }
-        this.setState({
-          entities: {
-            ...this.state.entities,
-            toTypes: R.union(toTypesTypes, this.state.entities.toTypes),
-          },
-        });
         break;
       case 'relationship_type':
         // eslint-disable-next-line no-case-declarations
-        // eslint-disable-next-line no-case-declarations
-        let relationshipsTypes = R.pipe(
-          R.map((n) => ({
-            label: t(
-              n.toString()[0] === n.toString()[0].toUpperCase()
-                ? `entity_${n.toString()}`
-                : `relationship_${n.toString()}`,
-            ),
-            value: n,
-            type: n,
-          })),
-          R.sortWith([R.ascend(R.prop('label'))]),
-        )(
-          availableRelationshipTypes || [
-            'uses',
-            'indicates',
-            'targets',
-            'located-at',
-            'related-to',
-            'communicates-with',
-            'attributed-to',
-            'based-on',
-            'mitigates',
-            'variant-of',
-            'compromises',
-            'delivers',
-            'belongs-to',
-            'amplifies',
-          ],
-        );
-        if (this.props.allRelationshipTypes) {
-          relationshipsTypes = R.prepend(
-            {
-              label: t('relationship_All'),
-              value: 'all',
-              type: 'relationship',
-            },
-            relationshipsTypes,
-          );
-        }
-        this.setState({
-          entities: {
-            ...this.state.entities,
-            relationship_type: R.union(
+        let relationshipsTypes = [];
+        if (availableRelationshipTypes) {
+          relationshipsTypes = R.pipe(
+            R.map((n) => ({
+              label: t(`relationship_${n.toString()}`),
+              value: n,
+              type: n,
+            })),
+            R.sortWith([R.ascend(R.prop('label'))]),
+          )(availableRelationshipTypes);
+          if (this.props.allRelationshipTypes) {
+            relationshipsTypes = R.prepend(
+              {
+                label: t('relationship_All'),
+                value: 'all',
+                type: 'relationship',
+              },
               relationshipsTypes,
-              this.state.entities.relationship_type,
-            ),
-          },
-        });
+            );
+          }
+          this.setState({
+            entities: {
+              ...this.state.entities,
+              relationship_type: R.union(
+                relationshipsTypes,
+                this.state.entities.relationship_type,
+              ),
+            },
+          });
+        } else {
+          fetchQuery(filtersAllTypesQuery)
+            .toPromise()
+            .then((data) => {
+              relationshipsTypes = R.pipe(
+                R.pathOr([], ['sroTypes', 'edges']),
+                R.map((n) => ({
+                  label: t(`relationship_${n.node.label}`),
+                  value: n.node.label,
+                  type: n.node.label,
+                })),
+                R.sortWith([R.ascend(R.prop('label'))]),
+              )(data);
+              if (this.props.allRelationshipTypes) {
+                relationshipsTypes = R.prepend(
+                  {
+                    label: t('relationship_All'),
+                    value: 'all',
+                    type: 'relationship',
+                  },
+                  relationshipsTypes,
+                );
+              }
+              this.setState({
+                entities: {
+                  ...this.state.entities,
+                  relationship_type: R.union(
+                    relationshipsTypes,
+                    this.state.entities.relationship_type,
+                  ),
+                },
+              });
+            });
+        }
         break;
       case 'container_type':
         // eslint-disable-next-line no-case-declarations
