@@ -199,6 +199,21 @@ const entityStixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
               name
               description
             }
+            ... on Event {
+              name
+              description
+            }
+            ... on Channel {
+              name
+              description
+            }
+            ... on Narrative {
+              name
+              description
+            }
+            ... on Language {
+              name
+            }
             ... on StixCyberObservable {
               id
               entity_type
