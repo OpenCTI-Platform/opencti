@@ -14,7 +14,7 @@ import { RELATION_BASED_ON } from '../../src/schema/stixCoreRelationship';
 import { wait } from '../../src/database/utils';
 
 const RULE = RULE_PREFIX + RuleObserveSighting.id;
-const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const OBSERVED_DATA = 'observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be'; // observed-data A
 const OBSERVED_FILE = 'file--702e320e-43b6-552a-b7e7-d045bf9c887d'; // observable B
 const ANSSI = 'identity--18fe5225-fee1-5627-ad3e-20c14435b024'; // Organization X
@@ -50,7 +50,7 @@ describe('Observed sighting rule', () => {
         stop_time: '2020-02-20T00:00:00.000Z',
         confidence: 100,
         relationship_type: RELATION_BASED_ON,
-        objectMarking: [TLP_WHITE_ID],
+        objectMarking: [TLP_CLEAR_ID],
       });
       const afterLiveRelations = await assertInferencesSize(1);
       const cbrickToAnssi = await inferenceLookup(afterLiveRelations, CBRICKSDOC, ANSSI, STIX_SIGHTING_RELATIONSHIP);

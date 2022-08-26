@@ -12468,6 +12468,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   updated_at: Scalars['DateTime'];
   vendor?: Maybe<Scalars['String']>;
   version?: Maybe<Scalars['String']>;
+  vulnerabilities?: Maybe<VulnerabilityConnection>;
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
@@ -16167,6 +16168,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   pendingFiles?: Maybe<FileConnection>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
+  softwares?: Maybe<StixCyberObservableConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
@@ -21863,6 +21865,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   vendor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vulnerabilities?: Resolver<Maybe<ResolversTypes['VulnerabilityConnection']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -23107,6 +23110,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<VulnerabilityPendingFilesArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<VulnerabilityReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  softwares?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;

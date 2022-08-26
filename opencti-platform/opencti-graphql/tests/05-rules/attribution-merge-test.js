@@ -12,7 +12,7 @@ import { wait } from '../../src/database/utils';
 const RULE = RULE_PREFIX + AttributionUseRule.id;
 const APT41 = 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084';
 const PARADISE_RANSOMWARE = 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714';
-const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 
 describe('Attribute use rule when merging', () => {
   it(
@@ -31,7 +31,7 @@ describe('Attribute use rule when merging', () => {
         toId: threat.id,
         confidence: 10,
         relationship_type: RELATION_ATTRIBUTED_TO,
-        objectMarking: [TLP_WHITE_ID],
+        objectMarking: [TLP_CLEAR_ID],
       });
       // ---- Rule execution
       // Check that no inferences exists

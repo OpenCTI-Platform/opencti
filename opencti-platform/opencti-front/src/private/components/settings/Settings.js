@@ -649,7 +649,7 @@ class Settings extends Component {
                                   />
                                   {t('entity_Vulnerability')}
                                 </MenuItem>
-                                <MenuItem value="Arsenal" dense={true}>
+                                <MenuItem value="Entities" dense={true}>
                                   <Checkbox
                                     checked={
                                       (

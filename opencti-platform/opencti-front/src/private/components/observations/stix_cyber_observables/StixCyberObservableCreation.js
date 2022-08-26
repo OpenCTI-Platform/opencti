@@ -324,7 +324,7 @@ const sharedUpdater = (
 class StixCyberObservableCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, type: null };
+    this.state = { open: false, type: props.type || null };
   }
 
   handleOpen() {
@@ -806,6 +806,7 @@ StixCyberObservableCreation.propTypes = {
   display: PropTypes.bool,
   inputValue: PropTypes.string,
   openExports: PropTypes.bool,
+  type: PropTypes.string,
 };
 
 export default compose(

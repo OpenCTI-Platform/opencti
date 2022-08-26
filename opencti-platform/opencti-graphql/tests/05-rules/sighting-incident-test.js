@@ -15,7 +15,7 @@ import { listRelations } from '../../src/database/middleware-loader';
 import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
 import { wait } from '../../src/database/utils';
 
-const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const ONE_CLAP = 'indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752'; // indicator A
 
 describe('Sighting incident rule', () => {
@@ -41,8 +41,8 @@ describe('Sighting incident rule', () => {
       const inference = R.head(inferences);
       expect(inference).not.toBeNull();
       expect((inference[RELATION_OBJECT_MARKING] || []).length).toBe(1);
-      const white = await internalLoadById(SYSTEM_USER, TLP_WHITE_ID);
-      expect(R.head(inference[RELATION_OBJECT_MARKING])).toBe(white.internal_id);
+      const clear = await internalLoadById(SYSTEM_USER, TLP_CLEAR_ID);
+      expect(R.head(inference[RELATION_OBJECT_MARKING])).toBe(clear.internal_id);
       expect(inference.first_seen).toBe('2016-08-06T20:08:31.000Z');
       expect(inference.last_seen).toBe('2016-08-07T20:08:31.000Z');
       const relArgs = { fromId: inference.id, connectionFormat: false };

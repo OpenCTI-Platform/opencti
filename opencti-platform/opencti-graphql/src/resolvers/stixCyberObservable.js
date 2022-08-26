@@ -23,6 +23,7 @@ import {
   stixCyberObservablesExportAsk,
   promoteObservableToIndicator,
   artifactImport,
+  batchVulnerabilities
 } from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -35,6 +36,7 @@ import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { observableValue } from '../utils/format';
 
 const indicatorsLoader = batchLoader(batchIndicators);
+const vulnerabilitiesLoader = batchLoader(batchVulnerabilities);
 
 const stixCyberObservableResolvers = {
   Query: {
@@ -67,6 +69,9 @@ const stixCyberObservableResolvers = {
     toStix: (stixCyberObservable, _, { user }) => stixLoadByIdStringify(user, stixCyberObservable.id),
     importFiles: (stixCyberObservable, { first }, { user }) => filesListing(user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
     exportFiles: (stixCyberObservable, { first }, { user }) => filesListing(user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
+  },
+  Software: {
+    vulnerabilities: (software, _, { user }) => vulnerabilitiesLoader.load(software.id, user),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, { user }) => ({

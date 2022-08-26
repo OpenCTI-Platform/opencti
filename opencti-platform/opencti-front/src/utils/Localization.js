@@ -40,6 +40,7 @@ const i18n = {
       'Advanced search': 'Recherche avancée',
       'Global keyword': 'Mot-clé global',
       'Search for a threat...': 'Rechercher une menace...',
+      'Affected software': 'Logiciels affectés',
       'Do you want to delete this entity?':
         'Souhaitez-vous supprimer cette entité ?',
       'Do you want to delete this user?':
@@ -2582,6 +2583,7 @@ const i18n = {
       'Do you want to delete this entity?': '是否要删除此实体？',
       Platforms: '平台',
       Platform: '平台',
+      'Affected software': '受影响的软件',
       'Commit message': '提交消息',
       'Commit messages': '提交消息',
       'Reference knowledge update': '引用知识更新',
@@ -2922,8 +2924,12 @@ const i18n = {
       entity_Region: 'Region',
       entity_Position: 'Position',
       entity_Malware: 'Malware',
+      entity_Event: 'Event',
       'entity_Threat-Actor': 'Threat Actor',
       entity_Tool: 'Tool',
+      entity_Channel: 'Channel',
+      entity_Narrative: 'Narrative',
+      entity_Language: 'Language',
       entity_Vulnerability: 'Vulnerability',
       entity_Incident: 'Incident',
       'entity_Stix-Cyber-Observable': 'Observable',

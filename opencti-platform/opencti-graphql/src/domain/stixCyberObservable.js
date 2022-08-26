@@ -4,7 +4,7 @@ import { createHash } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
-  batchListThroughGetFrom,
+  batchListThroughGetFrom, batchListThroughGetTo,
   createEntity,
   createRelation,
   createRelations,
@@ -16,7 +16,7 @@ import {
   storeLoadById,
   storeLoadByIdWithRefs,
   timeSeriesEntities,
-  updateAttribute,
+  updateAttribute
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../config/conf';
@@ -32,7 +32,7 @@ import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
-  stixCyberObservableOptions,
+  stixCyberObservableOptions
 } from '../schema/stixCyberObservable';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -42,8 +42,8 @@ import {
   INPUT_MARKINGS
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship';
+import { ENTITY_TYPE_INDICATOR, ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { escape, now, observableValue } from '../utils/format';
@@ -400,4 +400,8 @@ export const artifactImport = async (user, args) => {
   const artifact = await addStixCyberObservable(user, artifactData);
   await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id, version });
   return artifact;
+};
+
+export const batchVulnerabilities = (user, softwareIds) => {
+  return batchListThroughGetTo(user, softwareIds, RELATION_HAS, ENTITY_TYPE_VULNERABILITY);
 };

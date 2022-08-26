@@ -13,7 +13,7 @@ const RULE = RULE_PREFIX + AttributionUseRule.id;
 const APT41 = 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084';
 const PARADISE_RANSOMWARE = 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714';
 const SPELEVO = 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85';
-const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 
 describe('Attribute use rule', () => {
   it(
@@ -34,7 +34,7 @@ describe('Attribute use rule', () => {
         stop_time: '2020-02-29T14:00:00.000Z',
         confidence: 10,
         relationship_type: RELATION_ATTRIBUTED_TO,
-        objectMarking: [TLP_WHITE_ID],
+        objectMarking: [TLP_CLEAR_ID],
       });
       // ---- Rule execution
       // Check that no inferences exists
@@ -61,7 +61,7 @@ describe('Attribute use rule', () => {
         stop_time: '2020-02-28T14:00:00.000Z',
         confidence: 90,
         relationship_type: RELATION_USES,
-        objectMarking: [TLP_WHITE_ID],
+        objectMarking: [TLP_CLEAR_ID],
       });
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       // Check the inferences

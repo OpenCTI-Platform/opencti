@@ -87,7 +87,7 @@ const stixMetaObjectsAttributes = {
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), stixMetaObjectsAttributes);
 
 const stixMetaObjectsFieldsToBeUpdated = {
-  [ENTITY_TYPE_MARKING_DEFINITION]: ['definition'],
+  [ENTITY_TYPE_MARKING_DEFINITION]: [],
   [ENTITY_TYPE_LABEL]: ['value', 'color'],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: ['description'],
   [ENTITY_TYPE_KILL_CHAIN_PHASE]: ['x_opencti_order'],
