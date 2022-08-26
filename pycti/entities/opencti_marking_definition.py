@@ -260,6 +260,10 @@ class MarkingDefinition:
                 elif "name" in stix_object:
                     definition = stix_object["name"]
 
+            # Replace TLP:WHITE
+            if definition == "TLP:WHITE":
+                definition = "TLP:CLEAR"
+
             # Search in extensions
             if (
                 "x_opencti_order" not in stix_object
