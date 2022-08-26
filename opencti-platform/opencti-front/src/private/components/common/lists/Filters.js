@@ -248,6 +248,21 @@ export const filtersStixCoreObjectsSearchQuery = graphql`
             name
             description
           }
+          ... on Event {
+            name
+            description
+          }
+          ... on Channel {
+            name
+            description
+          }
+          ... on Narrative {
+            name
+            description
+          }
+          ... on Language {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -921,6 +936,7 @@ class Filters extends Component {
             'compromises',
             'delivers',
             'belongs-to',
+            'amplifies',
           ],
         );
         if (this.props.allRelationshipTypes) {

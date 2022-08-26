@@ -1640,7 +1640,10 @@ class InvestigationGraphComponent extends Component {
                       width: '100%',
                     }}
                   >
-                    {[
+                    {R.pipe(
+                      R.map((n) => ({ key: n, label: t(`entity_${n}`) })),
+                      R.sortWith([R.ascend(R.prop('label'))]),
+                    )([
                       'All',
                       'Attack-Pattern',
                       'Campaign',
@@ -1664,14 +1667,17 @@ class InvestigationGraphComponent extends Component {
                       'Tool',
                       'Vulnerability',
                       'Incident',
+                      'Label',
+                      'Marking-Definition',
+                      'External-Reference',
                       'Stix-Cyber-Observable',
                       'Domain-Name',
                       'IPv4-Addr',
                       'IPv6-Addr',
                       'StixFile',
-                    ].map((entityType) => (
-                      <MenuItem key={entityType} value={entityType}>
-                        {t(`entity_${entityType}`)}
+                    ]).map((entityType) => (
+                      <MenuItem key={entityType.key} value={entityType.key}>
+                        {entityType.label}
                       </MenuItem>
                     ))}
                   </Field>
@@ -1686,16 +1692,28 @@ class InvestigationGraphComponent extends Component {
                       width: '100%',
                     }}
                   >
-                    {[
+                    {R.pipe(
+                      R.map((n) => ({ key: n, label: t(`relationship_${n}`) })),
+                      R.sortWith([R.ascend(R.prop('label'))]),
+                    )([
                       'All',
+                      'uses',
                       'indicates',
                       'targets',
-                      'uses',
                       'located-at',
+                      'related-to',
+                      'communicates-with',
                       'attributed-to',
-                    ].map((relationshipType) => (
-                      <MenuItem key={relationshipType} value={relationshipType}>
-                        {t(`relationship_${relationshipType}`)}
+                      'based-on',
+                      'mitigates',
+                      'variant-of',
+                      'compromises',
+                      'delivers',
+                      'belongs-to',
+                      'amplifies',
+                    ]).map((relationshipType) => (
+                      <MenuItem key={relationshipType.key} value={relationshipType.key}>
+                        {relationshipType.label}
                       </MenuItem>
                     ))}
                   </Field>

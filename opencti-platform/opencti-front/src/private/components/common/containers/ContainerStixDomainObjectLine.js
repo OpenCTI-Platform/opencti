@@ -240,6 +240,18 @@ const ContainerStixDomainObjectLineFragment = createFragmentContainer(
         ... on Incident {
           name
         }
+        ... on Event {
+          name
+        }
+        ... on Channel {
+          name
+        }
+        ... on Narrative {
+          name
+        }
+        ... on Language {
+          name
+        }
         objectLabel {
           edges {
             node {
