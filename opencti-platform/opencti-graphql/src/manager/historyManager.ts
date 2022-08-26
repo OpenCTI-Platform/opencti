@@ -61,7 +61,7 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const stix = event.data.data;
-    const eventMarkingRefs = (event.data.data?.object_marking_refs ?? []).map((stixId) => markingsById.get(stixId));
+    const eventMarkingRefs = (stix.object_marking_refs ?? []).map((stixId) => markingsById.get(stixId));
     const contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,

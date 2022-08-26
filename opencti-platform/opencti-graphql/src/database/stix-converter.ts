@@ -954,11 +954,11 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sro',
-        source_ref: instance.from?.internal_id,
-        source_type: instance.from?.entity_type,
+        source_ref: instance.from.internal_id,
+        source_type: instance.from.entity_type,
         source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
-        target_ref: instance.to?.internal_id,
-        target_type: instance.to?.entity_type,
+        target_ref: instance.to.internal_id,
+        target_type: instance.to.entity_type,
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
         kill_chain_phases: buildKillChainPhases(instance)
       })
@@ -981,11 +981,11 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
-        sighting_of_ref: instance.from?.internal_id,
-        sighting_of_type: instance.from?.entity_type,
+        sighting_of_ref: instance.from.internal_id,
+        sighting_of_type: instance.from.entity_type,
         sighting_of_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
-        where_sighted_refs: instance.to?.internal_id ? [instance.to?.internal_id] : [],
-        where_sighted_types: instance.to?.entity_type ? [instance.to?.entity_type] : [],
+        where_sighted_refs: instance.to.internal_id ? [instance.to.internal_id] : [],
+        where_sighted_types: instance.to.entity_type ? [instance.to.entity_type] : [],
         where_sighted_refs_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
         negative: instance.x_opencti_negative,
       })
