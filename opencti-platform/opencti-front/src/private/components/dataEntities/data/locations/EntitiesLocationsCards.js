@@ -43,6 +43,7 @@ class EntitiesLocationsCards extends Component {
     this.props.relay.refetchConnection(nbOfCardsToLoad, null, {
       offset: this.state.offset,
       first: nbOfCardsToLoad,
+       ...this.props.paginationOptions,
     })
   }
 
@@ -52,6 +53,7 @@ class EntitiesLocationsCards extends Component {
     this.props.relay.refetchConnection(nbOfCardsToLoad, null, {
       offset: this.state.offset,
       first: nbOfCardsToLoad,
+       ...this.props.paginationOptions,
     })
   }
 

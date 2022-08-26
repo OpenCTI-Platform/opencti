@@ -31,6 +31,8 @@ class EntitiesAssessmentPlatformsLines extends Component {
     this.setState({ offset: incrementedOffset })
     this.props.relay.refetchConnection(nbOfRowsToLoad, null, {
       offset: this.state.offset,
+      first: nbOfRowsToLoad,
+      ...this.props.paginationOptions,
     })
   }
 
@@ -39,6 +41,8 @@ class EntitiesAssessmentPlatformsLines extends Component {
     this.setState({ offset: decrementedOffset })
     this.props.relay.refetchConnection(nbOfRowsToLoad, null, {
       offset: this.state.offset,
+      first: nbOfRowsToLoad,
+      ...this.props.paginationOptions,
     })
   }
 
