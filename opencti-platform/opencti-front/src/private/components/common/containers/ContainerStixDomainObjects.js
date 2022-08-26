@@ -12,12 +12,14 @@ import ContainerStixDomainObjectsLines, {
 import StixDomainObjectsRightBar from '../stix_domain_objects/StixDomainObjectsRightBar';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 import ToolBar from '../../data/ToolBar';
 import { UserContext } from '../../../../utils/Security';
+import { isUniqFilter } from '../lists/Filters';
 
 const styles = () => ({
   container: {
@@ -38,6 +40,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
+      filters: R.propOr({}, 'filters', params),
       types: propOr([], 'types', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -132,6 +135,41 @@ class ContainerStixDomainObjectsComponent extends Component {
     });
   }
 
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: R.assoc(
+            key,
+            isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
+  }
+
   handleClearSelectedElements() {
     this.setState({
       selectAll: false,
@@ -188,35 +226,35 @@ class ContainerStixDomainObjectsComponent extends Component {
       deSelectedElements,
       selectAll,
       types,
+      filters,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original
         - Object.keys(deSelectedElements || {}).length;
     }
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       types: types.length > 0 ? types : ['Stix-Domain-Object'],
-      filters: null,
       search: searchTerm,
+      filters: finalFilters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
-    const filters = [{ key: 'containedBy', values: [container.id] }];
-    if (types.length > 0) {
-      filters.push({ key: 'entity_type', values: types });
-    }
-    const exportPaginationOptions = {
-      filters,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-      search: searchTerm,
-    };
-    const finalFilters = {
+    const exportFilters = {
+      containedBy: [{ id: container.id, value: defaultValue(container) }],
       entity_type:
         types.length > 0
           ? R.map((n) => ({ id: n, value: n }), types)
           : [{ id: 'Stix-Domain-Object', value: 'Stix-Domain-Object' }],
-      containedBy: [{ id: container.id, value: defaultValue(container) }],
+      ...filters,
+    };
+    const exportFinalFilters = convertFilters(exportFilters);
+    const exportPaginationOptions = {
+      filters: exportFinalFilters,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
+      search: searchTerm,
     };
     return (
       <UserContext.Consumer>
@@ -228,6 +266,8 @@ class ContainerStixDomainObjectsComponent extends Component {
               dataColumns={this.buildColumns(helper)}
               handleSort={this.handleSort.bind(this)}
               handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
               handleToggleExports={this.handleToggleExports.bind(this)}
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               selectAll={selectAll}
@@ -235,6 +275,14 @@ class ContainerStixDomainObjectsComponent extends Component {
               exportEntityType="Stix-Domain-Object"
               openExports={openExports}
               exportContext={`of-container-${container.id}`}
+              filters={filters}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'created_at_start_date',
+                'created_at_end_date',
+                'createdBy',
+              ]}
               keyword={searchTerm}
               secondaryAction={true}
               numberOfElements={numberOfElements}

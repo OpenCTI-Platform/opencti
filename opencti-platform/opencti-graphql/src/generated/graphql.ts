@@ -13981,11 +13981,27 @@ export type StixObjectOrStixRelationshipEdge = {
 };
 
 export enum StixObjectOrStixRelationshipsFilter {
+  Confidence = 'confidence',
+  ContainedBy = 'containedBy',
+  Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  EntityType = 'entity_type',
+  HasExternalReference = 'hasExternalReference',
+  HashesMd5 = 'hashes_MD5',
+  HashesSha1 = 'hashes_SHA1',
+  HashesSha256 = 'hashes_SHA256',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
-  UpdatedAt = 'updated_at'
+  Modified = 'modified',
+  Name = 'name',
+  ObjectContained = 'objectContained',
+  RelatedTo = 'relatedTo',
+  SightedBy = 'sightedBy',
+  UpdatedAt = 'updated_at',
+  Value = 'value',
+  XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiScore = 'x_opencti_score'
 }
 
 export type StixObjectOrStixRelationshipsFiltering = {

@@ -11,6 +11,7 @@ import ContainerStixCyberObservablesLines, {
 } from './ContainerStixCyberObservablesLines';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
@@ -18,6 +19,7 @@ import StixCyberObservablesRightBar from '../../observations/stix_cyber_observab
 import ToolBar from '../../data/ToolBar';
 import { defaultValue } from '../../../../utils/Graph';
 import { UserContext } from '../../../../utils/Security';
+import { isUniqFilter } from '../lists/Filters';
 
 const styles = () => ({
   container: {
@@ -38,7 +40,8 @@ class ContainerStixCyberObservablesComponent extends Component {
       sortBy: propOr('created_at', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      types: [],
+      filters: R.propOr({}, 'filters', params),
+      types: propOr([], 'types', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
@@ -136,6 +139,41 @@ class ContainerStixCyberObservablesComponent extends Component {
     });
   }
 
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: R.assoc(
+            key,
+            isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
+  }
+
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
   }
@@ -188,20 +226,27 @@ class ContainerStixCyberObservablesComponent extends Component {
       deSelectedElements,
       selectAll,
       types,
+      filters,
     } = this.state;
-
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       types: types.length > 0 ? types : ['Stix-Cyber-Observable'],
       search: searchTerm,
+      filters: finalFilters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
-    const filters = [{ key: 'containedBy', values: [container.id] }];
-    if (types.length > 0) {
-      filters.push({ key: 'entity_type', values: types });
-    }
+    const exportFilters = {
+      containedBy: [{ id: container.id, value: defaultValue(container) }],
+      entity_type:
+        types.length > 0
+          ? R.map((n) => ({ id: n, value: n }), types)
+          : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
+      ...filters,
+    };
+    const exportFinalFilters = convertFilters(exportFilters);
     const exportPaginationOptions = {
-      filters,
+      filters: exportFinalFilters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,
@@ -210,13 +255,6 @@ class ContainerStixCyberObservablesComponent extends Component {
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
     }
-    const finalFilters = {
-      entity_type:
-        types.length > 0
-          ? R.map((n) => ({ id: n, value: n }), types)
-          : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
-      containedBy: [{ id: container.id, value: defaultValue(container) }],
-    };
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -229,6 +267,8 @@ class ContainerStixCyberObservablesComponent extends Component {
               handleSearch={this.handleSearch.bind(this)}
               secondaryAction={true}
               numberOfElements={numberOfElements}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               selectAll={selectAll}
               iconExtension={true}
@@ -236,6 +276,17 @@ class ContainerStixCyberObservablesComponent extends Component {
               exportEntityType="Stix-Cyber-Observable"
               openExports={openExports}
               exportContext={`of-container-${container.id}`}
+              filters={filters}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'created_at_start_date',
+                'created_at_end_date',
+                'x_opencti_score_gt',
+                'x_opencti_score_lte',
+                'createdBy',
+                'sightedBy',
+              ]}
               paginationOptions={exportPaginationOptions}
             >
               <QueryRenderer

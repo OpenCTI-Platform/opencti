@@ -8061,6 +8061,22 @@ enum StixObjectOrStixRelationshipsFilter {
   createdBy
   markedBy
   labelledBy
+  entity_type
+  x_opencti_score
+  x_opencti_organization_type
+  created
+  modified
+  relatedTo
+  objectContained
+  containedBy
+  hasExternalReference
+  sightedBy
+  value
+  name
+  confidence
+  hashes_MD5
+  hashes_SHA1
+  hashes_SHA256
 }
 input StixObjectOrStixRelationshipsFiltering {
   key: StixObjectOrStixRelationshipsFilter!
