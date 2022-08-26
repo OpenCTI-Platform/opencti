@@ -945,8 +945,8 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
     ...stixRelationship,
     relationship_type: instance.relationship_type,
     description: instance.description,
-    source_ref: instance.from?.standard_id,
-    target_ref: instance.to?.standard_id,
+    source_ref: instance.from.standard_id,
+    target_ref: instance.to.standard_id,
     start_time: cleanDate(instance.start_time),
     stop_time: cleanDate(instance.stop_time),
     external_references: buildExternalReferences(instance),
@@ -974,8 +974,8 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
     first_seen: cleanDate(instance.first_seen),
     last_seen: cleanDate(instance.last_seen),
     count: instance.attribute_count,
-    sighting_of_ref: instance.from?.standard_id,
-    where_sighted_refs: instance.to?.standard_id ? [instance.to?.standard_id] : [],
+    sighting_of_ref: instance.from.standard_id,
+    where_sighted_refs: instance.to.standard_id ? [instance.to.standard_id] : [],
     summary: instance.summary,
     observed_data_refs: [], // TODO Add support
     extensions: {
