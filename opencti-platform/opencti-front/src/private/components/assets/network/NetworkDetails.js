@@ -20,7 +20,7 @@ const styles = (theme) => ({
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: '15px',
+    padding: '24px 24px 32px 24px',
     borderRadius: 6,
   },
   chip: {
@@ -47,8 +47,8 @@ class NetworkDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <div>
+            <Grid container spacing={1}>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -64,44 +64,8 @@ class NetworkDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {network.network_name && t(network.network_name)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Starting Address')}
-                </Typography>
-                <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
-                  <Tooltip title={t('Starting Address')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                  { startingAddress }
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
-                  <Tooltip title={t('Starting Address')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Switch disabled defaultChecked={network?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
-              </div>              
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -117,8 +81,27 @@ class NetworkDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {network.network_id && t(network.network_id)}
-              </div>
-              <div>
+              </Grid>
+            </Grid>
+            <Grid container spacing={1}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Starting Address')}
+                </Typography>
+                <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
+                  <Tooltip title={t('Starting Address')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                  { startingAddress }
+              </Grid>            
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -134,25 +117,10 @@ class NetworkDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 { endingAddress }
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20  }}
-                >
-                  {t('Last Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Last Scanned')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {network.last_scanned && fldt(network.last_scanned)}
-              </div>
-              <div>
+              </Grid>       
+            </Grid>
+            <Grid container spacing={1}>              
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -168,7 +136,43 @@ class NetworkDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {network.implementation_point && t(network.implementation_point)}
-              </div>
+              </Grid>
+            </Grid>
+            <Grid container spacing={1}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
+                  <Tooltip title={t('Starting Address')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Switch disabled defaultChecked={network?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
+              </Grid>       
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20  }}
+                >
+                  {t('Last Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Last Scanned')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {network.last_scanned && fldt(network.last_scanned)}
+              </Grid>             
             </Grid>
           </Grid>
         </Paper>

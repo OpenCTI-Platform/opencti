@@ -169,8 +169,8 @@ class SoftwareEditionDetailsComponent extends Component {
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
-                <div>
+              <Grid container spacing={1}>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -191,8 +191,82 @@ class SoftwareEditionDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                   />
-                </div>
-                <div>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Patch Level')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                    <Tooltip title={t('Patch Level')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="patch_level"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                  />
+                </Grid>                
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('CPE Identifier')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip
+                      title={t('CPE Identifier')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="cpe_identifier"
+                    size='small'
+                    fullWidth={true}                  
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Implementation Point')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Implementation Point')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="implementation_point"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </Grid>
+              </Grid>              
+              <Grid container spacing={1}>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -215,36 +289,32 @@ class SoftwareEditionDetailsComponent extends Component {
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   />
-                </div>
-                <div>
+                </Grid>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('CPE Identifier')}
+                    {t('Installation ID')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip
-                      title={t('CPE Identifier')}>
+                    <Tooltip title={t('Installation ID')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="cpe_identifier"
+                    name="installation_id"
                     size='small'
                     fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   fieldName="cpe_identifier"
-                  //   />
-                  // }
                   />
-                </div>
-                <div>
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>                
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -270,79 +340,8 @@ class SoftwareEditionDetailsComponent extends Component {
                     />
                     <Typography>Yes</Typography>
                   </div>
-                </div>
-              </Grid>
-              <Grid item={true} xs={6}>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Patch Level')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
-                    <Tooltip title={t('Patch Level')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="patch_level"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Installation ID')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Installation ID')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="installation_id"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Implementation Point')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Implementation Point')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="implementation_point"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
-                <div>
+                </Grid>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -367,7 +366,7 @@ class SoftwareEditionDetailsComponent extends Component {
                     style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
                   />
-                </div>
+                </Grid>
               </Grid>
             </Grid>
           </Paper>

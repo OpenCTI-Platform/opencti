@@ -74,9 +74,9 @@ class DeviceDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <div style={{ marginBottom: '23px' }}>
+          <Grid rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+            <Grid container spacing={1} style={{ marginBottom: '20px' }}>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -100,190 +100,8 @@ class DeviceDetailsComponent extends Component {
                   >
                     <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.installed_operating_system.name)}
                   </Link>}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Installed Software')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Installed Software')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.installed_software
-                  && device.installed_software.map((software, key) => (
-                    <div key={key}>
-                      <div className="clearfix" />
-                      {software.name
-                        && <Link
-                          key={key}
-                          component="button"
-                          variant="body2"
-                          className={classes.link}
-                          onClick={() => (
-                            software.id && history.push(`/defender HQ/assets/software/${software.id}`)
-                          )}
-                        >
-                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)}
-                        </Link>}
-                    </div>
-                  ))}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Motherboard ID')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Motherboard ID')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.motherboard_id && t(device.motherboard_id)}
-              </div>              
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Installation ID')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Installation ID')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.installation_id && t(device.installation_id)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Connected to Network')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Connected to Network')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.connected_to_network?.name
-                  && <Link
-                    component="button"
-                    variant="body2"
-                    className={classes.link}
-                    onClick={() => (
-                      device.connected_to_network.id && history.push(`/defender HQ/assets/network/${device.connected_to_network.id}`)
-                    )}
-                  >
-                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.connected_to_network.name)}
-                  </Link>}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('NetBIOS Name')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('NetBIOS Name')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.netbios_name && t(device.netbios_name)}
-              </div>              
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Virtual')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Virtual')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Switch disabled color="primary" defaultChecked={device?.is_virtual} size="small" />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Scanned')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Scanned')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Switch disabled color="primary" defaultChecked={device?.is_scanned} size="small" />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Publicly Accessible')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Publicly Accessible')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Switch disabled color="primary" defaultChecked={device?.is_publicly_accessible} size="small" />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('FQDN')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('FQDN')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.fqdn && t(device.fqdn)}
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -312,17 +130,53 @@ class DeviceDetailsComponent extends Component {
                     </Link>
                   </div>
                 ))}
-              </div>
-              <div>
+              </Grid>              
+            </Grid>
+            <Grid container spacing={1} style={{ marginBottom: '20px' }}>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
+                >
+                  {t('Installed Software')}
+                </Typography>
+                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
+                  <Tooltip title={t('Installed Software')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.installed_software
+                  && device.installed_software.map((software, key) => (
+                    <div key={key}>
+                      <div className="clearfix" />
+                      {software.name
+                        && <Link
+                          key={key}
+                          component="button"
+                          variant="body2"
+                          className={classes.link}
+                          onClick={() => (
+                            software.id && history.push(`/defender HQ/assets/software/${software.id}`)
+                          )}
+                        >
+                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)}
+                        </Link>}
+                    </div>
+                  ))}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 1 }}
                 >
                   {t('Location')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                   <Tooltip title={t('Location')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
@@ -341,8 +195,27 @@ class DeviceDetailsComponent extends Component {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div>
+              </Grid>
+            </Grid> 
+            <Grid container spacing={1} style={{ marginBottom: '20px' }}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Motherboard ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Motherboard ID')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.motherboard_id && t(device.motherboard_id)}
+              </Grid>              
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -358,8 +231,27 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {device?.model && t(device.model)}
-              </div>
-              <div>
+              </Grid>
+            </Grid>
+            <Grid container spacing={1}>              
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Installation ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Installation ID')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.installation_id && t(device.installation_id)}
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -376,8 +268,37 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device?.baseline_configuration_name
                   && t(device.baseline_configuration_name)}
-              </div>
-              <div>
+              </Grid>
+            </Grid>
+            <Grid container spacing={1} style={{ marginBottom: '20px' }}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Connected to Network')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Connected to Network')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.connected_to_network?.name
+                  && <Link
+                    component="button"
+                    variant="body2"
+                    className={classes.link}
+                    onClick={() => (
+                      device.connected_to_network.id && history.push(`/defender HQ/assets/network/${device.connected_to_network.id}`)
+                    )}
+                  >
+                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.connected_to_network.name)}
+                  </Link>}
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -400,8 +321,27 @@ class DeviceDetailsComponent extends Component {
                   >
                     <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.uri)}
                   </Link>}
-              </div>
-              <div>
+              </Grid>
+            </Grid>
+            <Grid container spacing={1} style={{ marginBottom: '20px' }}>              
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('NetBIOS Name')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('NetBIOS Name')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.netbios_name && t(device.netbios_name)}
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -418,44 +358,63 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device?.bios_id
                   && t(device.bios_id)}
-              </div>             
-              <div>
+              </Grid>
+            </Grid>
+            <Grid container spacing={1}>              
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Host Name')}
+                  {t('Virtual')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Host Name')} >
+                  <Tooltip title={t('Virtual')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device?.hostname
-                  && t(device.hostname)}
-              </div>              
-              <div>
+                <Switch disabled color="primary" defaultChecked={device?.is_virtual} size="small" />
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Default Gateway')}
+                  {t('Publicly Accessible')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Default Gateway')} >
+                  <Tooltip title={t('Publicly Accessible')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device?.default_gateway
-                  && t(device.default_gateway)}
-              </div>
-              <div>
+                <Switch disabled color="primary" defaultChecked={device?.is_publicly_accessible} size="small" />
+              </Grid>
+            </Grid>
+            <Grid container spacing={1} style={{ marginBottom: '20px' }}>              
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Scanned')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Switch disabled color="primary" defaultChecked={device?.is_scanned} size="small" />
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -472,8 +431,65 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device.last_scanned
                   && fldt(device.last_scanned)}
-              </div>
-              <div>
+              </Grid>              
+            </Grid>                    
+            <Grid container spacing={1} style={{ marginBottom: '20px' }}>             
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Host Name')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Host Name')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.hostname
+                  && t(device.hostname)}
+              </Grid>              
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Default Gateway')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Default Gateway')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.default_gateway
+                  && t(device.default_gateway)}
+              </Grid>
+            </Grid>
+            <Grid container spacing={1} style={{ marginBottom: '20px' }}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('FQDN')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('FQDN')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.fqdn && t(device.fqdn)}
+              </Grid>            
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -490,10 +506,10 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device.cpe_identifier
                   && t(device.cpe_identifier)}
-              </div>
+              </Grid>
             </Grid>
           </Grid>
-          <Grid container={true} spacing={3}>
+          <Grid container spacing={1}>
             <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
@@ -524,6 +540,8 @@ class DeviceDetailsComponent extends Component {
                 </div>
               </div>
             </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
@@ -552,6 +570,8 @@ class DeviceDetailsComponent extends Component {
                 </div>
               </div>
             </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
@@ -581,6 +601,8 @@ class DeviceDetailsComponent extends Component {
                 </div>
               </div>
             </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
