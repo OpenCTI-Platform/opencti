@@ -704,6 +704,20 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
         ... on UserAgent {
           value
         }
+        ... on BankAccount {
+          iban
+          bic
+          number
+        }
+        ... on PhoneNumber {
+          value
+        }
+        ... on PaymentCard {
+          number
+          expiration_date
+          cvv
+          holder_name
+        }
         x_opencti_score
         x_opencti_description
         createdBy {

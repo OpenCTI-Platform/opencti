@@ -4801,7 +4801,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   observable_value: String!
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
-  number: Int!
+  number: Float
   name: String
   rir: String
   creator: User
@@ -4815,7 +4815,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
 }
 
 input AutonomousSystemAddInput {
-  number: Int!
+  number: Float!
   name: String
   rir: String
 }
@@ -6016,6 +6016,136 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
 
 input UserAgentAddInput {
   value: String
+}
+
+type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  iban: String
+  bic: String
+  number: Float
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+
+input BankAccountAddInput {
+  iban: String
+  bic: String
+  number: Float
+}
+
+type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  value: String
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+
+input PhoneNumberAddInput {
+  value: String
+}
+
+type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [String]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  number: Float
+  expiration_date: DateTime
+  cvv: Int
+  holder_name: String
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+
+input PaymentCardAddInput {
+  number: Float!
+  expiration_date: DateTime
+  cvv: Int
+  holder_name: String
 }
 
 interface BasicRelationship {
@@ -7299,7 +7429,7 @@ type Mutation {
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput): Incident
   incidentEdit(id: ID!): IncidentEditMutations
-  stixCyberObservableAdd(type: String!, stix_id: String, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput): StixCyberObservable
+  stixCyberObservableAdd(type: String!, stix_id: String, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(format: String!, exportType: String!, maxMarkingDefinition: String, context: String, types: [String], search: String, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode, filters: [StixCyberObservablesFiltering], filterMode: FilterMode): FileConnection
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean

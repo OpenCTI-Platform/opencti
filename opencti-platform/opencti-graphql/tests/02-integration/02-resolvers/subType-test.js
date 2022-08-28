@@ -17,6 +17,6 @@ const LIST_QUERY = gql`
 describe('SubType resolver standard behavior', () => {
   it('should list subTypes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { type: 'Stix-Cyber-Observable' } });
-    expect(queryResult.data.subTypes.edges.length).toEqual(25);
+    expect(queryResult.data.subTypes.edges.length).toEqual(28);
   });
 });

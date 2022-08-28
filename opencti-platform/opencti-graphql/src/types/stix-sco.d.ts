@@ -241,6 +241,59 @@ interface StixUserAgent extends StixCyberObject {
   }
 }
 
+// Custom object extension - Bank Account
+// iban, bic, number
+interface StixBankAccount extends StixCyberObject {
+  iban: string;
+  bic: string;
+  number: number;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+  }
+}
+
+// Custom object extension - Phone number
+// value
+interface StixPhoneNumber extends StixCyberObject {
+  value: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+  }
+}
+
+// Custom object extension - Credit Card
+// number, expiration_date, cvv, holder_name
+interface StixPaymentCard extends StixCyberObject {
+  number: number;
+  expiration_date: Date;
+  cvv: number;
+  holder_name: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+  }
+}
+
 type StixExtendedObservable = StixCryptographicKey | StixHostname | StixText | StixUserAgent | StixEmailBodyMultipart | StixWindowsRegistryValueType;
 
 // IPv4 Address Object Specific Properties

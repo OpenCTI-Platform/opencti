@@ -78,7 +78,7 @@ import {
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
-  ENTITY_AUTONOMOUS_SYSTEM,
+  ENTITY_AUTONOMOUS_SYSTEM, ENTITY_BANK_ACCOUNT,
   ENTITY_CRYPTOGRAPHIC_KEY,
   ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
@@ -95,6 +95,8 @@ import {
   ENTITY_MAC_ADDR,
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
+  ENTITY_PAYMENT_CARD,
+  ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
   ENTITY_TEXT,
@@ -853,6 +855,62 @@ const convertTextToStix = (instance: StoreCyberObservable, type: string): SCO.St
     }
   };
 };
+const convertBankAccountToStix = (instance: StoreCyberObservable, type: string): SCO.StixBankAccount => {
+  assertType(ENTITY_BANK_ACCOUNT, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    iban: instance.iban,
+    bic: instance.bic,
+    number: instance.number,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    description: instance.x_opencti_description,
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
+const convertPhoneNumberToStix = (instance: StoreCyberObservable, type: string): SCO.StixPhoneNumber => {
+  assertType(ENTITY_PHONE_NUMBER, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    value: instance.value,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    description: instance.x_opencti_description,
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
+const convertPaymentCardToStix = (instance: StoreCyberObservable, type: string): SCO.StixPaymentCard => {
+  assertType(ENTITY_PAYMENT_CARD, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    number: instance.number,
+    expiration_date: instance.expiration_date,
+    cvv: instance.cvv,
+    holder_name: instance.holder_name,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    description: instance.x_opencti_description,
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
 const convertURLToStix = (instance: StoreCyberObservable, type: string): SCO.StixURL => {
   assertType(ENTITY_URL, type);
   return {
@@ -1281,6 +1339,15 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     }
     if (ENTITY_TEXT === type) {
       return convertTextToStix(cyber, type);
+    }
+    if (ENTITY_BANK_ACCOUNT === type) {
+      return convertBankAccountToStix(cyber, type);
+    }
+    if (ENTITY_PHONE_NUMBER === type) {
+      return convertPhoneNumberToStix(cyber, type);
+    }
+    if (ENTITY_PAYMENT_CARD === type) {
+      return convertPaymentCardToStix(cyber, type);
     }
     if (ENTITY_URL === type) {
       return convertURLToStix(cyber, type);

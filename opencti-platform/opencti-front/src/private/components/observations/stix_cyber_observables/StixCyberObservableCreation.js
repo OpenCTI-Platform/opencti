@@ -96,6 +96,7 @@ export const dateAttributes = [
   'credential_last_changed',
   'account_first_login',
   'account_last_login',
+  'expiration_date',
 ];
 
 export const numberAttributes = [
@@ -110,6 +111,7 @@ export const numberAttributes = [
   'size',
   'number_of_subkeys',
   'subject_public_key_exponent',
+  'cvv',
 ];
 
 export const booleanAttributes = [
@@ -229,6 +231,9 @@ const stixCyberObservableMutation = graphql`
     $CryptocurrencyWallet: CryptocurrencyWalletAddInput
     $Text: TextAddInput
     $UserAgent: UserAgentAddInput
+    $BankAccount: BankAccountAddInput
+    $PhoneNumber: PhoneNumberAddInput
+    $PaymentCard: PaymentCardAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -264,6 +269,9 @@ const stixCyberObservableMutation = graphql`
       CryptocurrencyWallet: $CryptocurrencyWallet
       Text: $Text
       UserAgent: $UserAgent
+      BankAccount: $BankAccount
+      PhoneNumber: $PhoneNumber
+      PaymentCard: $PaymentCard
     ) {
       id
       entity_type

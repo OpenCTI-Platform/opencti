@@ -1283,6 +1283,9 @@ const i18n = {
       entity_Hostname: "Nom d'hôte",
       entity_Text: 'Texte',
       'entity_User-Agent': 'User agent',
+      'entity_Bank-Account': 'Compte bancaire',
+      'entity_Phone-Number': 'Numéro de téléphone',
+      'entity_Payment-Card': 'Carte de paiement',
       // Relations
       relationship_All: 'Tous les types de relation',
       relationship_object: 'contient',
@@ -2675,6 +2678,9 @@ const i18n = {
       entity_Hostname: '主机名',
       entity_Text: '文本',
       'entity_User-Agent': '用户代理',
+      'entity_Bank-Account': '银行账户',
+      'entity_Phone-Number': '电话号码',
+      'entity_Payment-Card': '支付卡',
       // Relations
       relationship_All: '所有关系',
       relationship_object: '对象',
@@ -2962,6 +2968,9 @@ const i18n = {
       entity_Hostname: 'Hostname',
       entity_Text: 'Text',
       'entity_User-Agent': 'User agent',
+      'entity_Bank-Account': 'Bank account',
+      'entity_Phone-Number': 'Phone number',
+      'entity_Payment-Card': 'Payment card',
       // Relations
       relationship_All: 'All types of relationship',
       relationship_object: 'contains',

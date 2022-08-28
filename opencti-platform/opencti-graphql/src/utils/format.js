@@ -2,7 +2,7 @@ import Moment from 'moment';
 import { extendMoment } from 'moment-range';
 import * as R from 'ramda';
 import {
-  ENTITY_AUTONOMOUS_SYSTEM,
+  ENTITY_AUTONOMOUS_SYSTEM, ENTITY_BANK_ACCOUNT,
   ENTITY_DIRECTORY,
   ENTITY_EMAIL_MESSAGE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -10,11 +10,12 @@ import {
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
+  ENTITY_PAYMENT_CARD,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../schema/stixCyberObservable';
 
 const moment = extendMoment(Moment);
@@ -93,6 +94,10 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.name || 'Unknown';
     case ENTITY_USER_ACCOUNT:
       return stixCyberObservable.account_login || stixCyberObservable.user_id || 'Unknown';
+    case ENTITY_BANK_ACCOUNT:
+      return stixCyberObservable.iban || stixCyberObservable.number || 'Unknown';
+    case ENTITY_PAYMENT_CARD:
+      return stixCyberObservable.number || stixCyberObservable.holder_name || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_KEY:
       return stixCyberObservable.attribute_key || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
@@ -202,6 +207,18 @@ export const runtimeFieldObservableValueScript = () => {
          emit(doc['account_login.keyword'].value)
        } else if (have(doc, 'user_id')) {
          emit(doc['user_id.keyword'].value)
+       } else {
+         emit('Unknown')
+       }
+    } else if (type == 'bank-account') {
+       if (have(doc, 'iban')) {
+         emit(doc['iban.keyword'].value)
+       } else {
+         emit('Unknown')
+       }
+    } else if (type == 'payment-card') {
+       if (have(doc, 'number')) {
+         emit(doc['number.keyword'].value)
        } else {
          emit('Unknown')
        }

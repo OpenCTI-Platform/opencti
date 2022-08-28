@@ -35,11 +35,14 @@ export const ENTITY_URL = 'Url';
 export const ENTITY_USER_ACCOUNT = 'User-Account';
 export const ENTITY_WINDOWS_REGISTRY_KEY = 'Windows-Registry-Key';
 export const ENTITY_WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type';
-export const ENTITY_CRYPTOGRAPHIC_KEY = 'Cryptographic-Key';
-export const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet';
-export const ENTITY_HOSTNAME = 'Hostname';
-export const ENTITY_TEXT = 'Text';
-export const ENTITY_USER_AGENT = 'User-Agent';
+export const ENTITY_CRYPTOGRAPHIC_KEY = 'Cryptographic-Key'; // Custom
+export const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet'; // Custom
+export const ENTITY_HOSTNAME = 'Hostname'; // Custom
+export const ENTITY_TEXT = 'Text'; // Custom
+export const ENTITY_USER_AGENT = 'User-Agent'; // Custom
+export const ENTITY_BANK_ACCOUNT = 'Bank-Account'; // Custom
+export const ENTITY_PHONE_NUMBER = 'Phone-Number'; // Custom
+export const ENTITY_PAYMENT_CARD = 'Payment-Card'; // Custom
 
 const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -73,6 +76,9 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_HOSTNAME,
   ENTITY_USER_AGENT,
   ENTITY_TEXT,
+  ENTITY_BANK_ACCOUNT,
+  ENTITY_PHONE_NUMBER,
+  ENTITY_PAYMENT_CARD,
 ];
 schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 
@@ -247,6 +253,9 @@ const stixCyberObservableFieldsToBeUpdated = {
   [ENTITY_HOSTNAME]: ['x_opencti_description', 'x_opencti_score', 'value'],
   [ENTITY_TEXT]: ['x_opencti_description', 'x_opencti_score', 'value'],
   [ENTITY_USER_AGENT]: ['x_opencti_description', 'x_opencti_score', 'value'],
+  [ENTITY_BANK_ACCOUNT]: ['x_opencti_description', 'x_opencti_score', 'iban', 'bic', 'number'],
+  [ENTITY_PHONE_NUMBER]: ['x_opencti_description', 'x_opencti_score', 'value'],
+  [ENTITY_PAYMENT_CARD]: ['x_opencti_description', 'x_opencti_score', 'number', 'expiration_date', 'cvv', 'holder_name'],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerUpsertAttributes(key, value), stixCyberObservableFieldsToBeUpdated);
 
@@ -721,6 +730,56 @@ const stixCyberObservablesAttributes = {
     'x_opencti_description',
     'x_opencti_score',
     'value',
+  ],
+  [ENTITY_BANK_ACCOUNT]: [
+    'internal_id',
+    'standard_id',
+    'entity_type',
+    'x_opencti_stix_ids',
+    'spec_version',
+    'created_at',
+    'i_created_at_day',
+    'i_created_at_month',
+    'i_created_at_year',
+    'updated_at',
+    'x_opencti_description',
+    'x_opencti_score',
+    'iban',
+    'bic',
+    'number',
+  ],
+  [ENTITY_PHONE_NUMBER]: [
+    'internal_id',
+    'standard_id',
+    'entity_type',
+    'x_opencti_stix_ids',
+    'spec_version',
+    'created_at',
+    'i_created_at_day',
+    'i_created_at_month',
+    'i_created_at_year',
+    'updated_at',
+    'x_opencti_description',
+    'x_opencti_score',
+    'value',
+  ],
+  [ENTITY_PAYMENT_CARD]: [
+    'internal_id',
+    'standard_id',
+    'entity_type',
+    'x_opencti_stix_ids',
+    'spec_version',
+    'created_at',
+    'i_created_at_day',
+    'i_created_at_month',
+    'i_created_at_year',
+    'updated_at',
+    'x_opencti_description',
+    'x_opencti_score',
+    'number',
+    'expiration_date',
+    'cvv',
+    'holder_name'
   ],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), stixCyberObservablesAttributes);

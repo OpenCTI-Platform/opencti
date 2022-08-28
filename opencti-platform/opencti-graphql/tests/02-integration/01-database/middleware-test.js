@@ -90,7 +90,7 @@ describe('Loaders', () => {
   it('should load subTypes values', async () => {
     const stixObservableSubTypes = await querySubTypes({ type: 'Stix-Cyber-Observable' });
     expect(stixObservableSubTypes).not.toBeNull();
-    expect(stixObservableSubTypes.edges.length).toEqual(25);
+    expect(stixObservableSubTypes.edges.length).toEqual(28);
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);
     expect(R.includes('IPv4-Addr', subTypeLabels)).toBeTruthy();
     expect(R.includes('IPv6-Addr', subTypeLabels)).toBeTruthy();

@@ -373,6 +373,9 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   name: string;
   data: string;
   data_type: string;
+  iban: string;
+  bic: string;
+  holder_name: string;
   // date
   attribute_date: Date;
   ctime: Date;
@@ -391,6 +394,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   validity_not_after: Date;
   private_key_usage_period_not_before: Date;
   private_key_usage_period_not_after: Date;
+  expiration_date: Date;
   // boolean
   defanged: boolean;
   is_multipart: boolean;
@@ -419,6 +423,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   pid: number;
   number_of_subkeys: number;
   subject_public_key_exponent: number;
+  cvv: number;
   // object
   ipfix: object;
   environment_variables: object;
