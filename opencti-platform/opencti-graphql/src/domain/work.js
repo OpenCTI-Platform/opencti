@@ -120,7 +120,9 @@ export const deleteWorkForConnector = async (user, connectorId) => {
 
 export const deleteWorkForFile = async (user, fileId) => {
   const works = await worksForSource(user, fileId);
-  await deleteWorksRaw(works);
+  if (works.length > 0) {
+    await deleteWorksRaw(works);
+  }
   return true;
 };
 

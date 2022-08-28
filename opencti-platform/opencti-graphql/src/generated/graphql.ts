@@ -513,7 +513,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   jobs?: Maybe<Array<Maybe<Work>>>;
   name?: Maybe<Scalars['String']>;
   notes?: Maybe<NoteConnection>;
-  number?: Maybe<Scalars['Int']>;
+  number?: Maybe<Scalars['Float']>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
@@ -642,7 +642,7 @@ export type AutonomousSystemStixCyberObservableRelationshipsArgs = {
 
 export type AutonomousSystemAddInput = {
   name?: InputMaybe<Scalars['String']>;
-  number: Scalars['Int'];
+  number: Scalars['Float'];
   rir?: InputMaybe<Scalars['String']>;
 };
 
@@ -664,7 +664,7 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
-  number?: Maybe<Scalars['Int']>;
+  number?: Maybe<Scalars['Float']>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
@@ -793,7 +793,7 @@ export type BankAccountStixCyberObservableRelationshipsArgs = {
 export type BankAccountAddInput = {
   bic?: InputMaybe<Scalars['String']>;
   iban?: InputMaybe<Scalars['String']>;
-  number?: InputMaybe<Scalars['Int']>;
+  number?: InputMaybe<Scalars['Float']>;
 };
 
 export type BasicObject = {
@@ -9549,7 +9549,7 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
-  number?: Maybe<Scalars['Int']>;
+  number?: Maybe<Scalars['Float']>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   observable_value: Scalars['String'];
@@ -9679,7 +9679,7 @@ export type PaymentCardAddInput = {
   cvv?: InputMaybe<Scalars['Int']>;
   expiration_date?: InputMaybe<Scalars['DateTime']>;
   holder_name?: InputMaybe<Scalars['String']>;
-  number?: InputMaybe<Scalars['Int']>;
+  number: Scalars['Float'];
 };
 
 export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -18891,7 +18891,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AutonomousSystemJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AutonomousSystemNotesArgs>>;
-  number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  number?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -18931,7 +18931,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<BankAccountJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<BankAccountNotesArgs>>;
-  number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  number?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -21620,7 +21620,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PaymentCardJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PaymentCardNotesArgs>>;
-  number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  number?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
