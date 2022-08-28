@@ -31,6 +31,7 @@ import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { now } from '../utils/format';
 
 // region hashes
 const MD5 = 'MD5';
@@ -401,7 +402,10 @@ const generateStixId = (type, data) => {
 };
 
 export const generateInternalId = () => uuidv4();
-export const generateWorkId = () => `opencti-work--${generateInternalId()}`;
+export const generateWorkId = (connectorId) => {
+  const timestamp = now();
+  return { id: `work_${connectorId}_${timestamp}`, timestamp };
+};
 export const generateStandardId = (type, data) => {
   // Entities
   if (isStixMetaObject(type)) return generateStixId(type, data);

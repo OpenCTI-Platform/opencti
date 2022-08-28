@@ -67,6 +67,12 @@
     "enabled": true,
     "lock_key": "history_manager_lock"
   },
+  "connector_manager": {
+    "enabled": true,
+    "lock_key": "connector_manager_lock",
+    "works_day_range": 7,
+    "interval": 15000
+  },
   "task_scheduler": {
     "enabled": true,
     "lock_key": "task_manager_lock",

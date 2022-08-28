@@ -232,7 +232,7 @@ class ConnectorWorksComponent extends Component {
                       <span className={classes.number}>
                         {work.status === 'wait'
                           ? '-'
-                          : tracking?.import_processed_number}
+                          : tracking?.import_processed_number ?? '-'}
                       </span>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -242,7 +242,7 @@ class ConnectorWorksComponent extends Component {
                       <span className={classes.number}>
                         {work.status === 'wait'
                           ? '-'
-                          : tracking?.import_expected_number}
+                          : tracking?.import_expected_number ?? '-'}
                       </span>
                     </Grid>
                     <Grid item={true} xs={12}>

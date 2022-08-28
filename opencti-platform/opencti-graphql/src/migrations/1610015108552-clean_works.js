@@ -1,15 +1,5 @@
-import { deleteOldCompletedWorks } from '../domain/work';
-import { logApp } from '../config/conf';
-import { SYSTEM_USER } from '../utils/access';
-import { connectors } from '../database/repository';
-
 export const up = async (next) => {
-  const connectorList = await connectors(SYSTEM_USER);
-  for (let index = 0; index < connectorList.length; index += 1) {
-    const connector = connectorList[index];
-    logApp.info(`Deleting old works for ${connector.name}`);
-    await deleteOldCompletedWorks(connector, true);
-  }
+  // Handled by the connector manager
   next();
 };
 

@@ -8,6 +8,7 @@ import conf, {
   ENABLED_SYNC_MANAGER,
   ENABLED_RETENTION_MANAGER,
   ENABLED_HISTORY_MANAGER,
+  ENABLED_CONNECTOR_MANAGER,
 } from './config/conf';
 import expiredManager from './manager/expiredManager';
 import subscriptionManager from './manager/subscriptionManager';
@@ -17,6 +18,7 @@ import historyManager from './manager/historyManager';
 import syncManager from './manager/syncManager';
 import retentionManager from './manager/retentionManager';
 import httpServer from './http/httpServer';
+import connectorManager from './manager/connectorManager';
 
 // region static graphql modules
 import './modules/index';
@@ -37,6 +39,13 @@ export const startModules = async () => {
     await expiredManager.start();
   } else {
     logApp.info('[OPENCTI-MODULE] Expiration manager not started (disabled by configuration)');
+  }
+  // endregion
+  // region connector manager
+  if (ENABLED_CONNECTOR_MANAGER) {
+    await connectorManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Connector manager not started (disabled by configuration)');
   }
   // endregion
   // region Retention manager

@@ -227,11 +227,11 @@ export const redisTx = async (client: Redis, chain: (tx: ChainableCommander) => 
     throw DatabaseError('Redis Tx error', { error: e });
   }
 };
-export const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object) => {
+const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object) => {
   const data = R.flatten(R.toPairs(input));
   await tx.hset(id, data);
 };
-export const updateObjectCounterRaw = async (tx: ChainableCommander, id: string, field: string, number: number) => {
+const updateObjectCounterRaw = async (tx: ChainableCommander, id: string, field: string, number: number) => {
   await tx.hincrby(id, field, number);
 };
 // endregion
@@ -641,16 +641,10 @@ export const createStreamProcessor = (user: AuthUser, provider: string, callback
 // endregion
 
 // region work handling
-export const redisDeleteWork = async (internalIds: Array<string>) => {
+export const redisDeleteWorks = async (internalIds: Array<string>) => {
   const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
   return redisTx(clientBase, (tx) => {
     tx.del(...ids);
-  });
-};
-export const redisCreateWork = async (element: StoreObject) => {
-  return redisTx(clientBase, (tx) => {
-    const data = R.flatten(R.toPairs(element as any));
-    tx.hset(element.internal_id, data);
   });
 };
 export const redisGetWork = async (internalId: string) => {
@@ -658,14 +652,20 @@ export const redisGetWork = async (internalId: string) => {
 };
 export const redisUpdateWorkFigures = async (workId: string) => {
   const timestamp = now();
-  const [, , fetched]: any = await redisTx(clientBase, async (tx) => {
+  await redisTx(clientBase, async (tx) => {
+    if (workId.includes('_')) { // Handle a connector status.
+      const [, connectorId] = workId.split('_');
+      await tx.set(`work:${connectorId}`, workId);
+    }
     await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
     await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
-    await tx.hgetall(workId);
   });
-  const updatedMetrics = R.last(fetched);
+  const updatedMetrics = await redisGetWork(workId);
   const { import_processed_number: pn, import_expected_number: en }: any = updatedMetrics;
   return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn, expected: en };
+};
+export const redisGetConnectorStatus = async (connectorId: string) => {
+  return clientBase.get(`work:${connectorId}`);
 };
 export const redisUpdateActionExpectation = async (user: AuthUser, workId: string, expectation: number) => {
   await redisTx(clientBase, async (tx) => {

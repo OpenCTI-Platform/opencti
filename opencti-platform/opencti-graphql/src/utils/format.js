@@ -33,6 +33,9 @@ export const sinceNowInMinutes = (lastModified) => {
   const duration = moment.duration(diff);
   return Math.floor(duration.asMinutes());
 };
+export const sinceNowInDays = (lastModified) => {
+  return sinceNowInMinutes(lastModified) / 1440;
+};
 export const prepareDate = (date) => utcDate(date).format(dateFormat);
 export const yearFormat = (date) => utcDate(date).format('YYYY');
 export const monthFormat = (date) => utcDate(date).format('YYYY-MM');

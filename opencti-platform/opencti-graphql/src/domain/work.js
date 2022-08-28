@@ -1,22 +1,23 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import {
-  elLoadById,
   elDeleteInstanceIds,
   elIndex,
+  elLoadById,
   elPaginate,
   elUpdate,
-  ES_IGNORE_THROTTLED,
-  elRawSearch,
 } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
-import { READ_INDEX_HISTORY, isNotEmptyField, INDEX_HISTORY } from '../database/utils';
-import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
-import { logApp } from '../config/conf';
+import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
+import {
+  redisDeleteWorks,
+  redisGetWork,
+  redisUpdateActionExpectation,
+  redisUpdateWorkFigures
+} from '../database/redis';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
-import { DatabaseError } from '../config/errors';
 import { now, sinceNowInMinutes } from '../utils/format';
-import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -86,15 +87,17 @@ export const loadExportWorksAsProgressFiles = async (user, sourceId) => {
   return R.map((item) => workToExportFile(item), filterSuccessCompleted);
 };
 
-export const deleteWorkRaw = async (work) => {
-  await elDeleteInstanceIds([work]);
-  await redisDeleteWork(work.internal_id);
-  return work.internal_id;
+export const deleteWorksRaw = async (works) => {
+  const workIds = works.map((w) => w.internal_id);
+  await elDeleteInstanceIds(works);
+  await redisDeleteWorks(workIds);
+  return workIds;
 };
 
 export const deleteWork = async (user, workId) => {
   const work = await loadWorkById(user, workId);
-  return deleteWorkRaw(work);
+  await deleteWorksRaw([work]);
+  return workId;
 };
 
 export const pingWork = async (user, workId) => {
@@ -107,83 +110,28 @@ export const pingWork = async (user, workId) => {
 };
 
 export const deleteWorkForConnector = async (user, connectorId) => {
-  let works = await worksForConnector(user, connectorId, { first: 5000 });
+  let works = await worksForConnector(user, connectorId, { first: 500 });
   while (works.length > 0) {
-    await Promise.all(R.map((w) => deleteWorkRaw(w), works));
-    works = await worksForConnector(user, connectorId, { first: 5000 });
+    await deleteWorksRaw(works);
+    works = await worksForConnector(user, connectorId, { first: 500 });
   }
   return true;
 };
 
 export const deleteWorkForFile = async (user, fileId) => {
   const works = await worksForSource(user, fileId);
-  await Promise.all(R.map((w) => deleteWorkRaw(w), works));
+  await deleteWorksRaw(works);
   return true;
 };
 
-export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
-  const paginationCount = 500;
-  const rangeToKeep = connector.connector_type === CONNECTOR_INTERNAL_ENRICHMENT ? 'now-2d/d' : 'now-30d/d';
-  const query = {
-    bool: {
-      must: [
-        { match_phrase: { 'connector_id.keyword': connector.id } },
-        { match_phrase: { 'status.keyword': 'complete' } },
-        { range: { completed_time: { lte: rangeToKeep } } },
-      ],
-    },
-  };
-  let counter = 0;
-  let hasNextPage = true;
-  let searchAfter = '';
-  let totalToDelete = null;
-  while (hasNextPage) {
-    let body = {
-      query,
-      size: paginationCount,
-      track_total_hits: true,
-      sort: [{ completed_time: { order: 'desc', unmapped_type: 'date' } }],
-    };
-    if (searchAfter) {
-      body = { ...body, search_after: [searchAfter] };
-    }
-    const worksToDelete = await elRawSearch({ index: READ_INDEX_HISTORY, ignore_throttled: ES_IGNORE_THROTTLED, body })
-      .catch((e) => {
-        throw DatabaseError('Error searching for works to delete', { error: e });
-      });
-
-    const { hits, total: { value: valTotal } } = worksToDelete.hits;
-    if (totalToDelete === null) totalToDelete = valTotal;
-    if (hits.length === 0) {
-      hasNextPage = false;
-    } else {
-      const lastHit = R.last(hits);
-      counter += hits.length;
-      searchAfter = R.head(lastHit.sort);
-      if (hits.length > 0) {
-        const works = hits.map((h) => R.assoc('_index', h._index, h._source));
-        const ids = works.map((w) => w.internal_id);
-        await redisDeleteWork(ids);
-        await elDeleteInstanceIds(works);
-      }
-      if (logInfo) {
-        const message = `[WORKS] Deleting old works ${connector.name}: ${counter}/${totalToDelete}`;
-        logApp.info(message);
-      }
-    }
-  }
-};
-
 export const createWork = async (user, connector, friendlyName, sourceId, args = {}) => {
-  // 01. Cleanup complete work older
-  await deleteOldCompletedWorks(connector);
-  // 02. Create the new work
+  // Create the new work
   const { receivedTime = null } = args;
   // Create the work and an initial job
-  const workId = generateWorkId();
+  const { id: workId, timestamp } = generateWorkId(connector.internal_id);
   const work = {
     internal_id: workId,
-    timestamp: now(),
+    timestamp,
     updated_at: now(),
     name: friendlyName,
     entity_type: ENTITY_TYPE_WORK,
@@ -195,6 +143,7 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
     connector_id: connector.internal_id, // Connector responsible for the action
     // Action context
     status: receivedTime ? 'progress' : 'wait', // Wait / Progress / Complete
+    import_expected_number: 0,
     received_time: receivedTime,
     processed_time: null,
     completed_time: null,
@@ -202,26 +151,18 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
     messages: [],
     errors: [],
   };
-  const workTracing = {
-    internal_id: workId,
-    import_expected_number: 0,
-    import_processed_number: 0,
-  };
-  await redisCreateWork(workTracing);
   await elIndex(INDEX_HISTORY, work);
   return loadWorkById(user, workId);
 };
 
 const isWorkCompleted = async (workId) => {
   const { import_processed_number: pn, import_expected_number: en } = await redisGetWork(workId);
-  // eslint-disable-next-line camelcase
   return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn };
 };
 
-export const reportActionImport = async (user, workId, errorData) => {
+export const reportExpectation = async (user, workId, errorData) => {
   const timestamp = now();
   const { isComplete, total } = await redisUpdateWorkFigures(workId);
-  // const { isComplete, total } = await isWorkCompleted(workId);
   if (isComplete || errorData) {
     const params = { now: timestamp };
     let sourceScript = '';
@@ -237,11 +178,22 @@ export const reportActionImport = async (user, workId, errorData) => {
       params.source = source;
       params.error = error;
     }
-    await elUpdate(INDEX_HISTORY, workId, {
-      script: { source: sourceScript, lang: 'painless', params },
-    });
+    // Update elastic
+    await elUpdate(INDEX_HISTORY, workId, { script: { source: sourceScript, lang: 'painless', params } });
+    // Remove redis work if needed
+    if (isComplete) {
+      await redisDeleteWorks(workId);
+    }
   }
   return workId;
+};
+
+export const updateExpectationsNumber = async (user, workId, expectations) => {
+  const params = { updated_at: now(), import_expected_number: expectations };
+  let source = 'ctx._source.updated_at = params.updated_at;';
+  source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
+  await elUpdate(INDEX_HISTORY, workId, { script: { source, lang: 'painless', params } });
+  return redisUpdateActionExpectation(user, workId, expectations);
 };
 
 export const updateReceivedTime = async (user, workId, message) => {
@@ -251,18 +203,18 @@ export const updateReceivedTime = async (user, workId, message) => {
   if (isNotEmptyField(message)) {
     source += 'ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); ';
   }
-  await elUpdate(INDEX_HISTORY, workId, {
-    script: { source, lang: 'painless', params },
-  });
+  // Update elastic
+  await elUpdate(INDEX_HISTORY, workId, { script: { source, lang: 'painless', params } });
   return workId;
 };
 
 export const updateProcessedTime = async (user, workId, message, inError = false) => {
   const params = { processed_time: now(), message };
   let source = 'ctx._source["processed_time"] = params.processed_time;';
+  const currentWork = await loadWorkById(user, workId);
   const { isComplete, total } = await isWorkCompleted(workId);
-  if (isComplete) {
-    params.completed_number = total;
+  if (currentWork.import_expected_number === 0 || isComplete) {
+    params.completed_number = total ?? 0;
     source += `ctx._source['status'] = "complete";
                ctx._source['completed_number'] = params.completed_number;
                ctx._source['completed_time'] = params.processed_time;`;
@@ -274,8 +226,11 @@ export const updateProcessedTime = async (user, workId, message, inError = false
       source += 'ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); ';
     }
   }
-  await elUpdate(INDEX_HISTORY, workId, {
-    script: { source, lang: 'painless', params },
-  });
+  // Update elastic
+  await elUpdate(INDEX_HISTORY, workId, { script: { source, lang: 'painless', params } });
+  // Remove redis work if needed
+  if (isComplete) {
+    await redisDeleteWorks([workId]);
+  }
   return workId;
 };

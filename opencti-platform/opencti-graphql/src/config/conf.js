@@ -305,9 +305,11 @@ export const configureCA = (certificates) => {
   return { ca: [] };
 };
 
-// Expose global configuration
+// Default activated managers
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_RETENTION_MANAGER = booleanConf('retention_manager:enabled', true);
+export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
+// Default deactivated managers
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
 export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
