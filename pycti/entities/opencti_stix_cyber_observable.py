@@ -285,6 +285,20 @@ class StixCyberObservable:
             ... on UserAgent {
                 value
             }
+            ... on BankAccount {
+                iban
+                bic
+                number
+            }
+            ... on PhoneNumber {
+                value
+            }
+            ... on PaymentCard {
+                number
+                expiration_date
+                cvv
+                holder_name
+            }
             importFiles {
                 edges {
                     node {
@@ -655,6 +669,9 @@ class StixCyberObservable:
                     $Hostname: HostnameAddInput
                     $Text: TextAddInput,
                     $UserAgent: UserAgentAddInput
+                    $BankAccount: BankAccountAddInput
+                    $PhoneNumber: PhoneNumberAddInput
+                    $PaymentCard: PaymentCardAddInput
                 ) {
                     stixCyberObservableAdd(
                         type: $type,
@@ -691,6 +708,9 @@ class StixCyberObservable:
                         Hostname: $Hostname,
                         Text: $Text,
                         UserAgent: $UserAgent
+                        BankAccount: $BankAccount
+                        PhoneNumber: $PhoneNumber
+                        PaymentCard: $PaymentCard
                     ) {
                         id
                         standard_id
@@ -1076,10 +1096,33 @@ class StixCyberObservable:
                     if "value" in observable_data
                     else None,
                 }
-            elif type == "User-Agent":
-                input_variables["UserAgent"] = {
+            elif type == "Bank-Account":
+                input_variables["BankAccount"] = {
+                    "iban": observable_data["iban"]
+                    if "iban" in observable_data
+                    else None,
+                    "bic": observable_data["bic"] if "bic" in observable_data else None,
+                    "number": observable_data["number"]
+                    if "number" in observable_data
+                    else None,
+                }
+            elif type == "Phone-Number":
+                input_variables["PhoneNumber"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
+                    else None,
+                }
+            elif type == "Payment-Card":
+                input_variables["PaymentCard"] = {
+                    "number": observable_data["number"]
+                    if "number" in observable_data
+                    else None,
+                    "expiration_date": observable_data["expiration_date"]
+                    if "expiration_date" in observable_data
+                    else None,
+                    "cvv": observable_data["cvv"] if "cvv" in observable_data else None,
+                    "holder_name": observable_data["holder_name"]
+                    if "holder_name" in observable_data
                     else None,
                 }
             result = self.opencti.query(query, input_variables)
