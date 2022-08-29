@@ -11,14 +11,17 @@ def test_split_bundle():
         content = file.read()
     bundles = stix_splitter.split_bundle(content)
     assert len(bundles) == 7029
-    #
-    # with open("./tests/data/test.pdf", 'w') as file:
-    #     content = file.read()
-    # with pytest.raises(Exception):
-    #     stix_splitter.split_bundle(content)
 
 
-def test_crate_bundle():
+def test_split_cyclic_bundle():
+    stix_splitter = OpenCTIStix2Splitter()
+    with open("./tests/data/cyclic-bundle.json") as file:
+        content = file.read()
+    bundles = stix_splitter.split_bundle(content)
+    assert len(bundles) == 3
+
+
+def test_create_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     report = Report(
         report_types=["campaign"],

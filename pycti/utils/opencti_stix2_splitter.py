@@ -18,17 +18,24 @@ class OpenCTIStix2Splitter:
         item = raw_data[item_id]
         for key, value in item.items():
             if key.endswith("_refs"):
+                to_keep = []
                 for element_ref in item[key]:
-                    nb_deps += self.enlist_element(element_ref, raw_data)
+                    if element_ref != item_id:
+                        nb_deps += self.enlist_element(element_ref, raw_data)
+                        to_keep.append(element_ref)
+                    item[key] = to_keep
             elif key.endswith("_ref"):
-                # Need to handle the special case of recursive ref for created by ref
-                is_created_by_ref = key == "created_by_ref"
-                if is_created_by_ref:
-                    is_marking = item["id"].startswith("marking-definition--")
-                    if is_marking is False:
-                        nb_deps += self.enlist_element(value, raw_data)
+                if item[key] == item_id:
+                    item[key] = None
                 else:
-                    nb_deps += self.enlist_element(value, raw_data)
+                    # Need to handle the special case of recursive ref for created by ref
+                    is_created_by_ref = key == "created_by_ref"
+                    if is_created_by_ref:
+                        is_marking = item["id"].startswith("marking-definition--")
+                        if is_marking is False:
+                            nb_deps += self.enlist_element(value, raw_data)
+                    else:
+                        nb_deps += self.enlist_element(value, raw_data)
         # Get the final dep counting and add in cache
         item["nb_deps"] = nb_deps
         self.elements.append(item)
