@@ -1728,7 +1728,7 @@ class ToolBar extends Component {
             </Typography>
             <List>
               {this.state.enrichConnectors.length === 0 && <Alert severity="warning">
-                {t('There is no possible connectors available to enrich your selection')}
+                {t('No connector available for the selected entities.')}
               </Alert>}
               {this.state.enrichConnectors.map((connector) => (
                   <ListItem key={connector.id} dense={true} divider={true}>

@@ -565,6 +565,11 @@ const i18n = {
       Synchronization: 'Synchronisation',
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
+      'Entity enrichment': "Enrichissement de l'entité",
+      'Selected connectors': 'Connecteurs sélectionnés',
+      'No connector available for the selected entities.':
+        'Aucun connecteur disponible pour les entités sélectionnées.',
+      Enrich: 'Enrichir',
       'Custom dashboards': 'Tableaux de bord personnalisés',
       'Custom dashboard': 'Tableau de bord personnalisé',
       'Unique identifier': 'Identifiant unique',
@@ -1217,7 +1222,8 @@ const i18n = {
         'Cette action va générer des observables depuis les indicateurs sélectionnés.',
       'This action will generate STIX patterns indicators from the selected observables.':
         'Cette action va générer des indicateurs STIX depuis les observables sélectionnés.',
-      'Indicators/observables generation': "Génération d'indicateurs/observables",
+      'Indicators/observables generation':
+        "Génération d'indicateurs/observables",
       Generate: 'Générer',
       // Time
       '24h': '24h',
@@ -1992,6 +1998,11 @@ const i18n = {
       Synchronization: '同步',
       Indicator: '攻击指标',
       Indicators: '攻击指标',
+      'Entity enrichment': '实体充实',
+      'Selected connectors': '选定的连接器',
+      'No connector available for the selected entities.':
+        '没有可用于选定实体的连接器。',
+      Enrich: '丰富',
       'Custom dashboards': '自定义仪表盘',
       'Custom dashboard': '自定义仪表盘',
       'Unique identifier': '唯一标识',
@@ -2889,8 +2900,7 @@ const i18n = {
         '你想清除这个连接器的工作吗？',
       Reset: '重启',
       'No file selected.': '未选择文件。',
-      'Observables and indicators conversion':
-        '可观测数据和指标转换',
+      'Observables and indicators conversion': '可观测数据和指标转换',
       'This action will generate observables from the selected indicators.':
         '此操作将从选定的指标生成 observables。',
       'This action will generate STIX patterns indicators from the selected observables.':
