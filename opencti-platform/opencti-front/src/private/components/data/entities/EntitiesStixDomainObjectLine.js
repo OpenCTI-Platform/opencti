@@ -8,11 +8,16 @@ import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import { compose, pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import { Link } from 'react-router-dom';
+import { VisibilityOutlined } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   item: {
@@ -59,6 +64,7 @@ class EntitiesStixDomainObjectLineComponent extends Component {
       deSelectedElements,
       selectAll,
     } = this.props;
+    const link = `${resolveLink(node.entity_type)}/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -141,6 +147,16 @@ class EntitiesStixDomainObjectLineComponent extends Component {
             </div>
           }
         />
+        <ListItemSecondaryAction>
+          <IconButton
+            aria-label="Go to"
+            component={Link}
+            to={link}
+            size="large"
+          >
+            <VisibilityOutlined />
+          </IconButton>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }

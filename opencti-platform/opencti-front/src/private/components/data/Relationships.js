@@ -211,8 +211,12 @@ class Relationships extends Component {
       selectedElements,
       deSelectedElements,
       selectAll,
-      numberOfSelectedElements,
     } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original
+        - Object.keys(deSelectedElements || {}).length;
+    }
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -231,6 +235,9 @@ class Relationships extends Component {
               openExports={openExports}
               exportEntityType="stix-core-relationship"
               disableCards={true}
+              secondaryAction={true}
+              iconExtension={true}
+              noPadding={true}
               keyword={searchTerm}
               filters={filters}
               paginationOptions={paginationOptions}
@@ -260,6 +267,7 @@ class Relationships extends Component {
                     selectedElements={selectedElements}
                     deSelectedElements={deSelectedElements}
                     onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
                     setNumberOfElements={this.setNumberOfElements.bind(this)}
                   />
                 )}
@@ -270,12 +278,21 @@ class Relationships extends Component {
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
-              filters={filters}
+              filters={R.assoc(
+                'entity_type',
+                [
+                  {
+                    id: 'stix-core-relationship',
+                    value: 'stix-core-relationship',
+                  },
+                ],
+                filters,
+              )}
               search={searchTerm}
               handleClearSelectedElements={this.handleClearSelectedElements.bind(
                 this,
               )}
-              withPaddingRight={true}
+              withPaddingRight={false}
             />
           </div>
         )}

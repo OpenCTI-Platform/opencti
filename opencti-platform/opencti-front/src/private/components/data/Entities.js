@@ -265,6 +265,7 @@ class Entities extends Component {
               paginationOptions={paginationOptions}
               numberOfElements={numberOfElements}
               iconExtension={true}
+              secondaryAction={true}
               availableFilterKeys={[
                 'labelledBy',
                 'markedBy',

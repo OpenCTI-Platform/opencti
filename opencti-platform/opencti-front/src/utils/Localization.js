@@ -780,6 +780,8 @@ const i18n = {
       'Launch an import of this file': 'Lancer un import de ce fichier',
       Launch: 'Lancer',
       'Rule rescan': 'Rafraichissement des règles',
+      'Rule rescan (engine is disabled)':
+        'Rafraichissement des règles (moteur désactivé)',
       'Rule entity rescan': 'Rafraichissement des règles pour les entités',
       'Selected rules': 'Règles sélectionnées',
       'Element will be rescan with all compatible activated rules':
@@ -1209,6 +1211,14 @@ const i18n = {
       Nonee: 'Aucune',
       Status: 'Statut',
       'No file selected.': 'Aucun fichier sélectionné.',
+      'Observables and indicators conversion':
+        'Conversion entre observables et indicateurs',
+      'This action will generate observables from the selected indicators.':
+        'Cette action va générer des observables depuis les indicateurs sélectionnés.',
+      'This action will generate STIX patterns indicators from the selected observables.':
+        'Cette action va générer des indicateurs STIX depuis les observables sélectionnés.',
+      'Indicators/observables generation': "Génération d'indicateurs/observables",
+      Generate: 'Générer',
       // Time
       '24h': '24h',
       // Types
@@ -2182,6 +2192,7 @@ const i18n = {
       'Launch an import of this file': '启动此文件的导入',
       Launch: '启动',
       'Rule rescan': '规则重新扫描',
+      'Rule rescan (engine is disabled)': '规则重新扫描（引擎已禁用）',
       'Rule entity rescan': '规则实体重新扫描',
       'Selected rules': '选定的规则',
       'Element will be rescan with all compatible activated rules':
@@ -2878,6 +2889,13 @@ const i18n = {
         '你想清除这个连接器的工作吗？',
       Reset: '重启',
       'No file selected.': '未选择文件。',
+      'Observables and indicators conversion':
+        '可观测数据和指标转换',
+      'This action will generate observables from the selected indicators.':
+        '此操作将从选定的指标生成 observables。',
+      'This action will generate STIX patterns indicators from the selected observables.':
+        '此操作将从选定的 observables 生成 STIX 模式指标。',
+      'Indicators/observables generation': '指标/可观察的生成',
       'Update opinion': '更新意见',
       disagree: '不同意',
       neutral: '中性的',

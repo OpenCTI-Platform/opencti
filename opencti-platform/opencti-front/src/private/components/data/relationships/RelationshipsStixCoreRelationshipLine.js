@@ -8,11 +8,13 @@ import ListItemText from '@mui/material/ListItemText';
 import { compose, pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
-import { KeyboardArrowRight } from '@mui/icons-material';
+import { VisibilityOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix, VectorRadius } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -75,9 +77,8 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         button={true}
-        component={Link}
-        to={link}
-        disabled={link === null}
+        onClick={onToggleEntity.bind(this, node)}
+        selected={node.id in (selectedElements || {})}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
@@ -183,9 +184,17 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
+        <ListItemSecondaryAction>
+          <IconButton
+            aria-label="Go to"
+            component={Link}
+            to={link}
+            disabled={link === null}
+            size="large"
+          >
+            <VisibilityOutlined />
+          </IconButton>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }

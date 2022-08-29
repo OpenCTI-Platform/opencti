@@ -35,8 +35,9 @@ import {
   CancelOutlined,
   LinkOffOutlined,
   LanguageOutlined,
+  TransformOutlined,
 } from '@mui/icons-material';
-import { AutoFix, Label, Merge, ArrowDecisionOutline } from 'mdi-material-ui';
+import { AutoFix, Label, Merge } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -1112,7 +1113,7 @@ class ToolBar extends Component {
                 );
               }}
             </UserContext.Consumer>
-            <Tooltip title={t('Promote')}>
+            <Tooltip title={t('Indicators/observables generation')}>
               <span>
                 <IconButton
                     aria-label="promote"
@@ -1121,7 +1122,7 @@ class ToolBar extends Component {
                     color="primary"
                     size="large"
                 >
-                  <ArrowDecisionOutline />
+                  <TransformOutlined />
                 </IconButton>
               </span>
             </Tooltip>
@@ -1659,7 +1660,7 @@ class ToolBar extends Component {
                 color="primary">
               <CloseOutlined fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t('Promote entity')}</Typography>
+            <Typography variant="h6">{t('Observables and indicators conversion')}</Typography>
           </div>
           <div className={classes.container}>
             { !observablesFiltered && <div>
@@ -1667,7 +1668,7 @@ class ToolBar extends Component {
                 {t('Indicators')}
               </Typography>
               <Alert severity="warning" style={{ marginTop: 20 }}>
-                {t('Will be promoted to according observables')}
+                {t('This action will generate observables from the selected indicators.')}
               </Alert>
             </div> }
             { observablesFiltered && <div>
@@ -1675,7 +1676,7 @@ class ToolBar extends Component {
                 {t('Observables')}
               </Typography>
               <Alert severity="warning" style={{ marginTop: 20 }}>
-                {t('Will be promoted to according indicators')}
+                {t('This action will generate STIX patterns indicators from the selected observables.')}
               </Alert>
             </div> }
             <div className={classes.buttons}>
@@ -1683,7 +1684,7 @@ class ToolBar extends Component {
                   color="secondary"
                   onClick={this.handleLaunchPromote.bind(this)}
                   classes={{ root: classes.button }}>
-                {t('Promote')}
+                {t('Generate')}
               </Button>
             </div>
           </div>
