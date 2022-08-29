@@ -120,7 +120,7 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_TEXT]: [{ src: 'value' }],
     [C.ENTITY_BANK_ACCOUNT]: [{ src: 'iban' }],
     [C.ENTITY_PHONE_NUMBER]: [{ src: 'value' }],
-    [C.ENTITY_PAYMENT_CARD]: [{ src: 'number' }],
+    [C.ENTITY_PAYMENT_CARD]: [{ src: 'card_number' }],
     // Types embedded
     [C.ENTITY_EMAIL_MIME_PART_TYPE]: [], // ALL
     [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL

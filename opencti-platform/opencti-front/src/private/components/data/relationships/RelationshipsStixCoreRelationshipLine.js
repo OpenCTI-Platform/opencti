@@ -12,6 +12,7 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix, VectorRadius } from 'mdi-material-ui';
+import Checkbox from '@mui/material/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -51,7 +52,17 @@ const styles = (theme) => ({
 
 class RelationshipsStixCoreRelationshipLineComponent extends Component {
   render() {
-    const { t, fd, classes, dataColumns, node } = this.props;
+    const {
+      t,
+      fd,
+      classes,
+      dataColumns,
+      node,
+      onToggleEntity,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+    } = this.props;
     const remoteNode = node.from ? node.from : node.to;
     let link = null;
     if (remoteNode) {
@@ -68,6 +79,20 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
         to={link}
         disabled={link === null}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox
+            edge="start"
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
+            disableRipple={true}
+            onChange={onToggleEntity.bind(this, node)}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {node.is_inferred ? (
             <Tooltip
@@ -173,6 +198,9 @@ RelationshipsStixCoreRelationshipLineComponent.propTypes = {
   fd: PropTypes.func,
   t: PropTypes.func,
   onLabelClick: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
 };
 
 const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
@@ -3435,6 +3463,12 @@ class RelationshipsStixCoreRelationshipLineDummyComponent extends Component {
         divider={true}
         style={{ minWidth: 40 }}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"

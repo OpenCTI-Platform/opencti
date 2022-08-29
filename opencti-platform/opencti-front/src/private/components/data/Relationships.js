@@ -15,6 +15,7 @@ import {
 } from '../../../utils/ListParameters';
 import { isUniqFilter } from '../common/lists/Filters';
 import { UserContext } from '../../../utils/Security';
+import ToolBar from './ToolBar';
 
 class Relationships extends Component {
   constructor(props) {
@@ -31,6 +32,9 @@ class Relationships extends Component {
       view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      deSelectedElements: null,
+      selectAll: false,
       openExports: false,
     };
   }
@@ -58,6 +62,14 @@ class Relationships extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({
+      selectAll: false,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -97,6 +109,49 @@ class Relationships extends Component {
 
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
+  }
+
+  handleToggleSelectEntity(entity) {
+    const { selectedElements, deSelectedElements, selectAll } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else if (selectAll && entity.id in (deSelectedElements || {})) {
+      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else if (selectAll) {
+      const newDeSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        deSelectedElements || {},
+      );
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({
+      selectAll: !this.state.selectAll,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -153,6 +208,10 @@ class Relationships extends Component {
       filters,
       numberOfElements,
       openExports,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+      numberOfSelectedElements,
     } = this.state;
     return (
       <UserContext.Consumer>
@@ -168,6 +227,7 @@ class Relationships extends Component {
               handleRemoveFilter={this.handleRemoveFilter.bind(this)}
               handleChangeView={this.handleChangeView.bind(this)}
               handleToggleExports={this.handleToggleExports.bind(this)}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               openExports={openExports}
               exportEntityType="stix-core-relationship"
               disableCards={true}
@@ -197,11 +257,26 @@ class Relationships extends Component {
                     dataColumns={this.buildColumns(helper)}
                     initialLoading={props === null}
                     onLabelClick={this.handleAddFilter.bind(this)}
+                    selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                     setNumberOfElements={this.setNumberOfElements.bind(this)}
                   />
                 )}
               />
             </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={filters}
+              search={searchTerm}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+              withPaddingRight={true}
+            />
           </div>
         )}
       </UserContext.Consumer>

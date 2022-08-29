@@ -5592,7 +5592,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # AutonomousSystem
-  number: Float
+  number: Int
   name: String
   rir: String
   # Technical
@@ -5606,7 +5606,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
 }
 input AutonomousSystemAddInput {
-  number: Float!
+  number: Int!
   name: String
   rir: String
 }
@@ -8084,7 +8084,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # BankAccount
   iban: String
   bic: String
-  number: Float
+  account_number: String
   # Technical
   creator: User
   toStix: String
@@ -8098,7 +8098,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
 input BankAccountAddInput {
   iban: String
   bic: String
-  number: Float
+  account_number: String
 }
 type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -8262,7 +8262,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # CreditCard
-  number: Float
+  card_number: String
   expiration_date: DateTime
   cvv: Int
   holder_name: String
@@ -8277,7 +8277,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   jobs(first: Int): [Work]
 }
 input PaymentCardAddInput {
-  number: Float!
+  card_number: String!
   expiration_date: DateTime
   cvv: Int
   holder_name: String
@@ -8423,6 +8423,9 @@ union StixObjectOrStixRelationship =
   | Hostname
   | Text
   | UserAgent
+  | BankAccount
+  | PhoneNumber
+  | PaymentCard
   | StixCoreRelationship
   | StixMetaRelationship
   | StixSightingRelationship
@@ -8480,7 +8483,10 @@ union StixCoreObjectOrStixCoreRelationship =
   | CryptocurrencyWallet
   | Hostname
   | Text
-  | UserAgent ### Stix Relationships
+  | UserAgent
+  | BankAccount
+  | PhoneNumber
+  | PaymentCard
   | StixCoreRelationship
 
 enum StixRelationshipsOrdering {

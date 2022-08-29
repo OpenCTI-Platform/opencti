@@ -376,6 +376,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   iban: string;
   bic: string;
   holder_name: string;
+  card_number: string;
+  account_number: string;
   // date
   attribute_date: Date;
   ctime: Date;

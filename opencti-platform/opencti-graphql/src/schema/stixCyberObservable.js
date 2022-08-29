@@ -746,7 +746,7 @@ const stixCyberObservablesAttributes = {
     'x_opencti_score',
     'iban',
     'bic',
-    'number',
+    'account_number',
   ],
   [ENTITY_PHONE_NUMBER]: [
     'internal_id',
@@ -776,7 +776,7 @@ const stixCyberObservablesAttributes = {
     'updated_at',
     'x_opencti_description',
     'x_opencti_score',
-    'number',
+    'card_number',
     'expiration_date',
     'cvv',
     'holder_name'

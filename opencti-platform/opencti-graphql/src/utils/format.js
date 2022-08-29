@@ -100,7 +100,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_BANK_ACCOUNT:
       return stixCyberObservable.iban || stixCyberObservable.number || 'Unknown';
     case ENTITY_PAYMENT_CARD:
-      return stixCyberObservable.number || stixCyberObservable.holder_name || 'Unknown';
+      return stixCyberObservable.card_number || stixCyberObservable.holder_name || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_KEY:
       return stixCyberObservable.attribute_key || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
@@ -220,8 +220,8 @@ export const runtimeFieldObservableValueScript = () => {
          emit('Unknown')
        }
     } else if (type == 'payment-card') {
-       if (have(doc, 'number')) {
-         emit(doc['number.keyword'].value)
+       if (have(doc, 'card_number')) {
+         emit(doc['card_number.keyword'].value)
        } else {
          emit('Unknown')
        }

@@ -283,7 +283,7 @@ class StixCoreRelationshipContainer extends Component {
             style={{
               padding: '5px 8px 5px 8px',
               backgroundColor: theme.palette.background.accent,
-              color: '#ffffff',
+              color: theme.palette.text.primary,
               fontSize: 12,
               display: 'inline-block',
             }}

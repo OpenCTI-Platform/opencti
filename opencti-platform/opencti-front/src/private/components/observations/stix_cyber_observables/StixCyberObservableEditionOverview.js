@@ -707,13 +707,13 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
         ... on BankAccount {
           iban
           bic
-          number
+          account_number
         }
         ... on PhoneNumber {
           value
         }
         ... on PaymentCard {
-          number
+          card_number
           expiration_date
           cvv
           holder_name

@@ -81,6 +81,9 @@ export const resolveLink = (type) => {
     case 'Hostname':
     case 'Text':
     case 'User-Agent':
+    case 'Bank-Account':
+    case 'Phone-Number':
+    case 'Payment-Card':
       return '/dashboard/observations/observables';
     default:
       return null;

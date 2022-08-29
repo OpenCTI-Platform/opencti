@@ -246,7 +246,7 @@ interface StixUserAgent extends StixCyberObject {
 interface StixBankAccount extends StixCyberObject {
   iban: string;
   bic: string;
-  number: number;
+  account_number: number;
   description: string;
   score: number;
   labels: Array<string>;
@@ -278,7 +278,7 @@ interface StixPhoneNumber extends StixCyberObject {
 // Custom object extension - Credit Card
 // number, expiration_date, cvv, holder_name
 interface StixPaymentCard extends StixCyberObject {
-  number: number;
+  card_number: string;
   expiration_date: Date;
   cvv: number;
   holder_name: string;

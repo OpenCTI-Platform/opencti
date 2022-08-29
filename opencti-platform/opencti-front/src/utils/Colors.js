@@ -186,10 +186,13 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'User-Account':
     case 'Windows-Registry-Key':
     case 'Windows-Registry-Value-Type':
-    case 'X-OpenCTI-Cryptographic-Key':
-    case 'X-OpenCTI-Cryptocurrency-Wallet':
-    case 'X-OpenCTI-Text':
-    case 'X-OpenCTI-User-Agent':
+    case 'Cryptographic-Key':
+    case 'Cryptocurrency-Wallet':
+    case 'Text':
+    case 'User-Agent':
+    case 'Bank-Account':
+    case 'Phone-Number':
+    case 'Payment-Card':
       if (dark) {
         return '#37474f';
       }
