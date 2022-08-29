@@ -288,13 +288,13 @@ class StixCyberObservable:
             ... on BankAccount {
                 iban
                 bic
-                number
+                account_number
             }
             ... on PhoneNumber {
                 value
             }
             ... on PaymentCard {
-                number
+                card_number
                 expiration_date
                 cvv
                 holder_name
@@ -1102,8 +1102,8 @@ class StixCyberObservable:
                     if "iban" in observable_data
                     else None,
                     "bic": observable_data["bic"] if "bic" in observable_data else None,
-                    "number": observable_data["number"]
-                    if "number" in observable_data
+                    "account_number": observable_data["account_number"]
+                    if "account_number" in observable_data
                     else None,
                 }
             elif type == "Phone-Number":
@@ -1114,8 +1114,8 @@ class StixCyberObservable:
                 }
             elif type == "Payment-Card":
                 input_variables["PaymentCard"] = {
-                    "number": observable_data["number"]
-                    if "number" in observable_data
+                    "card_number": observable_data["card_number"]
+                    if "card_number" in observable_data
                     else None,
                     "expiration_date": observable_data["expiration_date"]
                     if "expiration_date" in observable_data
