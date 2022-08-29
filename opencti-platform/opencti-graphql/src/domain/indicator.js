@@ -25,7 +25,6 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS
 } from '../schema/general';
-import { now } from '../utils/format';
 import { elCount } from '../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { extractObservablesFromIndicatorPattern } from '../utils/syntax';
