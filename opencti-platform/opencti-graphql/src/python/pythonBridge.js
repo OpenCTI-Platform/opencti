@@ -62,7 +62,6 @@ export const createStixPattern = async (observableType, observableValue) => {
     const result = await execPython3('./src/python', 'stix2_create_pattern.py', [observableType, observableValue]);
     return result.data;
   } catch (err) {
-    logApp.warn(`[BRIDGE] createStixPattern error > ${err.message}`);
     return null;
   }
 };

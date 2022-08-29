@@ -759,6 +759,7 @@ enum TaskActionType {
   REMOVE
   REPLACE
   MERGE
+  PROMOTE
   RULE_ELEMENT_RESCAN
 }
 

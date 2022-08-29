@@ -7,7 +7,7 @@ import {
   batchListThroughGetTo,
   storeLoadById,
   timeSeriesEntities,
-  distributionEntities,
+  distributionEntities, storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
@@ -19,7 +19,12 @@ import { DatabaseError, FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS,
+  INPUT_LABELS,
+  INPUT_MARKINGS
+} from '../schema/general';
 import { now } from '../utils/format';
 import { elCount } from '../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
@@ -159,6 +164,16 @@ export const createObservablesFromIndicator = async (user, input, indicator) => 
   );
 };
 
+export const promoteIndicatorToObservable = async (user, indicatorId) => {
+  const indicator = await storeLoadByIdWithRefs(user, indicatorId);
+  const objectLabel = (indicator[INPUT_LABELS] ?? []).map((n) => n.internal_id);
+  const objectMarking = (indicator[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
+  const externalReferences = (indicator[INPUT_EXTERNAL_REFS] ?? []).map((n) => n.internal_id);
+  const createdBy = indicator[INPUT_CREATED_BY]?.internal_id;
+  const input = { objectLabel, objectMarking, createdBy, externalReferences };
+  return createObservablesFromIndicator(user, input, indicator);
+};
+
 export const addIndicator = async (user, indicator) => {
   const observableType = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type;
   const isKnownObservable = observableType !== 'Unknown';
@@ -177,7 +192,7 @@ export const addIndicator = async (user, indicator) => {
     R.assoc('x_opencti_main_observable_type', observableType),
     R.assoc('x_opencti_score', R.isNil(indicator.x_opencti_score) ? 50 : indicator.x_opencti_score),
     R.assoc('x_opencti_detection', R.isNil(indicator.x_opencti_detection) ? false : indicator.x_opencti_detection),
-    R.assoc('valid_from', R.isNil(indicator.valid_from) ? now() : indicator.valid_from),
+    R.assoc('valid_from', R.isNil(indicator.valid_from) ? validUntil : indicator.valid_from),
     R.assoc('valid_until', validUntil)
   )(indicator);
   // create the linked observables

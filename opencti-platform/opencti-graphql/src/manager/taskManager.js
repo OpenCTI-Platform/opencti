@@ -6,6 +6,7 @@ import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_DELETE,
   ACTION_TYPE_MERGE,
+  ACTION_TYPE_PROMOTE,
   ACTION_TYPE_REMOVE,
   ACTION_TYPE_REPLACE,
   ACTION_TYPE_RULE_APPLY,
@@ -27,7 +28,9 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   mergeEntities,
-  patchAttribute, stixLoadById, storeLoadByIdWithRefs,
+  patchAttribute,
+  stixLoadById,
+  storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { now } from '../utils/format';
 import {
@@ -41,7 +44,7 @@ import { elPaginate, elUpdate } from '../database/engine';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { rulesCleanHandler, rulesApplyHandler, buildInternalEvent } from './ruleManager';
+import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
 import { listAllRelations } from '../database/middleware-loader';
@@ -49,6 +52,10 @@ import { getActivatedRules, getRule } from '../domain/rules';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
+import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
+import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
+import { promoteIndicatorToObservable } from '../domain/indicator';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -224,6 +231,16 @@ const executeMerge = async (user, context, element) => {
   const { values } = context;
   await mergeEntities(user, element.internal_id, values);
 };
+const executePromote = async (user, context, element) => {
+  // If indicator, promote to observable
+  if (element.entity_type === ENTITY_TYPE_INDICATOR) {
+    await promoteIndicatorToObservable(user, element.internal_id);
+  }
+  // If observable, promote to indicator
+  if (isStixCyberObservable(element.entity_type)) {
+    await promoteObservableToIndicator(user, element.internal_id);
+  }
+};
 const executeRuleApply = async (user, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
@@ -287,6 +304,9 @@ const executeProcessing = async (user, processingElements) => {
         }
         if (type === ACTION_TYPE_MERGE) {
           await executeMerge(user, context, element);
+        }
+        if (type === ACTION_TYPE_PROMOTE) {
+          await executePromote(user, context, element);
         }
         if (type === ACTION_TYPE_RULE_APPLY) {
           await executeRuleApply(user, context, element);

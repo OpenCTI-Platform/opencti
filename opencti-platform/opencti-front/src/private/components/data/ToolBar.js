@@ -36,7 +36,7 @@ import {
   LinkOffOutlined,
   LanguageOutlined,
 } from '@mui/icons-material';
-import { AutoFix, Label, Merge } from 'mdi-material-ui';
+import { AutoFix, Label, Merge, ArrowDecisionOutline } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -226,6 +226,7 @@ class ToolBar extends Component {
       displayUpdate: false,
       displayRescan: false,
       displayMerge: false,
+      displayPromote: false,
       actions: [],
       actionsInputs: [{}],
       keptEntityId: null,
@@ -271,6 +272,14 @@ class ToolBar extends Component {
 
   handleOpenMerge() {
     this.setState({ displayMerge: true });
+  }
+
+  handleOpenPromote() {
+    this.setState({ displayPromote: true });
+  }
+
+  handleClosePromote() {
+    this.setState({ displayPromote: false });
   }
 
   handleCloseMerge() {
@@ -389,6 +398,14 @@ class ToolBar extends Component {
     const actions = [{ type: 'RULE_ELEMENT_RESCAN' }];
     this.setState({ actions }, () => {
       this.handleCloseRescan();
+      this.handleOpenTask();
+    });
+  }
+
+  handleLaunchPromote() {
+    const actions = [{ type: 'PROMOTE' }];
+    this.setState({ actions }, () => {
+      this.handleClosePromote();
       this.handleOpenTask();
     });
   }
@@ -970,8 +987,18 @@ class ToolBar extends Component {
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs } = this.state;
     const isOpen = numberOfSelectedElements > 0;
-    const typesAreDifferent = R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))
-      .length > 1;
+    const selectedTypes = R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})));
+    const typesAreDifferent = selectedTypes.length > 1;
+    // region promote filters
+    const promotionTypes = ['Stix-Cyber-Observable', 'Indicator'];
+    const observablesFiltered = (filters?.entity_type ?? []).length === 1
+        && R.head(filters.entity_type).id === 'Stix-Cyber-Observable';
+    const isManualPromoteSelect = observablesFiltered || (!selectAll && selectedTypes.length === 1
+        && promotionTypes.includes(R.head(selectedTypes)));
+    const isAllPromoteSelect = selectAll && (filters?.entity_type ?? []).length === 1
+        && promotionTypes.includes(R.head(filters.entity_type).id);
+    const promoteDisable = !isManualPromoteSelect && !isAllPromoteSelect;
+    // endregion
     const typesAreNotMergable = R.includes(
       R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
       notMergableTypes,
@@ -1085,6 +1112,19 @@ class ToolBar extends Component {
                 );
               }}
             </UserContext.Consumer>
+            <Tooltip title={t('Promote')}>
+              <span>
+                <IconButton
+                    aria-label="promote"
+                    disabled={ promoteDisable || this.state.processing }
+                    onClick={this.handleOpenPromote.bind(this)}
+                    color="primary"
+                    size="large"
+                >
+                  <ArrowDecisionOutline />
+                </IconButton>
+              </span>
+            </Tooltip>
             <Tooltip title={t('Merge')}>
               <span>
                 <IconButton
@@ -1605,14 +1645,55 @@ class ToolBar extends Component {
             </div>
           </div>
         </Drawer>
-        <Drawer
-          open={this.state.displayRescan}
+        <Drawer open={this.state.displayPromote}
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleClosePromote.bind(this)}>
+          <div className={classes.header}>
+            <IconButton aria-label="Close"
+                className={classes.closeButton}
+                onClick={this.handleClosePromote.bind(this)}
+                size="large"
+                color="primary">
+              <CloseOutlined fontSize="small" color="primary" />
+            </IconButton>
+            <Typography variant="h6">{t('Promote entity')}</Typography>
+          </div>
+          <div className={classes.container}>
+            { !observablesFiltered && <div>
+              <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
+                {t('Indicators')}
+              </Typography>
+              <Alert severity="warning" style={{ marginTop: 20 }}>
+                {t('Will be promoted to according observables')}
+              </Alert>
+            </div> }
+            { observablesFiltered && <div>
+              <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
+                {t('Observables')}
+              </Typography>
+              <Alert severity="warning" style={{ marginTop: 20 }}>
+                {t('Will be promoted to according indicators')}
+              </Alert>
+            </div> }
+            <div className={classes.buttons}>
+              <Button variant="contained"
+                  color="secondary"
+                  onClick={this.handleLaunchPromote.bind(this)}
+                  classes={{ root: classes.button }}>
+                {t('Promote')}
+              </Button>
+            </div>
+          </div>
+        </Drawer>
+        <Drawer open={this.state.displayRescan}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseRescan.bind(this)}
-        >
+          onClose={this.handleCloseRescan.bind(this)}>
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
@@ -1626,23 +1707,14 @@ class ToolBar extends Component {
             <Typography variant="h6">{t('Rule entity rescan')}</Typography>
           </div>
           <div className={classes.container}>
-            <Typography
-              variant="h4"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
               {t('Selected rules')}
             </Typography>
             <Alert severity="warning" style={{ marginTop: 20 }}>
               {t('Element will be rescan with all compatible activated rules')}
             </Alert>
             <div className={classes.buttons}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={this.handleLaunchRescan.bind(this)}
-                classes={{ root: classes.button }}
-              >
+              <Button variant="contained" color="secondary" onClick={this.handleLaunchRescan.bind(this)} classes={{ root: classes.button }}>
                 {t('Rescan')}
               </Button>
             </div>
