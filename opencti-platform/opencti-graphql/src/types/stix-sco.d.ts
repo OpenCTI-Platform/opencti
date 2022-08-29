@@ -246,7 +246,7 @@ interface StixUserAgent extends StixCyberObject {
 interface StixBankAccount extends StixCyberObject {
   iban: string;
   bic: string;
-  account_number: number;
+  account_number: string;
   description: string;
   score: number;
   labels: Array<string>;

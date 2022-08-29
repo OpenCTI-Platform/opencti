@@ -862,7 +862,7 @@ const convertBankAccountToStix = (instance: StoreCyberObservable, type: string):
     ...stixCyberObject,
     iban: instance.iban,
     bic: instance.bic,
-    number: instance.number,
+    account_number: instance.account_number,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     description: instance.x_opencti_description,
     score: instance.x_opencti_score,
@@ -896,7 +896,7 @@ const convertPaymentCardToStix = (instance: StoreCyberObservable, type: string):
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
     ...stixCyberObject,
-    number: instance.number,
+    card_number: instance.card_number,
     expiration_date: instance.expiration_date,
     cvv: instance.cvv,
     holder_name: instance.holder_name,
