@@ -11,7 +11,6 @@ import {
   externalReferenceEditField,
   findAll,
   findById,
-  askExternalReferenceEnrichment,
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -19,7 +18,7 @@ import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { worksForSource } from '../domain/work';
 import { filesListing } from '../database/file-storage';
-import { stixCoreObjectImportPush } from '../domain/stixCoreObject';
+import { askElementEnrichmentForConnector, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { connectorsForEnrichment } from '../database/repository';
 
 const externalReferenceResolvers = {
@@ -46,7 +45,7 @@ const externalReferenceResolvers = {
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
       relationDelete: ({ fromId, relationship_type: relationshipType }) => externalReferenceDeleteRelation(user, id, fromId, relationshipType),
-      askEnrichment: ({ connectorId }) => askExternalReferenceEnrichment(user, id, connectorId),
+      askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(user, id, connectorId),
       importPush: ({ file }) => stixCoreObjectImportPush(user, id, file),
     }),
     externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input),

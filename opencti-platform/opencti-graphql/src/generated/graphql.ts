@@ -10242,6 +10242,7 @@ export type Query = {
   courseOfAction?: Maybe<CourseOfAction>;
   coursesOfAction?: Maybe<CourseOfActionConnection>;
   elasticSearchMetrics?: Maybe<ElasticSearchMetrics>;
+  enrichmentConnectors?: Maybe<Array<Maybe<Connector>>>;
   event?: Maybe<Event>;
   events?: Maybe<EventConnection>;
   externalReference?: Maybe<ExternalReference>;
@@ -10559,6 +10560,11 @@ export type QueryCoursesOfActionArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryEnrichmentConnectorsArgs = {
+  type: Scalars['String'];
 };
 
 
@@ -15213,6 +15219,7 @@ export type TaskActionInput = {
 export enum TaskActionType {
   Add = 'ADD',
   Delete = 'DELETE',
+  Enrichment = 'ENRICHMENT',
   Merge = 'MERGE',
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
@@ -21827,6 +21834,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   courseOfAction?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, Partial<QueryCourseOfActionArgs>>;
   coursesOfAction?: Resolver<Maybe<ResolversTypes['CourseOfActionConnection']>, ParentType, ContextType, Partial<QueryCoursesOfActionArgs>>;
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
+  enrichmentConnectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, RequireFields<QueryEnrichmentConnectorsArgs, 'type'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   events?: Resolver<Maybe<ResolversTypes['EventConnection']>, ParentType, ContextType, Partial<QueryEventsArgs>>;
   externalReference?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<QueryExternalReferenceArgs, 'id'>>;

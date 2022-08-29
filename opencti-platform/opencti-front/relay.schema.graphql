@@ -759,6 +759,7 @@ enum TaskActionType {
   REMOVE
   REPLACE
   MERGE
+  ENRICHMENT
   PROMOTE
   RULE_ELEMENT_RESCAN
 }
@@ -6674,6 +6675,7 @@ input StixMetaRelationshipsAddInput {
 
 type Query {
   stix(id: String!): String
+  enrichmentConnectors(type: String!): [Connector]
   platform_theme: String
   about: AppInfo
   logsWorkerConfig: LogsWorkerConfig

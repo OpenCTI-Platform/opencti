@@ -18,9 +18,6 @@ import { ForbiddenAccess, FunctionalError, ValidationError } from '../config/err
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { isStixMetaRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { createWork } from './work';
-import { pushToConnector } from '../database/rabbitmq';
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 
@@ -43,22 +40,6 @@ export const references = async (user, externalReferenceId, args) => {
     return paginateAllThings(user, types, R.assoc('filters', filters, args));
   }
   return listThings(user, types, R.assoc('filters', filters, args));
-};
-
-export const askExternalReferenceEnrichment = async (user, externalReferenceId, connectorId) => {
-  const connector = await storeLoadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
-  const work = await createWork(user, connector, 'Manual enrichment', externalReferenceId);
-  const message = {
-    internal: {
-      work_id: work.id, // Related action for history
-      applicant_id: user.id, // User asking for the import
-    },
-    event: {
-      entity_id: externalReferenceId,
-    },
-  };
-  await pushToConnector(connector, message);
-  return work;
 };
 
 export const addExternalReference = async (user, externalReference) => {

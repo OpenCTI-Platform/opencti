@@ -728,6 +728,7 @@ enum TaskActionType {
   REMOVE
   REPLACE
   MERGE
+  ENRICHMENT
   PROMOTE
   RULE_ELEMENT_RESCAN
 }
@@ -8943,8 +8944,8 @@ input StixMetaRelationshipsAddInput {
 ### QUERIES
 
 type Query {
-  ###### TEST
   stix(id: String!): String @auth(for: [KNOWLEDGE])
+  enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES])
   ###### INTERNAL
 
   platform_theme: String
