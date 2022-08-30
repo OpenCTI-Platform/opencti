@@ -767,6 +767,18 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                       description
                     }
+                    ... on Event {
+                      name
+                    }
+                    ... on Channel {
+                      name
+                    }
+                    ... on Narrative {
+                      name
+                    }
+                    ... on Language {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -858,6 +870,18 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                     ... on Incident {
                       name
                       description
+                    }
+                    ... on Event {
+                      name
+                    }
+                    ... on Channel {
+                      name
+                    }
+                    ... on Narrative {
+                      name
+                    }
+                    ... on Language {
+                      name
                     }
                     ... on StixCyberObservable {
                       observable_value

@@ -1849,7 +1849,7 @@ export const getRelationsToRemove = async (user, elements) => {
   await getRelatedRelations(user, ids, relationsToRemove, 0, relationsToRemoveMap);
   return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
-export const elDeleteInstanceIds = async (instances) => {
+export const elDeleteInstances = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
   if (instances.length > 0) {
     logApp.debug(`[SEARCH ENGINE] Deleting ${instances.length} instances`);
@@ -1937,13 +1937,13 @@ export const elDeleteElements = async (user, elements, stixLoadById) => {
   let currentRelationsDelete = 0;
   const groupsOfDeletions = R.splitEvery(MAX_SPLIT, relations);
   const concurrentDeletions = async (deletions) => {
-    await elDeleteInstanceIds(deletions);
+    await elDeleteInstances(deletions);
     currentRelationsDelete += deletions.length;
     logApp.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
   };
   await BluePromise.map(groupsOfDeletions, concurrentDeletions, opts);
   // Remove the elements
-  await elDeleteInstanceIds(elements);
+  await elDeleteInstances(elements);
   // Update all rel connections that will remain
   let currentRelationsCount = 0;
   const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromToImpacts);

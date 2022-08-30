@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import {
-  elDeleteInstanceIds,
+  elDeleteInstances,
   elIndex,
   elLoadById,
   elPaginate,
@@ -89,7 +89,7 @@ export const loadExportWorksAsProgressFiles = async (user, sourceId) => {
 
 export const deleteWorksRaw = async (works) => {
   const workIds = works.map((w) => w.internal_id);
-  await elDeleteInstanceIds(works);
+  await elDeleteInstances(works);
   await redisDeleteWorks(workIds);
   return workIds;
 };

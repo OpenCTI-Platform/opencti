@@ -3,7 +3,7 @@ import { lockResource, redisDeleteWorks, redisGetConnectorStatus, redisGetWork }
 import conf, { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
-import { elDeleteInstanceIds, elUpdate } from '../database/engine';
+import { elDeleteInstances, elUpdate } from '../database/engine';
 import { elList } from '../database/middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { INDEX_HISTORY } from '../database/utils';
@@ -35,7 +35,7 @@ const closeOldWorks = async (connector) => {
         try {
           // If element is too old, just delete it
           if (sinceNowInDays(element.timestamp) > CONNECTOR_WORK_RANGE) {
-            await elDeleteInstanceIds([element.internal_id]);
+            await elDeleteInstances([element]);
           } else { // If not, update the status to complete + the number of processed elements
             const currentWorkStatus = await redisGetWork(element.internal_id);
             if (currentWorkStatus) {
@@ -79,7 +79,7 @@ const deleteCompletedWorks = async (connector) => {
     logApp.info(message);
     const ids = elements.map((w) => w.internal_id);
     await redisDeleteWorks(ids);
-    await elDeleteInstanceIds(elements);
+    await elDeleteInstances(elements);
   };
   await elList(SYSTEM_USER, [INDEX_HISTORY], {
     filters,
