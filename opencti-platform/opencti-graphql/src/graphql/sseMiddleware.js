@@ -129,6 +129,13 @@ const createSeeMiddleware = () => {
   const wait = (ms) => {
     return new Promise((resolve) => setTimeout(() => resolve(), ms));
   };
+  const extractQueryParameter = (req, param) => {
+    const paramData = req.query[param];
+    if (paramData && Array.isArray(paramData)) {
+      return R.head(paramData);
+    }
+    return paramData;
+  };
   const isUserGlobalCapabilityGranted = (user) => {
     const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
     return R.find(capabilityControl, user.capabilities || []) !== undefined;
@@ -178,7 +185,7 @@ const createSeeMiddleware = () => {
   const createSseChannel = (req, res) => {
     const channel = {
       id: generateInternalId(),
-      delay: parseInt(req.query.delay || req.headers['event-delay'] || 10, 10),
+      delay: parseInt(extractQueryParameter(req, 'delay') || req.headers['event-delay'] || 10, 10),
       user: req.session.user,
       userId: req.userId,
       expirationTime: req.expirationTime,
@@ -239,10 +246,10 @@ const createSeeMiddleware = () => {
         client.sendHeartbeat(lastEventId);
       });
       await initBroadcasting(req, res, client, processor);
-      let lastEventId = req.query.from || req.headers['last-event-id'];
+      let lastEventId = extractQueryParameter(req, 'from') || req.headers['last-event-id'];
       if (lastEventId && lastEventId.includes('T')) {
         const startDate = utcDate(lastEventId);
-        lastEventId = `${startDate.toDate().getTime()}-0`;
+        lastEventId = startDate.isValid() ? `${startDate.toDate().getTime()}-0` : 'live';
       }
       await processor.start(lastEventId);
     } catch (err) {
@@ -502,14 +509,14 @@ const createSeeMiddleware = () => {
     const { id } = req.params;
     try {
       const { user } = req.session;
-      const paramStartFrom = req.query.from || req.headers.from || req.headers['last-event-id'];
+      const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       let startFrom = (paramStartFrom === '0' || paramStartFrom === '0-0') ? FROM_START_STR : paramStartFrom;
       // Also handle event id with redis format stamp or stamp-index
       if (startFrom && startFrom.includes('-') && startFrom.split('-').length === 2) {
         const [timestamp] = startFrom.split('-');
         startFrom = utcDate(parseInt(timestamp, 10)).toISOString();
       }
-      const recoverTo = req.query.recover || req.headers.recover || req.headers['recover-date'];
+      const recoverTo = extractQueryParameter(req, 'recover') || req.headers.recover || req.headers['recover-date'];
       const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
       const withInferences = (req.query['with-inferences'] || req.headers['with-inferences']) === 'true';
@@ -670,7 +677,7 @@ const createSeeMiddleware = () => {
       // After recovery start the stream listening
       const streamStartDate = (recoverTo || startFrom) ? utcDate(recoverTo || startFrom) : undefined;
       logApp.info(`[STREAM] Listening stream ${id} from ${streamStartDate ?? 'live'}`);
-      const startEventTime = streamStartDate ? `${streamStartDate.unix() * 1000}-0` : 'live';
+      const startEventTime = streamStartDate && streamStartDate.isValid() ? `${streamStartDate.unix() * 1000}-0` : 'live';
       // noinspection ES6MissingAwait
       processor.start(startEventTime);
     } catch (e) {
