@@ -258,7 +258,7 @@ const FileManager = ({
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   >
-                    {connectorsImport.map((connector, i) => {
+                    {(connectorsImport || []).map((connector, i) => {
                       const disabled = !fileToImport
                         || (connector.connector_scope.length > 0
                           && !includes(

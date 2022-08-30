@@ -38,7 +38,7 @@ export const workToExportFile = (work) => {
 
 const loadWorkById = async (user, workId) => {
   const action = await elLoadById(user, workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
-  return R.assoc('id', workId, action);
+  return action ? R.assoc('id', workId, action) : action;
 };
 
 export const findById = (user, workId) => {
@@ -96,7 +96,9 @@ export const deleteWorksRaw = async (works) => {
 
 export const deleteWork = async (user, workId) => {
   const work = await loadWorkById(user, workId);
-  await deleteWorksRaw([work]);
+  if (work) {
+    await deleteWorksRaw([work]);
+  }
   return workId;
 };
 

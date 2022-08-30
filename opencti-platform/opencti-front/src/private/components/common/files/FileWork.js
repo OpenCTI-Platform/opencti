@@ -72,6 +72,7 @@ const FileWorkComponent = (props) => {
       },
       onCompleted: () => {
         setDeleting(false);
+        setDisplayDelete(null);
       },
     });
   };

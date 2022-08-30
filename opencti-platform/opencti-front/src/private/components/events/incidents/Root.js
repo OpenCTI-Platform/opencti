@@ -51,6 +51,9 @@ const IncidentQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     settings {
       platform_enable_reference
     }
@@ -169,7 +172,7 @@ class RootIncident extends Component {
                           <FileManager
                             {...routeProps}
                             id={incidentId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.incident}
                           />
