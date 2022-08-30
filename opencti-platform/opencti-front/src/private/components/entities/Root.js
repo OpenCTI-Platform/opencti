@@ -36,6 +36,12 @@ class Root extends Component {
             redirect = 'cities';
           } else if (!helper.isEntityTypeHidden('Position')) {
             redirect = 'positions';
+          } else if (!helper.isEntityTypeHidden('Event')) {
+            redirect = 'events';
+          } else if (!helper.isEntityTypeHidden('Organization')) {
+            redirect = 'organizations';
+          } else if (!helper.isEntityTypeHidden('System')) {
+            redirect = 'systems';
           }
           return (
             <Switch>

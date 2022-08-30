@@ -239,7 +239,7 @@ const executeEnrichment = async (user, context, element) => {
     await askElementEnrichmentForConnector(user, element.internal_id, connector.internal_id);
   }, { concurrency: ES_MAX_CONCURRENCY });
 };
-const executePromote = async (user, context, element) => {
+const executePromote = async (user, element) => {
   // If indicator, promote to observable
   if (element.entity_type === ENTITY_TYPE_INDICATOR) {
     await promoteIndicatorToObservable(user, element.internal_id);
@@ -314,7 +314,7 @@ const executeProcessing = async (user, processingElements) => {
           await executeMerge(user, context, element);
         }
         if (type === ACTION_TYPE_PROMOTE) {
-          await executePromote(user, context, element);
+          await executePromote(user, element);
         }
         if (type === ACTION_TYPE_ENRICHMENT) {
           await executeEnrichment(user, context, element);
