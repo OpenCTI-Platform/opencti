@@ -1069,6 +1069,12 @@ class StixCyberObservable:
                     if "data_type" in observable_data
                     else None,
                 }
+            elif type == "User-Agent":
+                input_variables["UserAgent"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
             elif type == "Cryptographic-Key":
                 input_variables["CryptographicKey"] = {
                     "value": observable_data["value"]
