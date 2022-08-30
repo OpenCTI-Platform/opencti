@@ -1460,7 +1460,7 @@ class PendingFileContentComponent extends Component {
         />
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: connectors[0].id }}
+          initialValues={{ connector_id: connectors.length > 0 ? connectors[0].id : '' }}
           validationSchema={importValidation(t)}
           onSubmit={this.onSubmitValidate.bind(this)}
           onReset={this.handleCloseValidate.bind(this)}
