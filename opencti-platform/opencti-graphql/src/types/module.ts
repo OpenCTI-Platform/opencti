@@ -13,10 +13,9 @@ import {
   numericAttributes
 } from '../schema/fieldDataAdapter';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS } from '../schema/stixCyberObservableRelationship';
 import {
+  RelationDefinition,
   stixCoreRelationshipsMapping as coreRels,
-  stixCyberObservableRelationshipsMapping as obsRels
 } from '../database/stix';
 
 export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json';
@@ -47,8 +46,7 @@ export interface ModuleDefinition<T extends StoreEntity> {
   }>;
   relations: Array<{
     name: string;
-    targets: Array<string>;
-    type: 'StixCoreRelationship' | 'StixCyberObservableRelationship';
+    targets: Array<RelationDefinition>;
   }>;
   converter: ConvertFn<T>;
 }
@@ -89,16 +87,10 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   jsonAttributes.push(...attrsForType('json')); // --- jsonAttributes
   // Register relations
   definition.relations.forEach((source) => {
-    if (source.type === 'StixCoreRelationship' && !STIX_CORE_RELATIONSHIPS.includes(source.type)) {
-      STIX_CORE_RELATIONSHIPS.push(source.name);
-    }
-    if (source.type === 'StixCyberObservableRelationship' && !STIX_CYBER_OBSERVABLE_RELATIONSHIPS.includes(source.type)) {
-      STIX_CYBER_OBSERVABLE_RELATIONSHIPS.push(source.name);
-    }
+    STIX_CORE_RELATIONSHIPS.push(source.name);
     source.targets.forEach((target) => {
-      const key: `${string}_${string}` = `${definition.type.name}_${target}`;
-      const mapping = source.type === 'StixCoreRelationship' ? coreRels : obsRels;
-      mapping[key] = [...(mapping[key] ?? []), source.name];
+      const key: `${string}_${string}` = `${definition.type.name}_${target.name}`;
+      coreRels[key] = [...(coreRels[key] ?? []), { name: source.name, type: target.type }];
     });
   });
 };
