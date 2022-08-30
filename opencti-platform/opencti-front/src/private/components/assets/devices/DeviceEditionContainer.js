@@ -569,6 +569,7 @@ const DeviceEditionFragment = createFragmentContainer(
         netbios_name
         is_virtual
         is_publicly_accessible
+        implementation_point
         # ...DeviceEditionOverview_device
         # ...DeviceEditionDetails_device
         # editContext {

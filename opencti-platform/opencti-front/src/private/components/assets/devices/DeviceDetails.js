@@ -263,6 +263,23 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device?.fqdn && t(device.fqdn)}
               </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Implementation Point')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Implementation Point')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device.implementation_point && t(device.implementation_point)}
+              </div>
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -471,24 +488,7 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device.cpe_identifier
                   && t(device.cpe_identifier)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Implementation Point')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Implementation Point')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device.implementation_point && t(device.implementation_point)}
-              </div>
+              </div>              
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>

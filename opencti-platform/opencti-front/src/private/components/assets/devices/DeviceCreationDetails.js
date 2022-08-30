@@ -19,6 +19,7 @@ import InstalledAsset from '../../common/form/InstalledAsset';
 import PortsField from '../../common/form/PortsField';
 import AddressField from '../../common/form/AddressField';
 import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../utils/Network';
+import TaskType from '../../common/form/TaskType';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -334,6 +335,28 @@ class DeviceCreationDetailsComponent extends Component {
                   fullWidth={true}
                 />
               </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Implementation Point')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Implementation Point')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <TaskType
+                  name="implementation_point"
+                  taskType='ImplementationPoint'
+                  fullWidth={true}
+                  style={{ height: '18.09px' }}
+                  containerstyle={{ width: '100%' }}
+                />
+              </div>
             </Grid>
             <Grid item={true} xs={6}>
               <div>
@@ -565,28 +588,6 @@ class DeviceCreationDetailsComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   name="cpe_identifier"
-                  size='small'
-                  fullWidth={true}
-                />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Implementation Point')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Implementation Point')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <Field
-                  component={TextField}
-                  variant='outlined'
-                  name="implementation_point"
                   size='small'
                   fullWidth={true}
                 />
