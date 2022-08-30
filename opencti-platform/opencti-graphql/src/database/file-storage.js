@@ -9,8 +9,10 @@ import conf, { booleanConf, logApp, logAudit } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { UPLOAD_ACTION } from '../config/audit';
 import { DatabaseError } from '../config/errors';
-import { deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
+import { createWork, deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
 import { buildPagination } from './utils';
+import { connectorsForImport } from './repository';
+import { pushToConnector } from './rabbitmq';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -193,8 +195,51 @@ export const rawFilesListing = async (user, directory, recursive = false) => {
   return BluePromise.map(filteredObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
 
+export const uploadJobImport = async (user, fileId, fileMime, entityId, opts = {}) => {
+  const { manual = false, connectorId = null, bypassValidation = false } = opts;
+  let connectors = await connectorsForImport(user, fileMime, true, !manual);
+  if (connectorId) {
+    connectors = R.filter((n) => n.id === connectorId, connectors);
+  }
+  if (!entityId) {
+    connectors = R.filter((n) => !n.only_contextual, connectors);
+  }
+  if (connectors.length > 0) {
+    // Create job and send ask to broker
+    const createConnectorWork = async (connector) => {
+      const work = await createWork(user, connector, 'Manual import', fileId);
+      return { connector, work };
+    };
+    const actionList = await Promise.all(R.map((connector) => createConnectorWork(connector), connectors));
+    // Send message to all correct connectors queues
+    const buildConnectorMessage = (data) => {
+      const { work } = data;
+      return {
+        internal: {
+          work_id: work.id, // Related action for history
+          applicant_id: user.id, // User asking for the import
+        },
+        event: {
+          file_id: fileId,
+          file_mime: fileMime,
+          file_fetch: `/storage/get/${fileId}`, // Path to get the file
+          entity_id: entityId, // Context of the upload
+          bypass_validation: bypassValidation, // Force no validation
+        },
+      };
+    };
+    const pushMessage = (data) => {
+      const { connector } = data;
+      const message = buildConnectorMessage(data);
+      return pushToConnector(connector, message);
+    };
+    await Promise.all(R.map((data) => pushMessage(data), actionList));
+  }
+};
+
 export const upload = async (user, path, fileUpload, meta = {}) => {
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
+  // Upload the data
   const readStream = createReadStream();
   const fileMime = mime.lookup(filename) || mimetype;
   const metadata = { ...meta };
@@ -219,7 +264,7 @@ export const upload = async (user, path, fileUpload, meta = {}) => {
     }
   });
   await s3Upload.done();
-  return {
+  const file = {
     id: key,
     name: filename,
     size: readStream.bytesRead,
@@ -229,6 +274,11 @@ export const upload = async (user, path, fileUpload, meta = {}) => {
     metaData: { ...fullMetadata, messages: [], errors: [] },
     uploadStatus: 'complete'
   };
+  // Trigger a enrich job for import file if needed
+  if (path.startsWith('import/')) {
+    await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id);
+  }
+  return file;
 };
 
 export const filesListing = async (user, first, path, entityId = null) => {
