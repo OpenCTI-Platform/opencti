@@ -217,7 +217,6 @@ import { buildFilters } from './repository';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listEntities, listRelations } from './middleware-loader';
-import { uploadJobImport } from '../domain/file';
 import { getEntitiesFromCache } from '../manager/cacheManager';
 
 // region global variables
@@ -2236,7 +2235,6 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
   if (!isEmptyField(updatePatch.file)) {
     const meta = { entity_id: element.internal_id };
     const file = await upload(user, `import/${element.entity_type}/${element.internal_id}`, updatePatch.file, meta);
-    await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id); // Start import job
     const ins = { key: 'x_opencti_files', value: [storeFileConverter(user, file)], operation: UPDATE_OPERATION_ADD };
     impactedInputs.push(ins);
     patchInputs.push(ins);
@@ -2810,7 +2808,6 @@ const buildEntityData = async (user, input, type, opts = {}) => {
   if (!isEmptyField(input.file)) {
     const meta = { entity_id: created.internal_id };
     const file = await upload(user, `import/${created.entity_type}/${created.internal_id}`, input.file, meta);
-    await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id); // Start import job
     created.x_opencti_files = [storeFileConverter(user, file)];
   }
   // Simply return the data
