@@ -30,10 +30,6 @@ import {
 } from '../../../../utils/ListParameters';
 import Loader from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
-import RobotoRegular from '../../../../static/fonts/Roboto-Regular.ttf';
-import RobotoBold from '../../../../static/fonts/Roboto-Bold.ttf';
-import RobotoItalic from '../../../../static/fonts/Roboto-Italic.ttf';
-import RobotoBoldItalic from '../../../../static/fonts/Roboto-BoldItalic.ttf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.min.js`;
 
@@ -349,12 +345,14 @@ class StixDomainObjectContentComponent extends Component {
         content: ret.content,
         images,
       };
+      const { protocol, hostname, port } = window.location;
+      const url = `${protocol}//${hostname}:${port || ''}`;
       const fonts = {
         Roboto: {
-          normal: `${APP_BASE_PATH}${RobotoRegular}`,
-          bold: `${APP_BASE_PATH}${RobotoBold}`,
-          italics: `${APP_BASE_PATH}${RobotoItalic}`,
-          bolditalics: `${APP_BASE_PATH}${RobotoBoldItalic}`,
+          normal: `${url}${APP_BASE_PATH}/static/ext/Roboto-Regular.ttf`,
+          bold: `${url}${APP_BASE_PATH}/static/ext/Roboto-Bold.ttf`,
+          italics: `${url}${APP_BASE_PATH}/static/ext/Roboto-Italic.ttf`,
+          bolditalics: `${url}${APP_BASE_PATH}/static/ext/Roboto-BoldItalic.ttf`,
         },
       };
       const fragment = currentFileId.split('/');
