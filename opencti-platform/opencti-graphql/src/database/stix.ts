@@ -117,6 +117,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
 import type { StoreRelation } from '../types/store';
+import { logApp } from '../config/conf';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -782,12 +783,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
   // endregion
-  // region Text
+  // region TEXT
   [`${ENTITY_TEXT}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
   // endregion
-  // region Artifact
+  // region ARTIFACT
   [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
@@ -890,7 +891,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_HAS, type: REL_EXTENDED }
   ],
   // endregion
-  // region Relations to Relations: DISCUSS IMPLEMENTATION!!
+  // region RELATIONS TO RELATIONS: DISCUSS IMPLEMENTATION!!
   [`${ENTITY_TYPE_INDICATOR}_${RELATION_USES}`]: [
     { name: RELATION_INDICATES, type: REL_EXTENDED }
   ],
@@ -1088,9 +1089,23 @@ export const checkStixCoreRelationshipMapping = (fromType: string, toType: strin
 };
 
 export const isRelationBuiltin = (instance: StoreRelation): boolean => {
+  // Any <-> Any relationship type check
+  if (instance.entity_type === RELATION_RELATED_TO) {
+    return true;
+  }
+  if (instance.entity_type === RELATION_REVOKED_BY) {
+    return false;
+  }
+  // Well defined relationship type check
   const definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`];
-  const rel = definitions.find((d) => d.name === instance.entity_type);
-  return rel?.type === REL_BUILT_IN;
+  if (definitions) {
+    const rel = definitions.find((d) => d.name === instance.entity_type);
+    if (rel) {
+      return rel.type === REL_BUILT_IN;
+    }
+  }
+  logApp.warn(`[STIX] Missing definition for ${instance.fromType}<-${instance.entity_type}->${instance.toType}`);
+  return true;
 };
 
 // Build map of input fields for all observable types
