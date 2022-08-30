@@ -5,6 +5,7 @@ import narrativeResolvers from './narrative-resolver';
 import { ENTITY_TYPE_NARRATIVE, RELATION_SUBNARRATIVE_OF, StoreEntityNarrative } from './narrative-types';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
+import { REL_NEW } from '../../database/stix';
 
 const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative> = {
   type: {
@@ -34,9 +35,8 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative> = {
   ],
   relations: [
     { name: RELATION_SUBNARRATIVE_OF,
-      type: 'StixCoreRelationship',
       targets: [
-        ENTITY_TYPE_NARRATIVE,
+        { name: ENTITY_TYPE_NARRATIVE, type: REL_NEW },
       ] },
   ],
   converter: convertNarrativeToStix

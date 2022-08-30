@@ -117,6 +117,7 @@ import {
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
+import { isRelationBuiltin } from './stix';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -999,6 +1000,7 @@ const checkInstanceCompletion = (instance: StoreRelation) => {
 const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
   checkInstanceCompletion(instance);
   const stixRelationship = buildStixRelationship(instance);
+  const isBuiltin = isRelationBuiltin(instance);
   return {
     ...stixRelationship,
     relationship_type: instance.relationship_type,
@@ -1011,7 +1013,7 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
-        extension_type: 'new-sro',
+        extension_type: isBuiltin ? 'property-extension' : 'new-sro',
         source_ref: instance.from.internal_id,
         source_type: instance.from.entity_type,
         source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],

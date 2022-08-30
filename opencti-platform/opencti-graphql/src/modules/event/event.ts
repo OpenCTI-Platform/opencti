@@ -11,6 +11,7 @@ import {
   ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION
 } from '../../schema/stixDomainObject';
+import { REL_EXTENDED } from '../../database/stix';
 
 const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent> = {
   type: {
@@ -42,8 +43,13 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent> = {
   ],
   relations: [
     { name: RELATION_LOCATED_AT,
-      type: 'StixCoreRelationship',
-      targets: [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_POSITION] }
+      targets: [
+        { name: ENTITY_TYPE_LOCATION_REGION, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_LOCATION_CITY, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_EXTENDED },
+      ]
+    }
   ],
   converter: convertEventToStix
 };
