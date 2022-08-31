@@ -324,8 +324,9 @@ class DeviceEditionDetailsComponent extends Component {
                     name="implementation_point"
                     taskType='ImplementationPoint'
                     fullWidth={true}
-                    style={{ height: '18.09px' }}
+                    style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
+                    variant='outlined'
                   />
               </div>
               </Grid>
