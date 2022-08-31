@@ -20,7 +20,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import { adaptFieldValue } from '../../../../utils/String';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
+import TaskType from '../../common/form/TaskType';
 
 const styles = () => ({
   paper: {
@@ -280,7 +280,7 @@ class NetworkEditionDetailsComponent extends Component {
                   />
                 </Grid>                               
               </Grid>
-              <Grid container spacing={1}>
+              <Grid container spacing={1}>                
                 <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
@@ -291,17 +291,18 @@ class NetworkEditionDetailsComponent extends Component {
                     {t('Implementation Point')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Implementation Point')} >
+                    <Tooltip title={t('Implementation Point')}>
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="implementation_point"
-                    size='small'
+                  <TaskType
+                    name='implementation_point'
+                    taskType='ImplementationPoint'
                     fullWidth={true}
-                  />
+                    variant='outlined'
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />                  
                 </Grid>
               </Grid>
               <Grid container spacing={1}>                
@@ -339,26 +340,22 @@ class NetworkEditionDetailsComponent extends Component {
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('Last Scan')}
+                    {t('Last Scanned')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Last Scan')}>
+                    <Tooltip title={t('Last Scanned')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
-                  <div className="clearfix" />
                   <Field
-                    component={DateTimePickerField}
+                    component={TextField}
                     variant='outlined'
                     name="last_scanned"
                     size='small'
-                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD HH:MM)')}
                     fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
                   />
                 </Grid>
-              </Grid>              
+              </Grid>
             </Grid>
           </Paper>
         </div>

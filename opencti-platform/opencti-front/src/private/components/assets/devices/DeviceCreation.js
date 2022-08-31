@@ -156,7 +156,7 @@ class DeviceCreation extends Component {
       },
       onError: (err) => {
         toastGenericError("Failed to create Device");
-        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors))
+        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors))
         this.setState({ error: ErrorResponse });
       }
     });

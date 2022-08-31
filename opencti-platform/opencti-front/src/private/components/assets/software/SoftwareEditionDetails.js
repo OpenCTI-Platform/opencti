@@ -18,8 +18,8 @@ import TextField from '../../../../components/TextField';
 import { commitMutation } from '../../../../relay/environment';
 import { parse } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
+import TaskType from '../../common/form/TaskType';
 import SwitchField from '../../../../components/SwitchField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = () => ({
   paper: {
@@ -256,13 +256,14 @@ class SoftwareEditionDetailsComponent extends Component {
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="implementation_point"
-                    size='small'
+                  <TaskType
+                    name='implementation_point'
+                    taskType='ImplementationPoint'
                     fullWidth={true}
-                  />
+                    variant='outlined'
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />                     
                 </Grid>
               </Grid>              
               <Grid container spacing={1}>
@@ -355,16 +356,12 @@ class SoftwareEditionDetailsComponent extends Component {
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
-                  <div className="clearfix" />
                   <Field
-                    component={DateTimePickerField}
+                    component={TextField}
                     variant='outlined'
                     name="last_scanned"
                     size='small'
-                    invalidDateMessage={t('The value must be a date (YYYY-MM-DD HH:MM)')}
                     fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
                   />
                 </Grid>
               </Grid>

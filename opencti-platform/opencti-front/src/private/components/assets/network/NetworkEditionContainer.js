@@ -29,6 +29,7 @@ import CyioCoreObjectExternalReferences from '../../analysis/external_references
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import ErrorBox from '../../common/form/ErrorBox';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
