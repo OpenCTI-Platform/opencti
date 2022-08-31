@@ -3222,7 +3222,7 @@ export const selectAllRisks = (select, args, parent) => {
     }
     if (parent.entity_type === 'finding') {
       classTypeIri = '<http://csrc.nist.gov/ns/oscal/assessment-results#Finding>'
-      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_riskss>';
+      predicate = '<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>';
     }
     // define a constraint to limit retrieval to only those referenced by the parent
     constraintClause = `

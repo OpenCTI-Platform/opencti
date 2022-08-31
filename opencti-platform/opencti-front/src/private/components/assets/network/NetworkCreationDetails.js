@@ -102,7 +102,7 @@ class NetworkCreationDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-            <Grid container={true} spacing={3}>
+            <Grid container spacing={1} style={{ marginBottom: "20px" }}>
               <Grid item={true} xs={6}>
                 <div>
                   <Typography

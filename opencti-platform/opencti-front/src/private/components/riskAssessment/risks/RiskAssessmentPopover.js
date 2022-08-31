@@ -25,6 +25,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import inject18n from '../../../../components/i18n';
 import RiskStatus from '../../common/form/RiskStatus';
 import { toastGenericError } from "../../../../utils/bakedToast";
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
@@ -121,7 +122,7 @@ class RiskAssessmentPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: riskAssessmentPopoverEditMutation,
       variables: {
         id: this.props.node.id,
@@ -150,7 +151,7 @@ class RiskAssessmentPopover extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: riskAssessmentPopoverEditMutation,
       variables: {
         id: this.props.node.id,
@@ -178,7 +179,7 @@ class RiskAssessmentPopover extends Component {
         'value': [adaptFieldValue(n[1])],
       })),
     )(values);
-    CM(environmentDarkLight, {
+    commitMutation({
       mutation: riskAssessmentPopoverEditMutation,
       variables: {
         id: this.props.nodeId,

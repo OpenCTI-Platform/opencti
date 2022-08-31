@@ -142,6 +142,7 @@ class NetworkCreation extends Component {
     const adaptedValues = R.evolve(
       {
         release_date: () => values.release_date === null ? null : values.release_date.toISOString(),
+        last_scanned: () => values.last_scanned === null ? null : values.last_scanned.toISOString(),
       },
       values,
     );
@@ -228,6 +229,7 @@ class NetworkCreation extends Component {
             starting_address: '',
             ending_address: '',
             is_scanned: false,
+            last_scanned: null,
           }}
           validationSchema={networkValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

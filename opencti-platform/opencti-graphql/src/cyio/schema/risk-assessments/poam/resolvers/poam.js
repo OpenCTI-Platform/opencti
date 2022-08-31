@@ -1323,12 +1323,15 @@ const poamResolvers = {
             case 'application-software':
               component.component_type = 'software';
               break;
+            case 'firewall':
+              component.component_type = 'software';
+              break;
             case 'network':
               component.component_type = 'network';
               break;
             default:
-              console.error(`[CYIO] UNKNOWN-COMPONENT Unknown component type '${item.component_type}' for object ${item.iri}`);        
-              console.error(`[CYIO] UNKNOWN-TYPE Unknown asset type '${item.asset_type}' for object ${item.iri}`);        
+              console.error(`[CYIO] UNKNOWN-COMPONENT Unknown component type '${component.component_type}' for object ${component.iri}`);        
+              console.error(`[CYIO] UNKNOWN-TYPE Unknown asset type '${component.asset_type}' for object ${component.iri}`);        
               if (component.iri.includes('Software')) item.component_type = 'software';
               if (component.iri.includes('Network')) item.component_type = 'network';
               if (component.component_type === undefined) continue;
