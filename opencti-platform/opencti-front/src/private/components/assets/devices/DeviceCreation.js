@@ -247,6 +247,7 @@ class DeviceCreation extends Component {
             installed_hardware: [],
             installed_software: [],
             fqdn: '',
+            implementation_point: 'internal',
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

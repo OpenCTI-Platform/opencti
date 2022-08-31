@@ -257,6 +257,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('ipv4_address', R.pluck('ip_address_value', device?.ipv4_address || [])),
       R.assoc('ipv6_address', R.pluck('ip_address_value', device?.ipv6_address || [])),
       R.assoc('responsible_parties', ''),
+      R.assoc('implementation_point', device?.implementation_point),
       R.pick([
         'id',
         'asset_id',
@@ -297,6 +298,7 @@ class DeviceEditionContainer extends Component {
         'is_publicly_accessible',
         'resposnible_parties',
         'uri',
+        'implementation_point',
       ]),
     )(device);
     // const { editContext } = device;
@@ -571,6 +573,7 @@ const DeviceEditionFragment = createFragmentContainer(
         netbios_name
         is_virtual
         is_publicly_accessible
+        implementation_point
         # ...DeviceEditionOverview_device
         # ...DeviceEditionDetails_device
         # editContext {
