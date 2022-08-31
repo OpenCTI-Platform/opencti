@@ -131,6 +131,7 @@ class DeviceEditionContainer extends Component {
     const adaptedValues = R.evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        last_scanned: () => values.last_scanned === null ? null : parse(values.last_scanned).format(),
         ipv4_address: () => values.ipv4_address.length > 0 ? values.ipv4_address.map((address) => JSON.stringify({ ip_address_value: address })) : [],
         ipv6_address: () => values.ipv6_address.length > 0 ? values.ipv6_address.map((address) => JSON.stringify({ ip_address_value: address })) : [],
         ports: () => values.ports.length > 0 ? values.ports.map((port) => JSON.stringify(port)) : [],
@@ -248,6 +249,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('default_gateway', device?.default_gateway || ''),
       R.assoc('motherboard_id', device?.motherboard_id || ''),
       R.assoc('is_scanned', device?.is_scanned || false),
+      R.assoc('last_scanned', device?.last_scanned),
       R.assoc('is_virtual', device?.is_virtual || false),
       R.assoc('is_publicly_accessible', device?.is_publicly_accessible || false),
       R.assoc('uri', device?.uri || null),
@@ -291,6 +293,7 @@ class DeviceEditionContainer extends Component {
         'default_gateway',
         'motherboard_id',
         'is_scanned',
+        'last_scanned',
         'is_virtual',
         'is_publicly_accessible',
         'resposnible_parties',
@@ -562,6 +565,7 @@ const DeviceEditionFragment = createFragmentContainer(
         baseline_configuration_name
         bios_id
         is_scanned
+        last_scanned
         hostname
         default_gateway
         motherboard_id
