@@ -1,16 +1,15 @@
 import { SYSTEM_USER } from '../utils/access';
-import { patchAttribute } from '../database/middleware';
+import { internalLoadById, patchAttribute } from '../database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { addMarkingDefinition } from '../domain/markingDefinition';
 import { MARKING_TLP_CLEAR } from '../schema/identifier';
 
 export const up = async (next) => {
-  await patchAttribute(
-    SYSTEM_USER,
-    `marking-definition--${MARKING_TLP_CLEAR}`,
-    ENTITY_TYPE_MARKING_DEFINITION,
-    { definition: 'TLP:CLEAR' }
-  );
+  const markingId = `marking-definition--${MARKING_TLP_CLEAR}`;
+  const whiteMarking = await internalLoadById(SYSTEM_USER, markingId);
+  if (whiteMarking) { // Could be deleted on some platforms
+    await patchAttribute(SYSTEM_USER, markingId, ENTITY_TYPE_MARKING_DEFINITION, { definition: 'TLP:CLEAR' });
+  }
   await addMarkingDefinition(SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:AMBER+STRICT',
