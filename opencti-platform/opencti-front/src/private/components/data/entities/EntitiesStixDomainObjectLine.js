@@ -418,6 +418,11 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
             </div>
           }
         />
+        <ListItemSecondaryAction>
+          <IconButton aria-label="Go to" component={Link} disabled={true} size="large">
+            <VisibilityOutlined />
+          </IconButton>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
