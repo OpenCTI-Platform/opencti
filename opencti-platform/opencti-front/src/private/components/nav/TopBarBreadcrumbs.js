@@ -42,9 +42,10 @@ import AboutModal from '../../../components/AboutModal';
 const styles = (theme) => ({
   appBar: {
     width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
+    // zIndex: theme.zIndex.drawer + 1,
     backgroundColor: theme.palette.header.background,
     color: theme.palette.header.text,
+    paddingLeft: '280px'
   },
   flex: {
     flexGrow: 1,
@@ -119,7 +120,6 @@ const TopBarBreadcrumbs = ({
   const pathParts = location.pathname.split('/').filter((entry) => entry !== '');
 
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
-
   const buildBreadCrumbs = (array) => {
     let url = '';
     const crumbArry = [];
@@ -166,11 +166,11 @@ const TopBarBreadcrumbs = ({
       style={{ backgroundColor: theme.palette.header.background }}
     >
       <Toolbar>
-        <div className={classes.logoContainer}>
+        {/* <div className={classes.logoContainer}>
           <Link to="/dashboard">
             <img src={theme.logo} alt="logo" className={classes.logo} />
           </Link>
-        </div>
+        </div> */}
         <div className={classes.menuContainer}>
           <Breadcrumbs aria-label="breadcrumb">
             {breadCrumbs.map((crumb, i, array) => {
