@@ -3,12 +3,14 @@ import {
   ABSTRACT_STIX_META_RELATIONSHIP,
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
+  INPUT_GROUPS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
   schemaTypes,
 } from './general';
+import { RELATION_GROUPS } from './internalRelationship';
 
 export const RELATION_CREATED_BY = 'created-by';
 export const RELATION_OBJECT_MARKING = 'object-marking';
@@ -50,6 +52,7 @@ export const META_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
 );
 
 export const STIX_META_RELATION_TO_FIELD: { [k: string]: string } = {
+  [RELATION_GROUPS]: INPUT_GROUPS,
   [RELATION_EXTERNAL_REFERENCE]: INPUT_EXTERNAL_REFS,
   [RELATION_KILL_CHAIN_PHASE]: INPUT_KILLCHAIN,
   [RELATION_CREATED_BY]: INPUT_CREATED_BY,

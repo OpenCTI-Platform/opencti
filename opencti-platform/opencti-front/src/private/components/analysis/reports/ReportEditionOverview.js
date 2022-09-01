@@ -21,17 +21,23 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE_KNGROUPRESTRICT, SETTINGS_SETLABELS } from '../../../../utils/Security';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import {
-  convertCreatedBy,
+  convertCreatedBy, convertGroups,
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import ObjectGroupField from '../../common/form/ObjectGroupField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
+  restrictions: {
+    padding: 10,
+    marginBottom: 20,
+    backgroundColor: theme.palette.background.nav,
+  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -98,6 +104,26 @@ const reportMutationRelationAdd = graphql`
         from {
           ...ReportEditionOverview_report
         }
+      }
+    }
+  }
+`;
+
+const reportMutationGroupAdd = graphql`
+  mutation ReportEditionOverviewGroupAddMutation($id: ID!, $groupId: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionGroupAdd(groupId: $groupId) {
+        ...ReportEditionOverview_report
+      }
+    }
+  }
+`;
+
+const reportMutationGroupDelete = graphql`
+  mutation ReportEditionOverviewGroupDeleteMutation($id: ID!, $groupId: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionGroupDelete(groupId: $groupId) {
+        ...ReportEditionOverview_report
       }
     }
   }
@@ -214,6 +240,37 @@ class ReportEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeObjectGroup(name, values) {
+    const { report } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectGroup', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(report);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: reportMutationGroupAdd,
+        variables: {
+          id: this.props.report.id,
+          groupId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: reportMutationGroupDelete,
+        variables: {
+          id: this.props.report.id,
+          groupId: R.head(removed).value,
+        },
+      });
+    }
+  }
+
   handleChangeObjectMarking(name, values) {
     if (!this.props.enableReferences) {
       const { report } = this.props;
@@ -255,10 +312,12 @@ class ReportEditionOverviewComponent extends Component {
     const { t, report, context, enableReferences, classes } = this.props;
     const createdBy = convertCreatedBy(report);
     const objectMarking = convertMarkings(report);
+    const objectGroup = convertGroups(report);
     const status = convertStatus(t, report);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('objectGroup', objectGroup),
       R.assoc('published', buildDate(report.published)),
       R.assoc('x_opencti_workflow_id', status),
       R.assoc(
@@ -272,6 +331,7 @@ class ReportEditionOverviewComponent extends Component {
         'report_types',
         'createdBy',
         'objectMarking',
+        'objectGroup',
         'confidence',
         'x_opencti_workflow_id',
       ]),
@@ -307,6 +367,14 @@ class ReportEditionOverviewComponent extends Component {
                   }) => (
                     <div>
                       <Form style={{ margin: '20px 0 20px 0' }}>
+                        <Security needs={[KNOWLEDGE_KNUPDATE_KNGROUPRESTRICT]}>
+                          <div className={classes.restrictions}>
+                            <ObjectGroupField name="objectGroup" style={{ width: '100%' }}
+                                helpertext={<SubscriptionFocus context={context} fieldname="objectGroup"/>}
+                                onChange={this.handleChangeObjectGroup.bind(this)}
+                            />
+                          </div>
+                        </Security>
                         <Field
                           component={TextField}
                           variant="standard"
@@ -470,12 +538,7 @@ class ReportEditionOverviewComponent extends Component {
                         <ObjectMarkingField
                           name="objectMarking"
                           style={{ marginTop: 20, width: '100%' }}
-                          helpertext={
-                            <SubscriptionFocus
-                              context={context}
-                              fieldname="objectMarking"
-                            />
-                          }
+                          helpertext={<SubscriptionFocus context={context} fieldname="objectMarking"/>}
                           onChange={this.handleChangeObjectMarking.bind(this)}
                         />
                         {enableReferences && (
@@ -526,6 +589,14 @@ const ReportEditionOverview = createFragmentContainer(
             id
             name
             entity_type
+          }
+        }
+        objectGroup {
+          edges {
+            node {
+              id
+              name
+            }
           }
         }
         objectMarking {

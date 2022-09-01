@@ -1,26 +1,29 @@
 import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import {
-  findById,
-  findAll,
-  stixCoreObjectAddRelation,
-  stixCoreObjectAddRelations,
-  stixCoreObjectDeleteRelation,
-  stixCoreRelationships,
-  stixCoreObjectMerge,
-  batchMarkingDefinitions,
-  batchLabels,
+  askElementEnrichmentForConnector,
   batchCreatedBy,
   batchExternalReferences,
+  batchGroups,
+  batchLabels,
+  batchMarkingDefinitions,
   batchNotes,
-  batchOpinions,
   batchObservedData,
+  batchOpinions,
   batchReports,
-  askElementEnrichmentForConnector,
+  findAll,
+  findById,
+  stixCoreObjectAddGroupRestriction,
+  stixCoreObjectAddRelation,
+  stixCoreObjectAddRelations,
+  stixCoreObjectDelete,
+  stixCoreObjectDeleteRelation,
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
-  stixCoreObjectDelete,
   stixCoreObjectImportPush,
+  stixCoreObjectMerge,
+  stixCoreObjectRemoveGroupRestriction,
+  stixCoreRelationships,
   stixCoreObjectsExportAsk,
   stixCoreObjectsExportPush,
   stixCoreObjectCleanContext,
@@ -44,6 +47,7 @@ const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
 const observedDataLoader = batchLoader(batchObservedData);
+const groupsLoader = batchLoader(batchGroups);
 const creatorsLoader = batchLoader(batchUsers);
 
 const stixCoreObjectResolvers = {
@@ -69,6 +73,7 @@ const stixCoreObjectResolvers = {
     createdBy: (stixCoreObject, _, context) => createdByLoader.load(stixCoreObject.id, context, context.user),
     objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject.id, context, context.user),
     objectLabel: (stixCoreObject, _, context) => labelsLoader.load(stixCoreObject.id, context, context.user),
+    objectGroup: (stixCoreObject, _, { user }) => groupsLoader.load(stixCoreObject.id, user),
     externalReferences: (stixCoreObject, _, context) => externalReferencesLoader.load(stixCoreObject.id, context, context.user),
     reports: (stixCoreObject, args, context) => reportsLoader.load(stixCoreObject.id, context, context.user, args),
     notes: (stixCoreObject, _, context) => notesLoader.load(stixCoreObject.id, context, context.user),
@@ -85,6 +90,8 @@ const stixCoreObjectResolvers = {
       delete: () => stixCoreObjectDelete(context, context.user, id),
       relationAdd: ({ input }) => stixCoreObjectAddRelation(context, context.user, id, input),
       relationsAdd: ({ input }) => stixCoreObjectAddRelations(context, context.user, id, input),
+      restrictionGroupAdd: ({ groupId }) => stixCoreObjectAddGroupRestriction(context, context.user, id, groupId),
+      restrictionGroupDelete: ({ groupId }) => stixCoreObjectRemoveGroupRestriction(context, context.user, id, groupId),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       merge: ({ stixCoreObjectsIds }) => stixCoreObjectMerge(context, context.user, id, stixCoreObjectsIds),
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),

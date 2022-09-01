@@ -556,6 +556,7 @@ const buildSessionUser = (origin, impersonate, provider) => {
     login_provider: provider,
     impersonate: impersonate !== undefined,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
+    groups: user.groups.map((m) => m.internal_id),
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
       standard_id: m.standard_id,
@@ -574,8 +575,9 @@ const buildSessionUser = (origin, impersonate, provider) => {
 const buildCompleteUser = async (context, client) => {
   if (!client) return undefined;
   const capabilities = await getCapabilities(context, client.id);
+  const groups = await batchGroups(SYSTEM_USER, client.id, { batched: false, paginate: false });
   const marking = await getUserAndGlobalMarkings(context, client.id, capabilities);
-  return { ...client, capabilities, allowed_marking: marking.user, all_marking: marking.all };
+  return { ...client, capabilities, groups, allowed_marking: marking.user, all_marking: marking.all };
 };
 
 export const resolveUserById = async (context, id) => {

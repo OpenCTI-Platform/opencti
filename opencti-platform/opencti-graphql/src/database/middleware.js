@@ -123,12 +123,10 @@ import {
 } from '../schema/stixCyberObservableRelationship';
 import {
   FIELD_TO_META_RELATION,
-  META_FIELD_TO_STIX_ATTRIBUTE,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_MARKING,
-  STIX_ATTRIBUTE_TO_META_RELATIONS,
 } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_STATUS, isDatedInternalObject, isInternalObject, } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
@@ -192,7 +190,7 @@ import {
   executionContext,
   filterElementsAccordingToUser,
   isBypassUser,
-  isUserCanAccessElement,
+  isUserCanAccessElement, KNOWLEDGE_GROUP_RESTRICT,
   SYSTEM_USER
 } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
@@ -212,6 +210,7 @@ import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listEntities, listRelations } from './middleware-loader';
 import { getEntitiesFromCache } from '../manager/cacheManager';
+import { RELATION_GROUPS } from '../schema/internalRelationship';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 
 // region global variables
@@ -2246,15 +2245,17 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
     if (updatePatch[inputField] && MULTIPLE_META_RELATIONSHIPS_INPUTS.includes(inputField)) {
-      const stixField = META_FIELD_TO_STIX_ATTRIBUTE[inputField];
-      const existingInstances = element[FIELD_TO_META_RELATION[inputField]] || [];
-      const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), updatePatch[inputField]);
-      const relType = STIX_ATTRIBUTE_TO_META_RELATIONS[stixField];
-      if (instancesToCreate.length > 0) {
-        const newRelations = instancesToCreate.map((to) => R.head(buildInstanceRelTo(to, relType)));
-        rawRelations.push(...newRelations);
-        patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
-        createdTargets.push({ key: inputField, instances: instancesToCreate });
+      const relType = FIELD_TO_META_RELATION[inputField];
+      // Only add group relation for allowed users
+      if (relType !== RELATION_GROUPS || userHaveCapability(user, KNOWLEDGE_GROUP_RESTRICT)) {
+        const existingInstances = element[relType] || [];
+        const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), updatePatch[inputField]);
+        if (instancesToCreate.length > 0) {
+          const newRelations = instancesToCreate.map((to) => R.head(buildInstanceRelTo(to, relType)));
+          rawRelations.push(...newRelations);
+          patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
+          createdTargets.push({ key: inputField, instances: instancesToCreate });
+        }
       }
     }
   }
@@ -2729,7 +2730,10 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       const inputField = inputFields[fieldIndex];
       if (input[inputField]) {
         const relType = FIELD_TO_META_RELATION[inputField];
-        relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
+        // Only add group relation for allowed users
+        if (relType !== RELATION_GROUPS || userHaveCapability(user, KNOWLEDGE_GROUP_RESTRICT)) {
+          relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
+        }
       }
     }
   }
@@ -2768,10 +2772,13 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     relations: relToCreate, // Added meta relationships
   };
 };
+const userHaveCapability = (user, capability) => {
+  const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
+  return userCapabilities.includes(BYPASS) || userCapabilities.includes(capability);
+};
 export const createEntityRaw = async (context, user, input, type, opts = {}) => {
   const enforceReferences = conf.get('app:enforce_references');
-  const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
-  const isAllowedToByPass = userCapabilities.includes(BYPASS) || userCapabilities.includes(BYPASS_REFERENCE);
+  const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
   if (!isAllowedToByPass && enforceReferences && enforceReferences.includes(type)) {
     if (isEmptyField(input.externalReferences)) {
       throw ValidationError('externalReferences', {

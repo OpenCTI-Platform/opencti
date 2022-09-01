@@ -21,7 +21,7 @@ import { BYPASS, BYPASS_REFERENCE, executionContext, ROLE_ADMINISTRATOR, SYSTEM_
 import { smtpIsAlive } from './database/smtp';
 import { createStatus, createStatusTemplate } from './domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
-import { KNOWLEDGE_DELETE } from './schema/general';
+import { KNOWLEDGE_DELETE, KNOWLEDGE_GROUPS_RESTRICT } from './schema/general';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -45,7 +45,10 @@ const KNOWLEDGE_CAPABILITIES = {
       name: 'KNUPDATE',
       description: 'Create / Update knowledge',
       attribute_order: 200,
-      dependencies: [{ name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 }],
+      dependencies: [
+        { name: KNOWLEDGE_GROUPS_RESTRICT, attribute_order: 290, description: 'Restrict group access' },
+        { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 }
+      ],
     },
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
     { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },

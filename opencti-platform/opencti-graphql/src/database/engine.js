@@ -77,6 +77,7 @@ import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { RELATION_GROUPS } from '../schema/internalRelationship';
 import { telemetry } from '../config/tracing';
 
 const ELK_ENGINE = 'elk';
@@ -100,6 +101,7 @@ export const ROLE_TO = 'to';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
+  `${RELATION_GROUPS}_${ROLE_TO}`,
   `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   // RELATION_OBJECT
@@ -237,7 +239,7 @@ export const elUpdateByQueryForMigration = async (message, index, body) => {
   logApp.info(`${message} done in ${timeSec} seconds`);
 };
 
-const buildMarkingRestriction = (user) => {
+const buildDataRestrictions = (user) => {
   const must = [];
   // eslint-disable-next-line camelcase
   const must_not = [];
@@ -248,7 +250,7 @@ const buildMarkingRestriction = (user) => {
       // If user have no marking, he can only access to data with no markings.
       must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING, ID_INTERNAL) } });
     } else {
-      // Markings should be group by types for restriction
+      // Markings should be grouped by types for restriction
       const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
       const allGroupedMarkings = R.groupBy((m) => m.definition_type, user.all_marking);
       const markingGroups = Object.keys(allGroupedMarkings);
@@ -288,6 +290,26 @@ const buildMarkingRestriction = (user) => {
                 must_not: mustNotMarkingTerms,
               },
             },
+          ],
+          minimum_should_match: 1,
+        },
+      };
+      must.push(markingBool);
+    }
+    if (user.groups.length === 0) {
+      // If user have no groups, he can only access to data with no groups.
+      must_not.push({ exists: { field: buildRefRelationKey(RELATION_GROUPS) } });
+    } else {
+      const should = user.groups.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GROUPS)]: m } }));
+      const markingBool = {
+        bool: {
+          should: [
+            {
+              bool: {
+                must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GROUPS) } }],
+              },
+            },
+            ...should
           ],
           minimum_should_match: 1,
         },
@@ -579,7 +601,7 @@ export const elCount = (user, indexName, options = {}) => {
     isMetaRelationship = false,
   } = options;
   let must = [];
-  const markingRestrictions = buildMarkingRestriction(user);
+  const markingRestrictions = buildDataRestrictions(user);
   must.push(...markingRestrictions.must);
   if (endDate !== null) {
     must = R.append(
@@ -740,7 +762,7 @@ export const elAggregationCount = (context, user, type, aggregationField, start,
     };
   }, filters);
   const must = R.concat(dateFilter, histoFilters);
-  const markingRestrictions = buildMarkingRestriction(user);
+  const markingRestrictions = buildDataRestrictions(user);
   must.push(...markingRestrictions.must);
   const query = {
     index: READ_PLATFORM_INDICES,
@@ -867,7 +889,7 @@ const elDataConverter = (esHit) => {
 
 export const elFindByFromAndTo = async (context, user, fromId, toId, relationshipType) => {
   const mustTerms = [];
-  const markingRestrictions = buildMarkingRestriction(user);
+  const markingRestrictions = buildDataRestrictions(user);
   mustTerms.push(...markingRestrictions.must);
   mustTerms.push({
     nested: {
@@ -995,7 +1017,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         };
         mustTerms.push(shouldType);
       }
-      const markingRestrictions = buildMarkingRestriction(user);
+      const markingRestrictions = buildDataRestrictions(user);
       mustTerms.push(...markingRestrictions.must);
       const query = {
         index: indices,
@@ -1103,7 +1125,7 @@ export const elAggregationRelationsCount = async (context, user, type, opts) => 
     ],
     filters
   );
-  const markingRestrictions = buildMarkingRestriction(user);
+  const markingRestrictions = buildDataRestrictions(user);
   must.push(...markingRestrictions.must);
   const query = {
     index: READ_RELATIONSHIPS_INDICES,
@@ -1276,7 +1298,7 @@ export const elHistogramCount = async (context, user, type, field, interval, sta
     });
   }
   const must = R.concat(baseFilters, histogramFilters);
-  const markingRestrictions = buildMarkingRestriction(user);
+  const markingRestrictions = buildDataRestrictions(user);
   must.push(...markingRestrictions.must);
   const query = {
     index: onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_PLATFORM_INDICES,
@@ -1440,7 +1462,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   let must = [];
   let mustnot = [];
   let ordering = [];
-  const markingRestrictions = buildMarkingRestriction(user);
+  const markingRestrictions = buildDataRestrictions(user);
   must.push(...markingRestrictions.must);
   mustnot.push(...markingRestrictions.must_not);
   if (ids.length > 0) {
@@ -1751,7 +1773,7 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
 };
 export const elAttributeValues = async (context, user, field, opts = {}) => {
   const { first, orderMode = 'asc', search } = opts;
-  const markingRestrictions = buildMarkingRestriction(user);
+  const markingRestrictions = buildDataRestrictions(user);
   const isDateOrNumber = dateAttributes.includes(field) || numericOrBooleanAttributes.includes(field);
   const must = [];
   if (isNotEmptyField(search) && search.length > 0) {

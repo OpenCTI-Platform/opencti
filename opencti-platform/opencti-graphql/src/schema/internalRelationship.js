@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, schemaTypes } from './general';
 
+export const RELATION_GROUPS = 'object-group';
 export const RELATION_MIGRATES = 'migrates';
 export const RELATION_MEMBER_OF = 'member-of';
 export const RELATION_ALLOWED_BY = 'allowed-by';
@@ -16,6 +17,7 @@ export const INTERNAL_RELATIONSHIPS = [
   RELATION_HAS_CAPABILITY,
   RELATION_ACCESSES_TO,
   RELATION_HAS_REFERENCE,
+  RELATION_GROUPS
 ];
 schemaTypes.register(ABSTRACT_INTERNAL_RELATIONSHIP, INTERNAL_RELATIONSHIPS);
 export const isInternalRelationship = (type) => R.includes(type, INTERNAL_RELATIONSHIPS);
