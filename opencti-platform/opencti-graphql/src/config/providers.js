@@ -15,8 +15,7 @@ import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logApp } from './conf';
 import { ConfigurationError } from './errors';
 import { isNotEmptyField } from '../database/utils';
-import axios from 'axios';
-import qs from 'qs';
+import { configureOidcRefresh } from './tokenManagement';
 
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
@@ -126,41 +125,6 @@ const genConfigMapper = (elements) => {
 };
 const confProviders = conf.get('providers');
 const providerKeys = Object.keys(confProviders);
-
-let oidcRefreshAxios = null;
-let oidcIssuer = null
-export const oidcRefresh = async (refreshToken) => {
-  if(oidcRefreshAxios === null) throw new Error("Unable to refresh token, OIDC not configured.")
-  try {
-    const {data} = await oidcRefreshAxios.post('/protocol/openid-connect/token',qs.stringify({
-      ...oidcRefreshAxios.defaults.data,
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken
-    }), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    })
-    return {
-      refreshToken: data.refresh_token,
-      accessToken: data.access_token
-    }
-
-  }catch(e) {
-    logApp.error(`[OIDC] Failed to refresh token`, e.data)
-  }
-}
-
-const configureOidcRefresh = (config) => {
-  oidcIssuer = config.issuer;
-  oidcRefreshAxios = axios.create({
-    baseURL: oidcIssuer,
-    data: {
-      client_id: config.client_id,
-      client_secret: config.client_secret
-    }
-  });
-}
 
 for (let i = 0; i < providerKeys.length; i += 1) {
   const providerIdent = providerKeys[i];
@@ -310,7 +274,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           // endregion
           if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
             const { email, name } = userinfo;
-            providerLoginHandler({ email, name }, rolesToAssociate, groupsToAssociate, done, tokenset.access_token, tokenset.refresh_token);
+            providerLoginHandler(
+              { email, name },
+              rolesToAssociate,
+              groupsToAssociate,
+              done,
+              tokenset.access_token,
+              tokenset.refresh_token
+            );
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }

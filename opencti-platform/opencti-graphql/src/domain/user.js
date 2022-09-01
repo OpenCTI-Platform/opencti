@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { map } from 'ramda';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
+import jwtDecode from 'jwt-decode';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
@@ -48,8 +49,7 @@ import {
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import jwtDecode from 'jwt-decode';
-import {oidcRefresh} from "../config/providers";
+import { oidcRefresh } from '../config/tokenManagement';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -445,7 +445,13 @@ export const userIdDeleteRelation = async (user, userId, toId, relationshipType)
   return userDeleteRelation(user, userData, toId, relationshipType);
 };
 
-export const loginFromProvider = async (userInfo, providerRoles = [], providerGroups = [], accessToken, refreshToken) => {
+export const loginFromProvider = async (
+  userInfo,
+  providerRoles = [],
+  providerGroups = [],
+  accessToken,
+  refreshToken
+) => {
   const { email, name: providedName, firstname, lastname } = userInfo;
   if (isEmptyField(email)) {
     throw Error('User email not provided');
@@ -461,7 +467,7 @@ export const loginFromProvider = async (userInfo, providerRoles = [], providerGr
       user_email: email.toLowerCase(),
       external: true,
       access_token: accessToken,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     };
     return addUser(SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
@@ -573,10 +579,32 @@ export const userRenewToken = async (user, userId) => {
   return loadById(user, userId, ENTITY_TYPE_USER);
 };
 
+export const tokenExpired = (token) => {
+  const decoded = jwtDecode(token);
+  const expires = decoded.exp;
+  const nowTime = new Date();
+  const epochSec = Math.round(nowTime.getTime() / 1000) + nowTime.getTimezoneOffset() * 60;
+  return epochSec < expires + 60;
+};
+
+const authenticateUserOIDC = async (user) => {
+  const token = user.access_token;
+  if (tokenExpired(token)) {
+    const { accessToken, refreshToken } = await oidcRefresh(user.refresh_token);
+    const patch = {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+    const { element: updatedUser } = await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
+    return buildCompleteUser(updatedUser);
+  }
+  return user;
+};
+
 export const authenticateUser = async (req, user, provider) => {
   // Build the user session with only required fields
   let sessionUser = await buildCompleteUser(user);
-  if(provider === 'oic') {
+  if (provider === 'oic') {
     sessionUser = await authenticateUserOIDC(sessionUser);
   }
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
@@ -584,34 +612,12 @@ export const authenticateUser = async (req, user, provider) => {
   return sessionUser;
 };
 
-export const tokenExpired = (token) => {
-  const decoded = jwtDecode(token)
-  const expires = decoded.exp;
-  const now = new Date();
-  const epochSec = Math.round(now.getTime() / 1000) + (now.getTimezoneOffset() * 60);
-  return epochSec < (expires + 60);
-}
-
-const authenticateUserOIDC = async (user) => {
-  const token = user.access_token
-  if(tokenExpired(token)) {
-    const {accessToken, refreshToken} = await oidcRefresh(user.refresh_token)
-    const patch = {
-      access_token: accessToken,
-      refresh_token: refreshToken
-    }
-    const {element: updatedUser} = await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch)
-    return buildCompleteUser(updatedUser)
-  }
-  return user
-}
-
 export const authenticateUserFromRequest = async (req) => {
   const auth = req?.session?.user;
   if (auth) {
     // User already identified, check token
-    if(auth.access_token) {
-      return await authenticateUser(req, auth, 'Bearer')
+    if (auth.access_token) {
+      return authenticateUser(req, auth, 'Bearer');
     }
   }
   // If user not identified, try to extract token from bearer
