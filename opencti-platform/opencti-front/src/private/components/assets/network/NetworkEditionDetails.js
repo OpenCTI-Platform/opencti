@@ -20,6 +20,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import { adaptFieldValue } from '../../../../utils/String';
+import TaskType from '../../common/form/TaskType';
 
 const styles = () => ({
   paper: {
@@ -182,8 +183,8 @@ class NetworkEditionDetailsComponent extends Component {
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
-                <div>
+              <Grid container spacing={1}>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -204,8 +205,35 @@ class NetworkEditionDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                   />
-                </div>
-                <div>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Network ID')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                    <Tooltip title={t('Network ID')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="network_id"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -228,8 +256,57 @@ class NetworkEditionDetailsComponent extends Component {
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   />
-                </div>
-                <div>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Ending Address')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Ending Address')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="ending_address"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </Grid>                               
+              </Grid>
+              <Grid container spacing={1}>                
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Implementation Point')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Implementation Point')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <TaskType
+                    name='implementation_point'
+                    taskType='ImplementationPoint'
+                    fullWidth={true}
+                    variant='outlined'
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />                  
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>                
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -255,78 +332,29 @@ class NetworkEditionDetailsComponent extends Component {
                     />
                     <Typography>Yes</Typography>
                   </div>
-                </div>
-              </Grid>
-              <Grid item={true} xs={6}>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Network ID')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
-                    <Tooltip title={t('Network ID')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="network_id"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                  />
-                </div>
-                <div>
+                </Grid>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('Ending Address')}
+                    {t('Last Scanned')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Ending Address')} >
+                    <Tooltip title={t('Last Scanned')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="ending_address"
+                    name="last_scanned"
                     size='small'
                     fullWidth={true}
                   />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Implementation Point')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Implementation Point')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="implementation_point"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
+                </Grid>
               </Grid>
             </Grid>
           </Paper>

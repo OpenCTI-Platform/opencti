@@ -12,6 +12,7 @@ import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
+import Switch from '@material-ui/core/Switch';
 
 const styles = () => ({
   paper: {
@@ -26,7 +27,7 @@ const styles = () => ({
 class SoftwareDetailsComponent extends Component {
   render() {
     const {
-      fld, t, classes, software,
+       t, classes, software,fldt
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -35,8 +36,8 @@ class SoftwareDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <div>
+            <Grid container spacing={1} style={{marginBottom: "20px"}}>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -52,45 +53,8 @@ class SoftwareDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {software.software_identifier && t(software.software_identifier)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('License Key')}
-                </Typography>
-                <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
-                  <Tooltip title={t('License Key')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {software.license_key && t(software.license_key)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('CPE Identifier')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t('CPE Identifier')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {software.cpe_identifier && t(software.cpe_identifier)}
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -106,41 +70,117 @@ class SoftwareDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {software.patch_level && t(software.patch_level)}
-              </div>
-              <div>
+              </Grid>              
+            </Grid>
+            <Grid container spacing={1} style={{marginBottom: "20px"}}>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
-                  {t('Installation ID')}
+                  {t('CPE Identifier')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Installation ID')} >
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <Tooltip
+                    title={t('CPE Identifier')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
-                <div className="clearfix" />
-                {software.installation_id && t(software.installation_id)}
-              </div>
-              <div>
+                <div className="clearfix" />                
+                  {software.cpe_identifier && t(software.cpe_identifier)}               
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Implementation Point')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
                   <Tooltip title={t('Implementation Point')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 {software.implementation_point && t(software.implementation_point)}
-              </div>
+              </Grid>                        
+            </Grid>
+            <Grid container spacing={1} style={{marginBottom: "20px"}}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('License Key')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <Tooltip title={t('License Key')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {software.license_key && t(software.license_key)}
+              </Grid>              
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Installation ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <Tooltip title={t('Installation ID')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {software.installation_id && t(software.installation_id)}
+              </Grid>
+            </Grid>
+            <Grid container spacing={1} style={{marginBottom: "20px"}}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <Tooltip title={t('Scanned')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Switch disabled defaultChecked={software?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
+              </Grid>    
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Last Scanned')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                  <Tooltip
+                    title={t('Last Scanned')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {software.last_scanned && fldt(software.last_scanned)}
+              </Grid>
             </Grid>
           </Grid>
         </Paper>
@@ -166,6 +206,8 @@ const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
       patch_level
       installation_id
       implementation_point
+      last_scanned
+      is_scanned
     }
   `,
 });

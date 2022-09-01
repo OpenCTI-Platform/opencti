@@ -71,13 +71,21 @@ const Index = (me) => {
         }
       });
     }
+    const jwtToken = JSON.parse(atob(me.me.access_token.split('.')[1]));
+    const expiration = (jwtToken.exp * 1000) - Date.now();
+    if (expiration >= 0) {
+      setInterval(() => {
+        localStorage.removeItem('token');
+        me.retry();
+      }, expiration);
+    }
   }, [clientId]);
 
   const classes = useStyles();
   return (
     <div className={classes.root}>
       <TopBarBreadcrumbs />
-      <LeftBar clientId={clientId} setClientId={setClientId}/>
+      <LeftBar clientId={clientId} setClientId={setClientId} />
       <Message />
       <main className={classes.content} style={{ paddingRight: 24 }}>
         <div className={classes.toolbar} />
@@ -142,6 +150,7 @@ const Index = (me) => {
 Index.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
+  retry: PropTypes.func,
   me: PropTypes.object,
 };
 

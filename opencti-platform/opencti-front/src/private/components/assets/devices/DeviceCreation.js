@@ -129,6 +129,7 @@ class DeviceCreation extends Component {
     const adaptedValues = evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        last_scanned: () => values.last_scanned === null ? null : parse(values.last_scanned).format(),
         ipv4_address: () => values.ipv4_address.length > 0 ? values.ipv4_address.map((address) => { return { ip_address_value: address } }) : [],
         ipv6_address: () => values.ipv6_address.length > 0 ? values.ipv6_address.map((address) => { return { ip_address_value: address } }) : [],
       },
@@ -155,7 +156,7 @@ class DeviceCreation extends Component {
       },
       onError: (err) => {
         toastGenericError("Failed to create Device");
-        const ErrorResponse = JSON.parse(JSON.stringify(err.source.errors))
+        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors))
         this.setState({ error: ErrorResponse });
       }
     });
@@ -234,6 +235,7 @@ class DeviceCreation extends Component {
             is_virtual: false,
             is_publicly_accessible: false,
             is_scanned: false,
+            last_scanned: null,
             baseline_configuration_name: '',
             bios_id: '',
             hostname: '',
@@ -245,6 +247,7 @@ class DeviceCreation extends Component {
             installed_hardware: [],
             installed_software: [],
             fqdn: '',
+            implementation_point: 'internal',
           }}
           validationSchema={deviceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

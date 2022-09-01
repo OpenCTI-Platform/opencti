@@ -15,6 +15,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { commitMutation } from '../../../../relay/environment';
+import TaskType from '../../common/form/TaskType';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -98,8 +99,8 @@ class SoftwareCreationDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
-                <div>
+              <Grid container spacing={1}>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -120,62 +121,8 @@ class SoftwareCreationDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                   />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('License Key')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
-                    <Tooltip title={t('License Key')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="license_key"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('CPE Identifier')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip
-                      title={t('CPE Identifier')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="cpe_identifier"
-                    size='small'
-                    fullWidth={true}
-                  // helperText={
-                  //   <SubscriptionFocus
-                  //   fieldName="cpe_identifier"
-                  //   />
-                  // }
-                  />
-                </div>
-              </Grid>
-              <Grid item={true} xs={6}>
-                <div>
+                </Grid>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -199,8 +146,82 @@ class SoftwareCreationDetailsComponent extends Component {
                     fullWidth={true}
                     containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                   />
-                </div>
-                <div>
+                </Grid>                
+              </Grid>
+              <Grid container spacing={1}>              
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('CPE Identifier')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip
+                      title={t('CPE Identifier')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="cpe_identifier"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Implementation Point')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Implementation Point')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <TaskType
+                    name='implementation_point'
+                    taskType='ImplementationPoint'
+                    fullWidth={true}
+                    variant='outlined'
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />
+                </Grid>                  
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('License Key')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '15px 0 0 5px' }}>
+                    <Tooltip title={t('License Key')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="license_key"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -221,29 +242,7 @@ class SoftwareCreationDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                   />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Implementation Point')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Implementation Point')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="implementation_point"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
+                </Grid>                
               </Grid>
             </Grid>
         </Paper>
