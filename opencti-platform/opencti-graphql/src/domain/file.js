@@ -12,9 +12,7 @@ export const askJobImport = async (user, args) => {
 };
 
 export const uploadImport = async (user, file) => {
-  const up = await upload(user, 'import/global', file);
-  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
-  return up;
+  return upload(user, 'import/global', file);
 };
 
 export const uploadPending = async (user, file, entityId = null) => {
