@@ -57,6 +57,22 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
+  thumb: {
+    '&.MuiSwitch-thumb': {
+      color: 'white',
+    },
+  },
+  switch_track: {
+    backgroundColor: '#D3134A !important',
+    opacity: '1 !important',
+  },
+  switch_base: {
+    color: 'white',
+    '&.Mui-checked + .MuiSwitch-track': {
+      backgroundColor: '#49B8FC !important',
+      opacity: 1,
+    },
+  },
 });
 
 class DeviceDetailsComponent extends Component {
@@ -150,7 +166,7 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {device?.motherboard_id && t(device.motherboard_id)}
-              </div>              
+              </div>
               <div>
                 <Typography
                   variant="h3"
@@ -227,7 +243,16 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch disabled color="primary" defaultChecked={device?.is_virtual} size="small" />
+                <Switch
+                  disabled
+                  defaultChecked={device?.is_virtual}
+                  classes={{
+                    thumb: classes.thumb,
+                    track: classes.switch_track,
+                    switchBase: classes.switch_base,
+                    colorPrimary: classes.switch_primary,
+                  }}
+                />
               </div>
               <div>
                 <Typography
@@ -244,7 +269,16 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch disabled color="primary" defaultChecked={device?.is_publicly_accessible} size="small" />
+                <Switch
+                  disabled
+                  defaultChecked={device?.is_publicly_accessible}
+                  classes={{
+                    thumb: classes.thumb,
+                    track: classes.switch_track,
+                    switchBase: classes.switch_base,
+                    colorPrimary: classes.switch_primary,
+                  }}
+                />
               </div>
               <div>
                 <Typography
@@ -433,7 +467,16 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch disabled color="primary" defaultChecked={device?.is_scanned} size="small" />
+                <Switch
+                  disabled
+                  defaultChecked={device?.is_scanned}
+                  classes={{
+                    thumb: classes.thumb,
+                    track: classes.switch_track,
+                    switchBase: classes.switch_base,
+                    colorPrimary: classes.switch_primary,
+                  }}
+                />
               </div>
               <div>
                 <Typography
@@ -511,11 +554,11 @@ class DeviceDetailsComponent extends Component {
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
                     {device?.ports && device.ports.map((port, key) => (
-                      port.protocols && port.protocols.map((protocol) => (                        
+                      port.protocols && port.protocols.map((protocol) => (
                         <div key={key}>
-                        <div className="clearfix" />
+                          <div className="clearfix" />
                           {port.port_number && t(port.port_number)} {protocol && t(protocol)}
-                        </div>                                           
+                        </div>
                       ))
                     ))}
                   </div>
