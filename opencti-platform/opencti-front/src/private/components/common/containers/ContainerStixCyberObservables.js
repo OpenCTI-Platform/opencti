@@ -238,10 +238,7 @@ class ContainerStixCyberObservablesComponent extends Component {
     };
     const exportFilters = {
       containedBy: [{ id: container.id, value: defaultValue(container) }],
-      entity_type:
-        types.length > 0
-          ? R.map((n) => ({ id: n, value: n }), types)
-          : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
+      entity_type: types.length > 0 ? R.map((n) => ({ id: n, value: n }), types) : [],
       ...filters,
     };
     const exportFinalFilters = convertFilters(exportFilters);
