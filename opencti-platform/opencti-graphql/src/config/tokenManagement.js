@@ -1,5 +1,6 @@
 import qs from 'qs';
 import axios from 'axios';
+import jwtDecode from 'jwt-decode';
 import { logApp } from './conf';
 
 let oidcRefreshAxios = null;
@@ -40,4 +41,12 @@ export const configureOidcRefresh = (config) => {
       client_secret: config.client_secret,
     },
   });
+};
+
+export const tokenExpired = (token) => {
+  const decoded = jwtDecode(token);
+  const expires = decoded.exp;
+  const nowTime = new Date();
+  const epochSec = Math.round(nowTime.getTime() / 1000) + nowTime.getTimezoneOffset() * 60;
+  return epochSec < expires + 60;
 };

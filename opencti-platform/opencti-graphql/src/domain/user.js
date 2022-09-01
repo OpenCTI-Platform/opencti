@@ -49,7 +49,7 @@ import {
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { oidcRefresh } from '../config/tokenManagement';
+import {oidcRefresh, tokenExpired} from '../config/tokenManagement';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -577,14 +577,6 @@ export const userRenewToken = async (user, userId) => {
   const patch = { api_token: uuid() };
   await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return loadById(user, userId, ENTITY_TYPE_USER);
-};
-
-export const tokenExpired = (token) => {
-  const decoded = jwtDecode(token);
-  const expires = decoded.exp;
-  const nowTime = new Date();
-  const epochSec = Math.round(nowTime.getTime() / 1000) + nowTime.getTimezoneOffset() * 60;
-  return epochSec < expires + 60;
 };
 
 const authenticateUserOIDC = async (user) => {
