@@ -121,14 +121,17 @@ const styles = (theme) => ({
   },
   drawerButton: {
     position: 'absolute',
-    left: '75%',
+    left: '10%',
     top: '50%',
-    zIndex: '-1',
+    // zIndex: '-1',
+  },
+  drawerButtonMargin: {
+    margin: '0 20px 0 0',
   },
 });
 
 const LeftBar = ({
-  t, location, classes, clientId, history, setClientId, theme,
+  t, location, classes, clientId, history, setClientId, theme, setWidth,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const [user, setUser] = useState();
@@ -137,6 +140,11 @@ const LeftBar = ({
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
   const [openDrawer, setOpenDrawer] = useState(true);
+
+  // useEffect(() => {
+  //   setWidth(openDrawer);
+  // }, [openDrawer]);
+
   useEffect(() => {
     if (clientId) {
       getAccount()
@@ -174,7 +182,8 @@ const LeftBar = ({
   return (
     <Drawer variant="permanent" className={openDrawer ? classes.drawerOpen : classes.drawerClose} classes={{ paper: openDrawer ? classes.drawerOpen : classes.drawerClose }}>
       <div className={classes.drawerButton}>
-        <IconButton onClick={handleDrawerClose}>
+        <IconButton onClick={handleDrawerClose}
+          className={!openDrawer && classes.drawerButtonMargin} >
           {openDrawer ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
       </div>
