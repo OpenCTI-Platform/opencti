@@ -56,8 +56,18 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
       markingsById.set(id, marking.internal_id);
     }
   }
+  const filteredEvents = events.filter((event) => {
+    // Filter update events with only files modification
+    if (event.event === EVENT_TYPE_UPDATE) {
+      const { patch } = (event.data as UpdateEvent).context;
+      const noFilePatches = patch.filter((p) => !p.path.startsWith(`/extensions/${STIX_EXT_OCTI}/files`));
+      return noFilePatches.length > 0;
+    }
+    // Deletion and creation events are not filtered
+    return true;
+  });
   // Build the history data
-  const historyElements: Array<HistoryData> = events.map((event) => {
+  const historyElements: Array<HistoryData> = filteredEvents.map((event) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const stix = event.data.data;
