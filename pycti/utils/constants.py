@@ -30,6 +30,9 @@ class StixCyberObservableTypes(Enum):
     CRYPTOCURRENCY_WALLET = "Cryptocurrency-Wallet"
     TEXT = "Text"
     USER_AGENT = "User-Agent"
+    BANK_ACCOUNT = "Bank-Account"
+    PHONE_NUMBER = "Phone-Number"
+    PAYMENT_CARD = "Payment-Card"
     SIMPLE_OBSERVABLE = "Simple-Observable"
 
     @classmethod
@@ -99,7 +102,7 @@ class MultipleStixCyberObservableRelationship(Enum):
     CHILD = "child"
     BODY_MULTIPART = "body-multipart"
     VALUES = "values"
-    LINKED = "x_opencti_linked-to"
+    LINKED = "linked-to"
 
     @classmethod
     def has_value(cls, value):
