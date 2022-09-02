@@ -28,7 +28,8 @@ const i18n = {
       // Interface
       Login: "Nom d'utilisateur",
       'Two-factor authentication': 'Authentification double facteur',
-      'Use 2FA authentication': "Utiliser l'authentification à deux facteurs",
+      '2FA': 'ADF',
+      'Use 2FA authentication': "Utiliser l'authentification à double facteur",
       Search: 'Rechercher',
       Active: 'Actif',
       'Last update': 'Dernière mise à jour',
@@ -613,6 +614,7 @@ const i18n = {
         "Activer l'authentification double facteur",
       'Disable two-factor authentication':
         "Désactiver l'authentification double facteur",
+      '2FA state': "Etat de l'ADF",
       'Targeting through time': 'Ciblage à travers le temps',
       'TTPs through time': 'TTPs à travers le temps',
       Graph: 'Graph',
@@ -2461,6 +2463,7 @@ const i18n = {
       'Observables roles': '可观测角色',
       'Enable two-factor authentication': '启用双重身份验证',
       'Disable two-factor authentication': '禁用双重身份验证',
+      '2FA state': '2FA状态',
       Proxy: '代理',
       Sender: '发件人',
       Implant: '植入',
