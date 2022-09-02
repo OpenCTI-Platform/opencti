@@ -65,18 +65,14 @@ const s3Client = new s3.S3Client({
 
 export const initializeBucket = async () => {
   try {
-    await s3Client.send(new s3.CreateBucketCommand({
-      Bucket: bucketName
-    }));
+    // Try to access to the bucket
+    await s3Client.send(new s3.HeadBucketCommand({ Bucket: bucketName }));
     return true;
   } catch (err) {
-    if (err instanceof s3.BucketAlreadyOwnedByYou) {
-      return true;
-    }
-    if (err instanceof s3.BucketAlreadyExists) {
-      throw new Error(`The S3 bucket name ${bucketName} is already in use, please choose another.`);
-    }
-    throw err;
+    // If bucket not exist, try to create it.
+    // If creation fail, propagate the exception
+    await s3Client.send(new s3.CreateBucketCommand({ Bucket: bucketName }));
+    return true;
   }
 };
 
