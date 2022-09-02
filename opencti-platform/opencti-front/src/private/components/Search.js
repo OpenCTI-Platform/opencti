@@ -46,7 +46,7 @@ const styles = (theme) => ({
   },
 });
 
-const TYPE_SEARCH_SIZE = 500;
+const TYPE_SEARCH_SIZE = 200;
 
 class Search extends Component {
   constructor(props) {
