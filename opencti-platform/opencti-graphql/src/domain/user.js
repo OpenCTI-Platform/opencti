@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { map } from 'ramda';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
+import jwtDecode from 'jwt-decode';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
@@ -48,6 +49,7 @@ import {
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import {oidcRefresh, tokenExpired} from '../config/tokenManagement';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -443,7 +445,13 @@ export const userIdDeleteRelation = async (user, userId, toId, relationshipType)
   return userDeleteRelation(user, userData, toId, relationshipType);
 };
 
-export const loginFromProvider = async (userInfo, providerRoles = [], providerGroups = [], accessToken) => {
+export const loginFromProvider = async (
+  userInfo,
+  providerRoles = [],
+  providerGroups = [],
+  accessToken,
+  refreshToken
+) => {
   const { email, name: providedName, firstname, lastname } = userInfo;
   if (isEmptyField(email)) {
     throw Error('User email not provided');
@@ -459,14 +467,15 @@ export const loginFromProvider = async (userInfo, providerRoles = [], providerGr
       user_email: email.toLowerCase(),
       external: true,
       access_token: accessToken,
+      refresh_token: refreshToken,
     };
     return addUser(SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
-      return loginFromProvider(userInfo, providerRoles, providerGroups, accessToken);
+      return loginFromProvider(userInfo, providerRoles, providerGroups, accessToken, refreshToken);
     });
   }
   // Update the basic information
-  const patch = { name, firstname, lastname, external: true, access_token: accessToken };
+  const patch = { name, firstname, lastname, external: true, access_token: accessToken, refresh_token: refreshToken };
   await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
   // Update the roles
   // If roles are specified here, that overwrite the default assignation
@@ -525,6 +534,7 @@ const buildSessionUser = (user) => {
     internal_id: user.internal_id,
     user_email: user.user_email,
     access_token: user.access_token,
+    refresh_token: user.refresh_token,
     name: user.name,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     allowed_marking: user.allowed_marking.map((m) => ({
@@ -569,9 +579,26 @@ export const userRenewToken = async (user, userId) => {
   return loadById(user, userId, ENTITY_TYPE_USER);
 };
 
+const authenticateUserOIDC = async (user) => {
+  const token = user.access_token;
+  if (tokenExpired(token)) {
+    const { accessToken, refreshToken } = await oidcRefresh(user.refresh_token);
+    const patch = {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+    const { element: updatedUser } = await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
+    return buildCompleteUser(updatedUser);
+  }
+  return user;
+};
+
 export const authenticateUser = async (req, user, provider) => {
   // Build the user session with only required fields
-  const sessionUser = await buildCompleteUser(user);
+  let sessionUser = await buildCompleteUser(user);
+  if (provider === 'oic') {
+    sessionUser = await authenticateUserOIDC(sessionUser);
+  }
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
   req.session.user = sessionUser;
   return sessionUser;
@@ -580,27 +607,29 @@ export const authenticateUser = async (req, user, provider) => {
 export const authenticateUserFromRequest = async (req) => {
   const auth = req?.session?.user;
   if (auth) {
-    // User already identified
-    return auth;
+    // User already identified, check token
+    if (auth.access_token) {
+      return authenticateUser(req, auth, 'Bearer');
+    }
   }
   // If user not identified, try to extract token from bearer
   let loginProvider = 'Bearer';
-  let tokenUUID = extractTokenFromBearer(req?.headers.authorization);
+  let authToken = extractTokenFromBearer(req?.headers.authorization);
   // If no bearer specified, try with basic auth
-  if (!tokenUUID) {
+  if (!authToken) {
     loginProvider = 'BasicAuth';
-    tokenUUID = await extractTokenFromBasicAuth(req?.headers.authorization);
+    authToken = await extractTokenFromBasicAuth(req?.headers.authorization);
   }
   // Get user from the token if found
-  if (tokenUUID) {
+  if (authToken) {
     try {
-      const user = await resolveUserByToken(tokenUUID);
+      const user = await resolveUserByToken(authToken);
       if (req && user) {
         await authenticateUser(req, user, loginProvider);
       }
       return user;
     } catch (err) {
-      logApp.error(`[CYIO] Authentication error ${tokenUUID}`, { error: err });
+      logApp.error(`[CYIO] Authentication error ${authToken}`, { error: err });
     }
   }
   return undefined;
@@ -628,6 +657,7 @@ export const initAdmin = async (email, password, tokenValue) => {
       description: 'Principal admin account',
       api_token: tokenValue,
       access_token: null,
+      refresh_token: null,
       password,
     };
     await addUser(SYSTEM_USER, userToCreate);

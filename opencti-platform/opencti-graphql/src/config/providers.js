@@ -15,6 +15,7 @@ import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logApp } from './conf';
 import { ConfigurationError } from './errors';
 import { isNotEmptyField } from '../database/utils';
+import { configureOidcRefresh } from './tokenManagement';
 
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
@@ -103,8 +104,8 @@ const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
-const providerLoginHandler = (userInfo, roles, groups, done, token) => {
-  loginFromProvider(userInfo, roles, groups, token)
+const providerLoginHandler = (userInfo, roles, groups, done, token, refresh) => {
+  loginFromProvider(userInfo, roles, groups, token, refresh)
     .then((user) => {
       done(null, user);
     })
@@ -124,6 +125,7 @@ const genConfigMapper = (elements) => {
 };
 const confProviders = conf.get('providers');
 const providerKeys = Object.keys(confProviders);
+
 for (let i = 0; i < providerKeys.length; i += 1) {
   const providerIdent = providerKeys[i];
   const provider = confProviders[providerIdent];
@@ -272,12 +274,20 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           // endregion
           if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
             const { email, name } = userinfo;
-            providerLoginHandler({ email, name }, rolesToAssociate, groupsToAssociate, done, tokenset.access_token);
+            providerLoginHandler(
+              { email, name },
+              rolesToAssociate,
+              groupsToAssociate,
+              done,
+              tokenset.access_token,
+              tokenset.refresh_token
+            );
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
         });
         passport.use('oic', openIDStrategy);
+        configureOidcRefresh(config);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'oic' });
       });
     }
