@@ -4,7 +4,7 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { dissocPath } from 'ramda';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
-import { DEV_MODE } from '../config/conf';
+import { basePath, DEV_MODE } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
@@ -19,7 +19,13 @@ const buildContext = (user, req, res) => {
 };
 const createApolloServer = () => {
   const schema = createSchema();
-  const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground();
+  // In production mode, we use static from the server
+  const playgroundOptions = DEV_MODE ? {} : {
+    cdnUrl: `${basePath}/static`,
+    title: 'OpenCTI Playground',
+    faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`
+  };
+  const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
   const apolloServer = new ApolloServer({
     schema,
     introspection: true,

@@ -103,6 +103,10 @@ const createApp = async (app) => {
     );
   }
 
+  // -- Serv playground resources
+  app.use(`${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static`, express.static('static/playground'));
+
+  // -- Serv static resources
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
