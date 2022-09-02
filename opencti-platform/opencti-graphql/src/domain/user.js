@@ -564,7 +564,7 @@ export const logout = async (user, req, res) => {
   });
 };
 
-const buildSessionUser = (user) => {
+const buildSessionUser = (user, provider) => {
   return {
     id: user.id,
     session_creation: now(),
@@ -573,10 +573,12 @@ const buildSessionUser = (user) => {
     internal_id: user.internal_id,
     user_email: user.user_email,
     otp_activated: user.otp_activated,
-    otp_validated: !user.otp_activated,
+    // 2FA is implicitly validated when login from token
+    otp_validated: !user.otp_activated || provider === AUTH_BEARER,
     otp_secret: user.otp_secret,
     name: user.name,
     external: user.external,
+    login_provider: provider,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
@@ -623,7 +625,7 @@ export const authenticateUser = async (req, user, provider, token = '') => {
   // Build the user session with only required fields
   const completeUser = await buildCompleteUser(user);
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
-  req.session.user = buildSessionUser(completeUser);
+  req.session.user = buildSessionUser(completeUser, provider);
   req.session.session_provider = { provider, token };
   return completeUser;
 };

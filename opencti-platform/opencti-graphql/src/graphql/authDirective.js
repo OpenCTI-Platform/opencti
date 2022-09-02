@@ -29,7 +29,8 @@ export const authDirectiveBuilder = (directiveName) => {
           if (requiredCapabilities) {
             const { resolve = defaultFieldResolver } = fieldConfig;
             fieldConfig.resolve = (source, args, context, info) => {
-              const { user } = context;
+              // Get user from the session
+              const { user } = context?.req?.session ?? {};
               if (!user) {
                 throw AuthRequired();
               } // User must be authenticated.
