@@ -11094,7 +11094,6 @@ chromedriver@latest:
     passport-google-oauth: 2.0.0
     passport-ldapauth: 3.0.1
     passport-local: 1.0.0
-    passport-oauth2-refresh: ^2.1.0
     passport-saml: 3.1.1
     prettier: 2.3.2
     prom-client: ^14.0.1
@@ -11423,13 +11422,6 @@ chromedriver@latest:
     passport-strategy: 1.x.x
     utils-merge: 1.x.x
   checksum: b38444da71bf3468a53599d908b45e4043c7dd04cce0ded3398a91f161ce076c5973f42ddad47e5012f8b1cccea71b60890b35560491921d0858c36b364ac471
-  languageName: node
-  linkType: hard
-
-"passport-oauth2-refresh@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "passport-oauth2-refresh@npm:2.1.0"
-  checksum: beb140862b665c920ba36450ca9c3e1fa18a9d3214971caec10e6100b04523c71ba821d56a8fb9a3d17707902fcd6faf471141dd346debce324b1112fab47bfa
   languageName: node
   linkType: hard
 
