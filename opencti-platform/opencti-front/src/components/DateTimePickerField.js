@@ -58,6 +58,7 @@ const DateTimePickerField = (props) => {
     <KeyboardDateTimePicker
       {...fieldToKeyboardDatePicker(props)}
       variant="inline"
+      inputVariant='outlined'
       disableToolbar={false}
       autoOk={true}
       allowKeyboardControl={true}
