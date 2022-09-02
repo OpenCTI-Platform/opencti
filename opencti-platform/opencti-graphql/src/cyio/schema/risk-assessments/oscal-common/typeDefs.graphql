@@ -2,7 +2,7 @@
 # declares the query entry-points for this type
 extend type Query {
   # OSCAL Location
-  oscalLocation(id: ID!): OscalLocation
+  oscalLocation(id: ID!): OscalLocation  @hasPermission(resources:"OscalLocation:view")
   oscalLocations(
     first: Int
     offset: Int
@@ -11,9 +11,9 @@ extend type Query {
     filters: [OscalLocationFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalLocationConnection
+  ): OscalLocationConnection  @hasPermission(resources:"OscalLocation:view")
   # OSCAL Party
-  oscalParty(id: ID!): OscalParty
+  oscalParty(id: ID!): OscalParty  @hasPermission(resources:"OscalParty:view")
   oscalParties(
     first: Int
     offset: Int
@@ -22,9 +22,9 @@ extend type Query {
     filters: [OscalPartyFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalPartyConnection
+  ): OscalPartyConnection  @hasPermission(resources:"OscalParty:view")
   # OSCAL Relationship
-  oscalRelationship(id: ID!): OscalRelationship
+  oscalRelationship(id: ID!): OscalRelationship  @hasPermission(resources:"OscalRelationship:view")
   oscalRelationships(
     first: Int
     offset: Int
@@ -33,9 +33,9 @@ extend type Query {
     filters: [OscalRelationshipsFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalRelationshipConnection
+  ): OscalRelationshipConnection  @hasPermission(resources:"OscalRelationship:view")
   # OSCAL Resource
-  oscalResource(id: ID!): OscalResource
+  oscalResource(id: ID!): OscalResource  @hasPermission(resources:"Assessment:view")
   oscalResources(
     first: Int
     offset: Int
@@ -44,9 +44,9 @@ extend type Query {
     filters: [OscalResourcesFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalResourceConnection
+  ): OscalResourceConnection  @hasPermission(resources:"Assessment:view")
   # OSCAL Responsible Party
-  oscalResponsibleParty(id: ID!): OscalResponsibleParty
+  oscalResponsibleParty(id: ID!): OscalResponsibleParty  @hasPermission(resources:"ResponsibleParty:view")
   oscalResponsibleParties(
     first: Int
     offset: Int
@@ -55,9 +55,9 @@ extend type Query {
     filters: [OscalResponsiblePartyFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalResponsiblePartyConnection
+  ): OscalResponsiblePartyConnection  @hasPermission(resources:"ResponsibleParty:view")
   # OSCAL Responsible Role
-  oscalResponsibleRole(id: ID!): OscalResponsibleRole
+  oscalResponsibleRole(id: ID!): OscalResponsibleRole  @hasPermission(resources:"ResponsibleRole:view")
   oscalResponsibleRoles(
     first: Int
     offset: Int
@@ -66,9 +66,9 @@ extend type Query {
     filters: [OscalResponsibleRoleFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalResponsibleRoleConnection
+  ): OscalResponsibleRoleConnection  @hasPermission(resources:"ResponsibleRole:view")
   # OSCAL Role
-  oscalRole(id: ID!): OscalRole
+  oscalRole(id: ID!): OscalRole  @hasPermission(resources:"OscalRole:view")
   oscalRoles(
     first: Int
     offset: Int
@@ -77,9 +77,9 @@ extend type Query {
     filters: [OscalRolesFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalRoleConnection
+  ): OscalRoleConnection  @hasPermission(resources:"OscalRole:view")
   # OSCAL User
-  oscalUser(id: ID!): OscalUser
+  oscalUser(id: ID!): OscalUser  @hasPermission(resources:"OscalUser:view")
   oscalUsers(
     first: Int
     offset: Int
@@ -88,92 +88,55 @@ extend type Query {
     filters: [OscalUsersFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalUserConnection
+  ): OscalUserConnection  @hasPermission(resources:"OscalUser:view")
 }
 
 # declares the mutation entry-points for this type
 extend type Mutation {
   # Base64Content
-  createBase64Content(input: Base64ContentAddInput): Base64Content
-  deleteBase64Content(id: ID!): String!
-  editBase64Content(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): Base64Content
+  createBase64Content(input: Base64ContentAddInput): Base64Content  @hasPermission(resources:"Assessment:update")
+  deleteBase64Content(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editBase64Content(id: ID!, input: [EditInput]!, commitMessage: String): Base64Content  @hasPermission(resources:"Assessment:update")
   # Citation
-  createCitation(input: CitationAddInput): Citation
-  deleteCitation(id: ID!): String!
-  editCitation(id: ID!, input: [EditInput]!, commitMessage: String): Citation
+  createCitation(input: CitationAddInput): Citation  @hasPermission(resources:"Assessment:update")
+  deleteCitation(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editCitation(id: ID!, input: [EditInput]!, commitMessage: String): Citation  @hasPermission(resources:"Assessment:update")
   # OSCAL Location
-  createOscalLocation(input: OscalLocationAddInput): OscalLocation
-  deleteOscalLocation(id: ID!): String!
-  editOscalLocation(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): OscalLocation
+  createOscalLocation(input: OscalLocationAddInput): OscalLocation  @hasPermission(resources:"OscalLocation:update")
+  deleteOscalLocation(id: ID!): String!  @hasPermission(resources:"OscalLocation:delete")
+  editOscalLocation(id: ID!, input: [EditInput]!, commitMessage: String): OscalLocation  @hasPermission(resources:"OscalLocation:update")
   # OSCAL Party
-  createOscalParty(input: OscalPartyAddInput): OscalParty
-  deleteOscalParty(id: ID!): String!
-  editOscalParty(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): OscalParty
+  createOscalParty(input: OscalPartyAddInput): OscalParty  @hasPermission(resources:"OscalParty:update")
+  deleteOscalParty(id: ID!): String!  @hasPermission(resources:"OscalParty:delete")
+  editOscalParty(id: ID!, input: [EditInput]!, commitMessage: String): OscalParty  @hasPermission(resources:"OscalParty:update")
   # OSCAL Relationship
-  createOscalRelationship(input: OscalRelationshipAddInput): OscalRelationship
-  deleteOscalRelationship(id: ID!): String!
-  editOscalRelationship(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): OscalRelationship
+  createOscalRelationship(input: OscalRelationshipAddInput): OscalRelationship  @hasPermission(resources:"OscalRelationship:update")
+  deleteOscalRelationship(id: ID!): String! @hasPermission(resources:"OscalParty:delete")
+  editOscalRelationship(id: ID!, input: [EditInput]!,commitMessage: String): OscalRelationship  @hasPermission(resources:"OscalRelationship:update")
   # OSCAL Resource
-  createOscalResource(input: OscalResourceAddInput): OscalResource
-  deleteOscalResource(id: ID!): String!
-  editOscalResource(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): OscalResource
+  createOscalResource(input: OscalResourceAddInput): OscalResource  @hasPermission(resources:"Assessment:update")
+  deleteOscalResource(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editOscalResource(id: ID!, input: [EditInput]!,commitMessage: String): OscalResource  @hasPermission(resources:"Assessment:update")
   # OSCAL Responsible Party
-  createOscalResponsibleParty(
-    input: OscalResponsiblePartyAddInput
-  ): OscalResponsibleParty
-  deleteOscalResponsibleParty(id: ID!): String!
-  editOscalResponsibleParty(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): OscalResponsibleParty
+  createOscalResponsibleParty(input: OscalResponsiblePartyAddInput): OscalResponsibleParty  @hasPermission(resources:"ResponsibleParty:update")
+  deleteOscalResponsibleParty(id: ID!): String! @hasPermission(resources:"ResponsibleParty:delete")
+  editOscalResponsibleParty(id: ID!, input: [EditInput]!,commitMessage: String): OscalResponsibleParty  @hasPermission(resources:"ResponsibleParty:update")
   # OSCAL Responsible Role
-  createOscalResponsibleRole(
-    input: OscalResponsibleRoleAddInput
-  ): OscalResponsibleRole
-  deleteOscalResponsibleRole(id: ID!): String!
-  editOscalResponsibleRole(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): OscalResponsibleRole
+  createOscalResponsibleRole(input: OscalResponsibleRoleAddInput): OscalResponsibleRole  @hasPermission(resources:"ResponsibleRole:update")
+  deleteOscalResponsibleRole(id: ID!): String!  @hasPermission(resources:"ResponsibleRole:delete")
+  editOscalResponsibleRole(id: ID!, input: [EditInput]!, commitMessage: String): OscalResponsibleRole @hasPermission(resources:"ResponsibleRole:update")
   # OSCAL Role
-  createOscalRole(input: OscalRoleAddInput): OscalRole
-  deleteOscalRole(id: ID!): String!
-  editOscalRole(id: ID!, input: [EditInput]!, commitMessage: String): OscalRole
+  createOscalRole(input: OscalRoleAddInput): OscalRole  @hasPermission(resources:"OscalRole:update")
+  deleteOscalRole(id: ID!): String!  @hasPermission(resources:"OscalRole:delete")
+  editOscalRole(id: ID!, input: [EditInput]!, commitMessage: String): OscalRole  @hasPermission(resources:"OscalRole:update")
   # OSCAL User
-  createOscalUser(input: OscalUserAddInput): OscalUser
-  deleteOscalUser(id: ID!): String!
-  editOscalUser(id: ID!, input: [EditInput]!, commitMessage: String): OscalUser
+  createOscalUser(input: OscalUserAddInput): OscalUser  @hasPermission(resources:"OscalUser:update")
+  deleteOscalUser(id: ID!): String!  @hasPermission(resources:"OscalUser:delete")
+  editOscalUser(id: ID!, input: [EditInput]!, commitMessage: String): OscalUser  @hasPermission(resources:"OscalUser:update")
   # Export OSCAL Model
-  exportOscal(model: OscalModelType!, id: ID, media_type: OscalMediaType): ID
+  exportOscal(model: OscalModelType!, id: ID, media_type: OscalMediaType): ID  @hasPermission(resources:"Assessment:export")
   # Generate Report
-  generateRiskReport(
-    report: RiskReportType!
-    id: ID
-    media_type: ReportMediaType
-    options: [RiskReportOption]
-  ): ID
+  generateRiskReport(report: RiskReportType!, id: ID, media_type: ReportMediaType, options: [RiskReportOption]): ID  @hasPermission(resources:"Assessment:generate-report")
 }
 
 ##### OSCAL Model

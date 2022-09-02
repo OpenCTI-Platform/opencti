@@ -8,14 +8,14 @@
         filters: [NetworkAssetFiltering]
         filterMode: FilterMode
         search: String
-      ): NetworkAssetConnection
-    networkAsset(id: ID!): NetworkAsset
+      ): NetworkAssetConnection  @hasPermission(resources: "Asset:view")
+    networkAsset(id: ID!): NetworkAsset  @hasPermission(resources: "Asset:view")
   }
 
   extend type Mutation {
-    createNetworkAsset(input: NetworkAssetAddInput): NetworkAsset
-    deleteNetworkAsset(id: ID!): String!
-    editNetworkAsset(id: ID!, input: [EditInput]!, commitMessage: String): NetworkAsset
+    createNetworkAsset(input: NetworkAssetAddInput): NetworkAsset @hasPermission(resources: "Asset:update")
+    deleteNetworkAsset(id: ID!): String!  @hasPermission(resources: "Asset:delete")
+    editNetworkAsset(id: ID!, input: [EditInput]!, commitMessage: String): NetworkAsset  @hasPermission(resources: "Asset:update")
   }
 
   # Query Types

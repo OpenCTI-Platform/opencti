@@ -1,6 +1,6 @@
 # declares the query entry-points for this type
 extend type Query {
-  poam(id: ID): POAM
+  poam(id: ID): POAM  @hasPermission(resources:"POAM:view")
   poams(
     first: Int
     offset: Int
@@ -9,8 +9,8 @@ extend type Query {
     filters: [POAMFiltering]
     filterMode: FilterMode
     search: String
-  ): POAMConnection
-  poamItem(id: ID): POAMItem
+  ): POAMConnection  @hasPermission(resources:"POAM:view")
+  poamItem(id: ID): POAMItem  @hasPermission(resources:"POAM:view")
   poamItems(
     first: Int
     offset: Int
@@ -19,25 +19,19 @@ extend type Query {
     filters: [POAMItemsFiltering]
     filterMode: FilterMode
     search: String
-  ): POAMItemConnection
+  ): POAMItemConnection  @hasPermission(resources:"POAM:view")
 }
 
 # declares the mutation entry-points for this type
 extend type Mutation {
   # POAM
-  createPOAM(input: POAMAddInput): POAM
-  deletePOAM(id: ID!): String!
-  editPOAM(id: ID!, input: [EditInput]!, commitMessage: String): POAM
+  createPOAM(input: POAMAddInput): POAM @hasPermission(resources:"POAM:update")
+  deletePOAM(id: ID!): String!  @hasPermission(resources:"POAM:delete")
+  editPOAM(id: ID!, input: [EditInput]!, commitMessage: String): POAM  @hasPermission(resources:"POAM:update")
   # POAM Item
-  createPOAMItem(
-    poam: ID = "22f2ad37-4f07-5182-bf4e-59ea197a73dc"
-    input: POAMItemAddInput
-  ): POAMItem
-  deletePOAMItem(
-    poam: ID = "22f2ad37-4f07-5182-bf4e-59ea197a73dc"
-    id: ID!
-  ): String!
-  editPOAMItem(id: ID!, input: [EditInput]!, commitMessage: String): POAMItem
+  createPOAMItem(poam: ID = "22f2ad37-4f07-5182-bf4e-59ea197a73dc", input: POAMItemAddInput): POAMItem  @hasPermission(resources:"POAM:update")
+  deletePOAMItem(poam: ID = "22f2ad37-4f07-5182-bf4e-59ea197a73dc", id: ID!): String!  @hasPermission(resources:"POAM:delete")
+  editPOAMItem(id: ID!, input: [EditInput]!, commitMessage: String): POAMItem  @hasPermission(resources:"POAM:update")
 }
 
 ## POAM
