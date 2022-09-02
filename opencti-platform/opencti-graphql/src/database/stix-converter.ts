@@ -160,10 +160,10 @@ export const cleanObject = <T>(data: T): T => {
     } else if (key === 'extensions') {
       // Extensions can be generated with only the extension_type
       // If it's the case, no need to keep the extension
-      const extensionDefinitions = Object.entries(obj[key]);
+      const extensionDefinitions = Object.entries(obj[key] as Record<string, unknown>);
       for (let i = 0; i < extensionDefinitions.length; i += 1) {
         const [extKey, extObject] = extensionDefinitions[i];
-        if (Object.entries(extObject).length === 1) {
+        if (Object.entries(extObject as Record<string, unknown>).length === 1) {
           const ext = obj[key] as any;
           delete ext[extKey];
         }
