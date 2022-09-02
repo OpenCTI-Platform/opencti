@@ -172,9 +172,9 @@ class ViewCharts extends Component {
       Informational: '#FFEBBC',
     };
 
-    
 
-    const colorsForTrendingChart = ['#325B9B','#0083E8','#00A6F6','#0089C4','#00B2B9','#00B6AA','#00D7A1','#00D760'];
+
+    const colorsForTrendingChart = ['#FEECC1', '#3C5A96', '#F9B406', '#2AA3EF', '#F35426', '#11B3A9', '#AD0036', '#16D36D'];
 
     const handleTabChange = (event, newValue) => {
       this.setState({ tabValue: newValue });
@@ -769,6 +769,7 @@ class ViewCharts extends Component {
                           isAnimationActive={trendingName === s.name ? false : true}
                           data={s.data}
                           hide={trendingData.includes(s.name) && true}
+                          strokeWidth={3}
                           name={s.name}
                           key={s.name}
                           dot={{ r: 8 }}
