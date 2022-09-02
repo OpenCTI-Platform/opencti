@@ -137,6 +137,18 @@ node {
         throw e
       } finally {
         junit testResults: 'opencti-platform/opencti-graphql/test-results/jest/results.xml', skipPublishingChecks: true
+        try {
+          String results = sh(returnStdout: true, script: 'cat opencti-platform/opencti-graphql/test-results/jest/results.xml')
+          office365ConnectorSend(
+            webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+            message: 'Jest Test Results',
+            factDefinitions: [[name: 'Commit', template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
+                              [name: 'Version', template: "${version}"],
+                              [name: 'Results', template: "${results}"]]
+          )
+        } catch (Exception e) {
+          echo "Failed to post test results to Teams: ${e}"
+        }
       }
     }
   }
