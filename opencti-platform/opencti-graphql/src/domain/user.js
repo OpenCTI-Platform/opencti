@@ -625,9 +625,10 @@ export const authenticateUser = async (req, user, provider, token = '') => {
   // Build the user session with only required fields
   const completeUser = await buildCompleteUser(user);
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
-  req.session.user = buildSessionUser(completeUser, provider);
+  const sessionUser = buildSessionUser(completeUser, provider);
+  req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
-  return completeUser;
+  return sessionUser;
 };
 
 const AUTH_BEARER = 'Bearer';
@@ -638,11 +639,11 @@ export const authenticateUserFromRequest = async (req, res) => {
   if (auth) {
     // User already identified, we need to enforce the session validity
     const { provider, token } = req.session.session_provider;
-    // For bearer, validate that the bearer is the same than the session
+    // For bearer, validate that the bearer is the same as the session
     if (provider === AUTH_BEARER) {
       const currentToken = extractTokenFromBearer(req.headers.authorization);
       if (currentToken !== token) {
-        // Session doesnt match, kill the current session and try to re auth
+        // Session doesn't match, kill the current session and try to re auth
         await logout(auth, req, res);
         return authenticateUserFromRequest(req, res);
       }
@@ -655,12 +656,12 @@ export const authenticateUserFromRequest = async (req, res) => {
       const passwordCompare = isNotEmptyField(password) && isNotEmptyField(sessionPassword);
       const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
       if (!sameUsername || !samePassword) {
-        // Session doesnt match, kill the current session and try to re auth
+        // Session doesn't match, kill the current session and try to re auth
         await logout(auth, req, res);
         return authenticateUserFromRequest(req, res);
       }
     }
-    // Other providers doesnt need specific validation, session management is enough
+    // Other providers doesn't need specific validation, session management is enough
     // If everything ok, return the authenticated user.
     return auth;
   }
@@ -677,7 +678,7 @@ export const authenticateUserFromRequest = async (req, res) => {
     try {
       const user = await resolveUserByToken(tokenUUID);
       if (user) {
-        await authenticateUser(req, user, loginProvider, tokenUUID);
+        return authenticateUser(req, user, loginProvider, tokenUUID);
       }
       return user;
     } catch (err) {

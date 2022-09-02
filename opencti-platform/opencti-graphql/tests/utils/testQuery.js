@@ -51,8 +51,11 @@ export const ADMIN_USER = {
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   name: 'admin',
   user_email: 'admin@opencti.io',
+  otp_activated: false,
+  otp_validated: false,
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
+  groups: [],
   allowed_marking: [],
   origin: { source: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
 };
@@ -60,6 +63,8 @@ export const ADMIN_USER = {
 export const serverFromUser = (user = ADMIN_USER) => {
   return new ApolloServer({
     schema: createSchema(),
+    introspection: true,
+    persistedQueries: false,
     context: () => ({ user }),
   });
 };
