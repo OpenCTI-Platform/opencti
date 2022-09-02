@@ -1,6 +1,6 @@
   # declares the query entry-points for this type
   extend type Query {
-    cyioNote(id: ID!): CyioNote
+    cyioNote(id: ID!): CyioNote  @hasPermission(resources: "Cyio:view")
     cyioNotes( 
       first: Int
       offset: Int
@@ -9,8 +9,8 @@
       filters: [CyioNotesFiltering]
       filterMode: FilterMode
       search: String
-    ): CyioNoteConnection
-    cyioExternalReference(id: ID!): CyioExternalReference
+    ): CyioNoteConnection  @hasPermission(resources: "Cyio:view")
+    cyioExternalReference(id: ID!): CyioExternalReference @hasPermission(resources: "Cyio:view")
     cyioExternalReferences(
       first: Int
       offset: Int
@@ -18,8 +18,8 @@
       orderMode: OrderingMode
       filters: [CyioExternalReferencesFiltering]
       filterMode: FilterMode
-    ): CyioExternalReferenceConnection
-    cyioLabel(id: ID!): CyioLabel
+    ): CyioExternalReferenceConnection  @hasPermission(resources: "Cyio:view")
+    cyioLabel(id: ID!): CyioLabel  @hasPermission(resources: "Cyio:view")
     cyioLabels(
       first: Int
       offset: Int
@@ -28,8 +28,8 @@
       filters: [CyioLabelsFiltering]
       filterMode: FilterMode
       search: String
-    ): CyioLabelConnection
-    civicAddress(id: ID!): CivicAddress
+    ): CyioLabelConnection  @hasPermission(resources: "Cyio:view")
+    civicAddress(id: ID!): CivicAddress  @hasPermission(resources: "Cyio:view")
     civicAddresses(
       first: Int
       offset: Int
@@ -38,8 +38,8 @@
       filters: [CivicAddressFiltering]
       filterMode: FilterMode
       search: String
-    ): CivicAddressConnection
-    telephoneNumber(id: ID!): TelephoneNumber
+    ): CivicAddressConnection  @hasPermission(resources: "Cyio:view")
+    telephoneNumber(id: ID!): TelephoneNumber  @hasPermission(resources: "Cyio:view")
     telephoneNumbers(
       first: Int
       offset: Int
@@ -48,22 +48,22 @@
       filters: [TelephoneNumberFiltering]
       filterMode: FilterMode
       search: String
-    ): TelephoneNumberConnection
+    ): TelephoneNumberConnection  @hasPermission(resources: "Cyio:view")
   }
 
   # declares the mutation entry-points for this type
   extend type Mutation {
-    addReference(input: ReferenceAddInput): Boolean
-    removeReference( input: ReferenceAddInput): Boolean
-    createCyioNote(input: CyioNoteAddInput): CyioNote
-    deleteCyioNote(id: ID!): String!
-    editCyioNote(id: ID!, input: [EditInput]!, commitMessage: String): CyioNote
-    createCyioExternalReference(input: CyioExternalReferenceAddInput): CyioExternalReference
-    deleteCyioExternalReference(id: ID!): String!
-    editCyioExternalReference(id: ID!, input: [EditInput]!, commitMessage: String): CyioExternalReference
-    createCyioLabel(input: CyioLabelAddInput): CyioLabel
-    deleteCyioLabel(id: ID!): String!
-    editCyioLabel(id: ID!, input: [EditInput]!, commitMessage: String): CyioLabel
+    addReference(input: ReferenceAddInput): Boolean  
+    removeReference( input: ReferenceAddInput): Boolean  
+    createCyioNote(input: CyioNoteAddInput): CyioNote  @hasPermission(resources: "Note:update")
+    deleteCyioNote(id: ID!): String!  @hasPermission(resources: "Note:delete")
+    editCyioNote(id: ID!, input: [EditInput]!, commitMessage: String): CyioNote  @hasPermission(resources: "Node:update")
+    createCyioExternalReference(input: CyioExternalReferenceAddInput): CyioExternalReference  @hasPermission(resources: "ExtReference:update")
+    deleteCyioExternalReference(id: ID!): String!  @hasPermission(resources: "ExtReference:delete")
+    editCyioExternalReference(id: ID!, input: [EditInput]!, commitMessage: String): CyioExternalReference  @hasPermission(resources: "ExtReference:update")
+    createCyioLabel(input: CyioLabelAddInput): CyioLabel  @hasPermission(resources: "Label:update")
+    deleteCyioLabel(id: ID!): String!  @hasPermission(resources: "Label:delete")
+    editCyioLabel(id: ID!, input: [EditInput]!, commitMessage: String): CyioLabel  @hasPermission(resources: "Label:update")
   }
 
   type TargetObjectAddInput {
@@ -1059,7 +1059,7 @@
     "Identifes the state, province or analogous geographical region for mailing address"
     administrative_area: String
     "Identifies the ISO 3166-1 alpha-2 country code for the mailing address."
-    country_code: Iso3166CountryCode
+    country_code: Iso3166CountryCode!
     "Identifies the postal or ZIP code for mailing address"
     postal_code: PostalCode
   }

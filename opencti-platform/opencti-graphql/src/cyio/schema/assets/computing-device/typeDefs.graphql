@@ -7,14 +7,14 @@
           filters: [ComputingDeviceAssetFiltering]
           filterMode: FilterMode
           search: String
-        ): ComputingDeviceAssetConnection
-      computingDeviceAsset(id: ID!): ComputingDeviceAsset
+        ): ComputingDeviceAssetConnection @hasPermission(resources: "Asset:view")
+      computingDeviceAsset(id: ID!): ComputingDeviceAsset @hasPermission(resources: "Asset:view")
   }
 
   extend type Mutation {
-      createComputingDeviceAsset(input: ComputingDeviceAssetAddInput): ComputingDeviceAsset
-      deleteComputingDeviceAsset(id: ID!): String!
-      editComputingDeviceAsset(id: ID!, input: [EditInput]!, commitMessage: String): ComputingDeviceAsset
+      createComputingDeviceAsset(input: ComputingDeviceAssetAddInput): ComputingDeviceAsset @hasPermission(resources: "Asset:update")
+      deleteComputingDeviceAsset(id: ID!): String! @hasPermission(resources: "Asset:delete")
+      editComputingDeviceAsset(id: ID!, input: [EditInput]!, commitMessage: String): ComputingDeviceAsset @hasPermission(resources: "Asset:update")
   }
 
   "Defines identifying information about a network."

@@ -8,14 +8,14 @@
         filters: [PhysicalDeviceAssetFiltering]
         filterMode: FilterMode
         search: String
-      ): [PhysicalDeviceAsset]
-    physicalDevice(id: ID!): PhysicalDeviceAsset
+      ): [PhysicalDeviceAsset] @hasPermission(resources: "Asset:view")
+    physicalDevice(id: ID!): PhysicalDeviceAsset  @hasPermission(resources: "Asset:view")
   }
 
   extend type Mutation {
-    physicalDeviceAdd(input: PhysicalDeviceAssetAddInput): PhysicalDeviceAsset
-    physicalDeviceDelete(id: ID!): String!
-    physicalDeviceEdit(id: ID!, input: [EditInput]!, commitMessage: String): PhysicalDeviceAsset
+    physicalDeviceAdd(input: PhysicalDeviceAssetAddInput): PhysicalDeviceAsset  @hasPermission(resources: "Asset:update")
+    physicalDeviceDelete(id: ID!): String!  @hasPermission(resources: "Asset:delete")
+    physicalDeviceEdit(id: ID!, input: [EditInput]!, commitMessage: String): PhysicalDeviceAsset  @hasPermission(resources: "Asset:update")
   }
 
   # Query Types

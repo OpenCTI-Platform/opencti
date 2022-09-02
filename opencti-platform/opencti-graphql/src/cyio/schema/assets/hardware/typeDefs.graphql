@@ -1,5 +1,5 @@
   extend type Query {
-      hardwareAsset(id: ID!): HardwareAsset
+      hardwareAsset(id: ID!): HardwareAsset @hasPermission(resources:"Asset:view")
       hardwareAssetList(
           first: Int
           offset: Int
@@ -8,13 +8,13 @@
           filters: [HardwareAssetFiltering]
           filterMode: FilterMode
           search: String
-        ): HardwareAssetConnection
+        ): HardwareAssetConnection @hasPermission(resources: "Asset:view")
   }
 
   extend type Mutation {
-      createHardwareAsset(input: HardwareAssetAddInput): HardwareAsset
-      deleteHardwareAsset(id: ID!): String!
-      editHardwareAsset(id: ID!, input: [EditInput]!, commitMessage: String): HardwareAsset
+      createHardwareAsset(input: HardwareAssetAddInput): HardwareAsset @hasPermission(resources: "Asset:update")
+      deleteHardwareAsset(id: ID!): String! @hasPermission(resources: "Asset:delete")
+      editHardwareAsset(id: ID!, input: [EditInput]!, commitMessage: String): HardwareAsset @hasPermission(resources: "Asset:update")
   }
 
 #####  HardwareAsset
