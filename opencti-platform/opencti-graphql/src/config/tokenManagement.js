@@ -9,6 +9,7 @@ let oidcIssuer = null;
 export const oidcRefresh = async (refreshToken) => {
   if (oidcRefreshAxios === null) throw new Error('Unable to refresh token, OIDC not configured.');
   try {
+    logApp.debug(`[OIDC] Token refresh: ${refreshToken?.substring(0, 20) ?? 'missing refresh token'}`);
     const { data } = await oidcRefreshAxios.post(
       '/protocol/openid-connect/token',
       qs.stringify({
@@ -27,7 +28,7 @@ export const oidcRefresh = async (refreshToken) => {
       accessToken: data.access_token,
     };
   } catch (e) {
-    logApp.error(`[OIDC] Failed to refresh token`, e.data);
+    logApp.error(`[OIDC] Failed to refresh token`, e.response ?? e.response.data);
     throw e;
   }
 };
@@ -41,6 +42,7 @@ export const configureOidcRefresh = (config) => {
       client_secret: config.client_secret,
     },
   });
+  logApp.info(`[OIDC] Setting refresh default values`, { ...oidcRefreshAxios.defaults.data, baseUrl: oidcRefreshAxios.defaults.baseURL });
 };
 
 export const tokenExpired = (token) => {

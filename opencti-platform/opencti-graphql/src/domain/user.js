@@ -596,7 +596,7 @@ const authenticateUserOIDC = async (user) => {
 export const authenticateUser = async (req, user, provider) => {
   // Build the user session with only required fields
   let sessionUser = await buildCompleteUser(user);
-  if (provider === 'oic') {
+  if (['oic', 'Bearer'].includes(provider)) {
     sessionUser = await authenticateUserOIDC(sessionUser);
   }
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
