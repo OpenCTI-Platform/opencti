@@ -275,7 +275,7 @@ export const upload = async (user, path, fileUpload, meta = {}) => {
     uploadStatus: 'complete'
   };
   // Trigger a enrich job for import file if needed
-  if (path.startsWith('import/')) {
+  if (path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
     await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
   return file;
