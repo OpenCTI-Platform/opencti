@@ -30,9 +30,9 @@ export const oidcRefresh = async (refreshToken) => {
   } catch (e) {
     logApp.error(
       `[OIDC] Failed to refresh token`,
-      e.response ?? {
-        data: e.response.data,
+      e.response && {
         status: e.response.status,
+        data: e.response.data
       }
     );
     return null;
