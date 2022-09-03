@@ -28,8 +28,14 @@ export const oidcRefresh = async (refreshToken) => {
       accessToken: data.access_token,
     };
   } catch (e) {
-    logApp.error(`[OIDC] Failed to refresh token`, e.response ?? e.response.data);
-    throw e;
+    logApp.error(
+      `[OIDC] Failed to refresh token`,
+      e.response ?? {
+        data: e.response.data,
+        status: e.response.status,
+      }
+    );
+    return null;
   }
 };
 
@@ -42,7 +48,11 @@ export const configureOidcRefresh = (config) => {
       client_secret: config.client_secret,
     },
   });
-  logApp.info(`[OIDC] Setting refresh default values`, { ...oidcRefreshAxios.defaults.data, baseUrl: oidcRefreshAxios.defaults.baseURL });
+  logApp.info(`[OIDC] Setting refresh default values`, {
+    client_id: oidcRefreshAxios.defaults.data['client-id'],
+    client_secret: oidcRefreshAxios.defaults.data['client-id'],
+    baseUrl: oidcRefreshAxios.defaults.baseURL,
+  });
 };
 
 export const tokenExpired = (token) => {

@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { map } from 'ramda';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import jwtDecode from 'jwt-decode';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
@@ -49,7 +48,7 @@ import {
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import {oidcRefresh, tokenExpired} from '../config/tokenManagement';
+import { oidcRefresh, tokenExpired } from '../config/tokenManagement';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -582,10 +581,11 @@ export const userRenewToken = async (user, userId) => {
 const authenticateUserOIDC = async (user) => {
   const token = user.access_token;
   if (tokenExpired(token)) {
-    const { accessToken, refreshToken } = await oidcRefresh(user.refresh_token);
+    const tokenSet = await oidcRefresh(user.refresh_token);
+    if (tokenSet === null) return user;
     const patch = {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      access_token: tokenSet.accessToken,
+      refresh_token: tokenSet.refreshToken,
     };
     const { element: updatedUser } = await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
     return buildCompleteUser(updatedUser);
