@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { compose, map } from 'ramda';
+import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { CenterFocusStrong } from '@mui/icons-material';
 import { Field } from 'formik';
