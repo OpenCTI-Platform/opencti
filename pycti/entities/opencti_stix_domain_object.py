@@ -499,7 +499,7 @@ class StixDomainObject:
             final_data = final_data + data
             while result["data"]["stixDomainObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixDomainObjects"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Stix-Domain-Entities after " + after)
+                self.opencti.log("info", "Listing Stix-Domain-Objects after " + after)
                 result = self.opencti.query(
                     query,
                     {
