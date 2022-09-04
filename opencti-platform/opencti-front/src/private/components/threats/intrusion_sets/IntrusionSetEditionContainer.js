@@ -118,7 +118,6 @@ class IntrusionSetEditionContainer extends Component {
       R.assoc('objectGroup', objectGroup),
       R.pick(['objectGroup']),
     )(intrusionSet);
-    console.log(initialValues);
     return (
       <div>
         <div className={classes.header}>
