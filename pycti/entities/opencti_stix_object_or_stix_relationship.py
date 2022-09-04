@@ -324,6 +324,24 @@ class StixObjectOrStixRelationship:
                 last_seen
                 objective
             }
+            ... on Event {
+                name
+                description
+              }
+             ... on Channel {
+                name
+                description
+              }
+             ... on Narrative {
+                name
+                description
+              }
+             ... on Language {
+                name
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
             ... on StixCoreRelationship {
                 createdBy {
                     ... on Identity {
