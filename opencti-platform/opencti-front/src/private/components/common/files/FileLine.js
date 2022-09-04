@@ -143,6 +143,7 @@ class FileLineComponent extends Component {
       directDownload,
       handleOpenImport,
       nested,
+      workNested,
     } = this.props;
     const { lastModifiedSinceMin, uploadStatus, metaData } = file;
     const { messages, errors } = metaData;
@@ -266,7 +267,7 @@ class FileLineComponent extends Component {
             )}
           </ListItemSecondaryAction>
         </ListItem>
-        <FileWork file={file} />
+        <FileWork file={file} nested={workNested} />
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}
@@ -339,6 +340,7 @@ FileLineComponent.propTypes = {
   directDownload: PropTypes.bool,
   handleOpenImport: PropTypes.func,
   nested: PropTypes.bool,
+  workNested: PropTypes.bool,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {

@@ -36,6 +36,9 @@ const styles = (theme) => ({
   nested: {
     paddingLeft: theme.spacing(4),
   },
+  nestedNested: {
+    paddingLeft: theme.spacing(8),
+  },
   tooltip: {
     maxWidth: 600,
   },
@@ -55,6 +58,7 @@ const FileWorkComponent = (props) => {
     nsdt,
     classes,
     file: { works },
+    nested,
   } = props;
   const [deleting, setDeleting] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(null);
@@ -129,7 +133,7 @@ const FileWorkComponent = (props) => {
                 dense={true}
                 button={true}
                 divider={true}
-                classes={{ root: classes.nested }}
+                classes={{ root: nested ? classes.nestedNested : classes.nested }}
                 disabled={work.status === 'deleting'}
               >
                 <ListItemIcon>
@@ -208,6 +212,7 @@ FileWorkComponent.propTypes = {
   classes: PropTypes.object,
   file: PropTypes.object.isRequired,
   nsdt: PropTypes.func,
+  nested: PropTypes.bool,
 };
 
 const FileWork = createFragmentContainer(FileWorkComponent, {
