@@ -32,7 +32,7 @@ enum Capabilities {
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
   KNOWLEDGE_KNUPDATE_KNDELETE
-  KNOWLEDGE_KNUPDATE_KNGROUPRESTRICT
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
   KNOWLEDGE_KNGETEXPORT
@@ -1162,6 +1162,7 @@ type User implements BasicObject & InternalObject {
   roles: [Role]!
   capabilities: [Capability]!
   groups: GroupConnection
+  objectOrganization: OrganizationConnection
   created_at: DateTime!
   updated_at: DateTime!
   allowed_marking: [MarkingDefinition]
@@ -1212,6 +1213,7 @@ input UserAddInput {
   language: String
   theme: String
   roles: [ID]
+  objectOrganization: [ID!]
 }
 
 scalar user_email_String_minLength_5_format_email
@@ -1456,21 +1458,6 @@ type MarkingDefinitionConnection {
 type MarkingDefinitionEdge {
   cursor: String!
   node: MarkingDefinition!
-}
-
-type MarkingGroupConnection {
-  pageInfo: PageInfo!
-  edges: [MarkingGroupEdge]
-}
-
-type MarkingGroupEdge {
-  cursor: String!
-  node: MarkingGroup!
-}
-
-type MarkingGroup {
-  id: ID!
-  name: String!
 }
 
 type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
@@ -1798,7 +1785,7 @@ interface StixCoreObject {
   updated_at: DateTime!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -1893,7 +1880,7 @@ interface StixDomainObject {
   updated_at: DateTime!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -1999,7 +1986,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2118,7 +2105,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2165,6 +2152,7 @@ input CampaignAddInput {
   objective: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -2234,7 +2222,7 @@ interface Container {
   updated_at: DateTime!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2312,7 +2300,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2356,6 +2344,7 @@ input NoteAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  objectOrganization: [String]
   externalReferences: [String]
   objects: [String]
   created: DateTime
@@ -2425,7 +2414,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2470,6 +2459,7 @@ input ObservedDataAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  objectOrganization: [String]
   externalReferences: [String]
   objects: [String]!
   created: DateTime
@@ -2535,7 +2525,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2646,7 +2636,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2691,7 +2681,7 @@ input ReportAddInput {
   lang: String
   confidence: Int
   createdBy: String
-  objectGroup: [String]
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -2757,7 +2747,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2873,7 +2863,7 @@ interface Identity {
   updated_at: DateTime!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2986,7 +2976,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3111,7 +3101,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3228,7 +3218,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3340,7 +3330,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3472,7 +3462,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3602,7 +3592,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3712,7 +3702,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3837,7 +3827,7 @@ interface Location {
   updated_at: DateTime!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3948,7 +3938,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4065,7 +4055,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4173,7 +4163,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4281,7 +4271,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4401,7 +4391,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4518,7 +4508,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4580,6 +4570,7 @@ input ThreatActorAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -4640,7 +4631,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4752,7 +4743,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4881,7 +4872,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4933,6 +4924,7 @@ input IncidentAddInput {
   severity: IncidentSeverity
   source: String
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -5004,7 +4996,7 @@ interface StixCyberObservable {
   updated_at: DateTime!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5041,7 +5033,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5087,7 +5079,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5137,7 +5129,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5179,7 +5171,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5223,7 +5215,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5277,7 +5269,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5346,7 +5338,7 @@ interface HashedObservable {
   updated_at: DateTime!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5384,7 +5376,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5438,7 +5430,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5501,7 +5493,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5597,7 +5589,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5642,7 +5634,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5685,7 +5677,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5727,7 +5719,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5769,7 +5761,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5830,7 +5822,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5914,7 +5906,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5967,7 +5959,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6009,7 +6001,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6078,7 +6070,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6124,7 +6116,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6170,7 +6162,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6212,7 +6204,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6254,7 +6246,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6296,7 +6288,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6338,7 +6330,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6380,7 +6372,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6426,7 +6418,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6468,7 +6460,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6809,6 +6801,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
+  objectOrganization: OrganizationConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -6926,6 +6919,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7354,6 +7348,8 @@ type UserEditMutations {
   tokenRenew: User
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): User
+  organizationAdd(organizationId: ID!): User
+  organizationDelete(organizationId: ID!): User
 }
 
 type RoleEditMutations {
@@ -7446,8 +7442,8 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
   relationDelete(toId: StixRef!, relationship_type: String!): StixCoreObject
-  restrictionGroupAdd(groupId: ID!): StixCoreObject
-  restrictionGroupDelete(groupId: ID!): StixCoreObject
+  restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
+  restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
   merge(stixCoreObjectsIds: [String]!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
   importPush(file: Upload!, noTriggerImport: Boolean): File
@@ -7728,6 +7724,8 @@ type StixCoreRelationshipEditMutations {
   contextClean: StixCoreRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): StixCoreRelationship
+  restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship
+  restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship
 }
 
 type StixSightingRelationshipEditMutations {
@@ -7737,6 +7735,8 @@ type StixSightingRelationshipEditMutations {
   contextClean: StixSightingRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): StixSightingRelationship
+  restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship
+  restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship
 }
 
 type StixCyberObservableRelationshipEditMutations {
@@ -7874,7 +7874,7 @@ type Mutation {
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput): Incident
   incidentEdit(id: ID!): IncidentEditMutations
-  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput): StixCyberObservable
+  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(format: String!, exportType: String!, maxMarkingDefinition: String, context: String, types: [String], search: String, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode, filters: [StixCyberObservablesFiltering], filterMode: FilterMode): FileConnection
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
@@ -7939,7 +7939,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8046,7 +8046,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8148,7 +8148,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8259,7 +8259,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectGroup: MarkingGroupConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection

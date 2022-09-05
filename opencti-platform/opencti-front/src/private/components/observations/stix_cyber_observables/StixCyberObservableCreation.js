@@ -60,6 +60,11 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
+  restrictions: {
+    padding: 10,
+    marginBottom: 20,
+    backgroundColor: theme.palette.background.nav,
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -137,6 +142,7 @@ const stixCyberObservableMutation = graphql`
     $createdBy: String
     $objectMarking: [String]
     $objectLabel: [String]
+    $objectOrganization: [String]
     $externalReferences: [String]
     $AutonomousSystem: AutonomousSystemAddInput
     $Directory: DirectoryAddInput
@@ -176,6 +182,7 @@ const stixCyberObservableMutation = graphql`
       createdBy: $createdBy
       objectMarking: $objectMarking
       objectLabel: $objectLabel
+      objectOrganization: $objectOrganization
       externalReferences: $externalReferences
       AutonomousSystem: $AutonomousSystem
       Directory: $Directory
@@ -234,6 +241,14 @@ const stixCyberObservableMutation = graphql`
             id
             value
             color
+          }
+        }
+      }
+      objectOrganization {
+        edges {
+          node {
+            id
+            name
           }
         }
       }
@@ -320,6 +335,7 @@ class StixCyberObservableCreation extends Component {
       dissoc('x_opencti_description'),
       dissoc('x_opencti_score'),
       dissoc('createdBy'),
+      dissoc('objectOrganization'),
       dissoc('objectMarking'),
       dissoc('objectLabel'),
       dissoc('externalReferences'),
@@ -346,6 +362,7 @@ class StixCyberObservableCreation extends Component {
       x_opencti_score: parseInt(values.x_opencti_score, 10),
       createdBy: propOr(null, 'value', values.createdBy),
       objectMarking: pluck('value', values.objectMarking),
+      objectOrganization: pluck('value', values.objectOrganization),
       objectLabel: pluck('value', values.objectLabel),
       externalReferences: pluck('value', values.externalReferences),
       createIndicator: values.createIndicator,
@@ -441,6 +458,7 @@ class StixCyberObservableCreation extends Component {
               x_opencti_score: 50,
               createdBy: '',
               objectMarking: [],
+              objectOrganization: [],
               objectLabel: [],
               externalReferences: [],
               createIndicator: false,
@@ -482,14 +500,13 @@ class StixCyberObservableCreation extends Component {
                   setFieldValue,
                   values,
                 }) => (
-                  <Form
-                    style={{
-                      margin: this.props.contextual
-                        ? '10px 0 0 0'
-                        : '20px 0 20px 0',
-                    }}
-                  >
+                  <Form style={{ margin: this.props.contextual ? '10px 0 0 0' : '0px 0 20px 0' }}>
                     <div>
+                      <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                        <div className={classes.restrictions}>
+                          <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
+                        </div>
+                      </Security>
                       <Field
                         component={TextField}
                         variant="standard"

@@ -77,7 +77,7 @@ import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { RELATION_GROUPS } from '../schema/internalRelationship';
+import { RELATION_ORGANIZATIONS } from '../schema/internalRelationship';
 import { telemetry } from '../config/tracing';
 
 const ELK_ENGINE = 'elk';
@@ -101,7 +101,7 @@ export const ROLE_TO = 'to';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
-  `${RELATION_GROUPS}_${ROLE_TO}`,
+  `${RELATION_ORGANIZATIONS}_${ROLE_TO}`,
   `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   // RELATION_OBJECT
@@ -296,17 +296,17 @@ const buildDataRestrictions = (user) => {
       };
       must.push(markingBool);
     }
-    if (user.groups.length === 0) {
+    if (user.organizations.length === 0) {
       // If user have no groups, he can only access to data with no groups.
-      must_not.push({ exists: { field: buildRefRelationKey(RELATION_GROUPS) } });
+      must_not.push({ exists: { field: buildRefRelationKey(RELATION_ORGANIZATIONS) } });
     } else {
-      const should = user.groups.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GROUPS)]: m } }));
+      const should = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_ORGANIZATIONS)]: m } }));
       const markingBool = {
         bool: {
           should: [
             {
               bool: {
-                must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GROUPS) } }],
+                must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_ORGANIZATIONS) } }],
               },
             },
             ...should

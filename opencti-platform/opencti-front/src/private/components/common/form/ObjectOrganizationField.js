@@ -20,9 +20,9 @@ const styles = () => ({
   },
 });
 
-export const objectGroupFieldQuery = graphql`
-  query ObjectGroupFieldQuery {
-    groups {
+export const objectOrganizationFieldQuery = graphql`
+  query ObjectOrganizationFieldQuery {
+    organizations {
         edges {
             node {
                 id
@@ -33,30 +33,30 @@ export const objectGroupFieldQuery = graphql`
   }
 `;
 
-class ObjectGroupField extends Component {
+class ObjectOrganizationField extends Component {
   constructor(props) {
     super(props);
-    const { defaultGroups } = props;
-    const groups = (defaultGroups ?? [])
+    const { defaultOrganizations } = props;
+    const organizations = (defaultOrganizations ?? [])
       .map((n) => ({ label: n.name, value: n.id /* color: n.x_opencti_color */ }));
-    this.state = { groups };
+    this.state = { organizations };
   }
 
-  searchGroups() {
-    fetchQuery(objectGroupFieldQuery)
+  searchOrganizations() {
+    fetchQuery(objectOrganizationFieldQuery)
       .toPromise()
       .then((data) => {
-        const groups = data.groups.edges.map((n) => ({
+        const organizations = data.organizations.edges.map((n) => ({
           label: n.node.name,
           value: n.node.id,
           // color: n.x_opencti_color,
         }));
-        this.setState({ groups });
+        this.setState({ organizations });
       });
   }
 
   render() {
-    const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
+    const { t, name, label, style, classes, onChange, helpertext, disabled } = this.props;
     return (
       <Field
         component={AutocompleteField}
@@ -66,13 +66,13 @@ class ObjectGroupField extends Component {
         disabled={disabled}
         textfieldprops={{
           variant: 'standard',
-          label: t('Group restrictions'),
+          label: t(label ?? 'Organizations restrictions'),
           helperText: helpertext,
-          onFocus: this.searchGroups.bind(this),
+          onFocus: this.searchOrganizations.bind(this),
         }}
         noOptionsText={t('No available options')}
-        options={this.state.groups}
-        onInputChange={this.searchGroups.bind(this)}
+        options={this.state.organizations}
+        onInputChange={this.searchOrganizations.bind(this)}
         onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
         renderOption={(props, option) => (
           <li {...props}>
@@ -87,4 +87,4 @@ class ObjectGroupField extends Component {
   }
 }
 
-export default compose(inject18n, withStyles(styles))(ObjectGroupField);
+export default compose(inject18n, withStyles(styles))(ObjectOrganizationField);

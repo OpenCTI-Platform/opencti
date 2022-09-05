@@ -36,6 +36,7 @@ import {
   userIdDeleteRelation,
   userRenewToken,
   userWithOrigin,
+  batchOrganizations, assignOrganizationToUser,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -47,10 +48,12 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
 import { getUserSubscriptions } from '../domain/userSubscription';
+import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { executionContext } from '../utils/access';
 import { fetchSessionTtl, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 
 const groupsLoader = batchLoader(batchGroups);
+const organizationsLoader = batchLoader(batchOrganizations);
 const rolesLoader = batchLoader(batchRoles);
 const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
 
@@ -69,6 +72,7 @@ const userResolvers = {
   },
   User: {
     groups: (current, _, context) => groupsLoader.load(current.id, context, context.user),
+    objectOrganization: (current, _, { user }) => organizationsLoader.load(current.id, user),
     roles: (current, _, context) => rolesLoader.load(current.id, context, context.user),
     allowed_marking: (current, _, context) => getMarkings(context, current.id, context.user.capabilities),
     capabilities: (current, _, context) => getCapabilities(context, current.id),
@@ -153,6 +157,8 @@ const userResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => {
         return userIdDeleteRelation(context, context.user, id, toId, relationshipType);
       },
+      organizationAdd: ({ organizationId }) => assignOrganizationToUser(user, id, organizationId),
+      organizationDelete: ({ organizationId }) => userIdDeleteRelation(user, id, organizationId, RELATION_MEMBER_OF),
     }),
     meEdit: (_, { input, password }, context) => meEditField(context, context.user, context.user.id, input, password),
     meTokenRenew: (_, __, context) => userRenewToken(context, context.user, context.user.id),

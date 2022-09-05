@@ -19,7 +19,7 @@ import * as Yup from 'yup';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -28,6 +28,7 @@ import { noteCreationMutation } from './NoteCreation';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   paper: {
@@ -96,6 +97,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
         ...defaultMarking,
         ...R.pluck('value', values.objectMarking),
       ]),
+      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('objects', [stixSightingRelationshipId]),
       R.assoc('createdBy', R.pathOr(null, ['createdBy', 'value'], values)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
@@ -181,6 +183,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
                 attribute_abstract: '',
                 content: '',
                 createdBy: '',
+                objectOrganization: [],
                 objectMarking: [],
                 objectLabel: [],
               }}
@@ -196,6 +199,11 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
                 isSubmitting,
               }) => (
                 <Form style={{ width: '100%' }}>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <div style={{ marginBottom: 20 }}>
+                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
+                    </div>
+                  </Security>
                   <Field
                     component={TextField}
                     variant="standard"

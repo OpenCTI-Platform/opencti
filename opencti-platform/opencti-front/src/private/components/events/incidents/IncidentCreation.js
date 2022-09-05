@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -11,10 +11,7 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -22,12 +19,18 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { insertNode } from '../../../../utils/Store';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
+  restrictions: {
+    padding: 10,
+    backgroundColor: theme.palette.background.nav,
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -102,6 +105,7 @@ const IncidentCreation = ({ paginationOptions }) => {
         createdBy: R.path(['value']),
         objectMarking: R.pluck('value'),
         objectLabel: R.pluck('value'),
+        objectOrganization: R.pluck('value'),
         externalReferences: R.pluck('value'),
       },
       cleanedValues,
@@ -170,6 +174,7 @@ const IncidentCreation = ({ paginationOptions }) => {
               description: '',
               createdBy: '',
               objectMarking: [],
+              objectOrganization: [],
               objectLabel: [],
               externalReferences: [],
             }}
@@ -177,14 +182,13 @@ const IncidentCreation = ({ paginationOptions }) => {
             onSubmit={onSubmit}
             onReset={() => setOpen(false)}
           >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
+            {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+              <Form style={{ margin: '0px 0 20px 0' }}>
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                  <div className={classes.restrictions}>
+                    <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }} />
+                  </div>
+                </Security>
                 <Field
                   component={TextField}
                   variant="standard"

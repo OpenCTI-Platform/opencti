@@ -32,6 +32,11 @@ import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { filesListing } from '../database/file-storage';
 import { batchUsers } from '../domain/user';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
+import {
+  batchObjectOrganizations,
+  addOrganizationRestriction,
+  removeOrganizationRestriction
+} from '../domain/stixCoreObject';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -42,6 +47,7 @@ const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
+const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 const creatorsLoader = batchLoader(batchUsers);
 
 const stixCoreRelationshipResolvers = {
@@ -65,6 +71,7 @@ const stixCoreRelationshipResolvers = {
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),
     objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),
+    objectOrganization: (stixCoreObject, _, { user }) => batchOrganizationsLoader.load(stixCoreObject.id, user),
     externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
     killChainPhases: (rel, _, context) => killChainPhasesLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
@@ -89,6 +96,8 @@ const stixCoreRelationshipResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => {
         return stixCoreRelationshipDeleteRelation(context, context.user, id, toId, relationshipType);
       },
+      restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
+      restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
     }),
     stixCoreRelationshipAdd: (_, { input }, context) => addStixCoreRelationship(context, context.user, input),
     stixCoreRelationshipsExportAsk: (_, args, context) => stixCoreRelationshipsExportAsk(context, context.user, args),
@@ -107,7 +116,7 @@ const stixCoreRelationshipResolvers = {
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC),
           (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            if (!payload) return false; // When disconnected, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;
           }
         )(_, { id }, context);

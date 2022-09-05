@@ -15,7 +15,7 @@ export const BASE_TYPE_ENTITY = 'ENTITY';
 // Inputs
 export const INPUT_EXTERNAL_REFS = 'externalReferences'; // external_references
 export const INPUT_KILLCHAIN = 'killChainPhases'; // kill_chain_phases
-export const INPUT_GROUPS = 'objectGroup'; // created_by_ref
+export const INPUT_ORGANIZATIONS = 'objectOrganization'; // object-organization (internal)
 export const INPUT_CREATED_BY = 'createdBy'; // created_by_ref
 export const INPUT_LABELS = 'objectLabel'; // labels
 export const INPUT_MARKINGS = 'objectMarking'; // object_marking_refs
@@ -29,7 +29,7 @@ export const MULTIPLE_META_RELATIONSHIPS_INPUTS = [
   INPUT_EXTERNAL_REFS,
   INPUT_KILLCHAIN,
   INPUT_OBJECTS,
-  INPUT_GROUPS
+  INPUT_ORGANIZATIONS
 ];
 export const STIX_META_RELATIONSHIPS_INPUTS = [INPUT_CREATED_BY, ...MULTIPLE_META_RELATIONSHIPS_INPUTS];
 

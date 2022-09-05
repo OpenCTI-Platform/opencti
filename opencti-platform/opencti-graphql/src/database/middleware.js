@@ -210,7 +210,7 @@ import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listEntities, listRelations } from './middleware-loader';
 import { getEntitiesFromCache } from '../manager/cacheManager';
-import { RELATION_GROUPS } from '../schema/internalRelationship';
+import { RELATION_ORGANIZATIONS } from '../schema/internalRelationship';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 
 // region global variables
@@ -2247,7 +2247,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     if (updatePatch[inputField] && MULTIPLE_META_RELATIONSHIPS_INPUTS.includes(inputField)) {
       const relType = FIELD_TO_META_RELATION[inputField];
       // Only add group relation for allowed users
-      if (relType !== RELATION_GROUPS || userHaveCapability(user, KNOWLEDGE_GROUP_RESTRICT)) {
+      if (relType !== RELATION_ORGANIZATIONS || userHaveCapability(user, KNOWLEDGE_GROUP_RESTRICT)) {
         const existingInstances = element[relType] || [];
         const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), updatePatch[inputField]);
         if (instancesToCreate.length > 0) {
@@ -2731,7 +2731,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       if (input[inputField]) {
         const relType = FIELD_TO_META_RELATION[inputField];
         // Only add group relation for allowed users
-        if (relType !== RELATION_GROUPS || userHaveCapability(user, KNOWLEDGE_GROUP_RESTRICT)) {
+        if (relType !== RELATION_ORGANIZATIONS || userHaveCapability(user, KNOWLEDGE_GROUP_RESTRICT)) {
           relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
         }
       }

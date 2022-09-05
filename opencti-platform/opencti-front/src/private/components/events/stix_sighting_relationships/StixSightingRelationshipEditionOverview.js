@@ -29,14 +29,21 @@ import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import {
-  convertCreatedBy,
+  convertCreatedBy, convertOrganizations,
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
+  restrictions: {
+    padding: 10,
+    marginBottom: 20,
+    backgroundColor: theme.palette.background.nav,
+  },
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -141,6 +148,26 @@ const stixSightingRelationshipMutationRelationDelete = graphql`
   }
 `;
 
+const stixSightingRelationshipMutationGroupAdd = graphql`
+  mutation StixSightingRelationshipEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+    stixSightingRelationshipEdit(id: $id) {
+      restrictionOrganizationAdd(organizationId: $organizationId) {
+        ...StixSightingRelationshipEditionOverview_stixSightingRelationship
+      }
+    }
+  }
+`;
+
+const stixSightingRelationshipMutationGroupDelete = graphql`
+  mutation StixSightingRelationshipEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!) {
+    stixSightingRelationshipEdit(id: $id) {
+      restrictionOrganizationDelete(organizationId: $organizationId) {
+        ...StixSightingRelationshipEditionOverview_stixSightingRelationship
+      }
+    }
+  }
+`;
+
 const stixSightingRelationshipValidation = (t) => Yup.object().shape({
   attribute_count: Yup.number()
     .typeError(t('The value must be a number'))
@@ -235,6 +262,35 @@ const StixSightingRelationshipEditionContainer = ({
       },
     });
   };
+  const handleChangeObjectOrganization = (name, values) => {
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(stixSightingRelationship);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: stixSightingRelationshipMutationGroupAdd,
+        variables: {
+          id: stixSightingRelationship.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: stixSightingRelationshipMutationGroupDelete,
+        variables: {
+          id: stixSightingRelationship.id,
+          organizationId: R.head(removed).value,
+        },
+      });
+    }
+  };
   const handleSubmitField = (name, value) => {
     let finalValue = value;
     if (name === 'x_opencti_workflow_id') {
@@ -255,11 +311,13 @@ const StixSightingRelationshipEditionContainer = ({
   };
   const createdBy = convertCreatedBy(stixSightingRelationship);
   const objectMarking = convertMarkings(stixSightingRelationship);
+  const objectOrganization = convertOrganizations(stixSightingRelationship);
   const status = convertStatus(t, stixSightingRelationship);
   const initialValues = R.pipe(
     R.assoc('first_seen', buildDate(stixSightingRelationship.first_seen)),
     R.assoc('last_seen', buildDate(stixSightingRelationship.last_seen)),
     R.assoc('createdBy', createdBy),
+    R.assoc('objectOrganization', objectOrganization),
     R.assoc('objectMarking', objectMarking),
     R.assoc('x_opencti_workflow_id', status),
     R.pick([
@@ -270,6 +328,7 @@ const StixSightingRelationshipEditionContainer = ({
       'description',
       'x_opencti_negative',
       'createdBy',
+      'objectOrganization',
       'objectMarking',
       'x_opencti_workflow_id',
     ]),
@@ -302,7 +361,12 @@ const StixSightingRelationshipEditionContainer = ({
           validationSchema={stixSightingRelationshipValidation(t)}
         >
           {(setFieldValue) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ margin: '0px 0 20px 0' }}>
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                <div className={classes.restrictions}>
+                  <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }} onChange={handleChangeObjectOrganization}/>
+                </div>
+              </Security>
               <Field
                 component={TextField}
                 variant="standard"
@@ -500,6 +564,14 @@ const StixSightingRelationshipEditionFragment = createFragmentContainer(
             id
             name
             entity_type
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
+            }
           }
         }
         objectMarking {

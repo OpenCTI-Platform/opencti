@@ -24,14 +24,13 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import Security, { KNOWLEDGE_KNUPDATE_KNGROUPRESTRICT } from '../../../../utils/Security';
-import ObjectGroupField from '../../common/form/ObjectGroupField';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   restrictions: {
     padding: 10,
-    marginBottom: 20,
     backgroundColor: theme.palette.background.nav,
   },
   drawerPaper: {
@@ -113,7 +112,7 @@ class IntrusionSetCreation extends Component {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('objectGroup', R.pluck('value', values.objectGroup)),
+      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
@@ -184,7 +183,7 @@ class IntrusionSetCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                objectGroup: [],
+                objectOrganization: [],
                 objectLabel: [],
                 externalReferences: [],
               }}
@@ -199,10 +198,10 @@ class IntrusionSetCreation extends Component {
                 setFieldValue,
                 values,
               }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNGROUPRESTRICT]}>
+                <Form style={{ margin: '0px 0 20px 0' }}>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                     <div className={classes.restrictions}>
-                      <ObjectGroupField name="objectGroup" style={{ width: '100%' }}/>
+                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
                     </div>
                   </Security>
                   <Field

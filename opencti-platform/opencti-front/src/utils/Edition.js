@@ -19,8 +19,8 @@ export const convertMarkings = (element) => R.pipe(
   })),
 )(element);
 
-export const convertGroups = (element) => R.pipe(
-  R.pathOr([], ['objectGroup', 'edges']),
+export const convertOrganizations = (element) => R.pipe(
+  R.pathOr([], ['objectOrganization', 'edges']),
   R.map((n) => ({
     label: n.node.name,
     value: n.node.id,

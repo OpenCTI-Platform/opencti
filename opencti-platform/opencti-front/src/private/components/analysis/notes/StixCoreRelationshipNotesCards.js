@@ -19,7 +19,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
@@ -29,6 +29,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   paper: {
@@ -97,6 +98,7 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
         ...defaultMarking,
         ...R.pluck('value', values.objectMarking),
       ]),
+      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('objects', [stixCoreRelationshipId]),
       R.assoc('createdBy', R.pathOr(null, ['createdBy', 'value'], values)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
@@ -200,6 +202,7 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
                 content: '',
                 createdBy: '',
                 objectMarking: [],
+                objectOrganization: [],
                 objectLabel: [],
               }}
               validationSchema={noteValidation(t)}
@@ -214,6 +217,11 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
                 isSubmitting,
               }) => (
                 <Form style={{ width: '100%' }}>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <div style={{ marginBottom: 20 }}>
+                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
+                    </div>
+                  </Security>
                   <Field
                     component={TextField}
                     variant="standard"

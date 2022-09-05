@@ -26,8 +26,14 @@ import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
+  restrictions: {
+    padding: 10,
+    backgroundColor: theme.palette.background.nav,
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -106,6 +112,7 @@ class ThreatActorCreation extends Component {
     const finalValues = R.pipe(
       R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
@@ -178,6 +185,7 @@ class ThreatActorCreation extends Component {
                 confidence: 75,
                 description: '',
                 createdBy: '',
+                objectOrganization: [],
                 objectMarking: [],
                 objectLabel: [],
                 externalReferences: [],
@@ -193,7 +201,12 @@ class ThreatActorCreation extends Component {
                 setFieldValue,
                 values,
               }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
+                <Form style={{ margin: '0px 0 20px 0' }}>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <div className={classes.restrictions}>
+                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
+                    </div>
+                  </Security>
                   <Field
                     component={TextField}
                     variant="standard"

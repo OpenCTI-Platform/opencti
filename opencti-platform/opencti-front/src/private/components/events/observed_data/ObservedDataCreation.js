@@ -32,9 +32,16 @@ import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
+  restrictions: {
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: theme.palette.background.nav,
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -120,6 +127,7 @@ class ObservedDataCreation extends Component {
         confidence: () => parseInt(values.confidence, 10),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
+        objectOrganization: pluck('value'),
         objectLabel: pluck('value'),
         externalReferences: pluck('value'),
         objects: pluck('value'),
@@ -200,6 +208,7 @@ class ObservedDataCreation extends Component {
                 confidence: 75,
                 createdBy: '',
                 objectMarking: [],
+                objectOrganization: [],
                 objectLabel: [],
                 externalReferences: [],
               }}
@@ -214,7 +223,12 @@ class ObservedDataCreation extends Component {
                 setFieldValue,
                 values,
               }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
+                <Form style={{ margin: '0px 0 20px 0' }}>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                      <div className={classes.restrictions}>
+                          <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
+                      </div>
+                  </Security>
                   <StixCoreObjectsField
                     name="objects"
                     style={{ width: '100%' }}

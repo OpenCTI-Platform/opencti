@@ -51,6 +51,7 @@ import {
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -129,6 +130,10 @@ export const batchUsers = async (context, user, userIds) => {
   const userToFinds = R.uniq(userIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
   const users = await elFindByIds(context, user, userToFinds, { toMap: true });
   return userIds.map((id) => INTERNAL_USERS[id] || users[id] || SYSTEM_USER);
+};
+
+export const batchOrganizations = async (user, userId, opts = {}) => {
+  return batchListThroughGetTo(user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
 };
 
 export const batchRoles = async (context, user, userId) => {
@@ -220,12 +225,20 @@ export const roleEditContext = async (context, user, roleId, input) => {
 
 const assignRoleToUser = async (context, user, userId, roleName) => {
   const generateToId = generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
+  // TODO Check is valid role
   const assignInput = {
     fromId: userId,
     toId: generateToId,
     relationship_type: RELATION_HAS_ROLE,
   };
   return createRelation(context, user, assignInput);
+};
+
+export const assignOrganizationToUser = async (user, userId, organizationId) => {
+  // TODO Check is valid organization
+  const assignInput = { fromId: userId, toId: organizationId, relationship_type: RELATION_MEMBER_OF };
+  await createRelation(user, assignInput);
+  return user;
 };
 
 const assignGroupToUser = async (context, user, userId, groupName) => {
@@ -256,7 +269,7 @@ export const addUser = async (context, user, newUser) => {
   )(newUser);
   const userCreated = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER);
   // Link to the roles
-  let userRoles = newUser.roles || []; // Expected roles name
+  let userRoles = newUser.roles ?? []; // Expected roles name
   const defaultRoles = await findRoles(context, user, { filters: [{ key: 'default_assignation', values: [true] }] });
   if (defaultRoles && defaultRoles.edges.length > 0) {
     userRoles = R.pipe(
@@ -266,6 +279,9 @@ export const addUser = async (context, user, newUser) => {
     )(defaultRoles.edges);
   }
   await Promise.all(R.map((role) => assignRoleToUser(context, user, userCreated.id, role), userRoles));
+  // Link to organizations
+  const userOrganizations = newUser.objectOrganization ?? [];
+  await Promise.all(R.map((organization) => assignOrganizationToUser(user, userCreated.id, organization), userOrganizations));
   // Assign default groups to user
   const defaultGroups = await findGroups(context, user, { filters: [{ key: 'default_assignation', values: [true] }] });
   const relationGroups = defaultGroups.edges.map((e) => ({
@@ -556,7 +572,7 @@ const buildSessionUser = (origin, impersonate, provider) => {
     login_provider: provider,
     impersonate: impersonate !== undefined,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
-    groups: user.groups.map((m) => m.internal_id),
+    organizations: user.organizations.map((m) => m.internal_id),
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
       standard_id: m.standard_id,
@@ -575,9 +591,9 @@ const buildSessionUser = (origin, impersonate, provider) => {
 const buildCompleteUser = async (context, client) => {
   if (!client) return undefined;
   const capabilities = await getCapabilities(context, client.id);
-  const groups = await batchGroups(SYSTEM_USER, client.id, { batched: false, paginate: false });
+  const organizations = await batchOrganizations(SYSTEM_USER, client.id, { batched: false, paginate: false });
   const marking = await getUserAndGlobalMarkings(context, client.id, capabilities);
-  return { ...client, capabilities, groups, allowed_marking: marking.user, all_marking: marking.all };
+  return { ...client, capabilities, organizations, allowed_marking: marking.user, all_marking: marking.all };
 };
 
 export const resolveUserById = async (context, id) => {

@@ -15,15 +15,14 @@ import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
 import IntrusionSetEditionDetails from './IntrusionSetEditionDetails';
-import Security, { KNOWLEDGE_KNUPDATE_KNGROUPRESTRICT } from '../../../../utils/Security';
-import ObjectGroupField from '../../common/form/ObjectGroupField';
-import { convertGroups } from '../../../../utils/Edition';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import { convertOrganizations } from '../../../../utils/Edition';
 import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   restrictions: {
     padding: 10,
-    marginBottom: 20,
     backgroundColor: theme.palette.background.nav,
   },
   header: {
@@ -50,9 +49,9 @@ const styles = (theme) => ({
 });
 
 const intrusionSetMutationGroupAdd = graphql`
-  mutation IntrusionSetEditionContainerGroupAddMutation($id: ID!, $groupId: ID!) {
+  mutation IntrusionSetEditionContainerGroupAddMutation($id: ID!, $organizationId: ID!) {
     stixCoreObjectEdit(id: $id) {
-      restrictionGroupAdd(groupId: $groupId) {
+      restrictionOrganizationAdd(organizationId: $organizationId) {
         ...IntrusionSetEditionOverview_intrusionSet
       }
     }
@@ -60,9 +59,9 @@ const intrusionSetMutationGroupAdd = graphql`
 `;
 
 const intrusionSetMutationGroupDelete = graphql`
-  mutation IntrusionSetEditionContainerGroupDeleteMutation($id: ID!, $groupId: ID!) {
+  mutation IntrusionSetEditionContainerGroupDeleteMutation($id: ID!, $organizationId: ID!) {
     stixCoreObjectEdit(id: $id) {
-      restrictionGroupDelete(groupId: $groupId) {
+      restrictionOrganizationDelete(organizationId: $organizationId) {
         ...IntrusionSetEditionOverview_intrusionSet
       }
     }
@@ -79,10 +78,10 @@ class IntrusionSetEditionContainer extends Component {
     this.setState({ currentTab: value });
   }
 
-  handleChangeObjectGroup(name, values) {
+  handleChangeObjectOrganization(name, values) {
     const { intrusionSet } = this.props;
     const currentValues = R.pipe(
-      R.pathOr([], ['objectGroup', 'edges']),
+      R.pathOr([], ['objectOrganization', 'edges']),
       R.map((n) => ({
         label: n.node.name,
         value: n.node.id,
@@ -95,7 +94,7 @@ class IntrusionSetEditionContainer extends Component {
         mutation: intrusionSetMutationGroupAdd,
         variables: {
           id: this.props.intrusionSet.id,
-          groupId: R.head(added).value,
+          organizationId: R.head(added).value,
         },
       });
     }
@@ -104,7 +103,7 @@ class IntrusionSetEditionContainer extends Component {
         mutation: intrusionSetMutationGroupDelete,
         variables: {
           id: this.props.intrusionSet.id,
-          groupId: R.head(removed).value,
+          organizationId: R.head(removed).value,
         },
       });
     }
@@ -113,10 +112,10 @@ class IntrusionSetEditionContainer extends Component {
   render() {
     const { t, classes, handleClose, intrusionSet } = this.props;
     const { editContext } = intrusionSet;
-    const objectGroup = convertGroups(intrusionSet);
+    const objectOrganization = convertOrganizations(intrusionSet);
     const initialValues = R.pipe(
-      R.assoc('objectGroup', objectGroup),
-      R.pick(['objectGroup']),
+      R.assoc('objectOrganization', objectOrganization),
+      R.pick(['objectOrganization']),
     )(intrusionSet);
     return (
       <div>
@@ -137,13 +136,13 @@ class IntrusionSetEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNGROUPRESTRICT]}>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
             <Formik enableReinitialize={true} initialValues={initialValues}>
               {() => (
                   <Form>
                     <div className={classes.restrictions}>
-                      <ObjectGroupField name="objectGroup" style={{ width: '100%' }}
-                                        onChange={this.handleChangeObjectGroup.bind(this)}/>
+                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}
+                                        onChange={this.handleChangeObjectOrganization.bind(this)}/>
                     </div>
                   </Form>)}
              </Formik>
@@ -195,7 +194,7 @@ const IntrusionSetEditionFragment = createFragmentContainer(
         id
         ...IntrusionSetEditionOverview_intrusionSet
         ...IntrusionSetEditionDetails_intrusionSet
-        objectGroup {
+        objectOrganization {
           edges {
             node {
               id

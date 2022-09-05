@@ -14,16 +14,23 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import {
-  convertCreatedBy,
+  convertCreatedBy, convertOrganizations,
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
+  restrictions: {
+    padding: 10,
+    marginBottom: 20,
+    backgroundColor: theme.palette.background.nav,
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -94,6 +101,26 @@ const noteMutationRelationDelete = graphql`
   ) {
     noteEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
+        ...NoteEditionOverview_note
+      }
+    }
+  }
+`;
+
+const noteMutationGroupAdd = graphql`
+  mutation NoteEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationAdd(organizationId: $organizationId) {
+        ...NoteEditionOverview_note
+      }
+    }
+  }
+`;
+
+const noteMutationGroupDelete = graphql`
+  mutation NoteEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationDelete(organizationId: $organizationId) {
         ...NoteEditionOverview_note
       }
     }
@@ -187,14 +214,47 @@ class NoteEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeObjectOrganization(name, values) {
+    const { note } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(note);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: noteMutationGroupAdd,
+        variables: {
+          id: this.props.note.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: noteMutationGroupDelete,
+        variables: {
+          id: this.props.note.id,
+          organizationId: R.head(removed).value,
+        },
+      });
+    }
+  }
+
   render() {
-    const { t, note, context } = this.props;
+    const { t, note, classes, context } = this.props;
     const createdBy = convertCreatedBy(note);
     const objectMarking = convertMarkings(note);
+    const objectOrganization = convertOrganizations(note);
     const status = convertStatus(t, note);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('objectOrganization', objectOrganization),
       R.assoc('x_opencti_workflow_id', status),
       R.assoc('created', buildDate(note.created)),
       R.pick([
@@ -203,6 +263,7 @@ class NoteEditionOverviewComponent extends Component {
         'content',
         'confidence',
         'createdBy',
+        'objectOrganization',
         'objectMarking',
         'x_opencti_workflow_id',
       ]),
@@ -215,7 +276,15 @@ class NoteEditionOverviewComponent extends Component {
       >
         {({ setFieldValue }) => (
           <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ margin: '0px 0 20px 0' }}>
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                <div className={classes.restrictions}>
+                  <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}
+                                    helpertext={<SubscriptionFocus context={context} fieldname="objectOrganization"/>}
+                                    onChange={this.handleChangeObjectOrganization.bind(this)}
+                  />
+                </div>
+              </Security>
               <Field
                 component={DateTimePickerField}
                 name="created"
@@ -337,6 +406,14 @@ const NoteEditionOverview = createFragmentContainer(
             id
             name
             entity_type
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
+            }
           }
         }
         objectMarking {

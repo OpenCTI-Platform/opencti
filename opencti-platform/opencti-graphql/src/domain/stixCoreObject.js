@@ -1,18 +1,18 @@
 import * as R from 'ramda';
 import { map } from 'ramda';
 import {
+  batchListThroughGetFrom,
   batchListThroughGetTo,
+  batchLoadThroughGetTo,
   createRelation,
+  createRelationRaw,
   createRelations,
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  batchListThroughGetFrom,
-  storeLoadById,
   mergeEntities,
-  batchLoadThroughGetTo,
+  storeLoadById,
   storeLoadByIdWithRefs,
-  createRelationRaw,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
@@ -20,11 +20,7 @@ import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent 
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
-import {
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_IDENTITY
-} from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -35,9 +31,11 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
-  ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
@@ -49,12 +47,12 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_GROUP } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
 import { elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { RELATION_GROUPS } from '../schema/internalRelationship';
+import { RELATION_ORGANIZATIONS } from '../schema/internalRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -95,8 +93,8 @@ export const batchLabels = (context, user, stixCoreObjectIds) => {
   return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const batchGroups = (user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_GROUPS, ENTITY_TYPE_GROUP);
+export const batchObjectOrganizations = (user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_ORGANIZATIONS, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };
 
 export const batchMarkingDefinitions = (context, user, stixCoreObjectIds) => {
@@ -125,15 +123,19 @@ export const stixCoreObjectAddRelation = async (context, user, stixCoreObjectId,
   return createRelation(context, user, finalInput);
 };
 
-export const stixCoreObjectAddGroupRestriction = async (user, stixCoreObjectId, groupId) => {
+export const addOrganizationRestriction = async (user, stixCoreObjectId, organizationId) => {
   const stixCoreObject = await findById(user, stixCoreObjectId);
-  await createRelationRaw(user, { fromId: stixCoreObjectId, toId: groupId, relationship_type: RELATION_GROUPS });
+  await createRelationRaw(user, {
+    fromId: stixCoreObjectId,
+    toId: organizationId,
+    relationship_type: RELATION_ORGANIZATIONS
+  });
   return stixCoreObject;
 };
 
-export const stixCoreObjectRemoveGroupRestriction = async (user, stixCoreObjectId, groupId) => {
+export const removeOrganizationRestriction = async (user, stixCoreObjectId, organizationId) => {
   const stixCoreObject = await findById(user, stixCoreObjectId);
-  await deleteRelationsByFromAndTo(user, stixCoreObjectId, groupId, RELATION_GROUPS, ABSTRACT_STIX_META_RELATIONSHIP);
+  await deleteRelationsByFromAndTo(user, stixCoreObjectId, organizationId, RELATION_ORGANIZATIONS, ABSTRACT_STIX_META_RELATIONSHIP);
   return stixCoreObject;
 };
 
@@ -237,7 +239,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
-    await elUpdateElement({ _index: previous._index, internal_id: internalId, updated_at: now(), x_opencti_files: files });
+    await elUpdateElement({
+      _index: previous._index,
+      internal_id: internalId,
+      updated_at: now(),
+      x_opencti_files: files
+    });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
@@ -272,7 +279,12 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
     const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
-    await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });
+    await elUpdateElement({
+      _index: previous._index,
+      internal_id: entityId,
+      updated_at: now(),
+      x_opencti_files: files
+    });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `removes \`${up.name}\` in \`files\``);

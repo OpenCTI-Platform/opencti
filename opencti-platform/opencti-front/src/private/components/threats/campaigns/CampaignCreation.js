@@ -24,9 +24,15 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
+  restrictions: {
+    padding: 10,
+    backgroundColor: theme.palette.background.nav,
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -115,6 +121,7 @@ class CampaignCreation extends Component {
       R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
@@ -191,6 +198,7 @@ class CampaignCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
+                objectOrganization: [],
                 objectLabel: [],
                 externalReferences: [],
               }}
@@ -205,7 +213,12 @@ class CampaignCreation extends Component {
                 setFieldValue,
                 values,
               }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
+                <Form style={{ margin: '0px 0 20px 0' }}>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <div className={classes.restrictions}>
+                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
+                    </div>
+                  </Security>
                   <Field
                     component={TextField}
                     variant="standard"
