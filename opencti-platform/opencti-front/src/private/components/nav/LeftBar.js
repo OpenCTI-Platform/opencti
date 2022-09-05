@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
 import { withStyles, withTheme } from '@material-ui/core/styles';
-// import Toolbar from '@material-ui/core/Toolbar';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -60,6 +59,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
+    minHeight: '100vh',
   },
   drawerClose: {
     backgroundColor: theme.palette.background.nav,
@@ -94,7 +94,7 @@ const styles = (theme) => ({
   toolbar: theme.mixins.toolbar,
   menuItem: {
     height: 40,
-    padding: '6px 10px 6px 10px',
+    padding: '6px 0 6px 10px',
   },
   menuItemNested: {
     height: 30,
@@ -108,7 +108,7 @@ const styles = (theme) => ({
   },
   logoContainer: {
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-    padding: '6px 10px',
+    padding: '6px 20px',
   },
   logoMain: {
     cursor: 'pointer',
@@ -121,17 +121,23 @@ const styles = (theme) => ({
   },
   drawerButton: {
     position: 'absolute',
-    left: '10%',
+    left: '90%',
     top: '50%',
-    // zIndex: '-1',
+  },
+  drawerButtonCollapsed: {
+    position: 'absolute',
+    left: '64%',
+    top: '55%',
   },
   drawerButtonMargin: {
     margin: '0 20px 0 0',
+    borderRadius: '25% 0 0 25%',
+    padding: '12px 1px',
   },
 });
 
 const LeftBar = ({
-  t, location, classes, clientId, history, setClientId, theme, setWidth,
+  t, location, classes, clientId, history, setClientId, theme,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const [user, setUser] = useState();
@@ -140,10 +146,6 @@ const LeftBar = ({
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
   const [openDrawer, setOpenDrawer] = useState(true);
-
-  // useEffect(() => {
-  //   setWidth(openDrawer);
-  // }, [openDrawer]);
 
   useEffect(() => {
     if (clientId) {
@@ -181,9 +183,11 @@ const LeftBar = ({
 
   return (
     <Drawer variant="permanent" className={openDrawer ? classes.drawerOpen : classes.drawerClose} classes={{ paper: openDrawer ? classes.drawerOpen : classes.drawerClose }}>
-      <div className={classes.drawerButton}>
+      <div className={openDrawer ? classes.drawerButton : classes.drawerButtonCollapsed}>
         <IconButton onClick={handleDrawerClose}
-          className={!openDrawer && classes.drawerButtonMargin} >
+          className={!openDrawer && classes.drawerButtonMargin}
+          classes={{ root: classes.drawerButtonMargin }}
+           >
           {openDrawer ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
       </div>
@@ -342,7 +346,7 @@ const LeftBar = ({
             <ListItemText primary={t('About')} className={!openDrawer && classes.hideText}/>
           </MenuItem>
         </MenuList>
-        <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
+        <MenuList component="nav" classes={{ root: classes.menuList }}>
           <MenuItem
             // component={Link}
             // to="/dashboard/profile"

@@ -43,9 +43,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.default,
     padding: '1rem',
   },
-  contentWidth: {
-    backgroundColor: 'green',
-  },
   message: {
     display: 'flex',
     alignItems: 'center',
@@ -58,7 +55,6 @@ const useStyles = makeStyles((theme) => ({
 
 const Index = (me) => {
   const [clientId, setClientId] = useState(localStorage.getItem('client_id'));
-  const [containerWidth, setContainerWidth] = useState(false);
 
   const clearStorage = () => {
     localStorage.removeItem('token');
@@ -92,7 +88,7 @@ const Index = (me) => {
   return (
     <div className={classes.root}>
       <div>
-        <LeftBar clientId={clientId} setClientId={setClientId} setWidth={setContainerWidth}/>
+        <LeftBar clientId={clientId} setClientId={setClientId}/>
       </div>
       <div>
         <TopBarBreadcrumbs />
@@ -100,7 +96,6 @@ const Index = (me) => {
         <main
           className={classes.content}
           style={{ paddingRight: 24 }}
-          classes={classes.contentWidth}
         >
           <div className={classes.toolbar} />
           <Switch>
