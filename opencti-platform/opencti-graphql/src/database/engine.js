@@ -72,7 +72,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import { BYPASS } from '../utils/access';
+import { BYPASS, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
@@ -243,9 +243,11 @@ const buildDataRestrictions = (user) => {
   const must = [];
   // eslint-disable-next-line camelcase
   const must_not = [];
-  // Check user rights
-  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+  // If user have bypass, no need to check restrictions
+  const capabilities = user.capabilities || [];
+  const isBypass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
   if (!isBypass) {
+    // region Handle marking restrictions
     if (user.allowed_marking.length === 0) {
       // If user have no marking, he can only access to data with no markings.
       must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING, ID_INTERNAL) } });
@@ -296,26 +298,33 @@ const buildDataRestrictions = (user) => {
       };
       must.push(markingBool);
     }
-    if (user.organizations.length === 0) {
-      // If user have no groups, he can only access to data with no groups.
-      must_not.push({ exists: { field: buildRefRelationKey(RELATION_ORGANIZATIONS) } });
-    } else {
-      const should = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_ORGANIZATIONS)]: m } }));
-      const markingBool = {
-        bool: {
-          should: [
-            {
-              bool: {
-                must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_ORGANIZATIONS) } }],
+    // endregion
+    // region Handle organization restrictions
+    // If user have organization management role, he can bypass this restriction.
+    const isOrganizationManager = R.find((s) => s.name === KNOWLEDGE_ORGANIZATION_RESTRICT, capabilities) !== undefined;
+    if (!isOrganizationManager) {
+      if (user.organizations.length === 0) {
+        // If user have no groups, he can only access to data with no groups.
+        must_not.push({ exists: { field: buildRefRelationKey(RELATION_ORGANIZATIONS) } });
+      } else {
+        const should = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_ORGANIZATIONS)]: m } }));
+        const markingBool = {
+          bool: {
+            should: [
+              {
+                bool: {
+                  must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_ORGANIZATIONS) } }],
+                },
               },
-            },
-            ...should
-          ],
-          minimum_should_match: 1,
-        },
-      };
-      must.push(markingBool);
+              ...should
+            ],
+            minimum_should_match: 1,
+          },
+        };
+        must.push(markingBool);
+      }
     }
+    // endregion
   }
   return { must, must_not };
 };
