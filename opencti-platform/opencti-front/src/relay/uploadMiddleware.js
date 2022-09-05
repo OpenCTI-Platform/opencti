@@ -1,6 +1,22 @@
 /* eslint-disable */
 import { extractFiles } from "extract-files";
 
+const buildHeaders = () => {
+  const accessToken = localStorage.getItem('token');
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+  const clientId = localStorage.getItem('client_id');
+  if (clientId) {
+    headers['X-Cyio-Client'] = clientId;
+  }
+  return headers;
+};
+
 const uploadMiddleware = () => (next) => async (req) => {
   const operations = {
     query: req.operation.text,
@@ -24,7 +40,9 @@ const uploadMiddleware = () => (next) => async (req) => {
     req.fetchOpts.method = "POST";
     req.fetchOpts.body = formData;
   }
-  return next(req);
+  req.fetchOpts.headers = buildHeaders();
+  const res = await next(req);
+  return res;
 };
 
 export default uploadMiddleware;
