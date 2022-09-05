@@ -123,11 +123,13 @@ const styles = (theme) => ({
     position: 'absolute',
     left: '90%',
     top: '50%',
+    zIndex: 2,
   },
   drawerButtonCollapsed: {
     position: 'absolute',
     left: '64%',
     top: '55%',
+    zIndex: 2,
   },
   drawerButtonMargin: {
     margin: '0 20px 0 0',
