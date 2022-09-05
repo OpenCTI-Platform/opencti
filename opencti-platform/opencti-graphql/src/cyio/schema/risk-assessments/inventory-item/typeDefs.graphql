@@ -1,6 +1,6 @@
 # declares the query entry-points for this type
 extend type Query {
-  inventoryItem(id: ID!): InventoryItem
+  inventoryItem(id: ID!): InventoryItem  @hasPermission(resources: "Assessment:view")
   inventoryItemList(
     first: Int
     offset: Int
@@ -9,18 +9,14 @@ extend type Query {
     filters: [InventoryItemsFiltering]
     filterMode: FilterMode
     search: String
-  ): InventoryItemConnection
+  ): InventoryItemConnection  @hasPermission(resources: "Assessment:view")
 }
 
 # declares the mutation entry-points for this type
 extend type Mutation {
-  createInventoryItem(input: InventoryItemAddInput): InventoryItem
-  deleteInventoryItem(id: ID!): String!
-  editInventoryItem(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): InventoryItem
+  createInventoryItem(input: InventoryItemAddInput): InventoryItem  @hasPermission(resources: "Assessment:update")
+  deleteInventoryItem(id: ID!): String!  @hasPermission(resources: "Assessment:delete")
+  editInventoryItem(id: ID!, input: [EditInput]!, commitMessage: String): InventoryItem  @hasPermission(resources: "Assessment:update")
 }
 
 #####   Inventory Item

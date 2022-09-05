@@ -1,7 +1,7 @@
 # declares the query entry-points for this type
 extend type Query {
   # Activity
-  activity(id: ID!): Activity
+  activity(id: ID!): Activity  @hasPermission(resources:"Assessment:view")
   activities(
     first: Int
     offset: Int
@@ -10,9 +10,9 @@ extend type Query {
     filters: [ActivityFiltering]
     filterMode: FilterMode
     search: String
-  ): ActivityConnection
+  ): ActivityConnection  @hasPermission(resources:"Assessment:view")
   # Actor
-  actor(id: ID!): Actor
+  actor(id: ID!): Actor  @hasPermission(resources:"Assessment:view")
   actors(
     first: Int
     offset: Int
@@ -21,9 +21,9 @@ extend type Query {
     filters: [ActorFiltering]
     filterMode: FilterMode
     search: String
-  ): ActorConnection
+  ): ActorConnection  @hasPermission(resources:"Assessment:view")
   # Assessment Log Entry
-  assessmentLogEntry(id: ID!): AssessmentLogEntry
+  assessmentLogEntry(id: ID!): AssessmentLogEntry  @hasPermission(resources:"Assessment:view")
   assessmentLogEntries(
     first: Int
     offset: Int
@@ -32,12 +32,12 @@ extend type Query {
     filters: [AssessmentLogEntriesFiltering]
     filterMode: FilterMode
     search: String
-  ): AssessmentLogEntryConnection
+  ): AssessmentLogEntryConnection  @hasPermission(resources:"Assessment:view")
   # AssessmentAsset
-  assessmentAsset(id: ID!): AssessmentAsset
-  assessmentAssets(first: Int, offset: Int): AssessmentAssetConnection
+  assessmentAsset(id: ID!): AssessmentAsset  @hasPermission(resources:"Assessment:view")
+  assessmentAssets(first: Int, offset: Int): AssessmentAssetConnection  @hasPermission(resources:"Assessment:view")
   # AssessmentPlatform
-  assessmentPlatform(id: ID!): AssessmentPlatform
+  assessmentPlatform(id: ID!): AssessmentPlatform  @hasPermission(resources:"Assessment:view")
   assessmentPlatforms(
     first: Int
     offset: Int
@@ -46,9 +46,9 @@ extend type Query {
     filters: [AssessmentPlatformFiltering]
     filterMode: FilterMode
     search: String
-  ): AssessmentPlatformConnection
+  ): AssessmentPlatformConnection  @hasPermission(resources:"Assessment:view")
   # AssessmentSubject
-  assessmentSubject(id: ID!): AssessmentSubject
+  assessmentSubject(id: ID!): AssessmentSubject  @hasPermission(resources:"Assessment:view")
   assessmentSubjects(
     first: Int
     offset: Int
@@ -57,9 +57,9 @@ extend type Query {
     filters: [AssessmentSubjectFiltering]
     filterMode: FilterMode
     search: String
-  ): AssessmentSubjectConnection
+  ): AssessmentSubjectConnection  @hasPermission(resources:"Assessment:view")
   # Associated Activity
-  associatedActivity(id: ID!): AssociatedActivity
+  associatedActivity(id: ID!): AssociatedActivity  @hasPermission(resources:"Assessment:view")
   associatedActivities(
     first: Int
     offset: Int
@@ -68,9 +68,9 @@ extend type Query {
     filters: [AssociatedActivityFiltering]
     filterMode: FilterMode
     search: String
-  ): AssociatedActivityConnection
+  ): AssociatedActivityConnection  @hasPermission(resources:"Assessment:view")
   # Characterizations
-  characterization(id: ID!): Characterization
+  characterization(id: ID!): Characterization  @hasPermission(resources:"Assessment:view")
   characterizations(
     first: Int
     offset: Int
@@ -79,9 +79,9 @@ extend type Query {
     filters: [CharacterizationFiltering]
     filterMode: FilterMode
     search: String
-  ): CharacterizationConnection
+  ): CharacterizationConnection  @hasPermission(resources:"Assessment:view")
   # Evidence
-  evidence(id: ID!): Evidence
+  evidence(id: ID!): Evidence  @hasPermission(resources:"Assessment:view")
   evidenceList(
     first: Int
     offset: Int
@@ -90,9 +90,9 @@ extend type Query {
     filters: [EvidenceFiltering]
     filterMode: FilterMode
     search: String
-  ): EvidenceConnection
+  ): EvidenceConnection  @hasPermission(resources:"Assessment:view")
   # Facet
-  facet(id: ID!): Facet
+  facet(id: ID!): Facet  @hasPermission(resources:"Assessment:view")
   facets(
     first: Int
     offset: Int
@@ -101,9 +101,9 @@ extend type Query {
     filters: [FacetFiltering]
     filterMode: FilterMode
     search: String
-  ): FacetConnection
+  ): FacetConnection  @hasPermission(resources:"Assessment:view")
   #Log Entry Author
-  logEntryAuthor(id: ID!): LogEntryAuthor
+  logEntryAuthor(id: ID!): LogEntryAuthor  @hasPermission(resources:"Assessment:view")
   logEntryAuthors(
     first: Int
     offset: Int
@@ -112,9 +112,9 @@ extend type Query {
     filters: [LogEntryAuthorFiltering]
     filterMode: FilterMode
     search: String
-  ): LogEntryAuthorConnection
+  ): LogEntryAuthorConnection  @hasPermission(resources:"Assessment:view")
   #Mitigating Factor
-  mitigatingFactor(id: ID!): MitigatingFactor
+  mitigatingFactor(id: ID!): MitigatingFactor  @hasPermission(resources:"Assessment:view")
   mitigatingFactors(
     first: Int
     offset: Int
@@ -123,9 +123,9 @@ extend type Query {
     filters: [MitigatingFactorFiltering]
     filterMode: FilterMode
     search: String
-  ): MitigatingFactorConnection
+  ): MitigatingFactorConnection  @hasPermission(resources:"Assessment:view")
   # Observation
-  observation(id: ID!): Observation
+  observation(id: ID!): Observation  @hasPermission(resources:"Assessment:view")
   observations(
     first: Int
     offset: Int
@@ -134,9 +134,9 @@ extend type Query {
     filters: [ObservationsFiltering]
     filterMode: FilterMode
     search: String
-  ): ObservationConnection
+  ): ObservationConnection  @hasPermission(resources:"Assessment:view")
   # Origin
-  origin(id: ID!): Origin
+  origin(id: ID!): Origin  @hasPermission(resources:"Assessment:view")
   origins(
     first: Int
     offset: Int
@@ -145,9 +145,9 @@ extend type Query {
     filters: [OriginFiltering]
     filterMode: FilterMode
     search: String
-  ): OriginConnection
+  ): OriginConnection  @hasPermission(resources:"Assessment:view")
   # Oscal Task
-  oscalTask(id: ID!): OscalTask
+  oscalTask(id: ID!): OscalTask  @hasPermission(resources:"Assessment:view")
   oscalTasks(
     first: Int
     offset: Int
@@ -156,9 +156,9 @@ extend type Query {
     filters: [OscalTaskFiltering]
     filterMode: FilterMode
     search: String
-  ): OscalTaskConnection
+  ): OscalTaskConnection  @hasPermission(resources:"Assessment:view")
   # Required Asset
-  requiredAsset(id: ID!): RequiredAsset
+  requiredAsset(id: ID!): RequiredAsset  @hasPermission(resources:"Assessment:view")
   requiredAssets(
     first: Int
     offset: Int
@@ -167,9 +167,9 @@ extend type Query {
     filters: [RequiredAssetFiltering]
     filterMode: FilterMode
     search: String
-  ): RequiredAssetConnection
+  ): RequiredAssetConnection  @hasPermission(resources:"Assessment:view")
   # Risk
-  risk(id: ID!): Risk
+  risk(id: ID!): Risk  @hasPermission(resources:"Assessment:view")
   risks(
     first: Int
     offset: Int
@@ -178,9 +178,9 @@ extend type Query {
     filters: [RisksFiltering]
     filterMode: FilterMode
     search: String
-  ): RiskConnection
+  ): RiskConnection  @hasPermission(resources:"Assessment:view")
   # Risk Log Entry
-  riskLogEntry(id: ID!): RiskLogEntry
+  riskLogEntry(id: ID!): RiskLogEntry  @hasPermission(resources:"Assessment:view")
   riskLogEntries(
     first: Int
     offset: Int
@@ -189,9 +189,9 @@ extend type Query {
     filters: [RiskLogEntriesFiltering]
     filterMode: FilterMode
     search: String
-  ): RiskLogEntryConnection
+  ): RiskLogEntryConnection  @hasPermission(resources:"Assessment:view")
   # Risk Response
-  riskResponse(id: ID!): RiskResponse
+  riskResponse(id: ID!): RiskResponse  @hasPermission(resources:"Assessment:view")
   riskResponses(
     first: Int
     offset: Int
@@ -200,9 +200,9 @@ extend type Query {
     filters: [RiskResponsesFiltering]
     filterMode: FilterMode
     search: String
-  ): RiskResponseConnection
+  ): RiskResponseConnection  @hasPermission(resources:"Assessment:view")
   # Subject
-  subject(id: ID!): Subject
+  subject(id: ID!): Subject  @hasPermission(resources:"Assessment:view")
   subjects(
     first: Int
     offset: Int
@@ -211,133 +211,83 @@ extend type Query {
     filters: [SubjectFiltering]
     filterMode: FilterMode
     search: String
-  ): SubjectConnection
+  ): SubjectConnection  @hasPermission(resources:"Assessment:view")
 }
 
 # declares the mutation entry-points for this type
 extend type Mutation {
   # Activity
-  createActivity(input: ActivityAddInput): Activity
-  deleteActivity(id: ID!): String!
-  editActivity(id: ID!, input: [EditInput]!, commitMessage: String): Activity
+  createActivity(input: ActivityAddInput): Activity  @hasPermission(resources:"Assessment:update")
+  deleteActivity(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editActivity(id: ID!, input: [EditInput]!, commitMessage: String): Activity  @hasPermission(resources:"Assessment:update")
   # Actor
-  createActor(input: ActorAddInput): Actor
-  deleteActor(id: ID!): String!
-  editActor(id: ID!, input: [EditInput]!, commitMessage: String): Actor
+  createActor(input: ActorAddInput): Actor  @hasPermission(resources:"Assessment:update")
+  deleteActor(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editActor(id: ID!, input: [EditInput]!, commitMessage: String): Actor  @hasPermission(resources:"Assessment:update")
   # Assessment Log Entry
-  createAssessmentLogEntry(
-    input: AssessmentLogEntryAddInput
-  ): AssessmentLogEntry
-  deleteAssessmentLogEntry(resultId: ID, id: ID!): String!
-  editAssessmentLogEntry(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): AssessmentLogEntry
+  createAssessmentLogEntry(input: AssessmentLogEntryAddInput): AssessmentLogEntry  @hasPermission(resources:"Assessment:update")
+  deleteAssessmentLogEntry(resultId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editAssessmentLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): AssessmentLogEntry  @hasPermission(resources:"Assessment:update")
   # AssessmentPlatform
-  createAssessmentPlatform(
-    input: AssessmentPlatformAddInput
-  ): AssessmentPlatform
-  deleteAssessmentPlatform(id: ID!): String!
-  editAssessmentPlatform(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): AssessmentPlatform
+  createAssessmentPlatform(input: AssessmentPlatformAddInput): AssessmentPlatform  @hasPermission(resources:"Assessment:update")
+  deleteAssessmentPlatform(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editAssessmentPlatform(id: ID!, input: [EditInput]!, commitMessage: String): AssessmentPlatform  @hasPermission(resources:"Assessment:update")
   # AssessmentSubject
-  createAssessmentSubject(input: AssessmentSubjectAddInput): AssessmentSubject
-  deleteAssessmentSubject(id: ID!): String!
-  editAssessmentSubject(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): AssessmentSubject
+  createAssessmentSubject(input: AssessmentSubjectAddInput): AssessmentSubject  @hasPermission(resources:"Assessment:update")
+  deleteAssessmentSubject(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editAssessmentSubject(id: ID!, input: [EditInput]!, commitMessage: String): AssessmentSubject  @hasPermission(resources:"Assessment:update")
   # AssociatedActivity
-  createAssociatedActivity(
-    input: AssociatedActivityAddInput
-  ): AssociatedActivity
-  deleteAssociatedActivity(taskId: ID, id: ID!): String!
-  editAssociatedActivity(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): AssociatedActivity
+  createAssociatedActivity(input: AssociatedActivityAddInput): AssociatedActivity  @hasPermission(resources:"Assessment:update")
+  deleteAssociatedActivity(taskId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editAssociatedActivity(id: ID!, input: [EditInput]!, commitMessage: String): AssociatedActivity  @hasPermission(resources:"Assessment:update")
   # Characterization
-  createCharacterization(input: CharacterizationAddInput): Characterization
-  deleteCharacterization(riskId: ID!, id: ID!): String!
-  editCharacterization(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): Characterization
+  createCharacterization(input: CharacterizationAddInput): Characterization  @hasPermission(resources:"Assessment:update")
+  deleteCharacterization(riskId: ID!, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): Characterization  @hasPermission(resources:"Assessment:update")
   # Evidence
-  createEvidence(input: EvidenceAddInput): Evidence
-  deleteEvidence(observationId: ID, id: ID!): String!
-  editEvidence(id: ID!, input: [EditInput]!, commitMessage: String): Evidence
+  createEvidence(input: EvidenceAddInput): Evidence  @hasPermission(resources:"Assessment:update")
+  deleteEvidence(observationId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editEvidence(id: ID!, input: [EditInput]!, commitMessage: String): Evidence  @hasPermission(resources:"Assessment:update")
   # Facet
-  createFacet(input: FacetAddInput): Facet
-  deleteFacet(characterizationId: ID, id: ID!): String!
-  editFacet(id: ID!, input: [EditInput]!, commitMessage: String): Facet
+  createFacet(input: FacetAddInput): Facet  @hasPermission(resources:"Assessment:update")
+  deleteFacet(characterizationId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editFacet(id: ID!, input: [EditInput]!, commitMessage: String): Facet  @hasPermission(resources:"Assessment:update")
   # Mitigating Factor
-  createMitigatingFactor(input: MitigatingFactorAddInput): MitigatingFactor
-  deleteMitigatingFactor(riskId: ID, id: ID!): String!
-  editMitigatingFactor(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): MitigatingFactor
+  createMitigatingFactor(input: MitigatingFactorAddInput): MitigatingFactor  @hasPermission(resources:"Assessment:update")
+  deleteMitigatingFactor(riskId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editMitigatingFactor(id: ID!, input: [EditInput]!, commitMessage: String): MitigatingFactor  @hasPermission(resources:"Assessment:update")
   # Observation
-  createObservation(
-    poamId: ID
-    resultId: ID
-    input: ObservationAddInput
-  ): Observation
-  deleteObservation(poamId: ID, resultId: ID, id: ID!): String!
-  editObservation(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): Observation
+  createObservation(poamId: ID, resultId: ID, input: ObservationAddInput): Observation  @hasPermission(resources:"Assessment:update")
+  deleteObservation(poamId: ID, resultId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editObservation(id: ID!, input: [EditInput]!, commitMessage: String): Observation  @hasPermission(resources:"Assessment:update")
   # Origins
-  createOrigin(input: OriginAddInput): Origin
-  deleteOrigin(id: ID!): String!
-  editOrigin(id: ID!, input: [EditInput]!, commitMessage: String): Origin
+  createOrigin(input: OriginAddInput): Origin  @hasPermission(resources:"Assessment:update")
+  deleteOrigin(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editOrigin(id: ID!, input: [EditInput]!, commitMessage: String): Origin  @hasPermission(resources:"Assessment:update")
   # Oscal Task
-  createOscalTask(input: OscalTaskAddInput): OscalTask
-  deleteOscalTask(id: ID!): String!
-  editOscalTask(id: ID!, input: [EditInput]!, commitMessage: String): OscalTask
+  createOscalTask(input: OscalTaskAddInput): OscalTask  @hasPermission(resources:"Assessment:update")
+  deleteOscalTask(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editOscalTask(id: ID!, input: [EditInput]!, commitMessage: String): OscalTask @hasPermission(resources:"Assessment:update")
   # RequiredAsset
-  createRequiredAsset(input: RequiredAssetAddInput): RequiredAsset
-  deleteRequiredAsset(remediationId: ID, id: ID!): String!
-  editRequiredAsset(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): RequiredAsset
+  createRequiredAsset(input: RequiredAssetAddInput): RequiredAsset  @hasPermission(resources:"Assessment:update")
+  deleteRequiredAsset(remediationId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editRequiredAsset(id: ID!, input: [EditInput]!, commitMessage: String): RequiredAsset  @hasPermission(resources:"Assessment:update")
   # RiskLog Entry
-  createRiskLogEntry(input: RiskLogEntryAddInput): RiskLogEntry
-  deleteRiskLogEntry(riskId: ID, id: ID!): String!
-  editRiskLogEntry(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): RiskLogEntry
+  createRiskLogEntry(input: RiskLogEntryAddInput): RiskLogEntry  @hasPermission(resources:"Assessment:update")
+  deleteRiskLogEntry(riskId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editRiskLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): RiskLogEntry  @hasPermission(resources:"Assessment:update")
   # Risk
-  createRisk(poamId: ID, resultId: ID, input: RiskAddInput): Risk
-  deleteRisk(poamId: ID, resultId: ID, id: ID!): String!
-  editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk
+  createRisk(poamId: ID, resultId: ID, input: RiskAddInput): Risk  @hasPermission(resources:"Assessment:update")
+  deleteRisk(poamId: ID, resultId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk  @hasPermission(resources:"Assessment:update")
   # Risk Response
-  createRiskResponse(input: RiskResponseAddInput): RiskResponse
-  deleteRiskResponse(riskId: ID!, id: ID!): String!
-  editRiskResponse(
-    id: ID!
-    input: [EditInput]!
-    commitMessage: String
-  ): RiskResponse
+  createRiskResponse(input: RiskResponseAddInput): RiskResponse  @hasPermission(resources:"Assessment:update")
+  deleteRiskResponse(riskId: ID!, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editRiskResponse(id: ID!, input: [EditInput]!, commitMessage: String): RiskResponse  @hasPermission(resources:"Assessment:update")
   # Subject
-  createSubject(input: SubjectAddInput): Subject
-  deleteSubject(id: ID!): String!
-  editSubject(id: ID!, input: [EditInput]!, commitMessage: String): Subject
+  createSubject(input: SubjectAddInput): Subject  @hasPermission(resources:"Assessment:update")
+  deleteSubject(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
+  editSubject(id: ID!, input: [EditInput]!, commitMessage: String): Subject  @hasPermission(resources:"Assessment:update")
 }
 
 ## Activity

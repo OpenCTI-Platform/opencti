@@ -1,16 +1,17 @@
-import { DataSource } from 'apollo-datasource'
+import { DataSource } from 'apollo-datasource';
 import { InMemoryLRUCache } from 'apollo-server-caching';
 import { Converter as TreeConverter } from 'sparqljson-to-tree';
 import conf from '../config/conf';
 
-// A bit of hackery because of how Stardog exported the query 
+// A bit of hackery because of how Stardog exported the query
 import pkg from 'stardog';
 import {ApolloError} from "apollo-errors";
 const { query, Connection } = pkg;
 
 export class StardogError extends ApolloError {
-  constructor(response, message, query) {
+  constructor(db, response, message, query) {
     super("StardogError", {
+      db,
       message,
       time_thrown: new Date(), // UTC
       internalData: { // Is not included when sent to client, internal use only
@@ -22,9 +23,9 @@ export class StardogError extends ApolloError {
   }
 }
 
-const throwFailed = (response, message, query) => {
+const throwFailed = (db, response, message, query) => {
   if(response.status > 299){
-    throw new StardogError(response, message, query)
+    throw new StardogError(db, response, message, query)
   }
 }
 
@@ -43,7 +44,7 @@ export default class Stardog extends DataSource {
     this.conn = conn
   }
 
-  // 
+  //
   // This is a function that gets called by ApolloServer when being setup.
   // This function gets called with the datasource config including things
   // like caches and context.  Assign this.context to the request context
@@ -66,7 +67,7 @@ export default class Stardog extends DataSource {
           throw err
         });
 
-    throwFailed(response, `Failed to execute query ${queryId}`, sparqlQuery)
+    throwFailed(dbName, response, `Failed to execute query ${queryId}`, sparqlQuery)
 
     const sparqlResponse = response.body;
     const converter = new TreeConverter({
@@ -99,7 +100,7 @@ export default class Stardog extends DataSource {
         throw err;
       });
 
-    throwFailed(response, `Failed to execute query ${queryId}`, sparqlQuery)
+    throwFailed(dbName, response, `Failed to execute query ${queryId}`, sparqlQuery)
 
     const sparqlResponse = response.body;
     const converter = new TreeConverter({
@@ -120,7 +121,7 @@ export default class Stardog extends DataSource {
       console.log(err)
       throw err;
     });
-    throwFailed(response, `Failed to execute insert query '${queryId}'`, sparqlQuery);
+    throwFailed(dbName, response, `Failed to execute insert query '${queryId}'`, sparqlQuery);
     return response;
   }
 
@@ -131,7 +132,7 @@ export default class Stardog extends DataSource {
       console.log(err)
       throw err;
     });
-    throwFailed(response, `Failed to execute delete query '${queryId}'`, sparqlQuery)
+    throwFailed(dbName, response, `Failed to execute delete query '${queryId}'`, sparqlQuery)
     return response;
   }
   async edit( {dbName, sparqlQuery, queryId }) {
@@ -141,7 +142,7 @@ export default class Stardog extends DataSource {
       console.log(err)
       throw err;
     });
-    throwFailed(response, `Failed to execute update query '${queryId}'`, sparqlQuery)
+    throwFailed(dbName, response, `Failed to execute update query '${queryId}'`, sparqlQuery)
     return response;
   }
 }

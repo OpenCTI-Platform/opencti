@@ -1,5 +1,5 @@
   extend type Query {
-    asset(id: ID!): Asset
+    asset(id: ID!): Asset @hasPermission(resources: "Asset:view")
     assetList(
       first: Int
       offset: Int
@@ -8,8 +8,8 @@
       filters: [AssetsFiltering]
       filterMode: FilterMode
       search: String
-    ): AssetConnection
-    assetLocation(id: ID!): AssetLocation
+    ): AssetConnection @hasPermission(resources: "Asset:view")
+    assetLocation(id: ID!): AssetLocation @hasPermission(resources: "Asset:view")
     assetLocationList(
       first: Int
       offset: Int
@@ -18,8 +18,8 @@
       filters: [AssetLocationsFiltering]
       filterMode: FilterMode
       search: String
-    ): AssetLocationConnection 
-    itAsset(id: ID!): ItAsset
+    ): AssetLocationConnection  @hasPermission(resources: "Asset:view")
+    itAsset(id: ID!): ItAsset @hasPermission(resources: "Asset:view")
     itAssetList(
       first: Int
       offset: Int
@@ -28,7 +28,7 @@
       filters: [ItAssetsFiltering]
       filterMode: FilterMode
       search: String
-    ): ItAssetConnection
+    ): ItAssetConnection @hasPermission(resources: "Asset:view")
     # hardware(id: ID!): HardwareAsset
     # hardwareList(
     #   first: Int
@@ -42,11 +42,11 @@
   }
 
   extend type Mutation {
-    deleteAsset(id:ID!): ID
-    deleteAssets(ids:[ID]!): [ID]
-    createAssetLocation(input: AssetLocationAddInput): AssetLocation
-    deleteAssetLocation(id: ID!): String!
-    editAssetLocation(id: ID!, input: [EditInput]!, commitMessage: String): AssetLocation
+    deleteAsset(id:ID!): ID  @hasPermission(resources: "Asset:delete")
+    deleteAssets(ids:[ID]!): [ID]  @hasPermission(resources: "Asset:delete")
+    createAssetLocation(input: AssetLocationAddInput): AssetLocation  @hasPermission(resources: "Asset:update")
+    deleteAssetLocation(id: ID!): String!  @hasPermission(resources: "Asset:delete")
+    editAssetLocation(id: ID!, input: [EditInput]!, commitMessage: String): AssetLocation @hasPermission(resources: "Asset:update")
   }
 
   # ENUMERATIONS

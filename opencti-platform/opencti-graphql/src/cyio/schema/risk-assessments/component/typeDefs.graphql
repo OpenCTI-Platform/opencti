@@ -1,6 +1,6 @@
 # declares the query entry-points for this type
 extend type Query {
-  component(id: ID!): Component
+  component(id: ID!): Component  @hasPermission(resources: "Assessment:view")
   componentList(
     first: Int
     offset: Int
@@ -9,99 +9,14 @@ extend type Query {
     filters: [ComponentsFiltering]
     filterMode: FilterMode
     search: String
-  ): ComponentConnection
-  # hardwareComponent(id: ID!): HardwareComponent
-  # hardwareComponentList(
-  #   first: Int
-  #   offset: Int
-  #   orderedBy: HardwareComponentsOrdering
-  #   orderMode: OrderingMode
-  #   filters: [HardwareComponentsFiltering]
-  #   filterMode: FilterMode
-  #   search: String
-  # ): HardwareComponentConnection
-  # networkComponent(id: ID!): NetworkComponent
-  # networkComponentList(
-  #   first: Int
-  #   offset: Int
-  #   orderedBy: NetworkComponentsOrdering
-  #   orderMode: OrderingMode
-  #   filters: [NetworkComponentsFiltering]
-  #   filterMode: FilterMode
-  #   search: String
-  # ): NetworkComponentConnection
-  # serviceComponent(id: ID!): ServiceComponent
-  # serviceComponentList(
-  #   first: Int
-  #   offset: Int
-  #   orderedBy: ServiceComponentsOrdering
-  #   orderMode: OrderingMode
-  #   filters: [ServiceComponentsFiltering]
-  #   filterMode: FilterMode
-  #   search: String
-  # ): ServiceComponentConnection
-  # softwareComponent(id: ID!): SoftwareComponent
-  # softwareComponentList(
-  #   first: Int
-  #   offset: Int
-  #   orderedBy: SoftwareComponentsOrdering
-  #   orderMode: OrderingMode
-  #   filters: [SoftwareComponentsFiltering]
-  #   filterMode: FilterMode
-  #   search: String
-  # ): SoftwareComponentConnection
-  # systemComponent(id: ID!): SystemComponent
-  # systemComponentList(
-  #   first: Int
-  #   offset: Int
-  #   orderedBy: SystemComponentsOrdering
-  #   orderMode: OrderingMode
-  #   filters: [SystemComponentsFiltering]
-  #   filterMode: FilterMode
-  #   search: String
-  # ): SystemComponentConnection
+  ): ComponentConnection  @hasPermission(resources: "Assessment:view")
 }
 
 # declares the mutation entry-points for this type
 extend type Mutation {
-  createComponent(input: ComponentAddInput): Component
-  deleteComponent(id: ID!): String!
-  editComponent(id: ID!, input: [EditInput]!, commitMessage: String): Component
-  # createHardwareComponent(input: HardwareComponentAddInput): HardwareComponent
-  # deleteHardwareComponent(id: ID!): String!
-  # editHardwareComponent(
-  #   id: ID!
-  #   input: [EditInput]!
-  #   commitMessage: String
-  # ): HardwareComponent
-  # createNetworkComponent(input: NetworkComponentAddInput): NetworkComponent
-  # deleteNetworkComponent(id: ID!): String!
-  # editNetworkComponent(
-  #   id: ID!
-  #   input: [EditInput]!
-  #   commitMessage: String
-  # ): NetworkComponent
-  # createServiceComponent(input: HardwareComponentAddInput): ServiceComponent
-  # deleteServiceComponent(id: ID!): String!
-  # editServiceComponent(
-  #   id: ID!
-  #   input: [EditInput]!
-  #   commitMessage: String
-  # ): ServiceComponent
-  # createSoftwareComponent(input: SoftwareComponentAddInput): SoftwareComponent
-  # deleteSoftwareComponent(id: ID!): String!
-  # editSoftwareComponent(
-  #   id: ID!
-  #   input: [EditInput]!
-  #   commitMessage: String
-  # ): SoftwareComponent
-  # createSystemComponent(input: SystemComponentAddInput): SystemComponent
-  # deleteSystemComponent(id: ID!): String!
-  # editSystemComponent(
-  #   id: ID!
-  #   input: [EditInput]!
-  #   commitMessage: String
-  # ): SystemComponent
+  createComponent(input: ComponentAddInput): Component  @hasPermission(resources: "Assessment:update")
+  deleteComponent(id: ID!): String!  @hasPermission(resources: "Assessment:delete")
+  editComponent(id: ID!, input: [EditInput]!, commitMessage: String): Component  @hasPermission(resources: "Assessment:update")
 }
 
 #####  Component

@@ -1,5 +1,5 @@
   extend type Query {
-    documentaryAsset(id: ID!): DocumentaryAsset
+    documentaryAsset(id: ID!): DocumentaryAsset  @hasPermission(resources: "Asset:view")
     documentaryAssetList(
       first: Int
       offset: Int
@@ -8,7 +8,7 @@
       filters: [DocumentaryAssetsFiltering]
       filterMode: FilterMode
       search: String
-    ): DocumentaryAssetConnection
+    ): DocumentaryAssetConnection @hasPermission(resources: "Asset:view")
   }
 
 #####  Documentary Asset 

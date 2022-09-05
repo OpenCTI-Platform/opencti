@@ -139,28 +139,17 @@ const classes = {
 
 const UserPreferencesModal = (props) => {
   const me = props.me;
- 
-  const currentClient = localStorage.getItem('client_id');
-
-  let clientSelected = {
-    id: currentClient,
-    title: '',
-    vsa_severity_score_method: '',
-  };
 
   const [isLoading, setIsLoading] = useState(props.isLoading);
   const [currentClient_id, setCurrentClient_id] = useState(localStorage.getItem('client_id'));
   const [severityLevel, setSeverityLevel] = useState();
-  const [user, setUser] = useState(props.user);
+  const [user] = useState(props.user);
   const [orgSettings, setOrgSettings] = useState([])
-  const [clients, setClients] = useState();
- 
+
   const location = useLocation();
 
   const handleSubmit = () => {
-   
    const param = { vsa_severity_score_method: severityLevel}
-
     updateOrganizationSettings(currentClient_id, param).then((results) =>{
 
       localStorage.setItem('client_id', currentClient_id);
@@ -175,7 +164,6 @@ const UserPreferencesModal = (props) => {
     }).catch((error) => {
       console.log(error)
     })
-
   };
 
   const handleCancel = () => {
@@ -199,11 +187,11 @@ const UserPreferencesModal = (props) => {
             console.log(error)
           });
     });
-    
+
     setIsLoading(false);
   }, []);
 
-  const handleOrgChange = (event) => { 
+  const handleOrgChange = (event) => {
 
     setSeverityLevel(orgSettings.find(obj => { return obj.client_id === currentClient_id}).vsa_severity_score_method);
     setCurrentClient_id(event.target.value);
@@ -234,8 +222,8 @@ const UserPreferencesModal = (props) => {
             <Typography gutterBottom variant="h5" component="h2">
               Organization
             </Typography>
-            <Select 
-              labelId="organization-label" 
+            <Select
+              labelId="organization-label"
               id="organization"
               value={currentClient_id}
               onChange={(e) => handleOrgChange(e)}
@@ -293,8 +281,8 @@ const UserPreferencesModal = (props) => {
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: 'right' }}>
-            <Button 
-              size="small" 
+            <Button
+              size="small"
               color="secondary"
               onClick={() => handleCancel()}
               >

@@ -1,4 +1,9 @@
+    # directive @auth on OBJECT | FIELD_DEFINITION
+    directive @hasPermission(resources: [String]) on OBJECT | FIELD_DEFINITION
+    directive @hasRole (role: [String]) on OBJECT | FIELD_DEFINITION
+
     directive @constraint(
+        # String constraints
         minLength: Int
         maxLength: Int
         startsWith: String

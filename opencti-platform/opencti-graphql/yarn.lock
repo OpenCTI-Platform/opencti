@@ -11098,6 +11098,7 @@ chromedriver@latest:
     prettier: 2.3.2
     prom-client: ^14.0.1
     python-shell: 3.0.0
+    qs: ^6.11.0
     ramda: 0.28.0
     redlock: 4.2.0
     remarkable-admonitions: 0.2.2
@@ -11818,6 +11819,15 @@ chromedriver@latest:
   version: 6.7.0
   resolution: "qs@npm:6.7.0"
   checksum: dfd5f6adef50e36e908cfa70a6233871b5afe66fbaca37ecc1da352ba29eb2151a3797991948f158bb37fccde51bd57845cb619a8035287bfc24e4591172c347
+  languageName: node
+  linkType: hard
+
+"qs@npm:^6.11.0":
+  version: 6.11.0
+  resolution: "qs@npm:6.11.0"
+  dependencies:
+    side-channel: ^1.0.4
+  checksum: 6e1f29dd5385f7488ec74ac7b6c92f4d09a90408882d0c208414a34dd33badc1a621019d4c799a3df15ab9b1d0292f97c1dd71dc7c045e69f81a8064e5af7297
   languageName: node
   linkType: hard
 

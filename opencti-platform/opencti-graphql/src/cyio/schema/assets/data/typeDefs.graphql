@@ -1,5 +1,5 @@
   extend type Query {
-    data(id: ID!): DataAsset
+    data(id: ID!): DataAsset @hasPermission(resources: "Asset:view")
     dataList(
       first: Int
       offset: Int
@@ -8,7 +8,7 @@
       filters: [DatumFiltering]
       filterMode: FilterMode
       search: String
-    ): DataConnection
+    ): DataConnection @hasPermission(resources: "Asset:view")
   }
   
 #####  Data 

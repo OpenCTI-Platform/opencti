@@ -8,20 +8,23 @@
         filters: [SoftwareAssetFiltering]
         filterMode: FilterMode
         search: String
-      ): SoftwareAssetConnection
-    softwareAsset(id: ID!): SoftwareAsset
+      ): SoftwareAssetConnection @hasPermission(resources: "Asset:view")
+    softwareAsset(id: ID!): SoftwareAsset @hasPermission(resources: "Asset:view")
   }
 
   extend type Mutation {
-    createSoftwareAsset(input: SoftwareAssetAddInput): SoftwareAsset
-    deleteSoftwareAsset(id: ID!): String!
-    editSoftwareAsset(id: ID!, input: [EditInput]!, commitMessage: String): SoftwareAsset
-    createOperatingSystemAsset(input: OperatingSystemAssetAddInput): OperatingSystemAsset
-    deleteOperatingSystemAsset(id: ID!): String!
-    editOperatingSystemAsset(id: ID!, input: [EditInput]!, commitMessage: String): OperatingSystemAsset
-    createApplicationSoftwareAsset(input: OperatingSystemAssetAddInput): ApplicationSoftwareAsset
-    deleteApplicationSoftwareAsset(id: ID!): String!
-    editApplicationSoftwareAsset(id: ID!, input: [EditInput]!, commitMessage: String): ApplicationSoftwareAsset
+    # Software
+    createSoftwareAsset(input: SoftwareAssetAddInput): SoftwareAsset @hasPermission(resources: "Asset:update")
+    deleteSoftwareAsset(id: ID!): String! @hasPermission(resources: "Asset:delete")
+    editSoftwareAsset(id: ID!, input: [EditInput]!, commitMessage: String): SoftwareAsset @hasPermission(resources: "Asset:update")
+    # Operating System
+    createOperatingSystemAsset(input: OperatingSystemAssetAddInput): OperatingSystemAsset @hasPermission(resources: "Asset:update")
+    deleteOperatingSystemAsset(id: ID!): String! @hasPermission(resources: "Asset:delete")
+    editOperatingSystemAsset(id: ID!, input: [EditInput]!, commitMessage: String): OperatingSystemAsset @hasPermission(resources: "Asset:update")
+    # Application Software
+    createApplicationSoftwareAsset(input: OperatingSystemAssetAddInput): ApplicationSoftwareAsset @hasPermission(resources: "Asset:update")
+    deleteApplicationSoftwareAsset(id: ID!): String! @hasPermission(resources: "Asset:delete")
+    editApplicationSoftwareAsset(id: ID!, input: [EditInput]!, commitMessage: String): ApplicationSoftwareAsset @hasPermission(resources: "Asset:update")
   }
 
 

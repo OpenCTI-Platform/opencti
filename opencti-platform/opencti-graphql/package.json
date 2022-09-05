@@ -98,6 +98,7 @@
     "passport-saml": "3.1.1",
     "prom-client": "^14.0.1",
     "python-shell": "3.0.0",
+    "qs": "^6.11.0",
     "ramda": "0.28.0",
     "redlock": "4.2.0",
     "remarkable-admonitions": "0.2.2",
