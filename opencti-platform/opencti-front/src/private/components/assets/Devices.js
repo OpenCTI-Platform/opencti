@@ -36,7 +36,7 @@ class Devices extends Component {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: 'lines',
+      view: R.propOr('cards', 'view', params),
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -57,7 +57,7 @@ class Devices extends Component {
   }
 
   handleChangeView(mode) {
-    this.setState({ view: mode });
+    this.setState({ view: mode }, () => this.saveView());
   }
 
   handleSearch(value) {
