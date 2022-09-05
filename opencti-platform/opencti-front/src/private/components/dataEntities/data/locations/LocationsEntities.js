@@ -380,12 +380,14 @@ class LocationsEntities extends Component {
           handleLocationCreation={this.handleLocationCreation.bind(this)}
           history={this.props.history}
         />
-        <LocationEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          locationId={this.state.selectedLocationId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedLocationId && (
+          <LocationEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            locationId={this.state.selectedLocationId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

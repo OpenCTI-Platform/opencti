@@ -113,7 +113,7 @@ const partyEntityEditionQuery = graphql`
   }
 `;
 
-class RoleEntityEdition extends Component {
+class PartyEntityEdition extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -152,7 +152,7 @@ class RoleEntityEdition extends Component {
   }
 }
 
-RoleEntityEdition.propTypes = {
+PartyEntityEdition.propTypes = {
   partyId: PropTypes.string,
   displayEdit: PropTypes.bool,
   handleDisplayEdit: PropTypes.func,
@@ -164,4 +164,4 @@ RoleEntityEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(RoleEntityEdition);
+)(PartyEntityEdition);

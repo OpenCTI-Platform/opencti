@@ -383,12 +383,14 @@ class AssessmentPlatformsEntities extends Component {
           handleAssessPlatformCreation={this.handleAssessPlatformCreation.bind(this)}
           history={this.props.history}
         />
-        <AssessmentPlatformEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          assessmentPlatformId={this.state.selectedAssessPlatformId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedAssessPlatformId && (
+          <AssessmentPlatformEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            assessmentPlatformId={this.state.selectedAssessPlatformId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

@@ -54,6 +54,19 @@ const responsiblePartyEntityEditionQuery = graphql`
   query ResponsiblePartyEntityEditionQuery($id: ID!) {
     oscalResponsibleParty(id: $id) {
       id
+      name
+      description
+      entity_type
+      role {
+        id
+        entity_type
+        role_identifier
+      }
+      parties {
+        id
+        entity_type
+        name
+      }
     }
   }
 `;

@@ -237,7 +237,7 @@ ExternalReferenceEntityEditionContainer.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   connectionKey: PropTypes.string,
-  enableReference: PropTypes.object,
+  externalReference: PropTypes.object,
 };
 
 export default compose(

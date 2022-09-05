@@ -91,6 +91,7 @@ class RoleEntityEdition extends Component {
                 <RoleEntityEditionContainer
                   displayEdit={displayEdit}
                   history={history}
+                  responsibility={props.oscalRole}
                   handleDisplayEdit={handleDisplayEdit}
                 />
               );

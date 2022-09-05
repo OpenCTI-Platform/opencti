@@ -112,6 +112,7 @@ class EntityRoleComponent extends Component {
         <RoleEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
+          responsibility={role}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>

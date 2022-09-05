@@ -89,6 +89,7 @@ class AssessmentPlatformEntityEdition extends Component {
                   displayEdit={displayEdit}
                   history={history}
                   handleDisplayEdit={handleDisplayEdit}
+                  assessmentPlatform={props.assessmentPlatform}
                 />
               );
             }
@@ -101,7 +102,7 @@ class AssessmentPlatformEntityEdition extends Component {
 }
 
 AssessmentPlatformEntityEdition.propTypes = {
-  roldId: PropTypes.string,
+  assessmentPlatformId: PropTypes.string,
   displayEdit: PropTypes.bool,
   handleDisplayEdit: PropTypes.func,
   classes: PropTypes.object,
