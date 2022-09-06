@@ -45,7 +45,7 @@ const styles = (theme) => ({
     // zIndex: theme.zIndex.drawer + 1,
     backgroundColor: theme.palette.header.background,
     color: theme.palette.header.text,
-    paddingLeft: '280px'
+    // paddingLeft: '280px'
   },
   flex: {
     flexGrow: 1,

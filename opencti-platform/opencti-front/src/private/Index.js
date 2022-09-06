@@ -32,16 +32,20 @@ const useStyles = makeStyles((theme) => ({
   root: {
     minWidth: '100%',
     height: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
-  content: {
+  contentOpen: {
     height: '100%',
-    width: '80vw',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
-    padding: '1rem',
+    minWidth: 0,
+    marginLeft: '285px',
+  },
+  contentClose: {
+    height: '100%',
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.default,
+    minWidth: 0,
+    marginLeft: '110px',
   },
   message: {
     display: 'flex',
@@ -54,11 +58,16 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Index = (me) => {
+  const classes = useStyles();
+  const [drawer, setDrawer] = useState(false);
   const [clientId, setClientId] = useState(localStorage.getItem('client_id'));
-
   const clearStorage = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('client_id');
+  };
+
+  const drawerValue = (value) => {
+    setDrawer(value);
   };
 
   useEffect(() => {
@@ -83,76 +92,70 @@ const Index = (me) => {
       }, expiration);
     }
   }, [clientId]);
-
-  const classes = useStyles();
   return (
     <div className={classes.root}>
-      <div>
-        <LeftBar clientId={clientId} setClientId={setClientId}/>
-      </div>
-      <div>
-        <TopBarBreadcrumbs />
+      <TopBarBreadcrumbs />
+      <LeftBar clientId={clientId} setClientId={setClientId} drawerValue={drawerValue} />
+      <main
+        className={drawer ? classes.contentClose : classes.contentOpen}
+        style={{ paddingRight: 24 }}
+      >
         <Message />
-        <main
-          className={classes.content}
-          style={{ paddingRight: 24 }}
-        >
-          <div className={classes.toolbar} />
-          <Switch>
-            <BoundaryRoute exact path="/dashboard" component={Dashboard} />
-            <BoundaryRoute
-              exact
-              path="/dashboard/search"
-              render={(routeProps) => <Search {...routeProps} me={me} />}
-            />
-            <BoundaryRoute
-              exact
-              path="/dashboard/id/:id"
-              render={(routeProps) => (
-                <StixCoreObjectOrStixCoreRelationship {...routeProps} me={me} />
-              )}
-            />
-            <BoundaryRoute
-              exact
-              path="/dashboard/search/:keyword"
-              render={(routeProps) => <Search {...routeProps} me={me} />}
-            />
-            <BoundaryRoute
-              path="/data"
-              render={(routeProps) => <RootDataEntities {...routeProps} me={me} />}
-            />
-            <BoundaryRoute path="/about" component={RootAbout} />
-            <BoundaryRoute path="/activities/vulnerability assessment" component={RootVSAC} />
-            <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
-            <BoundaryRoute path="/dashboard/events" component={RootEvents} />
-            <Route path="/dashboard/observations" component={RootObservations} />
-            <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
-            <BoundaryRoute path="/defender HQ/assets" component={RootAssets} />
-            <FeatureFlag tag={'RISK_ASSESSMENT'}>
-              <BoundaryRoute path="/activities/risk assessment" component={RootRiskAssessment} />
-            </FeatureFlag>
-            <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
-            <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
-            <BoundaryRoute path="/dashboard/data" render={RootData} />
-            <BoundaryRoute
-              path="/dashboard/workspaces"
-              component={RootWorkspaces}
-            />
-            <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
-            <BoundaryRoute
-              exact
-              path="/dashboard/profile"
-              render={(routeProps) => <Profile {...routeProps} me={me} />}
-            />
-            <BoundaryRoute
-              path="/dashboard/import"
-              component={RootImport}
-              me={me}
-            />
-            <Route component={NoMatch} />
-          </Switch>
-        </main>
-      </div>
+        <div className={classes.toolbar} />
+        <Switch>
+          <BoundaryRoute exact path="/dashboard" component={Dashboard} />
+          <BoundaryRoute
+            exact
+            path="/dashboard/search"
+            render={(routeProps) => <Search {...routeProps} me={me} />}
+          />
+          <BoundaryRoute
+            exact
+            path="/dashboard/id/:id"
+            render={(routeProps) => (
+              <StixCoreObjectOrStixCoreRelationship {...routeProps} me={me} />
+            )}
+          />
+          <BoundaryRoute
+            exact
+            path="/dashboard/search/:keyword"
+            render={(routeProps) => <Search {...routeProps} me={me} />}
+          />
+          <BoundaryRoute
+            path="/data"
+            render={(routeProps) => <RootDataEntities {...routeProps} me={me} />}
+          />
+          <BoundaryRoute path="/about" component={RootAbout} />
+          <BoundaryRoute path="/activities/vulnerability assessment" component={RootVSAC} />
+          <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
+          <BoundaryRoute path="/dashboard/events" component={RootEvents} />
+          <Route path="/dashboard/observations" component={RootObservations} />
+          <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
+          <BoundaryRoute path="/defender HQ/assets" component={RootAssets} />
+          <FeatureFlag tag={'RISK_ASSESSMENT'}>
+            <BoundaryRoute path="/activities/risk assessment" component={RootRiskAssessment} />
+          </FeatureFlag>
+          <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
+          <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
+          <BoundaryRoute path="/dashboard/data" render={RootData} />
+          <BoundaryRoute
+            path="/dashboard/workspaces"
+            component={RootWorkspaces}
+          />
+          <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
+          <BoundaryRoute
+            exact
+            path="/dashboard/profile"
+            render={(routeProps) => <Profile {...routeProps} me={me} />}
+          />
+          <BoundaryRoute
+            path="/dashboard/import"
+            component={RootImport}
+            me={me}
+          />
+          <Route component={NoMatch} />
+        </Switch>
+      </main>
     </div>
   );
 };

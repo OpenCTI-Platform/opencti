@@ -67,7 +67,7 @@ const styles = (theme) => ({
     padding: '0 310px 50px 0',
   },
   toolBar: {
-    margin: '-20px -24px 20px -24px',
+    margin: '0px -24px 20px -30px',
     height: '100%',
     display: 'flex',
     '@media (max-width: 1400px)': {

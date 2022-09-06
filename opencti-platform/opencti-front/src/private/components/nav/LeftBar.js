@@ -55,21 +55,20 @@ const styles = (theme) => ({
     backgroundRepeat: 'no-repeat',
     backgroundPosition: '50% 70%;',
     overflowX: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    minHeight: '100vh',
+    // transition: theme.transitions.create('width', {
+    //   easing: theme.transitions.easing.sharp,
+    //   duration: theme.transitions.duration.enteringScreen,
+    // }),
   },
   drawerClose: {
     backgroundColor: theme.palette.background.nav,
     backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: '50% 70%;',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
+    // transition: theme.transitions.create('width', {
+    //   easing: theme.transitions.easing.sharp,
+    //   duration: theme.transitions.duration.leavingScreen,
+    // }),
     overflowX: 'hidden',
     width: theme.spacing(7) + 1,
     [theme.breakpoints.up('sm')]: {
@@ -139,7 +138,7 @@ const styles = (theme) => ({
 });
 
 const LeftBar = ({
-  t, location, classes, clientId, history, setClientId, theme,
+  t, location, classes, clientId, history, setClientId, theme, drawerValue,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const [user, setUser] = useState();
@@ -181,6 +180,7 @@ const LeftBar = ({
 
   const handleDrawerClose = () => {
     setOpenDrawer(!openDrawer);
+    drawerValue(openDrawer);
   };
 
   return (
@@ -397,6 +397,7 @@ const LeftBar = ({
 };
 
 LeftBar.propTypes = {
+  drawerValue: PropTypes.func,
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
