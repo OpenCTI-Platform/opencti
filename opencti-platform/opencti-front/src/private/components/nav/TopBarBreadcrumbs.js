@@ -42,23 +42,19 @@ import AboutModal from '../../../components/AboutModal';
 const styles = (theme) => ({
   appBar: {
     width: '100%',
-    // zIndex: theme.zIndex.drawer + 1,
     backgroundColor: theme.palette.header.background,
     color: theme.palette.header.text,
-    // paddingLeft: '280px'
   },
   flex: {
     flexGrow: 1,
   },
   logoContainer: {
-
     height: 64,
     width: 255,
     marginLeft: -24,
     paddingTop: 15,
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
     backgroundColor: theme.palette.background.nav,
-
   },
   logo: {
     cursor: 'pointer',
@@ -69,7 +65,19 @@ const styles = (theme) => ({
   },
   menuContainer: {
     float: 'left',
-    marginLeft: 40,
+    marginLeft: '17rem',
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  menuContainerClose: {
+    float: 'left',
+    marginLeft: '5.55rem',
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
   },
   barRight: {
     position: 'absolute',
@@ -116,6 +124,7 @@ const TopBarBreadcrumbs = ({
   risk,
   remediation,
   riskId,
+  drawer,
 }) => {
   const pathParts = location.pathname.split('/').filter((entry) => entry !== '');
 
@@ -165,13 +174,8 @@ const TopBarBreadcrumbs = ({
       elevation={1}
       style={{ backgroundColor: theme.palette.header.background }}
     >
-      <Toolbar>
-        {/* <div className={classes.logoContainer}>
-          <Link to="/dashboard">
-            <img src={theme.logo} alt="logo" className={classes.logo} />
-          </Link>
-        </div> */}
-        <div className={classes.menuContainer}>
+      <Toolbar>        
+        <div className={drawer ? classes.menuContainerClose : classes.menuContainer }>
           <Breadcrumbs aria-label="breadcrumb">
             {breadCrumbs.map((crumb, i, array) => {
               if (crumb.label === riskId) {
