@@ -488,7 +488,7 @@ class PendingFileContentComponent extends Component {
 
   loadFileContent() {
     const { file } = this.props;
-    const url = `/storage/view/${file.id}`;
+    const url = `/storage/view/${encodeURIComponent(file.id)}`;
     Axios.get(url).then(async (res) => {
       const state = await this.computeState(res.data.objects);
       this.setState(state);

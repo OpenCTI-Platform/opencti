@@ -175,8 +175,8 @@ class FileLineComponent extends Component {
           disabled={isProgress}
           to={
             directDownload
-              ? `/storage/get/${file.id}`
-              : `/storage/view/${file.id}`
+              ? `/storage/get/${encodeURIComponent(file.id)}`
+              : `/storage/view/${encodeURIComponent(file.id)}`
           }
           target="_blank"
           rel="noopener noreferrer"
@@ -228,7 +228,7 @@ class FileLineComponent extends Component {
                 <span>
                   <IconButton
                     disabled={isProgress}
-                    href={`${APP_BASE_PATH}/storage/get/${file.id}`}
+                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
                     size="large"
