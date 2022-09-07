@@ -40,21 +40,13 @@ import FeatureFlag from '../../../components/feature/FeatureFlag';
 import { toastGenericError } from '../../../utils/bakedToast';
 
 const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: 255,
-    backgroundColor: theme.palette.background.nav,
-    backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: '50% 70%;',
-  },
   drawerOpen: {
     width: 255,
     backgroundColor: theme.palette.background.nav,
     backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: '50% 70%;',
-    overflowX: 'hidden',
+    overflow: 'hidden',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -62,14 +54,11 @@ const styles = (theme) => ({
   },
   drawerClose: {
     backgroundColor: theme.palette.background.nav,
-    backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: '50% 70%;',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    overflowX: 'hidden',
+    overflow: 'hidden',
     width: theme.spacing(7) + 1,
     [theme.breakpoints.up('sm')]: {
       width: theme.spacing(9) + 1,
