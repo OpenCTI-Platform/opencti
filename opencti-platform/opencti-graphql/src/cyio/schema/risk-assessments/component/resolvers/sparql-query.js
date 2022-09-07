@@ -137,7 +137,7 @@ export const insertComponentQuery = (propValues) => {
   return {iri, id, query}  
 }
 export const selectComponentQuery = (id, select) => {
-  return selectComponentByIriQuery(`http://csrc.nist.gov/ns/oscal/common#Comoponent-${id}`, select);
+  return selectComponentByIriQuery(`http://csrc.nist.gov/ns/oscal/common#Component-${id}`, select);
 }
 export const selectComponentByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;

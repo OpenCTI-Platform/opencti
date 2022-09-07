@@ -1,0 +1,147 @@
+  # declares the query entry-points for this type
+extend type Query {
+  product(id: ID!): Product  @hasPermission(resources: "Cyio:view")
+  products(
+    first: Int
+    offset: Int
+    orderedBy: ProductOrdering
+    orderMode: OrderingMode
+    filters: [ProductFiltering]
+    filterMode: FilterMode
+    search: String
+  ): ProductConnection   @hasPermission(resources: "Cyio:view")
+}
+
+interface Product {
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp
+  "Identifies the name of the product"
+  name: String
+  "Identifiers the vendor or manufacturer of the product"
+  vendor: String
+  "Identifies the version of the product"
+  version: String
+  "Identifies the Common Product Enumerator (CPE) assigned to the product"
+  cpe_identifier: String
+  "Identifies the name used to display to users"
+  display_name: String
+}
+
+type SoftwareProduct implements BasicObject & LifecycleObject & Product {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp
+  # Product
+  "Identifies the name of the product"
+  name: String
+  "Identifiers the vendor or manufacturer of the product"
+  vendor: String
+  "Identifies the version of the product"
+  version: String
+  "Identifies the Common Product Enumerator (CPE) assigned to the product"
+  cpe_identifier: String
+  "Identifies the name used to display to users"
+  display_name: String
+  # Software Product
+  "Identifies the Software Identifier (SWID) assigned to the product"
+  software_identifier: String
+  "Identifies the languages supported by the product"
+  languages: [String]
+}
+
+type HardwareProduct implements BasicObject & LifecycleObject & Product {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp
+  # Product
+  "Identifies the name of the product"
+  name: String
+  "Identifiers the vendor or manufacturer of the product"
+  vendor: String
+  "Identifies the version of the product"
+  version: String
+  "Identifies the Common Product Enumerator (CPE) assigned to the product"
+  cpe_identifier: String
+  "Identifies the name used to display to users"
+  display_name: String
+}
+
+# Ordering
+enum ProductOrdering {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Display Name"
+  display_name
+  "Name"
+  name
+  "Vendor"
+  vendor
+}
+
+# Filtering Enumerations
+enum ProductFilter {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Display Name"
+  display_name
+  "Name"
+  name
+  "Vendor"
+  vendor
+  "Product Type"
+  object_type
+}
+
+input ProductFiltering {
+  key: ProductFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+
+# Pagination Types
+type ProductConnection {
+  pageInfo: PageInfo!
+  edges: [ProductEdge]
+}
+type ProductEdge {
+  cursor: String!
+  node: Product!
+}
