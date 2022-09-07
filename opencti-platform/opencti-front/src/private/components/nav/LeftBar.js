@@ -61,12 +61,15 @@ const styles = (theme) => ({
     overflow: 'hidden',
     width: theme.spacing(7) + 1,
     [theme.breakpoints.up('sm')]: {
-      width: theme.spacing(9) + 1,
+      width: theme.spacing(7) + 1,
     },
   },
   menuList: {
     marginTop: 20,
     marginBottom: 20,
+    height: 'auto',
+    minHeight: '30%',
+    maxHeight: '100%',
   },
   menuItem: {
     height: 40,
@@ -78,10 +81,6 @@ const styles = (theme) => ({
   logoButton: {
     marginLeft: -23,
     marginRight: 20,
-  },
-  logo: {
-    cursor: 'pointer',
-    height: 35,
   },
   toolbar: theme.mixins.toolbar,
   menuItemNested: {
@@ -104,8 +103,13 @@ const styles = (theme) => ({
   logoMain: {
     cursor: 'pointer',
     height: 20,
-    marginTop: 10,
+    marginTop: 8,
     marginLeft: 10,
+  },
+  logo: {
+    cursor: 'pointer',
+    height: 22,
+    marginTop: 10,
   },
   hideText: {
     display: 'none',
@@ -119,7 +123,7 @@ const styles = (theme) => ({
   drawerButtonCollapsed: {
     position: 'absolute',
     left: '64%',
-    top: '55%',
+    top: '50%',
     zIndex: 2,
   },
   drawerButtonMargin: {
@@ -208,7 +212,7 @@ const LeftBar = ({
           </ListItemIcon>
           <ListItemText primary={t('Dashboard')} className={!openDrawer && classes.hideText}/>
         </MenuItem>
-          <Security needs={[KNOWLEDGE]}>
+        <Security needs={[KNOWLEDGE]}>
           <MenuItem
             dense={false}
             classes={{ root: classes.menuItem }}
@@ -307,72 +311,74 @@ const LeftBar = ({
             }
         </Security>
       </MenuList>
-      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-        <Divider />
-        <MenuList component="nav" classes={{ root: classes.menuList }}>
-          <MenuItem
-            component={Link}
-            to={'/data'}
-            selected={location.pathname.includes('/data')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <Database />
-            </ListItemIcon>
-            <ListItemText primary={t('Data')} className={!openDrawer && classes.hideText}/>
-          </MenuItem>
-          <MenuItem
-            disabled="true"
-            component={Link}
-            to="/dashboard/settings"
-            selected={location.pathname.includes('/dashboard/setings')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <CogOutline />
-            </ListItemIcon>
-            <ListItemText primary={t('Settings')} className={!openDrawer && classes.hideText}/>
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={'/about'}
-            selected={location.pathname.includes('/about')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <Language />
-            </ListItemIcon>
-            <ListItemText primary={t('About')} className={!openDrawer && classes.hideText}/>
-          </MenuItem>
-        </MenuList>
-        <MenuList component="nav" classes={{ root: classes.menuList }}>
-          <MenuItem
-            // component={Link}
-            // to="/dashboard/profile"
-            selected={location.pathname.includes('/dashboard/profile')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <PersonIcon />
-            </ListItemIcon>
-            <ListItemText primary={t(me.name)} className={!openDrawer && classes.hideText}/>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleUserPrefOpen()}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <LocationCityIcon />
-            </ListItemIcon>
-            <ListItemText primary={currentOrg} className={!openDrawer && classes.hideText}/>
-          </MenuItem>
-        </MenuList>
-      </Security>
+      <MenuList component="nav" classes={{ root: classes.menuList }}>
+        <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+          <Divider />
+          <MenuList component="nav" classes={{ root: classes.menuList }}>
+            <MenuItem
+              component={Link}
+              to={'/data'}
+              selected={location.pathname.includes('/data')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <Database />
+              </ListItemIcon>
+              <ListItemText primary={t('Data')} className={!openDrawer && classes.hideText}/>
+            </MenuItem>
+            <MenuItem
+              disabled="true"
+              component={Link}
+              to="/dashboard/settings"
+              selected={location.pathname.includes('/dashboard/setings')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <CogOutline />
+              </ListItemIcon>
+              <ListItemText primary={t('Settings')} className={!openDrawer && classes.hideText}/>
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to={'/about'}
+              selected={location.pathname.includes('/about')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <Language />
+              </ListItemIcon>
+              <ListItemText primary={t('About')} className={!openDrawer && classes.hideText}/>
+            </MenuItem>
+          </MenuList>
+          <MenuList component="nav" classes={{ root: classes.menuList }}>
+            <MenuItem
+              // component={Link}
+              // to="/dashboard/profile"
+              selected={location.pathname.includes('/dashboard/profile')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <PersonIcon />
+              </ListItemIcon>
+              <ListItemText primary={t(me.name)} className={!openDrawer && classes.hideText}/>
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleUserPrefOpen()}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <LocationCityIcon />
+              </ListItemIcon>
+              <ListItemText primary={currentOrg} className={!openDrawer && classes.hideText}/>
+            </MenuItem>
+          </MenuList>
+        </Security>
+      </MenuList>
       <Dialog
         open={userPrefOpen}
         onClose={() => handleDialogClose()}
