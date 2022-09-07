@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     minWidth: 0,
-    margin: '0 1rem 0 17rem',
+    margin: '1.2rem 1rem 0 17rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     minWidth: 0,
-    margin: '0 1% 0 6%',
+    margin: '1.2rem 1rem 0 5rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
