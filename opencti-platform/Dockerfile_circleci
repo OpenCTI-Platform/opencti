@@ -35,6 +35,7 @@ RUN pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI
 RUN apk del git python3-dev gcc musl-dev
 COPY --from=graphql-deps-builder /opt/opencti-build/opencti-graphql/node_modules ./node_modules
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/build ./build
+COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/static ./static
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/public ./public
 COPY opencti-graphql/src ./src
 COPY opencti-graphql/config ./config
