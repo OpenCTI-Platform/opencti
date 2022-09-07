@@ -127,6 +127,7 @@ const assetSingularizeSchema = { singularizeVariables: {
     "color": true,
     "connected_to_network": true,
     "content": true,
+    "count": true,
     "country": true,
     "country_code": true,
     "cpe_identifier": true,
