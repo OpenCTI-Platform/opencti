@@ -76,28 +76,11 @@ const subscribeFn = (request, variables) => {
   return Observable.from(subscribeObservable);
 };
 
-const buildHeaders = () => {
-  const accessToken = localStorage.getItem('token');
-  const headers = {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-  };
-  if (accessToken) {
-    headers.Authorization = `Bearer ${accessToken}`;
-  }
-  const clientId = localStorage.getItem('client_id');
-  if (clientId) {
-    headers['X-Cyio-Client'] = clientId;
-  }
-  return headers;
-};
-
 const network = new RelayNetworkLayer(
   [
     urlMiddleware({
       url: `${APP_BASE_PATH}/graphql`,
       credentials: 'same-origin',
-      headers: buildHeaders(),
     }),
     uploadMiddleware(),
   ],
