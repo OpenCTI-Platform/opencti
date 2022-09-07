@@ -1,8 +1,10 @@
 import * as R from 'ramda';
 
 // General
-export const KNOWLEDGE_GROUPS_RESTRICT = 'KNGROUPRESTRICT';
+export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNORGARESTRICT';
 export const KNOWLEDGE_DELETE = 'KNDELETE';
+export const KNOWLEDGE_UPDATE = 'KNUPDATE';
+export const KNOWLEDGE_COLLABORATION = 'KNPARTICIPATE';
 
 export const ID_INTERNAL = 'internal_id';
 export const ID_INFERRED = 'inferred_id';

@@ -21,8 +21,11 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
+import {
+  CollaborativeSecurity,
+  granted,
+  KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  UserContext,
 } from '../../../../utils/Security';
 
 const styles = (theme) => ({
@@ -128,22 +131,19 @@ class NotePopover extends Component {
   }
 
   render() {
-    const { classes, t, id, handleOpenRemove, size } = this.props;
+    const { note, classes, t, id, handleOpenRemove, size } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           size={size || 'large'}
-          style={{ marginTop: size === 'small' ? -3 : 3 }}
-        >
+          style={{ marginTop: size === 'small' ? -3 : 3 }}>
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
+        <Menu anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -152,11 +152,11 @@ class NotePopover extends Component {
               {t('Remove from this entity')}
             </MenuItem>
           )}
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
-          </Security>
+          </CollaborativeSecurity>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
@@ -185,29 +185,32 @@ class NotePopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
+        <Drawer open={this.state.displayEdit}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
-          <QueryRenderer
-            query={noteEditionQuery}
-            variables={{ id }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <NoteEditionContainer
-                    note={props.note}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
+          onClose={this.handleCloseEdit.bind(this)}>
+          <UserContext.Consumer>
+            {({ me }) => {
+              const userIsOrganizationEditor = granted(me, [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+              return <QueryRenderer
+                  query={noteEditionQuery}
+                  variables={{ id, userIsOrganizationEditor }}
+                  render={({ props }) => {
+                    if (props) {
+                      return (
+                          <NoteEditionContainer
+                              note={props.note}
+                              handleClose={this.handleCloseEdit.bind(this)}
+                          />
+                      );
+                    }
+                    return <Loader variant="inElement" />;
+                  }}
+              />;
             }}
-          />
+          </UserContext.Consumer>
         </Drawer>
       </div>
     );

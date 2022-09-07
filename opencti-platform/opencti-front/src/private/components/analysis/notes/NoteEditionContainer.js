@@ -88,9 +88,10 @@ NoteEditionContainer.propTypes = {
 
 const NoteEditionFragment = createFragmentContainer(NoteEditionContainer, {
   note: graphql`
-    fragment NoteEditionContainer_note on Note {
+    fragment NoteEditionContainer_note on Note
+    @argumentDefinitions(userIsOrganizationEditor: { type: "Boolean", defaultValue: false }) {
       id
-      ...NoteEditionOverview_note
+      ...NoteEditionOverview_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
       editContext {
         name
         focusOn

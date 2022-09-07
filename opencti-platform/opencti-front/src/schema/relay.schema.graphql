@@ -31,6 +31,7 @@ enum Capabilities {
   CONNECTORAPI
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
+  KNOWLEDGE_KNPARTICIPATE
   KNOWLEDGE_KNUPDATE_KNDELETE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPLOAD
@@ -1009,6 +1010,7 @@ type Settings implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
+  platform_organization: ID
   platform_title: String
   platform_favicon: String
   platform_url: String
@@ -1149,6 +1151,7 @@ type User implements BasicObject & InternalObject {
   parent_types: [String]!
   user_email: String!
   api_token: String!
+  individual_id: String
   name: String!
   description: String
   firstname: String
@@ -2341,7 +2344,6 @@ input NoteAddInput {
   revoked: Boolean
   lang: String
   confidence: Int
-  createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   objectOrganization: [String]

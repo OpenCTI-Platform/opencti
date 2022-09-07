@@ -51,7 +51,7 @@ import {
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -114,7 +114,8 @@ const extractTokenFromBasicAuth = async (authorization) => {
 
 export const findById = async (context, user, userId) => {
   const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
-  return data ? R.dissoc('password', data) : data;
+  const withoutPassword = data ? R.dissoc('password', data) : data;
+  return buildCompleteUser(withoutPassword);
 };
 
 export const findAll = (context, user, args) => {
@@ -558,14 +559,14 @@ const buildSessionUser = (origin, impersonate, provider) => {
   const user = impersonate ?? origin;
   return {
     id: user.id,
+    individual_id: user.individual_id,
     session_creation: now(),
     session_password: user.password,
     api_token: user.api_token,
     internal_id: user.internal_id,
     user_email: user.user_email,
     otp_activated: user.otp_activated,
-    // 2FA is implicitly validated when login from token
-    otp_validated: !user.otp_activated || provider === AUTH_BEARER,
+    otp_validated: !user.otp_activated || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
     otp_secret: user.otp_secret,
     name: user.name,
     external: user.external,
@@ -593,7 +594,17 @@ const buildCompleteUser = async (context, client) => {
   const capabilities = await getCapabilities(context, client.id);
   const organizations = await batchOrganizations(SYSTEM_USER, client.id, { batched: false, paginate: false });
   const marking = await getUserAndGlobalMarkings(context, client.id, capabilities);
-  return { ...client, capabilities, organizations, allowed_marking: marking.user, all_marking: marking.all };
+  const args = { filters: [{ key: 'contact_information', values: [client.user_email] }], connectionFormat: false };
+  const individuals = await listEntities(SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+  const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
+  return {
+    ...client,
+    capabilities,
+    organizations,
+    individual_id: individualId,
+    allowed_marking: marking.user,
+    all_marking: marking.all
+  };
 };
 
 export const resolveUserById = async (context, id) => {

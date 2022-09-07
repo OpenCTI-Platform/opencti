@@ -33,7 +33,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_WORKSPACE,
   ENTITY_TYPE_SYNC,
 ];
-const INTERNAL_OBJECTS = [
+export const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_FEED,
@@ -68,6 +68,7 @@ const internalObjectsAttributes = {
     'standard_id',
     'entity_type',
     'platform_title',
+    'platform_organization',
     'platform_favicon',
     'platform_email',
     'platform_theme',

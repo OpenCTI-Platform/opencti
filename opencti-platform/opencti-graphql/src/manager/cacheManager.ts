@@ -10,10 +10,10 @@ import {
   ENTITY_TYPE_STATUS_TEMPLATE
 } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { UnsupportedError } from '../config/errors';
-import type { BasicStoreEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
+import type { BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
 import { EntityOptions, listEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext, AuthUser } from '../types/user';
 import { telemetry } from '../config/tracing';
 
@@ -80,21 +80,18 @@ const initCacheManager = () => {
       logApp.info('[OPENCTI-MODULE] Initializing cache manager');
       const context = executionContext('cache_manager');
       // Load initial data used for cache
-      cache[ENTITY_TYPE_STATUS] = await workflowStatuses(context);
-      cache[ENTITY_TYPE_CONNECTOR] = await platformConnectors(context);
-      cache[ENTITY_TYPE_RULE] = await platformRules(context);
-      cache[ENTITY_TYPE_MARKING_DEFINITION] = await platformMarkings(context);
+      writeCacheForEntity(ENTITY_TYPE_STATUS, await workflowStatuses(context));
+      writeCacheForEntity(ENTITY_TYPE_CONNECTOR, await platformConnectors(context));
+      writeCacheForEntity(ENTITY_TYPE_RULE, await platformRules(context));
+      writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, await platformMarkings(context));
+      writeCacheForEntity(ENTITY_TYPE_SETTINGS, await platformSettings());
       cache[ENTITY_TYPE_SETTINGS] = await platformSettings(context);
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
       subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {
         const { instance } = event;
         // Invalid cache if any entity has changed.
-        if (cache[instance.entity_type]) {
-          cache[instance.entity_type].values = undefined;
-        } else {
-          // This entity type is not part of the caching system
-        }
+        resetCacheForEntity(instance.entity_type);
       }, { pattern: true });
       logApp.info('[OPENCTI-MODULE] Cache manager initialized');
     },
@@ -102,7 +99,6 @@ const initCacheManager = () => {
       if (subscribeIdentifier) {
         pubsub.unsubscribe(subscribeIdentifier);
       }
-      cache = {};
       return true;
     }
   };

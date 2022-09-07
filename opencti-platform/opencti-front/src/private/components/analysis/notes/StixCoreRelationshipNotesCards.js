@@ -19,14 +19,17 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
 import { noteLinesMutationRelationAdd } from './AddNotesLines';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
-import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
@@ -100,7 +103,6 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
       ]),
       R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('objects', [stixCoreRelationshipId]),
-      R.assoc('createdBy', R.pathOr(null, ['createdBy', 'value'], values)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
@@ -182,101 +184,96 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
             />
           );
         })}
-        <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
-          expanded={open}
-          onChange={this.handleToggleWrite.bind(this)}
-          variant="outlined"
-        >
-          <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-            <Typography className={classes.heading}>
-              <RateReviewOutlined />
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails style={{ width: '100%' }}>
-            <Formik
-              initialValues={{
-                attribute_abstract: '',
-                content: '',
-                createdBy: '',
-                objectMarking: [],
-                objectOrganization: [],
-                objectLabel: [],
-              }}
-              validationSchema={noteValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({
-                submitForm,
-                handleReset,
-                setFieldValue,
-                values,
-                isSubmitting,
-              }) => (
-                <Form style={{ width: '100%' }}>
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <div style={{ marginBottom: 20 }}>
-                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
+        <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
+          <Accordion
+            style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
+            expanded={open}
+            onChange={this.handleToggleWrite.bind(this)}
+            variant="outlined">
+            <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+              <Typography className={classes.heading}>
+                <RateReviewOutlined />
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails style={{ width: '100%' }}>
+              <Formik
+                initialValues={{
+                  attribute_abstract: '',
+                  content: '',
+                  objectMarking: [],
+                  objectOrganization: [],
+                  objectLabel: [],
+                }}
+                validationSchema={noteValidation(t)}
+                onSubmit={this.onSubmit.bind(this)}
+                onReset={this.onReset.bind(this)}
+              >
+                {({
+                  submitForm,
+                  handleReset,
+                  setFieldValue,
+                  values,
+                  isSubmitting,
+                }) => (
+                  <Form style={{ width: '100%' }}>
+                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                      <div style={{ marginBottom: 20 }}>
+                        <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
+                      </div>
+                    </Security>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="attribute_abstract"
+                      label={t('Abstract')}
+                      fullWidth={true}
+                    />
+                    <Field
+                      component={MarkDownField}
+                      name="content"
+                      label={t('Content')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <ObjectLabelField
+                      name="objectLabel"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.objectLabel}
+                    />
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                    <div className={classes.buttons}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Create')}
+                      </Button>
                     </div>
-                  </Security>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="attribute_abstract"
-                    label={t('Abstract')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="content"
-                    label={t('Content')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </AccordionDetails>
-        </Accordion>
+                  </Form>
+                )}
+              </Formik>
+            </AccordionDetails>
+          </Accordion>
+        </Security>
         <div style={{ marginTop: 100 }} />
         <div ref={this.bottomRef} />
       </div>

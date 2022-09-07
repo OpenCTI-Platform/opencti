@@ -10,7 +10,7 @@ import NoteDetails from './NoteDetails';
 import NoteEdition from './NoteEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNPARTICIPATE } from '../../../../utils/Security';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import NotePopover from './NotePopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -29,7 +29,7 @@ class NoteComponent extends Component {
     const { classes, note } = this.props;
     return (
       <div className={classes.container}>
-        <ContainerHeader container={note} PopoverComponent={<NotePopover />} />
+        <ContainerHeader container={note} PopoverComponent={<NotePopover note={note} />} />
         <Grid
           container={true}
           spacing={3}
@@ -65,7 +65,7 @@ class NoteComponent extends Component {
             <StixCoreObjectLatestHistory stixCoreObjectId={note.id} />
           </Grid>
         </Grid>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
           <NoteEdition noteId={note.id} />
         </Security>
       </div>

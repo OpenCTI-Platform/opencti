@@ -57,6 +57,7 @@ const settingsQuery = graphql`
       id
       platform_title
       platform_favicon
+      platform_organization
       platform_email
       platform_theme
       platform_language
@@ -92,6 +93,14 @@ const settingsQuery = graphql`
         focusOn
       }
     }
+    organizations {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
   }
 `;
 
@@ -123,6 +132,7 @@ const settingsMutationFieldPatch = graphql`
         platform_language
         platform_login_message
         platform_hidden_types
+        platform_organization
       }
     }
   }
@@ -176,6 +186,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
   platform_hidden_types: Yup.array().nullable(),
+  platform_organization: Yup.string().nullable(),
 });
 
 class Settings extends Component {
@@ -272,7 +283,7 @@ class Settings extends Component {
           query={settingsQuery}
           render={({ props }) => {
             if (props && props.settings) {
-              const { settings } = props;
+              const { settings, organizations } = props;
               const { id, editContext } = settings;
               const initialValues = R.pipe(
                 R.assoc(
@@ -305,6 +316,7 @@ class Settings extends Component {
                   'platform_map_tile_server_dark',
                   'platform_map_tile_server_light',
                   'platform_hidden_types',
+                  'platform_organization',
                 ]),
               )(settings);
               const authProviders = settings.platform_providers;
@@ -343,6 +355,19 @@ class Settings extends Component {
                                   />
                                 }
                               />
+                              <Field component={SelectField}
+                                     variant="standard"
+                                     name="platform_organization"
+                                     label={t('Platform organization')}
+                                     fullWidth={true}
+                                     containerstyle={{ marginTop: 20, width: '100%' }}
+                                     onFocus={this.handleChangeFocus.bind(this, id)}
+                                     onChange={this.handleSubmitField.bind(this, id)}
+                                     helpertext={<SubscriptionFocus context={editContext} fieldName="platform_organization"/>}>
+                                <MenuItem value="">-</MenuItem>
+                                {/* eslint-disable-next-line max-len */}
+                                {organizations.edges.map((o) => <MenuItem value={o.node.id}>{t(o.node.name)}</MenuItem>)}
+                              </Field>
                               <Field
                                 component={TextField}
                                 variant="standard"

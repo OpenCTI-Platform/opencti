@@ -18,6 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import NoteEdition from './NoteEdition';
+import { granted, KNOWLEDGE_KNUPDATE_KNORGARESTRICT, UserContext } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -44,10 +45,11 @@ Transition.displayName = 'TransitionSlide';
 const stixCoreObjectOrStixCoreRelationshipNotePopoverCleanContext = graphql`
   mutation StixCoreObjectOrStixCoreRelationshipNotePopoverCleanContextMutation(
     $id: ID!
+    $userIsOrganizationEditor: Boolean!
   ) {
     noteEdit(id: $id) {
       contextClean {
-        ...NoteEditionOverview_note
+        ...NoteEditionOverview_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
       }
     }
   }
@@ -66,9 +68,10 @@ const stixCoreObjectOrStixCoreRelationshipNotePopoverDeletionMutation = graphql`
 const stixCoreObjectOrStixCoreRelationshipNotePopoverEditionQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotePopoverEditionQuery(
     $id: String!
+    $userIsOrganizationEditor: Boolean!
   ) {
     note(id: $id) {
-      ...NoteEditionOverview_note
+      ...NoteEditionOverview_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
     }
   }
 `;
@@ -97,10 +100,10 @@ class StixCoreObjectOrStixCoreRelationshipNotePopover extends Component {
     this.handleClose();
   }
 
-  handleCloseUpdate() {
+  handleCloseUpdate(userIsOrganizationEditor) {
     commitMutation({
       mutation: stixCoreObjectOrStixCoreRelationshipNotePopoverCleanContext,
-      variables: { id: this.props.roleId },
+      variables: { id: this.props.roleId, userIsOrganizationEditor },
     });
     this.setState({ displayUpdate: false });
   }
@@ -153,30 +156,31 @@ class StixCoreObjectOrStixCoreRelationshipNotePopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
-          <QueryRenderer
-            query={stixCoreObjectOrStixCoreRelationshipNotePopoverEditionQuery}
-            variables={{ id: noteId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <NoteEdition
-                    note={props.note}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
+        <UserContext.Consumer>
+          {({ me }) => {
+            const userIsOrganizationEditor = granted(me, [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+            return <Drawer open={this.state.displayUpdate}
+                           anchor="right"
+                           elevation={1}
+                           sx={{ zIndex: 1202 }}
+                           classes={{ paper: classes.drawerPaper }}
+                           onClose={this.handleCloseUpdate.bind(this, userIsOrganizationEditor)}>
+                  <QueryRenderer
+                      query={stixCoreObjectOrStixCoreRelationshipNotePopoverEditionQuery}
+                      variables={{ id: noteId, userIsOrganizationEditor }}
+                      render={({ props }) => {
+                        if (props) {
+                          return (
+                            // eslint-disable-next-line max-len
+                            <NoteEdition note={props.note} handleClose={this.handleCloseUpdate.bind(this, userIsOrganizationEditor)}/>
+                          );
+                        }
+                        return <Loader variant="inElement" />;
+                      }}
+                  />;
+            </Drawer>;
+          }}
+          </UserContext.Consumer>
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}

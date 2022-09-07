@@ -11,6 +11,7 @@ import NoteEditionContainer from './NoteEditionContainer';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { noteEditionOverviewFocus } from './NoteEditionOverview';
 import Loader from '../../../../components/Loader';
+import { granted, KNOWLEDGE_KNUPDATE_KNORGARESTRICT, UserContext } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   editButton: {
@@ -32,9 +33,9 @@ const styles = (theme) => ({
 });
 
 export const noteEditionQuery = graphql`
-  query NoteEditionContainerQuery($id: String!) {
+  query NoteEditionContainerQuery($id: String!, $userIsOrganizationEditor: Boolean!) {
     note(id: $id) {
-      ...NoteEditionContainer_note
+      ...NoteEditionContainer_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
     }
   }
 `;
@@ -64,37 +65,38 @@ class NoteEdition extends Component {
     const { classes, noteId } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <QueryRenderer
-            query={noteEditionQuery}
-            variables={{ id: noteId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <NoteEditionContainer
-                    note={props.note}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
+          onClose={this.handleClose.bind(this)}>
+          <UserContext.Consumer>
+            {({ me }) => {
+              const userIsOrganizationEditor = granted(me, [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+              return <QueryRenderer
+                  query={noteEditionQuery}
+                  variables={{ id: noteId, userIsOrganizationEditor }}
+                  render={({ props }) => {
+                    if (props) {
+                      return (
+                          <NoteEditionContainer
+                              note={props.note}
+                              handleClose={this.handleClose.bind(this)}
+                          />
+                      );
+                    }
+                    return <Loader variant="inElement" />;
+                  }}
+              />;
             }}
-          />
+          </UserContext.Consumer>
         </Drawer>
       </div>
     );

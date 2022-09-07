@@ -19,13 +19,12 @@ import { ConnectionHandler } from 'relay-runtime';
 import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
 import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
@@ -99,7 +98,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
       ]),
       R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('objects', [stixCoreObjectId]),
-      R.assoc('createdBy', R.pathOr(null, ['createdBy', 'value'], values)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
@@ -133,16 +131,12 @@ class StixCoreObjectNotesCardsContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes about this entity')}
         </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
-        >
+        <Security needs={[KNOWLEDGE_KNPARTICIPATE]} placeholder={<div style={{ height: 29 }} />}>
           <IconButton
             color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
-            size="large"
-          >
+            size="large">
             <EditOutlined fontSize="small" />
           </IconButton>
           <AddNotes
@@ -161,13 +155,12 @@ class StixCoreObjectNotesCardsContainer extends Component {
             />
           );
         })}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
           <Accordion
             style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
             expanded={open}
             onChange={this.handleToggleWrite.bind(this)}
-            variant="outlined"
-          >
+            variant="outlined">
             <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
               <Typography className={classes.heading}>
                 <RateReviewOutlined />
@@ -180,7 +173,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
                 initialValues={{
                   attribute_abstract: '',
                   content: '',
-                  createdBy: '',
                   objectMarking: [],
                   objectOrganization: [],
                   objectLabel: [],
@@ -217,11 +209,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
                       multiline={true}
                       rows="4"
                       style={{ marginTop: 20 }}
-                    />
-                    <CreatedByField
-                      name="createdBy"
-                      style={{ marginTop: 20, width: '100%' }}
-                      setFieldValue={setFieldValue}
                     />
                     <ObjectLabelField
                       name="objectLabel"

@@ -210,9 +210,9 @@ import { buildFilters } from './repository';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listEntities, listRelations } from './middleware-loader';
-import { getEntitiesFromCache } from '../manager/cacheManager';
 import { RELATION_ORGANIZATIONS } from '../schema/internalRelationship';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
+import { getEntitiesFromCache } from './cache';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -2183,28 +2183,25 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     }
   }
   // Upsert entities
+  const upsertAttributes = schemaTypes.getUpsertAttributes(type);
   if (isInternalObject(type) && forceUpdate) {
-    const fields = schemaTypes.getUpsertAttributes(type);
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixDomainObject(type) && forceUpdate) {
-    const fields = schemaTypes.getUpsertAttributes(type);
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixMetaObject(type) && forceUpdate) {
-    const fields = schemaTypes.getUpsertAttributes(type);
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   // Upsert SCOs
   if (isStixCyberObservable(type) && forceUpdate) {
-    const fields = schemaTypes.getUpsertAttributes(type);
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
