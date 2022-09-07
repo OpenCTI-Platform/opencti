@@ -2340,6 +2340,7 @@ input NoteAddInput {
   x_opencti_stix_ids: [StixId]
   attribute_abstract: String
   content: content_String_NotNull_minLength_2!
+  authors: [String]
   revoked: Boolean
   lang: String
   createdBy: String

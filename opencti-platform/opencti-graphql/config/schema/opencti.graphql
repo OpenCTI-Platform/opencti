@@ -2457,6 +2457,7 @@ input NoteAddInput {
   x_opencti_stix_ids: [StixId]
   attribute_abstract: String
   content: String! @constraint(minLength: 2)
+  authors: [String]
   revoked: Boolean
   lang: String
   createdBy: String
