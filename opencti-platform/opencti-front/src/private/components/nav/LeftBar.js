@@ -98,7 +98,7 @@ const styles = (theme) => ({
     width: 255,
     paddingTop: 15,
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-    padding: '6px 20px',
+    padding: '6px 25px 6px 20px',
   },
   logoMain: {
     cursor: 'pointer',
