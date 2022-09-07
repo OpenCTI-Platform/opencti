@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
 import frLocale from 'date-fns/locale/fr';
+import esLocale from 'date-fns/locale/es';
 import enLocale from 'date-fns/locale/en-US';
 import cnLocale from 'date-fns/locale/zh-CN';
 import moment from 'moment';
@@ -16,6 +17,7 @@ import { UserContext } from '../utils/Security';
 const localeMap = {
   'en-us': enLocale,
   'fr-fr': frLocale,
+  'es-es': esLocale,
   'zg-cn': cnLocale,
 };
 
@@ -39,6 +41,8 @@ const AppIntlProvider = (props) => {
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG];
   if (lang === 'fr-fr') {
     moment.locale('fr-fr');
+  } else if (lang === 'es-es') {
+    moment.locale('es-es');
   } else if (lang === 'zh-cn') {
     moment.locale('zh-cn');
   } else {
