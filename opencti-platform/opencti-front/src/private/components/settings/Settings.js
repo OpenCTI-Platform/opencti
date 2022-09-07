@@ -366,7 +366,12 @@ class Settings extends Component {
                                      helpertext={<SubscriptionFocus context={editContext} fieldName="platform_organization"/>}>
                                 <MenuItem value="">-</MenuItem>
                                 {/* eslint-disable-next-line max-len */}
-                                {organizations.edges.map((o) => <MenuItem value={o.node.id}>{t(o.node.name)}</MenuItem>)}
+                                {organizations.edges.map((o) => {
+                                  const key = `menu_${o.node.id}`;
+                                  return <MenuItem key={key} value={o.node.id}>
+                                    {t(o.node.name)}
+                                  </MenuItem>;
+                                })}
                               </Field>
                               <Field
                                 component={TextField}

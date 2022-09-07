@@ -28,6 +28,7 @@ import {
 import { buildRefRelationKey, KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { BYPASS } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
+import { addIndividual } from '../domain/individual';
 
 // Needs to have edit rights or needs to be creator of the note
 const checkUserAccess = async (user, id) => {
@@ -103,7 +104,18 @@ const noteResolvers = {
         return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
       },
     }),
-    noteAdd: (_, { input }, context) => addNote(context, context.user, input),
+    userNoteAdd: async (_, { input }, { user }) => {
+      let individualId = user.individual_id;
+      if (individualId === undefined) {
+        const individual = await addIndividual(user, { name: user.name, contact_information: user.user_email });
+        individualId = individual.id;
+      }
+      const inputWithCreator = { ...input, createdBy: individualId };
+      return addNote(user, inputWithCreator);
+    },
+    noteAdd: (_, { input }, context) => {
+      return addNote(context, context.user, input);
+    },
   },
 };
 

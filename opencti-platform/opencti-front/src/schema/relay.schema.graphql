@@ -2340,9 +2340,9 @@ input NoteAddInput {
   x_opencti_stix_ids: [StixId]
   attribute_abstract: String
   content: content_String_NotNull_minLength_2!
-  authors: [String]
   revoked: Boolean
   lang: String
+  createdBy: String
   confidence: Int
   objectMarking: [String]
   objectLabel: [String]
@@ -2356,6 +2356,25 @@ input NoteAddInput {
 }
 
 scalar content_String_NotNull_minLength_2
+
+input NoteUserAddInput {
+  stix_id: String
+  x_opencti_stix_ids: [String]
+  attribute_abstract: String
+  content: content_String_NotNull_minLength_2!
+  revoked: Boolean
+  lang: String
+  confidence: Int
+  objectMarking: [String]
+  objectLabel: [String]
+  objectOrganization: [String]
+  externalReferences: [String]
+  objects: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+}
 
 enum ObservedDatasOrdering {
   first_observed
@@ -7831,6 +7850,7 @@ type Mutation {
   campaignEdit(id: ID!): CampaignEditMutations
   containerEdit(id: ID!): ContainerEditMutations
   noteAdd(input: NoteAddInput): Note
+  userNoteAdd(input: NoteUserAddInput): Note
   noteEdit(id: ID!): NoteEditMutations
   observedDataAdd(input: ObservedDataAddInput): ObservedData
   observedDataEdit(id: ID!): ObservedDataEditMutations

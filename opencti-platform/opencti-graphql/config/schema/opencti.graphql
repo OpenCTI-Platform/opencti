@@ -2457,7 +2457,25 @@ input NoteAddInput {
   x_opencti_stix_ids: [StixId]
   attribute_abstract: String
   content: String! @constraint(minLength: 2)
-  authors: [String]
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  confidence: Int
+  objectMarking: [String]
+  objectLabel: [String]
+  objectOrganization: [String]
+  externalReferences: [String]
+  objects: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+}
+input NoteUserAddInput {
+  stix_id: String
+  x_opencti_stix_ids: [String]
+  attribute_abstract: String
+  content: String! @constraint(minLength: 2)
   revoked: Boolean
   lang: String
   confidence: Int
@@ -10966,7 +10984,8 @@ type Mutation {
   campaignEdit(id: ID!): CampaignEditMutations
   ############### Containers
   containerEdit(id: ID!): ContainerEditMutations
-  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
+  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  userNoteAdd(input: NoteUserAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   noteEdit(id: ID!): NoteEditMutations
   observedDataAdd(input: ObservedDataAddInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   observedDataEdit(id: ID!): ObservedDataEditMutations
