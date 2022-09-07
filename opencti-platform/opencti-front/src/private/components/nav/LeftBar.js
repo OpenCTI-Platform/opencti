@@ -40,36 +40,25 @@ import FeatureFlag from '../../../components/feature/FeatureFlag';
 import { toastGenericError } from '../../../utils/bakedToast';
 
 const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: 255,
-    backgroundColor: theme.palette.background.nav,
-    backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: '50% 70%;',
-  },
   drawerOpen: {
     width: 255,
     backgroundColor: theme.palette.background.nav,
     backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: '50% 70%;',
-    overflowX: 'hidden',
-    // transition: theme.transitions.create('width', {
-    //   easing: theme.transitions.easing.sharp,
-    //   duration: theme.transitions.duration.enteringScreen,
-    // }),
+    overflow: 'hidden',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
   },
   drawerClose: {
     backgroundColor: theme.palette.background.nav,
-    backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: '50% 70%;',
-    // transition: theme.transitions.create('width', {
-    //   easing: theme.transitions.easing.sharp,
-    //   duration: theme.transitions.duration.leavingScreen,
-    // }),
-    overflowX: 'hidden',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    overflow: 'hidden',
     width: theme.spacing(7) + 1,
     [theme.breakpoints.up('sm')]: {
       width: theme.spacing(9) + 1,
@@ -78,6 +67,10 @@ const styles = (theme) => ({
   menuList: {
     marginTop: 20,
     marginBottom: 20,
+  },
+  menuItem: {
+    height: 40,
+    padding: '6px 0 6px 20px',
   },
   lastItem: {
     bottom: 0,
@@ -91,10 +84,6 @@ const styles = (theme) => ({
     height: 35,
   },
   toolbar: theme.mixins.toolbar,
-  menuItem: {
-    height: 40,
-    padding: '6px 0 6px 10px',
-  },
   menuItemNested: {
     height: 30,
     padding: '6px 10px 6px 25px',
@@ -106,6 +95,9 @@ const styles = (theme) => ({
     marginBottom: 40,
   },
   logoContainer: {
+    height: 64,
+    width: 255,
+    paddingTop: 15,
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
     padding: '6px 20px',
   },
@@ -134,6 +126,10 @@ const styles = (theme) => ({
     margin: '0 20px 0 0',
     borderRadius: '25% 0 0 25%',
     padding: '12px 1px',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    },
   },
 });
 
@@ -144,9 +140,9 @@ const LeftBar = ({
   const [user, setUser] = useState();
   const [currentOrg, setCurrentOrg] = useState();
   const [userPrefOpen, setUserPrefOpen] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(true);
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
-  const [openDrawer, setOpenDrawer] = useState(true);
 
   useEffect(() => {
     if (clientId) {

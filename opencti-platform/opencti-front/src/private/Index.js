@@ -38,14 +38,22 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     minWidth: 0,
-    marginLeft: '285px',
+    margin: '0 1rem 0 17rem',
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
   },
   contentClose: {
     height: '100%',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     minWidth: 0,
-    marginLeft: '110px',
+    margin: '0 1% 0 6%',
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
   },
   message: {
     display: 'flex',
@@ -94,11 +102,15 @@ const Index = (me) => {
   }, [clientId]);
   return (
     <div className={classes.root}>
-      <TopBarBreadcrumbs />
-      <LeftBar clientId={clientId} setClientId={setClientId} drawerValue={drawerValue} />
+      <TopBarBreadcrumbs drawer={drawer} />
+      <LeftBar
+        clientId={clientId}
+        setClientId={setClientId}
+        drawerValue={drawerValue}
+      />
       <main
         className={drawer ? classes.contentClose : classes.contentOpen}
-        style={{ paddingRight: 24 }}
+        // style={{ paddingRight: 24 }}
       >
         <Message />
         <div className={classes.toolbar} />
