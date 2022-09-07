@@ -364,7 +364,7 @@ class Settings extends Component {
                                      onFocus={this.handleChangeFocus.bind(this, id)}
                                      onChange={this.handleSubmitField.bind(this, id)}
                                      helpertext={<SubscriptionFocus context={editContext} fieldName="platform_organization"/>}>
-                                <MenuItem value="">-</MenuItem>
+                                <MenuItem value="">&nbsp;</MenuItem>
                                 {/* eslint-disable-next-line max-len */}
                                 {organizations.edges.map((o) => {
                                   const key = `menu_${o.node.id}`;

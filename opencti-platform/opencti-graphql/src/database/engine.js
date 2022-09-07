@@ -333,10 +333,14 @@ const buildDataRestrictions = async (user) => {
           { match: { 'entity_type.keyword': ENTITY_TYPE_LOCATION_REGION } },
           { match: { 'entity_type.keyword': ENTITY_TYPE_IDENTITY_ORGANIZATION } },
           { match: { 'entity_type.keyword': ENTITY_TYPE_IDENTITY_SECTOR } },
-          // Add individual instance and related created by
-          { match: { 'internal_id.keyword': user.individual_id } },
-          { match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } }
         ]);
+        if (user.individual_id) {
+          should.push(...[
+            // Add individual instance and related created by
+            { match: { 'internal_id.keyword': user.individual_id } },
+            { match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } }
+          ]);
+        }
       }
       // If not, all user can access empty organization data
       if (user.organizations.length > 0) {
