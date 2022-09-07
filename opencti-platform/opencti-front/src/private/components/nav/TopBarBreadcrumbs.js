@@ -359,6 +359,7 @@ TopBarBreadcrumbs.propTypes = {
   location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  drawer: PropTypes.bool,
 };
 
 export default compose(

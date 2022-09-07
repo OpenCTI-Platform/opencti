@@ -73,7 +73,7 @@ const styles = (theme) => ({
   },
   menuItem: {
     height: 40,
-    padding: '6px 0 6px 20px',
+    // padding: '6px 0 6px 20px',
   },
   lastItem: {
     bottom: 0,
@@ -117,13 +117,13 @@ const styles = (theme) => ({
   drawerButton: {
     position: 'absolute',
     left: '90%',
-    top: '50%',
+    top: '48%',
     zIndex: 2,
   },
   drawerButtonCollapsed: {
     position: 'absolute',
     left: '64%',
-    top: '50%',
+    top: '48%',
     zIndex: 2,
   },
   drawerButtonMargin: {
