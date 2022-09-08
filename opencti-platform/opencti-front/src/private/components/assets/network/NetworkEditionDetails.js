@@ -5,13 +5,14 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Field } from 'formik';
-import { compose,  split } from 'ramda';
+import { compose, split } from 'ramda';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import SwitchField from '../../../../components/SwitchField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -183,7 +184,7 @@ class NetworkEditionDetailsComponent extends Component {
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
-              <Grid container spacing={1}>
+              <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
@@ -232,7 +233,7 @@ class NetworkEditionDetailsComponent extends Component {
                   />
                 </Grid>
               </Grid>
-              <Grid container spacing={1}>
+              <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
@@ -278,34 +279,9 @@ class NetworkEditionDetailsComponent extends Component {
                     size='small'
                     fullWidth={true}
                   />
-                </Grid>                               
-              </Grid>
-              <Grid container spacing={1}>                
-                <Grid item={true} xs={6}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Implementation Point')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Implementation Point')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <TaskType
-                    name='implementation_point'
-                    taskType='ImplementationPoint'
-                    fullWidth={true}
-                    variant='outlined'
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />                  
                 </Grid>
               </Grid>
-              <Grid container spacing={1}>                
+              <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
@@ -348,11 +324,41 @@ class NetworkEditionDetailsComponent extends Component {
                     </Tooltip>
                   </div>
                   <Field
-                    component={TextField}
-                    variant='outlined'
+                    component={DateTimePickerField}
+                    variant="outlined"
                     name="last_scanned"
-                    size='small'
+                    size="small"
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD HH:MM)',
+                    )}
                     fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Implementation Point')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Implementation Point')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <TaskType
+                    name='implementation_point'
+                    taskType='ImplementationPoint'
+                    fullWidth={true}
+                    variant='outlined'
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
                   />
                 </Grid>
               </Grid>

@@ -79,6 +79,7 @@ class DeviceDetailsComponent extends Component {
   render() {
     const {
       t,
+      fldt,
       classes,
       device,
       history,
@@ -261,17 +262,17 @@ class DeviceDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Publicly Accessible')}
+                  {t('Scanned')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Publicly Accessible')} >
+                  <Tooltip title={t('Scanned')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <Switch
                   disabled
-                  defaultChecked={device?.is_publicly_accessible}
+                  defaultChecked={device?.is_scanned}
                   classes={{
                     thumb: classes.thumb,
                     track: classes.switch_track,
@@ -279,6 +280,24 @@ class DeviceDetailsComponent extends Component {
                     colorPrimary: classes.switch_primary,
                   }}
                 />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Host Name')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Host Name')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {device?.hostname
+                  && t(device.hostname)}
               </div>
               <div>
                 <Typography
@@ -459,17 +478,17 @@ class DeviceDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Scanned')}
+                  {t('Publicly Accessible')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Scanned')} >
+                  <Tooltip title={t('Publicly Accessible')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <Switch
                   disabled
-                  defaultChecked={device?.is_scanned}
+                  defaultChecked={device?.is_publicly_accessible}
                   classes={{
                     thumb: classes.thumb,
                     track: classes.switch_track,
@@ -485,16 +504,15 @@ class DeviceDetailsComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
-                  {t('Host Name')}
+                  {t('Last Scanned')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Host Name')} >
+                  <Tooltip title={t('Last Scanned')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device?.hostname
-                  && t(device.hostname)}
+                {device?.last_scanned && fldt(device.last_scanned)}
               </div>
               <div>
                 <Typography
@@ -531,7 +549,7 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device.cpe_identifier
                   && t(device.cpe_identifier)}
-              </div>              
+              </div>
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -663,6 +681,7 @@ DeviceDetailsComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const DeviceDetails = createFragmentContainer(
@@ -709,6 +728,7 @@ const DeviceDetails = createFragmentContainer(
         model
         mac_address
         fqdn
+        last_scanned
         cpe_identifier
         baseline_configuration_name
         bios_id

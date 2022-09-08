@@ -20,6 +20,7 @@ import { parse } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import TaskType from '../../common/form/TaskType';
 import SwitchField from '../../../../components/SwitchField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = () => ({
   paper: {
@@ -169,7 +170,7 @@ class SoftwareEditionDetailsComponent extends Component {
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
-              <Grid container spacing={1}>
+              <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
@@ -216,9 +217,9 @@ class SoftwareEditionDetailsComponent extends Component {
                     fullWidth={true}
                     containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                   />
-                </Grid>                
+                </Grid>
               </Grid>
-              <Grid container spacing={1}>
+              <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
@@ -239,7 +240,7 @@ class SoftwareEditionDetailsComponent extends Component {
                     variant='outlined'
                     name="cpe_identifier"
                     size='small'
-                    fullWidth={true}                  
+                    fullWidth={true}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -263,10 +264,10 @@ class SoftwareEditionDetailsComponent extends Component {
                     variant='outlined'
                     style={{ height: '38.09px' }}
                     containerstyle={{ width: '100%' }}
-                  />                     
+                  />
                 </Grid>
-              </Grid>              
-              <Grid container spacing={1}>
+              </Grid>
+              <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
@@ -314,7 +315,7 @@ class SoftwareEditionDetailsComponent extends Component {
                   />
                 </Grid>
               </Grid>
-              <Grid container spacing={1}>                
+              <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
@@ -349,19 +350,24 @@ class SoftwareEditionDetailsComponent extends Component {
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('Last Scan')}
+                    {t('Last Scaned')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Last Scan')}>
+                    <Tooltip title={t('Last Scaned')}>
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
                   <Field
-                    component={TextField}
-                    variant='outlined'
+                    component={DateTimePickerField}
+                    variant="outlined"
                     name="last_scanned"
-                    size='small'
+                    size="small"
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD HH:MM)',
+                    )}
                     fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%' }}
                   />
                 </Grid>
               </Grid>
