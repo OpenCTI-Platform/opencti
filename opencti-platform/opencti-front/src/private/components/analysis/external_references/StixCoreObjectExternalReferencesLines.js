@@ -217,28 +217,21 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
   render() {
     const { t, classes, stixCoreObjectId, data } = this.props;
     const { expanded, fileToImport } = this.state;
-    const externalReferencesEdges = data && data.stixCoreObject
-      ? data.stixCoreObject.externalReferences.edges
-      : [];
+    const externalReferencesEdges = data.stixCoreObject
+      ? data.stixCoreObject.externalReferences.edges : [];
     const expandable = externalReferencesEdges.length > 7;
     const importConnsPerFormat = data.connectorsForImport
-      ? scopesConn(data.connectorsForImport || [])
-      : {};
+      ? scopesConn(data.connectorsForImport) : {};
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
-        >
+        <Security needs={[KNOWLEDGE_KNUPDATE]} placeholder={<div style={{ height: 29 }} />}>
           <AddExternalReferences
             stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
             stixCoreObjectOrStixCoreRelationshipReferences={
-              data && data.stixCoreObject
-                ? data.stixCoreObject.externalReferences.edges
-                : []
+              data.stixCoreObject ? data.stixCoreObject.externalReferences.edges : []
             }
           />
         </Security>
