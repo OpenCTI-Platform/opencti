@@ -153,7 +153,7 @@ const initHistoryManager = () => {
       // Lock the manager
       lock = await lockResource([HISTORY_ENGINE_KEY]);
       logApp.info('[OPENCTI-MODULE] Running history manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler);
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', false, historyStreamHandler);
       await streamProcessor.start(lastEventId);
       while (syncListening) {
         await wait(WAIT_TIME_ACTION);

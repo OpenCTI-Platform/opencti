@@ -5,6 +5,7 @@ import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -66,7 +67,7 @@ import {
   RELATION_DOWNLOADS,
   RELATION_DROPS,
   RELATION_EXFILTRATES_TO,
-  RELATION_EXPLOITS,
+  RELATION_EXPLOITS, RELATION_GRANTED_TO,
   RELATION_HAS,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
@@ -139,6 +140,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION
 } from '../schema/stixMetaObject';
+import { isInternalRelationship } from '../schema/internalRelationship';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -176,6 +178,11 @@ type RelationshipMappings = { [k: `${string}_${string}`]: Array<RelationDefiniti
 
 export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // Core
+  // region REPORT
+  [`${ENTITY_TYPE_CONTAINER_REPORT}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_GRANTED_TO, type: REL_NEW }
+  ],
+  // endregion
   // region ATTACK_PATTERN
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_SUBTECHNIQUE_OF, type: REL_NEW }
@@ -935,6 +942,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_PUBLISHES, type: REL_NEW }
   ],
   // endregion
+  // Extended
   // region RELATIONS TO RELATIONS: DISCUSS IMPLEMENTATION!!
   [`${ENTITY_TYPE_INDICATOR}_${RELATION_USES}`]: [
     { name: RELATION_INDICATES, type: REL_EXTENDED }
@@ -1133,6 +1141,9 @@ export const checkStixCoreRelationshipMapping = (fromType: string, toType: strin
 };
 
 export const isRelationBuiltin = (instance: StoreRelation): boolean => {
+  if (isInternalRelationship(instance.entity_type)) {
+    return false;
+  }
   // Any <-> Any relationship type check
   if (instance.entity_type === RELATION_RELATED_TO) {
     return true;
@@ -1140,7 +1151,7 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
   if (instance.entity_type === RELATION_REVOKED_BY) {
     return false;
   }
-  // Well define relationship type check
+  // Well-define relationship type check
   let definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`];
   // if definition not found, check from toType parent observables
   if (!definitions && isStixCyberObservable(instance.toType)) {

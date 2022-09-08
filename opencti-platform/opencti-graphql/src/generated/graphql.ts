@@ -5422,6 +5422,7 @@ export type IndicatorAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   pattern: Scalars['String'];
   pattern_type: Scalars['String'];
   pattern_version?: InputMaybe<Scalars['String']>;

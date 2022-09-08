@@ -229,13 +229,14 @@ const createSeeMiddleware = () => {
   };
   const genericStreamHandler = async (req, res) => {
     try {
-      if (!isUserGlobalCapabilityGranted(req.session.user)) {
+      const sessionUser = req.session.user;
+      if (!isUserGlobalCapabilityGranted(sessionUser)) {
         res.statusMessage = 'You are not authorized, please check your credentials';
         res.status(401).end();
         return;
       }
       const { client } = createSseChannel(req, res);
-      const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(sessionUser, sessionUser.user_email, false, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
@@ -584,7 +585,7 @@ const createSeeMiddleware = () => {
       // Init stream and broadcasting
       const userEmail = user.user_email;
       const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
-      const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(user, userEmail, false, async (elements, lastEventId) => {
         // Process the stream elements
         for (let index = 0; index < elements.length; index += 1) {
           const element = elements[index];

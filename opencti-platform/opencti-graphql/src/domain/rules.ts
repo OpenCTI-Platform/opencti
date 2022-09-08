@@ -7,6 +7,7 @@ import AttributionUseRule from '../rules/attribution-use/AttributionUseRule';
 import RuleLocalizationOfTargets from '../rules/localization-of-targets/LocalizationOfTargetsRule';
 import LocatedAtLocatedRule from '../rules/located-at-located/LocatedAtLocatedRule';
 import LocationTargetsRule from '../rules/location-targets/LocationTargetsRule';
+import ParticipateToParts from '../rules/participate-to-parts/ParticipateToPartsRule';
 import RuleObservableRelatedObservable from '../rules/observable-related/ObservableRelatedRule';
 import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule';
 import PartOfPartRule from '../rules/part-of-part/PartOfPartRule';
@@ -38,6 +39,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   RuleLocalizationOfTargets,
   LocatedAtLocatedRule,
   LocationTargetsRule,
+  ParticipateToParts,
   RuleObservableRelatedObservable,
   RuleObserveSighting,
   PartOfPartRule,

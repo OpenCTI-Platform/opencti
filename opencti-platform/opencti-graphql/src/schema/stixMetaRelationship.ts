@@ -3,14 +3,12 @@ import {
   ABSTRACT_STIX_META_RELATIONSHIP,
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
-  INPUT_ORGANIZATIONS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
   schemaTypes,
 } from './general';
-import { RELATION_ORGANIZATIONS } from './internalRelationship';
 
 export const RELATION_CREATED_BY = 'created-by';
 export const RELATION_OBJECT_MARKING = 'object-marking';
@@ -30,12 +28,6 @@ export const FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string 
   [RELATION_OBJECT_LABEL]: 'labels',
 };
 
-export const STIX_ATTRIBUTE_TO_META_RELATIONS = R.mergeAll(
-  Object.keys(FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE).map((k) => ({
-    [FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE[k]]: k,
-  }))
-);
-
 export const STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD: { [k: string]: string } = {
   created_by_ref: INPUT_CREATED_BY,
   object_marking_refs: INPUT_MARKINGS,
@@ -52,7 +44,6 @@ export const META_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
 );
 
 export const STIX_META_RELATION_TO_FIELD: { [k: string]: string } = {
-  [RELATION_ORGANIZATIONS]: INPUT_ORGANIZATIONS,
   [RELATION_EXTERNAL_REFERENCE]: INPUT_EXTERNAL_REFS,
   [RELATION_KILL_CHAIN_PHASE]: INPUT_KILLCHAIN,
   [RELATION_CREATED_BY]: INPUT_CREATED_BY,
@@ -79,7 +70,6 @@ export const isSingleStixMetaRelationship = (type: string): boolean => R.include
 export const isSingleStixMetaRelationshipInput = (input: string): boolean => R.includes(input, [INPUT_CREATED_BY]);
 
 export const isStixMetaRelationship = (type: string) => R.includes(type, STIX_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
-export const isStixInternalMetaRelationship = (type: string) => R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 
 export const stixMetaRelationshipsAttributes = [
   'internal_id',

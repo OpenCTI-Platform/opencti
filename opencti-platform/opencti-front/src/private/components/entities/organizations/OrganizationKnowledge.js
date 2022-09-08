@@ -116,7 +116,7 @@ class OrganizationKnowledgeComponent extends Component {
                 role="part-of_to"
                 targetStixDomainObjectTypes={['Organization']}
                 entityLink={link}
-                isRelationReversed={true}
+                isRelationReversed={false}
                 {...routeProps}
               />
             )}

@@ -75,14 +75,13 @@ import {
 } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
-import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { RELATION_GRANTED_TO, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { RELATION_ORGANIZATIONS } from '../schema/internalRelationship';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
@@ -108,7 +107,7 @@ export const ROLE_TO = 'to';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
-  `${RELATION_ORGANIZATIONS}_${ROLE_TO}`,
+  `${RELATION_GRANTED_TO}_${ROLE_TO}`,
   `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   // RELATION_OBJECT
@@ -320,7 +319,7 @@ const buildDataRestrictions = async (user) => {
       if (!settings.platform_organization) {
         should.push({
           bool: {
-            must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_ORGANIZATIONS) } }],
+            must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GRANTED_TO) } }],
           },
         });
       } else {
@@ -344,7 +343,7 @@ const buildDataRestrictions = async (user) => {
       }
       // If not, all user can access empty organization data
       if (user.organizations.length > 0) {
-        const shouldOrgs = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_ORGANIZATIONS)]: m } }));
+        const shouldOrgs = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m } }));
         should.push(...shouldOrgs);
       }
       const markingBool = { bool: { should, minimum_should_match: 1 } };
@@ -763,8 +762,10 @@ export const elCount = async (user, indexName, options = {}) => {
     .then((data) => {
       return oebp(data).count;
     })
-    .catch((err) => {
-      throw DatabaseError('Count data fail', { error: err, query });
+    .catch(async () => {
+      // In some case count can fail, so we can search instead
+      const searchFallback = await elRawSearch(query);
+      return searchFallback.hits.total.value;
     });
 };
 export const elAggregationCount = async (context, user, type, aggregationField, start, end, filters = []) => {

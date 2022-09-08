@@ -41,6 +41,7 @@ export const RELATION_RESOLVES_TO = 'resolves-to';
 
 // region Extended relationships
 export const RELATION_PART_OF = 'part-of'; // Extension (OpenCTI)
+export const RELATION_GRANTED_TO = 'granted-to'; // Extension (OpenCTI)
 export const RELATION_COOPERATES_WITH = 'cooperates-with'; // Extension (OpenCTI)
 export const RELATION_PARTICIPATES_IN = 'participates-in'; // Extension (OpenCTI)
 export const RELATION_PUBLISHES = 'publishes'; // Extension (OpenCTI)
@@ -86,6 +87,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_RELATED_TO,
   RELATION_DROPS,
   RELATION_PART_OF,
+  RELATION_GRANTED_TO,
   RELATION_COOPERATES_WITH,
   RELATION_PARTICIPATES_IN,
   RELATION_SUBTECHNIQUE_OF,

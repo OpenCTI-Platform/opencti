@@ -22,15 +22,22 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import {
   convertCreatedBy,
-  convertMarkings,
+  convertMarkings, convertOrganizations,
   convertStatus,
 } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
+  restrictions: {
+    padding: 10,
+    marginBottom: 20,
+    backgroundColor: theme.palette.background.nav,
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -110,6 +117,26 @@ const indicatorMutationRelationDelete = graphql`
   ) {
     indicatorEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
+        ...IndicatorEditionOverview_indicator
+      }
+    }
+  }
+`;
+
+const indicatorMutationOrganizationAdd = graphql`
+  mutation IndicatorEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationAdd(organizationId: $organizationId) {
+        ...IndicatorEditionOverview_indicator
+      }
+    }
+  }
+`;
+
+const indicatorMutationOrganizationDelete = graphql`
+  mutation IndicatorEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationDelete(organizationId: $organizationId) {
         ...IndicatorEditionOverview_indicator
       }
     }
@@ -298,8 +325,39 @@ class IndicatorEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeObjectOrganization(name, values) {
+    const { indicator } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(indicator);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: indicatorMutationOrganizationAdd,
+        variables: {
+          id: this.props.indicator.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: indicatorMutationOrganizationDelete,
+        variables: {
+          id: this.props.indicator.id,
+          organizationId: R.head(removed).value,
+        },
+      });
+    }
+  }
+
   render() {
-    const { t, indicator, context, enableReferences } = this.props;
+    const { t, indicator, classes, context, enableReferences } = this.props;
     const killChainPhases = R.pipe(
       R.pathOr([], ['killChainPhases', 'edges']),
       R.map((n) => ({
@@ -309,16 +367,15 @@ class IndicatorEditionOverviewComponent extends Component {
     )(indicator);
     const createdBy = convertCreatedBy(indicator);
     const objectMarking = convertMarkings(indicator);
+    const objectOrganization = convertOrganizations(indicator);
     const status = convertStatus(t, indicator);
     const initialValues = R.pipe(
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('objectOrganization', objectOrganization),
       R.assoc('x_opencti_workflow_id', status),
-      R.assoc(
-        'x_mitre_platforms',
-        R.propOr([], 'x_mitre_platforms', indicator),
-      ),
+      R.assoc('x_mitre_platforms', R.propOr([], 'x_mitre_platforms', indicator)),
       R.assoc('indicator_types', R.propOr([], 'indicator_types', indicator)),
       R.assoc('valid_from', buildDate(indicator.valid_from)),
       R.assoc('valid_until', buildDate(indicator.valid_until)),
@@ -337,6 +394,7 @@ class IndicatorEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'objectOrganization',
         'x_opencti_workflow_id',
       ]),
     )(indicator);
@@ -354,7 +412,15 @@ class IndicatorEditionOverviewComponent extends Component {
           setFieldValue,
           values,
         }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form style={{ margin: '0px 0 20px 0' }}>
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+              <div className={classes.restrictions}>
+                <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}
+                                         helpertext={<SubscriptionFocus context={context} fieldname="objectOrganization"/>}
+                                         onChange={this.handleChangeObjectOrganization.bind(this)}
+                />
+              </div>
+            </Security>
             <Field
               component={TextField}
               variant="standard"
@@ -616,6 +682,14 @@ const IndicatorEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
+            }
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
             }
           }
         }

@@ -3547,6 +3547,7 @@ input IndicatorAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  objectOrganization: [String]
   externalReferences: [String]
   created: DateTime
   modified: DateTime
