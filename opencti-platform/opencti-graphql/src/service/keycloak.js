@@ -81,16 +81,12 @@ const realm = conf.get('keycloak:realm');
 const keycloakServer = conf.get('keycloak:server');
 const clientId = conf.get('keycloak:client_id');
 const secret = conf.get('keycloak:client_secret');
-const environment = process.env.NODE_ENV;
-const disabled = process.env.KEYCLOAK_DISABLE ? process.env.KEYCLOAK_DISABLE === '1' : true;
+const enabled = process.env.POLICY_ENFORCEMENT ? process.env.POLICY_ENFORCEMENT === '1' : false;
 
 let keycloakInstance
 
 export const keycloakEnabled = () => {
-  if(environment === 'production' || environment === 'prod') {
-    return true;
-  }
-  return !disabled;
+  return enabled;
 }
 
 export const keycloakAlive = async () => {
