@@ -72,7 +72,7 @@ import ExportPoam from '../../../components/ExportPoam';
 const styles = (theme) => ({
   appBar: {
     width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
+    zIndex: theme.zIndex.drawer - 1,
     backgroundColor: theme.palette.header.background,
     color: theme.palette.header.text,
   },
@@ -164,11 +164,11 @@ const TopBar = ({
       style={{ backgroundColor: theme.palette.header.background }}
     >
       <Toolbar>
-        <div className={classes.logoContainer}>
+        {/* <div className={classes.logoContainer}>
           <Link to="/dashboard">
             <img src={theme.logo} alt="logo" className={classes.logo} />
           </Link>
-        </div>
+        </div> */}
         <div className={classes.menuContainer}>
           {(location.pathname === '/dashboard'
             || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
