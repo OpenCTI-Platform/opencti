@@ -36,7 +36,7 @@ class SoftwareDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid container spacing={1} style={{marginBottom: "20px"}}>
+            <Grid container spacing={3} style={{marginBottom: "20px"}}>
               <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
@@ -72,7 +72,7 @@ class SoftwareDetailsComponent extends Component {
                 {software.patch_level && t(software.patch_level)}
               </Grid>              
             </Grid>
-            <Grid container spacing={1} style={{marginBottom: "20px"}}>
+            <Grid container spacing={3} style={{marginBottom: "20px"}}>
               <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
@@ -109,7 +109,7 @@ class SoftwareDetailsComponent extends Component {
                 {software.implementation_point && t(software.implementation_point)}
               </Grid>                        
             </Grid>
-            <Grid container spacing={1} style={{marginBottom: "20px"}}>
+            <Grid container spacing={3} style={{marginBottom: "20px"}}>
               <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
@@ -145,7 +145,7 @@ class SoftwareDetailsComponent extends Component {
                 {software.installation_id && t(software.installation_id)}
               </Grid>
             </Grid>
-            <Grid container spacing={1} style={{marginBottom: "20px"}}>
+            <Grid container spacing={3} style={{marginBottom: "20px"}}>
               <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"

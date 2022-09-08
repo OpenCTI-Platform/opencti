@@ -47,7 +47,7 @@ class NetworkDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid container spacing={1}>
+            <Grid container spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
@@ -83,7 +83,7 @@ class NetworkDetailsComponent extends Component {
                 {network.network_id && t(network.network_id)}
               </Grid>
             </Grid>
-            <Grid container spacing={1}>
+            <Grid container spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
@@ -119,7 +119,7 @@ class NetworkDetailsComponent extends Component {
                 { endingAddress }
               </Grid>       
             </Grid>
-            <Grid container spacing={1}>              
+            <Grid container spacing={3}>              
               <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
@@ -138,7 +138,7 @@ class NetworkDetailsComponent extends Component {
                 {network.implementation_point && t(network.implementation_point)}
               </Grid>
             </Grid>
-            <Grid container spacing={1}>
+            <Grid container spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"

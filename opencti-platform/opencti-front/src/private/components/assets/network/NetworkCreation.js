@@ -18,6 +18,7 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
+import { parse } from '../../../../utils/Time';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
@@ -141,8 +142,8 @@ class NetworkCreation extends Component {
     }
     const adaptedValues = R.evolve(
       {
-        release_date: () => values.release_date === null ? null : values.release_date.toISOString(),
-        last_scanned: () => values.last_scanned === null ? null : values.last_scanned.toISOString(),
+        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        last_scanned: () => values.last_scanned === null ? null : parse(values.last_scanned).format(),
       },
       values,
     );

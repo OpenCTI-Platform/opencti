@@ -141,8 +141,8 @@ class NetworkEditionContainer extends Component {
     };
     const adaptedValues = R.evolve(
       {
-        release_date: () => values.release_date === null ? null : values.release_date.toISOString(),
-        last_scanned: () => values.last_scanned === null ? null : values.last_scanned.toISOString(),
+        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+        last_scanned: () => values.last_scanned === null ? null : parse(values.last_scanned).format(),
       },
       values,
     );
