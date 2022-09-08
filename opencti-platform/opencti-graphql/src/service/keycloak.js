@@ -1,11 +1,10 @@
 // Keycloak Admin Client
-import jwtDecode from 'jwt-decode';
-import conf, {basePath} from '../config/conf';
+import conf from '../config/conf';
 import Keycloak from 'keycloak-connect'
 
-import { defaultFieldResolver, GraphQLSchema } from 'graphql';
+import { defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-import { auth, hasPermission, hasRole } from 'keycloak-connect-graphql';
+import {auth, hasPermission, hasRole, KeycloakContext} from 'keycloak-connect-graphql';
 
 export const authDirectiveTransformer = (schema, directiveName = 'auth') => {
   return mapSchema(schema, {
@@ -83,7 +82,7 @@ const keycloakServer = conf.get('keycloak:server');
 const clientId = conf.get('keycloak:client_id');
 const secret = conf.get('keycloak:client_secret');
 const environment = process.env.NODE_ENV;
-const disabled = process.env.KEYCLOAK_DISABLE ? process.env.KEYCLOAK_DISABLE === '1' : false;
+const disabled = process.env.KEYCLOAK_DISABLE ? process.env.KEYCLOAK_DISABLE === '1' : true;
 
 let keycloakInstance
 
@@ -113,13 +112,13 @@ export const keycloakAlive = async () => {
 
 export const configureKeycloakMiddleware = (route, expressApp) => {
   if(keycloakEnabled()){
-    expressApp.use(route, getKeycloak().middleware({}));
+    expressApp.use(route, getKeycloak().middleware());
   }
 }
 
-export const applyKeycloakContext = (context) => {
+export const applyKeycloakContext = (context, req) => {
   if(keycloakEnabled()){
-    context.kauth = getKeycloak()
+    context.kauth = new KeycloakContext({req}, getKeycloak());
   }
 }
 

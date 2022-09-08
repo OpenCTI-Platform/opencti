@@ -17,11 +17,10 @@ import Artemis from '../datasources/artemis.js';
 import mockList from './mocks.js' ;
 import nconf from "nconf";
 import querySelectMap from "../cyio/schema/querySelectMap";
-import {KeycloakContext} from "keycloak-connect-graphql";
 import {
   applyKeycloakContext,
   authDirectiveTransformer,
-  getKeycloak, keycloakEnabled,
+  getKeycloak,
   permissionDirectiveTransformer,
   roleDirectiveTransformer
 } from "../service/keycloak";
@@ -39,7 +38,7 @@ const buildContext = (user, req, res) => {
     context.dbName = `db${clientId}`;
   }
   //Keycloak configuration
-  applyKeycloakContext(context)
+  applyKeycloakContext(context, req);
   //OpenCTI user info
   if (user) {
     context.user = userWithOrigin(req, user);
@@ -85,8 +84,8 @@ const createApolloServer = (app) => {
 
   let schema = createSchema()
   schema = authDirectiveTransformer(schema, "kcAuth")
-  schema = permissionDirectiveTransformer(schema, "kcHasPermission")
-  schema = roleDirectiveTransformer(schema, "kcHasRole")
+  schema = permissionDirectiveTransformer(schema)
+  schema = roleDirectiveTransformer(schema)
 
   const server = new ApolloServer({
     schema,
