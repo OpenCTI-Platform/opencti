@@ -564,7 +564,7 @@ class Report:
                 + "}",
             )
             query = """
-               mutation ReportEditRelationDelete($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation ReportEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    reportEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id

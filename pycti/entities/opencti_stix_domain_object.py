@@ -803,7 +803,7 @@ class StixDomainObject:
             stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
             if stix_domain_object["createdBy"] is not None:
                 query = """
-                    mutation StixDomainObjectEdit($id: ID!, $toId: String! $relationship_type: String!) {
+                    mutation StixDomainObjectEdit($id: ID!, $toId: StixRef! $relationship_type: String!) {
                         stixDomainObjectEdit(id: $id) {
                             relationDelete(toId: $toId, relationship_type: $relationship_type) {
                                 id
@@ -936,7 +936,7 @@ class StixDomainObject:
                 + "}",
             )
             query = """
-               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixDomainObjectEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -1031,7 +1031,7 @@ class StixDomainObject:
                 "Removing label {" + label_id + "} to Stix-Domain-Object {" + id + "}",
             )
             query = """
-               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixDomainObjectEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -1119,7 +1119,7 @@ class StixDomainObject:
                 + "}",
             )
             query = """
-               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixDomainObjectEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -1205,7 +1205,7 @@ class StixDomainObject:
                 + "}",
             )
             query = """
-               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixDomainObjectEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id

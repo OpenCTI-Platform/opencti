@@ -520,7 +520,7 @@ class Opinion:
                 + "}",
             )
             query = """
-               mutation OpinionEditRelationDelete($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation OpinionEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    opinionEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
