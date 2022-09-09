@@ -1889,6 +1889,7 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const ruleInstance = R.mergeRight(instance, rulePatch);
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
+  logApp.debug('Upsert inferred relation', { relation: patch });
   return patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 // endregion
@@ -2313,6 +2314,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
     // Simply add the rule
     // start/stop confidence was computed by the rule directly
     data[fromRule] = input[fromRule];
+    data.i_inference_weight = input.i_inference_weight;
   }
   data.internal_id = internalId;
   data.standard_id = standardId;
@@ -2606,16 +2608,16 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
   const args = { ...opts, fromRule: ruleContent.field };
   // eslint-disable-next-line camelcase
   const { fromId, toId, relationship_type } = input;
-  logApp.info('Create inferred relation', { fromId, toId, relationshipType: relationship_type });
   // In some cases, we can try to create with the same from and to, ignore
   if (fromId === toId) {
     return undefined;
   }
   // Build the instance
-  const instance = { fromId, toId, relationship_type, [ruleContent.field]: [ruleContent.content] };
+  const instance = { fromId, toId, entity_type: relationship_type, relationship_type, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
   const inputRelation = { ...instance, ...patch };
-  return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
+  logApp.debug('Create inferred relation', { relation: inputRelation });
+  return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, opts);
 };
 /* istanbul ignore next */
 export const createRelations = async (context, user, inputs) => {
@@ -2725,10 +2727,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       const inputField = inputFields[fieldIndex];
       if (input[inputField]) {
         const relType = FIELD_TO_META_RELATION[inputField];
-        // Only add group relation for allowed users
-        if (relType !== RELATION_GRANTED_TO || userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-          relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
-        }
+        relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
       }
     }
   }
@@ -2930,12 +2929,12 @@ export const createEntity = async (context, user, input, type) => {
 };
 export const createInferredEntity = async (context, input, ruleContent, type) => {
   const opts = { fromRule: ruleContent.field, impactStandardId: false };
-  logApp.info('Create inferred entity', { type });
   // Inferred entity have a specific standardId generated from dependencies data.
   const standardId = idGenFromData(type, ruleContent.content.dependencies.sort());
   const instance = { standard_id: standardId, ...input, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
   const inputEntity = { ...instance, ...patch };
+  logApp.debug('Create inferred entity', { entity: inputEntity });
   return createEntityRaw(context, RULE_MANAGER_USER, inputEntity, type, opts);
 };
 // endregion

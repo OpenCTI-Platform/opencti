@@ -433,6 +433,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   // endregion
   // region INDICATOR
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_GRANTED_TO, type: REL_NEW }
+  ],
   [`${ENTITY_TYPE_INDICATOR}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [
     { name: RELATION_BASED_ON, type: REL_EXTENDED }
   ],
