@@ -147,7 +147,7 @@ import {
   numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship, RELATION_GRANTED_TO, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
@@ -191,7 +191,6 @@ import {
   filterElementsAccordingToUser,
   isBypassUser,
   isUserCanAccessElement,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
   SYSTEM_USER
 } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
