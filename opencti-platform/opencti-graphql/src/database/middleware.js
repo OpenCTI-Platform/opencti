@@ -1867,6 +1867,7 @@ const createRuleDataPatch = (instance) => {
   return patch;
 };
 const upsertEntityRule = async (context, instance, input, opts = {}) => {
+  logApp.info('Upsert inferred entity', { input });
   const { fromRule } = opts;
   const updatedRule = input[fromRule];
   const rulePatch = { [fromRule]: updatedRule };
