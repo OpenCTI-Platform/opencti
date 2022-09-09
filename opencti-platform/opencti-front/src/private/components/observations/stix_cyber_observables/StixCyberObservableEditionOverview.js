@@ -107,7 +107,7 @@ const stixCyberObservableMutationRelationAdd = graphql`
 const stixCyberObservableMutationRelationDelete = graphql`
   mutation StixCyberObservableEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixCyberObservableEdit(id: $id) {

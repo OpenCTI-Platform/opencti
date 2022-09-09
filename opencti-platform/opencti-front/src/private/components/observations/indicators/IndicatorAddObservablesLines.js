@@ -59,8 +59,8 @@ export const indicatorMutationRelationAdd = graphql`
 
 export const indicatorMutationRelationDelete = graphql`
   mutation IndicatorAddObservablesLinesRelationDeleteMutation(
-    $fromId: String!
-    $toId: String!
+    $fromId: StixRef!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixCoreRelationshipDelete(

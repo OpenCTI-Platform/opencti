@@ -43,7 +43,7 @@ const userMutationRelationAdd = graphql`
 const userMutationRelationDelete = graphql`
   mutation GroupEditionUsersRelationDeleteMutation(
     $id: ID!
-    $fromId: String!
+    $fromId: StixRef!
     $relationship_type: String!
   ) {
     groupEdit(id: $id) {

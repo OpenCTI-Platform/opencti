@@ -95,7 +95,7 @@ const systemMutationRelationAdd = graphql`
 const systemMutationRelationDelete = graphql`
   mutation SystemEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     systemEdit(id: $id) {

@@ -94,7 +94,7 @@ const cityMutationRelationAdd = graphql`
 const cityMutationRelationDelete = graphql`
   mutation CityEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     cityEdit(id: $id) {

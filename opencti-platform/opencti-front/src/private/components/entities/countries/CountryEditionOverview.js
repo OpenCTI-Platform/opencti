@@ -94,7 +94,7 @@ const countryMutationRelationAdd = graphql`
 const countryMutationRelationDelete = graphql`
   mutation CountryEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     countryEdit(id: $id) {

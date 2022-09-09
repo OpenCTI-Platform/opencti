@@ -229,7 +229,10 @@ const stixBaseEntityContribution = {
     },
   },
 };
+
 const identifierContributions = [stixBaseCyberObservableContribution, stixBaseEntityContribution];
+export const isSupportedStixType = (stixType) => identifierContributions.map((identifier) => Object.keys(identifier.definition)).flat()
+  .map((type) => type.toLowerCase()).includes(stixType);
 export const registerModelIdentifier = (identifier) => {
   identifierContributions.push(identifier);
 };

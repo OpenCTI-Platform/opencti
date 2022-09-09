@@ -41,8 +41,8 @@ Transition.displayName = 'TransitionSlide';
 
 const stixCoreRelationshipFromAndToPopoverDeletionMutation = graphql`
   mutation StixCoreRelationshipFromAndToPopoverDeletionMutation(
-    $fromId: String!
-    $toId: String!
+    $fromId: StixRef!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixCoreRelationshipDelete(

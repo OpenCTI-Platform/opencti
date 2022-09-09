@@ -43,7 +43,7 @@ const observedDataLinesMutationRelationAdd = graphql`
 export const observedDataMutationRelationDelete = graphql`
   mutation AddObservedDataLinesRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     observedDataEdit(id: $id) {

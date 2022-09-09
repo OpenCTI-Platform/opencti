@@ -96,7 +96,7 @@ const stixCoreObjectMutationRelationsAdd = graphql`
 const stixCoreObjectMutationRelationDelete = graphql`
   mutation StixCoreObjectLabelsViewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixCoreObjectEdit(id: $id) {

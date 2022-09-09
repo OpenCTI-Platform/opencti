@@ -40,8 +40,8 @@ Transition.displayName = 'TransitionSlide';
 
 const stixCyberObservableIndicatorPopoverDeletionMutation = graphql`
   mutation StixCyberObservableIndicatorPopoverDeletionMutation(
-    $fromId: String!
-    $toId: String!
+    $fromId: StixRef!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixCoreRelationshipDelete(

@@ -94,7 +94,7 @@ export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
 export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
   mutation ContainerAddStixCoreObjectsLinesRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     containerEdit(id: $id) {

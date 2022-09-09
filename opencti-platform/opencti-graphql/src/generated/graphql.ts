@@ -20,6 +20,8 @@ export type Scalars = {
   ConstraintNumber: any;
   ConstraintString: any;
   DateTime: any;
+  StixId: any;
+  StixRef: any;
   Upload: any;
 };
 
@@ -116,7 +118,7 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -183,7 +185,7 @@ export type ArtifactStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -195,7 +197,7 @@ export type ArtifactStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -208,7 +210,7 @@ export type ArtifactStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -220,7 +222,7 @@ export type ArtifactStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -282,7 +284,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -344,7 +346,7 @@ export type AttackPatternStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -356,7 +358,7 @@ export type AttackPatternStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -375,13 +377,13 @@ export type AttackPatternAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_mitre_detection?: InputMaybe<Scalars['String']>;
   x_mitre_id?: InputMaybe<Scalars['String']>;
   x_mitre_permissions_required?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_mitre_platforms?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type AttackPatternConnection = {
@@ -426,7 +428,7 @@ export type AttackPatternEditMutationsRelationAddArgs = {
 
 export type AttackPatternEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum AttackPatternsFilter {
@@ -532,7 +534,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -599,7 +601,7 @@ export type AutonomousSystemStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -611,7 +613,7 @@ export type AutonomousSystemStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -624,7 +626,7 @@ export type AutonomousSystemStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -636,7 +638,7 @@ export type AutonomousSystemStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -682,7 +684,7 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -749,7 +751,7 @@ export type BankAccountStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -761,7 +763,7 @@ export type BankAccountStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -774,7 +776,7 @@ export type BankAccountStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -786,7 +788,7 @@ export type BankAccountStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -856,7 +858,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -918,7 +920,7 @@ export type CampaignStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -930,7 +932,7 @@ export type CampaignStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -951,9 +953,9 @@ export type CampaignAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objective?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type CampaignConnection = {
@@ -998,7 +1000,7 @@ export type CampaignEditMutationsRelationAddArgs = {
 
 export type CampaignEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum CampaignsFilter {
@@ -1122,7 +1124,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -1184,7 +1186,7 @@ export type ChannelStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -1196,7 +1198,7 @@ export type ChannelStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -1213,9 +1215,9 @@ export type ChannelAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type ChannelConnection = {
@@ -1339,7 +1341,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -1401,7 +1403,7 @@ export type CityStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -1413,7 +1415,7 @@ export type CityStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -1433,10 +1435,10 @@ export type CityAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   precision?: InputMaybe<Scalars['Float']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type CityConnection = {
@@ -1481,7 +1483,7 @@ export type CityEditMutationsRelationAddArgs = {
 
 export type CityEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export type Connector = BasicObject & InternalObject & {
@@ -1555,7 +1557,7 @@ export type Container = {
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -1618,7 +1620,7 @@ export type ContainerStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -1630,7 +1632,7 @@ export type ContainerStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -1676,7 +1678,7 @@ export type ContainerEditMutationsRelationAddArgs = {
 
 export type ContainerEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum ContainersFilter {
@@ -1797,7 +1799,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -1859,7 +1861,7 @@ export type CountryStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -1871,7 +1873,7 @@ export type CountryStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -1891,10 +1893,10 @@ export type CountryAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   precision?: InputMaybe<Scalars['Float']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type CountryConnection = {
@@ -1939,7 +1941,7 @@ export type CountryEditMutationsRelationAddArgs = {
 
 export type CountryEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -1984,7 +1986,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_log_sources?: Maybe<Array<Maybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
   x_opencti_threat_hunting?: Maybe<Scalars['String']>;
 };
 
@@ -2047,7 +2049,7 @@ export type CourseOfActionStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2059,7 +2061,7 @@ export type CourseOfActionStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2076,11 +2078,11 @@ export type CourseOfActionAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_mitre_id?: InputMaybe<Scalars['String']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type CourseOfActionConnection = {
@@ -2125,7 +2127,7 @@ export type CourseOfActionEditMutationsRelationAddArgs = {
 
 export type CourseOfActionEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum CoursesOfActionFilter {
@@ -2194,7 +2196,7 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -2261,7 +2263,7 @@ export type CryptocurrencyWalletStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2273,7 +2275,7 @@ export type CryptocurrencyWalletStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2286,7 +2288,7 @@ export type CryptocurrencyWalletStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2298,7 +2300,7 @@ export type CryptocurrencyWalletStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2340,7 +2342,7 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -2407,7 +2409,7 @@ export type CryptographicKeyStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2419,7 +2421,7 @@ export type CryptographicKeyStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2432,7 +2434,7 @@ export type CryptographicKeyStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2444,7 +2446,7 @@ export type CryptographicKeyStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2497,7 +2499,7 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -2564,7 +2566,7 @@ export type DirectoryStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2576,7 +2578,7 @@ export type DirectoryStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2589,7 +2591,7 @@ export type DirectoryStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2601,7 +2603,7 @@ export type DirectoryStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2659,7 +2661,7 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -2726,7 +2728,7 @@ export type DomainNameStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2738,7 +2740,7 @@ export type DomainNameStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2751,7 +2753,7 @@ export type DomainNameStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2763,7 +2765,7 @@ export type DomainNameStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2836,7 +2838,7 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -2903,7 +2905,7 @@ export type EmailAddrStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2915,7 +2917,7 @@ export type EmailAddrStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2928,7 +2930,7 @@ export type EmailAddrStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -2940,7 +2942,7 @@ export type EmailAddrStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -2989,7 +2991,7 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -3056,7 +3058,7 @@ export type EmailMessageStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -3068,7 +3070,7 @@ export type EmailMessageStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -3081,7 +3083,7 @@ export type EmailMessageStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -3093,7 +3095,7 @@ export type EmailMessageStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -3143,7 +3145,7 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -3210,7 +3212,7 @@ export type EmailMimePartTypeStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -3222,7 +3224,7 @@ export type EmailMimePartTypeStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -3235,7 +3237,7 @@ export type EmailMimePartTypeStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -3247,7 +3249,7 @@ export type EmailMimePartTypeStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -3299,7 +3301,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -3361,7 +3363,7 @@ export type EventStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -3373,7 +3375,7 @@ export type EventStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -3391,10 +3393,10 @@ export type EventAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   start_time?: InputMaybe<Scalars['DateTime']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   stop_time?: InputMaybe<Scalars['DateTime']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type EventConnection = {
@@ -3467,7 +3469,7 @@ export type ExternalReference = BasicObject & StixMetaObject & StixObject & {
   updated_at: Scalars['DateTime'];
   url?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -3509,10 +3511,10 @@ export type ExternalReferenceAddInput = {
   hash?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   source_name: Scalars['String'];
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   url?: InputMaybe<Scalars['String']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type ExternalReferenceConnection = {
@@ -3566,7 +3568,7 @@ export type ExternalReferenceEditMutationsRelationAddArgs = {
 
 
 export type ExternalReferenceEditMutationsRelationDeleteArgs = {
-  fromId: Scalars['String'];
+  fromId: Scalars['StixRef'];
   relationship_type: Scalars['String'];
 };
 
@@ -3766,9 +3768,9 @@ export type GroupEditMutationsRelationAddArgs = {
 
 
 export type GroupEditMutationsRelationDeleteArgs = {
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   relationship_type: Scalars['String'];
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
 };
 
 export enum GroupsOrdering {
@@ -3822,7 +3824,7 @@ export type HashedObservable = {
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -3889,7 +3891,7 @@ export type HashedObservableStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -3901,7 +3903,7 @@ export type HashedObservableStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -3914,7 +3916,7 @@ export type HashedObservableStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -3926,7 +3928,7 @@ export type HashedObservableStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -3964,7 +3966,7 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -4031,7 +4033,7 @@ export type HostnameStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4043,7 +4045,7 @@ export type HostnameStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4056,7 +4058,7 @@ export type HostnameStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4068,7 +4070,7 @@ export type HostnameStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4110,7 +4112,7 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -4177,7 +4179,7 @@ export type IPv4AddrStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4189,7 +4191,7 @@ export type IPv4AddrStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4202,7 +4204,7 @@ export type IPv4AddrStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4214,7 +4216,7 @@ export type IPv4AddrStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4258,7 +4260,7 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -4325,7 +4327,7 @@ export type IPv6AddrStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4337,7 +4339,7 @@ export type IPv6AddrStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4350,7 +4352,7 @@ export type IPv6AddrStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4362,7 +4364,7 @@ export type IPv6AddrStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4443,7 +4445,7 @@ export type Identity = {
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -4505,7 +4507,7 @@ export type IdentityStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4517,7 +4519,7 @@ export type IdentityStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4536,11 +4538,11 @@ export type IdentityAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   type: IdentityType;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type IdentityConnection = {
@@ -4585,7 +4587,7 @@ export type IdentityEditMutationsRelationAddArgs = {
 
 export type IdentityEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum IdentityType {
@@ -4637,7 +4639,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -4699,7 +4701,7 @@ export type IncidentStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4711,7 +4713,7 @@ export type IncidentStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4732,9 +4734,9 @@ export type IncidentAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objective?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type IncidentConnection = {
@@ -4779,7 +4781,7 @@ export type IncidentEditMutationsRelationAddArgs = {
 
 export type IncidentEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum IncidentsFilter {
@@ -4869,7 +4871,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_main_observable_type?: Maybe<Scalars['String']>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -4936,7 +4938,7 @@ export type IndicatorStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -4948,7 +4950,7 @@ export type IndicatorStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4971,7 +4973,7 @@ export type IndicatorAddInput = {
   pattern_type: Scalars['String'];
   pattern_version?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   valid_from?: InputMaybe<Scalars['DateTime']>;
   valid_until?: InputMaybe<Scalars['DateTime']>;
@@ -4979,7 +4981,7 @@ export type IndicatorAddInput = {
   x_opencti_detection?: InputMaybe<Scalars['Boolean']>;
   x_opencti_main_observable_type?: InputMaybe<Scalars['String']>;
   x_opencti_score?: InputMaybe<Scalars['Int']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type IndicatorConnection = {
@@ -5024,7 +5026,7 @@ export type IndicatorEditMutationsRelationAddArgs = {
 
 export type IndicatorEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum IndicatorsFilter {
@@ -5122,7 +5124,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_lastname?: Maybe<Scalars['String']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -5184,7 +5186,7 @@ export type IndividualStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -5196,7 +5198,7 @@ export type IndividualStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -5215,12 +5217,12 @@ export type IndividualAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_firstname?: InputMaybe<Scalars['String']>;
   x_opencti_lastname?: InputMaybe<Scalars['String']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type IndividualConnection = {
@@ -5265,7 +5267,7 @@ export type IndividualEditMutationsRelationAddArgs = {
 
 export type IndividualEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum IndividualsFilter {
@@ -5359,7 +5361,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -5421,7 +5423,7 @@ export type InfrastructureStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -5433,7 +5435,7 @@ export type InfrastructureStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -5455,9 +5457,9 @@ export type InfrastructureAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type InfrastructureConnection = {
@@ -5502,7 +5504,7 @@ export type InfrastructureEditMutationsRelationAddArgs = {
 
 export type InfrastructureEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum InfrastructuresFilter {
@@ -5612,7 +5614,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -5674,7 +5676,7 @@ export type IntrusionSetStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -5686,7 +5688,7 @@ export type IntrusionSetStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -5710,9 +5712,9 @@ export type IntrusionSetAddInput = {
   resource_level?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   secondary_motivations?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type IntrusionSetConnection = {
@@ -5757,7 +5759,7 @@ export type IntrusionSetEditMutationsRelationAddArgs = {
 
 export type IntrusionSetEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum IntrusionSetsFilter {
@@ -5807,7 +5809,7 @@ export type KillChainPhase = BasicObject & StixMetaObject & StixObject & {
   updated_at: Scalars['DateTime'];
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_order?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 export type KillChainPhaseAddInput = {
@@ -5816,10 +5818,10 @@ export type KillChainPhaseAddInput = {
   kill_chain_name: Scalars['String'];
   modified?: InputMaybe<Scalars['DateTime']>;
   phase_name: Scalars['String'];
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_order: Scalars['Int'];
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type KillChainPhaseConnection = {
@@ -5862,7 +5864,7 @@ export type KillChainPhaseEditMutationsRelationAddArgs = {
 
 export type KillChainPhaseEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum KillChainPhasesFilter {
@@ -5904,7 +5906,7 @@ export type Label = BasicObject & StixMetaObject & StixObject & {
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 export type LabelAddInput = {
@@ -5912,10 +5914,10 @@ export type LabelAddInput = {
   color?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   value: Scalars['String'];
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type LabelConnection = {
@@ -6007,7 +6009,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -6069,7 +6071,7 @@ export type LanguageStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -6081,7 +6083,7 @@ export type LanguageStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -6097,9 +6099,9 @@ export type LanguageAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type LanguageConnection = {
@@ -6205,7 +6207,7 @@ export type Location = {
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -6267,7 +6269,7 @@ export type LocationStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -6279,7 +6281,7 @@ export type LocationStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -6299,11 +6301,11 @@ export type LocationAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   precision?: InputMaybe<Scalars['Float']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   type: LocationType;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type LocationConnection = {
@@ -6348,7 +6350,7 @@ export type LocationEditMutationsRelationAddArgs = {
 
 export type LocationEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum LocationType {
@@ -6479,7 +6481,7 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -6546,7 +6548,7 @@ export type MacAddrStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -6558,7 +6560,7 @@ export type MacAddrStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -6571,7 +6573,7 @@ export type MacAddrStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -6583,7 +6585,7 @@ export type MacAddrStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -6638,7 +6640,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -6700,7 +6702,7 @@ export type MalwareStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -6712,7 +6714,7 @@ export type MalwareStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -6738,9 +6740,9 @@ export type MalwareAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type MalwareConnection = {
@@ -6785,7 +6787,7 @@ export type MalwareEditMutationsRelationAddArgs = {
 
 export type MalwareEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum MalwaresFilter {
@@ -6845,7 +6847,7 @@ export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
   x_opencti_color?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_order: Scalars['Int'];
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 export type MarkingDefinitionAddInput = {
@@ -6854,11 +6856,11 @@ export type MarkingDefinitionAddInput = {
   definition: Scalars['String'];
   definition_type: Scalars['String'];
   modified?: InputMaybe<Scalars['DateTime']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_color?: InputMaybe<Scalars['String']>;
   x_opencti_order: Scalars['Int'];
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type MarkingDefinitionConnection = {
@@ -7183,7 +7185,7 @@ export type MutationChannelRelationAddArgs = {
 export type MutationChannelRelationDeleteArgs = {
   id: Scalars['ID'];
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -7275,7 +7277,7 @@ export type MutationEventRelationAddArgs = {
 export type MutationEventRelationDeleteArgs = {
   id: Scalars['ID'];
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -7433,7 +7435,7 @@ export type MutationLanguageRelationAddArgs = {
 export type MutationLanguageRelationDeleteArgs = {
   id: Scalars['ID'];
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -7516,7 +7518,7 @@ export type MutationNarrativeRelationAddArgs = {
 export type MutationNarrativeRelationDeleteArgs = {
   id: Scalars['ID'];
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -7701,9 +7703,9 @@ export type MutationStixCoreRelationshipAddArgs = {
 
 
 export type MutationStixCoreRelationshipDeleteArgs = {
-  fromId: Scalars['String'];
+  fromId: Scalars['StixRef'];
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -7768,7 +7770,7 @@ export type MutationStixCyberObservableAddArgs = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   type: Scalars['String'];
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_description?: InputMaybe<Scalars['String']>;
@@ -8057,7 +8059,7 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -8124,7 +8126,7 @@ export type MutexStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -8136,7 +8138,7 @@ export type MutexStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -8149,7 +8151,7 @@ export type MutexStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -8161,7 +8163,7 @@ export type MutexStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -8212,7 +8214,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -8274,7 +8276,7 @@ export type NarrativeStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -8286,7 +8288,7 @@ export type NarrativeStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -8303,9 +8305,9 @@ export type NarrativeAddInput = {
   narrative_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type NarrativeConnection = {
@@ -8397,7 +8399,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -8464,7 +8466,7 @@ export type NetworkTrafficStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -8476,7 +8478,7 @@ export type NetworkTrafficStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -8489,7 +8491,7 @@ export type NetworkTrafficStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -8501,7 +8503,7 @@ export type NetworkTrafficStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -8559,7 +8561,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -8647,7 +8649,7 @@ export type NoteStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -8659,7 +8661,7 @@ export type NoteStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -8678,9 +8680,9 @@ export type NoteAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type NoteConnection = {
@@ -8725,7 +8727,7 @@ export type NoteEditMutationsRelationAddArgs = {
 
 export type NoteEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum NotesFilter {
@@ -8817,7 +8819,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -8905,7 +8907,7 @@ export type ObservedDataStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -8917,7 +8919,7 @@ export type ObservedDataStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -8936,9 +8938,9 @@ export type ObservedDataAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects: Array<InputMaybe<Scalars['String']>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type ObservedDataConnection = {
@@ -8983,7 +8985,7 @@ export type ObservedDataEditMutationsRelationAddArgs = {
 
 export type ObservedDataEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum ObservedDatasFilter {
@@ -9063,7 +9065,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -9151,7 +9153,7 @@ export type OpinionStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -9163,7 +9165,7 @@ export type OpinionStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -9182,9 +9184,9 @@ export type OpinionAddInput = {
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   opinion: Scalars['String'];
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type OpinionConnection = {
@@ -9229,7 +9231,7 @@ export type OpinionEditMutationsRelationAddArgs = {
 
 export type OpinionEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum OpinionsFilter {
@@ -9316,7 +9318,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_organization_type?: Maybe<Scalars['String']>;
   x_opencti_reliability?: Maybe<OrganizationReliability>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -9378,7 +9380,7 @@ export type OrganizationStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -9390,7 +9392,7 @@ export type OrganizationStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -9409,12 +9411,12 @@ export type OrganizationAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_organization_type?: InputMaybe<Scalars['String']>;
   x_opencti_reliability?: InputMaybe<OrganizationReliability>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type OrganizationConnection = {
@@ -9459,7 +9461,7 @@ export type OrganizationEditMutationsRelationAddArgs = {
 
 export type OrganizationEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export type OrganizationOrIndividual = Individual | Organization;
@@ -9567,7 +9569,7 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -9634,7 +9636,7 @@ export type PaymentCardStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -9646,7 +9648,7 @@ export type PaymentCardStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -9659,7 +9661,7 @@ export type PaymentCardStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -9671,7 +9673,7 @@ export type PaymentCardStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -9716,7 +9718,7 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -9783,7 +9785,7 @@ export type PhoneNumberStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -9795,7 +9797,7 @@ export type PhoneNumberStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -9808,7 +9810,7 @@ export type PhoneNumberStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -9820,7 +9822,7 @@ export type PhoneNumberStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -9873,7 +9875,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -9935,7 +9937,7 @@ export type PositionStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -9947,7 +9949,7 @@ export type PositionStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -9968,11 +9970,11 @@ export type PositionAddInput = {
   postal_code?: InputMaybe<Scalars['String']>;
   precision?: InputMaybe<Scalars['Float']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   street_address?: InputMaybe<Scalars['String']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type PositionConnection = {
@@ -10017,7 +10019,7 @@ export type PositionEditMutationsRelationAddArgs = {
 
 export type PositionEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum PositionsFilter {
@@ -10090,7 +10092,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -10157,7 +10159,7 @@ export type ProcessStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -10169,7 +10171,7 @@ export type ProcessStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -10182,7 +10184,7 @@ export type ProcessStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -10194,7 +10196,7 @@ export type ProcessStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -11352,7 +11354,7 @@ export type QueryStixCoreRelationshipsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   isTo?: InputMaybe<Scalars['Boolean']>;
   limit?: InputMaybe<Scalars['Int']>;
   noDirection?: InputMaybe<Scalars['Boolean']>;
@@ -11373,7 +11375,7 @@ export type QueryStixCoreRelationshipsExportFilesArgs = {
 export type QueryStixCoreRelationshipsNumberArgs = {
   authorId?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   noDirection?: InputMaybe<Scalars['Boolean']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   type?: InputMaybe<Scalars['String']>;
@@ -11383,7 +11385,7 @@ export type QueryStixCoreRelationshipsNumberArgs = {
 export type QueryStixCoreRelationshipsTimeSeriesArgs = {
   endDate: Scalars['DateTime'];
   field: Scalars['String'];
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   interval: Scalars['String'];
   operation: StatsOperation;
   relationship_type?: InputMaybe<Scalars['String']>;
@@ -11408,7 +11410,7 @@ export type QueryStixCyberObservableRelationshipsArgs = {
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11418,7 +11420,7 @@ export type QueryStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -11428,7 +11430,7 @@ export type QueryStixCyberObservableRelationshipsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
-  fromId: Scalars['String'];
+  fromId: Scalars['StixRef'];
   limit?: InputMaybe<Scalars['Int']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;
@@ -11439,14 +11441,14 @@ export type QueryStixCyberObservableRelationshipsDistributionArgs = {
 
 export type QueryStixCyberObservableRelationshipsNumberArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
 };
 
 
 export type QueryStixCyberObservableRelationshipsTimeSeriesArgs = {
   endDate: Scalars['DateTime'];
   field: Scalars['String'];
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   interval: Scalars['String'];
   operation: StatsOperation;
   startDate: Scalars['DateTime'];
@@ -11560,7 +11562,7 @@ export type QueryStixMetaRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromRole?: InputMaybe<Scalars['String']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
@@ -11575,7 +11577,7 @@ export type QueryStixMetaRelationshipsArgs = {
   stix?: InputMaybe<Scalars['Boolean']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toRole?: InputMaybe<Scalars['String']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -11596,7 +11598,7 @@ export type QueryStixMetaRelationshipsDistributionArgs = {
 
 export type QueryStixMetaRelationshipsNumberArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   type?: InputMaybe<Scalars['String']>;
 };
 
@@ -11622,7 +11624,7 @@ export type QueryStixRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromRole?: InputMaybe<Scalars['String']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
@@ -11637,7 +11639,7 @@ export type QueryStixRelationshipsArgs = {
   stix?: InputMaybe<Scalars['Boolean']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toRole?: InputMaybe<Scalars['String']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -11656,14 +11658,14 @@ export type QueryStixSightingRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
   orderBy?: InputMaybe<StixSightingRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -11673,7 +11675,7 @@ export type QueryStixSightingRelationshipsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
-  fromId: Scalars['String'];
+  fromId: Scalars['StixRef'];
   limit?: InputMaybe<Scalars['Int']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;
@@ -11684,14 +11686,14 @@ export type QueryStixSightingRelationshipsDistributionArgs = {
 
 export type QueryStixSightingRelationshipsNumberArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
 };
 
 
 export type QueryStixSightingRelationshipsTimeSeriesArgs = {
   endDate: Scalars['DateTime'];
   field: Scalars['String'];
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   interval: Scalars['String'];
   operation: StatsOperation;
   startDate: Scalars['DateTime'];
@@ -12013,7 +12015,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -12075,7 +12077,7 @@ export type RegionStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -12087,7 +12089,7 @@ export type RegionStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -12107,10 +12109,10 @@ export type RegionAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   precision?: InputMaybe<Scalars['Float']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type RegionConnection = {
@@ -12155,7 +12157,7 @@ export type RegionEditMutationsRelationAddArgs = {
 
 export type RegionEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum RegionsFilter {
@@ -12236,7 +12238,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -12324,7 +12326,7 @@ export type ReportStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -12336,7 +12338,7 @@ export type ReportStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -12356,9 +12358,9 @@ export type ReportAddInput = {
   published: Scalars['DateTime'];
   report_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type ReportConnection = {
@@ -12403,7 +12405,7 @@ export type ReportEditMutationsRelationAddArgs = {
 
 export type ReportEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum ReportsFilter {
@@ -12544,7 +12546,7 @@ export type RoleEditMutationsRelationAddArgs = {
 
 export type RoleEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum RolesOrdering {
@@ -12645,7 +12647,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -12707,7 +12709,7 @@ export type SectorStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -12719,7 +12721,7 @@ export type SectorStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -12738,10 +12740,10 @@ export type SectorAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type SectorConnection = {
@@ -12786,7 +12788,7 @@ export type SectorEditMutationsRelationAddArgs = {
 
 export type SectorEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum SectorsFilter {
@@ -12929,7 +12931,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -12996,7 +12998,7 @@ export type SoftwareStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -13008,7 +13010,7 @@ export type SoftwareStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -13021,7 +13023,7 @@ export type SoftwareStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -13033,7 +13035,7 @@ export type SoftwareStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -13150,7 +13152,7 @@ export type StixCoreObject = {
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -13212,7 +13214,7 @@ export type StixCoreObjectStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -13224,7 +13226,7 @@ export type StixCoreObjectStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -13288,7 +13290,7 @@ export type StixCoreObjectEditMutationsRelationAddArgs = {
 
 export type StixCoreObjectEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -13373,7 +13375,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -13405,7 +13407,7 @@ export type StixCoreRelationshipStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -13417,7 +13419,7 @@ export type StixCoreRelationshipStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -13428,7 +13430,7 @@ export type StixCoreRelationshipAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  fromId: Scalars['String'];
+  fromId: Scalars['StixRef'];
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -13437,11 +13439,11 @@ export type StixCoreRelationshipAddInput = {
   relationship_type: Scalars['String'];
   revoked?: InputMaybe<Scalars['Boolean']>;
   start_time?: InputMaybe<Scalars['DateTime']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   stop_time?: InputMaybe<Scalars['DateTime']>;
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type StixCoreRelationshipConnection = {
@@ -13486,7 +13488,7 @@ export type StixCoreRelationshipEditMutationsRelationAddArgs = {
 
 export type StixCoreRelationshipEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum StixCoreRelationshipsFilter {
@@ -13570,7 +13572,7 @@ export type StixCyberObservable = {
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -13637,7 +13639,7 @@ export type StixCyberObservableStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -13649,7 +13651,7 @@ export type StixCyberObservableStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -13662,7 +13664,7 @@ export type StixCyberObservableStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -13674,7 +13676,7 @@ export type StixCyberObservableStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -13742,7 +13744,7 @@ export type StixCyberObservableEditMutationsRelationAddArgs = {
 
 export type StixCyberObservableEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -13774,7 +13776,7 @@ export type StixCyberObservableRelationship = BasicRelationship & StixRelationsh
   toRole?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -13797,17 +13799,17 @@ export type StixCyberObservableRelationshipAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  fromId: Scalars['String'];
+  fromId: Scalars['StixRef'];
   modified?: InputMaybe<Scalars['DateTime']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   relationship_type: Scalars['String'];
   start_time?: InputMaybe<Scalars['DateTime']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   stop_time?: InputMaybe<Scalars['DateTime']>;
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type StixCyberObservableRelationshipConnection = {
@@ -13941,7 +13943,7 @@ export type StixDomainObject = {
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -14003,7 +14005,7 @@ export type StixDomainObjectStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -14015,7 +14017,7 @@ export type StixDomainObjectStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -14035,11 +14037,11 @@ export type StixDomainObjectAddInput = {
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   pattern?: InputMaybe<Scalars['String']>;
   pattern_type?: InputMaybe<Scalars['String']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   type: Scalars['String'];
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type StixDomainObjectConnection = {
@@ -14111,7 +14113,7 @@ export type StixDomainObjectEditMutationsRelationAddArgs = {
 
 export type StixDomainObjectEditMutationsRelationDeleteArgs = {
   relationship_type?: InputMaybe<Scalars['String']>;
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -14217,7 +14219,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -14284,7 +14286,7 @@ export type StixFileStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -14296,7 +14298,7 @@ export type StixFileStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -14309,7 +14311,7 @@ export type StixFileStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -14321,7 +14323,7 @@ export type StixFileStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -14349,7 +14351,7 @@ export type StixMetaObject = {
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   updated_at: Scalars['DateTime'];
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 export type StixMetaRelationship = BasicRelationship & StixRelationship & {
@@ -14367,7 +14369,7 @@ export type StixMetaRelationship = BasicRelationship & StixRelationship & {
   toRole?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 export type StixMetaRelationshipAddInput = {
@@ -14420,7 +14422,7 @@ export type StixObject = {
   standard_id: Scalars['String'];
   updated_at: Scalars['DateTime'];
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 export type StixObjectOrStixRelationship = Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | Channel | City | Country | CourseOfAction | CryptocurrencyWallet | CryptographicKey | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Event | ExternalReference | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MarkingDefinition | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | PhoneNumber | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixCyberObservableRelationship | StixFile | StixMetaRelationship | StixSightingRelationship | System | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate;
@@ -14490,7 +14492,7 @@ export type StixRelationship = {
   to?: Maybe<StixObjectOrStixRelationship>;
   toRole?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 export type StixRelationshipConnection = {
@@ -14586,7 +14588,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_negative: Scalars['Boolean'];
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -14618,16 +14620,16 @@ export type StixSightingRelationshipAddInput = {
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
-  fromId: Scalars['String'];
+  fromId: Scalars['StixRef'];
   last_seen?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
-  toId?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
+  toId: Scalars['StixRef'];
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_negative?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type StixSightingRelationshipConnection = {
@@ -14666,7 +14668,7 @@ export type StixSightingRelationshipEditMutationsRelationAddArgs = {
 
 export type StixSightingRelationshipEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export type StixSightingRelationshipsEdge = {
@@ -15015,7 +15017,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_lastname?: Maybe<Scalars['String']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -15077,7 +15079,7 @@ export type SystemStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -15089,7 +15091,7 @@ export type SystemStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -15108,12 +15110,12 @@ export type SystemAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_firstname?: InputMaybe<Scalars['String']>;
   x_opencti_lastname?: InputMaybe<Scalars['String']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type SystemConnection = {
@@ -15158,7 +15160,7 @@ export type SystemEditMutationsRelationAddArgs = {
 
 export type SystemEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum SystemsFilter {
@@ -15368,7 +15370,7 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -15435,7 +15437,7 @@ export type TextStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -15447,7 +15449,7 @@ export type TextStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -15460,7 +15462,7 @@ export type TextStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -15472,7 +15474,7 @@ export type TextStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -15530,7 +15532,7 @@ export type ThreatActor = BasicObject & StixCoreObject & StixDomainObject & Stix
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -15592,7 +15594,7 @@ export type ThreatActorStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -15604,7 +15606,7 @@ export type ThreatActorStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -15631,10 +15633,10 @@ export type ThreatActorAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   secondary_motivations?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   sophistication?: InputMaybe<Scalars['String']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type ThreatActorConnection = {
@@ -15679,7 +15681,7 @@ export type ThreatActorEditMutationsRelationAddArgs = {
 
 export type ThreatActorEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum ThreatActorsFilter {
@@ -15759,7 +15761,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -15821,7 +15823,7 @@ export type ToolStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -15833,7 +15835,7 @@ export type ToolStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -15852,11 +15854,11 @@ export type ToolAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   tool_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   tool_version?: InputMaybe<Scalars['String']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type ToolConnection = {
@@ -15901,7 +15903,7 @@ export type ToolEditMutationsRelationAddArgs = {
 
 export type ToolEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export enum ToolsFilter {
@@ -15966,7 +15968,7 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -16033,7 +16035,7 @@ export type UrlStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16045,7 +16047,7 @@ export type UrlStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16058,7 +16060,7 @@ export type UrlStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16070,7 +16072,7 @@ export type UrlStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16160,7 +16162,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -16227,7 +16229,7 @@ export type UserAccountStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16239,7 +16241,7 @@ export type UserAccountStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16252,7 +16254,7 @@ export type UserAccountStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16264,7 +16266,7 @@ export type UserAccountStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16331,7 +16333,7 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -16398,7 +16400,7 @@ export type UserAgentStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16410,7 +16412,7 @@ export type UserAgentStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16423,7 +16425,7 @@ export type UserAgentStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16435,7 +16437,7 @@ export type UserAgentStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16484,7 +16486,7 @@ export type UserEditMutationsRelationAddArgs = {
 
 export type UserEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export type UserLoginInput = {
@@ -16660,7 +16662,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_integrity_impact?: Maybe<Scalars['String']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -16722,7 +16724,7 @@ export type VulnerabilityStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16734,7 +16736,7 @@ export type VulnerabilityStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16751,7 +16753,7 @@ export type VulnerabilityAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  stix_id?: InputMaybe<Scalars['String']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_attack_vector?: InputMaybe<Scalars['String']>;
@@ -16760,7 +16762,7 @@ export type VulnerabilityAddInput = {
   x_opencti_base_severity?: InputMaybe<Scalars['String']>;
   x_opencti_confidentiality_impact?: InputMaybe<Scalars['String']>;
   x_opencti_integrity_impact?: InputMaybe<Scalars['String']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export type VulnerabilityConnection = {
@@ -16805,7 +16807,7 @@ export type VulnerabilityEditMutationsRelationAddArgs = {
 
 export type VulnerabilityEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -16844,7 +16846,7 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -16911,7 +16913,7 @@ export type WindowsRegistryKeyStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16923,7 +16925,7 @@ export type WindowsRegistryKeyStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16936,7 +16938,7 @@ export type WindowsRegistryKeyStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -16948,7 +16950,7 @@ export type WindowsRegistryKeyStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -16994,7 +16996,7 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -17061,7 +17063,7 @@ export type WindowsRegistryValueTypeStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -17073,7 +17075,7 @@ export type WindowsRegistryValueTypeStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -17086,7 +17088,7 @@ export type WindowsRegistryValueTypeStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -17098,7 +17100,7 @@ export type WindowsRegistryValueTypeStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -17286,7 +17288,7 @@ export type WorkspaceEditMutationsRelationAddArgs = {
 
 export type WorkspaceEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
-  toId: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -17381,7 +17383,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
 
@@ -17448,7 +17450,7 @@ export type X509CertificateStixCoreRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -17460,7 +17462,7 @@ export type X509CertificateStixCoreRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -17473,7 +17475,7 @@ export type X509CertificateStixCyberObservableRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']>;
   lastSeenStop?: InputMaybe<Scalars['DateTime']>;
@@ -17485,7 +17487,7 @@ export type X509CertificateStixCyberObservableRelationshipsArgs = {
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -18036,6 +18038,7 @@ export type ResolversTypes = ResolversObject<{
   StixEditMutations: ResolverTypeWrapper<StixEditMutations>;
   StixFile: ResolverTypeWrapper<StixFile>;
   StixFileAddInput: StixFileAddInput;
+  StixId: ResolverTypeWrapper<Scalars['StixId']>;
   StixMetaObject: ResolversTypes['ExternalReference'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MarkingDefinition'];
   StixMetaRelationship: ResolverTypeWrapper<Omit<StixMetaRelationship, 'from' | 'to'> & { from?: Maybe<ResolversTypes['StixObjectOrStixRelationship']>, to?: Maybe<ResolversTypes['StixObjectOrStixRelationship']> }>;
   StixMetaRelationshipAddInput: StixMetaRelationshipAddInput;
@@ -18052,6 +18055,7 @@ export type ResolversTypes = ResolversObject<{
   StixObjectOrStixRelationshipsFilter: StixObjectOrStixRelationshipsFilter;
   StixObjectOrStixRelationshipsFiltering: StixObjectOrStixRelationshipsFiltering;
   StixObjectOrStixRelationshipsOrdering: StixObjectOrStixRelationshipsOrdering;
+  StixRef: ResolverTypeWrapper<Scalars['StixRef']>;
   StixRelationship: ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'];
   StixRelationshipConnection: ResolverTypeWrapper<StixRelationshipConnection>;
   StixRelationshipEdge: ResolverTypeWrapper<StixRelationshipEdge>;
@@ -18551,6 +18555,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixEditMutations: StixEditMutations;
   StixFile: StixFile;
   StixFileAddInput: StixFileAddInput;
+  StixId: Scalars['StixId'];
   StixMetaObject: ResolversParentTypes['ExternalReference'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MarkingDefinition'];
   StixMetaRelationship: Omit<StixMetaRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']> };
   StixMetaRelationshipAddInput: StixMetaRelationshipAddInput;
@@ -18563,6 +18568,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixObjectOrStixRelationshipConnection: StixObjectOrStixRelationshipConnection;
   StixObjectOrStixRelationshipEdge: Omit<StixObjectOrStixRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixObjectOrStixRelationship'] };
   StixObjectOrStixRelationshipsFiltering: StixObjectOrStixRelationshipsFiltering;
+  StixRef: Scalars['StixRef'];
   StixRelationship: ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'];
   StixRelationshipConnection: StixRelationshipConnection;
   StixRelationshipEdge: StixRelationshipEdge;
@@ -18781,7 +18787,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -18832,7 +18838,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -18918,7 +18924,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -18957,7 +18963,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19022,7 +19028,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19113,7 +19119,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19171,7 +19177,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19264,7 +19270,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type ContainerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContainerConnection'] = ResolversParentTypes['ContainerConnection']> = ResolversObject<{
@@ -19342,7 +19348,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19409,7 +19415,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_log_sources?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   x_opencti_threat_hunting?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -19469,7 +19475,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19506,7 +19512,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19557,7 +19563,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19606,7 +19612,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19658,7 +19664,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19701,7 +19707,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19740,7 +19746,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19785,7 +19791,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -19825,7 +19831,7 @@ export type ExternalReferenceResolvers<ContextType = any, ParentType extends Res
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20009,7 +20015,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type HostnameResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hostname'] = ResolversParentTypes['Hostname']> = ResolversObject<{
@@ -20045,7 +20051,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20082,7 +20088,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20119,7 +20125,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20164,7 +20170,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type IdentityConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdentityConnection'] = ResolversParentTypes['IdentityConnection']> = ResolversObject<{
@@ -20230,7 +20236,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20311,7 +20317,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_main_observable_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20381,7 +20387,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20462,7 +20468,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20553,7 +20559,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20595,7 +20601,7 @@ export type KillChainPhaseResolvers<ContextType = any, ParentType extends Resolv
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20637,7 +20643,7 @@ export type LabelResolvers<ContextType = any, ParentType extends ResolversParent
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20698,7 +20704,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20770,7 +20776,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type LocationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LocationConnection'] = ResolversParentTypes['LocationConnection']> = ResolversObject<{
@@ -20861,7 +20867,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20911,7 +20917,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -20955,7 +20961,7 @@ export type MarkingDefinitionResolvers<ContextType = any, ParentType extends Res
   x_opencti_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21192,7 +21198,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21238,7 +21244,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21297,7 +21303,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21341,7 +21347,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21421,7 +21427,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21487,7 +21493,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21557,7 +21563,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_organization_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['OrganizationReliability']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21646,7 +21652,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21683,7 +21689,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21731,7 +21737,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -21796,7 +21802,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22102,7 +22108,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22169,7 +22175,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22352,7 +22358,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22473,7 +22479,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22545,7 +22551,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixCoreObjectStixCoreRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type StixCoreObjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectConnection'] = ResolversParentTypes['StixCoreObjectConnection']> = ResolversObject<{
@@ -22614,7 +22620,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22672,7 +22678,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type StixCyberObservableConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservableConnection'] = ResolversParentTypes['StixCyberObservableConnection']> = ResolversObject<{
@@ -22725,7 +22731,7 @@ export type StixCyberObservableRelationshipResolvers<ContextType = any, ParentTy
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22784,7 +22790,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type StixDomainObjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixDomainObjectConnection'] = ResolversParentTypes['StixDomainObjectConnection']> = ResolversObject<{
@@ -22862,9 +22868,13 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
+
+export interface StixIdScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['StixId'], any> {
+  name: 'StixId';
+}
 
 export type StixMetaObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaObject'] = ResolversParentTypes['StixMetaObject']> = ResolversObject<{
   __resolveType: TypeResolveFn<'ExternalReference' | 'KillChainPhase' | 'Label' | 'MarkingDefinition', ParentType, ContextType>;
@@ -22878,7 +22888,7 @@ export type StixMetaObjectResolvers<ContextType = any, ParentType extends Resolv
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type StixMetaRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaRelationship'] = ResolversParentTypes['StixMetaRelationship']> = ResolversObject<{
@@ -22895,7 +22905,7 @@ export type StixMetaRelationshipResolvers<ContextType = any, ParentType extends 
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22922,7 +22932,7 @@ export type StixObjectResolvers<ContextType = any, ParentType extends ResolversP
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationship'] = ResolversParentTypes['StixObjectOrStixRelationship']> = ResolversObject<{
@@ -22941,6 +22951,10 @@ export type StixObjectOrStixRelationshipEdgeResolvers<ContextType = any, ParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export interface StixRefScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['StixRef'], any> {
+  name: 'StixRef';
+}
+
 export type StixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationship'] = ResolversParentTypes['StixRelationship']> = ResolversObject<{
   __resolveType: TypeResolveFn<'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixMetaRelationship' | 'StixSightingRelationship', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -22953,7 +22967,7 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
 export type StixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipConnection'] = ResolversParentTypes['StixRelationshipConnection']> = ResolversObject<{
@@ -23008,7 +23022,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_negative?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23184,7 +23198,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23315,7 +23329,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23368,7 +23382,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23441,7 +23455,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23504,7 +23518,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23584,7 +23598,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23621,7 +23635,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23731,7 +23745,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_integrity_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23792,7 +23806,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23831,7 +23845,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23990,7 +24004,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -24244,6 +24258,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixDomainObjectEditMutations?: StixDomainObjectEditMutationsResolvers<ContextType>;
   StixEditMutations?: StixEditMutationsResolvers<ContextType>;
   StixFile?: StixFileResolvers<ContextType>;
+  StixId?: GraphQLScalarType;
   StixMetaObject?: StixMetaObjectResolvers<ContextType>;
   StixMetaRelationship?: StixMetaRelationshipResolvers<ContextType>;
   StixMetaRelationshipConnection?: StixMetaRelationshipConnectionResolvers<ContextType>;
@@ -24252,6 +24267,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixObjectOrStixRelationship?: StixObjectOrStixRelationshipResolvers<ContextType>;
   StixObjectOrStixRelationshipConnection?: StixObjectOrStixRelationshipConnectionResolvers<ContextType>;
   StixObjectOrStixRelationshipEdge?: StixObjectOrStixRelationshipEdgeResolvers<ContextType>;
+  StixRef?: GraphQLScalarType;
   StixRelationship?: StixRelationshipResolvers<ContextType>;
   StixRelationshipConnection?: StixRelationshipConnectionResolvers<ContextType>;
   StixRelationshipEdge?: StixRelationshipEdgeResolvers<ContextType>;

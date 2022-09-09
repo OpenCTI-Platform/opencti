@@ -99,7 +99,7 @@ const threatActorMutationRelationAdd = graphql`
 const threatActorMutationRelationDelete = graphql`
   mutation ThreatActorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     threatActorEdit(id: $id) {

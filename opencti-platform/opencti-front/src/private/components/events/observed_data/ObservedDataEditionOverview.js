@@ -98,7 +98,7 @@ const observedDataMutationRelationAdd = graphql`
 const observedDataMutationRelationDelete = graphql`
   mutation ObservedDataEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     observedDataEdit(id: $id) {

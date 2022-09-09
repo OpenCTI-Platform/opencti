@@ -2,8 +2,10 @@ import { GraphQLDateTime } from 'graphql-scalars';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
-import { printSchema } from 'graphql';
+import { GraphQLScalarType, printSchema, Kind } from 'graphql';
+import { validate as uuidValidate } from 'uuid';
 import fs from 'fs';
+import { UserInputError } from 'apollo-server-express';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -69,11 +71,67 @@ import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
 import { DEV_MODE } from '../config/conf';
+import { isSupportedStixType } from '../schema/identifier';
 
 const schemaTypeDefs = [globalTypeDefs];
 
+const validateStixId = (stixId) => {
+  if (!stixId.includes('--')) {
+    throw new UserInputError('Provided value is not a valid STIX ID');
+  }
+  const [type, uuid] = stixId.split('--');
+  if (!isSupportedStixType(type)) {
+    throw new UserInputError('Provided value is not a valid STIX ID (type not supported)');
+  }
+  if (!uuidValidate(uuid)) {
+    throw new UserInputError('Provided value is not a valid STIX ID (UUID not valid)');
+  }
+  return stixId;
+};
+
+const validateStixRef = (stixRef) => {
+  if (stixRef.includes('--')) {
+    return validateStixId(stixRef);
+  } if (uuidValidate(stixRef)) {
+    return stixRef;
+  }
+  throw new UserInputError('Provided value is not a valid STIX Reference');
+};
+
 const globalResolvers = {
   DateTime: GraphQLDateTime,
+  StixId: new GraphQLScalarType({
+    name: 'StixId',
+    description: 'STIX ID Scalar Type',
+    serialize(value) {
+      return value;
+    },
+    parseValue(value) {
+      return validateStixId(value);
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.STRING) {
+        return validateStixId(ast.value);
+      }
+      throw new UserInputError('Provided value is not a valid STIX ID');
+    },
+  }),
+  StixRef: new GraphQLScalarType({
+    name: 'StixRef',
+    description: 'STIX Reference Scalar Type',
+    serialize(value) {
+      return value;
+    },
+    parseValue(value) {
+      return validateStixRef(value);
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.STRING) {
+        return validateStixRef(ast.value);
+      }
+      throw new UserInputError('Provided value is not a valid STIX ID');
+    },
+  }),
 };
 const schemaResolvers = [
   // INTERNAL

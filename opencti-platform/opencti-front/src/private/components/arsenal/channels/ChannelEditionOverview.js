@@ -99,7 +99,7 @@ const channelMutationRelationAdd = graphql`
 const channelMutationRelationDelete = graphql`
   mutation ChannelEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     channelRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {

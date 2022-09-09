@@ -44,7 +44,7 @@ const styles = () => ({
 
 const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
   query StixCoreObjectStixCoreRelationshipsCloudDistributionQuery(
-    $fromId: String!
+    $fromId: StixRef!
     $toTypes: [String]
     $relationship_type: String
     $startDate: DateTime

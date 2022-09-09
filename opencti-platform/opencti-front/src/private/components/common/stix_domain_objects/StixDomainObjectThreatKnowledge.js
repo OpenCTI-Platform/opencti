@@ -120,7 +120,7 @@ const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`
 const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
     $type: String
-    $fromId: String
+    $fromId: StixRef
     $toTypes: [String]
     $endDate: DateTime
   ) {

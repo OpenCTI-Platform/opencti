@@ -102,7 +102,7 @@ const narrativeMutationRelationAdd = graphql`
 const narrativeMutationRelationDelete = graphql`
   mutation NarrativeEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     narrativeRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {

@@ -97,7 +97,7 @@ const incidentMutationRelationAdd = graphql`
 const incidentMutationRelationDelete = graphql`
   mutation IncidentEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     incidentEdit(id: $id) {

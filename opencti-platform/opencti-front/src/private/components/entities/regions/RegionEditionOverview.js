@@ -94,7 +94,7 @@ const regionMutationRelationAdd = graphql`
 const regionMutationRelationDelete = graphql`
   mutation RegionEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     regionEdit(id: $id) {

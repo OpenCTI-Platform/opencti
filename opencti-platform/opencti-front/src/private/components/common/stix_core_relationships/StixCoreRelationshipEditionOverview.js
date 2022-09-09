@@ -142,7 +142,7 @@ const stixCoreRelationshipMutationRelationAdd = graphql`
 const stixCoreRelationshipMutationRelationDelete = graphql`
   mutation StixCoreRelationshipEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixCoreRelationshipEdit(id: $id) {

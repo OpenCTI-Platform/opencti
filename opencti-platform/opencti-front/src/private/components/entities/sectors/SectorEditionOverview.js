@@ -69,7 +69,7 @@ const sectorMutationRelationAdd = graphql`
 const sectorMutationRelationDelete = graphql`
   mutation SectorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     sectorEdit(id: $id) {

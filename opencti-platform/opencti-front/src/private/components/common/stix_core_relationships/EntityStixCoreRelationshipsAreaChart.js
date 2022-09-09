@@ -39,7 +39,7 @@ const styles = () => ({
 
 const entityStixCoreRelationshipsAreaChartStixCoreRelationshipTimeSeriesQuery = graphql`
   query EntityStixCoreRelationshipsAreaChartStixCoreRelationshipTimeSeriesQuery(
-    $fromId: String
+    $fromId: StixRef
     $toTypes: [String]
     $relationship_type: String
     $field: String!

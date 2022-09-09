@@ -43,7 +43,7 @@ const opinionLinesMutationRelationAdd = graphql`
 export const opinionMutationRelationDelete = graphql`
   mutation AddOpinionsLinesRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     opinionEdit(id: $id) {

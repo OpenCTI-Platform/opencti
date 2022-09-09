@@ -37,8 +37,8 @@ const addLocationsLinesMutationRelationAdd = graphql`
 
 export const addLocationsMutationRelationDelete = graphql`
   mutation AddLocationsLinesRelationDeleteMutation(
-    $fromId: String!
-    $toId: String!
+    $fromId: StixRef!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixCoreRelationshipDelete(

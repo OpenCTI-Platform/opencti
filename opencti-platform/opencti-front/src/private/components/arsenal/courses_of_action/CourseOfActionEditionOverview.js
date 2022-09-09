@@ -99,7 +99,7 @@ const courseOfActionMutationRelationAdd = graphql`
 const courseOfActionMutationRelationDelete = graphql`
   mutation CourseOfActionEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     courseOfActionEdit(id: $id) {

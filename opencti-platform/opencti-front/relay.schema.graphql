@@ -14,6 +14,12 @@ scalar ConstraintNumber
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
 
+"""STIX ID Scalar Type"""
+scalar StixId
+
+"""STIX Reference Scalar Type"""
+scalar StixRef
+
 enum State {
   wait
   progress
@@ -1290,7 +1296,7 @@ interface StixObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1303,7 +1309,7 @@ interface StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1351,7 +1357,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1368,8 +1374,8 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
 }
 
 input MarkingDefinitionAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   definition_type: String!
   definition: String!
   x_opencti_order: Int!
@@ -1416,7 +1422,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1431,8 +1437,8 @@ type Label implements BasicObject & StixObject & StixMetaObject {
 }
 
 input LabelAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   value: String!
   color: String
   created: DateTime
@@ -1481,7 +1487,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1504,8 +1510,8 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
 }
 
 input ExternalReferenceAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   source_name: source_name_String_NotNull_minLength_2!
   description: String
   url: String
@@ -1557,7 +1563,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1572,8 +1578,8 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
 }
 
 input KillChainPhaseAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   kill_chain_name: String!
   phase_name: String!
   x_opencti_order: Int!
@@ -1637,7 +1643,7 @@ interface StixCoreObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1650,7 +1656,7 @@ interface StixCoreObject {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   creator: User
   toStix: String
   importFiles(first: Int): FileConnection
@@ -1725,7 +1731,7 @@ interface StixDomainObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1738,7 +1744,7 @@ interface StixDomainObject {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -1758,8 +1764,8 @@ interface StixDomainObject {
 }
 
 input StixDomainObjectAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
   confidence: Int
@@ -1828,7 +1834,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1842,7 +1848,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -1874,8 +1880,8 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
 }
 
 input AttackPatternAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
   aliases: [String]
@@ -1945,7 +1951,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -1959,7 +1965,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -1985,8 +1991,8 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 
 input CampaignAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   aliases: [String]
@@ -2058,7 +2064,7 @@ interface Container {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2071,7 +2077,7 @@ interface Container {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2133,7 +2139,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2147,7 +2153,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2172,8 +2178,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 
 input NoteAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   attribute_abstract: String
   content: content_String_NotNull_minLength_2!
   authors: [String]
@@ -2244,7 +2250,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2258,7 +2264,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2284,8 +2290,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 
 input ObservedDataAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int
@@ -2352,7 +2358,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2366,7 +2372,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2391,8 +2397,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 
 input OpinionAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   opinion: String!
   explanation: String
   authors: [String]
@@ -2461,7 +2467,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2475,7 +2481,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2501,8 +2507,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 
 input ReportAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
   published: DateTime!
@@ -2568,7 +2574,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2582,7 +2588,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2609,8 +2615,8 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
 }
 
 input CourseOfActionAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   x_opencti_aliases: [String]
@@ -2683,7 +2689,7 @@ interface Identity {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2696,7 +2702,7 @@ interface Identity {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2722,8 +2728,8 @@ interface Identity {
 }
 
 input IdentityAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   type: IdentityType!
   name: String!
   description: String!
@@ -2793,7 +2799,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2807,7 +2813,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2836,8 +2842,8 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
 }
 
 input IndividualAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   contact_information: String
@@ -2916,7 +2922,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -2930,7 +2936,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2959,8 +2965,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 
 input OrganizationAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   contact_information: String
@@ -3030,7 +3036,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3044,7 +3050,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3074,8 +3080,8 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 
 input SectorAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   contact_information: String
@@ -3140,7 +3146,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3154,7 +3160,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3183,8 +3189,8 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 
 input SystemAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   contact_information: String
@@ -3270,7 +3276,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3284,7 +3290,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3318,8 +3324,8 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
 }
 
 input IndicatorAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   pattern_type: String!
   pattern_version: String
   pattern: String!
@@ -3398,7 +3404,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3412,7 +3418,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3439,8 +3445,8 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
 }
 
 input InfrastructureAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
   aliases: [String]
@@ -3506,7 +3512,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3520,7 +3526,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3550,8 +3556,8 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 
 input IntrusionSetAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   aliases: [String]
@@ -3630,7 +3636,7 @@ interface Location {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3643,7 +3649,7 @@ interface Location {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3669,8 +3675,8 @@ interface Location {
 }
 
 input LocationAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   type: LocationType!
   name: String!
   description: String
@@ -3736,7 +3742,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3750,7 +3756,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3779,8 +3785,8 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 
 input PositionAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
   latitude: Float
@@ -3850,7 +3856,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3864,7 +3870,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3891,8 +3897,8 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 
 input CityAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
   latitude: Float
@@ -3954,7 +3960,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -3968,7 +3974,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3995,8 +4001,8 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 
 input CountryAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
   latitude: Float
@@ -4058,7 +4064,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4072,7 +4078,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4102,8 +4108,8 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 
 input RegionAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
   latitude: Float
@@ -4176,7 +4182,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4190,7 +4196,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4221,8 +4227,8 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 
 input MalwareAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   malware_types: [String]
@@ -4291,7 +4297,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4305,7 +4311,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4339,8 +4345,8 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
 }
 
 input ThreatActorAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   aliases: [String]
@@ -4410,7 +4416,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4424,7 +4430,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4450,8 +4456,8 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
 }
 
 input ToolAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   aliases: [String]
@@ -4520,7 +4526,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4534,7 +4540,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4564,8 +4570,8 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
 }
 
 input VulnerabilityAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   x_opencti_aliases: [String]
@@ -4634,7 +4640,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4648,7 +4654,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4674,8 +4680,8 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 
 input IncidentAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   confidence: Int
@@ -4749,7 +4755,7 @@ interface StixCyberObservable {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4762,12 +4768,12 @@ interface StixCyberObservable {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   creator: User
   toStix: String
   importFiles(first: Int): FileConnection
@@ -4783,7 +4789,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4797,12 +4803,12 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   number: Int
   name: String
   rir: String
@@ -4827,7 +4833,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4841,12 +4847,12 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   path: String!
   path_enc: String
   ctime: DateTime
@@ -4875,7 +4881,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4889,12 +4895,12 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   observable_value: String!
   x_opencti_score: Int
   x_opencti_description: String
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -4915,7 +4921,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4929,12 +4935,12 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   display_name: String
   creator: User
@@ -4957,7 +4963,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -4971,12 +4977,12 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   is_multipart: Boolean
   attribute_date: DateTime
   content_type: String
@@ -5009,7 +5015,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5023,12 +5029,12 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   body: String
   content_type: String
   content_disposition: String
@@ -5067,7 +5073,7 @@ interface HashedObservable {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5080,12 +5086,12 @@ interface HashedObservable {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
   creator: User
   toStix: String
@@ -5102,7 +5108,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5116,12 +5122,12 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
   mime_type: String
   payload_bin: String
@@ -5154,7 +5160,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5168,12 +5174,12 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
   extensions: String
   size: Int
@@ -5213,7 +5219,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5227,12 +5233,12 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
   is_self_signed: Boolean
   version: String
@@ -5307,7 +5313,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5321,12 +5327,12 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -5349,7 +5355,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5363,12 +5369,12 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -5389,7 +5395,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5403,12 +5409,12 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -5429,7 +5435,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5443,12 +5449,12 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   name: String
   creator: User
   toStix: String
@@ -5469,7 +5475,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5483,12 +5489,12 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   extensions: String
   start: DateTime
   end: DateTime
@@ -5528,7 +5534,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5542,12 +5548,12 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   extensions: String
   is_hidden: Boolean
   pid: Int
@@ -5579,7 +5585,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5593,12 +5599,12 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   name: String
   cpe: String
   swid: String
@@ -5630,7 +5636,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5644,12 +5650,12 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -5670,7 +5676,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5684,12 +5690,12 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   extensions: String
   user_id: String
   credential: String
@@ -5737,7 +5743,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5751,12 +5757,12 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   attribute_key: String
   modified_time: DateTime
   number_of_subkeys: Int
@@ -5781,7 +5787,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5795,12 +5801,12 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   name: String
   data: String
   data_type: String
@@ -5825,7 +5831,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5839,12 +5845,12 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -5865,7 +5871,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5879,12 +5885,12 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -5905,7 +5911,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5919,12 +5925,12 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -5945,7 +5951,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5959,12 +5965,12 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -5985,7 +5991,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5999,12 +6005,12 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -6025,7 +6031,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -6039,12 +6045,12 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   iban: String
   bic: String
   account_number: String
@@ -6069,7 +6075,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -6083,12 +6089,12 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creator: User
   toStix: String
@@ -6109,7 +6115,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -6123,12 +6129,12 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   card_number: String
   expiration_date: DateTime
   cvv: Int
@@ -6293,7 +6299,7 @@ interface StixRelationship {
   fromRole: String
   toRole: String
   standard_id: String!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
@@ -6369,7 +6375,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   standard_id: String!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
@@ -6391,7 +6397,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   killChainPhases: KillChainPhaseConnection
   creator: User
   toStix: String
@@ -6401,10 +6407,10 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
 }
 
 input StixCoreRelationshipAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
-  fromId: String!
-  toId: String!
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  fromId: StixRef!
+  toId: StixRef!
   relationship_type: String!
   description: String
   start_time: DateTime
@@ -6486,7 +6492,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   standard_id: String!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   from: StixObjectOrStixRelationship
@@ -6516,10 +6522,10 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
 }
 
 input StixSightingRelationshipAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
-  fromId: String!
-  toId: String
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  fromId: StixRef!
+  toId: StixRef!
   description: String
   first_seen: DateTime
   last_seen: DateTime
@@ -6583,7 +6589,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   created_at: DateTime!
   updated_at: DateTime!
   standard_id: String!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   from: StixObjectOrStixRelationship
@@ -6601,10 +6607,10 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
 }
 
 input StixCyberObservableRelationshipAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
-  fromId: String!
-  toId: String!
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  fromId: StixRef!
+  toId: StixRef!
   relationship_type: String!
   confidence: Int
   createdBy: String
@@ -6653,7 +6659,7 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   standard_id: String!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   from: StixObjectOrStixRelationship
@@ -6831,27 +6837,27 @@ type Query {
   stixCyberObservablesTimeSeries(type: String): [TimeSeries]
   stixCyberObservablesDistribution(objectId: String, field: String!, dateAttribute: String, operation: String!): [Distribution]
   stixMetaRelationship(id: String): StixMetaRelationship
-  stixMetaRelationships(first: Int, after: ID, orderBy: StixMetaRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: String, fromRole: String, fromTypes: [String], toId: String, toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixMetaRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixMetaRelationshipConnection
+  stixMetaRelationships(first: Int, after: ID, orderBy: StixMetaRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: StixRef, fromRole: String, fromTypes: [String], toId: StixRef, toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixMetaRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixMetaRelationshipConnection
   stixMetaRelationshipsDistribution(field: String!, operation: StatsOperation!, relationship_type: String, toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
-  stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime): Number
+  stixMetaRelationshipsNumber(type: String, fromId: StixRef, endDate: DateTime): Number
   stixRelationship(id: String): StixRelationship
-  stixRelationships(first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: String, fromRole: String, fromTypes: [String], toId: String, toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixRelationshipConnection
+  stixRelationships(first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: StixRef, fromRole: String, fromTypes: [String], toId: StixRef, toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixRelationshipConnection
   stixCoreRelationship(id: String): StixCoreRelationship
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixCoreRelationshipConnection
-  stixCoreRelationshipsTimeSeries(fromId: String, relationship_type: String, toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
-  stixCoreRelationshipsDistribution(fromId: String, field: String!, operation: StatsOperation!, relationship_type: String, toTypes: [String], isTo: Boolean, noDirection: Boolean, startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
-  stixCoreRelationshipsNumber(type: String, fromId: String, authorId: String, toTypes: [String], noDirection: Boolean, endDate: DateTime): Number
+  stixCoreRelationshipsTimeSeries(fromId: StixRef, relationship_type: String, toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+  stixCoreRelationshipsDistribution(fromId: StixRef, field: String!, operation: StatsOperation!, relationship_type: String, toTypes: [String], isTo: Boolean, noDirection: Boolean, startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
+  stixCoreRelationshipsNumber(type: String, fromId: StixRef, authorId: String, toTypes: [String], noDirection: Boolean, endDate: DateTime): Number
   stixCoreRelationshipsExportFiles(first: Int, type: String!): FileConnection
   stixSightingRelationship(id: String): StixSightingRelationship
-  stixSightingRelationships(first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, elementId: String, fromId: String, toId: String, fromTypes: [String], toTypes: [String], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, search: String, filters: [StixSightingRelationshipsFiltering], filterMode: FilterMode, toStix: Boolean): StixSightingRelationshipConnection
-  stixSightingRelationshipsTimeSeries(fromId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
-  stixSightingRelationshipsDistribution(fromId: String!, field: String!, operation: StatsOperation!, toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
-  stixSightingRelationshipsNumber(fromId: String, endDate: DateTime): Number
+  stixSightingRelationships(first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, elementId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, search: String, filters: [StixSightingRelationshipsFiltering], filterMode: FilterMode, toStix: Boolean): StixSightingRelationshipConnection
+  stixSightingRelationshipsTimeSeries(fromId: StixRef, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+  stixSightingRelationshipsDistribution(fromId: StixRef!, field: String!, operation: StatsOperation!, toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
+  stixSightingRelationshipsNumber(fromId: StixRef, endDate: DateTime): Number
   stixCyberObservableRelationship(id: String): StixCyberObservableRelationship
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, elementId: String, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode, toStix: Boolean): StixCyberObservableRelationshipConnection
-  stixCyberObservableRelationshipsTimeSeries(fromId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
-  stixCyberObservableRelationshipsDistribution(fromId: String!, field: String!, operation: StatsOperation!, toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
-  stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime): Number
+  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, elementId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode, toStix: Boolean): StixCyberObservableRelationshipConnection
+  stixCyberObservableRelationshipsTimeSeries(fromId: StixRef, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+  stixCyberObservableRelationshipsDistribution(fromId: StixRef!, field: String!, operation: StatsOperation!, toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
+  stixCyberObservableRelationshipsNumber(fromId: StixRef, endDate: DateTime): Number
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   channel(id: String!): Channel
@@ -6908,7 +6914,7 @@ type GroupEditMutations {
   contextPatch(input: EditContext): Group
   contextClean: Group
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
-  relationDelete(fromId: String, toId: String, relationship_type: String!): Group
+  relationDelete(fromId: StixRef, toId: StixRef, relationship_type: String!): Group
 }
 
 type UserEditMutations {
@@ -6918,7 +6924,7 @@ type UserEditMutations {
   contextClean: User
   tokenRenew: User
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
-  relationDelete(toId: String!, relationship_type: String!): User
+  relationDelete(toId: StixRef!, relationship_type: String!): User
 }
 
 type RoleEditMutations {
@@ -6927,7 +6933,7 @@ type RoleEditMutations {
   contextPatch(input: EditContext): Role
   contextClean: Role
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
-  relationDelete(toId: String!, relationship_type: String!): Role
+  relationDelete(toId: StixRef!, relationship_type: String!): Role
 }
 
 type AttributeEditMutations {
@@ -6940,7 +6946,7 @@ type WorkspaceEditMutations {
   fieldPatch(input: [EditInput]!): Workspace
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): Workspace
-  relationDelete(toId: String!, relationship_type: String!): Workspace
+  relationDelete(toId: StixRef!, relationship_type: String!): Workspace
   relationsDelete(toIds: [String]!, relationship_type: String!): Workspace
   contextPatch(input: EditContext): Workspace
   contextClean: Workspace
@@ -6992,7 +6998,7 @@ type ExternalReferenceEditMutations {
   contextPatch(input: EditContext): ExternalReference
   contextClean: ExternalReference
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(fromId: String!, relationship_type: String!): ExternalReference
+  relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
   askEnrichment(connectorId: ID!): Work
   importPush(file: Upload!): File
 }
@@ -7003,14 +7009,14 @@ type KillChainPhaseEditMutations {
   contextPatch(input: EditContext): KillChainPhase
   contextClean: KillChainPhase
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): KillChainPhase
+  relationDelete(toId: StixRef!, relationship_type: String!): KillChainPhase
 }
 
 type StixCoreObjectEditMutations {
   delete: ID
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
-  relationDelete(toId: String!, relationship_type: String!): StixCoreObject
+  relationDelete(toId: StixRef!, relationship_type: String!): StixCoreObject
   merge(stixCoreObjectsIds: [String]!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
   importPush(file: Upload!): File
@@ -7026,7 +7032,7 @@ type StixDomainObjectEditMutations {
   contextClean: StixDomainObject
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixDomainObject
-  relationDelete(toId: String!, relationship_type: String): StixDomainObject
+  relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
   importPush(file: Upload!): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean
@@ -7038,7 +7044,7 @@ type AttackPatternEditMutations {
   contextPatch(input: EditContext): AttackPattern
   contextClean: AttackPattern
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): AttackPattern
+  relationDelete(toId: StixRef!, relationship_type: String!): AttackPattern
 }
 
 type CampaignEditMutations {
@@ -7047,7 +7053,7 @@ type CampaignEditMutations {
   contextPatch(input: EditContext): Campaign
   contextClean: Campaign
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Campaign
+  relationDelete(toId: StixRef!, relationship_type: String!): Campaign
 }
 
 type ContainerEditMutations {
@@ -7056,7 +7062,7 @@ type ContainerEditMutations {
   contextPatch(input: EditContext): Container
   contextClean: Container
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Container
+  relationDelete(toId: StixRef!, relationship_type: String!): Container
 }
 
 type NoteEditMutations {
@@ -7065,7 +7071,7 @@ type NoteEditMutations {
   contextPatch(input: EditContext): Note
   contextClean: Note
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Note
+  relationDelete(toId: StixRef!, relationship_type: String!): Note
 }
 
 type ObservedDataEditMutations {
@@ -7074,7 +7080,7 @@ type ObservedDataEditMutations {
   contextPatch(input: EditContext): ObservedData
   contextClean: ObservedData
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): ObservedData
+  relationDelete(toId: StixRef!, relationship_type: String!): ObservedData
 }
 
 type OpinionEditMutations {
@@ -7083,7 +7089,7 @@ type OpinionEditMutations {
   contextPatch(input: EditContext): Opinion
   contextClean: Opinion
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Opinion
+  relationDelete(toId: StixRef!, relationship_type: String!): Opinion
 }
 
 type ReportEditMutations {
@@ -7092,7 +7098,7 @@ type ReportEditMutations {
   contextPatch(input: EditContext): Report
   contextClean: Report
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Report
+  relationDelete(toId: StixRef!, relationship_type: String!): Report
 }
 
 type CourseOfActionEditMutations {
@@ -7101,7 +7107,7 @@ type CourseOfActionEditMutations {
   contextPatch(input: EditContext): CourseOfAction
   contextClean: CourseOfAction
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): CourseOfAction
+  relationDelete(toId: StixRef!, relationship_type: String!): CourseOfAction
 }
 
 type IdentityEditMutations {
@@ -7110,7 +7116,7 @@ type IdentityEditMutations {
   contextPatch(input: EditContext): Identity
   contextClean: Identity
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Identity
+  relationDelete(toId: StixRef!, relationship_type: String!): Identity
 }
 
 type IndividualEditMutations {
@@ -7119,7 +7125,7 @@ type IndividualEditMutations {
   contextPatch(input: EditContext): Individual
   contextClean: Individual
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Individual
+  relationDelete(toId: StixRef!, relationship_type: String!): Individual
 }
 
 type OrganizationEditMutations {
@@ -7128,7 +7134,7 @@ type OrganizationEditMutations {
   contextPatch(input: EditContext): Organization
   contextClean: Organization
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Organization
+  relationDelete(toId: StixRef!, relationship_type: String!): Organization
 }
 
 type SectorEditMutations {
@@ -7137,7 +7143,7 @@ type SectorEditMutations {
   contextPatch(input: EditContext): Sector
   contextClean: Sector
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Sector
+  relationDelete(toId: StixRef!, relationship_type: String!): Sector
 }
 
 type SystemEditMutations {
@@ -7146,7 +7152,7 @@ type SystemEditMutations {
   contextPatch(input: EditContext): System
   contextClean: System
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): System
+  relationDelete(toId: StixRef!, relationship_type: String!): System
 }
 
 type IndicatorEditMutations {
@@ -7155,7 +7161,7 @@ type IndicatorEditMutations {
   contextPatch(input: EditContext): Indicator
   contextClean: Indicator
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Indicator
+  relationDelete(toId: StixRef!, relationship_type: String!): Indicator
 }
 
 type InfrastructureEditMutations {
@@ -7164,7 +7170,7 @@ type InfrastructureEditMutations {
   contextPatch(input: EditContext): Infrastructure
   contextClean: Infrastructure
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Infrastructure
+  relationDelete(toId: StixRef!, relationship_type: String!): Infrastructure
 }
 
 type IntrusionSetEditMutations {
@@ -7173,7 +7179,7 @@ type IntrusionSetEditMutations {
   contextPatch(input: EditContext): IntrusionSet
   contextClean: IntrusionSet
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): IntrusionSet
+  relationDelete(toId: StixRef!, relationship_type: String!): IntrusionSet
 }
 
 type LocationEditMutations {
@@ -7182,7 +7188,7 @@ type LocationEditMutations {
   contextPatch(input: EditContext): Location
   contextClean: Location
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Location
+  relationDelete(toId: StixRef!, relationship_type: String!): Location
 }
 
 type CityEditMutations {
@@ -7191,7 +7197,7 @@ type CityEditMutations {
   contextPatch(input: EditContext): City
   contextClean: City
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): City
+  relationDelete(toId: StixRef!, relationship_type: String!): City
 }
 
 type CountryEditMutations {
@@ -7200,7 +7206,7 @@ type CountryEditMutations {
   contextPatch(input: EditContext): Country
   contextClean: Country
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Country
+  relationDelete(toId: StixRef!, relationship_type: String!): Country
 }
 
 type RegionEditMutations {
@@ -7209,7 +7215,7 @@ type RegionEditMutations {
   contextPatch(input: EditContext): Region
   contextClean: Region
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Region
+  relationDelete(toId: StixRef!, relationship_type: String!): Region
 }
 
 type PositionEditMutations {
@@ -7218,7 +7224,7 @@ type PositionEditMutations {
   contextPatch(input: EditContext): Position
   contextClean: Position
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Position
+  relationDelete(toId: StixRef!, relationship_type: String!): Position
 }
 
 type MalwareEditMutations {
@@ -7227,7 +7233,7 @@ type MalwareEditMutations {
   contextPatch(input: EditContext): Malware
   contextClean: Malware
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Malware
+  relationDelete(toId: StixRef!, relationship_type: String!): Malware
 }
 
 type ThreatActorEditMutations {
@@ -7236,7 +7242,7 @@ type ThreatActorEditMutations {
   contextPatch(input: EditContext): ThreatActor
   contextClean: ThreatActor
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): ThreatActor
+  relationDelete(toId: StixRef!, relationship_type: String!): ThreatActor
 }
 
 type ToolEditMutations {
@@ -7245,7 +7251,7 @@ type ToolEditMutations {
   contextPatch(input: EditContext): Tool
   contextClean: Tool
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Tool
+  relationDelete(toId: StixRef!, relationship_type: String!): Tool
 }
 
 type VulnerabilityEditMutations {
@@ -7254,7 +7260,7 @@ type VulnerabilityEditMutations {
   contextPatch(input: EditContext): Vulnerability
   contextClean: Vulnerability
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Vulnerability
+  relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability
 }
 
 type IncidentEditMutations {
@@ -7263,7 +7269,7 @@ type IncidentEditMutations {
   contextPatch(input: EditContext): Incident
   contextClean: Incident
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): Incident
+  relationDelete(toId: StixRef!, relationship_type: String!): Incident
 }
 
 type StixCyberObservableEditMutations {
@@ -7273,7 +7279,7 @@ type StixCyberObservableEditMutations {
   contextClean: StixCyberObservable
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable
-  relationDelete(toId: String!, relationship_type: String!): StixCyberObservable
+  relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable
   promote: StixCyberObservable
   importPush(file: Upload!): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
@@ -7290,7 +7296,7 @@ type StixCoreRelationshipEditMutations {
   contextPatch(input: EditContext): StixCoreRelationship
   contextClean: StixCoreRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): StixCoreRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): StixCoreRelationship
 }
 
 type StixSightingRelationshipEditMutations {
@@ -7299,7 +7305,7 @@ type StixSightingRelationshipEditMutations {
   contextPatch(input: EditContext): StixSightingRelationship
   contextClean: StixSightingRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): StixSightingRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): StixSightingRelationship
 }
 
 type StixCyberObservableRelationshipEditMutations {
@@ -7432,7 +7438,7 @@ type Mutation {
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput): Incident
   incidentEdit(id: ID!): IncidentEditMutations
-  stixCyberObservableAdd(type: String!, stix_id: String, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput): StixCyberObservable
+  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(format: String!, exportType: String!, maxMarkingDefinition: String, context: String, types: [String], search: String, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode, filters: [StixCyberObservablesFiltering], filterMode: FilterMode): FileConnection
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
@@ -7441,7 +7447,7 @@ type Mutation {
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations
   stixCoreRelationshipsExportAsk(type: String!, format: String!, exportType: String!, maxMarkingDefinition: String, context: String, search: String, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): FileConnection
-  stixCoreRelationshipDelete(fromId: String!, toId: String!, relationship_type: String!): Boolean!
+  stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
   stixCyberObservableRelationshipAdd(input: StixCyberObservableRelationshipAddInput): StixCyberObservableRelationship
   stixCyberObservableRelationshipEdit(id: ID!): StixCyberObservableRelationshipEditMutations
@@ -7453,28 +7459,28 @@ type Mutation {
   channelContextPatch(id: ID!, input: EditContext!): Channel
   channelContextClean(id: ID!): Channel
   channelRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
-  channelRelationDelete(id: ID!, toId: String!, relationship_type: String!): Channel
+  channelRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
   languageContextPatch(id: ID!, input: EditContext!): Language
   languageContextClean(id: ID!): Language
   languageRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
-  languageRelationDelete(id: ID!, toId: String!, relationship_type: String!): Language
+  languageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Language
   eventAdd(input: EventAddInput!): Event
   eventDelete(id: ID!): ID
   eventFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Event
   eventContextPatch(id: ID!, input: EditContext!): Event
   eventContextClean(id: ID!): Event
   eventRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
-  eventRelationDelete(id: ID!, toId: String!, relationship_type: String!): Event
+  eventRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Event
   narrativeAdd(input: NarrativeAddInput!): Narrative
   narrativeDelete(id: ID!): ID
   narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative
   narrativeContextPatch(id: ID!, input: EditContext!): Narrative
   narrativeContextClean(id: ID!): Narrative
   narrativeRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
-  narrativeRelationDelete(id: ID!, toId: String!, relationship_type: String!): Narrative
+  narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -7482,7 +7488,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -7496,7 +7502,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -7563,8 +7569,8 @@ type ChannelEdge {
 }
 
 input ChannelAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   channel_types: [String]
@@ -7585,7 +7591,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -7599,7 +7605,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -7662,8 +7668,8 @@ type LanguageEdge {
 }
 
 input LanguageAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   aliases: [String]
@@ -7683,7 +7689,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -7697,7 +7703,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -7766,8 +7772,8 @@ type EventEdge {
 }
 
 input EventAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   event_types: [String]
@@ -7790,7 +7796,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [String]
+  x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -7804,7 +7810,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -7874,8 +7880,8 @@ type NarrativeEdge {
 }
 
 input NarrativeAddInput {
-  stix_id: String
-  x_opencti_stix_ids: [String]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
   narrative_types: [String]

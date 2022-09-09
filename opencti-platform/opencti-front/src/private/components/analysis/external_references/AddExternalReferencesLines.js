@@ -87,7 +87,7 @@ export const externalReferenceLinesMutationRelationAdd = graphql`
 export const externalReferenceMutationRelationDelete = graphql`
   mutation AddExternalReferencesLinesRelationDeleteMutation(
     $id: ID!
-    $fromId: String!
+    $fromId: StixRef!
     $relationship_type: String!
   ) {
     externalReferenceEdit(id: $id) {

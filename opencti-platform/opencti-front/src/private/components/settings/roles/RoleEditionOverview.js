@@ -59,7 +59,7 @@ const roleEditionAddCapability = graphql`
 const roleEditionRemoveCapability = graphql`
   mutation RoleEditionOverviewDelCapabilityMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     roleEdit(id: $id) {

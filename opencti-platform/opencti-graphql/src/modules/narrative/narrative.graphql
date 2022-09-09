@@ -4,7 +4,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     entity_type: String!
     parent_types: [String]!
     # StixObject
-    x_opencti_stix_ids: [String]
+    x_opencti_stix_ids: [StixId]
     is_inferred: Boolean!
     spec_version: String!
     created_at: DateTime!
@@ -25,8 +25,8 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
         after: ID
         orderBy: StixCoreRelationshipsOrdering
         orderMode: OrderingMode
-        fromId: String
-        toId: String
+        fromId: StixRef
+        toId: StixRef
         fromTypes: [String]
         toTypes: [String]
         relationship_type: String
@@ -131,8 +131,8 @@ type Query {
 
 # Mutations
 input NarrativeAddInput {
-    stix_id: String
-    x_opencti_stix_ids: [String]
+    stix_id: StixId
+    x_opencti_stix_ids: [StixId]
     name: String! @constraint(minLength: 2)
     description: String!
     narrative_types: [String]
@@ -155,5 +155,5 @@ type Mutation {
     narrativeContextPatch(id: ID!, input: EditContext!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
     narrativeContextClean(id: ID!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
     narrativeRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeRelationDelete(id: ID!, toId: String!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
 }

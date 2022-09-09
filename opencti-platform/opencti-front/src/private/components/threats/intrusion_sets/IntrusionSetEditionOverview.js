@@ -98,7 +98,7 @@ const intrusionSetMutationRelationAdd = graphql`
 const intrusionSetMutationRelationDelete = graphql`
   mutation IntrusionSetEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     intrusionSetEdit(id: $id) {

@@ -100,7 +100,7 @@ const attackPatternMutationRelationAdd = graphql`
 const attackPatternMutationRelationDelete = graphql`
   mutation AttackPatternEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     attackPatternEdit(id: $id) {

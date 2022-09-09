@@ -108,7 +108,7 @@ const organizationMutationRelationAdd = graphql`
 const organizationMutationRelationDelete = graphql`
   mutation OrganizationEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     organizationEdit(id: $id) {

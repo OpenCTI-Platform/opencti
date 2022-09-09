@@ -91,7 +91,7 @@ const userEditionOverviewAddRole = graphql`
 const userEditionOverviewDeleteRole = graphql`
   mutation UserEditionOverviewDeleteRoleMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     userEdit(id: $id) {

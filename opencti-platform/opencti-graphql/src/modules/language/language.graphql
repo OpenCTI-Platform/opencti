@@ -4,7 +4,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     entity_type: String!
     parent_types: [String]!
     # StixObject
-    x_opencti_stix_ids: [String]
+    x_opencti_stix_ids: [StixId]
     is_inferred: Boolean!
     spec_version: String!
     created_at: DateTime!
@@ -25,8 +25,8 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
         after: ID
         orderBy: StixCoreRelationshipsOrdering
         orderMode: OrderingMode
-        fromId: String
-        toId: String
+        fromId: StixRef
+        toId: StixRef
         fromTypes: [String]
         toTypes: [String]
         relationship_type: String
@@ -123,8 +123,8 @@ type Query {
 
 # Mutations
 input LanguageAddInput {
-    stix_id: String
-    x_opencti_stix_ids: [String]
+    stix_id: StixId
+    x_opencti_stix_ids: [StixId]
     name: String! @constraint(minLength: 2)
     description: String!
     aliases: [String]
@@ -146,5 +146,5 @@ type Mutation {
     languageContextPatch(id: ID!, input: EditContext!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
     languageContextClean(id: ID!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
     languageRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    languageRelationDelete(id: ID!, toId: String!, relationship_type: String!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+    languageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -97,7 +97,7 @@ const positionMutationRelationAdd = graphql`
 const positionMutationRelationDelete = graphql`
   mutation PositionEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     positionEdit(id: $id) {

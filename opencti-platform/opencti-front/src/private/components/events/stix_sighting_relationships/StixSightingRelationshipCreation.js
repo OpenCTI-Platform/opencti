@@ -136,8 +136,8 @@ const styles = (theme) => ({
 
 export const stixSightingRelationshipCreationQuery = graphql`
   query StixSightingRelationshipCreationQuery(
-    $fromId: String!
-    $toId: String!
+    $fromId: StixRef!
+    $toId: StixRef!
   ) {
     stixSightingRelationships(fromId: $fromId, toId: $toId) {
       edges {

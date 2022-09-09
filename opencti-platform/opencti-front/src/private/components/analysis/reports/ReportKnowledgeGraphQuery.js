@@ -30,7 +30,7 @@ export const reportKnowledgeGraphtMutationRelationAddMutation = graphql`
 export const reportKnowledgeGraphMutationRelationDeleteMutation = graphql`
   mutation ReportKnowledgeGraphQueryRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     reportEdit(id: $id) {

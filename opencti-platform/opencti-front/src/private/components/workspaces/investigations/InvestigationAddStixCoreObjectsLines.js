@@ -81,7 +81,7 @@ export const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
 export const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
   mutation InvestigationAddStixCoreObjectsLinesRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     workspaceEdit(id: $id) {

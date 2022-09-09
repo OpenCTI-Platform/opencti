@@ -36,8 +36,8 @@ const addSubNarrativesLinesMutationRelationAdd = graphql`
 
 export const addSubNarrativesMutationRelationDelete = graphql`
   mutation AddSubNarrativesLinesRelationDeleteMutation(
-    $fromId: String!
-    $toId: String!
+    $fromId: StixRef!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixCoreRelationshipDelete(

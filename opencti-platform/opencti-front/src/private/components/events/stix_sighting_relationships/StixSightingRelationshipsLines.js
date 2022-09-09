@@ -62,8 +62,8 @@ StixSightingRelationshipsLines.propTypes = {
 
 export const stixSightingRelationshipsLinesQuery = graphql`
   query StixSightingRelationshipsLinesPaginationQuery(
-    $fromId: String
-    $toId: String
+    $fromId: StixRef
+    $toId: StixRef
     $toTypes: [String]
     $search: String
     $count: Int!
@@ -93,8 +93,8 @@ export default createPaginationContainer(
     data: graphql`
       fragment StixSightingRelationshipsLines_data on Query
       @argumentDefinitions(
-        fromId: { type: "String" }
-        toId: { type: "String" }
+        fromId: { type: "StixRef" }
+        toId: { type: "StixRef" }
         toTypes: { type: "[String]" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }

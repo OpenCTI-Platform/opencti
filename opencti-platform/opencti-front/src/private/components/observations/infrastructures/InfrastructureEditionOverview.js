@@ -92,7 +92,7 @@ const infrastructureMutationRelationAdd = graphql`
 const infrastructureMutationRelationDelete = graphql`
   mutation InfrastructureEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     infrastructureEdit(id: $id) {

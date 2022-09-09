@@ -42,7 +42,7 @@ Transition.displayName = 'TransitionSlide';
 export const containerStixCoreObjectPopoverRemoveMutation = graphql`
   mutation ContainerStixCoreObjectPopoverRemoveMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     containerEdit(id: $id) {

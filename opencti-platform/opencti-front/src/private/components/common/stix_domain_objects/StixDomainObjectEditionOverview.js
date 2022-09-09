@@ -134,7 +134,7 @@ const stixDomainObjectMutationRelationAdd = graphql`
 const stixDomainObjectMutationRelationDelete = graphql`
   mutation StixDomainObjectEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $toId: StixRef!
     $relationship_type: String!
   ) {
     stixDomainObjectEdit(id: $id) {
