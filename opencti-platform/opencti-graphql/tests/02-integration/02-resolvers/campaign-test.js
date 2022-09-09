@@ -235,7 +235,7 @@ describe('Campaign resolver standard behavior', () => {
   });
   it('should delete relation in campaign', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation CampaignEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         campaignEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

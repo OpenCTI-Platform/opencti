@@ -173,7 +173,7 @@ describe('Threat actor resolver standard behavior', () => {
   });
   it('should delete relation in threat actor', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ThreatActorEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation ThreatActorEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         threatActorEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

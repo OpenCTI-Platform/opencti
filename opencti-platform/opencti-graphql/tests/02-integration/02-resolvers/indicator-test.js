@@ -187,7 +187,7 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should delete relation in indicator', async () => {
     const RELATION_DELETE_QUERY = gql`
-        mutation IndicatorEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+        mutation IndicatorEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
             indicatorEdit(id: $id) {
                 relationDelete(toId: $toId, relationship_type: $relationship_type) {
                     id

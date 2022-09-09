@@ -212,7 +212,7 @@ describe('AttackPattern resolver standard behavior', () => {
   });
   it('should delete relation in attackPattern', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation AttackPatternEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation AttackPatternEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         attackPatternEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

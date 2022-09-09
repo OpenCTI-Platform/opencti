@@ -170,7 +170,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should delete relation in stixCyberObservable', async () => {
     const RELATION_DELETE_QUERY = gql`
-        mutation StixCyberObservableEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+        mutation StixCyberObservableEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
             stixCyberObservableEdit(id: $id) {
                 relationDelete(toId: $toId, relationship_type: $relationship_type) {
                     id

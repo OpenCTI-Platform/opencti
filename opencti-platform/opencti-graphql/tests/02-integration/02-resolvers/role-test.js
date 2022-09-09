@@ -170,7 +170,7 @@ describe('Role resolver standard behavior', () => {
   });
   it('should remove capability in role', async () => {
     const REMOVE_CAPABILITY_QUERY = gql`
-      mutation RoleEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation RoleEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         roleEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

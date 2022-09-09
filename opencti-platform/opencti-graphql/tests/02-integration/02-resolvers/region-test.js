@@ -222,7 +222,7 @@ describe('Region resolver standard behavior', () => {
   });
   it('should delete relation in region', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation RegionEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation RegionEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         regionEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

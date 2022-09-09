@@ -402,7 +402,7 @@ describe('Report resolver standard behavior', () => {
   });
   it('should delete relation in report', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ReportEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation ReportEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         reportEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

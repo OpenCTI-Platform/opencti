@@ -133,7 +133,7 @@ describe('User resolver standard behavior', () => {
     const roleStandardId = generateStandardId(ENTITY_TYPE_ROLE, { name: 'Default' });
     const role = await elLoadById(ADMIN_USER, roleStandardId);
     const REMOTE_ROLE_QUERY = gql`
-      mutation UserEditRemoveRole($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation UserEditRemoveRole($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         userEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
@@ -280,7 +280,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should delete relation in user', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation UserEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation UserEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         userEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

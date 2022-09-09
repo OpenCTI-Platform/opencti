@@ -295,7 +295,7 @@ describe('StixDomainObject resolver standard behavior', () => {
   });
   it('should delete relation in stixDomainObject', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation StixDomainObjectEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation StixDomainObjectEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         stixDomainObjectEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

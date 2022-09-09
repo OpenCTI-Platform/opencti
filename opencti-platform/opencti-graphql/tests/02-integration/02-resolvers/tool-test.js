@@ -187,7 +187,7 @@ describe('Tool resolver standard behavior', () => {
   });
   it('should delete relation in tool', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ToolEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation ToolEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         toolEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

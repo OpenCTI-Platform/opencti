@@ -194,7 +194,7 @@ describe('City resolver standard behavior', () => {
   });
   it('should delete relation in city', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CityEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation CityEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         cityEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

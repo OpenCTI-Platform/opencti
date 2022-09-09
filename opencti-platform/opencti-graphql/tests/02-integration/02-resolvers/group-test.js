@@ -149,7 +149,7 @@ describe('Group resolver standard behavior', () => {
   });
   it('should delete relation in group', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation GroupEdit($id: ID!, $fromId: String, $relationship_type: String!) {
+      mutation GroupEdit($id: ID!, $fromId: StixRef, $relationship_type: String!) {
         groupEdit(id: $id) {
           relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
             id

@@ -181,7 +181,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
   });
   it('should delete relation in stixSightingRelationship', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation stixSightingRelationshipEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation stixSightingRelationshipEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         stixSightingRelationshipEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id

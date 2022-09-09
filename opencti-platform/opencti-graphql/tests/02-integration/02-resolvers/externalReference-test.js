@@ -194,7 +194,7 @@ describe('ExternalReference resolver standard behavior', () => {
   });
   it('should delete relation in externalReference', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ExternalReferenceEdit($id: ID!, $fromId: String!, $relationship_type: String!) {
+      mutation ExternalReferenceEdit($id: ID!, $fromId: StixRef!, $relationship_type: String!) {
         externalReferenceEdit(id: $id) {
           relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
             id

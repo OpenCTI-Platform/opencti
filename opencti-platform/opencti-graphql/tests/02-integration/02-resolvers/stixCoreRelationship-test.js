@@ -63,7 +63,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   it('should stixCoreRelationship number to be accurate', async () => {
     const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const NUMBER_QUERY = gql`
-        query StixCoreRelationshipsNumber($type: String, $fromId: String) {
+        query StixCoreRelationshipsNumber($type: String, $fromId: StixRef) {
             stixCoreRelationshipsNumber(type: $type, fromId: $fromId) {
                 total
             }
@@ -171,7 +171,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should delete relation in stixCoreRelationship', async () => {
     const RELATION_DELETE_QUERY = gql`
-        mutation StixCoreRelationshipEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+        mutation StixCoreRelationshipEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
             stixCoreRelationshipEdit(id: $id) {
                 relationDelete(toId: $toId, relationship_type: $relationship_type) {
                     id

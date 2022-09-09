@@ -190,7 +190,7 @@ describe('Country resolver standard behavior', () => {
   });
   it('should delete relation in country', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CountryEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation CountryEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         countryEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
