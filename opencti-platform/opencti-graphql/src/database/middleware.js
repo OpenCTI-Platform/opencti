@@ -1888,7 +1888,7 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const ruleInstance = R.mergeRight(instance, rulePatch);
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
-  logApp.debug('Upsert inferred relation', { relation: patch });
+  logApp.info('Upsert inferred relation', { relation: patch });
   return patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 // endregion
@@ -2615,7 +2615,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
   const instance = { fromId, toId, entity_type: relationship_type, relationship_type, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
   const inputRelation = { ...instance, ...patch };
-  logApp.debug('Create inferred relation', { relation: inputRelation });
+  logApp.info('Create inferred relation', { relation: inputRelation });
   return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, opts);
 };
 /* istanbul ignore next */
@@ -2933,7 +2933,7 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
   const instance = { standard_id: standardId, ...input, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
   const inputEntity = { ...instance, ...patch };
-  logApp.debug('Create inferred entity', { entity: inputEntity });
+  logApp.info('Create inferred entity', { entity: inputEntity });
   return createEntityRaw(context, RULE_MANAGER_USER, inputEntity, type, opts);
 };
 // endregion
