@@ -83,7 +83,7 @@ class StixSightingRelationshipLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={entityFrom.entity_type} />
+          <ItemIcon type={!restrictedFrom ? entityFrom.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
           primary={
