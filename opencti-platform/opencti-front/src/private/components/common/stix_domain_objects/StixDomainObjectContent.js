@@ -180,7 +180,7 @@ class StixDomainObjectContentComponent extends Component {
       if (currentFileType === 'application/pdf') {
         return this.setState({ isLoading: false });
       }
-      const url = `${APP_BASE_PATH}/storage/view/${currentFileId}`;
+      const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
       return Axios.get(url).then((res) => {
         const content = res.data;
         return this.setState({
@@ -371,8 +371,8 @@ class StixDomainObjectContentComponent extends Component {
       markdownSelectedTab,
     } = this.state;
     const files = getFiles(stixDomainObject);
-    const currentUrl = currentFileId && `${APP_BASE_PATH}/storage/view/${currentFileId}`;
-    const currentGetUrl = currentFileId && `${APP_BASE_PATH}/storage/get/${currentFileId}`;
+    const currentUrl = currentFileId && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
+    const currentGetUrl = currentFileId && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;

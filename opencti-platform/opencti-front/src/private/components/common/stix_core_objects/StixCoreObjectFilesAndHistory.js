@@ -245,69 +245,67 @@ const StixCoreObjectFilesAndHistory = ({
           withoutRelations={withoutRelations}
         />
       </div>
-      <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={{ connector_id: '' }}
-          validationSchema={importValidation(t)}
-          onSubmit={onSubmitImport}
-          onReset={handleCloseImport}
-        >
-          {({ submitForm, handleReset, isSubmitting }) => (
-            <Form style={{ margin: '0 0 20px 0' }}>
-              <Dialog
-                PaperProps={{ elevation: 1 }}
-                open={fileToImport}
-                keepMounted={true}
-                onClose={handleCloseImport}
-                fullWidth={true}
-              >
-                <DialogTitle>{t('Launch an import')}</DialogTitle>
-                <DialogContent>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="connector_id"
-                    label={t('Connector')}
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  >
-                    {connectorsImport.map((connector, i) => {
-                      const disabled = !fileToImport
-                        || (connector.connector_scope.length > 0
-                          && !includes(
-                            fileToImport.metaData.mimetype,
-                            connector.connector_scope,
-                          ));
-                      return (
-                        <MenuItem
-                          key={i}
-                          value={connector.id}
-                          disabled={disabled || !connector.active}
-                        >
-                          {connector.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Field>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        </Formik>
-      </div>
+      <Formik
+        enableReinitialize={true}
+        initialValues={{ connector_id: '' }}
+        validationSchema={importValidation(t)}
+        onSubmit={onSubmitImport}
+        onReset={handleCloseImport}
+      >
+        {({ submitForm, handleReset, isSubmitting }) => (
+          <Form style={{ margin: '0 0 20px 0' }}>
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={fileToImport}
+              keepMounted={true}
+              onClose={handleCloseImport}
+              fullWidth={true}
+            >
+              <DialogTitle>{t('Launch an import')}</DialogTitle>
+              <DialogContent>
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="connector_id"
+                  label={t('Connector')}
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                >
+                  {connectorsImport.map((connector, i) => {
+                    const disabled = !fileToImport
+                      || (connector.connector_scope.length > 0
+                        && !includes(
+                          fileToImport.metaData.mimetype,
+                          connector.connector_scope,
+                        ));
+                    return (
+                      <MenuItem
+                        key={i}
+                        value={connector.id}
+                        disabled={disabled || !connector.active}
+                      >
+                        {connector.name}
+                      </MenuItem>
+                    );
+                  })}
+                </Field>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleReset} disabled={isSubmitting}>
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {t('Create')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Form>
+        )}
+      </Formik>
       <div>
         <Formik
           enableReinitialize={true}

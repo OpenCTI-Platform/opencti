@@ -4,6 +4,7 @@ import { askJobImport, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
 import { stixCoreObjectImportDelete } from '../domain/stixCoreObject';
 import { internalLoadById } from '../database/middleware';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 const fileResolvers = {
   Query: {
@@ -15,7 +16,7 @@ const fileResolvers = {
     works: (file, _, { user }) => worksForSource(user, file.id),
     metaData: (file, _, { user }) => {
       if (file.metaData.entity_id) {
-        return { ...file.metaData, entity: internalLoadById(user, file.metaData.entity_id) };
+        return { ...file.metaData, entity: internalLoadById(user, file.metaData.entity_id, { type: ABSTRACT_STIX_DOMAIN_OBJECT }) };
       }
       return file.metaData;
     },

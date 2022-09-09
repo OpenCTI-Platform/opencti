@@ -162,7 +162,7 @@ class PendingFileLineComponent extends Component {
                 <span>
                   <IconButton
                     disabled={isProgress}
-                    href={`${APP_BASE_PATH}/storage/get/${file.id}`}
+                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
                     size="large"

@@ -143,6 +143,7 @@ class FileLineComponent extends Component {
       directDownload,
       handleOpenImport,
       nested,
+      workNested,
     } = this.props;
     const { lastModifiedSinceMin, uploadStatus, metaData } = file;
     const { messages, errors } = metaData;
@@ -174,8 +175,8 @@ class FileLineComponent extends Component {
           disabled={isProgress}
           to={
             directDownload
-              ? `/storage/get/${file.id}`
-              : `/storage/view/${file.id}`
+              ? `/storage/get/${encodeURIComponent(file.id)}`
+              : `/storage/view/${encodeURIComponent(file.id)}`
           }
           target="_blank"
           rel="noopener noreferrer"
@@ -227,7 +228,7 @@ class FileLineComponent extends Component {
                 <span>
                   <IconButton
                     disabled={isProgress}
-                    href={`${APP_BASE_PATH}/storage/get/${file.id}`}
+                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
                     size="large"
@@ -266,7 +267,7 @@ class FileLineComponent extends Component {
             )}
           </ListItemSecondaryAction>
         </ListItem>
-        <FileWork file={file} />
+        <FileWork file={file} nested={workNested} />
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}
@@ -339,6 +340,7 @@ FileLineComponent.propTypes = {
   directDownload: PropTypes.bool,
   handleOpenImport: PropTypes.func,
   nested: PropTypes.bool,
+  workNested: PropTypes.bool,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {

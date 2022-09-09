@@ -25,6 +25,7 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import { ignoredAttributesInFeeds } from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import Filters, { isUniqFilter } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
+import { feedCreationAllTypesQuery } from './FeedCreation';
 
 const styles = (theme) => ({
   header: {
@@ -255,47 +256,6 @@ const FeedEditionContainer = (props) => {
     setFilters(R.dissoc(key, filters));
   };
 
-  const entitiesTypes = R.pipe(
-    R.map((n) => ({
-      label: t(
-        n.toString()[0] === n.toString()[0].toUpperCase()
-          ? `entity_${n.toString()}`
-          : `relationship_${n.toString()}`,
-      ),
-      value: n,
-    })),
-    R.sortWith([R.ascend(R.prop('label'))]),
-  )([
-    'Attack-Pattern',
-    'Campaign',
-    'Note',
-    'Observed-Data',
-    'Opinion',
-    'Report',
-    'Course-Of-Action',
-    'Individual',
-    'Organization',
-    'Sector',
-    'Indicator',
-    'Infrastructure',
-    'Intrusion-Set',
-    'City',
-    'Country',
-    'Region',
-    'Position',
-    'Malware',
-    'Threat-Actor',
-    'Tool',
-    'Vulnerability',
-    'Incident',
-    'Stix-Cyber-Observable',
-    'Stix-Core-Relationship',
-    'StixFile',
-    'IPv4-Addr',
-    'IPv6-Addr',
-    'Domain-Name',
-  ]);
-
   const initialValues = R.pickAll(
     ['name', 'separator', 'rolling_time', 'include_header', 'feed_types'],
     feed,
@@ -315,261 +275,316 @@ const FeedEditionContainer = (props) => {
         <Typography variant="h6">{t('Update a feed')}</Typography>
       </div>
       <div className={classes.container}>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={feedValidation(t)}
-          onSubmit={onSubmit}
-          onReset={onReset}
-        >
-          {({ submitForm, handleReset, isSubmitting }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="separator"
-                label={t('Separator')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                type="number"
-                name="rolling_time"
-                label={t('Rolling time (in minutes)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="feed_types"
-                onChange={(_, value) => handleSelectTypes(value)}
-                label={t('Entity types')}
-                fullWidth={true}
-                multiple={true}
-                containerstyle={{ width: '100%', marginTop: 20 }}
-              >
-                {entitiesTypes.map((type) => (
-                  <MenuItem key={type.value} value={type.value}>
-                    {type.label}
-                  </MenuItem>
-                ))}
-              </Field>
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="include_header"
-                label={t('Include headers in the feed')}
-                containerstyle={{ marginTop: 20 }}
-              />
-              <div style={{ marginTop: 35 }}>
-                <Filters
-                  variant="text"
-                  availableFilterKeys={[
-                    'markedBy',
-                    'labelledBy',
-                    'createdBy',
-                    'x_opencti_score_gt',
-                    'x_opencti_detection',
-                    'revoked',
-                    'confidence_gt',
-                    'pattern_type',
-                  ]}
-                  handleAddFilter={handleAddFilter}
-                  noDirectFilters={true}
-                />
-              </div>
-              <div className="clearfix" />
-              <div className={classes.filters}>
-                {R.map((currentFilter) => {
-                  const label = `${truncate(
-                    t(`filter_${currentFilter[0]}`),
-                    20,
-                  )}`;
-                  const values = (
-                    <span>
-                      {R.map(
-                        (n) => (
-                          <span key={n.value}>
-                            {n.value && n.value.length > 0
-                              ? truncate(n.value, 15)
-                              : t('No label')}{' '}
-                            {R.last(currentFilter[1]).value !== n.value && (
-                              <code>OR</code>
-                            )}{' '}
-                          </span>
-                        ),
-                        currentFilter[1],
-                      )}
-                    </span>
-                  );
-                  return (
-                    <span key={currentFilter[0]}>
-                      <Chip
-                        classes={{ root: classes.filter }}
-                        label={
-                          <div>
-                            <strong>{label}</strong>: {values}
-                          </div>
-                        }
-                        onDelete={() => handleRemoveFilter(currentFilter[0])}
+        <QueryRenderer
+          query={feedCreationAllTypesQuery}
+          render={({ props: data }) => {
+            if (data && data.scoTypes && data.sdoTypes) {
+              let result = [];
+              result = [
+                ...R.pipe(
+                  R.pathOr([], ['scoTypes', 'edges']),
+                  R.map((n) => ({
+                    label: t(`entity_${n.node.label}`),
+                    value: n.node.label,
+                    type: n.node.label,
+                  })),
+                )(data),
+                ...result,
+              ];
+              result = [
+                ...R.pipe(
+                  R.pathOr([], ['sdoTypes', 'edges']),
+                  R.map((n) => ({
+                    label: t(`entity_${n.node.label}`),
+                    value: n.node.label,
+                    type: n.node.label,
+                  })),
+                )(data),
+                ...result,
+              ];
+              const entitiesTypes = R.sortWith(
+                [R.ascend(R.prop('label'))],
+                result,
+              );
+              return (
+                <Formik
+                  initialValues={initialValues}
+                  validationSchema={feedValidation(t)}
+                  onSubmit={onSubmit}
+                  onReset={onReset}
+                >
+                  {({ submitForm, handleReset, isSubmitting }) => (
+                    <Form style={{ margin: '20px 0 20px 0' }}>
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        name="name"
+                        label={t('Name')}
+                        fullWidth={true}
                       />
-                      {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
-                        <Chip
-                          classes={{ root: classes.operator }}
-                          label={t('AND')}
-                        />
-                      )}
-                    </span>
-                  );
-                }, R.toPairs(filters))}
-              </div>
-              {selectedTypes.length > 0 && (
-                <div className={classes.container} style={{ marginTop: 20 }}>
-                  {Object.keys(feedAttributes).map((i) => (
-                    <div key={i} className={classes.step}>
-                      <IconButton
-                        disabled={feedAttributes.length === 1}
-                        aria-label="Delete"
-                        className={classes.stepCloseButton}
-                        onClick={() => handleRemoveAttribute(i)}
-                        size="large"
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        name="separator"
+                        label={t('Separator')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                      />
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        type="number"
+                        name="rolling_time"
+                        label={t('Rolling time (in minutes)')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                      />
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="feed_types"
+                        onChange={(_, value) => handleSelectTypes(value)}
+                        label={t('Entity types')}
+                        fullWidth={true}
+                        multiple={true}
+                        containerstyle={{ width: '100%', marginTop: 20 }}
                       >
-                        <CancelOutlined fontSize="small" />
-                      </IconButton>
-                      <Grid container={true} spacing={3}>
-                        <Grid item={true} xs="auto">
-                          <MuiTextField
-                            variant="standard"
-                            name="attribute"
-                            label={t('Column')}
-                            fullWidth={true}
-                            value={feedAttributes[i].attribute}
-                            onChange={(event) => handleChangeField(i, event.target.value)
-                            }
-                          />
-                        </Grid>
-                        {selectedTypes.map((selectedType) => (
-                          <Grid key={selectedType} item={true} xs="auto">
-                            <FormControl className={classes.formControl}>
-                              <InputLabel variant="standard">
-                                {t(`entity_${selectedType}`)}
-                              </InputLabel>
-                              <QueryRenderer
-                                query={stixCyberObservablesLinesAttributesQuery}
-                                variables={{ elementType: selectedType }}
-                                render={({ props: resultProps }) => {
-                                  if (
-                                    resultProps
-                                    && resultProps.schemaAttributes
-                                  ) {
-                                    let attributes = R.pipe(
-                                      R.map((n) => n.node),
-                                      R.filter(
-                                        (n) => !R.includes(
-                                          n.value,
-                                          ignoredAttributesInFeeds,
-                                        ) && !n.value.startsWith('i_'),
-                                      ),
-                                    )(resultProps.schemaAttributes.edges);
-                                    if (
-                                      attributes.filter(
-                                        (n) => n.value === 'hashes',
-                                      )
-                                    ) {
-                                      attributes = R.sortBy(
-                                        R.prop('value'),
-                                        [
-                                          ...attributes,
-                                          { value: 'hashes.MD5' },
-                                          { value: 'hashes.SHA-1' },
-                                          { value: 'hashes.SHA-256' },
-                                          { value: 'hashes.SHA-512' },
-                                        ].filter((n) => n.value !== 'hashes'),
-                                      );
-                                    }
-                                    return (
-                                      <Select
-                                        style={{ width: 150 }}
-                                        variant="standard"
-                                        value={
-                                          feedAttributes[i]?.mappings
-                                          && feedAttributes[i].mappings[
-                                            selectedType
-                                          ]?.attribute
-                                        }
-                                        onChange={(event) => handleChangeAttributeMapping(
-                                          i,
-                                          selectedType,
-                                          event.target.value,
-                                        )
-                                        }
-                                      >
-                                        {attributes.map((attribute) => (
-                                          <MenuItem
-                                            key={attribute.value}
-                                            value={attribute.value}
-                                          >
-                                            {attribute.value}
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
-                                    );
-                                  }
-                                  return <div />;
-                                }}
-                              />
-                            </FormControl>
-                          </Grid>
+                        {entitiesTypes.map((type) => (
+                          <MenuItem key={type.value} value={type.value}>
+                            {type.label}
+                          </MenuItem>
                         ))}
-                      </Grid>
-                    </div>
-                  ))}
-                  <div className={classes.add}>
-                    <Button
-                      disabled={!areAttributesValid()}
-                      variant="contained"
-                      color="secondary"
-                      size="small"
-                      onClick={() => handleAddAttribute()}
-                      classes={{ root: classes.buttonAdd }}
-                    >
-                      <AddOutlined fontSize="small" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-              <div className="clearfix" />
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting || !areAttributesValid()}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Update')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
+                      </Field>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="include_header"
+                        label={t('Include headers in the feed')}
+                        containerstyle={{ marginTop: 20 }}
+                      />
+                      <div style={{ marginTop: 35 }}>
+                        <Filters
+                          variant="text"
+                          availableFilterKeys={[
+                            'markedBy',
+                            'labelledBy',
+                            'createdBy',
+                            'x_opencti_score_gt',
+                            'x_opencti_detection',
+                            'revoked',
+                            'confidence_gt',
+                            'pattern_type',
+                          ]}
+                          handleAddFilter={handleAddFilter}
+                          noDirectFilters={true}
+                        />
+                      </div>
+                      <div className="clearfix" />
+                      <div className={classes.filters}>
+                        {R.map((currentFilter) => {
+                          const label = `${truncate(
+                            t(`filter_${currentFilter[0]}`),
+                            20,
+                          )}`;
+                          const values = (
+                            <span>
+                              {R.map(
+                                (n) => (
+                                  <span key={n.value}>
+                                    {n.value && n.value.length > 0
+                                      ? truncate(n.value, 15)
+                                      : t('No label')}{' '}
+                                    {R.last(currentFilter[1]).value
+                                      !== n.value && <code>OR</code>}{' '}
+                                  </span>
+                                ),
+                                currentFilter[1],
+                              )}
+                            </span>
+                          );
+                          return (
+                            <span key={currentFilter[0]}>
+                              <Chip
+                                classes={{ root: classes.filter }}
+                                label={
+                                  <div>
+                                    <strong>{label}</strong>: {values}
+                                  </div>
+                                }
+                                onDelete={() => handleRemoveFilter(currentFilter[0])
+                                }
+                              />
+                              {R.last(R.toPairs(filters))[0]
+                                !== currentFilter[0] && (
+                                <Chip
+                                  classes={{ root: classes.operator }}
+                                  label={t('AND')}
+                                />
+                              )}
+                            </span>
+                          );
+                        }, R.toPairs(filters))}
+                      </div>
+                      {selectedTypes.length > 0 && (
+                        <div
+                          className={classes.container}
+                          style={{ marginTop: 20 }}
+                        >
+                          {Object.keys(feedAttributes).map((i) => (
+                            <div key={i} className={classes.step}>
+                              <IconButton
+                                disabled={feedAttributes.length === 1}
+                                aria-label="Delete"
+                                className={classes.stepCloseButton}
+                                onClick={() => handleRemoveAttribute(i)}
+                                size="large"
+                              >
+                                <CancelOutlined fontSize="small" />
+                              </IconButton>
+                              <Grid container={true} spacing={3}>
+                                <Grid item={true} xs="auto">
+                                  <MuiTextField
+                                    variant="standard"
+                                    name="attribute"
+                                    label={t('Column')}
+                                    fullWidth={true}
+                                    value={feedAttributes[i].attribute}
+                                    onChange={(event) => handleChangeField(i, event.target.value)
+                                    }
+                                  />
+                                </Grid>
+                                {selectedTypes.map((selectedType) => (
+                                  <Grid
+                                    key={selectedType}
+                                    item={true}
+                                    xs="auto"
+                                  >
+                                    <FormControl
+                                      className={classes.formControl}
+                                    >
+                                      <InputLabel variant="standard">
+                                        {t(`entity_${selectedType}`)}
+                                      </InputLabel>
+                                      <QueryRenderer
+                                        query={
+                                          stixCyberObservablesLinesAttributesQuery
+                                        }
+                                        variables={{
+                                          elementType: selectedType,
+                                        }}
+                                        render={({ props: resultProps }) => {
+                                          if (
+                                            resultProps
+                                            && resultProps.schemaAttributes
+                                          ) {
+                                            let attributes = R.pipe(
+                                              R.map((n) => n.node),
+                                              R.filter(
+                                                (n) => !R.includes(
+                                                  n.value,
+                                                  ignoredAttributesInFeeds,
+                                                ) && !n.value.startsWith('i_'),
+                                              ),
+                                            )(
+                                              resultProps.schemaAttributes.edges,
+                                            );
+                                            if (
+                                              attributes.filter(
+                                                (n) => n.value === 'hashes',
+                                              ).length > 0
+                                            ) {
+                                              attributes = R.sortBy(
+                                                R.prop('value'),
+                                                [
+                                                  ...attributes,
+                                                  { value: 'hashes.MD5' },
+                                                  { value: 'hashes.SHA-1' },
+                                                  { value: 'hashes.SHA-256' },
+                                                  { value: 'hashes.SHA-512' },
+                                                ].filter(
+                                                  (n) => n.value !== 'hashes',
+                                                ),
+                                              );
+                                            }
+                                            return (
+                                              <Select
+                                                style={{ width: 150 }}
+                                                variant="standard"
+                                                value={
+                                                  feedAttributes[i]?.mappings
+                                                  && feedAttributes[i].mappings[
+                                                    selectedType
+                                                  ]?.attribute
+                                                }
+                                                onChange={(event) => handleChangeAttributeMapping(
+                                                  i,
+                                                  selectedType,
+                                                  event.target.value,
+                                                )
+                                                }
+                                              >
+                                                {attributes.map((attribute) => (
+                                                  <MenuItem
+                                                    key={attribute.value}
+                                                    value={attribute.value}
+                                                  >
+                                                    {attribute.value}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            );
+                                          }
+                                          return <div />;
+                                        }}
+                                      />
+                                    </FormControl>
+                                  </Grid>
+                                ))}
+                              </Grid>
+                            </div>
+                          ))}
+                          <div className={classes.add}>
+                            <Button
+                              disabled={!areAttributesValid()}
+                              variant="contained"
+                              color="secondary"
+                              size="small"
+                              onClick={() => handleAddAttribute()}
+                              classes={{ root: classes.buttonAdd }}
+                            >
+                              <AddOutlined fontSize="small" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      <div className="clearfix" />
+                      <div className={classes.buttons}>
+                        <Button
+                          variant="contained"
+                          onClick={handleReset}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Cancel')}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={submitForm}
+                          disabled={isSubmitting || !areAttributesValid()}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Update')}
+                        </Button>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              );
+            }
+            return <div />;
+          }}
+        />
       </div>
     </div>
   );
