@@ -37,7 +37,7 @@ describe('Sighting incident rule', () => {
       // All sighted indicators are revoked
       await assertInferencesSize(ENTITY_TYPE_INCIDENT, 0);
       // Update the valid until to change the revoked to false
-      await patchAttribute(testContext, SYSTEM_USER, ONE_CLAP, ENTITY_TYPE_INDICATOR, { valid_until: '2024-02-17T23:00:00.000Z' });
+      await patchAttribute(testContext, SYSTEM_USER, ONE_CLAP, ENTITY_TYPE_INDICATOR, { valid_until: '2124-02-17T23:00:00.000Z' });
       const inferences = await assertInferencesSize(ENTITY_TYPE_INCIDENT, 1);
       const inference = R.head(inferences);
       expect(inference).not.toBeNull();
