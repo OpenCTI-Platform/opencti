@@ -336,7 +336,7 @@ class StixSightingRelationship:
         )
         query = (
             """
-                query StixSightingRelationships($elementId: String, $fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $filters: [StixSightingRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixSightingRelationshipsOrdering, $orderMode: OrderingMode) {
+                query StixSightingRelationships($elementId: String, $fromId: StixRef, $fromTypes: [String], $toId: StixRef, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $filters: [StixSightingRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixSightingRelationshipsOrdering, $orderMode: OrderingMode) {
                     stixSightingRelationships(elementId: $elementId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
@@ -684,7 +684,7 @@ class StixSightingRelationship:
                 + "}",
             )
             query = """
-               mutation StixSightingRelationshipEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixSightingRelationshipEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixSightingRelationshipEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -752,7 +752,7 @@ class StixSightingRelationship:
             stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
             if stix_domain_object["createdBy"] is not None:
                 query = """
-                    mutation StixSightingRelationshipEdit($id: ID!, $toId: String! $relationship_type: String!) {
+                    mutation StixSightingRelationshipEdit($id: ID!, $toId: StixRef! $relationship_type: String!) {
                         stixSightingRelationshipEdit(id: $id) {
                             relationDelete(toId: $toId, relationship_type: $relationship_type) {
                                 id

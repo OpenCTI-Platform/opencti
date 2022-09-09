@@ -520,7 +520,7 @@ class Note:
                 + "}",
             )
             query = """
-               mutation NotetEditRelationDelete($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation NotetEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    noteEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id

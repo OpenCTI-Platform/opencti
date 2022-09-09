@@ -744,7 +744,7 @@ class StixCoreRelationship:
                 + "}",
             )
             query = """
-               mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixCoreRelationshipEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -886,7 +886,7 @@ class StixCoreRelationship:
                 + "}",
             )
             query = """
-               mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixCoreRelationshipEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -975,7 +975,7 @@ class StixCoreRelationship:
                 + "}",
             )
             query = """
-               mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixCoreRelationshipEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -1046,7 +1046,7 @@ class StixCoreRelationship:
             stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
             if stix_domain_object["createdBy"] is not None:
                 query = """
-                    mutation StixCoreRelationshipEdit($id: ID!, $toId: String! $relationship_type: String!) {
+                    mutation StixCoreRelationshipEdit($id: ID!, $toId: StixRef! $relationship_type: String!) {
                         stixCoreRelationshipEdit(id: $id) {
                             relationDelete(toId: $toId, relationship_type: $relationship_type) {
                                 id

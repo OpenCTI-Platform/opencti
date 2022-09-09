@@ -508,7 +508,7 @@ class ObservedData:
                 + "}",
             )
             query = """
-               mutation ObservedDataEditRelationDelete($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation ObservedDataEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    observedDataEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id

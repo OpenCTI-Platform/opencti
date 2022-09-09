@@ -636,7 +636,7 @@ class StixCyberObservable:
             query = """
                 mutation StixCyberObservableAdd(
                     $type: String!,
-                    $stix_id: String,
+                    $stix_id: StixId,
                     $x_opencti_score: Int,
                     $x_opencti_description: String,
                     $createIndicator: Boolean,
@@ -1455,7 +1455,7 @@ class StixCyberObservable:
             stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
             if stix_domain_object["createdBy"] is not None:
                 query = """
-                    mutation StixCyberObservableEdit($id: ID!, $toId: String! $relationship_type: String!) {
+                    mutation StixCyberObservableEdit($id: ID!, $toId: StixRef! $relationship_type: String!) {
                         stixCyberObservableEdit(id: $id) {
                             relationDelete(toId: $toId, relationship_type: $relationship_type) {
                                 id
@@ -1588,7 +1588,7 @@ class StixCyberObservable:
                 + "}",
             )
             query = """
-               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixCyberObservableEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -1687,7 +1687,7 @@ class StixCyberObservable:
                 + "}",
             )
             query = """
-               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixCyberObservableEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -1803,7 +1803,7 @@ class StixCyberObservable:
                 + "}",
             )
             query = """
-               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    stixCyberObservableEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
