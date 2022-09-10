@@ -26,8 +26,7 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import {
@@ -41,6 +40,8 @@ import { adaptFiltersFrontendFormat, convertFiltersToQueryOptions, TYPE_FILTER }
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { listAllRelations } from '../database/middleware-loader';
+import { getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -59,19 +60,162 @@ const CONFIDENCE_FILTER = 'confidence';
 const REVOKED_FILTER = 'revoked';
 const PATTERN_FILTER = 'pattern_type';
 
-const isEventGranted = (event, user) => {
-  const { data } = event;
-  // Granted if:
-  // - Event concern directly a marking definition
-  // - Event has no specified markings
-  // - User have all event markings
-  // - User have the bypass capabilities
-  const clientMarkings = R.flatten(R.map((m) => [m.standard_id, m.internal_id], user.allowed_marking));
-  const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-  const isUserHaveAccess = (event.markings || []).length === 0 || event.markings.every((m) => clientMarkings.includes(m));
-  const isBypass = isBypassUser(user);
-  const isGrantedForData = isMarkingObject || isUserHaveAccess;
-  return isBypass || isGrantedForData;
+const filterCacheResolver = async (values, filterCache) => {
+  const filterIds = values.map((v) => v.id);
+  const filterRefs = [];
+  for (let i = 0; i < filterIds.length; i += 1) {
+    const filterId = filterIds[i];
+    const fromCache = filterCache.get(filterId);
+    if (fromCache) {
+      filterRefs.push(fromCache.standard_id);
+    } else {
+      const creator = await internalLoadById(SYSTEM_USER, filterId);
+      filterRefs.push(creator.standard_id);
+      filterCache.set(filterId, creator);
+    }
+  }
+  return filterRefs;
+};
+const isInstanceAccessible = async (user, instance, filterCache, filters = {}) => {
+  // First we need to check if the user can access to it (marking and organizations)
+  // If bypass just return true
+  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+  if (isBypass) {
+    return true;
+  }
+  // Check if user have correct markings.
+  const instanceMarkings = instance.object_marking_refs ?? [];
+  if (instanceMarkings.length > 0) {
+    const userMarkings = (user.allowed_marking || []).map((m) => m.standard_id);
+    const isUserHaveAccess = instanceMarkings.every((m) => userMarkings.includes(m));
+    if (!isUserHaveAccess) {
+      return false;
+    }
+  }
+  // Check user have correct organizations
+  const dataOrganizations = instance.extensions[STIX_EXT_OCTI].granted_refs ?? [];
+  const platformSettings = await getEntityFromCache(ENTITY_TYPE_SETTINGS);
+  if (platformSettings.platform_organization) {
+    const isUserPartOfPlatformOrganization = (user.organizations ?? []).includes(platformSettings.platform_organization);
+    if (!isUserPartOfPlatformOrganization) {
+      if (dataOrganizations.length === 0) {
+        return false;
+      } // User cant see empty shared
+      if (!dataOrganizations.some((r) => user.organizations.includes(r))) {
+        return false;
+      }
+    }
+  } else if (dataOrganizations.length > 0 && !dataOrganizations.some((r) => user.organizations.includes(r))) {
+    return false;
+  }
+  // When apply extra filters if needed.
+  if (isNotEmptyField(filters)) {
+    // Pre-filter transformation to handle specific frontend format
+    const adaptedFilters = adaptFiltersFrontendFormat(filters);
+    // User is granted, but we still need to apply filters if needed
+    const filterEntries = Object.entries(adaptedFilters);
+    for (let index = 0; index < filterEntries.length; index += 1) {
+      const [type, { operator, values }] = filterEntries[index];
+      // Markings filtering
+      if (type === MARKING_FILTER) {
+        if (values.length === 0) {
+          return true;
+        }
+        const markings = instance.object_marking_refs || [];
+        if (values.length > 0 && markings.length === 0) {
+          return false;
+        }
+        const filterMarkingRefs = await filterCacheResolver(values, filterCache);
+        const found = filterMarkingRefs.some((r) => markings.includes(r));
+        if (!found) {
+          return false;
+        }
+      }
+      // Entity type filtering
+      if (type === TYPE_FILTER) {
+        const instanceType = instance.extensions[STIX_EXT_OCTI].type;
+        const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
+        let found = false;
+        if (values.length === 0) {
+          found = true;
+        } else {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const filter of values) {
+            if (instanceAllTypes.includes(filter.id)) {
+              found = true;
+            }
+          }
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      // Creator filtering
+      if (type === CREATOR_FILTER) {
+        if (values.length === 0) {
+          return true;
+        }
+        if (values.length > 0 && instance.created_by_ref === undefined) {
+          return false;
+        }
+        const filterCreationRefs = await filterCacheResolver(values, filterCache);
+        const found = filterCreationRefs.includes(instance.created_by_ref);
+        if (!found) {
+          return false;
+        }
+      }
+      // Labels filtering
+      if (type === LABEL_FILTER) {
+        const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
+        const found = values.map((v) => v.value).some((r) => labels.includes(r));
+        if (!found) {
+          return false;
+        }
+      }
+      // Boolean filtering
+      if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
+        const { id } = R.head(values);
+        const found = (id === 'true') === instance.revoked;
+        if (!found) {
+          return false;
+        }
+      }
+      // Numeric filtering
+      if (type === SCORE_FILTER || type === CONFIDENCE_FILTER) {
+        const { id } = R.head(values);
+        let found = false;
+        const numeric = parseInt(id, 10);
+        switch (operator) {
+          case 'lt':
+            found = instance[type] < numeric;
+            break;
+          case 'lte':
+            found = instance[type] <= numeric;
+            break;
+          case 'gt':
+            found = instance[type] > numeric;
+            break;
+          case 'gte':
+            found = instance[type] >= numeric;
+            break;
+          default:
+            found = instance[type] === numeric;
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      // String filtering
+      if (type === PATTERN_FILTER) {
+        const { id } = R.head(values);
+        const found = id === instance[type];
+        if (!found) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 };
 
 const createBroadcastClient = (channel) => {
@@ -83,10 +227,7 @@ const createBroadcastClient = (channel) => {
     setChannelDelay: (d) => channel.setDelay(d),
     close: () => channel.close(),
     sendEvent: (eventId, topic, event) => {
-      // Send event only if user is granted for
-      if (isEventGranted(event, channel)) {
-        channel.sendEvent(eventId, topic, event);
-      }
+      channel.sendEvent(eventId, topic, event);
     },
     sendHeartbeat: (eventId) => {
       // Debounce the heartbeat to STREAM_BATCH_TIME
@@ -236,11 +377,15 @@ const createSeeMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res);
+      const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       const processor = createStreamProcessor(sessionUser, sessionUser.user_email, false, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
-          client.sendEvent(eventId, event, data);
+          const instanceAccessible = await isInstanceAccessible(sessionUser, data.data, filterCache);
+          if (instanceAccessible) {
+            client.sendEvent(eventId, event, data);
+          }
         }
         // Send the Heartbeat with last event id
         client.sendHeartbeat(lastEventId);

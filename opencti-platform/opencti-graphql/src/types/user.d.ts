@@ -1,4 +1,5 @@
 import type { StoreMarkingDefinition } from './store';
+import type { StixId } from './stix-common';
 
 interface UserRole {
   name: string;
@@ -22,6 +23,7 @@ interface AuthUser {
   user_email: string;
   origin: Partial<UserOrigin>;
   roles: Array<UserRole>;
+  organizations: Array<StixId>;
   capabilities: Array<UserCapability>;
   allowed_marking: Array<StoreMarkingDefinition>;
   all_marking: Array<StoreMarkingDefinition>;

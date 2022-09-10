@@ -124,7 +124,7 @@ import {
 import {
   FIELD_TO_META_RELATION,
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
+  RELATION_EXTERNAL_REFERENCE, RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
@@ -147,7 +147,7 @@ import {
   numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship, RELATION_GRANTED_TO, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
@@ -584,8 +584,12 @@ const TRX_CREATION = 'creation';
 const TRX_UPDATE = 'update';
 const TRX_IDLE = 'idle';
 const depsKeys = [
+  // Relationship
   { src: 'fromId', dst: 'from' },
   { src: 'toId', dst: 'to' },
+  // Granted
+  { src: INPUT_GRANTED_REFS },
+  // Other meta refs
   ...STIX_META_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
   ...STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
 ];
@@ -1712,6 +1716,10 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         }
       } else {
         const relType = FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION[key];
+        // Special access check for RELATION_GRANTED_TO meta
+        if (relType === RELATION_GRANTED_TO && !userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+          throw ForbiddenAccess();
+        }
         const { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
@@ -1756,7 +1764,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
           const targets = await internalFindByIds(context, user, refs);
           const targetIds = targets.map((t) => t.internal_id);
           const currentRels = await listAllRelations(context, user, relType, { fromId: id });
-          const relsToDelete = currentRels.filter((c) => targetIds.includes(c.internal_id));
+          const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId));
           if (relsToDelete.length > 0) {
             // eslint-disable-next-line no-use-before-define
             await deleteElements(context, user, relsToDelete, streamOpts);
@@ -2414,6 +2422,10 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   const toRole = `${relationshipType}_to`;
   // Build final query
   const relToCreate = [];
+  // For global granted
+  if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+    relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
+  }
   if (isStixCoreRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
     relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
@@ -2451,10 +2463,6 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = input;
-  // Granted to relationship is protected.
-  if (relationshipType === RELATION_GRANTED_TO && !userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-    throw ForbiddenAccess();
-  }
   // Enforce reference controls
   if (isStixCoreRelationship(relationshipType)) {
     const enforceReferences = conf.get('app:enforce_references');
@@ -2726,6 +2734,11 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
+  // For global granted
+  if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+    relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
+  }
+  // For meta stix core
   if (isStixCoreObject(type)) {
     const inputFields = STIX_META_RELATIONSHIPS_INPUTS;
     for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
@@ -2736,6 +2749,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       }
     }
   }
+  // For meta observables
   if (isStixCyberObservable(type)) {
     const inputFields = stixCyberObservableFieldsForType(type);
     for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {

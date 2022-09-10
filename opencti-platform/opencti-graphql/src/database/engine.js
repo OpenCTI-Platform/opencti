@@ -30,13 +30,16 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixMetaRelationship,
-  RELATION_CREATED_BY,
+  RELATION_CREATED_BY, RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
-  ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_META_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_INTERNAL_OBJECT,
+  ABSTRACT_STIX_META_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -75,7 +78,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
-import { RELATION_GRANTED_TO, RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';

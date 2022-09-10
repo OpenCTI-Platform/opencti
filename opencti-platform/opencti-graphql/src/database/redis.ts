@@ -40,7 +40,6 @@ import type {
 } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
-import { BYPASS } from '../utils/access';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { telemetry } from '../config/tracing';
 
@@ -580,24 +579,11 @@ export const fetchStreamInfo = async () => {
 
 const processStreamResult = async (user: AuthUser, results: Array<any>, callback: any, withInternal: boolean) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
-  const baseData = streamData.filter((s) => {
+  const filteredEvents = streamData.filter((s) => {
     return withInternal ? true : (s.data.scope ?? 'external') === 'external';
   });
-  const lastEventId = baseData.length > 0 ? R.last(baseData)?.id : `${new Date().getTime()}-0`;
-  // Filter data with user markings
-  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
-  if (!isBypass) {
-    const userMarkings = user.allowed_marking.map((m) => m.standard_id);
-    const filteredEvents = baseData.filter((s) => {
-      const dataMarkings = s.data.data.object_marking_refs ?? [];
-      if (dataMarkings.length === 0) return true;
-      return dataMarkings.some((r) => userMarkings.includes(r));
-    });
-    await callback(filteredEvents, lastEventId);
-    return lastEventId;
-  }
-  // User can bypass any right
-  await callback(baseData, lastEventId);
+  const lastEventId = filteredEvents.length > 0 ? R.last(filteredEvents)?.id : `${new Date().getTime()}-0`;
+  await callback(filteredEvents, lastEventId);
   return lastEventId;
 };
 

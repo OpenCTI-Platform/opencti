@@ -15,6 +15,7 @@ export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
 
 // Inputs
+export const INPUT_GRANTED_REFS = 'objectOrganization'; // granted_refs
 export const INPUT_EXTERNAL_REFS = 'externalReferences'; // external_references
 export const INPUT_KILLCHAIN = 'killChainPhases'; // kill_chain_phases
 export const INPUT_CREATED_BY = 'createdBy'; // created_by_ref

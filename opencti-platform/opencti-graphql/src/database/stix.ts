@@ -5,7 +5,6 @@ import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -67,7 +66,7 @@ import {
   RELATION_DOWNLOADS,
   RELATION_DROPS,
   RELATION_EXFILTRATES_TO,
-  RELATION_EXPLOITS, RELATION_GRANTED_TO,
+  RELATION_EXPLOITS,
   RELATION_HAS,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
@@ -178,11 +177,6 @@ type RelationshipMappings = { [k: `${string}_${string}`]: Array<RelationDefiniti
 
 export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // Core
-  // region REPORT
-  [`${ENTITY_TYPE_CONTAINER_REPORT}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
-    { name: RELATION_GRANTED_TO, type: REL_NEW }
-  ],
-  // endregion
   // region ATTACK_PATTERN
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_SUBTECHNIQUE_OF, type: REL_NEW }
@@ -433,9 +427,6 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   // endregion
   // region INDICATOR
-  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
-    { name: RELATION_GRANTED_TO, type: REL_NEW }
-  ],
   [`${ENTITY_TYPE_INDICATOR}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [
     { name: RELATION_BASED_ON, type: REL_EXTENDED }
   ],

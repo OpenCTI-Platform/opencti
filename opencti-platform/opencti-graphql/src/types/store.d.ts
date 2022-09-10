@@ -14,13 +14,17 @@ import {
   INPUT_ENCAPSULATED_BY,
   INPUT_ENCAPSULATES,
   INPUT_FROM,
-  INPUT_IMAGE, INPUT_LINKED,
-  INPUT_OPENED_CONNECTION, INPUT_OPERATING_SYSTEM,
+  INPUT_IMAGE,
+  INPUT_LINKED,
+  INPUT_OPENED_CONNECTION,
+  INPUT_OPERATING_SYSTEM,
   INPUT_PARENT,
   INPUT_PARENT_DIRECTORY,
   INPUT_RAW_EMAIL,
-  INPUT_RESOLVES_TO, INPUT_SAMPLE,
-  INPUT_SENDER, INPUT_SERVICE_DLL,
+  INPUT_RESOLVES_TO,
+  INPUT_SAMPLE,
+  INPUT_SENDER,
+  INPUT_SERVICE_DLL,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
@@ -36,7 +40,7 @@ import {
   INPUT_MARKINGS,
   INPUT_OBJECTS
 } from '../schema/general';
-import type { StixId, OrganizationReliability } from './stix-common';
+import type { OrganizationReliability, StixId } from './stix-common';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -125,6 +129,7 @@ interface StoreRule {
 interface BasicStoreCommon extends BasicStoreBase {
   // Array
   [k: `i_rule_${string}`]: Array<StoreRawRule>;
+
   // [k: `rel_${string}`]: Array<string>;
   // object
   hashes?: { [k: string]: string };
@@ -146,6 +151,7 @@ interface StoreCommon {
 interface StoreProxyRelation extends BasicStoreCommon {
   _index: string;
 }
+
 interface StoreRawRelation extends StoreProxyRelation {
   lang: string;
   relationship_type: string;
@@ -169,6 +175,7 @@ interface StoreRawRelation extends StoreProxyRelation {
   // Array
   connections: Array<StoreConnection>;
 }
+
 interface BasicStoreRelation extends StoreRawRelation {
   fromId: string;
   fromRole: string;
@@ -177,6 +184,7 @@ interface BasicStoreRelation extends StoreRawRelation {
   toRole: string;
   toType: string;
 }
+
 interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_CREATED_BY]: BasicStoreEntity;
   [INPUT_DOMAIN_FROM]: BasicStoreObject;
@@ -238,6 +246,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   source_name: string;
   external_id: string;
   lastEventId: string;
+  platform_organization: string;
   source: string;
   severity: incident_severity_level_enum;
   incident_type: string;
@@ -302,6 +311,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_base_score: number;
   x_opencti_score: number;
 }
+
 interface StoreEntity extends BasicStoreEntity, StoreCommon {
   [INPUT_CREATED_BY]: BasicStoreEntity;
   [INPUT_OPERATING_SYSTEM]: Array<StoreCyberObservable>;
@@ -458,6 +468,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   service_status: windows_service_status_enum;
   integrity_level: windows_integrity_level_enum;
 }
+
 interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_CREATED_BY]: BasicStoreEntity;
   [INPUT_CONTAINS]: Array<BasicStoreObject>;

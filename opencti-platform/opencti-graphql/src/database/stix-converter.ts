@@ -105,7 +105,7 @@ import {
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import {
   INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
+  INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -216,6 +216,7 @@ const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
     is_inferred: instance._index ? isInferredIndex(instance._index) : undefined, // TODO Use case for empty _index?
     workflow_id: instance.x_opencti_workflow_id,
+    granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     linked_to_refs: (instance[INPUT_LINKED] ?? []).map((m) => m.standard_id),
   };
   return cleanObject(octiExtensions);

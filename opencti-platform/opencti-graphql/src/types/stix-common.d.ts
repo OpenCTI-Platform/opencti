@@ -35,6 +35,7 @@ interface StixOpenctiExtension {
   id: v4 | undefined;
   files: Array<StixFileExtension>;
   aliases: Array<string>;
+  granted_refs: Array<StixId>;
   linked_to_refs: Array<StixId>;
   stix_ids: Array<StixId>;
   type: string;
