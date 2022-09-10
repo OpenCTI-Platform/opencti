@@ -223,13 +223,13 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           const isPreviouslyMatched = isMatchRuleFilters(rule, previousStix);
           const isCurrentMatched = isMatchRuleFilters(rule, data);
           const impactDependencies = isAttributesImpactDependencies(rule, previousPatch);
-          // Rule doesnt match anymore, need to cleanup
+          // Rule doesn't match anymore, need to clean up
           if (impactDependencies || (isPreviouslyMatched && !isCurrentMatched)) {
             await applyCleanupOnDependencyIds([internalId]);
           }
           // Rule match, need to apply
           if (isCurrentMatched) {
-            const derivedEvents = await rule.insert(data);
+            const derivedEvents = await rule.update(data, updateEvent);
             await rulesApplyHandler(context, user, derivedEvents);
           }
         }
