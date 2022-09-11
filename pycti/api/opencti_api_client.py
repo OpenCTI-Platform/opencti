@@ -260,7 +260,7 @@ class OpenCTIApiClient:
                                 str(file_index),
                                 (
                                     file.name,
-                                    io.BytesIO(file.data.encode()),
+                                    io.BytesIO(file.data.encode("utf-8", "replace")),
                                     file.mime,
                                 ),
                             )
@@ -275,7 +275,11 @@ class OpenCTIApiClient:
                     if isinstance(files.data, str):
                         file_multi = (
                             str(file_index),
-                            (files.name, io.BytesIO(files.data.encode()), files.mime),
+                            (
+                                files.name,
+                                io.BytesIO(files.data.encode("utf-8", "replace")),
+                                files.mime,
+                            ),
                         )
                     else:
                         file_multi = (

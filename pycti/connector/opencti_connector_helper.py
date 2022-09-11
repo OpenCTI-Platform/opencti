@@ -320,7 +320,11 @@ class ListenStream(threading.Thread):
         self.url = url
         self.token = token
         self.verify_ssl = verify_ssl
-        self.start_timestamp = start_timestamp
+        self.start_timestamp = (
+            start_timestamp
+            if start_timestamp is not None
+            else self.helper.connect_live_stream_start_timestamp
+        )
         self.live_stream_id = live_stream_id
         self.listen_delete = listen_delete if listen_delete is not None else True
         self.no_dependencies = no_dependencies if no_dependencies is not None else False
@@ -551,6 +555,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_live_stream_recover_iso_date = get_config_variable(
             "CONNECTOR_LIVE_STREAM_RECOVER_ISO_DATE",
             ["connector", "live_stream_recover_iso_date"],
+            config,
+        )
+        self.connect_live_stream_start_timestamp = get_config_variable(
+            "CONNECTOR_LIVE_STREAM_START_TIMESTAMP",
+            ["connector", "live_stream_start_timestamp"],
             config,
         )
         self.connect_name = get_config_variable(
@@ -895,7 +904,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "applicant_id": self.applicant_id,
             "action_sequence": sequence,
             "entities_types": entities_types,
-            "content": base64.b64encode(bundle.encode("utf-8")).decode("utf-8"),
+            "content": base64.b64encode(bundle.encode("utf-8", "escape")).decode(
+                "utf-8"
+            ),
             "update": update,
         }
         if work_id is not None:
