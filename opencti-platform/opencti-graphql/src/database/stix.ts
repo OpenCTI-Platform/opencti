@@ -885,6 +885,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_DOMAIN_NAME}`]: [
     { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
   ],
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED }
+  ],
   // endregion
   // region SOFTWARE
   [`${ENTITY_SOFTWARE}_${ENTITY_TYPE_VULNERABILITY}`]: [

@@ -285,6 +285,7 @@ const relationsTypesMapping = {
   'Artifact_IPv6-Addr': ['communicates-with'],
   'Artifact_Domain-Name': ['communicates-with'],
   Artifact_Narrative: ['uses'],
+  'Artifact_Attack-Pattern': ['uses'],
   Url_Narrative: ['uses'],
   'Domain-Name_Narrative': ['uses'],
   Hostname_Narrative: ['uses'],
