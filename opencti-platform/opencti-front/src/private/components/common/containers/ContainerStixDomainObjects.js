@@ -243,7 +243,8 @@ class ContainerStixDomainObjectsComponent extends Component {
     };
     const exportFilters = {
       containedBy: [{ id: container.id, value: defaultValue(container) }],
-      entity_type: types.length > 0 ? R.map((n) => ({ id: n, value: n }), types) : [],
+      entity_type:
+        types.length > 0 ? R.map((n) => ({ id: n, value: n }), types) : [],
       ...filters,
     };
     const exportFinalFilters = convertFilters(exportFilters);
@@ -252,6 +253,14 @@ class ContainerStixDomainObjectsComponent extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,
+    };
+    const backgroundTaskFilters = {
+      containedBy: [{ id: container.id, value: defaultValue(container) }],
+      entity_type:
+        types.length > 0
+          ? R.map((n) => ({ id: n, value: n }), types)
+          : [{ id: 'Stix-Domain-Object', value: 'Stix-Domain-Object' }],
+      ...filters,
     };
     return (
       <UserContext.Consumer>
@@ -314,7 +323,7 @@ class ContainerStixDomainObjectsComponent extends Component {
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
-              filters={finalFilters}
+              filters={backgroundTaskFilters}
               search={searchTerm}
               handleClearSelectedElements={this.handleClearSelectedElements.bind(
                 this,
