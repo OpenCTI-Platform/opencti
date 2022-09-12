@@ -9,6 +9,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
+import Collapse from '@material-ui/core/Collapse';
 import {
   DashboardOutlined,
   Language,
@@ -38,6 +39,7 @@ import {
 import UserPreferencesModal from './UserPreferencesModal';
 import FeatureFlag from '../../../components/feature/FeatureFlag';
 import { toastGenericError } from '../../../utils/bakedToast';
+import logo from '../../../resources/images/logo-mark.png';
 
 const styles = (theme) => ({
   drawerOpen: {
@@ -54,62 +56,83 @@ const styles = (theme) => ({
   },
   drawerClose: {
     backgroundColor: theme.palette.background.nav,
+    overflow: 'hidden',
+    width: theme.spacing(7) + 1,
+    [theme.breakpoints.up('sm')]: {
+      width: theme.spacing(9) + 1,
+    },
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    overflow: 'hidden',
-    width: theme.spacing(7) + 1,
-    [theme.breakpoints.up('sm')]: {
-      width: theme.spacing(7) + 1,
-    },
   },
   menuList: {
     marginTop: 20,
     marginBottom: 20,
-    height: 'auto',
-    minHeight: '30%',
-    maxHeight: '100%',
+    // height: 'auto',
+    // minHeight: '30%',
+    // maxHeight: '100%',
   },
   menuItem: {
     height: 40,
-    // padding: '6px 0 6px 20px',
+    padding: '6px 10px 6px 10px',
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  menuItemClose: {
+    height: 40,
+    padding: '6px 10px 6px 20px',
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  menuItemNested: {
+    height: 30,
+    padding: '6px 10px 6px 25px',
   },
   lastItem: {
     bottom: 0,
+  },
+  toolbar: theme.mixins.toolbar,
+  bottomNavigationTwo: {
+    height: '40%',
+  },
+  bottomNavigationOne: {
+    height: '60%',
   },
   logoButton: {
     marginLeft: -23,
     marginRight: 20,
   },
-  toolbar: theme.mixins.toolbar,
-  menuItemNested: {
-    height: 30,
-    padding: '6px 10px 6px 25px',
-  },
-  bottomNavigation: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    marginBottom: 40,
-  },
   logoContainer: {
     height: 64,
     width: 255,
     paddingTop: 15,
+    paddingBottom: 15,
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-    padding: '6px 25px 6px 20px',
-  },
-  logoMain: {
-    cursor: 'pointer',
-    height: 20,
-    marginTop: 8,
-    marginLeft: 10,
   },
   logo: {
     cursor: 'pointer',
-    height: 22,
+    height: 20,
     marginTop: 10,
+    marginLeft: 10,
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  logoClose: {
+    cursor: 'pointer',
+    height: 20,
+    marginTop: 10,
+    marginLeft: 20,
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
   hideText: {
     display: 'none',
@@ -199,7 +222,7 @@ const LeftBar = ({
       </div>
       <div className={classes.logoContainer}>
         <Link to="/dashboard">
-          <img src={theme.logo} alt="logo" className={classes.logo} />
+          <img src={openDrawer ? theme.logo : logo} alt="logo" className={openDrawer ? classes.logo : classes.logoClose} />
         </Link>
       </div>
       {/* <Toolbar /> */}
@@ -209,7 +232,7 @@ const LeftBar = ({
           to="/dashboard"
           selected={location.pathname === '/dashboard'}
           dense={false}
-          classes={{ root: classes.menuItem }}
+          classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
         >
           <ListItemIcon style={{ minWidth: 35 }}>
             <DashboardOutlined />
@@ -219,7 +242,7 @@ const LeftBar = ({
         <Security needs={[KNOWLEDGE]}>
           <MenuItem
             dense={false}
-            classes={{ root: classes.menuItem }}
+            classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
             onClick={() => toggle('activities')}
             component={Link}
             to="/defender HQ/assets"
@@ -229,8 +252,8 @@ const LeftBar = ({
             </ListItemIcon>
             <ListItemText primary={t('Defender HQ')} className={!openDrawer && classes.hideText} />
           </MenuItem>
-          {openDrawer
-            && <MenuList component="nav" disablePadding={true}>
+          <Collapse in={openDrawer}>
+            <MenuList component="nav" disablePadding={true}>
               <MenuItem
                 component={Link}
                 to="/defender HQ/assets"
@@ -241,7 +264,7 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Assets')} data-cy='assets' className={!openDrawer && classes.hideText} />
+                <ListItemText primary={t('Assets')} data-cy='assets' />
               </MenuItem>
               <MenuItem
                 disabled="true"
@@ -254,13 +277,13 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Information Systems')} data-cy='information systems' className={!openDrawer && classes.hideText} />
+                <ListItemText primary={t('Information Systems')} data-cy='information systems' />
               </MenuItem>
             </MenuList>
-          }
+          </Collapse>
           <MenuItem
             dense={false}
-            classes={{ root: classes.menuItem }}
+            classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
             onClick={() => toggle('knowledge')}
             component={Link}
             to="/activities/risk assessment"
@@ -270,8 +293,8 @@ const LeftBar = ({
             </ListItemIcon>
             <ListItemText primary={t('Activities')} className={!openDrawer && classes.hideText} />
           </MenuItem>
-          {openDrawer
-            && <MenuList component="nav" disablePadding={true}>
+          <Collapse in={openDrawer}>
+            <MenuList component="nav" disablePadding={true}>
               <MenuItem
                 disabled="true"
                 component={Link}
@@ -283,7 +306,7 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Threats Assessment')} data-cy='threats assessment' className={!openDrawer && classes.hideText} />
+                <ListItemText primary={t('Threats Assessment')} data-cy='threats assessment' />
               </MenuItem>
               <MenuItem
                 component={Link}
@@ -295,7 +318,7 @@ const LeftBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
-                <ListItemText primary={t('Vulnerability Assessment')} data-cy='vsac' className={!openDrawer && classes.hideText} />
+                <ListItemText primary={t('Vulnerability Assessment')} data-cy='vsac' />
               </MenuItem>
               <FeatureFlag tag={'RISK_ASSESSMENT'}>
                 <MenuItem
@@ -308,81 +331,85 @@ const LeftBar = ({
                   <ListItemIcon style={{ minWidth: 35 }}>
                     <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                   </ListItemIcon>
-                  <ListItemText primary={t('Risk Assessment')} data-cy='risk assessment' className={!openDrawer && classes.hideText} />
+                  <ListItemText primary={t('Risk Assessment')} data-cy='risk assessment' />
                 </MenuItem>
               </FeatureFlag>
             </MenuList>
-          }
+          </Collapse>
         </Security>
       </MenuList>
-      <MenuList component="nav" classes={{ root: classes.menuList }}>
-        <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-          <Divider />
-          <MenuList component="nav" classes={{ root: classes.menuList }}>
-            <MenuItem
-              component={Link}
-              to={'/data'}
-              selected={location.pathname.includes('/data')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <Database />
-              </ListItemIcon>
-              <ListItemText primary={t('Data')} className={!openDrawer && classes.hideText} />
-            </MenuItem>
-            <MenuItem
-              disabled="true"
-              component={Link}
-              to="/dashboard/settings"
-              selected={location.pathname.includes('/dashboard/setings')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <CogOutline />
-              </ListItemIcon>
-              <ListItemText primary={t('Settings')} className={!openDrawer && classes.hideText} />
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to={'/about'}
-              selected={location.pathname.includes('/about')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <Language />
-              </ListItemIcon>
-              <ListItemText primary={t('About')} className={!openDrawer && classes.hideText} />
-            </MenuItem>
-          </MenuList>
-          <MenuList component="nav" classes={{ root: classes.menuList }}>
-            <MenuItem
-              // component={Link}
-              // to="/dashboard/profile"
-              selected={location.pathname.includes('/dashboard/profile')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <PersonIcon />
-              </ListItemIcon>
-              <ListItemText primary={t(me.name)} className={!openDrawer && classes.hideText} />
-            </MenuItem>
-            <MenuItem
-              onClick={() => handleUserPrefOpen()}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <LocationCityIcon />
-              </ListItemIcon>
-              <ListItemText primary={currentOrg} className={!openDrawer && classes.hideText} />
-            </MenuItem>
-          </MenuList>
-        </Security>
-      </MenuList>
+      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+        <Divider />
+        <div>
+          <div className={classes.bottomNavigationOne}>
+            <MenuList component="nav" classes={{ root: classes.menuList }}>
+              <MenuItem
+                component={Link}
+                to={'/data'}
+                selected={location.pathname.includes('/data')}
+                dense={false}
+                classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <Database />
+                </ListItemIcon>
+                <ListItemText primary={t('Data')} className={!openDrawer && classes.hideText} />
+              </MenuItem>
+              <MenuItem
+                disabled="true"
+                component={Link}
+                to="/dashboard/settings"
+                selected={location.pathname.includes('/dashboard/setings')}
+                dense={false}
+                classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <CogOutline />
+                </ListItemIcon>
+                <ListItemText primary={t('Settings')} className={!openDrawer && classes.hideText} />
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to={'/about'}
+                selected={location.pathname.includes('/about')}
+                dense={false}
+                classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <Language />
+                </ListItemIcon>
+                <ListItemText primary={t('About')} className={!openDrawer && classes.hideText} />
+              </MenuItem>
+            </MenuList>
+          </div>
+          <div className={classes.bottomNavigationTwo}>
+            <MenuList component="nav" classes={{ root: classes.menuList }}>
+              <MenuItem
+                // component={Link}
+                // to="/dashboard/profile"
+                selected={location.pathname.includes('/dashboard/profile')}
+                dense={false}
+                classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <PersonIcon />
+                </ListItemIcon>
+                <ListItemText primary={t(me.name)} className={!openDrawer && classes.hideText} />
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleUserPrefOpen()}
+                dense={false}
+                classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <LocationCityIcon />
+                </ListItemIcon>
+                <ListItemText primary={currentOrg} className={!openDrawer && classes.hideText} />
+              </MenuItem>
+            </MenuList>
+          </div>
+        </div>
+      </Security>
       <Dialog
         open={userPrefOpen}
         onClose={() => handleDialogClose()}

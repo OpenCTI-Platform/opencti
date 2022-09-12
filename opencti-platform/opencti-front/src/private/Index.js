@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     minWidth: 0,
-    margin: '1.2rem 1rem 0 17rem',
+    margin: '1rem 1rem 0 17rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -29,10 +29,10 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     minWidth: 0,
-    margin: '1.2rem 1rem 0 5rem',
+    margin: '1rem 1rem 0 5.2rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
+      duration: theme.transitions.duration.leavingScreen,
     }),
     overflow: 'hidden',
   },

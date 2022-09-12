@@ -76,7 +76,7 @@ const styles = (theme) => ({
     marginLeft: '5.55rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
+      duration: theme.transitions.duration.leavingScreen,
     }),
   },
   barRight: {
