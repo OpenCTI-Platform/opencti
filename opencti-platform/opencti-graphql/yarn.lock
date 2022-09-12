@@ -9837,16 +9837,16 @@ chromedriver@latest:
   languageName: node
   linkType: hard
 
-"keycloak-connect@npm:12.0.1":
-  version: 12.0.1
-  resolution: "keycloak-connect@npm:12.0.1"
+"keycloak-connect@npm:^19.0.1":
+  version: 19.0.1
+  resolution: "keycloak-connect@npm:19.0.1"
   dependencies:
     chromedriver: latest
     jwk-to-pem: ^2.0.0
   dependenciesMeta:
     chromedriver:
       optional: true
-  checksum: 82a1af4d89fbd700af825fd06361fe6f8b04ed41c00f4b9f865db94581dcbf0e71e712084874df3b0b19e9e04abd1437ba7384417008294a280fd5f1a952a33d
+  checksum: 2170e9aa41181f3816f3bce40f9b027daf92739d227c01db854498b13f7484e72c6a87aecd6e587e63dc744d852835f1de27e4d92b7870bcda6ec70626909406
   languageName: node
   linkType: hard
 
@@ -11076,7 +11076,7 @@ chromedriver@latest:
     jsondiffpatch: 0.4.1
     jsonwebtoken: 8.5.1
     jwt-decode: 3.1.2
-    keycloak-connect: 12.0.1
+    keycloak-connect: ^19.0.1
     keycloak-connect-graphql: ^0.7.0
     lru-cache: ^6.0.0
     migrate: 1.7.0
