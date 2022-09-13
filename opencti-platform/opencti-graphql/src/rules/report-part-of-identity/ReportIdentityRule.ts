@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import type { Operation } from 'fast-json-patch';
-import { createInferredRelation, deleteInferredRuleElement, } from '../../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, internalFindByIds, } from '../../database/middleware';
 import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import def from './ReportIdentityDefinition';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
@@ -16,6 +16,7 @@ import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../../ty
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { listAllEntities, listAllRelations } from '../../database/middleware-loader';
 import type { Event, UpdateEvent } from '../../types/event';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
 
 const ruleReportIdentityBuilder = (): RuleRuntime => {
   const handleReportCreation = async (report: StixReport) => {
@@ -27,6 +28,8 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
       const [type] = ref.split('--');
       return type === ENTITY_TYPE_IDENTITY.toLowerCase();
     });
+    const identities = await internalFindByIds(RULE_MANAGER_USER, identityRefs) as Array<StoreObject>;
+    const fromIds = identities.map((i) => i.internal_id);
     // Find all identities part of current identities
     const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
       for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
@@ -34,17 +37,17 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
         const dependencies = [reportId, partOfFromId, partOfId, partOfTargetId];
         // Create the inferred relations
         const ruleRelationContent = createRuleContent(def.id, dependencies, [reportId, partOfId], {});
-        const inputForRelation = { fromId: reportId, partOfId, relationship_type: RELATION_OBJECT };
+        const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
         const eventForRelation = await createInferredRelation(inputForRelation, ruleRelationContent);
         if (eventForRelation) events.push(eventForRelation as Event);
         // -----------------------------------------------------------------------------------------------------------
         const ruleIdentityContent = createRuleContent(def.id, dependencies, [reportId, partOfTargetId], {});
-        const inputForIdentity = { fromId: reportId, partOfTargetId, relationship_type: RELATION_OBJECT };
+        const inputForIdentity = { fromId: reportId, toId: partOfTargetId, relationship_type: RELATION_OBJECT };
         const eventForIdentity = await createInferredRelation(inputForIdentity, ruleIdentityContent);
         if (eventForIdentity) events.push(eventForIdentity as Event);
       }
     };
-    const listFromArgs = { fromId: identityRefs, toTypes: [ENTITY_TYPE_IDENTITY], callback: listFromCallback };
+    const listFromArgs = { fromId: fromIds, toTypes: [ENTITY_TYPE_IDENTITY], callback: listFromCallback };
     await listAllRelations(RULE_MANAGER_USER, RELATION_PART_OF, listFromArgs);
     return events;
   };
@@ -57,12 +60,12 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
         const dependencies = [reportId, partOfFromId, partOfId, partOfTargetId];
         // Create the inferred relations
         const ruleRelationContent = createRuleContent(def.id, dependencies, [reportId, partOfId], {});
-        const inputForRelation = { fromId: reportId, partOfId, relationship_type: RELATION_OBJECT };
+        const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
         const eventForRelation = await createInferredRelation(inputForRelation, ruleRelationContent);
         if (eventForRelation) events.push(eventForRelation as Event);
         // -----------------------------------------------------------------------------------------------------------
         const ruleIdentityContent = createRuleContent(def.id, dependencies, [reportId, partOfTargetId], {});
-        const inputForIdentity = { fromId: reportId, partOfTargetId, relationship_type: RELATION_OBJECT };
+        const inputForIdentity = { fromId: reportId, toId: partOfTargetId, relationship_type: RELATION_OBJECT };
         const eventForIdentity = await createInferredRelation(inputForIdentity, ruleIdentityContent);
         if (eventForIdentity) events.push(eventForIdentity as Event);
       }
@@ -89,6 +92,16 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_CONTAINER_REPORT) {
       const operations: Operation[] = event.context.patch;
+      const refOperations = operations.filter((o) => o.path === '/object_refs');
+      const isAddingRefs = refOperations.filter((o) => o.op === UPDATE_OPERATION_ADD).length > 0;
+      if (isAddingRefs) {
+        const createEvents = await handleReportCreation(data as StixReport);
+        events.push(...createEvents);
+      }
+      const isRemovingRefs = refOperations.filter((o) => o.op === UPDATE_OPERATION_REMOVE).length > 0;
+      if (isRemovingRefs) {
+        // TODO
+      }
       return events;
     }
     // We don't care about the relation update
