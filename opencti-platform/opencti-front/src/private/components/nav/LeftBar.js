@@ -44,6 +44,8 @@ import logo from '../../../resources/images/logo-mark.png';
 const styles = (theme) => ({
   drawerOpen: {
     width: 255,
+    height: '100%',
+    minHeight: '30%',
     backgroundColor: theme.palette.background.nav,
     backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
     backgroundRepeat: 'no-repeat',
@@ -57,6 +59,8 @@ const styles = (theme) => ({
   drawerClose: {
     backgroundColor: theme.palette.background.nav,
     overflow: 'hidden',
+    height: '100%',
+    minHeight: '30%',
     width: theme.spacing(7) + 1,
     [theme.breakpoints.up('sm')]: {
       width: theme.spacing(9) + 1,
@@ -69,9 +73,6 @@ const styles = (theme) => ({
   menuList: {
     marginTop: 20,
     marginBottom: 20,
-    // height: 'auto',
-    // minHeight: '30%',
-    // maxHeight: '100%',
   },
   menuItem: {
     height: 40,
@@ -93,19 +94,11 @@ const styles = (theme) => ({
     height: 30,
     padding: '6px 10px 6px 25px',
   },
-  lastItem: {
-    bottom: 0,
-  },
   toolbar: theme.mixins.toolbar,
-  bottomNavigationTwo: {
-    height: '40%',
-  },
-  bottomNavigationOne: {
-    height: '60%',
-  },
-  logoButton: {
-    marginLeft: -23,
-    marginRight: 20,
+  bottomNavigation: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
   },
   logoContainer: {
     height: 64,
@@ -340,8 +333,6 @@ const LeftBar = ({
       </MenuList>
       <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
-        <div>
-          <div className={classes.bottomNavigationOne}>
             <MenuList component="nav" classes={{ root: classes.menuList }}>
               <MenuItem
                 component={Link}
@@ -381,8 +372,7 @@ const LeftBar = ({
                 <ListItemText primary={t('About')} className={!openDrawer && classes.hideText} />
               </MenuItem>
             </MenuList>
-          </div>
-          <div className={classes.bottomNavigationTwo}>
+          <div className={classes.bottomNavigation}>
             <MenuList component="nav" classes={{ root: classes.menuList }}>
               <MenuItem
                 // component={Link}
@@ -408,7 +398,6 @@ const LeftBar = ({
               </MenuItem>
             </MenuList>
           </div>
-        </div>
       </Security>
       <Dialog
         open={userPrefOpen}
