@@ -8,7 +8,7 @@ extend type Query {
     orderMode: OrderingMode
     filters: [ProductFiltering]
     filterMode: FilterMode
-    search: String
+    search: String @constraint(minLength: 2)
   ): ProductConnection   @hasPermission(resources: "Cyio:view")
 }
 

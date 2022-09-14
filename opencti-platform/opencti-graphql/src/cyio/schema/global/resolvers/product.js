@@ -11,6 +11,20 @@ import {
 const productResolvers = {
   Query: {
     products: async (_, args, { dataSources, selectMap }) => {
+      // TODO: WORKAROUND to remove argument fields with null or empty values
+      if (args !== undefined) {
+        for (const [key, value] of Object.entries(args)) {
+          if (Array.isArray(args[key]) && args[key].length === 0) {
+            delete args[key];
+            continue;
+          }
+          if (value === null || value.length === 0) {
+            delete args[key];
+          }
+        }
+      }
+      // END WORKAROUND
+
       if ('search' in args && ('first' in args || 'offset' in args)) throw new UserInputError("Query can not have both 'search' and 'first'/'offset'");
       if ('offset' in args && !('first' in args)) throw new UserInputError("Argument 'offset' can not be used without 'first'");
 
@@ -37,6 +51,9 @@ const productResolvers = {
       // no components found
       if (response === undefined || response.length === 0) return null;
       const totalProductCount = response[0].count;
+
+      // too many products to return, so ask user to refine the search
+      if (totalProductCount > 1000) throw new UserInputError("Your search returned too many results. Please narrow your query.");
 
       // Select the list of products
       const sparqlQuery = selectAllProducts(selectMap.getNode("node"), args);
