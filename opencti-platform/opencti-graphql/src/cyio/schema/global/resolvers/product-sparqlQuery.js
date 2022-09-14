@@ -56,6 +56,8 @@ export const countProductsQuery = (args) => {
   FROM <tag:stardog:api:context:local>
   WHERE {
     ${classType} .
+    ?iri <http://docs.oasis-open.org/ns/cti#name> ?name .
+    FILTER (STRSTARTS(STR(?name), '${args.search}'))
   }
   `;
 }
@@ -125,7 +127,7 @@ export const selectAllProducts = (select, args, parent) => {
 
     // define search filter for the name predicate
     if (args.search !== undefined ) {
-      searchFilter = `FILTER (CONTAINS(STR(?name), '${args.search}'))`;
+      searchFilter = `FILTER (STRSTARTS(STR(?name), '${args.search}'))`;
       if (!select.includes('name')) select.push('name');
     }
   }
