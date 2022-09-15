@@ -17,7 +17,7 @@ directive @constraint(
   exclusiveMin: Int
   exclusiveMax: Int
   multipleOf: Int
-) on INPUT_FIELD_DEFINITION
+) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION | FIELD_DEFINITION
 
 ### SCALAR
 
@@ -650,11 +650,6 @@ type FileConnection {
 
 ############## Task
 enum TaskType {
-  """The task represents a planned milestone."""
-  milestone
-
-  """The task represents a specific assessment action to be performed."""
-  action
   QUERY
   LIST
   RULE
@@ -8315,10 +8310,10 @@ type Query {
   ###### INTERNAL
 
   platform_theme: String
-  about: AppInfo @auth(for: [SETTINGS])
-  logsWorkerConfig: LogsWorkerConfig @auth(for: [MODULES])
-  amqpMetrics(prefix: String): AMQPMetrics @auth(for: [MODULES])
-  elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
+  about: AppInfo @hasPermission(resources:"Settings:view")
+  logsWorkerConfig: LogsWorkerConfig @hasPermission(resources:"Connector:view")
+  amqpMetrics(prefix: String): AMQPMetrics @hasPermission(resources:"Connector:view")
+  elasticSearchMetrics: ElasticSearchMetrics @hasPermission(resources:"Connector:view")
   logs(
     first: Int
     after: ID
@@ -8327,7 +8322,7 @@ type Query {
     filters: [LogsFiltering]
     filterMode: FilterMode
     search: String
-  ): LogConnection @auth(for: [KNOWLEDGE])
+  ): LogConnection @hasPermission(resources:"Knowledge:view")
   logsTimeSeries(
     userId: String
     field: String!
@@ -8335,8 +8330,8 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  subType(id: String!): SubType @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @hasPermission(resources:"Knowledge:view")
+  subType(id: String!): SubType @hasPermission(resources:"Knowledge:view")
   subTypes(
     first: Int
     after: ID
@@ -8345,21 +8340,21 @@ type Query {
     type: String
     includeParents: Boolean
     search: String
-  ): SubTypeConnection @auth(for: [KNOWLEDGE])
-  importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  ): SubTypeConnection @hasPermission(resources:"Knowledge:view")
+  importFiles(first: Int): FileConnection @hasPermission(resources:"Knowledge:import")
 
   ###### ENTITIES
 
   ######## INTERNAL OBJECT ENTITIES
 
   settings: Settings
-  group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES])
+  group(id: String!): Group @hasPermission(resources:"Settings:manage-access")
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
-    @auth(for: [SETTINGS_SETACCESSES])
+    @hasPermission(resources:"Settings:manage-access")
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
-    @auth(for: [SETTINGS_SETACCESSES])
+    @hasPermission(resources:"Settings:manage-access")
   me: User @auth
-  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
+  user(id: String!): User @hasPermission(resources:"Settings:manage-access")
   users(
     first: Int
     after: ID
@@ -8369,15 +8364,15 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
-  sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
-  role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
-  capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
-  connector(id: String!): Connector @auth(for: [MODULES])
-  connectors: [Connector] @auth(for: [MODULES])
-  connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
-  connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
-  work(id: ID!): Work @auth(for: [MODULES])
+  ): UserConnection @hasPermission(resources:"Settings:manage-access")
+  sessions: [UserSession] @hasPermission(resources:"Settings:manage-access")
+  role(id: String!): Role @hasPermission(resources:"Settings:manage-access")
+  capabilities(first: Int): CapabilityConnection @hasPermission(resources:"Settings:manage-access")
+  connector(id: String!): Connector @hasPermission(resources:"Connector:view")
+  connectors: [Connector] @hasPermission(resources:"Connector:view")
+  connectorsForExport: [Connector] @hasPermission(resources:"Knowledge:view")
+  connectorsForImport: [Connector] @hasPermission(resources:"Knowledge:view")
+  work(id: ID!): Work @hasPermission(resources:"Connector:view")
   works(
     first: Int
     after: ID
@@ -8386,8 +8381,8 @@ type Query {
     search: String
     filters: [WorksFiltering]
     filterMode: FilterMode
-  ): WorkConnection @auth(for: [MODULES])
-  attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
+  ): WorkConnection @hasPermission(resources:"Connector:view")
+  attribute(id: String): Attribute @hasPermission(resources:"Knowledge:view")
   attributes(
     first: Int
     after: ID
@@ -8397,8 +8392,8 @@ type Query {
     elementType: String
     fieldKey: String
     search: String
-  ): AttributeConnection @auth(for: [KNOWLEDGE])
-  workspace(id: String): Workspace @auth(for: [EXPLORE])
+  ): AttributeConnection @hasPermission(resources:"Knowledge:view")
+  workspace(id: String): Workspace @hasPermission(resources:"Explore:view")
   workspaces(
     first: Int
     after: ID
@@ -8407,31 +8402,31 @@ type Query {
     filters: [WorkspacesFiltering]
     filterMode: FilterMode
     search: String
-  ): WorkspaceConnection @auth(for: [EXPLORE])
-  taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  ): WorkspaceConnection @hasPermission(resources:"Explore:view")
+  taxiiCollection(id: String!): TaxiiCollection @hasPermission(resources:"Taxii:set-collections")
   taxiiCollections(
     first: Int
     after: ID
     orderBy: TaxiiCollectionOrdering
     orderMode: OrderingMode
     search: String
-  ): TaxiiCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  ): TaxiiCollectionConnection @hasPermission(resources:"Taxii:set-collections")
+  streamCollection(id: String!): StreamCollection @hasPermission(resources:"Taxii:set-collections")
   streamCollections(
     first: Int
     after: ID
     orderBy: StreamCollectionOrdering
     orderMode: OrderingMode
     search: String
-  ): StreamCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  userSubscription(id: String!): UserSubscription @auth(for: [KNOWLEDGE])
+  ): StreamCollectionConnection @hasPermission(resources:"Taxii:set-collections")
+  userSubscription(id: String!): UserSubscription @hasPermission(resources:"Knowledge:view")
   userSubscriptions(
     first: Int
     after: ID
     orderBy: UserSubscriptionOrdering
     orderMode: OrderingMode
     search: String
-  ): UserSubscriptionConnection @auth(for: [KNOWLEDGE])
+  ): UserSubscriptionConnection @hasPermission(resources:"Knowledge:view")
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int
@@ -8449,7 +8444,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StatusConnection @auth
-  task(id: String!): Task @auth(for: [KNOWLEDGE])
+  task(id: String!): Task @hasPermission(resources:"Knowledge:view")
   tasks(
     first: Int
     after: ID
@@ -8458,23 +8453,23 @@ type Query {
     filters: [TasksFiltering]
     filterMode: FilterMode
     search: String
-  ): TaskConnection @auth(for: [KNOWLEDGE])
-  rule(id: String!): Rule @auth(for: [KNOWLEDGE])
-  rules: [Rule] @auth(for: [KNOWLEDGE])
-  ruleManagerInfo: RuleManager @auth(for: [SETTINGS])
-  synchronizer(id: String!): Synchronizer @auth(for: [SETTINGS])
+  ): TaskConnection @hasPermission(resources:"Knowledge:view")
+  rule(id: String!): Rule @hasPermission(resources:"Knowledge:view")
+  rules: [Rule] @hasPermission(resources:"Knowledge:view")
+  ruleManagerInfo: RuleManager @hasPermission(resources:"Settings:view")
+  synchronizer(id: String!): Synchronizer @hasPermission(resources:"Settings:view")
   synchronizers(
     first: Int
     after: ID
     orderBy: SynchronizersOrdering
     orderMode: OrderingMode
     search: String
-  ): SynchronizerConnection @auth(for: [SETTINGS])
+  ): SynchronizerConnection @hasPermission(resources:"Settings:view")
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
 
-  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
+  markingDefinition(id: String!): MarkingDefinition @hasPermission(resources:"Knowledge:view")
   markingDefinitions(
     first: Int
     after: ID
@@ -8484,8 +8479,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE])
-  label(id: String!): Label @auth(for: [KNOWLEDGE])
+  ): MarkingDefinitionConnection @hasPermission(resources:"Knowledge:view")
+  label(id: String!): Label @hasPermission(resources:"Knowledge:view")
   labels(
     first: Int
     after: ID
@@ -8494,8 +8489,8 @@ type Query {
     filters: [LabelsFiltering]
     filterMode: FilterMode
     search: String
-  ): LabelConnection @auth(for: [KNOWLEDGE])
-  externalReference(id: String!): ExternalReference @auth(for: [KNOWLEDGE])
+  ): LabelConnection @hasPermission(resources:"Knowledge:view")
+  externalReference(id: String!): ExternalReference @hasPermission(resources:"Knowledge:view")
   externalReferences(
     first: Int
     after: ID
@@ -8504,8 +8499,8 @@ type Query {
     filters: [ExternalReferencesFiltering]
     filterMode: FilterMode
     search: String
-  ): ExternalReferenceConnection @auth(for: [KNOWLEDGE])
-  killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE])
+  ): ExternalReferenceConnection @hasPermission(resources:"Knowledge:view")
+  killChainPhase(id: String!): KillChainPhase @hasPermission(resources:"Knowledge:view")
   killChainPhases(
     first: Int
     after: ID
@@ -8514,12 +8509,12 @@ type Query {
     filters: [KillChainPhasesFiltering]
     filterMode: FilterMode
     search: String
-  ): KillChainPhaseConnection @auth(for: [KNOWLEDGE])
+  ): KillChainPhaseConnection @hasPermission(resources:"Knowledge:view")
 
   ######## STIX CORE OBJECT ENTITIES
 
-  stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
-  stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
+  stixCoreObjectRaw(id: String!): String @hasPermission(resources:"Knowledge:view")
+  stixCoreObject(id: String!): StixCoreObject @hasPermission(resources:"Knowledge:view")
   stixCoreObjects(
     first: Int
     after: ID
@@ -8529,11 +8524,11 @@ type Query {
     filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
-  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  ): StixCoreObjectConnection @hasPermission(resources:"Knowledge:view")
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
-  stixDomainObject(id: String!): StixDomainObject @auth(for: [KNOWLEDGE])
+  stixDomainObject(id: String!): StixDomainObject @hasPermission(resources:"Knowledge:view")
   stixDomainObjects(
     first: Int
     after: ID
@@ -8543,9 +8538,9 @@ type Query {
     filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     search: String
-  ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  ): StixDomainObjectConnection @hasPermission(resources:"Knowledge:view")
+  bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection @hasPermission(resources:"Knowledge:view")
+  stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @hasPermission(resources:"Knowledge:export")
   stixDomainObjectsTimeSeries(
     type: String
     authorId: String
@@ -8554,8 +8549,8 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @hasPermission(resources: ["Knowledge:view","Explore:view"])
   stixDomainObjectsDistribution(
     objectId: String
     relationship_type: String!
@@ -8564,8 +8559,8 @@ type Query {
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  attackPattern(id: String): AttackPattern @auth(for: [KNOWLEDGE])
+  ): [Distribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  attackPattern(id: String): AttackPattern @hasPermission(resources:"Knowledge:view")
   attackPatterns(
     first: Int
     after: ID
@@ -8575,8 +8570,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): AttackPatternConnection @auth(for: [KNOWLEDGE])
-  campaign(id: String): Campaign @auth(for: [KNOWLEDGE])
+  ): AttackPatternConnection @hasPermission(resources:"Knowledge:view")
+  campaign(id: String): Campaign @hasPermission(resources:"Knowledge:view")
   campaigns(
     first: Int
     after: ID
@@ -8586,7 +8581,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CampaignConnection @auth(for: [KNOWLEDGE])
+  ): CampaignConnection @hasPermission(resources:"Knowledge:view")
   campaignsTimeSeries(
     objectId: String
     field: String!
@@ -8595,9 +8590,9 @@ type Query {
     endDate: DateTime!
     interval: String!
     relationship_type: String
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   # Containers
-  container(id: String): Container @auth(for: [KNOWLEDGE])
+  container(id: String): Container @hasPermission(resources:"Knowledge:view")
   containers(
     first: Int
     after: ID
@@ -8607,15 +8602,15 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): ContainerConnection @auth(for: [KNOWLEDGE])
+  ): ContainerConnection @hasPermission(resources:"Knowledge:view")
   containersObjectsOfObject(
     id: String!
     types: [String]
     filters: [ContainersFiltering]
     filterMode: FilterMode
     search: String
-  ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
-  note(id: String): Note @auth(for: [KNOWLEDGE])
+  ): StixObjectOrStixRelationshipConnection @hasPermission(resources:"Knowledge:view")
+  note(id: String): Note @hasPermission(resources:"Knowledge:view")
   notes(
     first: Int
     after: ID
@@ -8625,7 +8620,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): NoteConnection @auth(for: [KNOWLEDGE])
+  ): NoteConnection @hasPermission(resources:"Knowledge:view")
   notesTimeSeries(
     objectId: String
     authorId: String
@@ -8634,18 +8629,18 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  notesNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  notesNumber(objectId: String, endDate: DateTime): Number @hasPermission(resources: ["Knowledge:view","Explore:view"])
   notesDistribution(
     objectId: String
     field: String!
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @hasPermission(resources:"Knowledge:view")
   noteContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
-  observedData(id: String): ObservedData @auth(for: [KNOWLEDGE])
+    @hasPermission(resources:"Knowledge:view")
+  observedData(id: String): ObservedData @hasPermission(resources:"Knowledge:view")
   observedDatas(
     first: Int
     after: ID
@@ -8655,7 +8650,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): ObservedDataConnection @auth(for: [KNOWLEDGE])
+  ): ObservedDataConnection @hasPermission(resources:"Knowledge:view")
   observedDatasTimeSeries(
     objectId: String
     authorId: String
@@ -8664,18 +8659,18 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  observedDatasNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  observedDatasNumber(objectId: String, endDate: DateTime): Number @hasPermission(resources: ["Knowledge:view","Explore:view"])
   observedDatasDistribution(
     objectId: String
     field: String!
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [Distribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   observedDataContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
-  opinion(id: String): Opinion @auth(for: [KNOWLEDGE])
+    @hasPermission(resources:"Knowledge:view")
+  opinion(id: String): Opinion @hasPermission(resources:"Knowledge:view")
   opinions(
     first: Int
     after: ID
@@ -8685,7 +8680,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): OpinionConnection @auth(for: [KNOWLEDGE])
+  ): OpinionConnection @hasPermission(resources:"Knowledge:view")
   opinionsTimeSeries(
     objectId: String
     authorId: String
@@ -8694,19 +8689,19 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  opinionsNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  opinionsNumber(objectId: String, endDate: DateTime): Number @hasPermission(resources: ["Knowledge:view","Explore:view"])
   opinionsDistribution(
     objectId: String
     field: String!
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [Distribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
-  myOpinion(id: String!): Opinion @auth(for: [KNOWLEDGE])
-  report(id: String): Report @auth(for: [KNOWLEDGE])
+    @hasPermission(resources:"Knowledge:view")
+  myOpinion(id: String!): Opinion @hasPermission(resources:"Knowledge:view")
+  report(id: String): Report @hasPermission(resources:"Knowledge:view")
   reports(
     first: Int
     after: ID
@@ -8716,7 +8711,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): ReportConnection @auth(for: [KNOWLEDGE])
+  ): ReportConnection @hasPermission(resources:"Knowledge:view")
   reportsTimeSeries(
     objectId: String
     authorId: String
@@ -8726,9 +8721,9 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   reportsNumber(reportType: String, objectId: String, authorId: String, endDate: DateTime): Number
-    @auth(for: [KNOWLEDGE, EXPLORE])
+    @hasPermission(resources: ["Knowledge:view","Explore:view"])
   reportsDistribution(
     objectId: String
     authorId: String
@@ -8738,10 +8733,10 @@ type Query {
     order: String
     startDate: DateTime
     endDate: DateTime
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [Distribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
-  courseOfAction(id: String): CourseOfAction @auth(for: [KNOWLEDGE])
+    @hasPermission(resources:"Knowledge:view")
+  courseOfAction(id: String): CourseOfAction @hasPermission(resources:"Knowledge:view")
   coursesOfAction(
     first: Int
     after: ID
@@ -8751,9 +8746,9 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CourseOfActionConnection @auth(for: [KNOWLEDGE])
+  ): CourseOfActionConnection @hasPermission(resources:"Knowledge:view")
   # Identities
-  identity(id: String!): Identity @auth(for: [KNOWLEDGE])
+  identity(id: String!): Identity @hasPermission(resources:"Knowledge:view")
   identities(
     first: Int
     after: ID
@@ -8764,8 +8759,8 @@ type Query {
     filters: [IdentitiesFiltering]
     filterMode: FilterMode
     toStix: Boolean
-  ): IdentityConnection @auth(for: [KNOWLEDGE])
-  individual(id: String!): Individual @auth(for: [KNOWLEDGE])
+  ): IdentityConnection @hasPermission(resources:"Knowledge:view")
+  individual(id: String!): Individual @hasPermission(resources:"Knowledge:view")
   individuals(
     first: Int
     after: ID
@@ -8775,8 +8770,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): IndividualConnection @auth(for: [KNOWLEDGE])
-  organization(id: String): Organization @auth(for: [KNOWLEDGE])
+  ): IndividualConnection @hasPermission(resources:"Knowledge:view")
+  organization(id: String): Organization @hasPermission(resources:"Knowledge:view")
   organizations(
     first: Int
     after: ID
@@ -8786,8 +8781,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): OrganizationConnection @auth(for: [KNOWLEDGE])
-  sector(id: String): Sector @auth(for: [KNOWLEDGE])
+  ): OrganizationConnection @hasPermission(resources:"Knowledge:view")
+  sector(id: String): Sector @hasPermission(resources:"Knowledge:view")
   sectors(
     first: Int
     after: ID
@@ -8797,8 +8792,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): SectorConnection @auth(for: [KNOWLEDGE])
-  system(id: String): System @auth(for: [KNOWLEDGE])
+  ): SectorConnection @hasPermission(resources:"Knowledge:view")
+  system(id: String): System @hasPermission(resources:"Knowledge:view")
   systems(
     first: Int
     after: ID
@@ -8808,8 +8803,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): SystemConnection @auth(for: [KNOWLEDGE])
-  indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
+  ): SystemConnection @hasPermission(resources:"Knowledge:view")
+  indicator(id: String!): Indicator @hasPermission(resources:"Knowledge:view")
   indicators(
     first: Int
     after: ID
@@ -8818,7 +8813,7 @@ type Query {
     filters: [IndicatorsFiltering]
     filterMode: FilterMode
     search: String
-  ): IndicatorConnection @auth(for: [KNOWLEDGE])
+  ): IndicatorConnection @hasPermission(resources:"Knowledge:view")
   indicatorsTimeSeries(
     objectId: String
     pattern_type: String
@@ -8827,8 +8822,8 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @hasPermission(resources:"Knowledge:view")
+  indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @hasPermission(resources:"Knowledge:view")
   indicatorsDistribution(
     objectId: String
     field: String!
@@ -8837,8 +8832,8 @@ type Query {
     order: String
     startDate: DateTime
     endDate: DateTime
-  ): [Distribution] @auth(for: [KNOWLEDGE])
-  infrastructure(id: String!): Infrastructure @auth(for: [KNOWLEDGE])
+  ): [Distribution] @hasPermission(resources:"Knowledge:view")
+  infrastructure(id: String!): Infrastructure @hasPermission(resources:"Knowledge:view")
   infrastructures(
     first: Int
     after: ID
@@ -8847,8 +8842,8 @@ type Query {
     filters: [InfrastructuresFiltering]
     filterMode: FilterMode
     search: String
-  ): InfrastructureConnection @auth(for: [KNOWLEDGE])
-  intrusionSet(id: String): IntrusionSet @auth(for: [KNOWLEDGE])
+  ): InfrastructureConnection @hasPermission(resources:"Knowledge:view")
+  intrusionSet(id: String): IntrusionSet @hasPermission(resources:"Knowledge:view")
   intrusionSets(
     first: Int
     after: ID
@@ -8858,9 +8853,9 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): IntrusionSetConnection @auth(for: [KNOWLEDGE])
+  ): IntrusionSetConnection @hasPermission(resources:"Knowledge:view")
   # Locations
-  location(id: String!): Location @auth(for: [KNOWLEDGE])
+  location(id: String!): Location @hasPermission(resources:"Knowledge:view")
   locations(
     first: Int
     after: ID
@@ -8871,8 +8866,8 @@ type Query {
     filters: [LocationsFiltering]
     filterMode: FilterMode
     toStix: Boolean
-  ): LocationConnection @auth(for: [KNOWLEDGE])
-  city(id: String): City @auth(for: [KNOWLEDGE])
+  ): LocationConnection @hasPermission(resources:"Knowledge:view")
+  city(id: String): City @hasPermission(resources:"Knowledge:view")
   cities(
     first: Int
     after: ID
@@ -8882,8 +8877,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CityConnection @auth(for: [KNOWLEDGE])
-  country(id: String): Country @auth(for: [KNOWLEDGE])
+  ): CityConnection @hasPermission(resources:"Knowledge:view")
+  country(id: String): Country @hasPermission(resources:"Knowledge:view")
   countries(
     first: Int
     after: ID
@@ -8893,8 +8888,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CountryConnection @auth(for: [KNOWLEDGE])
-  region(id: String!): Region @auth(for: [KNOWLEDGE])
+  ): CountryConnection @hasPermission(resources:"Knowledge:view")
+  region(id: String!): Region @hasPermission(resources:"Knowledge:view")
   regions(
     first: Int
     after: ID
@@ -8904,8 +8899,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): RegionConnection @auth(for: [KNOWLEDGE])
-  position(id: String!): Position @auth(for: [KNOWLEDGE])
+  ): RegionConnection @hasPermission(resources:"Knowledge:view")
+  position(id: String!): Position @hasPermission(resources:"Knowledge:view")
   positions(
     first: Int
     after: ID
@@ -8915,8 +8910,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): PositionConnection @auth(for: [KNOWLEDGE])
-  malware(id: String): Malware @auth(for: [KNOWLEDGE])
+  ): PositionConnection @hasPermission(resources:"Knowledge:view")
+  malware(id: String): Malware @hasPermission(resources:"Knowledge:view")
   malwares(
     first: Int
     after: ID
@@ -8926,8 +8921,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): MalwareConnection @auth(for: [KNOWLEDGE])
-  threatActor(id: String): ThreatActor @auth(for: [KNOWLEDGE])
+  ): MalwareConnection @hasPermission(resources:"Knowledge:view")
+  threatActor(id: String): ThreatActor @hasPermission(resources:"Knowledge:view")
   threatActors(
     first: Int
     after: ID
@@ -8937,8 +8932,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): ThreatActorConnection @auth(for: [KNOWLEDGE])
-  tool(id: String): Tool @auth(for: [KNOWLEDGE])
+  ): ThreatActorConnection @hasPermission(resources:"Knowledge:view")
+  tool(id: String): Tool @hasPermission(resources:"Knowledge:view")
   tools(
     first: Int
     after: ID
@@ -8948,8 +8943,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): ToolConnection @auth(for: [KNOWLEDGE])
-  vulnerability(id: String): Vulnerability @auth(for: [KNOWLEDGE])
+  ): ToolConnection @hasPermission(resources:"Knowledge:view")
+  vulnerability(id: String): Vulnerability @hasPermission(resources:"Knowledge:view")
   vulnerabilities(
     first: Int
     after: ID
@@ -8959,8 +8954,8 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
-  incident(id: String): Incident @auth(for: [KNOWLEDGE])
+  ): VulnerabilityConnection @hasPermission(resources:"Knowledge:view")
+  incident(id: String): Incident @hasPermission(resources:"Knowledge:view")
   incidents(
     first: Int
     after: ID
@@ -8970,7 +8965,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): IncidentConnection @auth(for: [KNOWLEDGE])
+  ): IncidentConnection @hasPermission(resources:"Knowledge:view")
   incidentsTimeSeries(
     objectId: String
     field: String!
@@ -8979,11 +8974,11 @@ type Query {
     endDate: DateTime!
     interval: String!
     relationship_type: String
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @hasPermission(resources:"Knowledge:view")
 
   ######## STIX CYBER OBSERVABLE ENTITIES
 
-  stixCyberObservable(id: String!): StixCyberObservable @auth(for: [KNOWLEDGE])
+  stixCyberObservable(id: String!): StixCyberObservable @hasPermission(resources:"Knowledge:view")
   stixCyberObservables(
     first: Int
     after: ID
@@ -8994,16 +8989,16 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
+  ): StixCyberObservableConnection @hasPermission(resources:"Knowledge:view")
   stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
   stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime): Number
-    @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+    @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  stixCyberObservablesTimeSeries(type: String): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
-    @auth(for: [KNOWLEDGE, EXPLORE])
+    @hasPermission(resources: ["Knowledge:view","Explore:view"])
 
   ######## STIX META RELATIONSHIPS
-  stixMetaRelationship(id: String): StixMetaRelationship @auth(for: [KNOWLEDGE])
+  stixMetaRelationship(id: String): StixMetaRelationship @hasPermission(resources:"Knowledge:view")
   stixMetaRelationships(
     first: Int
     after: ID
@@ -9033,7 +9028,7 @@ type Query {
     filters: [StixMetaRelationshipsFiltering]
     filterMode: FilterMode
     stix: Boolean
-  ): StixMetaRelationshipConnection @auth(for: [KNOWLEDGE])
+  ): StixMetaRelationshipConnection @hasPermission(resources:"Knowledge:view")
   stixMetaRelationshipsDistribution(
     field: String!
     operation: StatsOperation!
@@ -9043,11 +9038,11 @@ type Query {
     endDate: DateTime
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  ): [Distribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime): Number @hasPermission(resources:"Knowledge:view")
 
   ######## STIX RELATIONSHIPS
-  stixRelationship(id: String): StixRelationship @auth(for: [KNOWLEDGE])
+  stixRelationship(id: String): StixRelationship @hasPermission(resources:"Knowledge:view")
   stixRelationships(
     first: Int
     after: ID
@@ -9077,11 +9072,11 @@ type Query {
     filters: [StixRelationshipsFiltering]
     filterMode: FilterMode
     stix: Boolean
-  ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
+  ): StixRelationshipConnection @hasPermission(resources:"Knowledge:view")
 
   ######## STIX CORE RELATIONSHIPS
 
-  stixCoreRelationship(id: String): StixCoreRelationship @auth(for: [KNOWLEDGE])
+  stixCoreRelationship(id: String): StixCoreRelationship @hasPermission(resources:"Knowledge:view")
   stixCoreRelationships(
     first: Int
     after: ID
@@ -9111,7 +9106,7 @@ type Query {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
     stix: Boolean
-  ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
+  ): StixCoreRelationshipConnection @hasPermission(resources:"Knowledge:view")
   stixCoreRelationshipsTimeSeries(
     fromId: String
     relationship_type: String
@@ -9121,7 +9116,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   stixCoreRelationshipsDistribution(
     fromId: String
     field: String!
@@ -9135,7 +9130,7 @@ type Query {
     dateAttribute: String
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [Distribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   stixCoreRelationshipsNumber(
     type: String
     fromId: String
@@ -9143,11 +9138,11 @@ type Query {
     toTypes: [String]
     noDirection: Boolean
     endDate: DateTime
-  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): Number @hasPermission(resources: ["Knowledge:view","Explore:view"])
 
   ######## STIX SIGHTING RELATIONSHIPS
 
-  stixSightingRelationship(id: String): StixSightingRelationship @auth(for: [KNOWLEDGE])
+  stixSightingRelationship(id: String): StixSightingRelationship @hasPermission(resources:"Knowledge:view")
   stixSightingRelationships(
     first: Int
     after: ID
@@ -9166,7 +9161,7 @@ type Query {
     filters: [StixSightingRelationshipsFiltering]
     filterMode: FilterMode
     toStix: Boolean
-  ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
+  ): StixSightingRelationshipConnection @hasPermission(resources:"Knowledge:view")
   stixSightingRelationshipsTimeSeries(
     fromId: String
     field: String!
@@ -9174,7 +9169,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   stixSightingRelationshipsDistribution(
     fromId: String!
     field: String!
@@ -9184,12 +9179,12 @@ type Query {
     endDate: DateTime
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixSightingRelationshipsNumber(fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [Distribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  stixSightingRelationshipsNumber(fromId: String, endDate: DateTime): Number @hasPermission(resources: ["Knowledge:view","Explore:view"])
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
 
-  stixCyberObservableRelationship(id: String): StixCyberObservableRelationship @auth(for: [KNOWLEDGE])
+  stixCyberObservableRelationship(id: String): StixCyberObservableRelationship @hasPermission(resources:"Knowledge:view")
   stixCyberObservableRelationships(
     first: Int
     after: ID
@@ -9209,7 +9204,7 @@ type Query {
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
     toStix: Boolean
-  ): StixCyberObservableRelationshipConnection @auth(for: [KNOWLEDGE])
+  ): StixCyberObservableRelationshipConnection @hasPermission(resources:"Knowledge:view")
   stixCyberObservableRelationshipsTimeSeries(
     fromId: String
     field: String!
@@ -9217,7 +9212,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   stixCyberObservableRelationshipsDistribution(
     fromId: String!
     field: String!
@@ -9227,31 +9222,31 @@ type Query {
     endDate: DateTime
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [Distribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime): Number @hasPermission(resources: ["Knowledge:view","Explore:view"])
 
   ####### ALL
-  stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE, EXPLORE])
+  stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship @hasPermission(resources: ["Knowledge:view","Explore:view"])
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
-    @auth(for: [KNOWLEDGE, EXPLORE])
+    @hasPermission(resources: ["Knowledge:view","Explore:view"])
 }
 
 ### SUBSCRIPTIONS
 
 type Subscription {
-  settings(id: ID!): Settings @auth(for: [SETTINGS])
-  group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])
-  user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
-  workspace(id: ID!): Workspace @auth(for: [EXPLORE])
-  label(id: ID!): Label @auth(for: [SETTINGS])
-  markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
-  killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
-  stixDomainObject(id: ID!): StixDomainObject @auth(for: [KNOWLEDGE])
-  stixCyberObservable(id: ID!): StixCyberObservable @auth(for: [KNOWLEDGE])
-  stixCoreRelationship(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE])
-  stixSightingRelationship(id: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE])
-  stixCyberObservableRelationship(id: ID!): StixCyberObservableRelationship @auth(for: [KNOWLEDGE])
-  externalReference(id: ID!): ExternalReference @auth(for: [KNOWLEDGE])
+  settings(id: ID!): Settings @hasPermission(resources:"Settings:view")
+  group(id: ID!): Group @hasPermission(resources:"Settings:manage-access")
+  user(id: ID!): User @hasPermission(resources:"Settings:manage-access")
+  workspace(id: ID!): Workspace @hasPermission(resources:"Explore:view")
+  label(id: ID!): Label @hasPermission(resources:"Settings:view")
+  markingDefinition(id: ID!): MarkingDefinition @hasPermission(resources:"Settings:view")
+  killChainPhase(id: ID!): KillChainPhase @hasPermission(resources:"Settings:view")
+  stixDomainObject(id: ID!): StixDomainObject @hasPermission(resources:"Knowledge:view")
+  stixCyberObservable(id: ID!): StixCyberObservable @hasPermission(resources:"Knowledge:view")
+  stixCoreRelationship(id: ID!): StixCoreRelationship @hasPermission(resources:"Knowledge:view")
+  stixSightingRelationship(id: ID!): StixSightingRelationship @hasPermission(resources:"Knowledge:view")
+  stixCyberObservableRelationship(id: ID!): StixCyberObservableRelationship @hasPermission(resources:"Knowledge:view")
+  externalReference(id: ID!): ExternalReference @hasPermission(resources:"Knowledge:view")
 }
 
 ### MUTATIONS
@@ -9308,12 +9303,12 @@ type AttributeEditMutations {
   fieldPatch(input: [EditInput]!): Attribute
 }
 type WorkspaceEditMutations {
-  delete: ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
+  delete: ID @hasPermission(resources: "Explore:delete")
   fieldPatch(input: [EditInput]!): Workspace
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [EXPLORE_EXUPDATE])
-  relationsAdd(input: StixMetaRelationshipsAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  relationsDelete(toIds: [String]!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Explore:update")
+  relationsAdd(input: StixMetaRelationshipsAddInput): Workspace @hasPermission(resources: "Explore:update")
+  relationDelete(toId: String!, relationship_type: String!): Workspace @hasPermission(resources: "Explore:update")
+  relationsDelete(toIds: [String]!, relationship_type: String!): Workspace @hasPermission(resources: "Explore:update")
   contextPatch(input: EditContext): Workspace
   contextClean: Workspace
 }
@@ -9360,14 +9355,14 @@ type LabelEditMutations {
   contextClean: Label
 }
 type ExternalReferenceEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(fromId: String!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  delete: ID @hasPermission(resources: ["Knowledge:update","Knowledge:delete"])
+  fieldPatch(input: [EditInput]!): ExternalReference @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): ExternalReference @hasPermission(resources: "Knowledge:update")
+  contextClean: ExternalReference @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(fromId: String!, relationship_type: String!): ExternalReference @hasPermission(resources: "Knowledge:update")
+  askEnrichment(connectorId: ID!): Work @hasPermission(resources: "Knowledge:enrich")
+  importPush(file: Upload!): File @hasPermission(resources: "Knowledge:upload")
 }
 type KillChainPhaseEditMutations {
   delete: ID
@@ -9385,98 +9380,98 @@ type StixCoreObjectEditMutations {
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
   relationDelete(toId: String!, relationship_type: String!): StixCoreObject
   merge(stixCoreObjectsIds: [String]!): StixCoreObject
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: ID!): Work @hasPermission(resources: "Knowledge:enrich")
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
 
 type StixDomainObjectEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  changeType(newType: String!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationsAdd(input: StixMetaRelationshipsAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  changeType(newType: String!): StixDomainObject @hasPermission(resources: "Knowledge:update")
+  fieldPatch(input: [EditInput]!, commitMessage: String): StixDomainObject @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): StixDomainObject @hasPermission(resources: "Knowledge:update")
+  contextClean: StixDomainObject @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationsAdd(input: StixMetaRelationshipsAddInput): StixDomainObject @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String): StixDomainObject @hasPermission(resources: "Knowledge:update")
+  importPush(file: Upload!): File @hasPermission(resources: "Knowledge:upload")
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+    @hasPermission(resources: "Knowledge:export")
+  exportPush(file: Upload!): Boolean @hasPermission(resources: "Connector:export")
 }
 type AttackPatternEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): AttackPattern @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): AttackPattern @hasPermission(resources: "Knowledge:update")
+  contextClean: AttackPattern @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): AttackPattern @hasPermission(resources: "Knowledge:update")
 }
 type CampaignEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Campaign @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Campaign @hasPermission(resources: "Knowledge:update")
+  contextClean: Campaign @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Campaign @hasPermission(resources: "Knowledge:update")
 }
 ############### Containers
 type ContainerEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Container @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Container @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Container @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Container @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Container @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Container @hasPermission(resources: "Knowledge:update")
+  contextClean: Container @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Container @hasPermission(resources: "Knowledge:update")
 }
 type NoteEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Note @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Note @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Note @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Note @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Note @hasPermission(resources: "Knowledge:update")
+  contextClean: Note @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Note @hasPermission(resources: "Knowledge:update")
 }
 type ObservedDataEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): ObservedData @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): ObservedData @hasPermission(resources: "Knowledge:update")
+  contextClean: ObservedData @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): ObservedData @hasPermission(resources: "Knowledge:update")
 }
 type OpinionEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Opinion @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Opinion @hasPermission(resources: "Knowledge:update")
+  contextClean: Opinion @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Opinion @hasPermission(resources: "Knowledge:update")
 }
 type ReportEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Report @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Report @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Report @hasPermission(resources: "Knowledge:update")
+  contextClean: Report @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Report @hasPermission(resources: "Knowledge:update")
 }
 type CourseOfActionEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): CourseOfAction @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): CourseOfAction @hasPermission(resources: "Knowledge:update")
+  contextClean: CourseOfAction @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): CourseOfAction @hasPermission(resources: "Knowledge:update")
 }
 ############### Identities
 type IdentityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Identity @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Identity @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Identity @hasPermission(resources: "Knowledge:update")
+  contextClean: Identity @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Identity @hasPermission(resources: "Knowledge:update")
 }
 type IndividualEditMutations {
   delete: ID
@@ -9487,146 +9482,146 @@ type IndividualEditMutations {
   relationDelete(toId: String!, relationship_type: String!): Individual
 }
 type OrganizationEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Organization @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Organization @hasPermission(resources: "Knowledge:update")
+  contextClean: Organization @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Organization @hasPermission(resources: "Knowledge:update")
 }
 type SectorEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Sector @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Sector @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Sector @hasPermission(resources: "Knowledge:update")
+  contextClean: Sector @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Sector @hasPermission(resources: "Knowledge:update")
 }
 type SystemEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): System @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): System @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: System @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): System @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): System @hasPermission(resources: "Knowledge:update")
+  contextClean: System @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): System @hasPermission(resources: "Knowledge:update")
 }
 type IndicatorEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Indicator @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Indicator @hasPermission(resources: "Knowledge:update")
+  contextClean: Indicator @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Indicator @hasPermission(resources: "Knowledge:update")
 }
 type InfrastructureEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Infrastructure @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Infrastructure @hasPermission(resources: "Knowledge:update")
+  contextClean: Infrastructure @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Infrastructure @hasPermission(resources: "Knowledge:update")
 }
 type IntrusionSetEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): IntrusionSet @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): IntrusionSet @hasPermission(resources: "Knowledge:update")
+  contextClean: IntrusionSet @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): IntrusionSet @hasPermission(resources: "Knowledge:update")
 }
 ############### Locations
 type LocationEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Location @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Location @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Location @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Location @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Location @hasPermission(resources: "Knowledge:update")
+  contextClean: Location @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Location @hasPermission(resources: "Knowledge:update")
 }
 type CityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): City @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): City @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: City @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): City @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): City @hasPermission(resources: "Knowledge:update")
+  contextClean: City @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): City @hasPermission(resources: "Knowledge:update")
 }
 type CountryEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Country @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Country @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Country @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Country @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Country @hasPermission(resources: "Knowledge:update")
+  contextClean: Country @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Country @hasPermission(resources: "Knowledge:update")
 }
 type RegionEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Region @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Region @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Region @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Region @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Region @hasPermission(resources: "Knowledge:update")
+  contextClean: Region @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Region @hasPermission(resources: "Knowledge:update")
 }
 type PositionEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Position @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Position @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Position @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Position @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Position @hasPermission(resources: "Knowledge:update")
+  contextClean: Position @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Position @hasPermission(resources: "Knowledge:update")
 }
 type MalwareEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Malware @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Malware @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Malware @hasPermission(resources: "Knowledge:update")
+  contextClean: Malware @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Malware @hasPermission(resources: "Knowledge:update")
 }
 type ThreatActorEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): ThreatActor @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): ThreatActor @hasPermission(resources: "Knowledge:update")
+  contextClean: ThreatActor @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): ThreatActor @hasPermission(resources: "Knowledge:update")
 }
 type ToolEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Tool @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Tool @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Tool @hasPermission(resources: "Knowledge:update")
+  contextClean: Tool @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Tool @hasPermission(resources: "Knowledge:update")
 }
 type VulnerabilityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Vulnerability @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Vulnerability @hasPermission(resources: "Knowledge:update")
+  contextClean: Vulnerability @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Vulnerability @hasPermission(resources: "Knowledge:update")
 }
 type IncidentEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Incident @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): Incident @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): Incident @hasPermission(resources: "Knowledge:update")
+  contextClean: Incident @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): Incident @hasPermission(resources: "Knowledge:update")
 }
 
 ######## STIX CYBER OBSERVABLE ENTITIES
 
 type StixCyberObservableEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
-  promote: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @hasPermission(resources: "Knowledge:delete")
+  fieldPatch(input: [EditInput]!, commitMessage: String): StixCyberObservable @hasPermission(resources: "Knowledge:update")
+  contextPatch(input: EditContext): StixCyberObservable @hasPermission(resources: "Knowledge:update")
+  contextClean: StixCyberObservable @hasPermission(resources: "Knowledge:update")
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @hasPermission(resources: "Knowledge:update")
+  relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @hasPermission(resources: "Knowledge:update")
+  relationDelete(toId: String!, relationship_type: String!): StixCyberObservable @hasPermission(resources: "Knowledge:update")
+  promote: StixCyberObservable @hasPermission(resources: "Knowledge:update")
 }
 
 ######## STIX RELATIONSHIPS
@@ -9666,84 +9661,84 @@ type StixCyberObservableRelationshipEditMutations {
 
 type Mutation {
   ###### INTERNAL
-  deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  deleteImport(fileName: String): Boolean @hasPermission(resources:"Knowledge:import")
+  uploadImport(file: Upload!): File @hasPermission(resources:"Knowledge:import")
+  askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String): File @hasPermission(resources:"Knowledge:import")
 
   ### SYNC
-  synchronizerAdd(input: SynchronizerAddInput): Synchronizer @auth(for: [CONNECTORAPI])
-  synchronizerEdit(id: ID!): SynchronizerEditMutations @auth(for: [CONNECTORAPI])
-  synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
-  synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
-  synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI])
+  synchronizerAdd(input: SynchronizerAddInput): Synchronizer @hasPermission(resources: "Connector:synchronize")
+  synchronizerEdit(id: ID!): SynchronizerEditMutations @hasPermission(resources: "Connector:synchronize")
+  synchronizerStart(id: ID!): Synchronizer @hasPermission(resources: "Connector:synchronize")
+  synchronizerStop(id: ID!): Synchronizer @hasPermission(resources: "Connector:synchronize")
+  synchronizerTest(input: SynchronizerAddInput): String @hasPermission(resources: "Connector:synchronize")
 
   ### WORK
   workAdd(connectorId: String!, friendlyName: String): Work!
-    @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+    @hasPermission(resources: ["Knowledge:import","Knowedge:export"])
+  workEdit(id: ID!): WorkEditMutations @hasPermission(resources: ["Knowledge:import","Knowedge:export"])
   workDelete(connectorId: String!): Boolean
 
   ### TASK
-  deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
-  listTaskAdd(input: ListTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
-  queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+  deleteTask(id: ID!): ID! @hasPermission(resources: "Knowledge:update")
+  listTaskAdd(input: ListTaskAddInput): Task! @hasPermission(resources: "Knowledge:update")
+  queryTaskAdd(input: QueryTaskAddInput): Task! @hasPermission(resources: "Knowledge:update")
 
   ### RULE
-  ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS])
-  ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS])
+  ruleSetActivation(id: ID!, enable: Boolean!): Rule! @hasPermission(resources:"Settings:view")
+  ruleManagerClean(eventId: ID): RuleManager! @hasPermission(resources:"Settings:view")
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String
-  settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
-  subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS])
-  groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
-  groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
-  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  settingsEdit(id: ID!): SettingsEditMutations @hasPermission(resources:"Settings:view")
+  subTypeEdit(id: ID!): SubTypeEditMutations @hasPermission(resources:"Settings:view")
+  groupAdd(input: GroupAddInput): Group @hasPermission(resources:"Settings:manage-access")
+  groupEdit(id: ID!): GroupEditMutations @hasPermission(resources:"Settings:manage-access")
+  userAdd(input: UserAddInput): User @hasPermission(resources:"Settings:manage-access")
+  userEdit(id: ID!): UserEditMutations @hasPermission(resources:"Settings:manage-access")
   meTokenRenew: User @auth
   meEdit(input: [EditInput]!): User @auth
-  bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
-  bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
+  bookmarkAdd(id: ID!, type: String!): StixDomainObject @hasPermission(resources:"Knowledge:view")
+  bookmarkDelete(id: ID!): ID @hasPermission(resources:"Knowledge:view")
   logout: ID @auth
-  roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
-  sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
-  userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
-  roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  pingConnector(id: ID!, state: String): Connector @auth(for: [CONNECTORAPI])
-  registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
-  resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
-  deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
-  attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
-  attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
-  workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  workspaceEdit(id: ID!): WorkspaceEditMutations @auth(for: [EXPLORE_EXUPDATE])
-  taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  userSubscriptionAdd(input: UserSubscriptionAddInput): UserSubscription @auth(for: [KNOWLEDGE])
-  userSubscriptionEdit(id: ID!): UserSubscriptionEditMutations @auth(for: [KNOWLEDGE])
+  roleAdd(input: RoleAddInput): Role @hasPermission(resources:"Settings:manage-access")
+  sessionKill(id: ID!): ID @hasPermission(resources:"Settings:manage-access")
+  userSessionsKill(id: ID!): [ID] @hasPermission(resources:"Settings:manage-access")
+  roleEdit(id: ID!): RoleEditMutations @hasPermission(resources:"Settings:manage-access")
+  pingConnector(id: ID!, state: String): Connector @hasPermission(resources: "Connector:ping")
+  registerConnector(input: RegisterConnectorInput): Connector @hasPermission(resources: "Connector:register")
+  resetStateConnector(id: ID!): Connector @hasPermission(resources: "Connector:reset")
+  deleteConnector(id: ID!): ID! @hasPermission(resources: "Connector:delete")
+  attributeAdd(input: AttributeAddInput): Attribute @hasPermission(resources:"Settings:view")
+  attributeEdit(id: ID!): AttributeEditMutations @hasPermission(resources:"Settings:view")
+  workspaceAdd(input: WorkspaceAddInput): Workspace @hasPermission(resources: "Explore:update")
+  workspaceEdit(id: ID!): WorkspaceEditMutations @hasPermission(resources: "Explore:update")
+  taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection @hasPermission(resources:"Taxii:set-collections")
+  taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @hasPermission(resources:"Taxii:set-collections")
+  streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection @hasPermission(resources:"Taxii:set-collections")
+  streamCollectionEdit(id: ID!): StreamCollectionEditMutations @hasPermission(resources:"Taxii:set-collections")
+  userSubscriptionAdd(input: UserSubscriptionAddInput): UserSubscription @hasPermission(resources:"Knowledge:view")
+  userSubscriptionEdit(id: ID!): UserSubscriptionEditMutations @hasPermission(resources:"Knowledge:view")
 
   ######## STIX OBJECT
-  stixEdit(id: ID!): StixEditMutations @auth(for: [SETTINGS])
+  stixEdit(id: ID!): StixEditMutations @hasPermission(resources:"Settings:view")
 
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
-  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
-  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: [SETTINGS_SETMARKINGS])
-  labelAdd(input: LabelAddInput): Label @auth(for: [SETTINGS_SETLABELS])
-  labelEdit(id: ID!): LabelEditMutations @auth(for: [SETTINGS_SETLABELS])
-  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS])
-  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS])
+  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @hasPermission(resources: "Markings:update")
+  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @hasPermission(resources: "Markings:update")
+  labelAdd(input: LabelAddInput): Label @hasPermission(resources: "Labelss:update")
+  labelEdit(id: ID!): LabelEditMutations @hasPermission(resources: "Labelss:update")
+  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @hasPermission(resources: "Knowledge:update")
+  externalReferenceEdit(id: ID!): ExternalReferenceEditMutations@hasPermission(resources: "Knowledge:update")
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @hasPermission(resources:"Settings:view")
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @hasPermission(resources:"Settings:view")
 
   ######## STIX CORE OBJECT ENTITIES
-  stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @hasPermission(resources: "Knowledge:update")
 
   ######## STIX DOMAIN OBJECT ENTITIES
-  stixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject @hasPermission(resources: "Knowledge:update")
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(
     type: String!
@@ -9756,62 +9751,62 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
-  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  ): FileConnection @hasPermission(resources: "Knowledge:export")
   stixDomainObjectsDelete(id: [ID]!): [ID]!
-  stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
-  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @hasPermission(resources: "Connector:export")
+  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @hasPermission(resources: "Knowledge:update")
   attackPatternEdit(id: ID!): AttackPatternEditMutations
-  campaignAdd(input: CampaignAddInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  campaignAdd(input: CampaignAddInput): Campaign @hasPermission(resources: "Knowledge:update")
   campaignEdit(id: ID!): CampaignEditMutations
   ############### Containers
   containerEdit(id: ID!): ContainerEditMutations
-  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  noteAdd(input: NoteAddInput): Note @hasPermission(resources: "Knowledge:update")
   noteEdit(id: ID!): NoteEditMutations
-  observedDataAdd(input: ObservedDataAddInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  observedDataAdd(input: ObservedDataAddInput): ObservedData @hasPermission(resources: "Knowledge:update")
   observedDataEdit(id: ID!): ObservedDataEditMutations
-  opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  opinionAdd(input: OpinionAddInput): Opinion @hasPermission(resources: "Knowledge:update")
   opinionEdit(id: ID!): OpinionEditMutations
-  reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  reportAdd(input: ReportAddInput): Report @hasPermission(resources: "Knowledge:update")
   reportEdit(id: ID!): ReportEditMutations
-  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @hasPermission(resources: "Knowledge:update")
   courseOfActionEdit(id: ID!): CourseOfActionEditMutations
   ############### Identities
-  identityAdd(input: IdentityAddInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  identityAdd(input: IdentityAddInput): Identity @hasPermission(resources: "Knowledge:update")
   identityEdit(id: ID!): IdentityEditMutations
-  individualAdd(input: IndividualAddInput): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
-  individualEdit(id: ID!): IndividualEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationAdd(input: OrganizationAddInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  individualAdd(input: IndividualAddInput): Individual @hasPermission(resources: "Knowledge:update")
+  individualEdit(id: ID!): IndividualEditMutations @hasPermission(resources: "Knowledge:update")
+  organizationAdd(input: OrganizationAddInput): Organization @hasPermission(resources: "Knowledge:update")
   organizationEdit(id: ID!): OrganizationEditMutations
-  sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  sectorAdd(input: SectorAddInput): Sector @hasPermission(resources: "Knowledge:update")
   sectorEdit(id: ID!): SectorEditMutations
-  systemAdd(input: SystemAddInput): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  systemAdd(input: SystemAddInput): System @hasPermission(resources: "Knowledge:update")
   systemEdit(id: ID!): SystemEditMutations
-  indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorAdd(input: IndicatorAddInput): Indicator @hasPermission(resources: "Knowledge:update")
   indicatorEdit(id: ID!): IndicatorEditMutations
-  infrastructureAdd(input: InfrastructureAddInput): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  infrastructureAdd(input: InfrastructureAddInput): Infrastructure @hasPermission(resources: "Knowledge:update")
   infrastructureEdit(id: ID!): InfrastructureEditMutations
-  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @hasPermission(resources: "Knowledge:update")
   intrusionSetEdit(id: ID!): IntrusionSetEditMutations
   ############### Locations
-  locationAdd(input: LocationAddInput): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  locationAdd(input: LocationAddInput): Location @hasPermission(resources: "Knowledge:update")
   locationEdit(id: ID!): LocationEditMutations
-  cityAdd(input: CityAddInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  cityAdd(input: CityAddInput): City @hasPermission(resources: "Knowledge:update")
   cityEdit(id: ID!): CityEditMutations
-  countryAdd(input: CountryAddInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  countryAdd(input: CountryAddInput): Country @hasPermission(resources: "Knowledge:update")
   countryEdit(id: ID!): CountryEditMutations
-  regionAdd(input: RegionAddInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  regionAdd(input: RegionAddInput): Region @hasPermission(resources: "Knowledge:update")
   regionEdit(id: ID!): RegionEditMutations
-  positionAdd(input: PositionAddInput): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  positionAdd(input: PositionAddInput): Position @hasPermission(resources: "Knowledge:update")
   positionEdit(id: ID!): PositionEditMutations
-  malwareAdd(input: MalwareAddInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  malwareAdd(input: MalwareAddInput): Malware @hasPermission(resources: "Knowledge:update")
   malwareEdit(id: ID!): MalwareEditMutations
-  threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorAdd(input: ThreatActorAddInput): ThreatActor @hasPermission(resources: "Knowledge:update")
   threatActorEdit(id: ID!): ThreatActorEditMutations
-  toolAdd(input: ToolAddInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  toolAdd(input: ToolAddInput): Tool @hasPermission(resources: "Knowledge:update")
   toolEdit(id: ID!): ToolEditMutations
-  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @hasPermission(resources: "Knowledge:update")
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
-  incidentAdd(input: IncidentAddInput): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  incidentAdd(input: IncidentAddInput): Incident @hasPermission(resources: "Knowledge:update")
   incidentEdit(id: ID!): IncidentEditMutations
 
   ######## STIX CYBER OBSERVABLE ENTITIES
@@ -9853,7 +9848,7 @@ type Mutation {
     XOpenCTIHostname: XOpenCTIHostnameAddInput
     XOpenCTIText: XOpenCTITextAddInput
     XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
-  ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  ): StixCyberObservable @hasPermission(resources: "Knowledge:update")
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(
     format: String!
@@ -9866,7 +9861,7 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixCyberObservablesFiltering]
     filterMode: FilterMode
-  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  ): FileConnection @hasPermission(resources: "Knowledge:export")
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
   artifactImport(
     file: Upload!
@@ -9880,19 +9875,19 @@ type Mutation {
 
   ######## STIX CORE RELATIONSHIPS
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
-    @auth(for: [KNOWLEDGE_KNUPDATE])
-  stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+    @hasPermission(resources: "Knowledge:update")
+  stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @hasPermission(resources: "Knowledge:update")
   stixCoreRelationshipDelete(fromId: String!, toId: String!, relationship_type: String!): Boolean!
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+    @hasPermission(resources: "Knowledge:update")
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
   stixCyberObservableRelationshipAdd(input: StixCyberObservableRelationshipAddInput): StixCyberObservableRelationship
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+    @hasPermission(resources: "Knowledge:update")
   stixCyberObservableRelationshipEdit(id: ID!): StixCyberObservableRelationshipEditMutations
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+    @hasPermission(resources: "Knowledge:update")
 
   ######## STIX SIGHTING RELATIONSHIPS
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput): StixSightingRelationship
-    @auth(for: [KNOWLEDGE_KNUPDATE])
-  stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+    @hasPermission(resources: "Knowledge:update")
+  stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations @hasPermission(resources: "Knowledge:update")
 }

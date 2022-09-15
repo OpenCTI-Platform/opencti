@@ -51,7 +51,7 @@ const styles = (theme) => ({
     margin: '0 300px 0 -10px',
   },
   toolBar: {
-    margin: '-20px -24px 20px -24px',
+    margin: '0px -24px 20px -30px',
     height: '100%',
     display: 'flex',
     '@media (max-width: 1400px)': {

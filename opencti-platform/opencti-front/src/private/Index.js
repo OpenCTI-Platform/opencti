@@ -1,44 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Switch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import TopBarBreadcrumbs from './components/nav/TopBarBreadcrumbs';
 import LeftBar from './components/nav/LeftBar';
-import Dashboard from './components/Dashboard';
-import Search from './components/Search';
-import RootVSAC from './components/vsac/Root';
-import RootImport from './components/import/Root';
-import RootAnalysis from './components/analysis/Root';
-import RootEvents from './components/events/Root';
-import RootObservations from './components/observations/Root';
-import RootThreats from './components/threats/Root';
-import RootAssets from './components/assets/Root';
-import RootRiskAssessment from './components/riskAssessment/Root';
-import RootDataEntities from './components/dataEntities/Root';
-import RootArsenal from './components/arsenal/Root';
-import RootEntities from './components/entities/Root';
-import RootSettings from './components/settings/Root';
-import RootData from './components/data/Root';
-import RootAbout from './components/about/Root';
-import RootWorkspaces from './components/workspaces/Root';
-import Profile from './components/Profile';
 import Message from '../components/Message';
-import { NoMatch, BoundaryRoute } from './components/Error';
-import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
 import { getAccount } from '../services/account.service';
-import FeatureFlag from '../components/feature/FeatureFlag';
+import IndexRoutePath from './components/IndexRoutePath';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     minWidth: '100%',
     height: '100%',
   },
-  content: {
+  contentOpen: {
     height: '100%',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
-    padding: '24px 24px 24px 280px',
     minWidth: 0,
+    margin: '1rem 1rem 0 17rem',
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    overflow: 'hidden',
+  },
+  contentClose: {
+    height: '100%',
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.default,
+    minWidth: 0,
+    margin: '1rem 1rem 0 5.2rem',
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    overflow: 'hidden',
   },
   message: {
     display: 'flex',
@@ -51,12 +47,17 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Index = (me) => {
+  const classes = useStyles();
+  const [drawer, setDrawer] = useState(false);
   const [clientId, setClientId] = useState(localStorage.getItem('client_id'));
-
   const clearStorage = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('client_id');
   };
+
+  const drawerValue = useCallback((value) => {
+    setDrawer(value);
+  }, []);
 
   useEffect(() => {
     if (!clientId) {
@@ -80,68 +81,21 @@ const Index = (me) => {
       }, expiration);
     }
   }, [clientId]);
-
-  const classes = useStyles();
   return (
     <div className={classes.root}>
-      <TopBarBreadcrumbs />
-      <LeftBar clientId={clientId} setClientId={setClientId} />
-      <Message />
-      <main className={classes.content} style={{ paddingRight: 24 }}>
+      <TopBarBreadcrumbs drawer={drawer} />
+      <LeftBar
+        clientId={clientId}
+        setClientId={setClientId}
+        drawerValue={drawerValue}
+      />
+      <main
+        className={drawer ? classes.contentClose : classes.contentOpen}
+      // style={{ paddingRight: 24 }}
+      >
+        <Message />
         <div className={classes.toolbar} />
-        <Switch>
-          <BoundaryRoute exact path="/dashboard" component={Dashboard} />
-          <BoundaryRoute
-            exact
-            path="/dashboard/search"
-            render={(routeProps) => <Search {...routeProps} me={me} />}
-          />
-          <BoundaryRoute
-            exact
-            path="/dashboard/id/:id"
-            render={(routeProps) => (
-              <StixCoreObjectOrStixCoreRelationship {...routeProps} me={me} />
-            )}
-          />
-          <BoundaryRoute
-            exact
-            path="/dashboard/search/:keyword"
-            render={(routeProps) => <Search {...routeProps} me={me} />}
-          />
-          <BoundaryRoute
-            path="/data"
-            render={(routeProps) => <RootDataEntities {...routeProps} me={me} />}
-          />
-          <BoundaryRoute path="/about" component={RootAbout} />
-          <BoundaryRoute path="/activities/vulnerability assessment" component={RootVSAC} />
-          <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
-          <BoundaryRoute path="/dashboard/events" component={RootEvents} />
-          <Route path="/dashboard/observations" component={RootObservations} />
-          <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
-          <BoundaryRoute path="/defender HQ/assets" component={RootAssets} />
-          <FeatureFlag tag={'RISK_ASSESSMENT'}>
-            <BoundaryRoute path="/activities/risk assessment" component={RootRiskAssessment} />
-          </FeatureFlag>
-          <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
-          <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
-          <BoundaryRoute path="/dashboard/data" render={RootData} />
-          <BoundaryRoute
-            path="/dashboard/workspaces"
-            component={RootWorkspaces}
-          />
-          <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
-          <BoundaryRoute
-            exact
-            path="/dashboard/profile"
-            render={(routeProps) => <Profile {...routeProps} me={me} />}
-          />
-          <BoundaryRoute
-            path="/dashboard/import"
-            component={RootImport}
-            me={me}
-          />
-          <Route component={NoMatch} />
-        </Switch>
+        <IndexRoutePath me={me}/>
       </main>
     </div>
   );

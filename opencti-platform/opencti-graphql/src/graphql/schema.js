@@ -299,6 +299,7 @@ const createSchema = () => {
     schemaTransforms: [constraintDirective()],
     inheritResolversFromInterfaces: true,
   });
+  schema = constraintDirective()(schema);
   schema = authDirectiveTransformer(schema);
   return schema;
 };
