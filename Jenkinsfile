@@ -76,7 +76,7 @@ node {
   }
 
   // Run any tests we can that do not require a build, alongside the build process
-  parallel build: {
+  parallel build: { 
     // if core branches (master, staging, or develop) build; except if the commit says:
     //   - 'ci:skip' then skip build
     //   - 'ci:build' then build regardless of branch
