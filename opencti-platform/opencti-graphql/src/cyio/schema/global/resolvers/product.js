@@ -1,5 +1,6 @@
 import {compareValues, filterValues} from '../../utils.js';
-import {UserInputError} from "apollo-server-express";
+import {ApolloError, UserInputError} from "apollo-server-express";
+// import {ApolloError, UserInputError} from 'apollo-server-errors';
 import {
   getReducer, 
   countProductsQuery,
@@ -25,8 +26,8 @@ const productResolvers = {
       }
       // END WORKAROUND
 
-      if ('search' in args && ('first' in args || 'offset' in args)) throw new UserInputError("Query can not have both 'search' and 'first'/'offset'");
-      if ('offset' in args && !('first' in args)) throw new UserInputError("Argument 'offset' can not be used without 'first'");
+      if ('search' in args && ('first' in args || 'offset' in args)) throw new ApolloError("Query can not have both 'search' and 'first'/'offset'", "BAD_USER_INPUT");
+      if ('offset' in args && !('first' in args)) throw new ApolloError("Argument 'offset' can not be used without 'first'", "BAD_USER_INPUT");
 
       const dbName = 'cyber-context';
       let response;
@@ -53,7 +54,7 @@ const productResolvers = {
       const totalProductCount = response[0].count;
 
       // too many products to return, so ask user to refine the search
-      if (totalProductCount > 1000) throw new UserInputError("Your search returned too many results. Please narrow your query.");
+      if (totalProductCount > 1000) throw new ApolloError("Your search returned too many results. Please narrow your query.", "BAD_USER_INPUT");
 
       // Select the list of products
       const sparqlQuery = selectAllProducts(selectMap.getNode("node"), args);
