@@ -188,8 +188,12 @@ const cleanDate = (date: Date | string | undefined): string | undefined => {
 };
 const convertObjectReferences = (instance: StoreEntity, inferred: boolean) => {
   const objectRefs = instance[INPUT_OBJECTS] ?? [];
-  return objectRefs.filter((r) => isInferredIndex(r.i_relation._index) === inferred)
-    .map((m) => m.standard_id);
+  return objectRefs.filter((r) => {
+    // If related relation not available, it's just a creation, so inferred false
+    if (!r.i_relation) return !inferred;
+    // If related relation is available, select accordingly
+    return isInferredIndex(r.i_relation._index) === inferred;
+  }).map((m) => m.standard_id);
 };
 
 // Extensions

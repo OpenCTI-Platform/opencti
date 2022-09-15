@@ -248,7 +248,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_firstname: string;
   x_opencti_inferences: Array<StoreRule> | undefined;
   // internal
-  i_relation: BasicStoreRelation;
+  i_relation: BasicStoreRelation; // internal related relation for refs
   // rels
   [RELATION_CREATED_BY]: string;
   [RELATION_OBJECT_MARKING]: Array<string>;
