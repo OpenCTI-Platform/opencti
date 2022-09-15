@@ -186,6 +186,11 @@ const cleanDate = (date: Date | string | undefined): string | undefined => {
   }
   return date;
 };
+const convertObjectReferences = (instance: StoreEntity, inferred: boolean) => {
+  const objectRefs = instance[INPUT_OBJECTS] ?? [];
+  return objectRefs.filter((r) => isInferredIndex(r.i_relation._index) === inferred)
+    .map((m) => m.standard_id);
+};
 
 // Extensions
 const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
@@ -553,43 +558,71 @@ const convertAttackPatternToStix = (instance: StoreEntity, type: string): SDO.St
 };
 const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixReport => {
   assertType(ENTITY_TYPE_CONTAINER_REPORT, type);
+  const report = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...report,
     name: instance.name,
     description: instance.description,
     report_types: instance.report_types,
     published: instance.published,
-    object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id)
+    object_refs: convertObjectReferences(instance, false),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...report.extensions[STIX_EXT_OCTI],
+        object_refs_inferred: convertObjectReferences(instance, true),
+      })
+    }
   };
 };
 const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote => {
   assertType(ENTITY_TYPE_CONTAINER_NOTE, type);
+  const note = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...note,
     abstract: instance.attribute_abstract,
     content: instance.content,
     authors: instance.authors,
-    object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id)
+    object_refs: convertObjectReferences(instance, false),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...note.extensions[STIX_EXT_OCTI],
+        object_refs_inferred: convertObjectReferences(instance, true),
+      })
+    }
   };
 };
 const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
   assertType(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, type);
+  const observedData = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...observedData,
     first_observed: instance.first_observed,
     last_observed: instance.last_observed,
     number_observed: instance.number_observed,
-    object_refs: (instance.objects ?? []).map((m) => m.standard_id)
+    object_refs: convertObjectReferences(instance, false),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...observedData.extensions[STIX_EXT_OCTI],
+        object_refs_inferred: convertObjectReferences(instance, true),
+      })
+    }
   };
 };
 const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpinion => {
   assertType(ENTITY_TYPE_CONTAINER_OPINION, type);
+  const opinion = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...opinion,
     explanation: instance.explanation,
     authors: instance.authors,
     opinion: instance.opinion,
-    object_refs: (instance.objects ?? []).map((m) => m.standard_id)
+    object_refs: convertObjectReferences(instance, false),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...opinion.extensions[STIX_EXT_OCTI],
+        object_refs_inferred: convertObjectReferences(instance, true),
+      })
+    }
   };
 };
 

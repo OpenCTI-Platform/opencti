@@ -21,8 +21,18 @@ interface DeleteEventOpts {
   publishStreamEvent?: boolean;
 }
 
+interface RuleEvent {
+  type: string;
+  data?: any;
+}
+
+interface DependenciesDeleteEvent extends RuleEvent {
+  type: 'delete-dependencies';
+  ids: Array<string>;
+}
+
 // stream
-interface Event {
+interface Event extends RuleEvent {
   id?: string;
   version: string;
   type: string;
@@ -32,6 +42,7 @@ interface Event {
 }
 
 interface UpdateEvent extends Event {
+  type: 'update';
   commit: CommitContext | undefined;
   context: {
     patch: Array<Operation>;
@@ -40,12 +51,14 @@ interface UpdateEvent extends Event {
 }
 
 interface DeleteEvent extends Event {
+  type: 'delete';
   context: {
     deletions: Array<StixCoreObject>;
   };
 }
 
 interface MergeEvent extends Event {
+  type: 'merge';
   context: {
     patch: Array<Operation>;
     reverse_patch: Array<Operation>;

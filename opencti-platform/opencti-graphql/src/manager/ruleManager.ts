@@ -14,7 +14,10 @@ import {
 } from '../database/middleware';
 import {
   EVENT_TYPE_CREATE,
-  EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_DELETE_DEPENDENCIES,
+  EVENT_TYPE_MERGE,
+  EVENT_TYPE_UPDATE,
   isEmptyField,
   isNotEmptyField,
   READ_DATA_INDICES
@@ -34,7 +37,15 @@ import type { RuleManager } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
-import type { DeleteEvent, Event, MergeEvent, StreamEvent, UpdateEvent } from '../types/event';
+import type {
+  DeleteEvent,
+  DependenciesDeleteEvent,
+  Event,
+  MergeEvent,
+  RuleEvent,
+  StreamEvent,
+  UpdateEvent
+} from '../types/event';
 import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
 import { executionContext } from '../utils/access';
 
@@ -171,7 +182,7 @@ const isMatchRuleFilters = (rule: RuleDefinition, element: StixCoreObject): bool
   return evaluations.reduce((a, b) => a || b);
 };
 
-const handleRuleError = async (event: Event, error: unknown) => {
+const handleRuleError = async (event: RuleEvent, error: unknown) => {
   const { type } = event;
   logApp.error(`[OPENCTI-MODULE] Rule error applying ${type} event`, { event, error });
 };
@@ -186,7 +197,7 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   await elList<BasicStoreCommon>(context, RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
 };
 
-export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<Event>, forRules: Array<RuleRuntime> = []) => {
+export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<RuleEvent>, forRules: Array<RuleRuntime> = []) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
@@ -195,7 +206,6 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
     const { type, data } = event;
-    const internalId = data.extensions[STIX_EXT_OCTI].id;
     try {
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
@@ -207,14 +217,20 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
         const deleteEvent = event as DeleteEvent;
-        // const element: StixCoreObject = { ...data, object_marking_refs: markings };
-        const contextDeletions = (deleteEvent.context?.deletions ?? []).map((d) => d.extensions[STIX_EXT_OCTI].id);
-        const deletionIds = [internalId, ...contextDeletions];
+        const internalId = deleteEvent.data.extensions[STIX_EXT_OCTI].id;
+        const contextDeletionsIds = (deleteEvent.context?.deletions ?? []).map((d) => d.extensions[STIX_EXT_OCTI].id);
+        const deletionIds = [internalId, ...contextDeletionsIds];
         await applyCleanupOnDependencyIds(deletionIds);
+      }
+      // In case of direct dependencies deletion (refs), call clean on every dependencies
+      if (type === EVENT_TYPE_DELETE_DEPENDENCIES) {
+        const deleteEvent = event as DependenciesDeleteEvent;
+        await applyCleanupOnDependencyIds(deleteEvent.ids);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
         const updateEvent = event as UpdateEvent;
+        const internalId = updateEvent.data.extensions[STIX_EXT_OCTI].id;
         const previousPatch = updateEvent.context.reverse_patch;
         const previousStix = jsonpatch.applyPatch<StixCoreObject>(R.clone(data), previousPatch).newDocument;
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
