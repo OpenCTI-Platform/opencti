@@ -447,9 +447,9 @@ const createSeeMiddleware = () => {
             const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
             channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
             cache.set(stixRelation.id);
-            await wait(channel.delay);
           }
         }
+        await wait(channel.delay);
       };
       const allRelOptions = {
         elementId: stix.extensions[STIX_EXT_OCTI].id,
@@ -471,7 +471,7 @@ const createSeeMiddleware = () => {
     }
     return match;
   };
-  const publishRelationDependencies = async (noDependencies, cache, filterCache, channel, req, streamFilters, element) => {
+  const publishRelationDependencies = async (client, noDependencies, cache, filterCache, channel, req, streamFilters, element) => {
     const { user } = req.session;
     const { id: eventId, data: eventData } = element;
     const { type, data: stix, message } = eventData;
@@ -504,6 +504,7 @@ const createSeeMiddleware = () => {
         channel.sendEvent(eventId, type, content);
       }
     }
+    client.sendHeartbeat(eventId);
   };
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
@@ -611,7 +612,7 @@ const createSeeMiddleware = () => {
                 } else if (noDependencies === false && isRelation) { // Update but not visible
                   // In case of relationship publication, from or to can be related to something that
                   // is part of the filtering. We can consider this as dependencies
-                  await publishRelationDependencies(noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                  await publishRelationDependencies(client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
                 }
               } else if (isCurrentlyVisible) {
                 if (type === EVENT_TYPE_DELETE) {
@@ -625,16 +626,18 @@ const createSeeMiddleware = () => {
               } else if (noDependencies === false && isRelation) { // Not an update and not visible
                 // In case of relationship publication, from or to can be related to something that
                 // is part of the filtering. We can consider this as dependencies
-                await publishRelationDependencies(noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                await publishRelationDependencies(client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
               }
-              await wait(channel.delay);
             }
             // Delete eventual filtering cache
             filterCache.delete(stix.extensions[STIX_EXT_OCTI].id);
           }
+          client.sendHeartbeat(eventId);
         }
         // Send the Heartbeat with last event id
         client.sendHeartbeat(lastEventId);
+        // Wait to prevent flooding
+        await wait(channel.delay);
       });
       await initBroadcasting(req, res, client, processor);
       // Start recovery if needed
@@ -659,7 +662,6 @@ const createSeeMiddleware = () => {
                     const eventData = { data: stixData, message, origin, version: EVENT_CURRENT_VERSION };
                     channel.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
                     cache.set(stixData.id);
-                    await wait(channel.delay);
                   }
                 } else {
                   return channel.connected();
@@ -667,7 +669,7 @@ const createSeeMiddleware = () => {
               }
             }
           }
-          await wait(50);
+          await wait(channel.delay);
           return channel.connected();
         };
         const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startFrom, before: recoverTo });
