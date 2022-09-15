@@ -1099,14 +1099,24 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
   if (instance.entity_type === RELATION_REVOKED_BY) {
     return false;
   }
-  // Well defined relationship type check
-  const definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`];
+  // Well define relationship type check
+  let definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`];
+  // if definition not found, check from toType parent observables
+  if (!definitions && isStixCyberObservable(instance.toType)) {
+    definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`];
+  }
+  // if definition not found, check from fromType parent observables
+  if (!definitions && isStixCyberObservable(instance.fromType)) {
+    definitions = stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${instance.toType}`];
+  }
+  // If definition found, check if the relation is build int
   if (definitions) {
     const rel = definitions.find((d) => d.name === instance.entity_type);
     if (rel) {
       return rel.type === REL_BUILT_IN;
     }
   }
+  // Definition not found, just warn
   logApp.warn(`[STIX] Missing definition for ${instance.fromType}<-${instance.entity_type}->${instance.toType}`);
   return true;
 };
