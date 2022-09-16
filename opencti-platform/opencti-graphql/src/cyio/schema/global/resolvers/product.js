@@ -1,6 +1,5 @@
 import {compareValues, filterValues, CyioError} from '../../utils.js';
 import {UserInputError} from "apollo-server-express";
-// import {ApolloError} from "apollo-errors";
 import {
   getReducer, 
   countProductsQuery,
@@ -9,14 +8,6 @@ import {
   productSingularizeSchema as singularizeSchema,
 } from './product-sparqlQuery.js';
 
-// export class CyioError extends ApolloError {
-//   constructor(message) {
-//     super("CyioError", {
-//       message,
-//       time_thrown: new Date() // UTC
-//     })
-//   }
-// }
 
 const productResolvers = {
   Query: {
