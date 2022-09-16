@@ -88,7 +88,7 @@ class RiskComponent extends Component {
               container={true}
               spacing={3}
               classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 25 }}
+              style={{ marginTop: 25, marginBottom: 30  }}
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences

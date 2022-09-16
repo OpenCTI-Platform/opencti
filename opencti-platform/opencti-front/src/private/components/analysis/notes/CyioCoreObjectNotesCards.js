@@ -20,7 +20,6 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: 0,
     marginTop: '-5px',
     position: 'relative',
     padding: '20px 20px 20px 20px',
@@ -130,7 +129,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
     //   search: this.state.search,
     // };
     return (
-      <div style={{ marginTop: marginTop || 40, height: '100%' }}>
+      <div style={{ marginTop: marginTop || 40, marginBottom: 10, height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes')}
         </Typography>
