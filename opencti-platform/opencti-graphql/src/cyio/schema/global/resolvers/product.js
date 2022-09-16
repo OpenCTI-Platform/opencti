@@ -28,7 +28,7 @@ const productResolvers = {
       // END WORKAROUND
 
       if ('search' in args && ('first' in args || 'offset' in args)) throw new UserInputError("Query can not have both 'search' and 'first'/'offset'", {code: "BAD_USER_INPUT"});
-      if ('offset' in args && !('first' in args)) throw new ApolloError("Argument 'offset' can not be used without 'first'", "BAD_USER_INPUT", {code: "BAD_USER_INPUT"});
+      if ('offset' in args && !('first' in args)) throw new ApolloError("Argument 'offset' can not be used without 'first'", {code: "BAD_USER_INPUT"});
 
       const dbName = 'cyber-context';
       let response;
