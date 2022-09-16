@@ -63,6 +63,8 @@ const styles = (theme) => ({
   },
   container: {
     display: 'flex',
+    flexWrap: 'wrap',
+    minWidth: 'max-content',
   },
   fixed: {
     width: '200px',
@@ -76,6 +78,8 @@ const styles = (theme) => ({
     background: '#075AD333',
     marginBottom: '5px',
     border: '1px solid #075AD3',
+    whiteSpace: 'nowrap',
+    minWidth: 'auto',
   },
 });
 
