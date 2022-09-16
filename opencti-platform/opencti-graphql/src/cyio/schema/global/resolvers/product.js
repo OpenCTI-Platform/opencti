@@ -1,7 +1,6 @@
-import {compareValues, filterValues} from '../../utils.js';
-// import {ApolloError, UserInputError} from "apollo-server-express";
-// import {ApolloError, UserInputError} from 'apollo-server-errors';
-import {ApolloError} from "apollo-errors";
+import {compareValues, filterValues, CyioError} from '../../utils.js';
+import {UserInputError} from "apollo-server-express";
+// import {ApolloError} from "apollo-errors";
 import {
   getReducer, 
   countProductsQuery,
@@ -10,14 +9,14 @@ import {
   productSingularizeSchema as singularizeSchema,
 } from './product-sparqlQuery.js';
 
-export class ArgumentError extends ApolloError {
-  constructor(message) {
-    super("ArgumentError", {
-      message,
-      time_thrown: new Date() // UTC
-    })
-  }
-}
+// export class CyioError extends ApolloError {
+//   constructor(message) {
+//     super("CyioError", {
+//       message,
+//       time_thrown: new Date() // UTC
+//     })
+//   }
+// }
 
 const productResolvers = {
   Query: {
@@ -36,8 +35,8 @@ const productResolvers = {
       }
       // END WORKAROUND
 
-      if ('search' in args && ('first' in args || 'offset' in args)) throw new ArgumentError("Query can not have both 'search' and 'first'/'offset'");
-      if ('offset' in args && !('first' in args)) throw new ArgumentError("Argument 'offset' can not be used without 'first'");
+      if ('search' in args && ('first' in args || 'offset' in args)) throw new CyioError("Query can not have both 'search' and 'first'/'offset'");
+      if ('offset' in args && !('first' in args)) throw new CyioError("Argument 'offset' can not be used without 'first'");
 
       const dbName = 'cyber-context';
       let response;
@@ -64,7 +63,7 @@ const productResolvers = {
       const totalProductCount = response[0].count;
 
       // too many products to return, so ask user to refine the search
-      if (totalProductCount > 1000) throw new ArgumentError("Your search returned too many results. Please narrow your query.");
+      if (totalProductCount > 1000) throw new CyioError("Your search returned too many results. Please narrow your query.");
 
       // Select the list of products
       const sparqlQuery = selectAllProducts(selectMap.getNode("node"), args);
