@@ -347,7 +347,6 @@ const LeftBar = ({
                 <ListItemText primary={t('Data')} className={!openDrawer && classes.hideText} />
               </MenuItem>
               <MenuItem
-                disabled="true"
                 component={Link}
                 to="/dashboard/settings"
                 selected={location.pathname.includes('/dashboard/setings')}
