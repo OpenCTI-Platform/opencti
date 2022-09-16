@@ -18,7 +18,7 @@ import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { initializeSession } from '../database/session';
 import { LOGIN_ACTION } from '../config/audit';
-import {configureKeycloakMiddleware, getKeycloak, getKeycloakMiddleware} from "../service/keycloak";
+import { configureKeycloakMiddleware, getKeycloak, getKeycloakMiddleware } from '../service/keycloak';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
