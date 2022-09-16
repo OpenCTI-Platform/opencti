@@ -99,6 +99,7 @@ const styles = (theme) => ({
     position: 'absolute',
     left: 0,
     bottom: 0,
+    width: '100%',
   },
   logoContainer: {
     height: 64,
