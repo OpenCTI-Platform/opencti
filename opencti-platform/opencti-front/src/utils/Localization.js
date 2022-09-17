@@ -510,7 +510,7 @@ const i18n = {
       Visualization: 'Visualización',
       Workspaces: 'Espacios de trabajo',
       Workspace: 'Espacio de trabajo',
-      Knowledge: 'Base de conocimiento',
+      Knowledge: 'Conocimiento',
       Explore: 'Explorar',
       Investigate: 'Investigar',
       Correlate: 'Correlar',
