@@ -365,7 +365,10 @@ class ListenStream(threading.Thread):
             stream_alive = StreamAlive(q)
             stream_alive.start()
             # Computing args, from is always set
-            live_stream_args = "?from=" + start_from + "&recover=" + recover_until
+            live_stream_args = "?from=" + start_from
+            # In case no recover is explicitely set
+            if recover_until not in ["no", "none", "No", "None", "false", "False"]:
+                live_stream_args = live_stream_args + "&recover=" + recover_until
             live_stream_url = self.url + live_stream_args
             listen_delete = str(self.listen_delete).lower()
             no_dependencies = str(self.no_dependencies).lower()
@@ -590,10 +593,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """sets the connector state
 
         :param state: state object
-        :type state: Dict
+        :type state: Dict or None
         """
-
-        self.connector_state = json.dumps(state)
+        if isinstance(state, Dict):
+            self.connector_state = json.dumps(state)
+        else:
+            self.connector_state = None
 
     def get_state(self) -> Optional[Dict]:
         """get the connector state
@@ -700,13 +705,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             and self.connect_live_stream_recover_iso_date is not None
         ):
             recover_iso_date = self.connect_live_stream_recover_iso_date
-
         # Generate the stream URL
-        live_stream_uri = ""
+        url = url + "/stream"
         if live_stream_id is not None:
-            live_stream_uri = "/" + live_stream_id
-        url = url + "/stream" + live_stream_uri
-
+            url = url + "/" + live_stream_id
         self.listen_stream = ListenStream(
             self,
             message_callback,
