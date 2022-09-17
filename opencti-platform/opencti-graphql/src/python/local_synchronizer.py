@@ -95,7 +95,7 @@ class TestLocalSynchronizer:
 
     def sync(self):
         # Reset the connector state if exists
-        self.opencti_source_helper.set_state({"connectorLastEventId": "-"})
+        self.opencti_source_helper.set_state(None)
         # Start to listen the stream from start specified parameter
         self.stream = self.opencti_source_helper.listen_stream(
             self._process_message,
