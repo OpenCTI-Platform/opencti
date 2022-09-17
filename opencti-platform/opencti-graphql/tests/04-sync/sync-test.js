@@ -21,7 +21,7 @@ import { execPython3, executePython } from '../../src/python/pythonBridge';
 import { storeFullLoadById } from '../../src/database/middleware';
 import { checkInstanceDiff } from '../utils/testStream';
 import { shutdownModules, startModules } from '../../src/modules';
-import { FROM_START_STR, now } from '../../src/utils/format';
+import { FROM_START, now } from '../../src/utils/format';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
 import { convertStoreToStix } from '../../src/database/stix-converter';
@@ -157,7 +157,7 @@ describe('Database sync testing', () => {
         SYNC_LIVE_START_REMOTE_URI,
         API_TOKEN,
         SYNC_LIVE_EVENTS_SIZE,
-        FROM_START_STR,
+        FROM_START,
         now(),
         'live',
       ];
