@@ -681,8 +681,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
-            nodeCanvasObject={
-              (node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
+            nodeCanvasObject={(node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
             }
             nodePointerAreaPaint={nodeAreaPaint}
             // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
@@ -894,6 +893,20 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                   name
                   first_seen
                   last_seen
+                }
+                ... on Event {
+                  name
+                  start_time
+                  stop_time
+                }
+                ... on Channel {
+                  name
+                }
+                ... on Narrative {
+                  name
+                }
+                ... on Language {
+                  name
                 }
                 ... on StixCyberObservable {
                   observable_value

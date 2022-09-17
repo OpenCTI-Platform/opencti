@@ -27,7 +27,8 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { commitMutation } from '../../../../relay/environment';
+import * as R from 'ramda';
+import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -36,6 +37,19 @@ import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ConfidenceField from '../form/ConfidenceField';
+
+export const stixDomainObjectCreationAllTypesQuery = graphql`
+  query StixDomainObjectCreationAllTypesQuery {
+    sdoTypes: subTypes(type: "Stix-Domain-Object") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+  }
+`;
 
 const typesWithOpenCTIAliases = [
   'Course-Of-Action',
@@ -338,107 +352,74 @@ class StixDomainObjectCreation extends Component {
   renderEntityTypesList() {
     const { t, targetStixDomainObjectTypes } = this.props;
     return (
-      <Field
-        component={SelectField}
-        variant="standard"
-        name="type"
-        label={t('Entity type')}
-        fullWidth={true}
-        containerstyle={{ width: '100%' }}
-      >
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Organization', 'Identity'].indexOf(r) >= 0,
-          ) && <MenuItem value="Organization">{t('Organization')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Sector', 'Identity'].indexOf(r) >= 0,
-          ) && <MenuItem value="Sector">{t('Sector')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'System', 'Identity'].indexOf(r) >= 0,
-          ) && <MenuItem value="System">{t('System')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Individual', 'Identity'].indexOf(r) >= 0,
-          ) && <MenuItem value="Individual">{t('Individual')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Threat-Actor'].indexOf(r) >= 0,
-          ) && <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Intrusion-Set'].indexOf(r) >= 0,
-          ) && <MenuItem value="Intrusion-Set">{t('Intrusion set')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Campaign'].indexOf(r) >= 0,
-          ) && <MenuItem value="Campaign">{t('Campaign')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Incident'].indexOf(r) >= 0,
-          ) && <MenuItem value="Incident">{t('Incident')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Malware'].indexOf(r) >= 0,
-          ) && <MenuItem value="Malware">{t('Malware')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Channel'].indexOf(r) >= 0,
-          ) && <MenuItem value="Channel">{t('Channel')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Narrative'].indexOf(r) >= 0,
-          ) && <MenuItem value="Narrative">{t('Narrative')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Event'].indexOf(r) >= 0,
-          ) && <MenuItem value="Event">{t('Event')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Tool'].indexOf(r) >= 0,
-          ) && <MenuItem value="Tool">{t('Tool')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Vulnerability'].indexOf(r) >= 0,
-          ) && <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Infrastructure'].indexOf(r) >= 0,
-          ) && (
-            <MenuItem value="Infrastructure">{t('Infrastructure')}</MenuItem>
-          ))}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Attack-Pattern'].indexOf(r) >= 0,
-          ) && (
-            <MenuItem value="Attack-Pattern">{t('Attack pattern')}</MenuItem>
-          ))}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Course-Of-Action'].indexOf(r) >= 0,
-          ) && (
-            <MenuItem value="Course-Of-Action">
-              {t('Course of action')}
-            </MenuItem>
-          ))}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Indicator'].indexOf(r) >= 0,
-          ) && <MenuItem value="Indicator">{t('Indicator')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Location', 'City'].indexOf(r) >= 0,
-          ) && <MenuItem value="City">{t('City')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Location', 'Country'].indexOf(r) >= 0,
-          ) && <MenuItem value="Country">{t('Country')}</MenuItem>)}
-        {targetStixDomainObjectTypes === undefined
-          || (targetStixDomainObjectTypes.some(
-            (r) => ['Stix-Domain-Object', 'Location', 'Region'].indexOf(r) >= 0,
-          ) && <MenuItem value="Region">{t('Region')}</MenuItem>)}
-      </Field>
+      <QueryRenderer
+        query={stixDomainObjectCreationAllTypesQuery}
+        render={({ props: data }) => {
+          if (data && data.sdoTypes) {
+            let result = [];
+            result = [
+              ...R.pipe(
+                R.pathOr([], ['sdoTypes', 'edges']),
+                R.map((n) => ({
+                  label: t(`entity_${n.node.label}`),
+                  value: n.node.label,
+                  type: n.node.label,
+                })),
+              )(data),
+              ...result,
+            ];
+            const entitiesTypes = R.sortWith(
+              [R.ascend(R.prop('label'))],
+              result,
+            );
+            const availableEntityTypes = R.filter((n) => {
+              if (
+                !targetStixDomainObjectTypes
+                || targetStixDomainObjectTypes.length === 0
+                || targetStixDomainObjectTypes.includes('Stix-Domain-Object')
+              ) {
+                return true;
+              }
+              if (
+                targetStixDomainObjectTypes.includes('Identity')
+                && [
+                  'Sector',
+                  'Organization',
+                  'Individual',
+                  'System',
+                  'Event',
+                ].includes(n.value)
+              ) {
+                return true;
+              }
+              if (
+                targetStixDomainObjectTypes.includes('Location')
+                && ['Region', 'Country', 'City', 'Location'].includes(n.value)
+              ) {
+                return true;
+              }
+              return !!targetStixDomainObjectTypes.includes(n.value);
+            }, entitiesTypes);
+            return (
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="type"
+                label={t('Entity type')}
+                fullWidth={true}
+                containerstyle={{ width: '100%' }}
+              >
+                {availableEntityTypes.map((type) => (
+                  <MenuItem key={type.value} value={type.value}>
+                    {type.label}
+                  </MenuItem>
+                ))}
+              </Field>
+            );
+          }
+          return <div />;
+        }}
+      />
     );
   }
 

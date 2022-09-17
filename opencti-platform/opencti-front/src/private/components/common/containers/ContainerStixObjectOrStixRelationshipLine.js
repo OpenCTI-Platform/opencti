@@ -241,6 +241,18 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
         ... on Incident {
           name
         }
+        ... on Event {
+          name
+        }
+        ... on Channel {
+          name
+        }
+        ... on Narrative {
+          name
+        }
+        ... on Language {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
         }
@@ -313,6 +325,18 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
             ... on Incident {
               name
             }
+            ... on Event {
+              name
+            }
+            ... on Channel {
+              name
+            }
+            ... on Narrative {
+              name
+            }
+            ... on Language {
+              name
+            }
           }
           to {
             ... on BasicObject {
@@ -375,6 +399,18 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
               name
             }
             ... on Incident {
+              name
+            }
+            ... on Event {
+              name
+            }
+            ... on Channel {
+              name
+            }
+            ... on Narrative {
+              name
+            }
+            ... on Language {
               name
             }
           }

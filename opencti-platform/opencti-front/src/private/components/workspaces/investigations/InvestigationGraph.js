@@ -417,6 +417,20 @@ const investigationGraphStixRelationshipsQuery = graphql`
               first_seen
               last_seen
             }
+            ... on Event {
+              name
+              start_time
+              stop_time
+            }
+            ... on Channel {
+              name
+            }
+            ... on Narrative {
+              name
+            }
+            ... on Language {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -1712,7 +1726,10 @@ class InvestigationGraphComponent extends Component {
                       'belongs-to',
                       'amplifies',
                     ]).map((relationshipType) => (
-                      <MenuItem key={relationshipType.key} value={relationshipType.key}>
+                      <MenuItem
+                        key={relationshipType.key}
+                        value={relationshipType.key}
+                      >
                         {relationshipType.label}
                       </MenuItem>
                     ))}

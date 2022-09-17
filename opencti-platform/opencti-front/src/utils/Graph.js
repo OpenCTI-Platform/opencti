@@ -28,6 +28,11 @@ import ThreatActor from '../static/images/entities/threat-actor.svg';
 import Tool from '../static/images/entities/tool.svg';
 import Vulnerability from '../static/images/entities/vulnerability.svg';
 import Incident from '../static/images/entities/incident.svg';
+import Channel from '../static/images/entities/channel.svg';
+import Narrative from '../static/images/entities/narrative.svg';
+import Language from '../static/images/entities/language.svg';
+import Event from '../static/images/entities/event.svg';
+import Unknown from '../static/images/entities/unknown.svg';
 import StixCyberObservable from '../static/images/entities/stix-cyber-observable.svg';
 import relationship from '../static/images/entities/relationship.svg';
 import { itemColor } from './Colors';
@@ -79,6 +84,10 @@ export const graphImages = {
   Tool: genImage(Tool),
   Vulnerability: genImage(Vulnerability),
   Incident: genImage(Incident),
+  Channel: genImage(Channel),
+  Narrative: genImage(Narrative),
+  Language: genImage(Language),
+  Event: genImage(Event),
   'Autonomous-System': genImage(StixCyberObservable),
   Directory: genImage(StixCyberObservable),
   'Domain-Name': genImage(StixCyberObservable),
@@ -103,8 +112,12 @@ export const graphImages = {
   Wallet: genImage(StixCyberObservable),
   Hostname: genImage(StixCyberObservable),
   'User-Agent': genImage(StixCyberObservable),
+  'Phone-Number': genImage(StixCyberObservable),
+  'Bank-Account': genImage(StixCyberObservable),
+  'Payment-Card': genImage(StixCyberObservable),
   Text: genImage(StixCyberObservable),
   relationship: genImage(relationship),
+  Unknown: genImage(Unknown),
 };
 
 export const graphLevel = {
@@ -132,6 +145,10 @@ export const graphLevel = {
   Tool: 1,
   Vulnerability: 1,
   Incident: 1,
+  Channel: 1,
+  Narrative: 1,
+  Language: 1,
+  Event: 1,
   'Autonomous-System': 1,
   Directory: 1,
   'Domain-Name': 1,
@@ -157,7 +174,11 @@ export const graphLevel = {
   Hostname: 1,
   'User-Agent': 1,
   Text: 1,
+  'Phone-Number': 1,
+  'Bank-Account': 1,
+  'Payment-Card': 1,
   relationship: 1,
+  Unknown: 1,
 };
 
 export const graphRawImages = {
@@ -188,6 +209,10 @@ export const graphRawImages = {
   Tool,
   Vulnerability,
   Incident,
+  Channel,
+  Narrative,
+  Language,
+  Event,
   'Autonomous-System': StixCyberObservable,
   Directory: StixCyberObservable,
   'Domain-Name': StixCyberObservable,
@@ -213,6 +238,11 @@ export const graphRawImages = {
   Hostname: StixCyberObservable,
   'User-Agent': StixCyberObservable,
   Text: StixCyberObservable,
+  'Phone-Number': StixCyberObservable,
+  'Bank-Account': StixCyberObservable,
+  'Payment-Card': StixCyberObservable,
+  Unknown,
+  relationship,
 };
 
 export const encodeGraphData = (graphData) => toB64(JSON.stringify(graphData));
@@ -585,16 +615,16 @@ export const buildCorrelationData = (
   const nodes = R.pipe(
     R.map((n) => ({
       id: n.id,
-      val: graphLevel[n.entity_type],
+      val: graphLevel[n.entity_type] || graphLevel.Unknown,
       name: defaultValue(n, true),
       defaultDate: jsDate(defaultDate(n)),
       label: truncate(
         defaultValue(n),
         n.entity_type === 'Attack-Pattern' ? 30 : 20,
       ),
-      img: graphImages[n.entity_type],
+      img: graphImages[n.entity_type] || graphImages.Unknown,
       entity_type: n.entity_type,
-      rawImg: graphRawImages[n.entity_type],
+      rawImg: graphRawImages[n.entity_type] || graphRawImages.Unknown,
       color: n.x_opencti_color || n.color || itemColor(n.entity_type, false),
       parent_types: n.parent_types,
       isObservable: !!n.observable_value,
@@ -627,11 +657,12 @@ export const buildGraphData = (objects, graphData, t) => {
     R.uniqBy(R.prop('id')),
     R.map((n) => ({
       id: n.id,
-      val: graphLevel[
-        n.parent_types.includes('basic-relationship')
-          ? 'relationship'
-          : n.entity_type
-      ],
+      val:
+        graphLevel[
+          n.parent_types.includes('basic-relationship')
+            ? 'relationship'
+            : n.entity_type
+        ] || graphLevel.Unknown,
       name: `${
         n.relationship_type
           ? `<strong>${t(`relationship_${n.relationship_type}`)}</strong>\n${t(
@@ -654,17 +685,18 @@ export const buildGraphData = (objects, graphData, t) => {
           defaultValue(n),
           n.entity_type === 'Attack-Pattern' ? 30 : 20,
         ),
-      img: graphImages[
-        n.parent_types.includes('basic-relationship')
-          ? 'relationship'
-          : n.entity_type
-      ],
+      img:
+        graphImages[
+          n.parent_types.includes('basic-relationship')
+            ? 'relationship'
+            : n.entity_type
+        ] || graphImages.Unknown,
       rawImg:
         graphRawImages[
           n.parent_types.includes('basic-relationship')
             ? 'relationship'
             : n.entity_type
-        ],
+        ] || graphRawImages.Unknown,
       color: n.x_opencti_color || n.color || itemColor(n.entity_type, false),
       parent_types: n.parent_types,
       entity_type: n.entity_type,

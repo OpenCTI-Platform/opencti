@@ -528,6 +528,23 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
                 first_seen
                 last_seen
               }
+              ... on Event {
+                name
+                description
+                start_time
+                stop_time
+              }
+              ... on Channel {
+                name
+                description
+              }
+              ... on Narrative {
+                name
+                description
+              }
+              ... on Language {
+                name
+              }
               ... on StixCyberObservable {
                 observable_value
                 x_opencti_description
