@@ -729,22 +729,28 @@ class StixDomainObject:
             )
             return None
 
-    def push_list_export(self, entity_type, file_name, data, list_filters=""):
+    def push_list_export(
+        self, entity_type, file_name, data, list_filters="", mime_type=None
+    ):
         query = """
             mutation StixDomainObjectsExportPush($type: String!, $file: Upload!, $listFilters: String) {
                 stixDomainObjectsExportPush(type: $type, file: $file, listFilters: $listFilters)
             }
         """
+        if mime_type is None:
+            file = self.file(file_name, data)
+        else:
+            file = self.file(file_name, data, mime_type)
         self.opencti.query(
             query,
             {
                 "type": entity_type,
-                "file": (self.file(file_name, data)),
+                "file": file,
                 "listFilters": list_filters,
             },
         )
 
-    def push_entity_export(self, entity_id, file_name, data):
+    def push_entity_export(self, entity_id, file_name, data, mime_type=None):
         query = """
             mutation StixDomainObjectEdit($id: ID!, $file: Upload!) {
                 stixDomainObjectEdit(id: $id) {
@@ -752,9 +758,11 @@ class StixDomainObject:
                 }
             }
         """
-        self.opencti.query(
-            query, {"id": entity_id, "file": (self.file(file_name, data))}
-        )
+        if mime_type is None:
+            file = self.file(file_name, data)
+        else:
+            file = self.file(file_name, data, mime_type)
+        self.opencti.query(query, {"id": entity_id, "file": file})
 
     """
         Update the Identity author of a Stix-Domain-Object object (created_by)
