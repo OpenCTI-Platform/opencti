@@ -1198,7 +1198,7 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
   let lock;
   try {
     // Lock the participants that will be merged
-    lock = await lockResource(mergedIds);
+    lock = await lockResource(participantIds);
     // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs(user, targetEntityId);
     const target = { ...initialInstance };
