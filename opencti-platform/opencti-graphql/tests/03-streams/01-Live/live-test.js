@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { shutdownModules, startModules } from '../../../src/modules';
 import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE } from '../../utils/testQuery';
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
-import { storeFullLoadById } from '../../../src/database/middleware';
+import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { elAggregationCount } from '../../../src/database/engine';
 import { convertEntityTypeToStixType } from '../../../src/schema/schemaUtils';
 import { convertStoreToStix } from '../../../src/database/stix-converter';
@@ -50,7 +50,7 @@ describe('Live streams tests', () => {
     'Should consume init live stream',
     async () => {
       // Check the stream rebuild
-      const report = await storeFullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
+      const report = await storeLoadByIdWithRefs(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
       const stixReport = convertStoreToStix(report);
       const now = utcDate().toISOString();
       const events = await fetchStreamEvents(`http://localhost:4000/stream/live?from=0&recover=${now}`);

@@ -790,6 +790,7 @@ const elBuildRelation = (type, connection) => {
     [type]: null,
     [`${type}Id`]: connection.internal_id,
     [`${type}Role`]: connection.role,
+    [`${type}Name`]: connection.name,
     [`${type}Type`]: R.head(connection.types),
   };
 };
@@ -1418,9 +1419,12 @@ export const elGenerateFullTextSearchShould = (search) => {
   );
   return shouldSearch;
 };
+
+const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type', 'entity_type',
+  'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
 export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc' } = options;
+  const { ids = [], baseData = false, first = 200, after, orderBy = null, orderMode = 'asc' } = options;
   const { types = null, filters = [], filterMode = 'and', search = null, connectionFormat = true } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
@@ -1616,6 +1620,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     index: indexName,
     ignore_throttled: ES_IGNORE_THROTTLED,
     track_total_hits: true,
+    _source: baseData ? BASE_FIELDS : true,
     body,
   };
   logApp.debug('[SEARCH ENGINE] paginate', { query });
