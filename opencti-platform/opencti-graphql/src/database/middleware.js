@@ -1898,7 +1898,13 @@ const createRuleDataPatch = (instance) => {
   return patch;
 };
 const upsertEntityRule = async (instance, input, opts = {}) => {
-  return patchAttribute(RULE_MANAGER_USER, instance.id, instance.entity_type, input, opts);
+  const { fromRule } = opts;
+  const updatedRule = input[fromRule];
+  const rulePatch = { [fromRule]: updatedRule };
+  const ruleInstance = R.mergeRight(instance, rulePatch);
+  const innerPatch = createRuleDataPatch(ruleInstance);
+  const patch = { ...rulePatch, ...innerPatch };
+  return patchAttribute(RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 const upsertRelationRule = async (instance, input, opts = {}) => {
   const { fromRule, ruleOverride = false } = opts;
