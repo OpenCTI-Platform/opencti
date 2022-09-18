@@ -771,7 +771,7 @@ export const openVocabularies = {
   ],
   'threat-actor-role-ov': [
     {
-      key: 'gent',
+      key: 'agent',
       description:
         'Threat actor executes attacks either on behalf of themselves or at the direction of someone else.',
     },
