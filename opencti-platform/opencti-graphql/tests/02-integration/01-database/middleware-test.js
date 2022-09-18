@@ -5,7 +5,6 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   distributionRelations,
-  storeFullLoadById,
   internalLoadById,
   storeLoadById,
   mergeEntities,
@@ -15,6 +14,7 @@ import {
   timeSeriesRelations,
   updateAttribute,
   createEntity,
+  storeLoadByIdWithRefs,
 } from '../../../src/database/middleware';
 import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
 import {
@@ -35,7 +35,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
-import { RELATION_MITIGATES, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
+import { RELATION_MITIGATES, RELATION_RELATED_TO, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { addLabel } from '../../../src/domain/label';
@@ -51,11 +51,10 @@ import {
   yearFormat,
 } from '../../../src/utils/format';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
-import { INTERNAL_FROM_FIELD } from '../../../src/schema/identifier';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
-import { listEntities, listRelations } from '../../../src/database/middleware-loader';
+import { listAllRelations, listEntities, listRelations } from '../../../src/database/middleware-loader';
 import { addThreatActor } from '../../../src/domain/threatActor';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
@@ -888,9 +887,9 @@ describe('Upsert and merge entities', () => {
     };
     let source02 = await createThreat(sourceInput02);
     await createRelation(ADMIN_USER, {
-      fromId: source02.internal_id,
-      toId: malware02.internal_id,
-      relationship_type: RELATION_USES,
+      fromId: malware02.internal_id,
+      toId: source02.internal_id,
+      relationship_type: RELATION_RELATED_TO,
       objectMarking: [testMarking, clearMarking, mitreMarking],
       objectLabel: ['report', 'note', 'malware'],
     });
@@ -898,7 +897,7 @@ describe('Upsert and merge entities', () => {
     // source 03
     const sourceInput03 = { name: 'THREAT_SOURCE_03', objectMarking: [testMarking], objectLabel: ['note', 'malware'] };
     let source03 = await createThreat(sourceInput03);
-    const duplicateRel = await createRelation(ADMIN_USER, {
+    await createRelation(ADMIN_USER, {
       fromId: source03.internal_id,
       toId: malware02.internal_id,
       relationship_type: RELATION_USES,
@@ -934,7 +933,7 @@ describe('Upsert and merge entities', () => {
       source05.internal_id,
       source06.internal_id,
     ]);
-    const loadedThreat = await storeFullLoadById(ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR);
+    const loadedThreat = await storeLoadByIdWithRefs(ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR);
     // List of ids that should disappears
     const idsThatShouldNotExists = [
       source01.internal_id,
@@ -943,7 +942,6 @@ describe('Upsert and merge entities', () => {
       source04.internal_id,
       source05.internal_id,
       source06.internal_id,
-      duplicateRel.internal_id,
     ];
     const isExist = await isOneOfThisIdsExists(idsThatShouldNotExists);
     expect(isExist).toBeFalsy();
@@ -952,9 +950,13 @@ describe('Upsert and merge entities', () => {
     expect(loadedThreat.aliases.length).toEqual(6); // [THREAT_SOURCE_01, THREAT_SOURCE_02, THREAT_SOURCE_03, THREAT_SOURCE_04, THREAT_SOURCE_05, THREAT_SOURCE_06]
     expect(loadedThreat.i_aliases_ids.length).toEqual(7);
     expect(loadedThreat.goals).toEqual(['MY GOAL']);
-    expect(loadedThreat[INTERNAL_FROM_FIELD]['object-marking'].length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
-    expect(loadedThreat[INTERNAL_FROM_FIELD]['object-label'].length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
-    expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
+    expect(loadedThreat['object-marking'].length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
+    expect(loadedThreat['object-label'].length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
+    // expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
+    const froms = await listAllRelations(ADMIN_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { fromId: loadedThreat.internal_id });
+    expect(froms.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
+    const tos = await listAllRelations(ADMIN_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { toId: loadedThreat.internal_id });
+    expect(tos.length).toEqual(1); // [MALWARE_TEST_02]
     // Cleanup
     await deleteElementById(ADMIN_USER, malware01.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(ADMIN_USER, malware02.id, ENTITY_TYPE_MALWARE);

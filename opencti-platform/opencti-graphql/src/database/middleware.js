@@ -98,8 +98,7 @@ import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   ID_INTERNAL,
@@ -432,48 +431,30 @@ export const storeLoadById = async (user, id, type, args = {}) => {
   const loadArgs = R.assoc('type', type, args);
   return internalLoadById(user, id, loadArgs);
 };
-const transformRawRelationsToAttributes = (data) => {
-  return R.mergeAll(Object.entries(R.groupBy((a) => a.i_relation.entity_type, data)).map(([k, v]) => ({ [k]: v })));
-};
 const loadElementMetaDependencies = async (user, element, args = {}) => {
-  const { dependencyTypes = [ABSTRACT_STIX_RELATIONSHIP] } = args;
-  const { onlyMarking = true, fullResolve = false } = args;
+  const { onlyMarking = true } = args;
   const elementId = element.internal_id;
-  const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : dependencyTypes;
+  const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP];
   // Resolve all relations
-  // noinspection ES6MissingAwait
-  const toRelationsPromise = fullResolve ? listAllRelations(user, relTypes, { toId: elementId }) : [];
-  const fromRelationsPromise = listAllRelations(user, relTypes, { fromId: elementId });
-  const [fromRelations, toRelations] = await Promise.all([fromRelationsPromise, toRelationsPromise]);
+  const refsRelations = await listAllRelations(user, relTypes, { fromId: elementId });
   const data = {};
   // Parallel resolutions
-  const toResolvedIds = R.uniq(fromRelations.map((rel) => rel.toId));
-  const fromResolvedIds = R.uniq(toRelations.map((rel) => rel.fromId));
-  const toResolvedPromise = elFindByIds(user, toResolvedIds, { toMap: true });
-  const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true });
-  const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
-  if (fromRelations.length > 0) {
+  const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
+  const toResolved = await elFindByIds(user, toResolvedIds, { toMap: true });
+  if (refsRelations.length > 0) {
     // Build flatten view inside the data for stix meta
-    const metaRels = fromRelations.filter((r) => isStixEmbeddedRelationship(r.entity_type));
-    const grouped = R.groupBy((a) => STIX_EMBEDDED_RELATION_TO_FIELD[a.entity_type], metaRels);
+    const grouped = R.groupBy((a) => STIX_EMBEDDED_RELATION_TO_FIELD[a.entity_type], refsRelations);
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
-      const resolvedRelations = R.map((v) => {
+      const resolvedElementsWithRelation = R.map((v) => {
         const resolvedElement = toResolved[v.toId];
         return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
       }, values).filter((d) => isNotEmptyField(d));
       const metaRefKey = FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION[key];
-      data[key] = isSingleStixEmbeddedRelationship(metaRefKey) ? R.head(resolvedRelations) : resolvedRelations;
+      data[key] = isSingleStixEmbeddedRelationship(metaRefKey)
+        ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
     }
-    if (fullResolve) {
-      const flatRelations = fromRelations.map((rel) => ({ ...toResolved[rel.toId], i_relation: rel }));
-      data[INTERNAL_FROM_FIELD] = transformRawRelationsToAttributes(flatRelations);
-    }
-  }
-  if (fullResolve && toRelations.length > 0) {
-    const flatRelations = toRelations.map((rel) => ({ ...fromResolved[rel.fromId], i_relation: rel }));
-    data[INTERNAL_TO_FIELD] = transformRawRelationsToAttributes(flatRelations);
   }
   return data;
 };
@@ -481,13 +462,12 @@ const loadElementWithDependencies = async (user, element, args = {}) => {
   const depsPromise = loadElementMetaDependencies(user, element, args);
   const isRelation = element.base_type === BASE_TYPE_RELATION;
   if (isRelation) {
-    const relOpts = { onlyMarking: true, fullResolve: false };
     // Load the relation from and to directly with the system user
     // Access right must be checked by hand in this case.
     // eslint-disable-next-line no-use-before-define
-    const fromPromise = loadByIdWithDependencies(SYSTEM_USER, element.fromId, element.fromType, relOpts);
+    const fromPromise = loadByIdWithDependencies(SYSTEM_USER, element.fromId, element.fromType, { onlyMarking: true });
     // eslint-disable-next-line no-use-before-define
-    const toPromise = loadByIdWithDependencies(SYSTEM_USER, element.toId, element.toType, relOpts);
+    const toPromise = loadByIdWithDependencies(SYSTEM_USER, element.toId, element.toType, { onlyMarking: true });
     const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
     // Check relations consistency
     if (isEmptyField(from) || isEmptyField(to)) {
@@ -515,16 +495,10 @@ const loadByIdWithDependencies = async (user, id, type, args = {}) => {
   if (!element) return null;
   return loadElementWithDependencies(user, element, args);
 };
-// Dangerous call because get everything related. (Limited to merging)
-export const storeFullLoadById = async (user, id, type = null) => {
-  const element = await loadByIdWithDependencies(user, id, type, { onlyMarking: false, fullResolve: true });
-  return { ...element, i_fully_resolved: true };
-};
 // Get element with every elements connected element -> rel -> to
 export const storeLoadByIdWithRefs = async (user, id, opts = {}) => {
   const { type = null } = opts;
-  const dependencyTypes = [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP];
-  return loadByIdWithDependencies(user, id, type, { dependencyTypes, onlyMarking: false });
+  return loadByIdWithDependencies(user, id, type, { onlyMarking: false });
 };
 export const stixLoadById = async (user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(user, id, opts);
@@ -897,34 +871,6 @@ export const hashMergeValidation = (instances) => {
 // endregion
 
 // region mutation update
-const targetedRelations = (entities, direction) => {
-  return R.flatten(
-    R.map((s) => {
-      const relations = [];
-      const directedRelations = s[`i_relations_${direction}`];
-      const info = directedRelations ? Object.entries(directedRelations) : [];
-      for (let index = 0; index < info.length; index += 1) {
-        const [key, values] = info[index];
-        if (!isSingleStixEmbeddedRelationship(key)) {
-          // Except created by ref (mono valued)
-          relations.push(
-            ...R.map((val) => {
-              return {
-                entity_type: key,
-                connect: val.internal_id,
-                connect_index: val._index,
-                relation: val.i_relation,
-                internal_id: val.i_relation.internal_id,
-                standard_id: val.i_relation.standard_id,
-              };
-            }, values)
-          );
-        }
-      }
-      return relations;
-    }, entities)
-  );
-};
 const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
 const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
 const filterTargetByExisting = (sources, targets) => {
@@ -933,9 +879,14 @@ const filterTargetByExisting = (sources, targets) => {
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
     // If the relation source is already in target = filtered
-    const finder = (t) => t.entity_type === source.entity_type && t.connect === source.connect && noDate(t.relation);
-    const id = `${source.entity_type}-${source.connect}`;
-    if (!R.find(finder, targets) && !cache.includes(id)) {
+    const finder = (t) => {
+      const sameTarget = t.internal_id === source.internal_id;
+      const sameRelationType = t.i_relation.entity_type === source.i_relation.entity_type;
+      return sameRelationType && sameTarget && noDate(t.i_relation);
+    };
+    const id = `${source.entity_type}-${source.internal_id}`;
+    const isSingleMeta = isSingleStixEmbeddedRelationship(source.i_relation.entity_type);
+    if (!isSingleMeta && !R.find(finder, targets) && !cache.includes(id)) {
       filtered.push(source);
       cache.push(id);
     }
@@ -943,14 +894,10 @@ const filterTargetByExisting = (sources, targets) => {
   return filtered;
 };
 
-const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
+const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, targetDependencies, sourcesDependencies, opts = {}) => {
   const { chosenFields = {} } = opts;
   // 01 Check if everything is fully resolved.
   const elements = [targetEntity, ...sourceEntities];
-  const notFullyResolved = elements.filter((e) => e.i_fully_resolved).length !== elements.length;
-  if (notFullyResolved) {
-    throw UnsupportedError('[OPENCTI] Merging required full resolved inputs');
-  }
   logApp.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
   // Pre-checks
   // - No self merge
@@ -982,29 +929,25 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
   // region CHANGING FROM
-  const allTargetToRelations = targetedRelations([targetEntity], 'from');
-  const allSourcesToRelations = targetedRelations(sourceEntities, 'from');
-  const relationsToRedirectFrom = filterTargetByExisting(allSourcesToRelations, allTargetToRelations);
+  const relationsToRedirectFrom = filterTargetByExisting(sourcesDependencies[INTERNAL_FROM_FIELD], targetDependencies[INTERNAL_FROM_FIELD]);
   // region CHANGING TO
-  const allTargetFromRelations = targetedRelations([targetEntity], 'to');
-  const allSourcesFromRelations = targetedRelations(sourceEntities, 'to');
-  const relationsFromRedirectTo = filterTargetByExisting(allSourcesFromRelations, allTargetFromRelations);
+  const relationsFromRedirectTo = filterTargetByExisting(sourcesDependencies[INTERNAL_TO_FIELD], targetDependencies[INTERNAL_TO_FIELD]);
   const updateConnections = [];
   const updateEntities = [];
   // FROM (x -> MERGED TARGET) --- (from) relation (to) ---- RELATED_ELEMENT
   // noinspection DuplicatedCode
   for (let indexFrom = 0; indexFrom < relationsToRedirectFrom.length; indexFrom += 1) {
-    const r = relationsToRedirectFrom[indexFrom];
-    const sideToRedirect = r.relation.fromId;
-    const sideToKeep = r.relation.toId;
-    const sideToKeepType = r.relation.toType;
+    const entity = relationsToRedirectFrom[indexFrom];
     const sideTarget = targetEntity.internal_id;
-    const relationType = r.relation.entity_type;
+    const sideToRedirect = entity.i_relation.fromId;
+    const sideToKeep = entity.i_relation.toId;
+    const sideToKeepType = entity.i_relation.toType;
+    const relationType = entity.i_relation.entity_type;
     // Replace relation connection fromId with the new TARGET
     const relUpdate = {
-      _index: r.relation._index,
-      id: r.internal_id,
-      standard_id: r.standard_id,
+      _index: entity.i_relation._index,
+      id: entity.i_relation.internal_id,
+      standard_id: entity.i_relation.standard_id,
       toReplace: sideToRedirect,
       entity_type: relationType,
       side: 'source_ref',
@@ -1012,9 +955,9 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     };
     updateConnections.push(relUpdate);
     // Update the side that will remain (RELATED_ELEMENT)
-    if (isImpactedTypeAndSide(r.entity_type, ROLE_TO)) {
+    if (isImpactedTypeAndSide(entity.i_relation.entity_type, ROLE_TO)) {
       updateEntities.push({
-        _index: r.connect_index,
+        _index: entity._index,
         id: sideToKeep,
         toReplace: sideToRedirect,
         relationType,
@@ -1023,7 +966,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
       });
     }
     // Update the MERGED TARGET (Need to add the relation side)
-    if (isImpactedTypeAndSide(r.entity_type, ROLE_FROM)) {
+    if (isImpactedTypeAndSide(entity.i_relation.entity_type, ROLE_FROM)) {
       updateEntities.push({
         _index: targetEntity._index,
         id: sideTarget,
@@ -1037,16 +980,16 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // RELATED_ELEMENT --- (from) relation (to) ---- TO (x -> MERGED TARGET)
   // noinspection DuplicatedCode
   for (let indexTo = 0; indexTo < relationsFromRedirectTo.length; indexTo += 1) {
-    const r = relationsFromRedirectTo[indexTo];
-    const sideToRedirect = r.relation.toId;
-    const sideToKeep = r.relation.fromId;
-    const sideToKeepType = r.relation.fromType;
+    const entity = relationsFromRedirectTo[indexTo];
+    const sideToRedirect = entity.i_relation.toId;
+    const sideToKeep = entity.i_relation.fromId;
+    const sideToKeepType = entity.i_relation.fromType;
     const sideTarget = targetEntity.internal_id;
-    const relationType = r.relation.entity_type;
+    const relationType = entity.i_relation.entity_type;
     const relUpdate = {
-      _index: r.relation._index,
-      id: r.internal_id,
-      standard_id: r.standard_id,
+      _index: entity.i_relation._index,
+      id: entity.i_relation.internal_id,
+      standard_id: entity.i_relation.standard_id,
       toReplace: sideToRedirect,
       entity_type: relationType,
       side: 'target_ref',
@@ -1054,9 +997,9 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     };
     updateConnections.push(relUpdate);
     // Update the side that will remain (RELATED_ELEMENT)
-    if (isImpactedTypeAndSide(r.entity_type, ROLE_FROM)) {
+    if (isImpactedTypeAndSide(entity.i_relation.entity_type, ROLE_FROM)) {
       updateEntities.push({
-        _index: r.connect_index,
+        _index: entity._index,
         id: sideToKeep,
         toReplace: sideToRedirect,
         relationType,
@@ -1065,7 +1008,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
       });
     }
     // Update the MERGED TARGET (Need to add the relation side)
-    if (isImpactedTypeAndSide(r.entity_type, ROLE_TO)) {
+    if (isImpactedTypeAndSide(entity.i_relation.entity_type, ROLE_TO)) {
       updateEntities.push({
         _index: targetEntity._index,
         id: sideTarget,
@@ -1195,27 +1138,45 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // Return extra deleted stix relations
   return { updatedRelations, dependencyDeletions };
 };
-const computeMergeParticipants = (entities) => {
-  const participants = [];
-  for (let i = 0; i < entities.length; i += 1) {
-    const entity = entities[i];
-    const froms = Object.entries(entity[INTERNAL_FROM_FIELD] || []);
-    for (let index = 0; index < froms.length; index += 1) {
-      const [key, values] = froms[index];
-      if (isImpactedTypeAndSide(key, ROLE_TO)) {
-        participants.push(...values.map((v) => v.internal_id));
+
+const loadMergeEntitiesDependencies = async (user, entityIds) => {
+  const data = { [INTERNAL_FROM_FIELD]: [], [INTERNAL_TO_FIELD]: [] };
+  for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex += 1) {
+    const entityId = entityIds[entityIndex];
+    // Internal From
+    const listFromCallback = (elements) => {
+      for (let index = 0; index < elements.length; index += 1) {
+        const rel = elements[index];
+        data[INTERNAL_FROM_FIELD].push({
+          _index: inferIndexFromConceptType(rel.toType),
+          internal_id: rel.toId,
+          entity_type: rel.toType,
+          name: rel.toName,
+          i_relation: rel
+        });
       }
-    }
-    const tos = Object.entries(entity[INTERNAL_TO_FIELD] || []);
-    for (let index = 0; index < tos.length; index += 1) {
-      const [key, values] = tos[index];
-      if (isImpactedTypeAndSide(key, ROLE_FROM)) {
-        participants.push(...values.map((v) => v.internal_id));
+    };
+    const fromArgs = { baseData: true, fromId: entityId, callback: listFromCallback };
+    await listAllRelations(user, ABSTRACT_STIX_RELATIONSHIP, fromArgs);
+    // Internal to
+    const listToCallback = (elements) => {
+      for (let index = 0; index < elements.length; index += 1) {
+        const rel = elements[index];
+        data[INTERNAL_TO_FIELD].push({
+          _index: inferIndexFromConceptType(rel.fromType),
+          internal_id: rel.fromId,
+          entity_type: rel.fromType,
+          name: rel.fromName,
+          i_relation: rel
+        });
       }
-    }
+    };
+    const toArgs = { baseData: true, toId: entityId, callback: listToCallback };
+    await listAllRelations(user, ABSTRACT_STIX_RELATIONSHIP, toArgs);
   }
-  return participants;
+  return data;
 };
+
 export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts = {}) => {
   // Pre-checks
   if (R.includes(targetEntityId, sourceEntityIds)) {
@@ -1224,6 +1185,7 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
       sourceEntityIds,
     });
   }
+  logApp.info(`[OPENCTI] Merging ${sourceEntityIds} in ${targetEntityId}`);
   // targetEntity and sourceEntities must be accessible
   const mergedIds = [targetEntityId, ...sourceEntityIds];
   const mergedInstances = await internalFindByIds(user, mergedIds);
@@ -1231,19 +1193,20 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
     throw FunctionalError('Cannot access all entities for merging');
   }
   // We need to lock all elements not locked yet.
-  // Entities must be fully loaded with admin user to resolve/move all dependencies
-  const targetEntityPromise = storeFullLoadById(SYSTEM_USER, targetEntityId, ABSTRACT_STIX_CORE_OBJECT);
-  const sourceEntitiesPromise = Promise.all(sourceEntityIds.map((sourceId) => storeFullLoadById(SYSTEM_USER, sourceId)));
-  const [target, sources] = await Promise.all([targetEntityPromise, sourceEntitiesPromise]);
   const { locks = [] } = opts;
-  const participantIds = computeMergeParticipants([target, ...sources]).filter((e) => !locks.includes(e));
+  const participantIds = mergedIds.filter((e) => !locks.includes(e));
   let lock;
   try {
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
-    // - TRANSACTION PART
+    // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs(user, targetEntityId);
-    const mergeImpacts = await mergeEntitiesRaw(user, target, sources, opts);
+    const target = { ...initialInstance };
+    const sources = await Promise.all(sourceEntityIds.map((sourceId) => storeLoadByIdWithRefs(SYSTEM_USER, sourceId)));
+    const sourcesDependencies = await loadMergeEntitiesDependencies(SYSTEM_USER, sources.map((s) => s.internal_id));
+    const targetDependencies = await loadMergeEntitiesDependencies(SYSTEM_USER, [initialInstance.internal_id]);
+    // - TRANSACTION PART
+    const mergeImpacts = await mergeEntitiesRaw(user, target, sources, targetDependencies, sourcesDependencies, opts);
     const mergedInstance = await storeLoadByIdWithRefs(user, targetEntityId);
     await storeMergeEvent(user, initialInstance, mergedInstance, sources, mergeImpacts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
@@ -2305,11 +2268,7 @@ const upsertElementRaw = async (user, element, type, updatePatch) => {
   // -------------------------------------------------------------------
   if (isUpdated) {
     // Resolve dependencies.
-    const resolvedInstance = await loadElementWithDependencies(user, element, {
-      dependencyTypes: [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP],
-      onlyMarking: false,
-      fullResolve: false,
-    });
+    const resolvedInstance = await loadElementWithDependencies(user, element, { onlyMarking: false });
     const updatedInstance = mergeInstanceWithInputs(resolvedInstance, impactedInputs);
     // Apply relations create to updatedInstance
     for (let index = 0; index < createdTargets.length; index += 1) {
@@ -2909,10 +2868,16 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
             const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
             // If the entity exists by the stix id and not the same as the previously founded.
             if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
-              // Merge this entity into the one matching the standard id
-              const mergeTarget = existingByStandard.internal_id;
-              const mergeSources = [existingByGivenStixId.internal_id];
-              await mergeEntities(user, mergeTarget, mergeSources, { locks: participantIds });
+              // Deciding the target
+              let mergeTarget = existingByStandard.internal_id;
+              let mergeSource = existingByGivenStixId.internal_id;
+              // If confidence level is bigger, pickup as the target
+              if (existingByGivenStixId.confidence > existingByStandard.confidence) {
+                mergeTarget = existingByGivenStixId.internal_id;
+                mergeSource = existingByStandard.internal_id;
+              }
+              logApp.info('[OPENCTI] Merge during creation detected');
+              await mergeEntities(user, mergeTarget, [mergeSource], { locks: participantIds });
             }
           }
           // In this mode we can safely consider this entity like the existing one.

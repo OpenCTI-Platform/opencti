@@ -18,7 +18,6 @@ import {
 } from '../utils/testQuery';
 import { elAggregationCount } from '../../src/database/engine';
 import { execPython3, executePython } from '../../src/python/pythonBridge';
-import { storeFullLoadById } from '../../src/database/middleware';
 import { checkInstanceDiff } from '../utils/testStream';
 import { shutdownModules, startModules } from '../../src/modules';
 import { FROM_START, now } from '../../src/utils/format';
@@ -26,6 +25,7 @@ import { SYSTEM_USER } from '../../src/utils/access';
 import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
 import { convertStoreToStix } from '../../src/database/stix-converter';
 import { wait } from '../../src/database/utils';
+import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 
 const STAT_QUERY = `query stats {
       about {
@@ -95,7 +95,7 @@ describe('Database sync testing', () => {
     expect(relMap.get('Indicates')).toEqual(59);
     expect(relMap.get('Uses')).toEqual(28);
     // Report content
-    const initReport = await storeFullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
+    const initReport = await storeLoadByIdWithRefs(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
     const initStixReport = convertStoreToStix(initReport);
     return { objectMap, relMap, initStixReport };
   };
