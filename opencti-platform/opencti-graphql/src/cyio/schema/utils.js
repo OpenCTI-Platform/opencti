@@ -1,5 +1,6 @@
 import canonicalize  from '../../utils/canonicalize.js';
 import {v5 as uuid5, v4 as uuid4} from 'uuid';
+import {ApolloError} from "apollo-errors";
 
 export const DARKLIGHT_NS = 'd85ba5b6-609e-58bf-a973-ca109f868e86';
 export const OASIS_SCO_NS = '00abedb4-aa42-466c-9c01-fed23315a9b7';
@@ -7,6 +8,15 @@ export const OASIS_NS = 'ba6cce09-c787-5a25-a707-f52be5734460';
 export const FIRST_NS = '941e7013-5670-5552-895c-e97149d1b61c';
 export const OSCAL_NS = 'b2b5f319-6363-57ec-9557-3c271fe709c7';
 export const FEDRAMP_NS = '4a6eb7bc-ed64-527a-a762-5e6f92b3c94f';
+
+export class CyioError extends ApolloError {
+  constructor(message) {
+    super("CyioError", {
+      message,
+      time_thrown: new Date(), // UTC
+    })
+  }
+}
 
 // converts string to Pascal case (aka UpperCamelCase)
 export function toPascalCase(string) {
