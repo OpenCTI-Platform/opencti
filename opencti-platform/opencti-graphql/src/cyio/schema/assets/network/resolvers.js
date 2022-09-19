@@ -136,7 +136,7 @@ const networkResolvers = {
     },
     networkAsset: async (_, {id}, {dbName, dataSources, selectMap}) => {
       const sparqlQuery = selectNetworkQuery(id, selectMap.getNode("networkAsset"));
-      var reducer = getReducer('NETWORK')
+      let reducer = getReducer('NETWORK');
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -335,6 +335,9 @@ const networkResolvers = {
       return id;
     },
     editNetworkAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
+      // make sure there is input data containing what is to be edited
+      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+
       // check that the object to be edited exists with the predicates - only get the minimum of data
       let editSelect = ['id','modified'];
       for (let editItem of input) {
