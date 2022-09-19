@@ -72,7 +72,7 @@ const redisOptions = (database: number): RedisOptions => ({
   showFriendlyErrorStack: DEV_MODE,
 });
 
-const createRedisClient = (provider: string, database?: number) => {
+const createRedisClient = (provider: string, database?: number) : Redis => {
   const client = new Redis(redisOptions(database ?? BASE_DATABASE));
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
@@ -98,13 +98,13 @@ const createRedisClient = (provider: string, database?: number) => {
   return client;
 };
 
-const publisher = createRedisClient('Pubsub publisher');
-const subscriber = createRedisClient('Pubsub subscriber');
 const clientBase = createRedisClient('Client base');
 const clientCache = createRedisClient('Client cache');
 const clientContext = createRedisClient('Client context', CONTEXT_DATABASE);
+const clientPublisher = createRedisClient('Pubsub publisher');
+const clientSubscriber = createRedisClient('Pubsub subscriber');
 
-export const pubsub = new RedisPubSub({ publisher, subscriber });
+export const pubsub = new RedisPubSub({ publisher: clientPublisher as any, subscriber: clientSubscriber as any });
 export const createMemorySessionStore = () => {
   return new SessionStoreMemory({
     checkPeriod: 3600000, // prune expired entries every 1h
