@@ -21,7 +21,7 @@ import EntitiesResponsiblePartiesCreation from './EntitiesResponsiblePartiesCrea
 import { isUniqFilter } from '../../../common/lists/Filters';
 import EntitiesResponsiblePartiesDeletion from './EntitiesResponsiblePartiesDeletion';
 import { toastGenericError } from '../../../../../utils/bakedToast';
-import RoleEntityEdition from './ResponsiblePartyEntityEdition';
+import ResponsiblePartyEntityEdition from './ResponsiblePartyEntityEdition';
 
 class ResponsiblePartiesEntities extends Component {
   constructor(props) {
@@ -388,12 +388,14 @@ class ResponsiblePartiesEntities extends Component {
           handleResponsiblePartyCreation={this.handleResponsiblePartyCreation.bind(this)}
           history={this.props.history}
         />
-        <RoleEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          respPartyId={this.state.selectedRespPartyId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedRespPartyId && (
+          <ResponsiblePartyEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            respPartyId={this.state.selectedRespPartyId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

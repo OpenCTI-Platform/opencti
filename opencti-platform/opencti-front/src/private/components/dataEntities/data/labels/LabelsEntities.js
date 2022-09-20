@@ -364,12 +364,14 @@ class RolesEntities extends Component {
           handleLabelCreation={this.handleLabelCreation.bind(this)}
           history={this.props.history}
         />
-        <LabelEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          labelId={this.state.selectedLabelId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedLabelId && (
+          <LabelEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            labelId={this.state.selectedLabelId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

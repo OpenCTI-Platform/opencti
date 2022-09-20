@@ -126,6 +126,18 @@ const EntityRole = createFragmentContainer(EntityResponsiblePartyComponent, {
       __typename
       id
       name
+      description
+      entity_type
+      role {
+        id
+        entity_type
+        role_identifier
+      }
+      parties {
+        id
+        entity_type
+        name
+      }
       labels {
         __typename
         id

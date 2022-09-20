@@ -152,29 +152,26 @@ class RoleEntityEditionContainer extends Component {
     const {
       classes,
       t,
-      disabled,
-      risk,
-      remediation,
+      responsibility,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
-      R.assoc('name', remediation?.name || ''),
-      R.assoc('description', remediation?.description || ''),
-      R.assoc('source', remediationOriginData?.name || []),
-      R.assoc('modified', dateFormat(remediation?.modified)),
-      R.assoc('created', dateFormat(remediation?.created)),
-      R.assoc('lifecycle', remediation?.lifecycle || []),
-      R.assoc('response_type', remediation?.response_type || ''),
+      R.assoc('id', responsibility?.id || ''),
+      R.assoc('name', responsibility?.name || ''),
+      R.assoc('description', responsibility?.description || ''),
+      R.assoc('modified', dateFormat(responsibility?.modified)),
+      R.assoc('created', dateFormat(responsibility?.created)),
+      R.assoc('role_identifier', responsibility?.role_identifier || []),
+      R.assoc('short_name', responsibility?.short_name || ''),
       R.pick([
+        'id',
         'name',
-        'description',
-        'source',
-        'modified',
         'created',
-        'lifecycle',
-        'response_type',
+        'modified',
+        'short_name',
+        'description',
+        'role_identifier',
       ]),
-    )(remediation);
+    )(responsibility);
     return (
       <>
         <Dialog
@@ -456,6 +453,7 @@ RoleEntityEditionContainer.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  responsibility: PropTypes.object,
   connectionKey: PropTypes.string,
   enableReferences: PropTypes.bool,
 };

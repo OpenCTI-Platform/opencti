@@ -290,8 +290,6 @@ NoteEntityEditionContainer.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  connectionKey: PropTypes.string,
-  enableReferences: PropTypes.bool,
   note: PropTypes.object,
 };
 

@@ -152,23 +152,20 @@ class AssessmentPlatformEntityEditionContainer extends Component {
     const {
       classes,
       t,
-      disabled,
-      risk,
-      remediation,
+      assessmentPlatform,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
-      R.assoc('name', remediation?.name || ''),
-      R.assoc('description', remediation?.description || ''),
-      R.assoc('modified', dateFormat(remediation?.modified)),
-      R.assoc('created', dateFormat(remediation?.created)),
+      R.assoc('name', assessmentPlatform?.name || ''),
+      R.assoc('description', assessmentPlatform?.description || ''),
+      R.assoc('modified', dateFormat(assessmentPlatform?.modified)),
+      R.assoc('created', dateFormat(assessmentPlatform?.created)),
       R.pick([
         'name',
         'description',
         'modified',
         'created',
       ]),
-    )(remediation);
+    )(assessmentPlatform);
     return (
       <>
         <Dialog
@@ -425,6 +422,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
 }
 
 AssessmentPlatformEntityEditionContainer.propTypes = {
+  assessmentPlatform: PropTypes.object,
   handleDisplayEdit: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,

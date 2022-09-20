@@ -89,7 +89,7 @@ class NoteEntityEdition extends Component {
                 <NoteEntityEditionContainer
                   displayEdit={displayEdit}
                   history={history}
-                  note={props.oscalResponsibleParty}
+                  note={props.cyioNote}
                   refreshQuery={retry}
                   handleDisplayEdit={handleDisplayEdit}
                 />
