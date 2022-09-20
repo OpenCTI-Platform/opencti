@@ -10,6 +10,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { parse } from '../../../../utils/Time';
+import SearchOutlined from '@material-ui/icons/SearchOutlined';
 import Dialog from '@material-ui/core/Dialog';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -70,6 +71,9 @@ const styles = (theme) => ({
   autocomplete: {
     width: '450px',
     marginLeft: '10px',
+    '&.MuiAutocomplete-endAdornment, &.MuiAutocomplete-popupIndicatorOpen': {
+      transform: 'none !important',
+    },
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -152,6 +156,7 @@ class SoftwareCreation extends Component {
       error: {},
       open: false,
       products: [],
+      productName: '',
       onSubmit: false,
       selectedProduct: {},
       displayCancel: false,
@@ -163,10 +168,22 @@ class SoftwareCreation extends Component {
   }
 
   searchProducts(event, value) {
-    if (this.timeout) clearTimeout(this.timeout);
-    this.timeout = setTimeout(() => {
-      (value.length > 2) && fetchQuery(softwareCreationProductQuery, {
-        search: value,
+    this.setState({ productName: value });
+    if (event.type === 'click' && value) {
+      const selectedProductValue = this.state.products.filter((product) => product.label === value)[0];
+      fetchQuery(softwareCreationProductIdQuery, {
+        id: selectedProductValue.value,
+      }).toPromise()
+        .then((data) => {
+          this.setState({ selectedProduct: data.product });
+        })
+    }
+  }
+
+  handleSearchProducts(event) {
+    this.setState({ selectedProduct: { name: this.state.productName } });
+      (this.state.productName.length > 2) && fetchQuery(softwareCreationProductQuery, {
+        search: this.state.productName,
         orderedBy: 'name',
         orderMode: 'asc',
         filters: [
@@ -186,17 +203,10 @@ class SoftwareCreation extends Component {
             products: R.union(this.state.products, products),
           });
         })
-        .catch((error) => console.error(error));
-    }, 1500);
-    if (event.type === 'click' && value) {
-      const selectedProductValue = this.state.products.filter((product) => product.label === value)[0];
-      fetchQuery(softwareCreationProductIdQuery, {
-        id: selectedProductValue.value,
-      }).toPromise()
-        .then((data) => {
-          this.setState({ selectedProduct: data.product });
-        })
-    }
+        .catch((err) => {
+          const ErrorResponse = err.res.errors;
+          this.setState({ error: ErrorResponse });
+        });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -324,6 +334,7 @@ class SoftwareCreation extends Component {
                     size="small"
                     className={classes.autocomplete}
                     noOptionsText={t('No available options')}
+                    popupIcon={<SearchOutlined onClick={this.handleSearchProducts.bind(this)} />}
                     options={this.state.products}
                     getOptionLabel={(option) => option.label ? option.label : option}
                     onInputChange={this.searchProducts.bind(this)}

@@ -40,6 +40,13 @@ const styles = (theme) => ({
 });
 
 class ErrorBox extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: true,
+    }
+  }
+
   handleErrorResponse(errorMessage) {
     let FieldName;
     function title(str) {
@@ -56,6 +63,24 @@ class ErrorBox extends Component {
     }
     FieldName = errorMessage.match(/\bValue\b.+/);
     return FieldName[0];
+  }
+
+  handleRenderComponent(error) {
+    if (Object.keys(error).length) {
+      if ((error.every((value) => value.name !== undefined && value.name.includes('CyioError')))) {
+        return this.renderCyioError();
+      }
+      else if (error.every((value) => value.extensions.code.includes('BAD_USER_INPUT'))) {
+        return this.renderBadUserInput();
+      }
+      else if (error.every((value) => value.extensions.code.includes('GRAPHQL_PARSE_FAILED') || value.extensions.code.includes('GRAPHQL_VALIDATION_FAILED') || value.extensions.code.includes('INTERNAL_SERVER_ERROR'))) {
+        return this.renderInternalServerError();
+      }
+      else if (error.every((value) => value.extensions.code.includes('FORBIDDEN'))) {
+        return this.renderForbidden();
+      }
+      return this.renderInternalServerError();
+    }
   }
 
   renderBadUserInput() {
@@ -88,6 +113,44 @@ class ErrorBox extends Component {
           <Button
             variant='outlined'
             onClick={() => history.push(pathname)}
+          >
+            {t('Cancel')}
+          </Button>
+        </DialogActions>
+      </>
+    );
+  }
+
+  renderCyioError() {
+    const {
+      t, classes, history, pathname, error,
+    } = this.props;
+    return (
+      <>
+        <DialogTitle classes={{ root: classes.dialogTitle }}>
+          {t('ERROR')}
+        </DialogTitle>
+        <DialogContent style={{ overflow: 'hidden' }}>
+          <Typography style={{ marginBottom: '20px' }}>
+            Sorry. Something went wrong and DarkLight Support has been notified. Please try again or contact <strong style={{ color: '#075AD3' }}>Support@darklight.ai</strong> for assistance.
+          </Typography>
+          <List>
+            {Object.keys(error).length && error.map((value, key) => {
+              return (
+                <ListItem
+                  divider
+                  key={key}
+                >
+                  {value.message}
+                </ListItem>
+              );
+            })}
+          </List>
+        </DialogContent>
+        <DialogActions className={classes.dialogAction}>
+          <Button
+            variant='outlined'
+            onClick={() => this.setState({ open: false })}
           >
             {t('Cancel')}
           </Button>
@@ -180,18 +243,11 @@ class ErrorBox extends Component {
     } = this.props;
     return (
       <Dialog
-        open={Object.keys(error).length}
+        open={Object.keys(error).length && this.state.open}
         fullWidth={true}
         maxWidth='md'
       >
-        {(Object.keys(error).length
-          && error.every((value) => value.extensions.code.includes('BAD_USER_INPUT'))) && this.renderBadUserInput()}
-        {(Object.keys(error).length
-          && error.every((value) => value.extensions.code.includes('GRAPHQL_PARSE_FAILED') || value.extensions.code.includes('GRAPHQL_VALIDATION_FAILED') || value.extensions.code.includes('INTERNAL_SERVER_ERROR'))) && this.renderInternalServerError()}
-        {(Object.keys(error).length
-          && error.every((value) => value.extensions.code.includes('UNAUTHENTICATED'))) && this.renderUnauthenticated()}
-        {(Object.keys(error).length
-          && error.every((value) => value.extensions.code.includes('FORBIDDEN'))) && this.renderForbidden()}
+        {this.handleRenderComponent(error)}
       </Dialog>
     );
 
