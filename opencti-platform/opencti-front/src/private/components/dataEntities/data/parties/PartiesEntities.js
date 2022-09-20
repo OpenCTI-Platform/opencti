@@ -380,12 +380,14 @@ class PartiesEntities extends Component {
           handlePartyCreation={this.handlePartyCreation.bind(this)}
           history={this.props.history}
         />
-        <PartyEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          partyId={this.state.selectedPartyId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedPartyId && (
+          <PartyEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            partyId={this.state.selectedPartyId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

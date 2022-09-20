@@ -111,6 +111,7 @@ class EntityAssessmentPlatformComponent extends Component {
         />
         <AssessmentPlatformEntityEditionContainer
           displayEdit={this.state.displayEdit}
+          assessmentPlatform={assessmentPlatform}
           history={history}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />

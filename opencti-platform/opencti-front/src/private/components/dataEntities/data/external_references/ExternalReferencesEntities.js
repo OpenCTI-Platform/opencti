@@ -375,12 +375,14 @@ class ExternalReferencesEntities extends Component {
           handleExternalReferenceCreation={this.handleExternalReferenceCreation.bind(this)}
           history={this.props.history}
         />
-        <ExternalReferenceEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          externalReferenceId={this.state.selectedExternalReferenceId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedExternalReferenceId && (
+          <ExternalReferenceEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            externalReferenceId={this.state.selectedExternalReferenceId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

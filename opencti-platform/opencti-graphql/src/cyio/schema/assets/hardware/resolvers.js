@@ -435,6 +435,9 @@ const hardwareResolvers = {
       return id;
     },
     editHardwareAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
+      // make sure there is input data containing what is to be edited
+      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+
       // check that the object to be edited exists with the predicates - only get the minimum of data
       let editSelect = ['id','modified'];
       for (let editItem of input) {
@@ -448,6 +451,7 @@ const hardwareResolvers = {
         singularizeSchema
       });
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;

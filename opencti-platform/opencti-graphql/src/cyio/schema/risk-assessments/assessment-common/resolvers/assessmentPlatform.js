@@ -277,11 +277,15 @@ const assessmentPlatformResolvers = {
       return id;
     },
     editAssessmentPlatform: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // make sure there is input data containing what is to be edited
+      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id'];
+      let editSelect = ['id','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
+
       const sparqlQuery = selectAssessmentPlatformQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
@@ -291,11 +295,20 @@ const assessmentPlatformResolvers = {
       })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
-      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      // determine operation, if missing
       for (let editItem of input) {
-        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+        if (editItem.operation !== undefined) continue;
+        if (!response[0].hasOwnProperty(editItem.key)) {
+          editItem.operation = 'add';
+        } else {
+          editItem.operation = 'replace';
+        }
       }
-      // END WORKAROUND
+
+      // Push an edit to update the modified time of the object
+      const timestamp = new Date().toISOString();
+      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      input.push(update);
 
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-${id}`,
