@@ -17,6 +17,7 @@ import type { RuleRuntime } from '../../types/rules';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import type { AuthContext } from '../../types/user';
 import { executionContext } from '../../utils/access';
+import type { RelationCreation } from '../../types/inputs';
 
 /*
 'If **indicator A** is `sighted` in **identity/location B** and '
@@ -57,10 +58,10 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
           last_seen: range.end,
           objectMarking: elementMarkings
         });
-        const event = await createInferredRelation(context, input, ruleContent);
+        const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
         // Re inject event if needed
-        if (event) {
-          events.push(event);
+        if (inferredRelation.event) {
+          events.push(inferredRelation.event);
         }
       }
     };
@@ -104,10 +105,10 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
           stop_time: range.end,
           objectMarking: elementMarkings
         });
-        const event = await createInferredRelation(context, input, ruleContent);
+        const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
         // Re inject event if needed
-        if (event) {
-          events.push(event);
+        if (inferredRelation.event) {
+          events.push(inferredRelation.event);
         }
       }
     };

@@ -16,6 +16,7 @@ import {
   isSingleStixCyberObservableRelationshipInput,
 } from './stixCyberObservableRelationship';
 import type { BasicStoreObject } from '../types/store';
+import { buildRefRelationKey, ID_INFERRED, ID_INTERNAL } from './general';
 
 export const INPUTS_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = {
   ...FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE,
@@ -44,10 +45,11 @@ export const isSingleStixEmbeddedRelationship = (type: string): boolean => isSin
 export const isSingleStixEmbeddedRelationshipInput = (input: string): boolean => isSingleStixMetaRelationshipInput(input) || isSingleStixCyberObservableRelationshipInput(input);
 
 // eslint-disable-next-line
-export const instanceMetaRefsExtractor = (data: BasicStoreObject) => {
-  const relKeys = Object.keys(FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE);
+export const instanceMetaRefsExtractor = (relationshipType: string, isInferred: boolean, data: BasicStoreObject) => {
+  const refField = isStixMetaRelationship(relationshipType) && isInferred ? ID_INFERRED : ID_INTERNAL;
+  const field = buildRefRelationKey(relationshipType, refField);
   const anyData = data as any; // TODO JRI Find a way to not use any
-  return relKeys.map((key) => anyData[key] || []).flat();
+  return anyData[field] ?? [];
 };
 const RELATIONS_STIX_ATTRIBUTES = ['source_ref', 'target_ref', 'sighting_of_ref', 'where_sighted_refs'];
 const ALL_STIX_REFS = [...META_STIX_ATTRIBUTES, ...RELATIONS_STIX_ATTRIBUTES];

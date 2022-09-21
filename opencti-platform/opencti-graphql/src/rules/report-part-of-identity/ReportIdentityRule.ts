@@ -1,24 +1,31 @@
 /* eslint-disable camelcase */
-import type { Operation, AddOperation, ReplaceOperation } from 'fast-json-patch';
+import type { AddOperation, Operation, ReplaceOperation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
-import { createInferredRelation, deleteInferredRuleElement, internalFindByIds, } from '../../database/middleware';
+import {
+  createInferredRelation,
+  deleteInferredRuleElement,
+  internalFindByIds,
+  storeLoadByIdWithRefs,
+} from '../../database/middleware';
 import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import def from './ReportIdentityDefinition';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { RELATION_OBJECT } from '../../schema/stixMetaRelationship';
 import { createRuleContent, RULE_MANAGER_USER } from '../rules';
-import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import { ENTITY_TYPE_IDENTITY, INPUT_OBJECTS } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
 import type { RuleRuntime } from '../../types/rules';
 import type { StixId, StixObject } from '../../types/stix-common';
 import type { StixReport } from '../../types/stix-sdo';
 import type { StixRelation } from '../../types/stix-sro';
-import type { BasicStoreRelation, StoreObject } from '../../types/store';
+import type { BasicStoreRelation, StoreEntity, StoreObject } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { DependenciesDeleteEvent, Event, RuleEvent, UpdateEvent } from '../../types/event';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../database/utils';
+import { storeUpdateEvent } from '../../database/redis';
+import type { RelationCreation } from '../../types/inputs';
 
 const INFERRED_OBJECT_REF_PATH = `/extensions/${STIX_EXT_OCTI}/object_refs_inferred`;
 
@@ -37,8 +44,51 @@ const generateDependencies = (reportId: string, partOfFromId: string, partOfId: 
   ];
 };
 
+type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfTargetId: string }>;
+const createObjectRefsInferences = async (reportId: string, refs: ArrayRefs) => {
+  const report = await storeLoadByIdWithRefs(RULE_MANAGER_USER, reportId) as StoreEntity;
+  const reportObjectRefIds = report[INPUT_OBJECTS].map((r) => r.internal_id);
+  const updatedReport = { ...report };
+  const opts = { publishStreamEvent: false };
+  const targetIds = refs.map((r) => [r.partOfId, r.partOfTargetId]).flat();
+  const targetsMap = await internalFindByIds(RULE_MANAGER_USER, targetIds, { toMap: true }) as any;
+  const createdTargets: Array<StoreEntity> = [];
+  for (let index = 0; index < refs.length; index += 1) {
+    const { partOfFromId, partOfId, partOfTargetId } = refs[index];
+    // When generating inferences, no need to listen internal generated events
+    // relationships are internal meta so creation will be in the stream directly
+    const dependencies = generateDependencies(reportId, partOfFromId, partOfId, partOfTargetId);
+    if (!reportObjectRefIds.includes(partOfId)) {
+      const ruleRelationContent = createRuleContent(def.id, dependencies, [reportId, partOfId], {});
+      const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
+      const inferredRelation = await createInferredRelation(inputForRelation, ruleRelationContent, opts) as RelationCreation;
+      if (inferredRelation.isCreation) {
+        const target = targetsMap[partOfId];
+        target.i_relation = inferredRelation.element;
+        createdTargets.push(target);
+      }
+    }
+    // -----------------------------------------------------------------------------------------------------------
+    if (!reportObjectRefIds.includes(partOfTargetId)) {
+      const ruleIdentityContent = createRuleContent(def.id, dependencies, [reportId, partOfTargetId], {});
+      const inputForIdentity = { fromId: reportId, toId: partOfTargetId, relationship_type: RELATION_OBJECT };
+      const inferredTarget = await createInferredRelation(inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
+      if (inferredTarget.isCreation) {
+        const target = targetsMap[partOfTargetId];
+        target.i_relation = inferredTarget.element;
+        createdTargets.push(target);
+      }
+    }
+  }
+  if (createdTargets.length > 0) {
+    updatedReport[INPUT_OBJECTS] = [...(updatedReport[INPUT_OBJECTS] ?? []), ...createdTargets];
+    await storeUpdateEvent(RULE_MANAGER_USER, report, updatedReport, 'Rule update');
+  }
+};
+
 const ruleReportIdentityBuilder = (): RuleRuntime => {
   const handleReportCreation = async (report: StixReport, addedIdentityRefs: Array<string>) => {
+    const objectRefsToCreate: ArrayRefs = [];
     const { id: reportId } = report.extensions[STIX_EXT_OCTI];
     const identities = await internalFindByIds(RULE_MANAGER_USER, addedIdentityRefs) as Array<StoreObject>;
     const fromIds = identities.map((i) => i.internal_id);
@@ -46,19 +96,13 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
     const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
       for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
         const { internal_id: partOfId, fromId: partOfFromId, toId: partOfTargetId } = relationships[relIndex];
-        const dependencies = generateDependencies(reportId, partOfFromId, partOfId, partOfTargetId);
-        // Create the inferred relations
-        const ruleRelationContent = createRuleContent(def.id, dependencies, [reportId, partOfId], {});
-        const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
-        await createInferredRelation(inputForRelation, ruleRelationContent);
-        // -----------------------------------------------------------------------------------------------------------
-        const ruleIdentityContent = createRuleContent(def.id, dependencies, [reportId, partOfTargetId], {});
-        const inputForIdentity = { fromId: reportId, toId: partOfTargetId, relationship_type: RELATION_OBJECT };
-        await createInferredRelation(inputForIdentity, ruleIdentityContent);
+        objectRefsToCreate.push({ partOfFromId, partOfId, partOfTargetId });
       }
     };
     const listFromArgs = { fromId: fromIds, toTypes: [ENTITY_TYPE_IDENTITY], callback: listFromCallback };
     await listAllRelations(RULE_MANAGER_USER, RELATION_PART_OF, listFromArgs);
+    // update the report
+    await createObjectRefsInferences(reportId, objectRefsToCreate);
     return [];
   };
   const handlePartOfRelationCreation = async (partOfRelation: StixRelation) => {
@@ -66,15 +110,7 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
     const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
       for (let objectRefIndex = 0; objectRefIndex < relationships.length; objectRefIndex += 1) {
         const { fromId: reportId } = relationships[objectRefIndex];
-        const dependencies = generateDependencies(reportId, partOfFromId, partOfId, partOfTargetId);
-        // Create the inferred relations
-        const ruleRelationContent = createRuleContent(def.id, dependencies, [reportId, partOfId], {});
-        const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
-        await createInferredRelation(inputForRelation, ruleRelationContent);
-        // -----------------------------------------------------------------------------------------------------------
-        const ruleIdentityContent = createRuleContent(def.id, dependencies, [reportId, partOfTargetId], {});
-        const inputForIdentity = { fromId: reportId, toId: partOfTargetId, relationship_type: RELATION_OBJECT };
-        await createInferredRelation(inputForIdentity, ruleIdentityContent);
+        await createObjectRefsInferences(reportId, [{ partOfFromId, partOfId, partOfTargetId }]);
       }
     };
     const listReportArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_REPORT], toId: partOfFromId, callback: listFromCallback };
@@ -88,7 +124,7 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
       const report = data as StixReport;
       const { object_refs: reportObjectRefs } = report;
       // Get all identities from the report refs
-      const identityRefs = reportObjectRefs.filter(identityRefFilter);
+      const identityRefs = (reportObjectRefs ?? []).filter(identityRefFilter);
       if (identityRefs.length > 0) {
         return handleReportCreation(report, identityRefs);
       }

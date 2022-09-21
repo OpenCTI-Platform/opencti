@@ -24,6 +24,11 @@ const styles = (theme) => ({
     paddingLeft: 10,
     height: 50,
   },
+  itemDisabled: {
+    paddingLeft: 10,
+    height: 50,
+    color: theme.palette.grey[700],
+  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
@@ -53,6 +58,7 @@ class ContainerStixDomainObjectLineComponent extends Component {
       fd,
       classes,
       node,
+      types,
       dataColumns,
       containerId,
       paginationOptions,
@@ -61,6 +67,9 @@ class ContainerStixDomainObjectLineComponent extends Component {
       deSelectedElements,
       selectAll,
     } = this.props;
+    const refTypes = types ?? ['manual'];
+    const isThroughInference = refTypes.includes('inferred');
+    const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -74,8 +83,7 @@ class ContainerStixDomainObjectLineComponent extends Component {
           style={{ minWidth: 40 }}
           onClick={onToggleEntity.bind(this, node)}
         >
-          <Checkbox
-            edge="start"
+          <Checkbox edge="start" disabled={isOnlyThroughInference}
             checked={
               (selectAll && !(node.id in (deSelectedElements || {})))
               || node.id in (selectedElements || {})
@@ -83,30 +91,23 @@ class ContainerStixDomainObjectLineComponent extends Component {
             disableRipple={true}
           />
         </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        {/* eslint-disable-next-line max-len */}
+        <ListItemIcon classes={{ root: isOnlyThroughInference ? classes.itemIconDisabled : classes.itemIcon }}>
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
                 {t(`entity_${node.entity_type}`)}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.x_mitre_id
                   ? `[${node.x_mitre_id}] ${node.name}`
                   : defaultValue(node)}
+                {isThroughInference && !isOnlyThroughInference && ' (+ inferred)'}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
                 <StixCoreObjectLabels
                   variant="inList"
                   labels={node.objectLabel}
@@ -143,13 +144,14 @@ class ContainerStixDomainObjectLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <ContainerStixCoreObjectPopover
-            containerId={containerId}
-            toId={node.id}
-            relationshipType="object"
-            paginationKey="Pagination_objects"
-            paginationOptions={paginationOptions}
-          />
+            <ContainerStixCoreObjectPopover
+              containerId={containerId}
+              toId={node.id}
+              menuDisable={isOnlyThroughInference}
+              relationshipType="object"
+              paginationKey="Pagination_objects"
+              paginationOptions={paginationOptions}
+            />
         </ListItemSecondaryAction>
       </ListItem>
     );

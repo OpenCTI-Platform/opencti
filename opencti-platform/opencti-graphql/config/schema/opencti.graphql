@@ -403,7 +403,7 @@ type Workspace {
     search: String
     types: [String]
     all: Boolean
-  ): StixObjectOrStixRelationshipConnection
+  ): StixObjectOrStixRelationshipRefConnection
   graph_data: String
 }
 input WorkspaceAddInput {
@@ -2218,7 +2218,7 @@ interface Container {
     search: String
     types: [String]
     all: Boolean
-  ): StixObjectOrStixRelationshipConnection
+  ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
     after: ID
@@ -2338,7 +2338,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     types: [String]
     all: Boolean
-  ): StixObjectOrStixRelationshipConnection
+  ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
     after: ID
@@ -2491,7 +2491,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     types: [String]
     all: Boolean
-  ): StixObjectOrStixRelationshipConnection
+  ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
     after: ID
@@ -2643,7 +2643,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     types: [String]
     all: Boolean
-  ): StixObjectOrStixRelationshipConnection
+  ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
     after: ID
@@ -2796,7 +2796,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     types: [String]
     all: Boolean
-  ): StixObjectOrStixRelationshipConnection
+  ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
     after: ID
@@ -8582,8 +8582,17 @@ type StixObjectOrStixRelationshipConnection {
   pageInfo: PageInfo!
   edges: [StixObjectOrStixRelationshipEdge]
 }
+type StixObjectOrStixRelationshipRefConnection {
+  pageInfo: PageInfo!
+  edges: [StixObjectOrStixRelationshipRefEdge]
+}
 type StixObjectOrStixRelationshipEdge {
   cursor: String!
+  node: StixObjectOrStixRelationship!
+}
+type StixObjectOrStixRelationshipRefEdge {
+  cursor: String!
+  types: [String]!
   node: StixObjectOrStixRelationship!
 }
 union StixObjectOrStixRelationship =

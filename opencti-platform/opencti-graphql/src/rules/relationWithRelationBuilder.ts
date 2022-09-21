@@ -11,6 +11,7 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StoreObject, BasicStoreRelation } from '../types/store';
 import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { executionContext } from '../utils/access';
+import type { RelationCreation } from '../types/inputs';
 
 const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
@@ -53,10 +54,10 @@ const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationT
           stop_time: range.end,
           objectMarking: elementMarkings,
         });
-        const event = await createInferredRelation(context, input, ruleContent);
+        const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
         // Re inject event if needed
-        if (event) {
-          events.push(event);
+        if (inferredRelation.event) {
+          events.push(inferredRelation.event);
         }
       }
     };

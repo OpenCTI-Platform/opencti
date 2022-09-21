@@ -23,6 +23,7 @@ import type { RuleRuntime } from '../../types/rules';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { executionContext } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
+import type { RelationCreation } from '../../types/inputs';
 
 const indicateSightedRuleBuilder = (): RuleRuntime => {
   // Execution
@@ -57,10 +58,10 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
           last_seen: range.end,
           objectMarking: elementMarkings
         });
-        const event = await createInferredRelation(context, input, ruleContent);
+        const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
         // Re inject event if needed
-        if (event) {
-          events.push(event);
+        if (inferredRelation.event) {
+          events.push(inferredRelation.event);
         }
       }
     };
@@ -106,10 +107,10 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
           stop_time: range.end,
           objectMarking: elementMarkings
         });
-        const event = await createInferredRelation(context, input, ruleContent);
+        const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
         // Re inject event if needed
-        if (event) {
-          events.push(event);
+        if (inferredRelation.event) {
+          events.push(inferredRelation.event);
         }
       }
     };

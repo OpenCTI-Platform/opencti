@@ -11,6 +11,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
 import { executionContext } from '../../utils/access';
+import type { RelationCreation } from '../../types/inputs';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
@@ -44,10 +45,10 @@ const ruleLocalizationOfTargetsBuilder = () => {
         stop_time: range.end,
         objectMarking: elementMarkings,
       });
-      const event = await createInferredRelation(context, input, ruleContent) as Event;
+      const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
       // Re inject event if needed
-      if (event) {
-        events.push(event);
+      if (inferredRelation.event) {
+        events.push(inferredRelation.event);
       }
     }
     return events;

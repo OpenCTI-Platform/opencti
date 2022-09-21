@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { paginateAllThings, listThings, storeLoadById, listAllThings } from '../database/middleware';
 import { listEntities, listRelations } from '../database/middleware-loader';
-import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
+import { buildRefRelationKey, ENTITY_TYPE_CONTAINER, ID_INFERRED, ID_INTERNAL } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
 
@@ -23,16 +23,36 @@ export const findAll = async (context, user, args) => {
 
 // Entities tab
 export const objects = async (context, user, containerId, args) => {
-  const key = buildRefRelationKey(RELATION_OBJECT);
+  const key = buildRefRelationKey(RELATION_OBJECT, '*');
   let types = ['Stix-Core-Object', 'stix-core-relationship', 'stix-sighting-relationship', 'stix-cyber-observable-relationship'];
   if (args.types) {
     types = args.types;
   }
-  const filters = [{ key, values: [containerId] }, ...(args.filters || [])];
+  const filters = [{ key, values: [containerId], operator: 'wildcard' }, ...(args.filters || [])];
+  let data;
   if (args.all) {
-    return paginateAllThings(context, user, types, R.assoc('filters', filters, args));
+    data = await paginateAllThings(context, user, types, R.assoc('filters', filters, args));
+  } else {
+    data = await listThings(user, types, R.assoc('filters', filters, args));
   }
-  return listThings(context, user, types, R.assoc('filters', filters, args));
+  if (args.connectionFormat !== false) {
+    const edges = [];
+    for (let index = 0; index < data.edges.length; index += 1) {
+      const edge = data.edges[index];
+      const relIdObjects = edge.node[buildRefRelationKey(RELATION_OBJECT, ID_INTERNAL)] ?? [];
+      const relInferredObjects = edge.node[buildRefRelationKey(RELATION_OBJECT, ID_INFERRED)] ?? [];
+      const refTypes = [];
+      if (relIdObjects.includes(containerId)) {
+        refTypes.push('manual');
+      }
+      if (relInferredObjects.includes(containerId)) {
+        refTypes.push('inferred');
+      }
+      edges.push({ ...edge, types: refTypes });
+    }
+    data.edges = edges;
+  }
+  return data;
 };
 export const relatedContainers = async (context, user, containerId, args) => {
   const key = buildRefRelationKey(RELATION_OBJECT);

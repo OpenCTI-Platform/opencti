@@ -2545,7 +2545,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     } else {
       // Check cyclic reference consistency for embedded relationships before creation
       if (isStixEmbeddedRelationship(relationshipType)) {
-        const toRefs = instanceMetaRefsExtractor(to);
+        const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
         // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
         // Checking the direction of the relation to allow relationships
         if (toRefs.includes(from.internal_id) && isRelationConsistent(relationshipType, to, from)) {
@@ -2588,7 +2588,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       event = await storeUpdateEvent(context, user, dataRel.previous, dataRel.element, dataRel.message, opts);
     }
     // - TRANSACTION END
-    return { element: dataRel.element, event };
+    return { element: dataRel.element, event, isCreation: dataRel.type === TRX_CREATION };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -2602,8 +2602,8 @@ export const createRelation = async (context, user, input) => {
   const data = await createRelationRaw(context, user, input);
   return data.element;
 };
-export const createInferredRelation = async (context, input, ruleContent) => {
-  const opts = { fromRule: ruleContent.field };
+export const createInferredRelation = async (context, input, ruleContent, opts = {}) => {
+  const args = { ...opts, fromRule: ruleContent.field };
   // eslint-disable-next-line camelcase
   const { fromId, toId, relationship_type } = input;
   logApp.info('Create inferred relation', { fromId, toId, relationshipType: relationship_type });
@@ -2615,8 +2615,7 @@ export const createInferredRelation = async (context, input, ruleContent) => {
   const instance = { fromId, toId, relationship_type, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
   const inputRelation = { ...instance, ...patch };
-  const data = await createRelationRaw(context, RULE_MANAGER_USER, inputRelation, opts);
-  return data.event;
+  return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
 };
 /* istanbul ignore next */
 export const createRelations = async (context, user, inputs) => {

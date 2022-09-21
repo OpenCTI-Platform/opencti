@@ -10,7 +10,7 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
-  isEmptyField,
+  isEmptyField, isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
   pascalize,
@@ -19,7 +19,7 @@ import {
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
-  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
@@ -37,7 +37,7 @@ import {
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
-  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_IDENTITY, ID_INFERRED,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -241,7 +241,7 @@ const buildMarkingRestriction = (user) => {
   if (!isBypass) {
     if (user.allowed_marking.length === 0) {
       // If user have no marking, he can only access to data with no markings.
-      must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING) } });
+      must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING, ID_INTERNAL) } });
     } else {
       // Markings should be group by types for restriction
       const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
@@ -847,7 +847,7 @@ const elDataConverter = (esHit) => {
       // Rebuild rel to stix attributes
       const rel = key.substr(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      data[relType] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : val;
+      data[relType] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
     } else {
       data[key] = val;
     }
@@ -896,7 +896,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
     },
   });
   const query = {
-    index: READ_RELATIONSHIPS_INDICES,
+    index: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     size: MAX_SEARCH_SIZE,
     ignore_throttled: ES_IGNORE_THROTTLED,
     body: {
@@ -1898,7 +1898,9 @@ const elRemoveRelationConnection = async (context, user, relsFromTo) => {
     const dataIds = await elFindByIds(context, user, idsToResolve);
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
     const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
-      const type = buildRefRelationKey(relation.entity_type);
+      const refField = isStixMetaRelationship(relation.entity_type)
+        && isInferredIndex(relation._index) ? ID_INFERRED : ID_INTERNAL;
+      const type = buildRefRelationKey(relation.entity_type, refField);
       const updates = [];
       const fromIndex = indexCache[relation.fromId];
       if (isFromCleanup && fromIndex) {
@@ -2067,39 +2069,41 @@ export const elIndexElements = async (context, user, message, elements) => {
       R.filter((e) => e.base_type === BASE_TYPE_RELATION),
       R.map((e) => {
         const { fromRole, toRole } = e;
-        const relationshipType = e.entity_type;
         const impacts = [];
-        // We impact target entities of the relation only if not global entities like
-        // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
-        cache[e.fromId] = e.from;
-        cache[e.toId] = e.to;
+      // We impact target entities of the relation only if not global entities like
+      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
+      cache[e.fromId] = e.from;
+      cache[e.toId] = e.to;
+      const refField = isStixMetaRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
+      const relationshipType = e.entity_type;
         if (isImpactedRole(fromRole)) {
-          impacts.push({ from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
-        }
-        if (isImpactedRole(toRole)) {
-          impacts.push({ from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
-        }
-        return impacts;
-      }),
-      R.flatten,
-      R.groupBy((i) => i.from)
-    )(elements);
-    const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
-      const entity = cache[entityId];
-      const targets = impactedEntities[entityId];
-      // Build document fields to update ( per relation type )
-      const targetsByRelation = R.groupBy((i) => i.relationshipType, targets);
-      const targetsElements = R.map((relType) => {
-        const data = targetsByRelation[relType];
+          impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
+      }
+      if (isImpactedRole(toRole)) {
+        impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
+      }
+      return impacts;
+    }),
+    R.flatten,
+    R.groupBy((i) => i.from)
+  )(elements);
+  const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
+    const entity = cache[entityId];
+    const targets = impactedEntities[entityId];
+    // Build document fields to update ( per relation type )
+    const targetsByRelation = R.groupBy((i) => `${i.relationshipType}|${i.refField}`, targets);
+      const targetsElements = R.map((relTypeAndField) => {
+      const [relType, refField] = relTypeAndField.split('|');
+        const data = targetsByRelation[relTypeAndField];
         const resolvedData = R.map((d) => {
           return { id: d.to.internal_id, side: d.side, type: d.type };
         }, data);
-        return { relation: relType, elements: resolvedData };
-      }, Object.keys(targetsByRelation));
-      // Create params and scripted update
-      const params = { updated_at: now() };
-      const sources = R.map((t) => {
-        const field = buildRefRelationKey(t.relation);
+        return { relation: relType, field: refField, elements: resolvedData };
+    }, Object.keys(targetsByRelation));
+    // Create params and scripted update
+    const params = { updated_at: now() };
+    const sources = targetsElements.map((t) => {
+        const field = buildRefRelationKey(t.relation, t.field);
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         script += `ctx._source['${field}'].addAll(params['${field}'])`;
         if (isStixMetaRelationship(t.relation)) {
@@ -2112,11 +2116,11 @@ export const elIndexElements = async (context, user, message, elements) => {
           }
         }
         return script;
-      }, targetsElements);
+      });
       const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
-        params[buildRefRelationKey(targetElement.relation)] = targetElement.elements.map((e) => e.id);
+        params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e) => e.id);
       }
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
@@ -2196,15 +2200,18 @@ export const elUpdateEntityConnections = async (elements) => {
       }
       return doc.data.internal_id;
     };
-    const bodyUpdate = elements.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      {
-        script: {
-          source,
-          params: { key: buildRefRelationKey(doc.relationType), from: doc.toReplace, to: addMultipleFormat(doc) },
+    const bodyUpdate = elements.flatMap((doc) => {
+      const refField = isStixMetaRelationship(doc.relationType) && isInferredIndex(doc._index) ? ID_INFERRED : ID_INTERNAL;
+      return [
+        { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        {
+          script: {
+            source,
+            params: { key: buildRefRelationKey(doc.relationType, refField), from: doc.toReplace, to: addMultipleFormat(doc) },
+          },
         },
-      },
-    ]);
+      ];
+    });
     const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
     const cachePromise = cacheDel(elements);
     await Promise.all([cachePromise, bulkPromise]);

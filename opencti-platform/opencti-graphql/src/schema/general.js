@@ -4,6 +4,7 @@ import * as R from 'ramda';
 export const KNOWLEDGE_DELETE = 'KNDELETE';
 
 export const ID_INTERNAL = 'internal_id';
+export const ID_INFERRED = 'inferred_id';
 export const ID_STANDARD = 'standard_id';
 export const INTERNAL_IDS_ALIASES = 'i_aliases_ids';
 export const IDS_STIX = 'x_opencti_stix_ids';

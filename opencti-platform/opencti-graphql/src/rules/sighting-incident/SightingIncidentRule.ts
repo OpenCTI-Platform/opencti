@@ -20,6 +20,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { executionContext } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
+import type { RelationCreation } from '../../types/inputs';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
@@ -65,25 +66,17 @@ const ruleSightingIncidentBuilder = () => {
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
         const created = inferredEntity.element as StoreObject;
-        const incidentToIndicator = {
-          fromId: created.internal_id,
-          toId: indicatorId,
-          relationship_type: RELATION_RELATED_TO,
-        };
-        const incidentToIndicatorEvent = await createInferredRelation(context, incidentToIndicator, ruleRelContent) as Event;
-        if (incidentToIndicatorEvent) {
-          events.push(incidentToIndicatorEvent);
+        const incidentToIndicator = { fromId: created.internal_id, toId: indicatorId, relationship_type: RELATION_RELATED_TO };
+        const incidentToIndicatorCreation = await createInferredRelation(context, incidentToIndicator, ruleRelContent) as RelationCreation;
+        if (incidentToIndicatorCreation.event) {
+          events.push(incidentToIndicatorCreation.event);
         }
         // Create **Incident C** `targets` **identity B**
 
-        const incidentToIdentity = {
-          fromId: created.internal_id,
-          toId: identityId,
-          relationship_type: RELATION_TARGETS,
-        };
-        const incidentToIdentityEvent = await createInferredRelation(context, incidentToIdentity, ruleRelContent) as Event;
-        if (incidentToIdentityEvent) {
-          events.push(incidentToIdentityEvent);
+        const incidentToIdentity = { fromId: created.internal_id, toId: identityId, relationship_type: RELATION_TARGETS };
+        const incidentToIdentityCreation = await createInferredRelation(context, incidentToIdentity, ruleRelContent) as RelationCreation;
+        if (incidentToIdentityCreation.event) {
+          events.push(incidentToIdentityCreation.event);
         }
       }
     }
