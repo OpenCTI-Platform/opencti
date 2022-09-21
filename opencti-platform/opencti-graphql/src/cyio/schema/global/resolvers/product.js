@@ -34,7 +34,7 @@ const productResolvers = {
 
       let limitValue = ('first' in args ? args['first'] : undefined)
       let offsetValue = ('offset' in args ? args['offset'] : 0);
-
+ 
       // count how may instances exist
       const countQuery = countProductsQuery(args);
       try {
@@ -53,8 +53,10 @@ const productResolvers = {
       if (response === undefined || response.length === 0) return null;
       const totalProductCount = response[0].count;
 
-      // too many products to return, so ask user to refine the search
-      if (totalProductCount > 1000) throw new CyioError("Your search returned too many results. Please narrow your query.");
+      if ('search' in args) {
+          // too many products to return, so ask user to refine the search
+        if (totalProductCount > 1000) throw new CyioError(`Your search for '${args.search}' returned ${totalProductCount} results. Please narrow your query.`);
+      }
 
       // Select the list of products
       const sparqlQuery = selectAllProducts(selectMap.getNode("node"), args);
@@ -116,15 +118,20 @@ const productResolvers = {
             limit-- ;
           }
         }
+
         // check if there is data to be returned
         if (edges.length === 0 ) return null;
-        resultCount = totalProductCount;
-        if ('search' in args) resultCount = edges.length;
-
-        // determine if there is more data
         let hasNextPage = false, hasPreviousPage = false;
-        if (offsetSize != 0 && offsetSize < resultCount) hasNextPage = true;
-        if (offsetSize > 0) hasPreviousPage = true;
+        if (edges.length < totalProductCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
 
         return {
           pageInfo: {
@@ -132,7 +139,7 @@ const productResolvers = {
             endCursor: edges[edges.length-1].cursor,
             hasNextPage: (hasNextPage ),
             hasPreviousPage: (hasPreviousPage),
-            globalCount: resultCount,
+            globalCount: totalProductCount,
           },
           edges: edges,
         }
