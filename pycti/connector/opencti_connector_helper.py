@@ -406,12 +406,12 @@ class ListenStream(threading.Thread):
                         pass
                     if msg.event == "heartbeat" or msg.event == "connected":
                         state = self.helper.get_state()
-                        state["start_from"] = str(msg.id) + "-0"
+                        state["start_from"] = str(msg.id)
                         self.helper.set_state(state)
                     else:
                         self.callback(msg)
                         state = self.helper.get_state()
-                        state["start_from"] = str(msg.id) + "-0"
+                        state["start_from"] = str(msg.id)
                         self.helper.set_state(state)
         except:
             sys.excepthook(*sys.exc_info())
