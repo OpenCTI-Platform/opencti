@@ -176,9 +176,10 @@ export const reportExpectation = async (user, workId, errorData) => {
       ctx._source['completed_number'] = params.completed_number;
       ctx._source['completed_time'] = params.now;`;
     }
+    // To avoid maximum string in Elastic (536870888), arbitrary limit the number of errors possible in a work to 5000 (50000 * 50000 < 536870888)
     if (errorData) {
       const { error, source } = errorData;
-      sourceScript += 'ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); ';
+      sourceScript += 'if (ctx._source.errors.length < 5000) { ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); }';
       params.source = source;
       params.error = error;
     }
