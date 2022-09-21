@@ -76,7 +76,8 @@ const styles = (theme) => ({
     justifyContent: 'space-between',
     alignItems: 'self-start',
     color: theme.palette.header.text,
-    boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
+    backgroundColor: theme.palette.background.paper,
+    // boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
   dataEntities: {
     width: '180px',
@@ -302,7 +303,6 @@ class CyioListLines extends Component {
         <div
           className={classes.toolBar}
           elevation={1}
-          style={{ backgroundColor: '#075AD333' }}
         >
           <div className={classes.parameters}>
             <div className={classes.searchBar}>

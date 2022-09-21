@@ -318,7 +318,6 @@ const TopBarBreadcrumbs = ({
                   aria-owns={menuOpen.open ? 'menu-appbar' : null}
                   aria-haspopup="true"
                   onClick={handleOpenMenu}
-                  color="inherit"
                   data-cy='menu'
                 >
                   <AccountCircleOutlined fontSize="default" />

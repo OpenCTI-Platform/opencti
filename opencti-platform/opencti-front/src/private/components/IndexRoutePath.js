@@ -54,6 +54,7 @@ const IndexRoutePath = (me) => (
     <Route path="/dashboard/observations" component={RootObservations} />
     <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
     <BoundaryRoute path="/defender HQ/assets" component={RootAssets} />
+    <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
     <FeatureFlag tag={'RISK_ASSESSMENT'}>
       <BoundaryRoute path="/activities/risk assessment" component={RootRiskAssessment} />
     </FeatureFlag>
@@ -64,7 +65,6 @@ const IndexRoutePath = (me) => (
       path="/dashboard/workspaces"
       component={RootWorkspaces}
     />
-    <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
     <BoundaryRoute
       exact
       path="/dashboard/profile"
