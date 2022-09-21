@@ -40,7 +40,7 @@ class TopMenuAssets extends Component {
           color={
             location.pathname.includes('/defender HQ/assets/devices')
               ? 'secondary'
-              : 'inherit'
+              : 'default'
           }
           classes={{ root: classes.button }}
           data-cy='asset devices'
@@ -60,7 +60,7 @@ class TopMenuAssets extends Component {
           color={
             location.pathname.includes('/defender HQ/assets/network')
               ? 'secondary'
-              : 'inherit'
+              : 'default'
           }
           classes={{ root: classes.button }}
           data-cy='asset networks'
@@ -80,7 +80,7 @@ class TopMenuAssets extends Component {
           color={
             location.pathname === '/defender HQ/assets/software'
               ? 'secondary'
-              : 'inherit'
+              : 'default'
           }
           classes={{ root: classes.button }}
           data-cy='asset software'

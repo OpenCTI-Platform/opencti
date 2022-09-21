@@ -25,12 +25,12 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = () => ({
+const styles = (theme) => ({
   header: {
     margin: '0 0 20px 0',
     padding: '24px',
     height: '64px',
-    backgroundColor: '#1F2842',
+    backgroundColor: theme.palette.background.paper,
   },
   iconButton: {
     float: 'left',

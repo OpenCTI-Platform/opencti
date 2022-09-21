@@ -47,7 +47,7 @@ const styles = (theme) => ({
     height: '100%',
     minHeight: '30%',
     backgroundColor: theme.palette.background.nav,
-    backgroundImage: `url(${window.BASE_PATH}/static/DarkLight_CyioLogo-Lock-Up.png)`,
+    backgroundImage: `url(${theme.waterMark})`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: '50% 70%;',
     overflow: 'hidden',

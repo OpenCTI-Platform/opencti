@@ -51,7 +51,7 @@ const styles = (theme) => ({
     margin: '0 300px 0 -10px',
   },
   toolBar: {
-    margin: '0px -24px 20px -30px',
+    margin: '0 0 20px 0',
     height: '100%',
     display: 'flex',
     '@media (max-width: 1400px)': {
@@ -60,7 +60,8 @@ const styles = (theme) => ({
     alignItems: 'self-start',
     justifyContent: 'space-between',
     color: theme.palette.header.text,
-    boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
+    backgroundColor: theme.palette.background.paper,
+    // boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
   dataEntities: {
     width: '180px',
@@ -178,7 +179,6 @@ class CyioListCards extends Component {
         <div
           className={classes.toolBar}
           elevation={1}
-          style={{ backgroundColor: '#075AD333' }}
         >
           <div className={classes.parameters}>
             <div className={classes.searchBar}>
