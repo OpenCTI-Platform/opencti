@@ -233,7 +233,7 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId, opts = {
   }
 };
 
-export const upload = async (user, path, fileUpload, meta = {}) => {
+export const upload = async (user, path, fileUpload, meta = {}, noTriggerImport = false) => {
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
   // Upload the data
   const readStream = createReadStream();
@@ -271,7 +271,7 @@ export const upload = async (user, path, fileUpload, meta = {}) => {
     uploadStatus: 'complete'
   };
   // Trigger a enrich job for import file if needed
-  if (path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
+  if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
     await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
   return file;

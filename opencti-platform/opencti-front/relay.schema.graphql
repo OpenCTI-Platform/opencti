@@ -7000,7 +7000,7 @@ type ExternalReferenceEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
   askEnrichment(connectorId: ID!): Work
-  importPush(file: Upload!): File
+  importPush(file: Upload!, noTriggerImport: Boolean): File
 }
 
 type KillChainPhaseEditMutations {
@@ -7019,7 +7019,7 @@ type StixCoreObjectEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): StixCoreObject
   merge(stixCoreObjectsIds: [String]!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
-  importPush(file: Upload!): File
+  importPush(file: Upload!, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean
 }
@@ -7033,7 +7033,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
-  importPush(file: Upload!): File
+  importPush(file: Upload!, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean
 }
@@ -7281,7 +7281,7 @@ type StixCyberObservableEditMutations {
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable
   promote: StixCyberObservable
-  importPush(file: Upload!): File
+  importPush(file: Upload!, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean
 }

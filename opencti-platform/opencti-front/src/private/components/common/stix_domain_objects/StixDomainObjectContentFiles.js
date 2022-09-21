@@ -66,7 +66,7 @@ export const stixDomainObjectContentFilesUploadStixDomainObjectMutation = graphq
     $file: Upload!
   ) {
     stixDomainObjectEdit(id: $id) {
-      importPush(file: $file) {
+      importPush(file: $file, noTriggerImport: true) {
         id
         name
         uploadStatus

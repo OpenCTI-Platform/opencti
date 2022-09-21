@@ -186,7 +186,7 @@ export const stixCoreObjectExportPush = async (user, entityId, file) => {
 };
 // endregion
 
-export const stixCoreObjectImportPush = async (user, id, file) => {
+export const stixCoreObjectImportPush = async (user, id, file, noTriggerImport = false) => {
   let lock;
   const previous = await storeLoadByIdWithRefs(user, id);
   if (!previous) {
@@ -197,7 +197,7 @@ export const stixCoreObjectImportPush = async (user, id, file) => {
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
     const { internal_id: internalId } = previous;
-    const up = await upload(user, `import/${previous.entity_type}/${internalId}`, file, { entity_id: internalId });
+    const up = await upload(user, `import/${previous.entity_type}/${internalId}`, file, { entity_id: internalId }, noTriggerImport);
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
