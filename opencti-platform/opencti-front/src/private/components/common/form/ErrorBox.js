@@ -40,12 +40,6 @@ const styles = (theme) => ({
 });
 
 class ErrorBox extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: true,
-    }
-  }
 
   handleErrorResponse(errorMessage) {
     let FieldName;
@@ -123,23 +117,21 @@ class ErrorBox extends Component {
 
   renderCyioError() {
     const {
-      t, classes, history, pathname, error,
+      t, classes, error, handleClearError,
     } = this.props;
     return (
       <>
         <DialogTitle classes={{ root: classes.dialogTitle }}>
-          {t('ERROR')}
+          {t('INFORMATION')}
         </DialogTitle>
         <DialogContent style={{ overflow: 'hidden' }}>
-          <Typography style={{ marginBottom: '20px' }}>
-            Sorry. Something went wrong and DarkLight Support has been notified. Please try again or contact <strong style={{ color: '#075AD3' }}>Support@darklight.ai</strong> for assistance.
-          </Typography>
           <List>
             {Object.keys(error).length && error.map((value, key) => {
               return (
                 <ListItem
-                  divider
                   key={key}
+                  alignItems='center'
+                  style={{ fontSize: '18px' }}
                 >
                   {value.message}
                 </ListItem>
@@ -150,7 +142,7 @@ class ErrorBox extends Component {
         <DialogActions className={classes.dialogAction}>
           <Button
             variant='outlined'
-            onClick={() => this.setState({ open: false })}
+            onClick={() => handleClearError()}
           >
             {t('Cancel')}
           </Button>
@@ -243,7 +235,7 @@ class ErrorBox extends Component {
     } = this.props;
     return (
       <Dialog
-        open={Object.keys(error).length && this.state.open}
+        open={Object.keys(error).length}
         fullWidth={true}
         maxWidth='md'
       >
@@ -260,6 +252,7 @@ ErrorBox.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   error: PropTypes.object,
+  handleClearError: PropTypes.func,
   fldt: PropTypes.func,
 };
 

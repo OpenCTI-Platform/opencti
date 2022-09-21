@@ -182,31 +182,35 @@ class SoftwareCreation extends Component {
 
   handleSearchProducts(event) {
     this.setState({ selectedProduct: { name: this.state.productName } });
-      (this.state.productName.length > 2) && fetchQuery(softwareCreationProductQuery, {
-        search: this.state.productName,
-        orderedBy: 'name',
-        orderMode: 'asc',
-        filters: [
-          { key: 'object_type', values: ['software'] }
-        ],
-      })
-        .toPromise()
-        .then((data) => {
-          const products = R.pipe(
-            R.pathOr([], ['products', 'edges']),
-            R.map((n) => ({
-              label: n.node.name,
-              value: n.node.id,
-            })),
-          )(data);
-          this.setState({
-            products: R.union(this.state.products, products),
-          });
-        })
-        .catch((err) => {
-          const ErrorResponse = err.res.errors;
-          this.setState({ error: ErrorResponse });
+    (this.state.productName.length > 2) && fetchQuery(softwareCreationProductQuery, {
+      search: this.state.productName,
+      orderedBy: 'name',
+      orderMode: 'asc',
+      filters: [
+        { key: 'object_type', values: ['software'] }
+      ],
+    })
+      .toPromise()
+      .then((data) => {
+        const products = R.pipe(
+          R.pathOr([], ['products', 'edges']),
+          R.map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          products: R.union(this.state.products, products),
         });
+      })
+      .catch((err) => {
+        const ErrorResponse = err.res.errors;
+        this.setState({ error: ErrorResponse });
+      });
+  }
+
+  handleClearError() {
+    this.setState({ error: {} });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -460,6 +464,7 @@ class SoftwareCreation extends Component {
         <ErrorBox
           error={this.state.error}
           pathname='/defender HQ/assets/software'
+          handleClearError={this.handleClearError.bind(this)}
         />
       </div>
     );
