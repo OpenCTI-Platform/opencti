@@ -155,6 +155,7 @@ class SoftwareCreation extends Component {
     this.state = {
       error: {},
       open: false,
+      openAutocomplete: false,
       products: [],
       productName: '',
       onSubmit: false,
@@ -180,8 +181,8 @@ class SoftwareCreation extends Component {
     }
   }
 
-  handleSearchProducts(event) {
-    this.setState({ selectedProduct: { name: this.state.productName } });
+  handleSearchProducts() {
+    this.setState({ selectedProduct: { name: this.state.productName }, openAutocomplete: true });
     (this.state.productName.length > 2) && fetchQuery(softwareCreationProductQuery, {
       search: this.state.productName,
       orderedBy: 'name',
@@ -335,6 +336,8 @@ class SoftwareCreation extends Component {
                     {t('EDIT: ')}
                   </Typography>
                   <Autocomplete
+                    open={this.state.openAutocomplete}
+                    onClose={() => this.setState({ openAutocomplete: false })}
                     size="small"
                     className={classes.autocomplete}
                     noOptionsText={t('No available options')}
@@ -348,6 +351,15 @@ class SoftwareCreation extends Component {
                       <TextField
                         variant='outlined'
                         {...params}
+                        inputProps={{
+                          ...params.inputProps,
+                          onKeyDown: (e) => {
+                            if (e.key === 'Enter') {
+                              e.stopPropagation();
+                              this.handleSearchProducts()
+                            }
+                          },
+                        }}
                         label='Products'
                       />
                     )}
