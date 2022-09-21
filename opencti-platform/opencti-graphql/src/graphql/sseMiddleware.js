@@ -651,7 +651,7 @@ const createSeeMiddleware = () => {
               if (isFullVisibleElement(instance)) {
                 const stixData = convertStoreToStix(instance);
                 const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
-                const eventId = utcDate(stixUpdatedAt).toDate().getTime();
+                const eventId = `${utcDate(stixUpdatedAt).toDate().getTime()}-0`;
                 if (channel.connected()) {
                   // publish missing dependencies if needed
                   await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stixData);
