@@ -42,12 +42,18 @@ const productReducer = (item) => {
 // Query Builders
 export const countProductsQuery = (args) => {
   let classType = '{?iri a <http://docs.oasis-open.org/ns/cti/stix#Software>} UNION {?iri a <http://docs.oasis-open.org/ns/cti/stix#Hardware>}';
+  let filter = '';
   if (args !== undefined && args.filters !== undefined ) {
     for( const filter of args.filters) {
       if (filter.key === 'object_type') {
         if (filter.values[0] === 'software') classType = '?iri a <http://docs.oasis-open.org/ns/cti/stix#Software>';
         if (filter.values[0] === 'hardware') classType = '?iri a <http://docs.oasis-open.org/ns/cti/stix#Hardware>';
       }
+    }
+    if ('search' in args) {
+      filter = `
+    ?iri <http://docs.oasis-open.org/ns/cti#name> ?name .
+    FILTER (STRSTARTS(STR(?name), '${args.search}'))`
     }
   }
 
@@ -56,8 +62,7 @@ export const countProductsQuery = (args) => {
   FROM <tag:stardog:api:context:local>
   WHERE {
     ${classType} .
-    ?iri <http://docs.oasis-open.org/ns/cti#name> ?name .
-    FILTER (STRSTARTS(STR(?name), '${args.search}'))
+    ${filter}
   }
   `;
 }

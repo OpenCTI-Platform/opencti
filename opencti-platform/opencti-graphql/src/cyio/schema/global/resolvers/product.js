@@ -1,6 +1,5 @@
-import {compareValues, filterValues} from '../../utils.js';
-import {ApolloError, UserInputError} from "apollo-server-express";
-// import {ApolloError, UserInputError} from 'apollo-server-errors';
+import {compareValues, filterValues, CyioError} from '../../utils.js';
+import {UserInputError} from "apollo-server-express";
 import {
   getReducer, 
   countProductsQuery,
@@ -8,6 +7,7 @@ import {
   selectProductQuery,
   productSingularizeSchema as singularizeSchema,
 } from './product-sparqlQuery.js';
+
 
 const productResolvers = {
   Query: {
@@ -26,15 +26,15 @@ const productResolvers = {
       }
       // END WORKAROUND
 
-      if ('search' in args && ('first' in args || 'offset' in args)) throw new ApolloError("Query can not have both 'search' and 'first'/'offset'", "BAD_USER_INPUT");
-      if ('offset' in args && !('first' in args)) throw new ApolloError("Argument 'offset' can not be used without 'first'", "BAD_USER_INPUT");
+      if ('search' in args && ('first' in args || 'offset' in args)) throw new CyioError("Query can not have both 'search' and 'first'/'offset'");
+      if ('offset' in args && !('first' in args)) throw new CyioError("Argument 'offset' can not be used without 'first'");
 
       const dbName = 'cyber-context';
       let response;
 
       let limitValue = ('first' in args ? args['first'] : undefined)
       let offsetValue = ('offset' in args ? args['offset'] : 0);
-
+ 
       // count how may instances exist
       const countQuery = countProductsQuery(args);
       try {
@@ -53,8 +53,10 @@ const productResolvers = {
       if (response === undefined || response.length === 0) return null;
       const totalProductCount = response[0].count;
 
-      // too many products to return, so ask user to refine the search
-      if (totalProductCount > 1000) throw new ApolloError("Your search returned too many results. Please narrow your query.", "BAD_USER_INPUT");
+      if ('search' in args) {
+          // too many products to return, so ask user to refine the search
+        if (totalProductCount > 1000) throw new CyioError(`Your search for '${args.search}' returned ${totalProductCount} results. Please narrow your query.`);
+      }
 
       // Select the list of products
       const sparqlQuery = selectAllProducts(selectMap.getNode("node"), args);
@@ -116,15 +118,20 @@ const productResolvers = {
             limit-- ;
           }
         }
+
         // check if there is data to be returned
         if (edges.length === 0 ) return null;
-        resultCount = totalProductCount;
-        if ('search' in args) resultCount = edges.length;
-
-        // determine if there is more data
         let hasNextPage = false, hasPreviousPage = false;
-        if (offsetSize != 0 && offsetSize < resultCount) hasNextPage = true;
-        if (offsetSize > 0) hasPreviousPage = true;
+        if (edges.length < totalProductCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
 
         return {
           pageInfo: {
@@ -132,7 +139,7 @@ const productResolvers = {
             endCursor: edges[edges.length-1].cursor,
             hasNextPage: (hasNextPage ),
             hasPreviousPage: (hasPreviousPage),
-            globalCount: resultCount,
+            globalCount: totalProductCount,
           },
           edges: edges,
         }

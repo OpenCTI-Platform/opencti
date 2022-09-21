@@ -380,12 +380,14 @@ class RolesEntities extends Component {
           handleRoleCreation={this.handleRoleCreation.bind(this)}
           history={this.props.history}
         />
-        <RoleEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          responsibilityId={this.state.selectedRoleId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedRoleId && (
+          <RoleEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            responsibilityId={this.state.selectedRoleId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

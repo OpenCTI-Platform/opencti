@@ -208,36 +208,54 @@ const softwareResolvers = {
       return id;
     },
     editSoftwareAsset: async ( _, {id, input}, {dbName, dataSources, selectMap}) => {
+      // make sure there is input data containing what is to be edited
+      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id'];
+      let editSelect = ['id','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
+
       const sparqlQuery = selectSoftwareQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
-        queryId: "Select Computing Device",
+        queryId: "Select Software",
         singularizeSchema
-      })
+      });
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
-      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
-      for (let editItem of input) {
-        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
-      }
-      // END WORKAROUND
 
+      // determine operation, if missing
+      for (let editItem of input) {
+        if (editItem.operation !== undefined) continue;
+        if (!response[0].hasOwnProperty(editItem.key)) {
+          editItem.operation = 'add';
+        } else {
+          editItem.operation = 'replace';
+        }
+      }
+
+      // Push an edit to update the modified time of the object
+      const timestamp = new Date().toISOString();
+      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      input.push(update);
+      
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Software-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Software",
         input,
         softwarePredicateMap
       );
-      await dataSources.Stardog.edit({
-        dbName, 
-        sparqlQuery: query, 
-        queryId: "Update Software Asset"
-      });
+      if (query != null) {
+        await dataSources.Stardog.edit({
+          dbName, 
+          sparqlQuery: query, 
+          queryId: "Update Software Asset"
+        });  
+      }
+
+      // retrieve the updated contents
       const select = selectSoftwareQuery(id, selectMap.getNode("editSoftwareAsset"));
       let result;
       try {

@@ -380,12 +380,14 @@ class TasksEntities extends Component {
           handleTaskCreation={this.handleTaskCreation.bind(this)}
           history={this.props.history}
         />
-        <TaskEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          taskId={this.state.selectedTaskId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedTaskId && (
+          <TaskEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            taskId={this.state.selectedTaskId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

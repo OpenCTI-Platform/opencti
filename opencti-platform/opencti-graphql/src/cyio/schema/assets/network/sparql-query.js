@@ -154,6 +154,7 @@ export function getSelectSparqlQuery(type, select, id, args, ) {
   // console.log(`[INFO] Query = ${sparqlQuery}`)
   return sparqlQuery ;
 }
+
 export const insertQuery = (propValues) => {
   const id_material = {
     ...(propValues.network_name && { "network_name": propValues.network_name}),
@@ -274,6 +275,7 @@ export const selectNetworkByIriQuery = (iri, select) => {
 export const selectAllNetworks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('network_id')) select.push('network_id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

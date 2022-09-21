@@ -374,12 +374,14 @@ class ResponsiblePartiesEntities extends Component {
           history={this.props.history}
           me={me}
         />
-        <NoteEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          noteId={this.state.selectedNoteId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {this.state.selectedNoteId && (
+          <NoteEntityEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            noteId={this.state.selectedNoteId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }
