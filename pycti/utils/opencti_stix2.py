@@ -1020,7 +1020,7 @@ class OpenCTIStix2:
     # endregion
 
     # region export
-    def generate_export(self, entity: Dict) -> Dict:
+    def generate_export(self, entity: Dict, no_custom_attributes: bool = False) -> Dict:
         # Handle model deviation
         # Identities
         if IdentityTypes.has_value(entity["entity_type"]):
@@ -1028,7 +1028,8 @@ class OpenCTIStix2:
 
         # Locations
         if LocationTypes.has_value(entity["entity_type"]):
-            entity["x_opencti_location_type"] = entity["entity_type"]
+            if not not no_custom_attributes:
+                entity["x_opencti_location_type"] = entity["entity_type"]
             if entity["entity_type"] == "City":
                 entity["city"] = entity["name"]
             elif entity["entity_type"] == "Country":
@@ -1041,9 +1042,13 @@ class OpenCTIStix2:
         if entity["entity_type"] == "StixFile":
             entity["entity_type"] = "File"
 
-        # Indicators
-        if "pattern" in entity and "hostname" in entity["pattern"]:
-            entity["pattern"] = entity["pattern"].replace("hostname", "domain-name")
+        # Dates
+        if (
+            "valid_from" in entity
+            and "valid_until" in entity
+            and entity["valid_from"] == entity["valid_until"]
+        ):
+            del entity["valid_from"]
 
         # Flatten
         if "objectLabel" in entity and len(entity["objectLabel"]) > 0:
@@ -1053,7 +1058,11 @@ class OpenCTIStix2:
         if "objectLabel" in entity:
             del entity["objectLabel"]
             del entity["objectLabelIds"]
-        if "killChainPhases" in entity and len(entity["killChainPhases"]) > 0:
+        if (
+            not no_custom_attributes
+            and "killChainPhases" in entity
+            and len(entity["killChainPhases"]) > 0
+        ):
             entity["kill_chain_phases"] = []
             for object_kill_chain_phase in entity["killChainPhases"]:
                 kill_chain_phase = {
@@ -1065,7 +1074,11 @@ class OpenCTIStix2:
         if "killChainPhases" in entity:
             del entity["killChainPhases"]
             del entity["killChainPhasesIds"]
-        if "externalReferences" in entity and len(entity["externalReferences"]) > 0:
+        if (
+            not no_custom_attributes
+            and "externalReferences" in entity
+            and len(entity["externalReferences"]) > 0
+        ):
             entity["external_references"] = []
             for entity_external_reference in entity["externalReferences"]:
                 external_reference = dict()
@@ -1120,7 +1133,8 @@ class OpenCTIStix2:
                 entity["hashes"][hash["algorithm"]] = hash["hash"]
 
         # Final
-        entity["x_opencti_id"] = entity["id"]
+        if not no_custom_attributes:
+            entity["x_opencti_id"] = entity["id"]
         entity["id"] = entity["standard_id"]
         entity["type"] = entity["entity_type"].lower()
         del entity["standard_id"]
@@ -1178,7 +1192,7 @@ class OpenCTIStix2:
             if "external_references" in entity:
                 del entity["external_references"]
             for key in entity_copy.keys():
-                if key.startswith("x_opencti_"):
+                if key.startswith("x_"):
                     del entity[key]
         # ObjectMarkingRefs
         if (
@@ -1623,7 +1637,7 @@ class OpenCTIStix2:
             self.opencti.log("error", "Cannot export entity (not found)")
             return bundle
         stix_objects = self.prepare_export(
-            self.generate_export(entity),
+            self.generate_export(entity, no_custom_attributes),
             mode,
             max_marking_definition_entity,
             no_custom_attributes,
