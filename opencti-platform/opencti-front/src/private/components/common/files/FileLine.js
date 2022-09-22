@@ -20,7 +20,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Link } from 'react-router-dom';
 import {
-  APP_BASE_PATH,
+  SERVER_URL,
   commitMutation,
   MESSAGING$,
 } from '../../../../relay/environment';
@@ -172,7 +172,7 @@ class FileLineComponent extends Component {
                 <span>
                   <IconButton
                     disabled={isProgress}
-                    href={`${APP_BASE_PATH}/storage/get/${file.id}`}
+                    href={`${SERVER_URL}/storage/get/${file.id}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
                   >

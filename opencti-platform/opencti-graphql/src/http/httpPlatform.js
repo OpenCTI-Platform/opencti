@@ -116,7 +116,7 @@ const createApp = async () => {
   //     res.attachment(file);
   //     stream.pipe(res);
   //   } catch (e) {
-  //     setCookieError(res, e?.message);
+  //   CookieError(res, e?.message);
   //     next(e);
   //   }
   // });
