@@ -367,7 +367,14 @@ class ListenStream(threading.Thread):
             # Computing args, from is always set
             live_stream_args = "?from=" + start_from
             # In case no recover is explicitely set
-            if recover_until not in ["no", "none", "No", "None", "false", "False"]:
+            if recover_until is not False and recover_until not in [
+                "no",
+                "none",
+                "No",
+                "None",
+                "false",
+                "False",
+            ]:
                 live_stream_args = live_stream_args + "&recover=" + recover_until
             live_stream_url = self.url + live_stream_args
             listen_delete = str(self.listen_delete).lower()
