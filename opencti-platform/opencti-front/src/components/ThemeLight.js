@@ -1,24 +1,25 @@
 export default (logo = null, primary = null, secondary = null) => ({
   fontFamily: 'Roboto, sans-serif',
-  logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
+  logo: logo || `${window.BASE_PATH}/static/DarkLight_Logo_White.png`,
+  waterMark: `${window.BASE_PATH}/static/CYIO_Lock_Up_White.png`,
   palette: {
     type: 'light',
     text: { secondary: 'rgba(0, 0, 0, 0.5)' },
-    primary: { main: primary || '#507bc8' },
-    secondary: { main: secondary || '#d84315' },
-    header: { background: primary || '#507bc8', text: '#ffffff' },
+    primary: { main: primary || '#49B8FC' },
+    secondary: { main: secondary || '#EFB740' },
+    header: { background: primary || '#FFFFFF', text: '#49B8FC' },
     navAlt: {
       background: '#ffffff',
-      backgroundHeader: primary || '#507bc8',
+      backgroundHeader: primary || '#49B8FC',
       backgroundHeaderText: '#ffffff',
     },
     navBottom: { background: '#ffffff' },
     background: {
-      paper: '#ffffff',
+      paper: '#FFFFFF',
       paperLight: '#f5f5f5',
-      nav: '#ffffff',
+      nav: '#CCCECF',
       navLight: '#ffffff',
-      default: '#f5f5f5',
+      default: '#FFFFFF',
       chip: 'rgba(80, 123, 200, 0.6)',
       line: 'rgba(80, 123, 200, 0.05)',
     },
@@ -35,7 +36,7 @@ export default (logo = null, primary = null, secondary = null) => ({
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#507bc8',
+      color: primary || '#49B8FC',
       fontWeight: 400,
       fontSize: 22,
     },
@@ -49,7 +50,7 @@ export default (logo = null, primary = null, secondary = null) => ({
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#507bc8',
+      color: primary || '#49B8FC',
       fontWeight: 400,
       fontSize: 13,
     },
@@ -73,6 +74,23 @@ export default (logo = null, primary = null, secondary = null) => ({
     },
   },
   overrides: {
+    MuiButton: {
+      outlined: {
+        color: '#06102D80',
+      },
+      text: {
+        backgroundColor: '#06102D80',
+        '&:hover': {
+          backgroundColor: '#CCCECF',
+        },
+        '.MuiButton-label': {
+          color: '#ffffff',
+          '&:hover': {
+            color: '#06102D80',
+          },
+        },
+      },
+    },
     MuiCssBaseline: {
       '@global': {
         '*': {
@@ -93,7 +111,7 @@ export default (logo = null, primary = null, secondary = null) => ({
           WebkitFontSmoothing: 'auto',
         },
         a: {
-          color: primary || '#507bc8',
+          color: primary || '#49B8FC',
         },
         'input:-webkit-autofill': {
           '-webkit-animation': 'autofill 0s forwards',
@@ -148,11 +166,11 @@ export default (logo = null, primary = null, secondary = null) => ({
         },
         '.react_time_range__track': {
           backgroundColor: 'rgba(80, 123, 200, 0.1) !important',
-          borderLeft: '1px solid #507bc8 !important',
-          borderRight: '1px solid #507bc8 !important',
+          borderLeft: '1px solid #49B8FC !important',
+          borderRight: '1px solid #49B8FC!important',
         },
         '.react_time_range__handle_marker': {
-          backgroundColor: '#507bc8 !important',
+          backgroundColor: '#49B8FC !important',
         },
       },
     },

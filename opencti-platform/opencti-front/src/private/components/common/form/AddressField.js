@@ -2,8 +2,8 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
-import { compose, propOr, map } from 'ramda';
+import { Field } from 'formik';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Delete from '@material-ui/icons/Delete';
@@ -112,7 +112,7 @@ class AddressField extends Component {
             </Tooltip>
           </div>
           <IconButton size='small' onClick={() => this.setState({ open: true })}>
-            <AddIcon fontSize='small'/>
+            <Edit fontSize='small' />
           </IconButton>
         </div>
         <Field
