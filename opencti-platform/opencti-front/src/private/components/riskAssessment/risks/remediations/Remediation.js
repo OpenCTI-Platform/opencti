@@ -22,7 +22,7 @@ import RemediationCreation from './RemediationCreation';
 
 const styles = () => ({
   container: {
-    margin: 0,
+    margin: '0 0 30px 0',
   },
   gridContainer: {
     marginBottom: 20,
@@ -115,7 +115,7 @@ class RemediationComponent extends Component {
             container={true}
             spacing={3}
             classes={{ container: classes.gridContainer }}
-            style={{ marginTop: 50 }}
+            style={{ marginTop: 25 }}
           >
             <Grid item={true} xs={6}>
               <CyioCoreObjectExternalReferences

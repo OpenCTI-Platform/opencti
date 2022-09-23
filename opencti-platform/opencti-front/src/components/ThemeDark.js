@@ -6,7 +6,7 @@ export default (logo = null, primary = null, secondary = null) => ({
     type: 'dark',
     text: { secondary: 'rgba(255, 255, 255, 0.5)' },
     primary: { main: primary || '#00bcd4' },
-    secondary: { main: secondary || '#49B8FC' },
+    secondary: { main: secondary || '#E28120' },
     header: { background: '#06102D', text: '#ffffff' },
     navAlt: {
       background: '#075AD3',

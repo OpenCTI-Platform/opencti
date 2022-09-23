@@ -40,7 +40,7 @@ import { dateFormatRegex } from '../../../../utils/Network';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '0 10px 0 20px',
+    margin: '0 10px 0 10px',
   },
   filtersDialog: {
     margin: '0 0 20px 0',

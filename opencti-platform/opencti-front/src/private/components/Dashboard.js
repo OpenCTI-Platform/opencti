@@ -53,7 +53,7 @@ import ImportFreshdeskScript from '../../utils/freshdesk';
 
 const styles = (theme) => ({
   root: {
-    flexGrow: 1,
+    margin: '0 0 1rem 0',
   },
   card: {
     width: '100%',
@@ -357,7 +357,7 @@ class Dashboard extends Component {
     } = this.props;
     ImportFreshdeskScript();
     return (
-      <div >
+      <div className={classes.root}>
         <Security
           needs={[KNOWLEDGE]}
           placeholder={t(
