@@ -6,8 +6,8 @@
   --ck-font-size-base: 14px !important;
 
   /* Helper variables to avoid duplication in the colors. */
-  --ck-custom-background: #001e3c !important;
-  --ck-custom-foreground: #01478dff !important;
+  --ck-custom-background: #f3f6f9 !important;
+  --ck-custom-foreground: #d3eaff !important;
   --ck-custom-border: #b2b2b2 !important;
   --ck-custom-white: hsl(0, 0%, 100%) !important;
 
@@ -15,23 +15,23 @@
 
   --ck-color-base-foreground: var(--ck-custom-background) !important;
   --ck-color-focus-border: #00b1ff !important;
-  --ck-color-text: hsl(0, 0%, 98%) !important;
+  --ck-color-text: #151515 !important;
   --ck-color-shadow-drop: transparent !important;
   --ck-color-shadow-inner: transparent !important;
 
   /* -- Overrides the default .ck-button class colors. ---------------------------------------- */
 
   --ck-color-button-default-background: var(--ck-custom-background) !important;
-  --ck-color-button-default-hover-background: #01478dff !important;
-  --ck-color-button-default-active-background: #01478dff !important;
+  --ck-color-button-default-hover-background: #b2b2b2 !important;
+  --ck-color-button-default-active-background: #b2b2b2 !important;
   --ck-color-button-default-active-shadow: transparent !important;
   --ck-color-button-default-disabled-background: var(
     --ck-custom-background
   ) !important;
 
   --ck-color-button-on-background: var(--ck-custom-foreground) !important;
-  --ck-color-button-on-hover-background: #01478dff !important;
-  --ck-color-button-on-active-background: #01478dff !important;
+  --ck-color-button-on-hover-background: #b2b2b2 !important;
+  --ck-color-button-on-active-background: #b2b2b2 !important;
   --ck-color-button-on-active-shadow: transparent !important;
   --ck-color-button-on-disabled-background: var(
     --ck-custom-foreground
