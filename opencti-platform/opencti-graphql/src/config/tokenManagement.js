@@ -2,6 +2,7 @@ import qs from 'qs';
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
 import { logApp } from './conf';
+import {AuthenticationFailure} from "./errors";
 
 let oidcRefreshAxios = null;
 let oidcIssuer = null;
@@ -35,7 +36,7 @@ export const oidcRefresh = async (refreshToken) => {
         data: e.response.data
       }
     );
-    return null;
+    throw AuthenticationFailure(e.response.data.error_description, e.response.data);
   }
 };
 
@@ -57,8 +58,7 @@ export const configureOidcRefresh = (config) => {
 
 export const tokenExpired = (token) => {
   const decoded = jwtDecode(token);
-  const expires = decoded.exp;
-  const nowTime = new Date();
-  const epochSec = Math.round(nowTime.getTime() / 1000) + nowTime.getTimezoneOffset() * 60;
-  return epochSec < expires + 60;
+  const expires = (decoded.exp - 60) * 1000;
+  const epochSec = Date.now();
+  return epochSec >= expires;
 };
