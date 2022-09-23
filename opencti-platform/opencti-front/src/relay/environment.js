@@ -78,6 +78,7 @@ const network = new RelayNetworkLayer(
   [
     urlMiddleware({
       url: `${SERVER_URL}/graphql`,
+      credentials: 'include',
     }),
     uploadMiddleware(),
   ],

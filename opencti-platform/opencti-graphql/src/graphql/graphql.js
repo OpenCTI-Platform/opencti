@@ -154,7 +154,10 @@ const createApolloServer = (app) => {
   });
   server.applyMiddleware({
     app,
-    cors: true,
+    cors: {
+      origin: 'http://localhost:8778',
+      credentials: true
+    },
     bodyParserConfig: {
       limit: requestSizeLimit,
     },

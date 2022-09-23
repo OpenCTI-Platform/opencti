@@ -1,6 +1,5 @@
 
 const express = require('express');
-const cors = require('cors');
 const { readFileSync } = require('fs');
 const helmet = require('helmet');
 const path = require('path');
@@ -14,7 +13,6 @@ const scriptSrc = [
 ];
 
 const securityMiddleware = helmet({
-  expectCt: { enforce: true, maxAge: 30 },
   referrerPolicy: { policy: 'unsafe-url' },
   contentSecurityPolicy: {
     directives: {
@@ -36,7 +34,6 @@ const securityMiddleware = helmet({
 });
 
 app.use(express.static(path.join(__dirname, 'build')));
-app.use(cors())
 
 app.get('/*', (req, res) => {
   const data = readFileSync(path.join(__dirname,`build/index.html`), 'utf8');
