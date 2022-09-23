@@ -28,8 +28,8 @@ Transition.displayName = 'TransitionSlide';
 const styles = (theme) => ({
   header: {
     margin: '0 0 20px 0',
-    padding: '24px',
-    height: '64px',
+    padding: '24px 12px 30px 12px',
+    height: '70px',
     backgroundColor: theme.palette.background.paper,
   },
   iconButton: {
