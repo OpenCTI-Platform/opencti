@@ -180,7 +180,9 @@ class StixDomainObjectContentComponent extends Component {
       if (currentFileType === 'application/pdf') {
         return this.setState({ isLoading: false });
       }
-      const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
+      const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
+        currentFileId,
+      )}`;
       return Axios.get(url).then((res) => {
         const content = res.data;
         return this.setState({
@@ -307,22 +309,35 @@ class StixDomainObjectContentComponent extends Component {
     Promise.all(
       R.pipe(
         R.toPairs,
-        R.map((n) => Axios.get(n[1], { responseType: 'arraybuffer' })
-          .then((response) => {
-            if (
-              ['image/jpeg', 'image/png'].includes(
-                response.headers['content-type'],
-              )
-            ) {
-              return {
-                ref: n[0],
-                mime: response.headers['content-type'],
-                data: Buffer.from(response.data, 'binary').toString('base64'),
-              };
-            }
-            return null;
-          })
-          .catch(() => null)),
+        R.map((n) => {
+          if (n[1].includes('data:')) {
+            const split = n[1].split(',');
+            const mime = split[0].split(';')[0].split(':')[1];
+            const data = split[1];
+            return {
+              ref: n[0],
+              mime,
+              data,
+            };
+          }
+          return Axios.get(n[1], { responseType: 'arraybuffer' })
+            .then((response) => {
+              if (
+                ['image/jpeg', 'image/png'].includes(
+                  response.headers['content-type'],
+                )
+              ) {
+                return {
+                  ref: n[0],
+                  mime: response.headers['content-type'],
+                  data: Buffer.from(response.data, 'binary').toString('base64'),
+                };
+              }
+              return null;
+            })
+            .catch(() => null);
+        }),
+        R.filter((n) => n !== null),
       )(ret.images),
     ).then((result) => {
       const imagesIndex = R.indexBy(R.prop('ref'), result);
@@ -371,8 +386,10 @@ class StixDomainObjectContentComponent extends Component {
       markdownSelectedTab,
     } = this.state;
     const files = getFiles(stixDomainObject);
-    const currentUrl = currentFileId && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
-    const currentGetUrl = currentFileId && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
+    const currentUrl = currentFileId
+      && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
+    const currentGetUrl = currentFileId
+      && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
@@ -428,6 +445,9 @@ class StixDomainObjectContentComponent extends Component {
                 config={{
                   width: '100%',
                   language: 'en',
+                  image: {
+                    resizeUnit: 'px',
+                  },
                 }}
                 data={currentContent}
                 onChange={(event, editor) => {
