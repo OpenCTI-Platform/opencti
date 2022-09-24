@@ -107,7 +107,7 @@ class AboutModal extends Component {
             onClick={this.handleAboutButton.bind(this)}
             aria-haspopup='true'
           >
-            <Info fontSize="default" />
+            <Info fontSize="medium" />
           </IconButton>
         </Tooltip>
         <Dialog
