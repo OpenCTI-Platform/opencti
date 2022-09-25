@@ -2,7 +2,11 @@ import React, { useContext, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
-import { createTheme, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
+import {
+  createTheme,
+  StyledEngineProvider,
+  ThemeProvider,
+} from '@mui/material/styles';
 import { UserContext } from '../utils/Security';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
@@ -17,11 +21,6 @@ const AppThemeProvider = (props) => {
     ['settings', 'platform_title'],
     props,
   );
-  useEffect(() => {
-    document.title = platformTitle;
-    document.getElementById('favicon').href = R.pathOr(fileUri(favImage), ['settings', 'platform_favicon'], props);
-    document.getElementById('manifest').href = `${APP_BASE_PATH}/static/ext/manifest.json`;
-  }, []);
   const platformThemeSettings = R.pathOr(
     null,
     ['settings', 'platform_theme'],
@@ -103,6 +102,18 @@ const AppThemeProvider = (props) => {
     ['settings', 'platform_theme_light_accent'],
     props,
   );
+  useEffect(() => {
+    document.title = platformTitle;
+    document.body.setAttribute('data-theme', theme);
+    document.getElementById('favicon').href = R.pathOr(
+      fileUri(favImage),
+      ['settings', 'platform_favicon'],
+      props,
+    );
+    document.getElementById(
+      'manifest',
+    ).href = `${APP_BASE_PATH}/static/ext/manifest.json`;
+  }, []);
   let muiTheme = createTheme(
     themeDark(
       platformThemeDarkLogo,

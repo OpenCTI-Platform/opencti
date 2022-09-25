@@ -5,6 +5,8 @@ import ReactDOM from 'react-dom';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import './static/css/index.css';
 import './static/css/leaflet.css';
+import './static/css/CKEditorDark.css';
+import './static/css/CKEditorLight.css';
 import 'react-grid-layout/css/styles.css';
 import 'react-mde/lib/styles/css/react-mde-all.css';
 import * as serviceWorker from './config/serviceWorker';

@@ -1,4 +1,4 @@
-:root {
+html[data-theme="light"],body[data-theme="light"] {
   /* Overrides the border radius setting in the theme. */
   --ck-border-radius: 4px !important;
 

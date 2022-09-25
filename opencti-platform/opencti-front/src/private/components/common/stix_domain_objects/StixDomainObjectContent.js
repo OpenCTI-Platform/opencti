@@ -194,16 +194,6 @@ class StixDomainObjectContentComponent extends Component {
     });
   }
 
-  componentWillMount() {
-    if (this.props.theme.palette.type === 'dark') {
-      // eslint-disable-next-line global-require
-      require('../../../../static/css/CKEditorDark.css');
-    } else {
-      // eslint-disable-next-line global-require
-      require('../../../../static/css/CKEditorLight.css');
-    }
-  }
-
   componentDidMount() {
     this.subscription = SAVE$.subscribe({
       next: () => this.saveFile(),
