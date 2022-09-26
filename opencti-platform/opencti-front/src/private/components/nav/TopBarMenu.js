@@ -113,7 +113,7 @@ const styles = (theme) => ({
   menuContainer: {
     float: 'left',
     width: '100%',
-    marginBottom: '20px',
+    // marginBottom: '20px',
     marginLeft: -20,
     paddingLeft: '20px',
     position: 'relative',

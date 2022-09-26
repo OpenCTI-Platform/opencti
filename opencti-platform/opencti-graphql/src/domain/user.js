@@ -518,7 +518,7 @@ export const login = async (email, password) => {
 
 export const logout = async (user, req, res) => {
   await delUserContext(user);
-  await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, { access_token: null });
+  await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, { access_token: null, refresh_token: null });
   res.clearCookie(OPENCTI_SESSION);
   req.session.destroy();
   logAudit.info(user, LOGOUT_ACTION);
@@ -573,7 +573,16 @@ const resolveUserByToken = async (tokenValue) => {
 };
 
 export const userRenewToken = async (user, userId) => {
-  const patch = { api_token: uuid() };
+  let patch;
+  if(user.access_token && user.refresh_token) {
+    patch = await oidcRefresh(user.refresh_token)
+    patch = {
+      access_token: patch.accessToken,
+      refresh_token: patch.refreshToken,
+    }
+  } else {
+    patch = { api_token: uuid() };
+  }
   await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return loadById(user, userId, ENTITY_TYPE_USER);
 };
@@ -596,9 +605,6 @@ const authenticateUserOIDC = async (user) => {
 export const authenticateUser = async (req, user, provider) => {
   // Build the user session with only required fields
   let sessionUser = await buildCompleteUser(user);
-  if (['oic', 'Bearer'].includes(provider)) {
-    sessionUser = await authenticateUserOIDC(sessionUser);
-  }
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
   req.session.user = sessionUser;
   return sessionUser;
@@ -607,10 +613,7 @@ export const authenticateUser = async (req, user, provider) => {
 export const authenticateUserFromRequest = async (req) => {
   const auth = req?.session?.user;
   if (auth) {
-    // User already identified, check token
-    if (auth.access_token) {
       return authenticateUser(req, auth, 'Bearer');
-    }
   }
   // If user not identified, try to extract token from bearer
   let loginProvider = 'Bearer';

@@ -148,7 +148,7 @@ class ExportPoam extends Component {
             onClick={this.handleOscalModalOpen.bind((this))}
             aria-haspopup='true'
           >
-            <PublishIcon fontSize="default" />
+            <PublishIcon fontSize="medium" />
           </IconButton>
         </Tooltip>
 
@@ -167,7 +167,7 @@ class ExportPoam extends Component {
           onClose={this.handleOscalModalClose.bind(this)}
         >
           <div style={{ display: 'flex', alignItems: 'center', padding: '10px 13px' }}>
-            <PublishIcon fontSize="default" />
+            <PublishIcon fontSize="medium" />
             <Typography style={{ marginLeft: '10px' }}>
               {t('Data Export')}
             </Typography>

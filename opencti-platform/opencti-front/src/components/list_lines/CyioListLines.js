@@ -67,7 +67,7 @@ const styles = (theme) => ({
     padding: '0 310px 50px 0',
   },
   toolBar: {
-    margin: '0 0 20px 0',
+    margin: '0 0 30px 0',
     height: '100%',
     display: 'flex',
     '@media (max-width: 1400px)': {
@@ -99,14 +99,14 @@ const styles = (theme) => ({
     width: '295px',
     minWidth: '285px',
     marginTop: '5px',
-    padding: '14px 18px 12px 18px',
+    padding: '14px 10px 12px 18px',
   },
   selectedViews: {
     width: '430px',
     minWidth: '415px',
     float: 'right',
     marginTop: '5px',
-    padding: '14px 18px 12px 18px',
+    padding: '14px 10px 12px 18px',
   },
   iconButton: {
     float: 'left',
@@ -115,7 +115,7 @@ const styles = (theme) => ({
     padding: '7px',
   },
   linesContainer: {
-    marginTop: '10px',
+    marginTop: '-20px',
     padding: '0px 16px 16px 16px',
   },
   linesContainerBottomNav: {

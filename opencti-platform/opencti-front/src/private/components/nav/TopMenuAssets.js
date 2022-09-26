@@ -10,6 +10,9 @@ import networkIcon from '../../../resources/images/assets/networkIcon.svg';
 import softwareIcon from '../../../resources/images/assets/softwareIcon.svg';
 
 const styles = (theme) => ({
+  root: {
+    marginTop: -7,
+  },
   button: {
     marginRight: theme.spacing(1),
     padding: '4px 25px',
@@ -17,6 +20,7 @@ const styles = (theme) => ({
     minWidth: 20,
     textTransform: 'none',
     borderRadius: '8px 8px 0px 0px',
+    color: '#fff',
   },
   icon: {
     marginRight: theme.spacing(1),
@@ -27,7 +31,7 @@ class TopMenuAssets extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
-      <div>
+      <div className={classes.root}>
         <Button
           component={Link}
           to="/defender HQ/assets/devices"

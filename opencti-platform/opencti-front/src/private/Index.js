@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     minWidth: 0,
-    margin: '1rem 1rem 0 5.2rem',
+    margin: '1rem 1rem 0 5.5rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -46,12 +46,11 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-const Index = (me) => {
+const Index = ({ me }) => {
   const classes = useStyles();
   const [drawer, setDrawer] = useState(false);
   const [clientId, setClientId] = useState(localStorage.getItem('client_id'));
   const clearStorage = () => {
-    localStorage.removeItem('token');
     localStorage.removeItem('client_id');
   };
 
@@ -71,14 +70,6 @@ const Index = (me) => {
           clearStorage();
         }
       });
-    }
-    const jwtToken = JSON.parse(atob(me.me.access_token.split('.')[1]));
-    const expiration = ((jwtToken.exp - 60) * 1000) - Date.now();
-    if (expiration >= 0) {
-      setInterval(() => {
-        localStorage.removeItem('token');
-        me.retry();
-      }, expiration);
     }
   }, [clientId]);
   return (
