@@ -40,7 +40,7 @@ import { dateFormatRegex } from '../../../../utils/Network';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '0 10px 0 20px',
+    margin: '0 10px 0 10px',
   },
   filtersDialog: {
     margin: '0 0 20px 0',
@@ -1143,7 +1143,7 @@ class Filters extends Component {
             disabled={disabled}
           // style={{ color: theme.palette.header.text }}
           >
-            <ToyBrickSearchOutline fontSize="default" />
+            <ToyBrickSearchOutline fontSize="medium" />
           </IconButton>
         </Tooltip>
         <Dialog

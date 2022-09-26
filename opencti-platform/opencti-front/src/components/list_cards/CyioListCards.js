@@ -51,7 +51,7 @@ const styles = (theme) => ({
     margin: '0 300px 0 -10px',
   },
   toolBar: {
-    margin: '0 0 20px 0',
+    margin: '0 0 30px 0',
     height: '100%',
     display: 'flex',
     '@media (max-width: 1400px)': {
@@ -84,17 +84,17 @@ const styles = (theme) => ({
     minWidth: '280px',
     float: 'right',
     marginTop: '5px',
-    padding: '14px 18px 12px 18px',
+    padding: '14px 10px 12px 18px',
   },
   selectedViews: {
     width: '430px',
     minWidth: '415px',
     float: 'right',
     marginTop: '5px',
-    padding: '14px 18px 12px 18px',
+    padding: '14px 10px 12px 18px',
   },
   cardsContainer: {
-    marginTop: 10,
+    marginTop: -13,
     paddingTop: '0px 16px 16px 16px',
   },
   icon: {

@@ -21,6 +21,10 @@ const productResolvers = {
           }
           if (value === null || value.length === 0) {
             delete args[key];
+            continue;
+          }
+          if (!Array.isArray(args[key]) && value.trim().length === 0) {
+            delete args[key];
           }
         }
       }
@@ -56,6 +60,10 @@ const productResolvers = {
       if ('search' in args) {
           // too many products to return, so ask user to refine the search
         if (totalProductCount > 1000) throw new CyioError(`Your search for '${args.search}' returned ${totalProductCount} results. Please narrow your query.`);
+      }
+
+      if (!('search' in args) && !('first' in args)) {
+        if (totalProductCount > 10000) throw new CyioError(`Your query returned ${totalProductCount} results. Please use 'search' or 'first' to limit your query.`);
       }
 
       // Select the list of products
