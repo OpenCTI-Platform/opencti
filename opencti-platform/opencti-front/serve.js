@@ -2,18 +2,28 @@ const express = require('express');
 const { readFileSync } = require('fs');
 const helmet = require('helmet');
 const path = require('path');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
+const https = require('https');
 
 dotenv.config();
 
 if(process.env.SERVER_HOST === undefined) throw new Error('SERVER_URL env not set.');
 if(process.env.API_URL === undefined) throw new Error('API_URL env not set.');
+if(process.env.SSL_CRT_FILE === undefined) throw new Error("SSL_CRT_FILE env not set.")
+if(process.env.SSL_KEY_FILE === undefined) throw new Error("SSL_KEY_FILE env not set.")
 
 const serverUrl = new URL(process.env.SERVER_HOST);
 const apiUrl = new URL(process.env.API_URL);
+const port = parseInt(process.env.PORT || '8443');
+
+const cert = readFileSync(process.env.SSL_CRT_FILE);
+const key = readFileSync(process.env.SSL_KEY_FILE);
+
 const freshworks = 'https://widget.freshworks.com/';
 
 const app = express();
+
+const httpsServer = https.createServer({key, cert, passphrase: process.env.SSL_KEY_PASS || null}, app);
 
 const scriptSrc = [
   "'self'",
@@ -26,7 +36,7 @@ const styleSrc = [
   "'unsafe-inline'",
   'https://fonts.googleapis.com/',
   freshworks,
-]
+];
 
 const connectSrc = [
   "'self'",
@@ -34,7 +44,7 @@ const connectSrc = [
   serverUrl.origin,
   apiUrl.origin,
   freshworks
-]
+];
 
 const securityMiddleware = helmet({
   referrerPolicy: { policy: 'unsafe-url' },
@@ -65,4 +75,4 @@ app.get('/*', (req, res) => {
   return res.send(withOptionValued);
 })
 
-app.listen(8778,() => console.log('listening...'))
+httpsServer.listen(port, () => console.log(`Server running on port ${port}...`));
