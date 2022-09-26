@@ -10,7 +10,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { parse } from '../../../../utils/Time';
-import SearchOutlined from '@material-ui/icons/SearchOutlined';
+import Add from '@material-ui/icons/Add';
 import Dialog from '@material-ui/core/Dialog';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -339,9 +339,10 @@ class SoftwareCreation extends Component {
                     open={this.state.openAutocomplete}
                     onClose={() => this.setState({ openAutocomplete: false })}
                     size="small"
+                    loading={selectedProduct.name || false}
                     className={classes.autocomplete}
                     noOptionsText={t('No available options')}
-                    popupIcon={<SearchOutlined onClick={this.handleSearchProducts.bind(this)} />}
+                    popupIcon={<Add onClick={this.handleSearchProducts.bind(this)} />}
                     options={this.state.products}
                     getOptionLabel={(option) => option.label ? option.label : option}
                     onInputChange={this.searchProducts.bind(this)}
