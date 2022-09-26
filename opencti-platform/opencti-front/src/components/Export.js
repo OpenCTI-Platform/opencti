@@ -256,7 +256,7 @@ class Export extends Component {
             classes={{ root: classes.button }}
             onClick={this.handleClickMenuOpen.bind(this)}
           >
-            <NoteAddIcon fontSize="default" />
+            <NoteAddIcon fontSize="medium" />
           </IconButton>
         </Tooltip>
         <Menu
@@ -267,7 +267,7 @@ class Export extends Component {
           onClose={this.handleClickMenuClose.bind(this)}
         >
           <div style={{ display: 'flex', alignItems: 'center', padding: '10px 13px' }}>
-            <NoteAddIcon fontSize="default" />
+            <NoteAddIcon fontSize="medium" />
             <Typography style={{ marginLeft: '10px' }}>
               {t('Generate Report')}
             </Typography>

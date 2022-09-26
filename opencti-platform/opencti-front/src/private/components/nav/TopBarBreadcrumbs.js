@@ -249,7 +249,7 @@ const TopBarBreadcrumbs = ({
                   }
                   classes={{ root: classes.button }}
                 >
-                  <InsertChartOutlined fontSize="default" />
+                  <InsertChartOutlined fontSize="medium" />
                 </IconButton>
               </Tooltip>
               <Tooltip title={t('Investigations')}>
@@ -272,7 +272,7 @@ const TopBarBreadcrumbs = ({
                   }
                   classes={{ root: classes.button }}
                 >
-                  <ExploreOutlined fontSize="default" />
+                  <ExploreOutlined fontSize="medium" />
                 </IconButton>
               </Tooltip>
             </Security>
@@ -284,7 +284,7 @@ const TopBarBreadcrumbs = ({
                     to='/dashboard'
                     classes={{ root: classes.button }}
                   >
-                    <DashboardIcon fontSize="default" />
+                    <DashboardIcon fontSize="medium" />
                   </IconButton>
                 </Tooltip>
               </Grid>
@@ -301,7 +301,7 @@ const TopBarBreadcrumbs = ({
                     component={Link}
                     classes={{ root: classes.button }}
                   >
-                    <FindInPageIcon fontSize="default" />
+                    <FindInPageIcon fontSize="medium" />
                   </IconButton>
                 </Tooltip>
               </Grid>
@@ -320,7 +320,7 @@ const TopBarBreadcrumbs = ({
                   onClick={handleOpenMenu}
                   data-cy='menu'
                 >
-                  <AccountCircleOutlined fontSize="default" />
+                  <AccountCircleOutlined fontSize="medium" />
                 </IconButton>
               </Grid>
             </Grid>
