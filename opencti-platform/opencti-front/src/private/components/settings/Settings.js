@@ -27,7 +27,7 @@ import ColorPickerField from '../../../components/ColorPickerField';
 
 const styles = (theme) => ({
   container: {
-    margin: 0,
+    margin: '0 0 1rem 0',
   },
   paper: {
     width: '100%',
