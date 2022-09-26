@@ -100,6 +100,14 @@ const visualizationTypesMapping = {
   reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA, LIST],
 };
 
+const entityList = [
+  { entity: ['global', 'asset'], name: 'Inventory Item', value: 'inventory_item' },
+  { entity: ['global', 'asset'], name: 'Components', value: 'components' },
+  { entity: ['global', 'risk'], name: 'Active Risks', value: 'active_risks' },
+  { entity: ['global', 'risk'], name: 'Accepted Risks', value: 'accepted_risks' },
+  { entity: ['asset'], name: 'All Assets', value: 'all_asset' },
+];
+
 class WidgetCreation extends Component {
   constructor(props) {
     super(props);
@@ -114,13 +122,8 @@ class WidgetCreation extends Component {
     };
   }
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
   handleClose() {
     this.setState({
-      open: false,
       stepIndex: 0,
       keyword: '',
       perspective: null,
@@ -131,11 +134,11 @@ class WidgetCreation extends Component {
   }
 
   handleSelectPerspective(perspective) {
-    this.setState({ perspective, stepIndex: perspective === 'global' ? 2 : 1 });
+    this.setState({ perspective, stepIndex: 1 });
   }
 
-  handleSelectEntity(stixDomainObject) {
-    this.setState({ selectedEntity: stixDomainObject, stepIndex: 2 });
+  handleSelectEntity(entity) {
+    this.setState({ selectedEntity: entity, stepIndex: 2 });
   }
 
   handleSelectDataType(dataType) {
@@ -807,7 +810,7 @@ class WidgetCreation extends Component {
             <Grid item={true} xs="4">
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
-                  onClick={this.handleSelectPerspective.bind(this, 'threat')}
+                  onClick={this.handleSelectPerspective.bind(this, 'asset')}
                   style={{ height: '100%' }}
                 >
                   <CardContent>
@@ -817,7 +820,7 @@ class WidgetCreation extends Component {
                       variant="h1"
                       style={{ marginTop: 20 }}
                     >
-                      {t('Threat or arsenal item')}
+                      {t('Assets')}
                     </Typography>
                     <br />
                     <Typography variant="body1">
@@ -832,7 +835,7 @@ class WidgetCreation extends Component {
             <Grid item={true} xs="4">
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
-                  onClick={this.handleSelectPerspective.bind(this, 'entity')}
+                  onClick={this.handleSelectPerspective.bind(this, 'risk')}
                   style={{ height: '100%' }}
                 >
                   <CardContent>
@@ -845,7 +848,7 @@ class WidgetCreation extends Component {
                       variant="h1"
                       style={{ marginTop: 20 }}
                     >
-                      {t('Identity or location')}
+                      {t('Risks')}
                     </Typography>
                     <br />
                     <Typography variant="body1">
@@ -862,13 +865,35 @@ class WidgetCreation extends Component {
       case 1:
         return (
           <div>
-            <SearchInput
+            {/* <SearchInput
               keyword={this.state.searchTerm}
               onSubmit={this.handleSearch.bind(this)}
               fullWidth={true}
               variant="noAnimation"
             />
-            {this.renderEntities()}
+            {this.renderEntities()} */}
+            <List>
+              {entityList
+                .filter((value) => value.entity.includes(this.state.perspective))
+                .map((entity) => (
+                  <ListItem
+                    key={entity.value}
+                    divider={true}
+                    button={true}
+                    onClick={this.handleSelectEntity.bind(
+                      this,
+                      entity.value,
+                    )}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={entity.value} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={entity.name}
+                    />
+                  </ListItem>
+                ))}
+            </List>
           </div>
         );
       case 2:
@@ -891,21 +916,14 @@ class WidgetCreation extends Component {
 
   render() {
     const { stepIndex } = this.state;
-    const { t, classes } = this.props;
+    const {
+      t, classes, open, handleWidgetCreation,
+    } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
         <Dialog
-          open={this.state.open}
+          open={open}
           TransitionComponent={Transition}
-          onClose={this.handleClose.bind(this)}
           fullWidth={true}
           maxWidth="md"
         >
@@ -949,7 +967,7 @@ class WidgetCreation extends Component {
           </DialogTitle>
           <DialogContent>{this.getStepContent(stepIndex)}</DialogContent>
           <DialogActions>
-            <Button onClick={this.handleClose.bind(this)}>{t('Cancel')}</Button>
+            <Button onClick={() => handleWidgetCreation()}>{t('Cancel')}</Button>
           </DialogActions>
         </Dialog>
       </div>
@@ -958,6 +976,8 @@ class WidgetCreation extends Component {
 }
 
 WidgetCreation.propTypes = {
+  handleWidgetCreation: PropTypes.func,
+  open: PropTypes.bool,
   onComplete: PropTypes.func,
   classes: PropTypes.object,
   theme: PropTypes.object,

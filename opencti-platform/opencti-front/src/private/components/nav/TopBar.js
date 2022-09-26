@@ -107,7 +107,7 @@ const styles = (theme) => ({
     height: '100%',
   },
   barContainer: {
-    display: 'table-cell',
+    display: 'flex',
     float: 'left',
     paddingTop: 10,
   },
@@ -288,9 +288,9 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
           )}
-          {location.pathname.includes('/dashboard/workspaces/dashboards') && (
+          {/* {location.pathname.includes('/dashboard/workspaces/dashboards') && (
             <TopMenuWorkspacesDashboards />
-          )}
+          )} */}
           {location.pathname.includes(
             '/dashboard/workspaces/investigations',
           ) && <TopMenuWorkspacesInvestigations />}
@@ -324,30 +324,30 @@ const TopBar = ({
           </div>
           <Divider className={classes.divider} orientation="vertical" />
           <div className={classes.barContainer}>
+            <Tooltip title={t('Custom dashboards')}>
+              <IconButton
+                component={Link}
+                to="/dashboard/workspaces/dashboards"
+                variant={
+                  location.pathname.includes(
+                    '/dashboard/workspaces/dashboards',
+                  )
+                    ? 'contained'
+                    : 'text'
+                }
+                color={
+                  location.pathname.includes(
+                    '/dashboard/workspaces/dashboards',
+                  )
+                    ? 'secondary'
+                    : 'inherit'
+                }
+                classes={{ root: classes.button }}
+              >
+                <InsertChartOutlined fontSize="medium" />
+              </IconButton>
+            </Tooltip>
             <Security needs={[EXPLORE]}>
-              <Tooltip title={t('Custom dashboards')}>
-                <IconButton
-                  component={Link}
-                  to="/dashboard/workspaces/dashboards"
-                  variant={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'contained'
-                      : 'text'
-                  }
-                  color={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'secondary'
-                      : 'inherit'
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  <InsertChartOutlined fontSize="medium" />
-                </IconButton>
-              </Tooltip>
               <Tooltip title={t('Investigations')}>
                 <IconButton
                   component={Link}

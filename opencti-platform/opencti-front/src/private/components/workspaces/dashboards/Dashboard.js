@@ -52,9 +52,6 @@ import ThreatVulnerabilities from './ThreatVulnerabilities';
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const styles = (theme) => ({
-  container: {
-    margin: '0 -20px 0 -20px',
-  },
   bottomNav: {
     zIndex: 1000,
     padding: '7px 0 0 205px',
@@ -76,7 +73,12 @@ const styles = (theme) => ({
 class DashboardComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { openConfig: false, currentWidget: {}, mapReload: false };
+    this.state = {
+      openConfig: false,
+      currentWidget: {},
+      mapReload: false,
+      openWidgetCreate: false,
+    };
   }
 
   saveManifest(manifest) {
@@ -96,6 +98,10 @@ class DashboardComponent extends Component {
         },
       });
     }
+  }
+
+  handleWidgetCreation() {
+    this.setState({ openWidgetCreate: !this.state.openWidgetCreate });
   }
 
   decodeManifest() {
@@ -437,12 +443,19 @@ class DashboardComponent extends Component {
   }
 
   render() {
-    const { t, classes, workspace } = this.props;
+    const {
+      t, classes, workspace, history,
+    } = this.props;
     const manifest = this.decodeManifest();
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
     return (
       <div className={classes.container} id="container">
-        <WorkspaceHeader workspace={workspace} variant="dashboard" />
+        <WorkspaceHeader
+          history={history}
+          workspace={workspace}
+          variant="dashboard"
+          handleWidgetCreation={this.handleWidgetCreation.bind(this)}
+        />
         <Drawer
           anchor="bottom"
           variant="permanent"
@@ -551,7 +564,7 @@ class DashboardComponent extends Component {
             </Grid>
           </Security>
         </Drawer>
-        <Security
+        {/* <Security
           needs={[EXPLORE_EXUPDATE]}
           placeholder={
             <ResponsiveGridLayout
@@ -592,48 +605,52 @@ class DashboardComponent extends Component {
               ))}
             </ResponsiveGridLayout>
           }
+        > */}
+        <ResponsiveGridLayout
+          className="layout"
+          margin={[20, 20]}
+          rowHeight={50}
+          breakpoints={{
+            lg: 1200,
+            md: 1200,
+            sm: 1200,
+            xs: 1200,
+            xxs: 1200,
+          }}
+          cols={{
+            lg: 18,
+            md: 18,
+            sm: 18,
+            xs: 18,
+            xxs: 18,
+          }}
+          onLayoutChange={this.onLayoutChange.bind(this)}
         >
-          <ResponsiveGridLayout
-            className="layout"
-            margin={[20, 20]}
-            rowHeight={50}
-            breakpoints={{
-              lg: 1200,
-              md: 1200,
-              sm: 1200,
-              xs: 1200,
-              xxs: 1200,
-            }}
-            cols={{
-              lg: 18,
-              md: 18,
-              sm: 18,
-              xs: 18,
-              xxs: 18,
-            }}
-            onLayoutChange={this.onLayoutChange.bind(this)}
-          >
-            {R.values(manifest.widgets).map((widget) => (
-              <Paper
-                key={widget.id}
-                data-grid={widget.layout}
-                classes={{ root: classes.paper }}
-                elevation={2}
-              >
-                <WidgetPopover
-                  onDelete={this.handleDeleteWidget.bind(this, widget.id)}
-                />
-                {widget.perspective === 'global'
-                  && this.renderGlobalVisualization(widget, manifest.config)}
-                {widget.perspective === 'threat'
-                  && this.renderThreatVisualization(widget, manifest.config)}
-                {widget.perspective === 'entity'
-                  && this.renderEntityVisualization(widget, manifest.config)}
-              </Paper>
-            ))}
-          </ResponsiveGridLayout>
-          <WidgetCreation onComplete={this.handleAddWidget.bind(this)} />
-        </Security>
+          {R.values(manifest.widgets).map((widget) => (
+            <Paper
+              key={widget.id}
+              data-grid={widget.layout}
+              classes={{ root: classes.paper }}
+              elevation={2}
+            >
+              <WidgetPopover
+                onDelete={this.handleDeleteWidget.bind(this, widget.id)}
+              />
+              {widget.perspective === 'global'
+                && this.renderGlobalVisualization(widget, manifest.config)}
+              {widget.perspective === 'threat'
+                && this.renderThreatVisualization(widget, manifest.config)}
+              {widget.perspective === 'entity'
+                && this.renderEntityVisualization(widget, manifest.config)}
+            </Paper>
+          ))}
+        </ResponsiveGridLayout>
+        <WidgetCreation
+          open={this.state.openWidgetCreate}
+          handleWidgetCreation={this.handleWidgetCreation.bind(this)}
+          onComplete={this.handleAddWidget.bind(this)}
+        />
+        {/* </Security> */}
       </div>
     );
   }

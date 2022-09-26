@@ -353,9 +353,9 @@ const TopBarMenu = ({
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
           )}
-          {location.pathname.includes('/dashboard/workspaces/dashboards') && (
+          {/* {location.pathname.includes('/dashboard/workspaces/dashboards') && (
             <TopMenuWorkspacesDashboards />
-          )}
+          )} */}
           {location.pathname.includes(
             '/dashboard/workspaces/investigations',
           ) && <TopMenuWorkspacesInvestigations />}
