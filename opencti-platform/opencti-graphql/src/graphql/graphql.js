@@ -79,7 +79,7 @@ let plugins = [
 const createApolloServer = (app) => {
   if(process.env.GRAPHQL_METRICS_ENABLED === '1') plugins.push(createPrometheusExporterPlugin({app}))
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
-
+  const allowedOrigins = nconf.get('app:cors:origins') || [];
   const cdnUrl = conf.get('app:playground_cdn_url');
 
   let schema = createSchema()
@@ -155,7 +155,7 @@ const createApolloServer = (app) => {
   server.applyMiddleware({
     app,
     cors: {
-      origin: 'http://localhost:8778',
+      origin: allowedOrigins,
       credentials: true
     },
     bodyParserConfig: {

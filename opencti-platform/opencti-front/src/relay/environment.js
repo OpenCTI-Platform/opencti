@@ -55,7 +55,7 @@ const loc = window.location;
 // eslint-disable-next-line max-len
 const serverUrl = new URL(process.env.REACT_APP_GRAPHQL_HOST ? process.env.REACT_APP_GRAPHQL_HOST : loc.host);
 export const SERVER_URL = serverUrl.origin;
-console.log(SERVER_URL);
+
 const isSecure = serverUrl.protocol === 'https:' ? 's' : '';
 const subscriptionClient = new SubscriptionClient(
   `ws${isSecure}://${serverUrl.host}/graphql`,
