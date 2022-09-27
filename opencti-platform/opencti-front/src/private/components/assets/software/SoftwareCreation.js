@@ -340,6 +340,7 @@ class SoftwareCreation extends Component {
                     onClose={() => this.setState({ openAutocomplete: false })}
                     size="small"
                     loading={selectedProduct.name || false}
+                    loadingText='Searching...'
                     className={classes.autocomplete}
                     noOptionsText={t('No available options')}
                     popupIcon={<Search onClick={this.handleSearchProducts.bind(this)} />}
