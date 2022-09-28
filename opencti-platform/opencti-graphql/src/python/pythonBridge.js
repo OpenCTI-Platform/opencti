@@ -7,7 +7,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
     return new Promise((resolve, reject) => {
       const options = {
         mode: 'text',
-        pythonPath: 'python3',
+        pythonPath: 'python',
         scriptPath,
         args,
       };

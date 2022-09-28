@@ -30,11 +30,11 @@ const tryResolveKeyPromises = async (data) => {
 const API_CALL_MESSAGE = 'API Call'; // If you touch this, you need to change the performance agent
 const perfLog = booleanConf('app:performance_logger', false);
 export default {
-  requestDidStart: /* istanbul ignore next */ () => {
+  requestDidStart: /* istanbul ignore next */ async () => {
     const start = Date.now();
     let op;
     return {
-      didResolveOperation: (context) => {
+      didResolveOperation: async (context) => {
         op = context.operationName;
       },
       willSendResponse: async (context) => {
