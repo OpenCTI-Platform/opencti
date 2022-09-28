@@ -78,6 +78,9 @@ const styles = (theme) => ({
   buttonPopover: {
     textTransform: 'capitalize',
   },
+  popupIndicator: {
+    transform: 'none',
+  },
   dialogActions: {
     justifyContent: 'flex-start',
     padding: '10px 0 20px 22px',
@@ -342,6 +345,9 @@ class SoftwareCreation extends Component {
                     loading={selectedProduct.name || false}
                     loadingText='Searching...'
                     className={classes.autocomplete}
+                    classes={{
+                      popupIndicatorOpen: classes.popupIndicator,
+                    }}
                     noOptionsText={t('No available options')}
                     popupIcon={<Search onClick={this.handleSearchProducts.bind(this)} />}
                     options={this.state.products}
