@@ -562,7 +562,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         logging.info("%s", f"Connector registered with ID: {self.connect_id}")
         self.connector_id = connector_configuration["id"]
         self.work_id = None
-        self.applicant_id = connector_configuration["connector_user"]["id"]
+        self.applicant_id = connector_configuration["connector_user_id"]
         self.connector_state = connector_configuration["connector_state"]
         self.config = connector_configuration["config"]
 

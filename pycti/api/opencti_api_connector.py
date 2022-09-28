@@ -94,9 +94,7 @@ class OpenCTIApiConnector:
                         push
                         push_exchange
                     }
-                    connector_user {
-                        id
-                    }
+                    connector_user_id
                 }
             }
            """
