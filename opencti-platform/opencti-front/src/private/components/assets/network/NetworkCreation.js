@@ -34,10 +34,12 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    margin: '-25px -24px 20px -24px',
-    padding: '23px 24px 24px 50px',
     height: '64px',
+    display: 'flex',
+    marginBottom: '20px',
     backgroundColor: '#1F2842',
+    padding: '23px 0 24px 12px',
+    justifyContent: 'space-between',
   },
   gridContainer: {
     marginBottom: 20,
@@ -52,8 +54,12 @@ const styles = (theme) => ({
     float: 'left',
   },
   rightContainer: {
-    float: 'right',
-    marginTop: '-5px',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  leftContainer: {
+    display: 'flex',
+    alignItems: 'center',
   },
   editButton: {
     position: 'fixed',
@@ -247,7 +253,7 @@ class NetworkCreation extends Component {
                 <Typography
                   variant="h1"
                   gutterBottom={true}
-                  classes={{ root: classes.title }}
+                  className={ classes.leftContainer }
                 >
                   {t('New Asset')}
                 </Typography>
