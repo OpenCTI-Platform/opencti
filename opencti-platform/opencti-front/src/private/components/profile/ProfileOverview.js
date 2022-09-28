@@ -63,7 +63,7 @@ const profileOverviewFieldPatch = graphql`
     $password: String
   ) {
     meEdit(input: $input, password: $password) {
-      ...UserEditionOverview_user
+      ...ProfileOverview_me
     }
   }
 `;
@@ -71,7 +71,7 @@ const profileOverviewFieldPatch = graphql`
 const renewTokenPatch = graphql`
   mutation ProfileOverviewTokenRenewMutation {
     meTokenRenew {
-      ...UserEditionOverview_user
+      ...ProfileOverview_me
     }
   }
 `;
@@ -88,7 +88,7 @@ const generateOTP = graphql`
 const validateOtpPatch = graphql`
   mutation ProfileOverviewOtpMutation($input: UserOTPActivationInput) {
     otpActivation(input: $input) {
-      ...UserEditionOverview_user
+      ...ProfileOverview_me
     }
   }
 `;
@@ -96,7 +96,7 @@ const validateOtpPatch = graphql`
 const disableOtpPatch = graphql`
   mutation ProfileOverviewOtpDisableMutation {
     otpDeactivation {
-      ...UserEditionOverview_user
+      ...ProfileOverview_me
     }
   }
 `;
@@ -645,7 +645,7 @@ ProfileOverviewComponent.propTypes = {
 
 const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   me: graphql`
-    fragment ProfileOverview_me on User {
+    fragment ProfileOverview_me on MeUser {
       id
       name
       user_email
@@ -658,8 +658,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       otp_activated
       otp_qr
       description
-      userSubscriptions(first: 200)
-        @connection(key: "Pagination_userSubscriptions") {
+      userSubscriptions(first: 200) @connection(key: "Pagination_userSubscriptions") {
         edges {
           node {
             id

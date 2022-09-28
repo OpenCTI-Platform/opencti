@@ -1495,7 +1495,7 @@ export type Connector = BasicObject & InternalObject & {
   connector_state?: Maybe<Scalars['String']>;
   connector_state_reset?: Maybe<Scalars['Boolean']>;
   connector_type?: Maybe<Scalars['String']>;
-  connector_user?: Maybe<User>;
+  connector_user_id: Scalars['ID'];
   created_at?: Maybe<Scalars['DateTime']>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
@@ -6918,6 +6918,33 @@ export enum MarkingDefinitionsOrdering {
   XOpenctiOrder = 'x_opencti_order'
 }
 
+export type MeUser = BasicObject & InternalObject & {
+  __typename?: 'MeUser';
+  allowed_marking?: Maybe<Array<Maybe<MarkingDefinition>>>;
+  api_token: Scalars['String'];
+  capabilities: Array<Maybe<Capability>>;
+  description?: Maybe<Scalars['String']>;
+  entity_type: Scalars['String'];
+  external?: Maybe<Scalars['Boolean']>;
+  firstname?: Maybe<Scalars['String']>;
+  id: Scalars['ID'];
+  language?: Maybe<Scalars['String']>;
+  lastname?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
+  otp_activated?: Maybe<Scalars['Boolean']>;
+  otp_qr?: Maybe<Scalars['String']>;
+  parent_types: Array<Maybe<Scalars['String']>>;
+  standard_id: Scalars['String'];
+  theme?: Maybe<Scalars['String']>;
+  userSubscriptions?: Maybe<UserSubscriptionConnection>;
+  user_email: Scalars['String'];
+};
+
+
+export type MeUserUserSubscriptionsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
 export type MessagesStats = {
   __typename?: 'MessagesStats';
   ack?: Maybe<Scalars['String']>;
@@ -7002,8 +7029,8 @@ export type Mutation = {
   malwareEdit?: Maybe<MalwareEditMutations>;
   markingDefinitionAdd?: Maybe<MarkingDefinition>;
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
-  meEdit?: Maybe<User>;
-  meTokenRenew?: Maybe<User>;
+  meEdit?: Maybe<MeUser>;
+  meTokenRenew?: Maybe<MeUser>;
   narrativeAdd?: Maybe<Narrative>;
   narrativeContextClean?: Maybe<Narrative>;
   narrativeContextPatch?: Maybe<Narrative>;
@@ -7019,10 +7046,10 @@ export type Mutation = {
   opinionEdit?: Maybe<OpinionEditMutations>;
   organizationAdd?: Maybe<Organization>;
   organizationEdit?: Maybe<OrganizationEditMutations>;
-  otpActivation?: Maybe<User>;
-  otpDeactivation?: Maybe<User>;
+  otpActivation?: Maybe<MeUser>;
+  otpDeactivation?: Maybe<MeUser>;
   otpLogin?: Maybe<Scalars['Boolean']>;
-  otpUserDeactivation?: Maybe<User>;
+  otpUserDeactivation?: Maybe<MeUser>;
   pingConnector?: Maybe<Connector>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
@@ -10287,7 +10314,7 @@ export type Query = {
   malwares?: Maybe<MalwareConnection>;
   markingDefinition?: Maybe<MarkingDefinition>;
   markingDefinitions?: Maybe<MarkingDefinitionConnection>;
-  me?: Maybe<User>;
+  me?: Maybe<MeUser>;
   myOpinion?: Maybe<Opinion>;
   narrative?: Maybe<Narrative>;
   narratives?: Maybe<NarrativeConnection>;
@@ -17620,7 +17647,7 @@ export type ResolversTypes = ResolversObject<{
   AutonomousSystemAddInput: AutonomousSystemAddInput;
   BankAccount: ResolverTypeWrapper<BankAccount>;
   BankAccountAddInput: BankAccountAddInput;
-  BasicObject: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['Capability'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Connector'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Group'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Role'] | ResolversTypes['Sector'] | ResolversTypes['Settings'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['User'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
+  BasicObject: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['Capability'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Connector'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Group'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['MeUser'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Role'] | ResolversTypes['Sector'] | ResolversTypes['Settings'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['User'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
   BasicRelationship: ResolversTypes['InternalRelationship'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'];
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Campaign: ResolverTypeWrapper<Campaign>;
@@ -17794,7 +17821,7 @@ export type ResolversTypes = ResolversObject<{
   InfrastructuresFiltering: InfrastructuresFiltering;
   InfrastructuresOrdering: InfrastructuresOrdering;
   Int: ResolverTypeWrapper<Scalars['Int']>;
-  InternalObject: ResolversTypes['Capability'] | ResolversTypes['Connector'] | ResolversTypes['Group'] | ResolversTypes['Role'] | ResolversTypes['Settings'] | ResolversTypes['User'];
+  InternalObject: ResolversTypes['Capability'] | ResolversTypes['Connector'] | ResolversTypes['Group'] | ResolversTypes['MeUser'] | ResolversTypes['Role'] | ResolversTypes['Settings'] | ResolversTypes['User'];
   InternalRelationship: ResolverTypeWrapper<InternalRelationship>;
   InternalRelationshipAddInput: InternalRelationshipAddInput;
   IntrusionSet: ResolverTypeWrapper<IntrusionSet>;
@@ -17864,6 +17891,7 @@ export type ResolversTypes = ResolversObject<{
   MarkingDefinitionsFilter: MarkingDefinitionsFilter;
   MarkingDefinitionsFiltering: MarkingDefinitionsFiltering;
   MarkingDefinitionsOrdering: MarkingDefinitionsOrdering;
+  MeUser: ResolverTypeWrapper<MeUser>;
   MessagesStats: ResolverTypeWrapper<MessagesStats>;
   Module: ResolverTypeWrapper<Module>;
   Mutation: ResolverTypeWrapper<{}>;
@@ -18223,7 +18251,7 @@ export type ResolversParentTypes = ResolversObject<{
   AutonomousSystemAddInput: AutonomousSystemAddInput;
   BankAccount: BankAccount;
   BankAccountAddInput: BankAccountAddInput;
-  BasicObject: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['Capability'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Connector'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Group'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Role'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Settings'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['User'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
+  BasicObject: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['Capability'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Connector'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Group'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['MeUser'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Role'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Settings'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['User'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
   BasicRelationship: ResolversParentTypes['InternalRelationship'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'];
   Boolean: Scalars['Boolean'];
   Campaign: Campaign;
@@ -18364,7 +18392,7 @@ export type ResolversParentTypes = ResolversObject<{
   InfrastructureEditMutations: InfrastructureEditMutations;
   InfrastructuresFiltering: InfrastructuresFiltering;
   Int: Scalars['Int'];
-  InternalObject: ResolversParentTypes['Capability'] | ResolversParentTypes['Connector'] | ResolversParentTypes['Group'] | ResolversParentTypes['Role'] | ResolversParentTypes['Settings'] | ResolversParentTypes['User'];
+  InternalObject: ResolversParentTypes['Capability'] | ResolversParentTypes['Connector'] | ResolversParentTypes['Group'] | ResolversParentTypes['MeUser'] | ResolversParentTypes['Role'] | ResolversParentTypes['Settings'] | ResolversParentTypes['User'];
   InternalRelationship: InternalRelationship;
   InternalRelationshipAddInput: InternalRelationshipAddInput;
   IntrusionSet: IntrusionSet;
@@ -18417,6 +18445,7 @@ export type ResolversParentTypes = ResolversObject<{
   MarkingDefinitionEdge: MarkingDefinitionEdge;
   MarkingDefinitionEditMutations: MarkingDefinitionEditMutations;
   MarkingDefinitionsFiltering: MarkingDefinitionsFiltering;
+  MeUser: MeUser;
   MessagesStats: MessagesStats;
   Module: Module;
   Mutation: {};
@@ -18972,7 +19001,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'Channel' | 'City' | 'Connector' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Event' | 'ExternalReference' | 'Group' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'Role' | 'Sector' | 'Settings' | 'Software' | 'StixFile' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'Channel' | 'City' | 'Connector' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Event' | 'ExternalReference' | 'Group' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'MeUser' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'Role' | 'Sector' | 'Settings' | 'Software' | 'StixFile' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -19215,7 +19244,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   connector_state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_state_reset?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   connector_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  connector_user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  connector_user_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -20499,7 +20528,7 @@ export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType e
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'Capability' | 'Connector' | 'Group' | 'Role' | 'Settings' | 'User', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Capability' | 'Connector' | 'Group' | 'MeUser' | 'Role' | 'Settings' | 'User', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
@@ -20989,6 +21018,28 @@ export type MarkingDefinitionEditMutationsResolvers<ContextType = any, ParentTyp
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MeUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeUser'] = ResolversParentTypes['MeUser']> = ResolversObject<{
+  allowed_marking?: Resolver<Maybe<Array<Maybe<ResolversTypes['MarkingDefinition']>>>, ParentType, ContextType>;
+  api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  capabilities?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  userSubscriptions?: Resolver<Maybe<ResolversTypes['UserSubscriptionConnection']>, ParentType, ContextType, Partial<MeUserUserSubscriptionsArgs>>;
+  user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MessagesStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesStats'] = ResolversParentTypes['MessagesStats']> = ResolversObject<{
   ack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ack_details?: Resolver<Maybe<ResolversTypes['AckDetails']>, ParentType, ContextType>;
@@ -21072,8 +21123,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   malwareEdit?: Resolver<Maybe<ResolversTypes['MalwareEditMutations']>, ParentType, ContextType, RequireFields<MutationMalwareEditArgs, 'id'>>;
   markingDefinitionAdd?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, Partial<MutationMarkingDefinitionAddArgs>>;
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
-  meEdit?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
-  meTokenRenew?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
+  meTokenRenew?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   narrativeAdd?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeAddArgs, 'input'>>;
   narrativeContextClean?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextCleanArgs, 'id'>>;
   narrativeContextPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextPatchArgs, 'id' | 'input'>>;
@@ -21089,10 +21140,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   opinionEdit?: Resolver<Maybe<ResolversTypes['OpinionEditMutations']>, ParentType, ContextType, RequireFields<MutationOpinionEditArgs, 'id'>>;
   organizationAdd?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<MutationOrganizationAddArgs>>;
   organizationEdit?: Resolver<Maybe<ResolversTypes['OrganizationEditMutations']>, ParentType, ContextType, RequireFields<MutationOrganizationEditArgs, 'id'>>;
-  otpActivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationOtpActivationArgs>>;
-  otpDeactivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  otpActivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, Partial<MutationOtpActivationArgs>>;
+  otpDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   otpLogin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationOtpLoginArgs>>;
-  otpUserDeactivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
+  otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, Partial<MutationPositionAddArgs>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
@@ -21886,7 +21937,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   malwares?: Resolver<Maybe<ResolversTypes['MalwareConnection']>, ParentType, ContextType, Partial<QueryMalwaresArgs>>;
   markingDefinition?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<QueryMarkingDefinitionArgs, 'id'>>;
   markingDefinitions?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType, Partial<QueryMarkingDefinitionsArgs>>;
-  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  me?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   myOpinion?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<QueryMyOpinionArgs, 'id'>>;
   narrative?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<QueryNarrativeArgs, 'id'>>;
   narratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType, Partial<QueryNarrativesArgs>>;
@@ -24159,6 +24210,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MarkingDefinitionConnection?: MarkingDefinitionConnectionResolvers<ContextType>;
   MarkingDefinitionEdge?: MarkingDefinitionEdgeResolvers<ContextType>;
   MarkingDefinitionEditMutations?: MarkingDefinitionEditMutationsResolvers<ContextType>;
+  MeUser?: MeUserResolvers<ContextType>;
   MessagesStats?: MessagesStatsResolvers<ContextType>;
   Module?: ModuleResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;

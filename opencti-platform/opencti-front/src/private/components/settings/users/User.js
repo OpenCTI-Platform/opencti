@@ -130,7 +130,7 @@ export const userUserSessionsKillMutation = graphql`
 export const userOtpDeactivationMutation = graphql`
   mutation UserOtpDeactivationMutation($id: ID!) {
     otpUserDeactivation(id: $id) {
-      ...User_user
+      ...ProfileOverview_me
     }
   }
 `;

@@ -980,7 +980,7 @@ type Group implements InternalObject & BasicObject {
   default_assignation: Boolean
   auto_new_marking: Boolean
   description: String
-  members: UserConnection
+  members: UserConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime
   updated_at: DateTime
   allowed_marking: [MarkingDefinition]
@@ -1036,7 +1036,7 @@ type User implements BasicObject & InternalObject {
   parent_types: [String]!
   # User
   user_email: String!
-  api_token: String!
+  api_token: String! @auth(for: [SETTINGS_SETACCESSES])
   name: String!
   description: String
   firstname: String
@@ -1049,14 +1049,34 @@ type User implements BasicObject & InternalObject {
   dashboard: String
   roles: [Role]!
   capabilities: [Capability]!
-  groups: GroupConnection
+  groups: GroupConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime!
   updated_at: DateTime!
   allowed_marking: [MarkingDefinition]
-  sessions: [SessionDetail]
+  sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES])
   userSubscriptions(first: Int): UserSubscriptionConnection
   # Technical
   editContext: [EditUserContext]
+}
+type MeUser implements BasicObject & InternalObject {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  user_email: String!
+  name: String!
+  description: String
+  firstname: String
+  otp_activated: Boolean
+  otp_qr: String
+  lastname: String
+  theme: String
+  language: String
+  external: Boolean
+  api_token: String!
+  capabilities: [Capability]!
+  allowed_marking: [MarkingDefinition]
+  userSubscriptions(first: Int): UserSubscriptionConnection
 }
 type SessionDetail {
   id: ID!
@@ -1177,7 +1197,7 @@ type RabbitMQConnection {
   pass: String!
 }
 type ConnectorConfig {
-  connection: RabbitMQConnection!
+  connection: RabbitMQConnection! @auth(for: [CONNECTORAPI])
   listen: String!
   listen_exchange: String!
   push: String!
@@ -1197,7 +1217,7 @@ type Connector implements BasicObject & InternalObject {
   connector_scope: [String!]
   connector_state: String
   connector_state_reset: Boolean
-  connector_user: User
+  connector_user_id: ID!
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
@@ -8996,7 +9016,7 @@ type Query {
     @auth(for: [SETTINGS_SETACCESSES])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
     @auth(for: [SETTINGS_SETACCESSES])
-  me: User @auth
+  me: MeUser @auth
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
   users(
@@ -10395,9 +10415,9 @@ type Mutation {
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String
-  otpActivation(input: UserOTPActivationInput): User @auth
-  otpDeactivation: User @auth
-  otpUserDeactivation(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
+  otpActivation(input: UserOTPActivationInput): MeUser @auth
+  otpDeactivation: MeUser @auth
+  otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
   otpLogin(input: UserOTPLoginInput): Boolean @auth
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS])
@@ -10405,8 +10425,8 @@ type Mutation {
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  meTokenRenew: User @auth
-  meEdit(input: [EditInput]!, password: String): User @auth
+  meTokenRenew: MeUser @auth
+  meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
   bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
   logout: ID @auth

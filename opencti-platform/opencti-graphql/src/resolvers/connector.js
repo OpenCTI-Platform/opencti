@@ -46,7 +46,6 @@ const connectorResolvers = {
     synchronizers: (_, args, { user }) => findAllSync(user, args),
   },
   Connector: {
-    connector_user: (connector, _, { user }) => findUserById(user, connector.connector_user_id),
     works: (connector, args, { user }) => worksForConnector(user, connector.id, args),
   },
   Work: {

@@ -77,6 +77,10 @@ const userResolvers = {
     sessions: (current) => findUserSessions(current.id),
     userSubscriptions: (current, _, { user }) => getUserSubscriptions(user, current.id),
   },
+  MeUser: {
+    capabilities: (current) => getCapabilities(current.id),
+    userSubscriptions: (current, _, { user }) => getUserSubscriptions(user, current.id),
+  },
   UserSession: {
     user: (session, _, { user }) => findById(user, session.user_id),
   },

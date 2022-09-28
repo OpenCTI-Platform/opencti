@@ -1106,6 +1106,27 @@ type User implements BasicObject & InternalObject {
   editContext: [EditUserContext]
 }
 
+type MeUser implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  user_email: String!
+  name: String!
+  description: String
+  firstname: String
+  otp_activated: Boolean
+  otp_qr: String
+  lastname: String
+  theme: String
+  language: String
+  external: Boolean
+  api_token: String!
+  capabilities: [Capability]!
+  allowed_marking: [MarkingDefinition]
+  userSubscriptions(first: Int): UserSubscriptionConnection
+}
+
 type SessionDetail {
   id: ID!
   created: DateTime
@@ -1253,7 +1274,7 @@ type Connector implements BasicObject & InternalObject {
   connector_scope: [String!]
   connector_state: String
   connector_state_reset: Boolean
-  connector_user: User
+  connector_user_id: ID!
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
@@ -6698,7 +6719,7 @@ type Query {
   group(id: String!): Group
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
-  me: User
+  me: MeUser
   otpGeneration: OtpElement
   user(id: String!): User
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: [UsersFiltering], filterMode: FilterMode, search: String, toStix: Boolean): UserConnection
@@ -7337,9 +7358,9 @@ type Mutation {
   ruleSetActivation(id: ID!, enable: Boolean!): Rule!
   ruleManagerClean(eventId: ID): RuleManager!
   token(input: UserLoginInput): String
-  otpActivation(input: UserOTPActivationInput): User
-  otpDeactivation: User
-  otpUserDeactivation(id: ID!): User
+  otpActivation(input: UserOTPActivationInput): MeUser
+  otpDeactivation: MeUser
+  otpUserDeactivation(id: ID!): MeUser
   otpLogin(input: UserOTPLoginInput): Boolean
   settingsEdit(id: ID!): SettingsEditMutations
   subTypeEdit(id: ID!): SubTypeEditMutations
@@ -7347,8 +7368,8 @@ type Mutation {
   groupEdit(id: ID!): GroupEditMutations
   userAdd(input: UserAddInput): User
   userEdit(id: ID!): UserEditMutations
-  meTokenRenew: User
-  meEdit(input: [EditInput]!, password: String): User
+  meTokenRenew: MeUser
+  meEdit(input: [EditInput]!, password: String): MeUser
   bookmarkAdd(id: ID!, type: String!): StixDomainObject
   bookmarkDelete(id: ID!): ID
   logout: ID
