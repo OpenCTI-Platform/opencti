@@ -157,7 +157,7 @@ class WorkspaceHeader extends Component {
           variant="outlined"
           className={classes.iconButton}
           size="large"
-          // onClick={() => history.push(goBack)}
+          onClick={() => history.goBack()}
         >
           <ArrowBack fontSize="inherit" />
         </Button>
