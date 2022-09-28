@@ -245,8 +245,20 @@ export const openVocabularies = {
   ],
   'event-type-ov': [
     {
-      key: 'sport-competition',
-      description: 'Sport competition.',
+      key: 'conference',
+      description: 'Conference.',
+    },
+    {
+      key: 'financial',
+      description: 'Significant financial event.',
+    },
+    {
+      key: 'holiday',
+      description: 'Holiday, festival, time of observance.',
+    },
+    {
+      key: 'international-summit',
+      description: 'Internationals summit.',
     },
     {
       key: 'local-election',
@@ -257,8 +269,8 @@ export const openVocabularies = {
       description: 'National election.',
     },
     {
-      key: 'international-summit',
-      description: 'Internationals summit.',
+      key: 'sport-competition',
+      description: 'Sport competition.',
     },
   ],
   'processor-architecture-ov': [
