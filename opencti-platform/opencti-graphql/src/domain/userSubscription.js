@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { elIndex } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_USER_SUBSCRIPTION } from '../schema/internalObject';
 import {
@@ -284,7 +284,7 @@ export const generateDigestForSubscription = async (subscription) => {
   const entities = subscription.entities_ids && subscription.entities_ids.length > 0
     ? await Promise.all(subscription.entities_ids.map((n) => internalLoadById(user, n)))
     : [];
-  const entitiesNames = entities.map((n) => n.name);
+  const entitiesNames = entities.filter((n) => isNotEmptyField(n)).map((n) => n.name);
   htmlData += header(baseUrl, entitiesNames);
   if (data.containersData.length > 0) {
     const number = data.containersData.length;
