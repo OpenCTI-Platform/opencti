@@ -90,9 +90,13 @@ const validateStixId = (stixId) => {
 };
 
 const validateStixRef = (stixRef) => {
+  if (stixRef === null) {
+    return stixRef;
+  }
   if (stixRef.includes('--')) {
     return validateStixId(stixRef);
-  } if (uuidValidate(stixRef)) {
+  }
+  if (uuidValidate(stixRef)) {
     return stixRef;
   }
   throw new UserInputError('Provided value is not a valid STIX Reference');

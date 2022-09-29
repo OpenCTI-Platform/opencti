@@ -27,7 +27,7 @@ esbuild
     logLevel: "info",
     plugins: [RelayPlugin],
     entryPoints: ["src/index.tsx"],
-    publicPath: '/',
+    publicPath: "/",
     bundle: true,
     banner: {
       js: ' (() => new EventSource("http://localhost:3000/dev").onmessage = () => location.reload())();',
@@ -52,7 +52,10 @@ esbuild
   })
   .then((builder) => {
     // region Copy public files to build
-    fsExtra.copySync("./src/static/ext", buildPath + '/static/ext', { recursive: true, overwrite: true });
+    fsExtra.copySync("./src/static/ext", buildPath + "/static/ext", {
+      recursive: true,
+      overwrite: true,
+    });
     // endregion
     // Listen change for hot recompile
     chokidar
@@ -116,9 +119,9 @@ esbuild
     );
     app.use(
       createProxyMiddleware(basePath + "/feeds", {
-          target: "http://localhost:4000",
-          changeOrigin: true,
-          ws: false,
+        target: "http://localhost:4000",
+        changeOrigin: true,
+        ws: false,
       })
     );
     app.use(
@@ -138,11 +141,17 @@ esbuild
     app.use(compression({}));
     app.use(`/css`, express.static(path.join(__dirname, "./build")));
     app.use(`/js`, express.static(path.join(__dirname, "./build")));
-    app.use(basePath + `/static`, express.static(path.join(__dirname, "./build/static")));
+    app.use(
+      basePath + `/static`,
+      express.static(path.join(__dirname, "./build/static"))
+    );
     app.get("*", (req, res) => {
       const data = readFileSync(`${__dirname}/index.html`, "utf8");
       const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
-      res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
+      res.header(
+        "Cache-Control",
+        "private, no-cache, no-store, must-revalidate"
+      );
       res.header("Expires", "-1");
       res.header("Pragma", "no-cache");
       return res.send(withOptionValued);
