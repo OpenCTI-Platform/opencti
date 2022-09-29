@@ -291,7 +291,7 @@ class Channel:
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Channel {" + name + "}.")
             query = """
-                mutation ChannelAdd($input: ChannelAddInput) {
+                mutation ChannelAdd($input: ChannelAddInput!) {
                     channelAdd(input: $input) {
                         id
                         standard_id

@@ -291,7 +291,7 @@ class Narrative:
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Narrative {" + name + "}.")
             query = """
-                mutation NarrativeAdd($input: NarrativeAddInput) {
+                mutation NarrativeAdd($input: NarrativeAddInput!) {
                     narrativeAdd(input: $input) {
                         id
                         standard_id

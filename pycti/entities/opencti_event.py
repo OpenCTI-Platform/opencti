@@ -295,7 +295,7 @@ class Event:
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Event {" + name + "}.")
             query = """
-                mutation EventAdd($input: EventAddInput) {
+                mutation EventAdd($input: EventAddInput!) {
                     eventAdd(input: $input) {
                         id
                         standard_id
