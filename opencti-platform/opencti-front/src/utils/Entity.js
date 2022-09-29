@@ -654,7 +654,6 @@ export const openVocabularies = {
       description:
         'The desire to improve one’s own financial status. Adversaries motivated by a selfish desire for personal gain are often out for gains that come from financial fraud, hacking for hire, or intellectual property theft. While a Threat Actor or Intrusion Set may be seeking personal gain, this does not mean they are acting alone. Individuals can band together solely to maximize their own personal profits.',
     },
-
     {
       key: 'personal-satisfaction',
       description:

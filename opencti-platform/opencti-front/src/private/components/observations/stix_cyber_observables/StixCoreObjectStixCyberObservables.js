@@ -261,6 +261,18 @@ class StixCoreObjectStixCyberObservables extends Component {
       ...paginationOptions,
       filters: exportFilters,
     };
+    let availableFilterKeys = [
+      'relationship_type',
+      'markedBy',
+      'createdBy',
+      'created_start_date',
+      'created_end_date',
+    ];
+    if (isRelationReversed) {
+      availableFilterKeys = R.prepend('toTypes', availableFilterKeys);
+    } else {
+      availableFilterKeys = R.prepend('fromTypes', availableFilterKeys);
+    }
     return (
       <UserContext.Consumer>
         {() => (
@@ -281,14 +293,7 @@ class StixCoreObjectStixCyberObservables extends Component {
             exportEntityType="stix-core-relationship"
             secondaryAction={true}
             filters={filters}
-            availableFilterKeys={[
-              'toTypes',
-              'relationship_type',
-              'markedBy',
-              'createdBy',
-              'created_start_date',
-              'created_end_date',
-            ]}
+            availableFilterKeys={availableFilterKeys}
             availableEntityTypes={['Stix-Cyber-Observable']}
             numberOfElements={numberOfElements}
             noPadding={true}
@@ -474,9 +479,13 @@ class StixCoreObjectStixCyberObservables extends Component {
       filters,
       searchTerm,
     } = this.state;
-    let finalFilters = convertFilters(filters);
+    let finalFilters = convertFilters(
+      R.pipe(R.dissoc('fromTypes'), R.dissoc('toTypes'))(filters),
+    );
     let paginationOptions = {
-      fromTypes: targetStixCyberObservableTypes,
+      fromTypes: filters.fromTypes
+        ? R.pluck('id', filters.fromTypes)
+        : targetStixCyberObservableTypes,
       search: searchTerm,
       toId: stixCoreObjectId,
       relationship_type: relationshipType || 'stix-core-relationship',
@@ -486,7 +495,9 @@ class StixCoreObjectStixCyberObservables extends Component {
     };
     if (isRelationReversed) {
       paginationOptions = {
-        toTypes: targetStixCyberObservableTypes,
+        toTypes: filters.toTypes
+          ? R.pluck('id', filters.toTypes)
+          : targetStixCyberObservableTypes,
         search: searchTerm,
         fromId: stixCoreObjectId,
         relationship_type: relationshipType || 'stix-core-relationship',
