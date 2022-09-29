@@ -63,7 +63,6 @@ import Security, {
 } from '../../../utils/Security';
 import AboutModal from '../../../components/AboutModal';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
-import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 import Export from '../../../components/Export';

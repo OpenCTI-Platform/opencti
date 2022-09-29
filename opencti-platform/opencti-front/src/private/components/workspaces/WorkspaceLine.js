@@ -31,6 +31,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingLeft: '24px',
   },
   goIcon: {
     position: 'absolute',
@@ -54,7 +55,6 @@ const styles = (theme) => ({
     width: 90,
   },
 });
-
 class WorkspaceLineComponent extends Component {
   render() {
     const {

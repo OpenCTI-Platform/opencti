@@ -18,8 +18,7 @@ import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import { Add, MapOutlined } from '@material-ui/icons';
+import { MapOutlined } from '@material-ui/icons';
 import {
   FlaskOutline,
   FolderTableOutline,
@@ -59,18 +58,21 @@ const styles = (theme) => ({
     zIndex: 1001,
   },
   card: {
-    height: 180,
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.default,
     textAlign: 'center',
   },
   card2: {
     height: 100,
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.default,
   },
   card3: {
     height: 100,
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.default,
     textAlign: 'center',
+  },
+  cardAction: {
+    height: 'max-content',
+    paddingBottom: '2rem',
   },
   dialog: {
     height: 600,
@@ -861,7 +863,7 @@ class WidgetCreation extends Component {
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'global_threats')}
-                  style={{ height: '100%' }}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
@@ -886,7 +888,7 @@ class WidgetCreation extends Component {
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'global_assets')}
-                  style={{ height: '100%' }}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
@@ -911,7 +913,7 @@ class WidgetCreation extends Component {
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'global_risks')}
-                  style={{ height: '100%' }}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
@@ -936,7 +938,7 @@ class WidgetCreation extends Component {
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'threat')}
-                  style={{ height: '100%' }}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <FlaskOutline style={{ fontSize: 40 }} color="primary" />
@@ -961,7 +963,7 @@ class WidgetCreation extends Component {
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'identity')}
-                  style={{ height: '100%' }}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <FolderTableOutline
@@ -989,7 +991,7 @@ class WidgetCreation extends Component {
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'asset_item')}
-                  style={{ height: '100%' }}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <FolderTableOutline
@@ -1017,7 +1019,7 @@ class WidgetCreation extends Component {
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'risk')}
-                  style={{ height: '100%' }}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <FolderTableOutline
@@ -1108,10 +1110,9 @@ class WidgetCreation extends Component {
   render() {
     const { stepIndex } = this.state;
     const {
-      t, classes, open, handleWidgetCreation,
+      t, open, handleWidgetCreation,
     } = this.props;
     return (
-      <div>
         <Dialog
           open={open}
           TransitionComponent={Transition}
@@ -1158,10 +1159,9 @@ class WidgetCreation extends Component {
           </DialogTitle>
           <DialogContent>{this.getStepContent(stepIndex)}</DialogContent>
           <DialogActions>
-            <Button onClick={() => handleWidgetCreation()}>{t('Cancel')}</Button>
+            <Button variant='outlined' onClick={() => handleWidgetCreation()}>{t('Cancel')}</Button>
           </DialogActions>
         </Dialog>
-      </div>
     );
   }
 }

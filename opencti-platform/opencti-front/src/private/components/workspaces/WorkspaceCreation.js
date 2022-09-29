@@ -6,8 +6,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/dialogTitle';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import { Add } from '@material-ui/icons';
 import { compose, assoc } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';

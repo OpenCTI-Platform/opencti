@@ -18,9 +18,7 @@ import Button from '@material-ui/core/Button';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import inject18n from '../../../components/i18n';
-import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 import WorkspacePopover from './WorkspacePopover';
-import ExportButtons from '../../../components/ExportButtons';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -148,7 +146,7 @@ class WorkspaceHeader extends Component {
 
   render() {
     const {
-      t, classes, workspace, variant, history, handleWidgetCreation,
+      t, classes, workspace, history, handleWidgetCreation,
     } = this.props;
     const tags = propOr([], 'tags', workspace);
     return (

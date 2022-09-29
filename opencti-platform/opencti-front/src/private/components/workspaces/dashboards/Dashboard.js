@@ -5,7 +5,6 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { DatePicker } from '@material-ui/pickers';
-import Drawer from '@material-ui/core/Drawer';
 import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -53,12 +52,14 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const styles = (theme) => ({
   bottomNav: {
-    zIndex: 1000,
-    padding: '7px 0 0 205px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
-    height: 64,
+    padding: '17px 50px',
+    zIndex: '1',
     overflow: 'hidden',
+    backgroundColor: theme.palette.navBottom.background,
+    position: 'fixed',
+    width: '100%',
+    bottom: '0',
+    marginLeft: '-30px',
   },
   paper: {
     height: '100%',
@@ -456,11 +457,12 @@ class DashboardComponent extends Component {
           variant="dashboard"
           handleWidgetCreation={this.handleWidgetCreation.bind(this)}
         />
-        <Drawer
+        {/* <Drawer
           anchor="bottom"
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
-        >
+        > */}
+        <div className={classes.bottomNav}>
           <Security
             needs={[EXPLORE_EXUPDATE]}
             placeholder={
@@ -563,7 +565,8 @@ class DashboardComponent extends Component {
               </Grid>
             </Grid>
           </Security>
-        </Drawer>
+          </div>
+        {/* </Drawer> */}
         {/* <Security
           needs={[EXPLORE_EXUPDATE]}
           placeholder={

@@ -12,7 +12,6 @@ import CyioListLines from '../../../components/list_lines/CyioListLines';
 import CyioListCards from '../../../components/list_cards/CyioListCards';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
 import WorkspaceCreation from './WorkspaceCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import WorkspaceDelete from './WorkspaceDelete';
 
 class Dashboards extends Component {
@@ -102,6 +101,7 @@ class Dashboards extends Component {
         keyword={searchTerm}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        style={{ marginTop: -50 }}
       >
         <QueryRenderer
           query={workspacesLinesQuery}
