@@ -11,12 +11,19 @@ from pycti import (
 
 
 @fixture(scope="session")
-def api_client():
-    return OpenCTIApiClient(
-        "https://demo.opencti.io",
-        "7e663f91-d048-4a8b-bdfa-cdb55597942b",
-        ssl_verify=True,
-    )
+def api_client(pytestconfig):
+    if pytestconfig.getoption("--drone"):
+        return OpenCTIApiClient(
+            "http://opencti:4000",
+            "bfa014e0-e02e-4aa6-a42b-603b19dcf159",
+            ssl_verify=False,
+        )
+    else:
+        return OpenCTIApiClient(
+            "https://demo.opencti.io",
+            "7e663f91-d048-4a8b-bdfa-cdb55597942b",
+            ssl_verify=True,
+        )
 
 
 @fixture(scope="session")
@@ -42,6 +49,12 @@ def opencti_splitter():
 def pytest_addoption(parser):
     parser.addoption(
         "--connectors", action="store_true", default=False, help="run connector tests"
+    )
+    parser.addoption(
+        "--drone",
+        action="store_true",
+        default=False,
+        help="run connector tests in drone environment",
     )
 
 

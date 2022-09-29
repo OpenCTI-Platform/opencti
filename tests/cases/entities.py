@@ -605,8 +605,10 @@ class StixCoreRelationshipTest(EntityTest):
             objective="Espionage",
         )
 
-        self.ttp1 = self.api_client.attack_pattern.read(
-            filters=[{"key": "x_mitre_id", "values": ["T1193"]}]
+        self.ttp1 = self.api_client.attack_pattern.create(
+            name="Password Filter DLL Mitigation",
+            description="Ensure only valid password filters are registered. Filter DLLs must be present in Windows installation directory (<code>C:\\Windows\\System32\\</code> by default) of a domain controller and/or local computer with a corresponding entry in <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\Notification Packages</code>. (Citation: Microsoft Install Password Filter n.d)",
+            x_mitre_id="T1174",
         )
 
     def data(self) -> Dict:
@@ -707,8 +709,10 @@ class StixCyberObservableRelationshipTest(EntityTest):
 
 class StixSightingRelationshipTest(EntityTest):
     def setup(self):
-        self.ttp1 = self.api_client.attack_pattern.read(
-            filters=[{"key": "x_mitre_id", "values": ["T1193"]}]
+        self.ttp1 = self.api_client.attack_pattern.create(
+            name="Password Filter DLL Mitigation",
+            description="Ensure only valid password filters are registered. Filter DLLs must be present in Windows installation directory (<code>C:\\Windows\\System32\\</code> by default) of a domain controller and/or local computer with a corresponding entry in <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\Notification Packages</code>. (Citation: Microsoft Install Password Filter n.d)",
+            x_mitre_id="T1174",
         )
 
         self.location = self.api_client.location.create(

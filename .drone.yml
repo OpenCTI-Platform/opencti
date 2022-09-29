@@ -1,0 +1,81 @@
+---
+kind: pipeline
+name: client-python-tests
+
+steps:
+  - name: sleep-for-opencti
+    image: python:3.10
+    commands:
+      - sleep 100
+  - name: client-test-38
+    image: python:3.8
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+  - name: client-test-39
+    image: python:3.9
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+  - name: client-test-310
+    image: python:3.10
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+
+  - name: slack
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      username: drone
+      icon_url: https://avatars.githubusercontent.com/oa/1284929
+      channel: notifications
+    when:
+      status: [ success, failure ]
+      event:
+        exclude:
+          - pull_request
+
+services:
+  - name: redis
+    image: redis:7.0.4
+  - name: elastic
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.1
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: false
+      ES_JAVA_OPTS: -Xms2g -Xmx2g
+  - name: minio
+    image: minio/minio:RELEASE.2022-08-26T19-53-15Z
+    environment:
+      MINIO_ROOT_USER: ChangeMe
+      MINIO_ROOT_PASSWORD: ChangeMe
+    command: [ server, /data ]
+  - name: rabbitmq
+    image: rabbitmq:3.10-management
+  - name: opencti
+    image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
+    environment:
+      APP__ADMIN__PASSWORD: admin
+      APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      REDIS__HOSTNAME: redis
+      REDIS__NAMESPACE: raw-start
+      ELASTICSEARCH__URL: http://elastic:9200
+      ELASTICSEARCH__INDEX_PREFIX: raw-start
+      MINIO__ENDPOINT: minio
+      MINIO__BUCKET_NAME: raw-start-bucket
+      RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
+      SUBSCRIPTION_SCHEDULER__ENABLED: false
+    commands:
+      - apk add build-base git libffi-dev
+      - git clone https://github.com/OpenCTI-Platform/opencti.git /tmp/opencti
+      - cd /tmp/opencti/opencti-platform/opencti-graphql
+      - yarn install
+      - yarn install:python
+      #      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn start
