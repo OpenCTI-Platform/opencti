@@ -287,7 +287,7 @@ class Language:
         if name is not None:
             self.opencti.log("info", "Creating Language {" + name + "}.")
             query = """
-                mutation LanguageAdd($input: LanguageAddInput) {
+                mutation LanguageAdd($input: LanguageAddInput!) {
                     languageAdd(input: $input) {
                         id
                         standard_id
