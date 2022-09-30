@@ -299,6 +299,13 @@ class StixCyberObservable:
                 cvv
                 holder_name
             }
+            ... on MediaContent {
+                title
+                content
+                media_category
+                url
+                publication_date
+            }
             importFiles {
                 edges {
                     node {
@@ -672,6 +679,7 @@ class StixCyberObservable:
                     $BankAccount: BankAccountAddInput
                     $PhoneNumber: PhoneNumberAddInput
                     $PaymentCard: PaymentCardAddInput
+                    $MediaContent: MediaContent
                 ) {
                     stixCyberObservableAdd(
                         type: $type,
@@ -711,6 +719,7 @@ class StixCyberObservable:
                         BankAccount: $BankAccount
                         PhoneNumber: $PhoneNumber
                         PaymentCard: $PaymentCard
+                        MediaContent: $MediaContent
                     ) {
                         id
                         standard_id
@@ -1129,6 +1138,21 @@ class StixCyberObservable:
                     "cvv": observable_data["cvv"] if "cvv" in observable_data else None,
                     "holder_name": observable_data["holder_name"]
                     if "holder_name" in observable_data
+                    else None,
+                }
+            elif type == "Media-Content":
+                input_variables["MediaContent"] = {
+                    "title": observable_data["title"]
+                    if "title" in observable_data
+                    else None,
+                    "content": observable_data["content"]
+                    if "content" in observable_data
+                    else None,
+                    "media_category": observable_data["media_category"]
+                    if "media_category" in observable_data
+                    else None,
+                    "url": observable_data["url"]
+                    if "publication_date" in observable_data
                     else None,
                 }
             result = self.opencti.query(query, input_variables)
