@@ -1065,6 +1065,9 @@ const stixCyberObservableRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_MEDIA_CONTENT}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
     { name: RELATION_AUTHORED_BY, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_MEDIA_CONTENT}_${ENTITY_USER_ACCOUNT}`]: [
+    { name: RELATION_AUTHORED_BY, type: REL_EXTENDED }
   ]
 };
 
