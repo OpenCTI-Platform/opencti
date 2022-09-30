@@ -52,7 +52,7 @@ const styles = (theme) => ({
   },
 });
 
-class TotalAcceptedRisksCard extends Component {
+class CyioCoreObjectTotalAcceptedRisksCount extends Component {
   render() {
     const {
       t, n, height, classes,
@@ -93,7 +93,7 @@ class TotalAcceptedRisksCard extends Component {
   }
 }
 
-TotalAcceptedRisksCard.propTypes = {
+CyioCoreObjectTotalAcceptedRisksCount.propTypes = {
   t: PropTypes.func,
 };
 
@@ -101,4 +101,4 @@ export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(TotalAcceptedRisksCard);
+)(CyioCoreObjectTotalAcceptedRisksCount);
