@@ -2467,6 +2467,17 @@ export type DependencyVersion = {
   version: Scalars['String'];
 };
 
+export type Dictionary = {
+  __typename?: 'Dictionary';
+  key: Scalars['String'];
+  value: Scalars['String'];
+};
+
+export type DictionaryInput = {
+  key: Scalars['String'];
+  value: Scalars['String'];
+};
+
 export type Directory = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Directory';
   atime?: Maybe<Scalars['DateTime']>;
@@ -10271,6 +10282,7 @@ export enum PositionsOrdering {
 
 export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Process';
+  aslr_enabled?: Maybe<Scalars['Boolean']>;
   command_line?: Maybe<Scalars['String']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
@@ -10278,15 +10290,20 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   created_time?: Maybe<Scalars['DateTime']>;
   creator?: Maybe<User>;
   cwd?: Maybe<Scalars['String']>;
+  dep_enabled?: Maybe<Scalars['Boolean']>;
+  descriptions?: Maybe<Array<Maybe<Scalars['String']>>>;
+  display_name?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<Maybe<EditUserContext>>>;
   entity_type: Scalars['String'];
   environment_variables?: Maybe<Array<Maybe<Scalars['String']>>>;
   exportFiles?: Maybe<FileConnection>;
   extensions?: Maybe<Scalars['String']>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  group_name?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
+  integrity_level?: Maybe<Scalars['String']>;
   is_hidden?: Maybe<Scalars['Boolean']>;
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
@@ -10296,16 +10313,25 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   observable_value: Scalars['String'];
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
+  owner_sid?: Maybe<Scalars['String']>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
   pid?: Maybe<Scalars['Int']>;
+  priority?: Maybe<Scalars['String']>;
   reports?: Maybe<ReportConnection>;
+  serviceDlls?: Maybe<StixFileConnection>;
+  service_name?: Maybe<Scalars['String']>;
+  service_status?: Maybe<Scalars['String']>;
+  service_type?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  start_type?: Maybe<Scalars['String']>;
+  startup_info?: Maybe<Array<Maybe<Dictionary>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
+  window_title?: Maybe<Scalars['String']>;
   x_opencti_description?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']>;
@@ -10418,12 +10444,28 @@ export type ProcessStixCyberObservableRelationshipsArgs = {
 };
 
 export type ProcessAddInput = {
+  aslr_enabled?: InputMaybe<Scalars['Boolean']>;
   command_line: Scalars['String'];
   created_time?: InputMaybe<Scalars['DateTime']>;
   cwd?: InputMaybe<Scalars['String']>;
+  dep_enabled?: InputMaybe<Scalars['Boolean']>;
+  descriptions?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  display_name?: InputMaybe<Scalars['String']>;
   environment_variables?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  group_name?: InputMaybe<Scalars['String']>;
+  integrity_level?: InputMaybe<WindowsIntegrityLevel>;
   is_hidden?: InputMaybe<Scalars['Boolean']>;
+  owner_sid?: InputMaybe<Scalars['String']>;
   pid?: InputMaybe<Scalars['Int']>;
+  priority?: InputMaybe<Scalars['String']>;
+  serviceDlls?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  service_name?: InputMaybe<Scalars['String']>;
+  service_status?: InputMaybe<WindowsServiceStatus>;
+  service_type?: InputMaybe<WindowsServiceType>;
+  start_type?: InputMaybe<WindowsServiceStartType>;
+  startup_info?: InputMaybe<Array<InputMaybe<DictionaryInput>>>;
+  window_title?: InputMaybe<Scalars['String']>;
+  x_opencti_description?: InputMaybe<Scalars['String']>;
 };
 
 export type Provider = {
@@ -14573,6 +14615,18 @@ export type StixFileAddInput = {
   x_opencti_additional_names?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
+export type StixFileConnection = {
+  __typename?: 'StixFileConnection';
+  edges?: Maybe<Array<Maybe<StixFileEdge>>>;
+  pageInfo: PageInfo;
+};
+
+export type StixFileEdge = {
+  __typename?: 'StixFileEdge';
+  cursor: Scalars['String'];
+  node: StixFile;
+};
+
 export type StixMetaObject = {
   created?: Maybe<Scalars['DateTime']>;
   created_at: Scalars['DateTime'];
@@ -17043,6 +17097,13 @@ export type VulnerabilityEditMutationsRelationDeleteArgs = {
   toId: Scalars['StixRef'];
 };
 
+export enum WindowsIntegrityLevel {
+  High = 'high',
+  Low = 'low',
+  Medium = 'medium',
+  System = 'system'
+}
+
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'WindowsRegistryKey';
   attribute_key?: Maybe<Scalars['String']>;
@@ -17342,6 +17403,31 @@ export type WindowsRegistryValueTypeAddInput = {
   data_type?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
 };
+
+export enum WindowsServiceStartType {
+  ServiceAutoStart = 'SERVICE_AUTO_START',
+  ServiceBootStart = 'SERVICE_BOOT_START',
+  ServiceDemandStart = 'SERVICE_DEMAND_START',
+  ServiceDisabled = 'SERVICE_DISABLED',
+  ServiceSystemAlert = 'SERVICE_SYSTEM_ALERT'
+}
+
+export enum WindowsServiceStatus {
+  ServiceContinuePending = 'SERVICE_CONTINUE_PENDING',
+  ServicePaused = 'SERVICE_PAUSED',
+  ServicePausePending = 'SERVICE_PAUSE_PENDING',
+  ServiceRunning = 'SERVICE_RUNNING',
+  ServiceStartPending = 'SERVICE_START_PENDING',
+  ServiceStopped = 'SERVICE_STOPPED',
+  ServiceStopPending = 'SERVICE_STOP_PENDING'
+}
+
+export enum WindowsServiceType {
+  ServiceFileSystemDriver = 'SERVICE_FILE_SYSTEM_DRIVER',
+  ServiceKernelDriver = 'SERVICE_KERNEL_DRIVER',
+  ServiceWin32OwnProcess = 'SERVICE_WIN32_OWN_PROCESS',
+  ServiceWin32ShareProcess = 'SERVICE_WIN32_SHARE_PROCESS'
+}
 
 export type Work = {
   __typename?: 'Work';
@@ -17914,6 +18000,8 @@ export type ResolversTypes = ResolversObject<{
   CryptographicKeyAddInput: CryptographicKeyAddInput;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   DependencyVersion: ResolverTypeWrapper<DependencyVersion>;
+  Dictionary: ResolverTypeWrapper<Dictionary>;
+  DictionaryInput: DictionaryInput;
   Directory: ResolverTypeWrapper<Directory>;
   DirectoryAddInput: DirectoryAddInput;
   Distribution: ResolverTypeWrapper<Omit<Distribution, 'entity'> & { entity?: Maybe<ResolversTypes['StixObjectOrStixRelationship']> }>;
@@ -18275,6 +18363,8 @@ export type ResolversTypes = ResolversObject<{
   StixEditMutations: ResolverTypeWrapper<StixEditMutations>;
   StixFile: ResolverTypeWrapper<StixFile>;
   StixFileAddInput: StixFileAddInput;
+  StixFileConnection: ResolverTypeWrapper<StixFileConnection>;
+  StixFileEdge: ResolverTypeWrapper<StixFileEdge>;
   StixId: ResolverTypeWrapper<Scalars['StixId']>;
   StixMetaObject: ResolversTypes['ExternalReference'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MarkingDefinition'];
   StixMetaRelationship: ResolverTypeWrapper<Omit<StixMetaRelationship, 'from' | 'to'> & { from?: Maybe<ResolversTypes['StixObjectOrStixRelationship']>, to?: Maybe<ResolversTypes['StixObjectOrStixRelationship']> }>;
@@ -18407,10 +18497,14 @@ export type ResolversTypes = ResolversObject<{
   VulnerabilityConnection: ResolverTypeWrapper<VulnerabilityConnection>;
   VulnerabilityEdge: ResolverTypeWrapper<VulnerabilityEdge>;
   VulnerabilityEditMutations: ResolverTypeWrapper<VulnerabilityEditMutations>;
+  WindowsIntegrityLevel: WindowsIntegrityLevel;
   WindowsRegistryKey: ResolverTypeWrapper<WindowsRegistryKey>;
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
   WindowsRegistryValueType: ResolverTypeWrapper<WindowsRegistryValueType>;
   WindowsRegistryValueTypeAddInput: WindowsRegistryValueTypeAddInput;
+  WindowsServiceStartType: WindowsServiceStartType;
+  WindowsServiceStatus: WindowsServiceStatus;
+  WindowsServiceType: WindowsServiceType;
   Work: ResolverTypeWrapper<Work>;
   WorkConnection: ResolverTypeWrapper<WorkConnection>;
   WorkEdge: ResolverTypeWrapper<WorkEdge>;
@@ -18507,6 +18601,8 @@ export type ResolversParentTypes = ResolversObject<{
   CryptographicKeyAddInput: CryptographicKeyAddInput;
   DateTime: Scalars['DateTime'];
   DependencyVersion: DependencyVersion;
+  Dictionary: Dictionary;
+  DictionaryInput: DictionaryInput;
   Directory: Directory;
   DirectoryAddInput: DirectoryAddInput;
   Distribution: Omit<Distribution, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']> };
@@ -18796,6 +18892,8 @@ export type ResolversParentTypes = ResolversObject<{
   StixEditMutations: StixEditMutations;
   StixFile: StixFile;
   StixFileAddInput: StixFileAddInput;
+  StixFileConnection: StixFileConnection;
+  StixFileEdge: StixFileEdge;
   StixId: Scalars['StixId'];
   StixMetaObject: ResolversParentTypes['ExternalReference'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MarkingDefinition'];
   StixMetaRelationship: Omit<StixMetaRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']> };
@@ -19764,6 +19862,12 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 export type DependencyVersionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DependencyVersion'] = ResolversParentTypes['DependencyVersion']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DictionaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Dictionary'] = ResolversParentTypes['Dictionary']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -22072,6 +22176,7 @@ export type PositionEditMutationsResolvers<ContextType = any, ParentType extends
 }>;
 
 export type ProcessResolvers<ContextType = any, ParentType extends ResolversParentTypes['Process'] = ResolversParentTypes['Process']> = ResolversObject<{
+  aslr_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   command_line?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ProcessConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -22079,15 +22184,20 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   created_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   cwd?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dep_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  descriptions?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  display_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   environment_variables?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessExportFilesArgs>>;
   extensions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ProcessExternalReferencesArgs>>;
+  group_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ProcessIndicatorsArgs>>;
+  integrity_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_hidden?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ProcessJobsArgs>>;
@@ -22097,16 +22207,25 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ProcessObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ProcessOpinionsArgs>>;
+  owner_sid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessPendingFilesArgs>>;
   pid?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ProcessReportsArgs>>;
+  serviceDlls?: Resolver<Maybe<ResolversTypes['StixFileConnection']>, ParentType, ContextType>;
+  service_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  service_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  service_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  start_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  startup_info?: Resolver<Maybe<Array<Maybe<ResolversTypes['Dictionary']>>>, ParentType, ContextType>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ProcessStixCoreRelationshipsArgs>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<ProcessStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  window_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -23178,6 +23297,18 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixFileConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixFileConnection'] = ResolversParentTypes['StixFileConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixFileEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixFileEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixFileEdge'] = ResolversParentTypes['StixFileEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['StixFile'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -24371,6 +24502,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CryptographicKey?: CryptographicKeyResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   DependencyVersion?: DependencyVersionResolvers<ContextType>;
+  Dictionary?: DictionaryResolvers<ContextType>;
   Directory?: DirectoryResolvers<ContextType>;
   Distribution?: DistributionResolvers<ContextType>;
   DocsMetrics?: DocsMetricsResolvers<ContextType>;
@@ -24569,6 +24701,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixDomainObjectEditMutations?: StixDomainObjectEditMutationsResolvers<ContextType>;
   StixEditMutations?: StixEditMutationsResolvers<ContextType>;
   StixFile?: StixFileResolvers<ContextType>;
+  StixFileConnection?: StixFileConnectionResolvers<ContextType>;
+  StixFileEdge?: StixFileEdgeResolvers<ContextType>;
   StixId?: GraphQLScalarType;
   StixMetaObject?: StixMetaObjectResolvers<ContextType>;
   StixMetaRelationship?: StixMetaRelationshipResolvers<ContextType>;

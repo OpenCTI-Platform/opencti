@@ -560,6 +560,22 @@ const stixCyberObservablesAttributes = {
     'cwd',
     'command_line',
     'environment_variables',
+    // windows-process-ext
+    'aslr_enabled',
+    'dep_enabled',
+    'priority',
+    'owner_sid',
+    'window_title',
+    'startup_info',
+    'integrity_level',
+    // windows-service-ext
+    'service_name',
+    'descriptions',
+    'display_name',
+    'group_name',
+    'start_type',
+    'service_type',
+    'service_status',
   ],
   [ENTITY_SOFTWARE]: [
     'internal_id',

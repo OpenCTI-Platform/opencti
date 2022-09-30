@@ -20,7 +20,7 @@ import {
   INPUT_PARENT_DIRECTORY,
   INPUT_RAW_EMAIL,
   INPUT_RESOLVES_TO, INPUT_SAMPLE,
-  INPUT_SENDER,
+  INPUT_SENDER, INPUT_SERVICE_DLL,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
@@ -43,6 +43,12 @@ import {
   RELATION_OBJECT_MARKING
 } from '../schema/stixMetaRelationship';
 import type { PageInfo } from '../generated/graphql';
+import type {
+  windows_integrity_level_enum,
+  windows_service_start_type_enum,
+  windows_service_status_enum,
+  windows_service_type_enum
+} from "./stix-sco";
 
 interface StoreFile {
   id: string;
@@ -326,6 +332,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   body: string;
   value: string;
   display_name: string;
+  group_name: string;
   mime_type: string;
   payload_bin: string;
   url: string;
@@ -378,6 +385,10 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   title: string;
   content: string;
   media_category: string;
+  service_name: string;
+  priority: string;
+  owner_sid: string;
+  window_title: string;
   // date
   attribute_date: Date;
   ctime: Date;
@@ -408,11 +419,14 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   can_escalate_privs: boolean;
   is_disabled: boolean;
   is_self_signed: boolean;
+  aslr_enabled: boolean;
+  dep_enabled: boolean;
   // Array
   x_opencti_additional_names: Array<string>;
   received_lines: Array<string>;
   protocols: Array<string>;
   languages: Array<string>;
+  descriptions: Array<string>;
   // number
   x_opencti_score: number;
   number: number;
@@ -430,6 +444,12 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   // object
   ipfix: object;
   environment_variables: object;
+  startup_info: object;
+  // enum
+  start_type: windows_service_start_type_enum;
+  service_type: windows_service_type_enum;
+  service_status: windows_service_status_enum;
+  integrity_level: windows_integrity_level_enum;
 }
 interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_CREATED_BY]: BasicStoreEntity;
@@ -448,6 +468,7 @@ interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_CHILD]: Array<BasicStoreObject>;
   [INPUT_ENCAPSULATES]: Array<BasicStoreObject>;
   [INPUT_OPENED_CONNECTION]: Array<BasicStoreObject>;
+  [INPUT_SERVICE_DLL]: Array<BasicStoreObject>;
   [INPUT_CC]: Array<BasicStoreObject>;
   [INPUT_BCC]: Array<BasicStoreObject>;
   [INPUT_TO]: Array<BasicStoreObject>;

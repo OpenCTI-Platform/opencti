@@ -30,6 +30,7 @@ export const INPUT_CHILD = 'child';
 export const INPUT_BODY_MULTIPART = 'bodyMultipart';
 export const INPUT_VALUES = 'values';
 export const INPUT_LINKED = 'xOpenctiLinkedTo';
+export const INPUT_SERVICE_DLL = 'serviceDlls';
 
 export const RELATION_OPERATING_SYSTEM = 'operating-system';
 export const RELATION_SAMPLE = 'sample';
@@ -59,6 +60,7 @@ export const RELATION_CHILD = 'child';
 export const RELATION_BODY_MULTIPART = 'body-multipart';
 export const RELATION_VALUES = 'values';
 export const RELATION_LINKED = 'x_opencti_linked-to';
+export const RELATION_SERVICE_DLL = 'service-dll';
 
 export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = {
   [RELATION_OPERATING_SYSTEM]: 'operating_system_refs',
@@ -89,6 +91,7 @@ export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = 
   [RELATION_BODY_MULTIPART]: 'body_multipart',
   [RELATION_VALUES]: 'values_refs',
   [RELATION_LINKED]: 'x_opencti_linked_to_refs',
+  [RELATION_SERVICE_DLL]: 'service_dll_refs',
 };
 
 export const STIX_ATTRIBUTE_TO_CYBER_RELATIONS = R.mergeAll(
@@ -126,6 +129,7 @@ export const STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD: { [k: string]: string } =
   body_multipart: INPUT_BODY_MULTIPART,
   values_refs: INPUT_VALUES,
   x_opencti_linked_to_refs: INPUT_LINKED,
+  service_dll_refs: INPUT_SERVICE_DLL,
 };
 export const STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
   Object.keys(STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD).map((k) => ({
@@ -162,6 +166,7 @@ export const STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD: { [k: string]: string } = 
   [RELATION_BODY_MULTIPART]: INPUT_BODY_MULTIPART,
   [RELATION_VALUES]: INPUT_VALUES,
   [RELATION_LINKED]: INPUT_LINKED,
+  [RELATION_SERVICE_DLL]: INPUT_SERVICE_DLL,
 };
 
 export const CYBER_OBSERVABLE_FIELD_TO_META_RELATION = R.mergeAll(
@@ -199,6 +204,7 @@ const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_BODY_MULTIPART,
   RELATION_VALUES,
   RELATION_LINKED,
+  RELATION_SERVICE_DLL
 ];
 schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 export const SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
@@ -233,6 +239,7 @@ export const MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
   INPUT_BODY_MULTIPART,
   INPUT_VALUES,
   INPUT_LINKED,
+  INPUT_SERVICE_DLL,
 ];
 export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
   ...SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,

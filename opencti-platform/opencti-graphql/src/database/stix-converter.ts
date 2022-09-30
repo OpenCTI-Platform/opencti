@@ -28,7 +28,7 @@ import {
   INPUT_RAW_EMAIL,
   INPUT_RESOLVES_TO,
   INPUT_SAMPLE,
-  INPUT_SENDER,
+  INPUT_SENDER, INPUT_SERVICE_DLL,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
@@ -807,8 +807,9 @@ const convertNetworkTrafficToStix = (instance: StoreCyberObservable, type: strin
 };
 const convertProcessToStix = (instance: StoreCyberObservable, type: string): SCO.StixProcess => {
   assertType(ENTITY_PROCESS, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
   return {
-    ...buildStixCyberObservable(instance),
+    ...stixCyberObject,
     is_hidden: instance.is_hidden,
     pid: instance.pid,
     created_time: instance.created_time,
@@ -820,6 +821,28 @@ const convertProcessToStix = (instance: StoreCyberObservable, type: string): SCO
     image_ref: instance[INPUT_IMAGE]?.standard_id,
     parent_ref: instance[INPUT_PARENT]?.standard_id,
     child_refs: (instance[INPUT_CHILD] ?? []).map((m) => m.standard_id),
+    extensions: {
+      ...stixCyberObject.extensions,
+      'windows-process-ext': {
+        aslr_enabled: instance.aslr_enabled,
+        dep_enabled: instance.dep_enabled,
+        priority: instance.priority,
+        owner_sid: instance.owner_sid,
+        window_title: instance.window_title,
+        startup_info: instance.startup_info,
+        integrity_level: instance.integrity_level,
+      },
+      'windows-service-ext': {
+        service_name: instance.service_name,
+        descriptions: instance.descriptions,
+        display_name: instance.display_name,
+        group_name: instance.group_name,
+        start_type: instance.start_type,
+        service_dll_refs: (instance[INPUT_SERVICE_DLL] ?? []).map((m) => m.standard_id),
+        service_type: instance.service_type,
+        service_status: instance.service_status,
+      }
+    }
   };
 };
 const convertSoftwareToStix = (instance: StoreCyberObservable, type: string): SCO.StixSoftware => {

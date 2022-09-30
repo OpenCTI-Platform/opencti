@@ -450,6 +450,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             name={attribute.value}
                             label={attribute.value}
                             containerstyle={{ marginTop: 20 }}
+                            onChange={this.handleSubmitField.bind(this)}
                           />
                         );
                       }
@@ -664,6 +665,21 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           cwd
           command_line
           environment_variables
+          ## windows-process-ext
+          aslr_enabled
+          dep_enabled
+          priority
+          owner_sid
+          window_title
+          integrity_level
+          ## windows-service-ext
+          service_name
+          descriptions
+          display_name
+          group_name
+          start_type
+          service_type
+          service_status
         }
         ... on Software {
           name

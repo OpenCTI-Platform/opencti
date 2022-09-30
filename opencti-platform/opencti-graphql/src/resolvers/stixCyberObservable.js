@@ -6,6 +6,7 @@ import {
   artifactImport,
   batchArtifacts,
   batchIndicators,
+  batchStixFiles,
   batchVulnerabilities,
   findAll,
   findById,
@@ -38,6 +39,7 @@ import { observableValue } from '../utils/format';
 
 const indicatorsLoader = batchLoader(batchIndicators);
 const vulnerabilitiesLoader = batchLoader(batchVulnerabilities);
+const stixFileLoader = batchLoader(batchStixFiles);
 const artifactsLoader = batchLoader(batchArtifacts);
 
 const stixCyberObservableResolvers = {
@@ -72,6 +74,9 @@ const stixCyberObservableResolvers = {
     importFiles: (stixCyberObservable, { first }, context) => filesListing(context, context.user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
     exportFiles: (stixCyberObservable, { first }, context) => filesListing(context, context.user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
   },
+  Process: {
+    serviceDlls: (process, _, { user }) => stixFileLoader.load(process.id, user),
+  },
   StixFile: {
     obsContent: (stixFile, _, context) => artifactsLoader.load(stixFile.id, context, context.user),
   },
@@ -81,19 +86,12 @@ const stixCyberObservableResolvers = {
   Mutation: {
     stixCyberObservableEdit: (_, { id }, context) => ({
       delete: () => stixCyberObservableDelete(context, context.user, id),
-      fieldPatch: ({
-        input,
-        commitMessage,
-        references
-      }) => stixCyberObservableEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) => stixCyberObservableEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixCyberObservableEditContext(context, context.user, id, input),
       contextClean: () => stixCyberObservableCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixCyberObservableAddRelation(context, context.user, id, input),
       relationsAdd: ({ input }) => stixCyberObservableAddRelations(context, context.user, id, input),
-      relationDelete: ({
-        toId,
-        relationship_type: relationshipType
-      }) => stixCyberObservableDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCyberObservableDeleteRelation(context, context.user, id, toId, relationshipType),
       exportAsk: (args) => stixCyberObservableExportAsk(context, context.user, assoc('stixCyberObservableId', id, args)),
       exportPush: ({ file }) => stixCyberObservableExportPush(context, context.user, id, file),
       importPush: ({ file }) => stixCoreObjectImportPush(context, context.user, id, file),
