@@ -54,11 +54,13 @@ const styles = (theme) => ({
 
 class TotalAcceptedRisksCard extends Component {
   render() {
-    const { t, n, classes } = this.props;
+    const {
+      t, n, height, classes,
+    } = this.props;
     return (
       <Card
         classes={{ root: classes.card }}
-        style={{ height: 110 }}
+        style={{ height: height || '100%' }}
         variant="outlined"
       >
         <Suspense fallback={<Loader variant="inElement" />}>
