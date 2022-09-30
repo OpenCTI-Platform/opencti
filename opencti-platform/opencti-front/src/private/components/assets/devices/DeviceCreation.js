@@ -275,7 +275,6 @@ class DeviceCreation extends Component {
                 >
                   {t('New Asset')}
                 </Typography>
->>>>>>> 4bd77bde514624cb687e167327902846a7d05db0
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
                     <Button
