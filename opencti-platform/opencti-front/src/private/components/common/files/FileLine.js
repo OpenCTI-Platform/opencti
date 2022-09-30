@@ -160,10 +160,9 @@ class FileLineComponent extends Component {
     } else {
       history.push(...[...messages, ...errors]);
     }
-    const toolTip = history
-      .map((s) => s.message)
-      .filter((s) => !isEmpty(s))
-      .join(', ');
+    const toolTip = history.map((s) => s.message).filter((s) => !isEmpty(s)).join(', ');
+    const encodedFilePath = encodeURIComponent(file.id);
+    const listClick = `${APP_BASE_PATH}/storage/${directDownload ? 'get' : 'view'}/${encodeURIComponent(encodedFilePath)}`;
     return (
       <div>
         <ListItem
@@ -173,11 +172,7 @@ class FileLineComponent extends Component {
           button={true}
           component={isOutdated ? null : Link}
           disabled={isProgress}
-          to={
-            directDownload
-              ? `/storage/get/${encodeURIComponent(file.id)}`
-              : `/storage/view/${encodeURIComponent(file.id)}`
-          }
+          to={listClick}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -228,11 +223,10 @@ class FileLineComponent extends Component {
                 <span>
                   <IconButton
                     disabled={isProgress}
-                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
+                    href={`${APP_BASE_PATH}/storage/get/${encodedFilePath}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
-                    size="large"
-                  >
+                    size="large">
                     <GetAppOutlined />
                   </IconButton>
                 </span>
