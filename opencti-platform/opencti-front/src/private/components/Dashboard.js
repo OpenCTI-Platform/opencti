@@ -977,11 +977,6 @@ class Dashboard extends Component {
               </Paper>
             </Grid>
           </Grid>
-          <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
-            <Grid item={true} xs={8}>
-              <CyioCoreObjectTotalAcceptedRiskAreaChart height="400px" />
-            </Grid>
-            </Grid>
         </Security>
       </div>
     );
