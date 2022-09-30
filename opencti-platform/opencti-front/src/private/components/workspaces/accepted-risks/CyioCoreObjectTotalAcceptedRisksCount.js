@@ -25,6 +25,7 @@ const styles = (theme) => ({
   },
   card: {
     width: '100%',
+    height: 'inherit',
     borderRadius: 6,
   },
   number: {
