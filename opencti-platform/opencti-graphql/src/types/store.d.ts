@@ -48,7 +48,7 @@ import type {
   windows_service_start_type_enum,
   windows_service_status_enum,
   windows_service_type_enum
-} from "./stix-sco";
+} from './stix-sco';
 
 interface StoreFile {
   id: string;
