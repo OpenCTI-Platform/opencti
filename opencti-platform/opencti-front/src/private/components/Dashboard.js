@@ -50,6 +50,8 @@ import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import { computeLevel } from '../../utils/Number';
 import ItemMarkings from '../../components/ItemMarkings';
 import ImportFreshdeskScript from '../../utils/freshdesk';
+import CyioCoreObjectTotalAcceptedRiskAreaChart from './workspaces/accepted-risks/CyioCoreObjectTotalAcceptedRiskAreaChart';
+import CyioCoreObjectTotalAcceptedRiskDonutChart from './workspaces/accepted-risks/CyioCoreObjectTotalAcceptedRiskDonutChart';
 
 const styles = (theme) => ({
   root: {
@@ -351,7 +353,7 @@ class Dashboard extends Component {
     return truncate(this.props.t(`entity_${title}`), 10);
   }
 
-  render() {
+  renderdefault() {
     const {
       t, n, fsd, mtd, classes, theme,
     } = this.props;
@@ -975,7 +977,23 @@ class Dashboard extends Component {
               </Paper>
             </Grid>
           </Grid>
+          <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
+            <Grid item={true} xs={8}>
+              <CyioCoreObjectTotalAcceptedRiskAreaChart height="400px" />
+            </Grid>
+            </Grid>
         </Security>
+      </div>
+    );
+  }
+
+  render() {
+    const { t } = this.props;
+    ImportFreshdeskScript();
+    return (
+      <div style={{ marginBottom: '2rem' }}>
+        <CyioCoreObjectTotalAcceptedRiskAreaChart height="400px" />
+        <CyioCoreObjectTotalAcceptedRiskDonutChart height="400px" />
       </div>
     );
   }
