@@ -193,6 +193,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Bank-Account':
     case 'Phone-Number':
     case 'Payment-Card':
+    case 'Media-Content':
       if (dark) {
         return '#37474f';
       }

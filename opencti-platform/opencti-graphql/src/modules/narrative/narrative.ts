@@ -2,10 +2,11 @@ import narrativeTypeDefs from './narrative.graphql';
 import convertNarrativeToStix from './narrative-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import narrativeResolvers from './narrative-resolver';
-import { ENTITY_TYPE_NARRATIVE, RELATION_SUBNARRATIVE_OF, StoreEntityNarrative } from './narrative-types';
+import { ENTITY_TYPE_NARRATIVE, StoreEntityNarrative } from './narrative-types';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
 import { REL_NEW } from '../../database/stix';
+import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 
 const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative> = {
   type: {

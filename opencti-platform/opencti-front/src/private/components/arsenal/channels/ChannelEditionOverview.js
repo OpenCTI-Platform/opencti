@@ -18,7 +18,6 @@ import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -30,20 +29,15 @@ import {
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
+import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
+import { attributesQuery } from '../../settings/attributes/AttributesLines';
+import Loader from '../../../../components/Loader';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import ItemIcon from '../../../../components/ItemIcon';
+import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 
 const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -53,6 +47,19 @@ const styles = (theme) => ({
     position: 'absolute',
     top: 30,
     right: 30,
+  },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
+  autoCompleteIndicator: {
+    display: 'none',
   },
 });
 
@@ -102,7 +109,11 @@ const channelMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    channelRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+    channelRelationDelete(
+      id: $id
+      toId: $toId
+      relationship_type: $relationship_type
+    ) {
       ...ChannelEditionOverview_channel
     }
   }
@@ -110,10 +121,8 @@ const channelMutationRelationDelete = graphql`
 
 const channelValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
+  description: Yup.string().nullable(),
+  channel_types: Yup.array().required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
 });
@@ -139,6 +148,7 @@ class ChannelEditionOverviewComponent extends Component {
       R.dissoc('references'),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('channel_types', R.pluck('value', values.channel_types)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -166,6 +176,9 @@ class ChannelEditionOverviewComponent extends Component {
     let finalValue = value;
     if (name === 'x_opencti_workflow_id') {
       finalValue = value.value;
+    }
+    if (name === 'channel_types') {
+      finalValue = R.pluck('value', value);
     }
     channelValidation(this.props.t)
       .validateAt(name, { [name]: value })
@@ -232,7 +245,7 @@ class ChannelEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, channel, context, enableReferences } = this.props;
+    const { t, classes, channel, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(channel);
     const objectMarking = convertMarkings(channel);
     const status = convertStatus(t, channel);
@@ -240,8 +253,13 @@ class ChannelEditionOverviewComponent extends Component {
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
       assoc('x_opencti_workflow_id', status),
+      R.assoc(
+        'channel_types',
+        (channel.channel_types || []).map((n) => ({ label: n, value: n })),
+      ),
       pick([
         'name',
+        'channel_types',
         'description',
         'createdBy',
         'objectMarking',
@@ -249,95 +267,190 @@ class ChannelEditionOverviewComponent extends Component {
       ]),
     )(channel);
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={channelValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          validateForm,
-          setFieldValue,
-          values,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
-            />
-            {channel.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Channel"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
-              onChange={this.handleChangeCreatedBy.bind(this)}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
-              }
-              onChange={this.handleChangeObjectMarking.bind(this)}
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting}
-                validateForm={validateForm}
-                setFieldValue={setFieldValue}
-                values={values}
-                id={channel.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+      <QueryRenderer
+        query={attributesQuery}
+        variables={{ key: 'channel_types' }}
+        render={({ props }) => {
+          if (props && props.runtimeAttributes) {
+            const channelEdges = props.runtimeAttributes.edges.map(
+              (e) => e.node.value,
+            );
+            const elements = R.uniq([...channelEdges, 'Twitter', 'Facebook']);
+            return (
+              <Formik
+                enableReinitialize={true}
+                initialValues={initialValues}
+                validationSchema={channelValidation(t)}
+                onSubmit={this.onSubmit.bind(this)}
+              >
+                {({
+                  submitForm,
+                  isSubmitting,
+                  validateForm,
+                  setFieldValue,
+                  values,
+                }) => (
+                  <Form style={{ margin: '20px 0 20px 0' }}>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="name"
+                      label={t('Name')}
+                      fullWidth={true}
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onSubmit={this.handleSubmitField.bind(this)}
+                      helperText={
+                        <SubscriptionFocus context={context} fieldName="name" />
+                      }
+                    />
+                    <Security
+                      needs={[SETTINGS_SETLABELS]}
+                      placeholder={
+                        <Field
+                          component={AutocompleteField}
+                          onChange={this.handleSubmitField.bind(this)}
+                          style={{ marginTop: 20 }}
+                          name="channel_types"
+                          multiple={true}
+                          createLabel={t('Add')}
+                          textfieldprops={{
+                            variant: 'standard',
+                            label: t('Channel types'),
+                            helperText: (
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName="channel_types"
+                              />
+                            ),
+                          }}
+                          options={elements.map((n) => ({
+                            id: n,
+                            value: n,
+                            label: n,
+                          }))}
+                          renderOption={(optionProps, option) => (
+                            <li {...optionProps}>
+                              <div className={classes.icon}>
+                                <ItemIcon type="attribute" />
+                              </div>
+                              <div className={classes.text}>{option.label}</div>
+                            </li>
+                          )}
+                          classes={{
+                            clearIndicator: classes.autoCompleteIndicator,
+                          }}
+                        />
+                      }
+                    >
+                      <Field
+                        component={AutocompleteFreeSoloField}
+                        onChange={this.handleSubmitField.bind(this)}
+                        style={{ marginTop: 20 }}
+                        name="channel_types"
+                        multiple={true}
+                        createLabel={t('Add')}
+                        textfieldprops={{
+                          variant: 'standard',
+                          label: t('Channel types'),
+                          helperText: (
+                            <SubscriptionFocus
+                              context={context}
+                              fieldName="channel_types"
+                            />
+                          ),
+                        }}
+                        options={elements.map((n) => ({
+                          id: n,
+                          value: n,
+                          label: n,
+                        }))}
+                        renderOption={(optionProps, option) => (
+                          <li {...optionProps}>
+                            <div className={classes.icon}>
+                              <ItemIcon type="attribute" />
+                            </div>
+                            <div className={classes.text}>{option.label}</div>
+                          </li>
+                        )}
+                        classes={{
+                          clearIndicator: classes.autoCompleteIndicator,
+                        }}
+                      />
+                    </Security>
+                    <Field
+                      component={MarkDownField}
+                      name="description"
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onSubmit={this.handleSubmitField.bind(this)}
+                      helperText={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldName="description"
+                        />
+                      }
+                    />
+                    {channel.workflowEnabled && (
+                      <StatusField
+                        name="x_opencti_workflow_id"
+                        type="Channel"
+                        onFocus={this.handleChangeFocus.bind(this)}
+                        onChange={this.handleSubmitField.bind(this)}
+                        setFieldValue={setFieldValue}
+                        style={{ marginTop: 20 }}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldName="x_opencti_workflow_id"
+                          />
+                        }
+                      />
+                    )}
+                    <CreatedByField
+                      name="createdBy"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      helpertext={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldName="createdBy"
+                        />
+                      }
+                      onChange={this.handleChangeCreatedBy.bind(this)}
+                    />
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                      helpertext={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldname="objectMarking"
+                        />
+                      }
+                      onChange={this.handleChangeObjectMarking.bind(this)}
+                    />
+                    {enableReferences && (
+                      <CommitMessage
+                        submitForm={submitForm}
+                        disabled={isSubmitting}
+                        validateForm={validateForm}
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        id={channel.id}
+                      />
+                    )}
+                  </Form>
+                )}
+              </Formik>
+            );
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
     );
   }
 }
@@ -356,6 +469,7 @@ const ChannelEditionOverview = createFragmentContainer(
       fragment ChannelEditionOverview_channel on Channel {
         id
         name
+        channel_types
         description
         createdBy {
           ... on Identity {

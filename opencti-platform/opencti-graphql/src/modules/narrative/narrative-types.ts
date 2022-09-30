@@ -2,7 +2,6 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
-export const RELATION_SUBNARRATIVE_OF = 'subnarrative-of';
 export const ENTITY_TYPE_NARRATIVE = 'Narrative';
 
 // region Database types
