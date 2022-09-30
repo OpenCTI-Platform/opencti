@@ -15,10 +15,7 @@ import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   paper: {
-    minHeight: 280,
     height: '100%',
-    margin: '4px 0 0 0',
-    padding: '0 0 10px 0',
     borderRadius: 6,
   },
   chip: {
@@ -28,9 +25,7 @@ const styles = (theme) => ({
   },
   card: {
     width: '100%',
-    marginBottom: 20,
     borderRadius: 6,
-    position: 'relative',
   },
   number: {
     marginTop: 10,
@@ -45,22 +40,20 @@ const styles = (theme) => ({
     color: theme.palette.text.secondary,
   },
   icon: {
-    position: 'absolute',
     color: theme.palette.primary.main,
-    top: 35,
-    right: 20,
+    width: 'auto',
+    display: 'flex',
+    justifyContent: 'flex-end',
   },
 });
-
 class CyioCoreObjectTotalAcceptedRisksCount extends Component {
-  render() {
+  renderContent() {
     const {
-      t, n, height, classes,
+      t, n, classes,
     } = this.props;
     return (
       <Card
         classes={{ root: classes.card }}
-        style={{ height: height || '100%' }}
         variant="outlined"
       >
         <Suspense fallback={<Loader variant="inElement" />}>
@@ -89,6 +82,26 @@ class CyioCoreObjectTotalAcceptedRisksCount extends Component {
           </CardContent>
         </Suspense>
       </Card>
+    );
+  }
+
+  render() {
+    const {
+      t, classes, title, variant, height,
+    } = this.props;
+    return (
+      <div style={{ height: height || '100%' }}>
+        <Typography variant="h4" gutterBottom={true}>
+          {title || t('Total Accepted Risks')}
+        </Typography>
+        {variant === 'inLine' ? (
+          this.renderContent()
+        ) : (
+          <Paper classes={{ root: classes.paper }} elevation={2}>
+            {this.renderContent()}
+          </Paper>
+        )}
+      </div>
     );
   }
 }
