@@ -73,7 +73,7 @@ import {
   RELATION_ORIGINATES_FROM,
   RELATION_OWNS,
   RELATION_PART_OF,
-  RELATION_PARTICIPATES_IN,
+  RELATION_PARTICIPATES_IN, RELATION_PUBLISHES,
   RELATION_RELATED_TO,
   RELATION_REMEDIATES,
   RELATION_RESOLVES_TO,
@@ -283,6 +283,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_MEDIA_CONTENT}`]: [
+    { name: RELATION_PUBLISHES, type: REL_NEW }
+  ],
   // endregion
   // region ORGANIZATION
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
@@ -305,6 +308,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_TOOL}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_MEDIA_CONTENT}`]: [
+    { name: RELATION_PUBLISHES, type: REL_NEW }
   ],
   // endregion
   // region SECTOR
@@ -903,6 +909,10 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_MEDIA_CONTENT}_${ENTITY_USER_ACCOUNT}`]: [
     { name: RELATION_AUTHORED_BY, type: REL_EXTENDED }
+  ],
+  // From USER_ACCOUNT
+  [`${ENTITY_USER_ACCOUNT}_${ENTITY_MEDIA_CONTENT}`]: [
+    { name: RELATION_PUBLISHES, type: REL_NEW }
   ],
   // endregion
   // region RELATIONS TO RELATIONS: DISCUSS IMPLEMENTATION!!

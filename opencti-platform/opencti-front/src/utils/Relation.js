@@ -293,6 +293,7 @@ const relationsTypesMapping = {
   'Media-Content_Individual': ['authored-by'],
   'Media-Content_Organization': ['authored-by'],
   'Media-Content_User-Account': ['authored-by'],
+  'User-Account_Media-Content': ['publishes'],
   // CUSTOM OPENCTI SRO RELATIONSHIPS
   // DISCUSS IMPLEMENTATION!!
   Indicator_uses: ['indicates'],

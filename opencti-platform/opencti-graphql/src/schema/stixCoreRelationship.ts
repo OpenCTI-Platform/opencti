@@ -49,6 +49,7 @@ export const RELATION_RESOLVES_TO = 'resolves-to';
 export const RELATION_PART_OF = 'part-of'; // Extension (OpenCTI)
 export const RELATION_COOPERATES_WITH = 'cooperates-with'; // Extension (OpenCTI)
 export const RELATION_PARTICIPATES_IN = 'participates-in'; // Extension (OpenCTI)
+export const RELATION_PUBLISHES = 'publishes'; // Extension OpenCTI
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
 export const RELATION_DETECTS = 'detects'; // Extension (MITRE)

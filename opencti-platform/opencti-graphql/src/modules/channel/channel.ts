@@ -1,7 +1,12 @@
 import channelTypeDefs from './channel.graphql';
 import convertChannelToStix from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { RELATION_BELONGS_TO, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import {
+  RELATION_BELONGS_TO,
+  RELATION_PUBLISHES,
+  RELATION_TARGETS,
+  RELATION_USES
+} from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -25,7 +30,8 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import {
   ENTITY_DOMAIN_NAME,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  ENTITY_HOSTNAME, ENTITY_MEDIA_CONTENT,
+  ENTITY_HOSTNAME,
+  ENTITY_MEDIA_CONTENT,
   ENTITY_TEXT,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT
@@ -33,7 +39,6 @@ import {
 import { REL_EXTENDED, REL_NEW } from '../../database/stix';
 
 const RELATION_AMPLIFIES = 'amplifies';
-const RELATION_PUBLISHES = 'publishes';
 
 const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
   type: {
