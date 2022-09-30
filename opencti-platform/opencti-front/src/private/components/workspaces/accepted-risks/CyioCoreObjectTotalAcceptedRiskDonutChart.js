@@ -235,124 +235,131 @@ class CyioCoreObjectTotalAcceptedRiskDonutChart extends Component {
       limit: 8,
     };
     return (
-    //   <QueryRenderer
-    //     query={stixCoreRelationshipsDonutsDistributionQuery}
-    //     variables={stixDomainObjectsDistributionVariables}
-    //     render={({ props }) => {
-    //       if (
-    //         props
-    //         && props.stixCoreRelationshipsDistribution
-    //         && props.stixCoreRelationshipsDistribution.length > 0
-    //       ) {
-    //         let data = props.stixCoreRelationshipsDistribution;
-    //         if (field === 'internal_id') {
-    //           data = map(
-    //             (n) => assoc(
-    //               'label',
-    //               `${
-    //                 toTypes.length > 1
-    //                   ? `[${t(`entity_${n.entity.entity_type}`)}] ${
-    //                     n.entity.name
-    //                   }`
-    //                   : `${n.entity.name}`
-    //               }`,
-    //               n,
-    //             ),
-    //             props.stixCoreRelationshipsDistribution,
-    //           );
-    //         }
-    //         return (
-              <ResponsiveContainer height="100%" width="100%">
-                <PieChart width={600} height={600}>
-                        {data
-                          && <Pie
-                            cx={500}
-                            cy={200}
-                            data={data}
-                            fill="#82ca9d"
-                            nameKey="name"
-                            dataKey="value"
-                            innerRadius={90}
-                            outerRadius={150}
-                            labelLine={true}
-                            isAnimationActive={false}
-                            isUpdateAnimationActive={true}
-                            label={({
-                              cx,
-                              cy,
-                              value,
-                              index,
-                              midAngle,
-                              innerRadius,
-                              outerRadius,
-                            }) => {
-                              const RADIAN = Math.PI / 180;
-                              // eslint-disable-next-line
-                              const radius =
-                                25 + innerRadius + (outerRadius - innerRadius);
-                              // eslint-disable-next-line
-                              const x =
-                                cx + radius * Math.cos(-midAngle * RADIAN);
-                              // eslint-disable-next-line
-                              const y =
-                                cy + radius * Math.sin(-midAngle * RADIAN);
-                              return (
-                                <text
-                                  x={x}
-                                  y={y}
-                                  fill={COLORS[data[index].name]}
-                                  textAnchor={x > cx ? 'start' : 'end'}
-                                  dominantBaseline="central"
-                                  style={{ fontSize: '15px' }}
-                                >
-                                  {data[index].name} ({value})
-                                </text>
-                              );
-                            }}
-                          >
-                            {data.map((entry, index) => (
-                              <Cell
-                                key={`cell-${index}`}
-                                fill={COLORS[entry.name]}
-                              />
-                            ))}
-                          </Pie>
-                        }
-                        <Tooltip content='Accepted Risks' />
-                      </PieChart>
-              </ResponsiveContainer>
-    //         );
-    //       }
-    //       if (props) {
-    //         return (
-    //           <div style={{ display: 'table', height: '100%', width: '100%' }}>
-    //             <span
-    //               style={{
-    //                 display: 'table-cell',
-    //                 verticalAlign: 'middle',
-    //                 textAlign: 'center',
-    //               }}
-    //             >
-    //               {t('No entities of this type has been found.')}
-    //             </span>
-    //           </div>
-    //         );
-    //       }
-    //       return (
-    //         <div style={{ display: 'table', height: '100%', width: '100%' }}>
-    //           <span
-    //             style={{
-    //               display: 'table-cell',
-    //               verticalAlign: 'middle',
-    //               textAlign: 'center',
-    //             }}
-    //           >
-    //             <CircularProgress size={40} thickness={2} />
-    //           </span>
-    //         </div>
-    //       );
-    //     }}
-    //   />
+      //   <QueryRenderer
+      //     query={stixCoreRelationshipsDonutsDistributionQuery}
+      //     variables={stixDomainObjectsDistributionVariables}
+      //     render={({ props }) => {
+      //       if (
+      //         props
+      //         && props.stixCoreRelationshipsDistribution
+      //         && props.stixCoreRelationshipsDistribution.length > 0
+      //       ) {
+      //         let data = props.stixCoreRelationshipsDistribution;
+      //         if (field === 'internal_id') {
+      //           data = map(
+      //             (n) => assoc(
+      //               'label',
+      //               `${
+      //                 toTypes.length > 1
+      //                   ? `[${t(`entity_${n.entity.entity_type}`)}] ${
+      //                     n.entity.name
+      //                   }`
+      //                   : `${n.entity.name}`
+      //               }`,
+      //               n,
+      //             ),
+      //             props.stixCoreRelationshipsDistribution,
+      //           );
+      //         }
+      //         return (
+      <ResponsiveContainer height="100%" width="100%">
+        <PieChart
+          margin={{
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+          }}
+        >
+          {data
+            && <Pie
+              cx='45%'
+              cy='45%'
+              data={data}
+              fill="#82ca9d"
+              nameKey="name"
+              dataKey="value"
+              innerRadius='50%'
+              outerRadius='80%'
+              labelLine={true}
+              isAnimationActive={false}
+              isUpdateAnimationActive={true}
+              label={({
+                cx,
+                cy,
+                value,
+                index,
+                midAngle,
+                innerRadius,
+                outerRadius,
+              }) => {
+                const RADIAN = Math.PI / 180;
+                // eslint-disable-next-line
+                const radius =
+                  25 + innerRadius + (outerRadius - innerRadius);
+                // eslint-disable-next-line
+                const x =
+                  cx + radius * Math.cos(-midAngle * RADIAN);
+                // eslint-disable-next-line
+                const y =
+                  cy + radius * Math.sin(-midAngle * RADIAN);
+                return (
+                  <text
+                    x={x}
+                    y={y}
+                    fill={COLORS[data[index].name]}
+                    textAnchor={x > cx ? 'start' : 'end'}
+                    dominantBaseline="central"
+                    style={{ fontSize: '15px' }}
+                  >
+                    {data[index].name} ({value})
+                  </text>
+                );
+              }}
+            >
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[entry.name]}
+                />
+              ))}
+            </Pie>
+          }
+          <Tooltip content='Accepted Risks' />
+        </PieChart>
+      </ResponsiveContainer>
+      //         );
+      //       }
+      //       if (props) {
+      //         return (
+      //           <div style={{ display: 'table', height: '100%', width: '100%' }}>
+      //             <span
+      //               style={{
+      //                 display: 'table-cell',
+      //                 verticalAlign: 'middle',
+      //                 textAlign: 'center',
+      //               }}
+      //             >
+      //               {t('No entities of this type has been found.')}
+      //             </span>
+      //           </div>
+      //         );
+      //       }
+      //       return (
+      //         <div style={{ display: 'table', height: '100%', width: '100%' }}>
+      //           <span
+      //             style={{
+      //               display: 'table-cell',
+      //               verticalAlign: 'middle',
+      //               textAlign: 'center',
+      //             }}
+      //           >
+      //             <CircularProgress size={40} thickness={2} />
+      //           </span>
+      //         </div>
+      //       );
+      //     }}
+      //   />
     );
   }
 
@@ -361,7 +368,7 @@ class CyioCoreObjectTotalAcceptedRiskDonutChart extends Component {
       t, classes, title, variant, height,
     } = this.props;
     return (
-      <div style={{ height: height || '100%', marginTop: '2rem' }}>
+      <div style={{ height: height || '100%', padding: '20px' }}>
         <Typography variant="h4" gutterBottom={true}>
           {title || t('Total Accepted Risks')}
         </Typography>
