@@ -265,6 +265,7 @@ const relationsTypesMapping = {
   Channel_Text: ['publishes'],
   'Channel_Domain-Name': ['publishes'],
   Channel_Hostname: ['publishes'],
+  'Channel_Media-Content': ['publishes'],
   Channel_Email: ['uses'],
   Channel_Channel: ['amplifies'],
   Hostname_Artifact: ['drops'],
@@ -289,6 +290,8 @@ const relationsTypesMapping = {
   Url_Narrative: ['uses'],
   'Domain-Name_Narrative': ['uses'],
   Hostname_Narrative: ['uses'],
+  'Media-Content_Individual': ['authored-by'],
+  'Media-Content_Organization': ['authored-by'],
   // CUSTOM OPENCTI SRO RELATIONSHIPS
   // DISCUSS IMPLEMENTATION!!
   Indicator_uses: ['indicates'],
