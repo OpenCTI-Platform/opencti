@@ -361,9 +361,9 @@ class CyioCoreObjectTotalAcceptedRiskDonutChart extends Component {
       t, classes, title, variant, height,
     } = this.props;
     return (
-      <div style={{ height: height || '100%' }}>
+      <div style={{ height: height || '100%', marginTop: '2rem' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Distribution of entities')}
+          {title || t('Total Accepted Risks')}
         </Typography>
         {variant === 'inLine' ? (
           this.renderContent()
