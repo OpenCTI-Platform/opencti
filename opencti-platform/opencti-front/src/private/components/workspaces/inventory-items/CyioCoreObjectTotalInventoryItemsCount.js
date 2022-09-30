@@ -30,7 +30,9 @@ const styles = (theme) => ({
     width: '100%',
     height: 'inherit',
     borderRadius: 6,
-    padding: '0 0 1rem 0',
+    display: 'grid',
+    alignItems: 'center',
+    border: 'none',
   },
   number: {
     marginTop: '1rem',
