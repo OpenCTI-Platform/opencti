@@ -49,7 +49,8 @@ export const RELATION_RESOLVES_TO = 'resolves-to';
 export const RELATION_PART_OF = 'part-of'; // Extension (OpenCTI)
 export const RELATION_COOPERATES_WITH = 'cooperates-with'; // Extension (OpenCTI)
 export const RELATION_PARTICIPATES_IN = 'participates-in'; // Extension (OpenCTI)
-export const RELATION_PUBLISHES = 'publishes'; // Extension OpenCTI
+export const RELATION_PUBLISHES = 'publishes'; // Extension (OpenCTI)
+export const RELATION_AMPLIFIES = 'amplifies'; // Extension (OpenCTI)
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
 export const RELATION_DETECTS = 'detects'; // Extension (MITRE)
@@ -97,6 +98,8 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_BELONGS_TO,
   RELATION_RESOLVES_TO,
   RELATION_DETECTS,
+  RELATION_PUBLISHES,
+  RELATION_AMPLIFIES,
 ];
 
 schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);

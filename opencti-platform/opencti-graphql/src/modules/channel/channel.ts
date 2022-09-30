@@ -2,6 +2,7 @@ import channelTypeDefs from './channel.graphql';
 import convertChannelToStix from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import {
+  RELATION_AMPLIFIES,
   RELATION_BELONGS_TO,
   RELATION_PUBLISHES,
   RELATION_TARGETS,
@@ -37,8 +38,6 @@ import {
   ENTITY_USER_ACCOUNT
 } from '../../schema/stixCyberObservable';
 import { REL_EXTENDED, REL_NEW } from '../../database/stix';
-
-const RELATION_AMPLIFIES = 'amplifies';
 
 const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
   type: {
