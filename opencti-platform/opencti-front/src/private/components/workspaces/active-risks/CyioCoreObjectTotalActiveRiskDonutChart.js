@@ -9,6 +9,7 @@ import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from 'rich-markdown-editor/dist/components/Tooltip';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -134,14 +135,24 @@ const styles = () => ({
 // `;
 
 const data = [
-  { name: 'Group A', value: 400 },
-  { name: 'Group B', value: 300 },
-  { name: 'Group C', value: 300 },
-  { name: 'Group D', value: 200 },
+  { name: 'Low', value: 400 },
+  { name: 'Medium', value: 300 },
+  { name: 'High', value: 300 },
+  { name: 'Severe', value: 200 },
+  { name: 'Critical', value: 100 },
+  { name: 'Informational', value: 100 },
 ];
-const COLORS = ['#FFD773', '#FFB000', '#F17B00', '#FF4100', '#FF0000', '#FFEBBC'];
 
-class CyioCoreObjectActiveRisksDonut extends Component {
+const COLORS = {
+  Low: '#FFD773',
+  Medium: '#FFB000',
+  High: '#F17B00',
+  Severe: '#FF4100',
+  Critical: '#FF0000',
+  Informational: '#FFEBBC',
+};
+
+class CyioCoreObjectTotalActiveRiskDonutChart extends Component {
   constructor(props) {
     super(props);
     this.renderLabel = this.renderLabel.bind(this);
@@ -224,31 +235,33 @@ class CyioCoreObjectActiveRisksDonut extends Component {
       limit: 8,
     };
     return (
-      // <QueryRenderer
-      //   query={stixCoreRelationshipsDonutsDistributionQuery}
-      //   variables={stixDomainObjectsDistributionVariables}
-      //   render={({ props }) => {
-      //     if (
-      //       props
-      //       && props.stixCoreRelationshipsDistribution
-      //       && props.stixCoreRelationshipsDistribution.length > 0
-      //     ) {
-      //       let data = props.stixCoreRelationshipsDistribution;
-      //       if (field === 'internal_id') {
-      //         data = map(
-      //           (n) => assoc(
-      //             'label',
-      //             `${toTypes.length > 1
-      //               ? `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name
-      //               }`
-      //               : `${n.entity.name}`
-      //             }`,
-      //             n,
-      //           ),
-      //           props.stixCoreRelationshipsDistribution,
-      //         );
-      //       }
-      //       return (
+      //   <QueryRenderer
+      //     query={stixCoreRelationshipsDonutsDistributionQuery}
+      //     variables={stixDomainObjectsDistributionVariables}
+      //     render={({ props }) => {
+      //       if (
+      //         props
+      //         && props.stixCoreRelationshipsDistribution
+      //         && props.stixCoreRelationshipsDistribution.length > 0
+      //       ) {
+      //         let data = props.stixCoreRelationshipsDistribution;
+      //         if (field === 'internal_id') {
+      //           data = map(
+      //             (n) => assoc(
+      //               'label',
+      //               `${
+      //                 toTypes.length > 1
+      //                   ? `[${t(`entity_${n.entity.entity_type}`)}] ${
+      //                     n.entity.name
+      //                   }`
+      //                   : `${n.entity.name}`
+      //               }`,
+      //               n,
+      //             ),
+      //             props.stixCoreRelationshipsDistribution,
+      //           );
+      //         }
+      //         return (
       <ResponsiveContainer height="100%" width="100%">
         <PieChart
           margin={{
@@ -258,39 +271,80 @@ class CyioCoreObjectActiveRisksDonut extends Component {
             left: 0,
           }}
         >
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="label"
-            cx="50%"
-            cy="50%"
-            innerRadius={90}
-            outerRadius={150}
-            labelLine={true}
-            isAnimationActive={false}
-            isUpdateAnimationActive={true}
-            fill="#82ca9d"
-            // label={
-            //   variant === 'inEntity'
-            //     ? this.renderLabel
-            //     : this.renderSimpleLabel
-            // }
-            paddingAngle={5}
-          >
-            {COLORS.map((entry, index) => (
-              <Cell
-                key={index}
-                fill={itemColor(COLORS[index])}
-                stroke={theme.palette.background.paper}
-              />
-            ))}
-          </Pie>
-          {variant === 'inLine' && <Legend margin={{ bottom: 20 }} />}
+          {data
+            && <Pie
+              cx='45%'
+              cy='45%'
+              data={data}
+              fill="#82ca9d"
+              nameKey="name"
+              dataKey="value"
+              innerRadius='50%'
+              outerRadius='80%'
+              labelLine={true}
+              isAnimationActive={false}
+              isUpdateAnimationActive={true}
+              label={({
+                cx,
+                cy,
+                value,
+                index,
+                midAngle,
+                innerRadius,
+                outerRadius,
+              }) => {
+                const RADIAN = Math.PI / 180;
+                // eslint-disable-next-line
+                const radius =
+                  25 + innerRadius + (outerRadius - innerRadius);
+                // eslint-disable-next-line
+                const x =
+                  cx + radius * Math.cos(-midAngle * RADIAN);
+                // eslint-disable-next-line
+                const y =
+                  cy + radius * Math.sin(-midAngle * RADIAN);
+                return (
+                  <text
+                    x={x}
+                    y={y}
+                    fill={COLORS[data[index].name]}
+                    textAnchor={x > cx ? 'start' : 'end'}
+                    dominantBaseline="central"
+                    style={{ fontSize: '15px' }}
+                  >
+                    {data[index].name} ({value})
+                  </text>
+                );
+              }}
+            >
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[entry.name]}
+                />
+              ))}
+            </Pie>
+          }
+          <Tooltip content='Accepted Risks' />
         </PieChart>
       </ResponsiveContainer>
-      //       );
-      //     }
-      //     if (props) {
+      //         );
+      //       }
+      //       if (props) {
+      //         return (
+      //           <div style={{ display: 'table', height: '100%', width: '100%' }}>
+      //             <span
+      //               style={{
+      //                 display: 'table-cell',
+      //                 verticalAlign: 'middle',
+      //                 textAlign: 'center',
+      //               }}
+      //             >
+      //               {t('No entities of this type has been found.')}
+      //             </span>
+      //           </div>
+      //         );
+      //       }
       //       return (
       //         <div style={{ display: 'table', height: '100%', width: '100%' }}>
       //           <span
@@ -300,26 +354,12 @@ class CyioCoreObjectActiveRisksDonut extends Component {
       //               textAlign: 'center',
       //             }}
       //           >
-      //             {t('No entities of this type has been found.')}
+      //             <CircularProgress size={40} thickness={2} />
       //           </span>
       //         </div>
       //       );
-      //     }
-      //     return (
-      //       <div style={{ display: 'table', height: '100%', width: '100%' }}>
-      //         <span
-      //           style={{
-      //             display: 'table-cell',
-      //             verticalAlign: 'middle',
-      //             textAlign: 'center',
-      //           }}
-      //         >
-      //           <CircularProgress size={40} thickness={2} />
-      //         </span>
-      //       </div>
-      //     );
-      //   }}
-      // />
+      //     }}
+      //   />
     );
   }
 
@@ -328,9 +368,9 @@ class CyioCoreObjectActiveRisksDonut extends Component {
       t, classes, title, variant, height,
     } = this.props;
     return (
-      <div style={{ height: height || '100%' }}>
+      <div style={{ height: height || '100%', padding: '20px' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Distribution of entities')}
+          {title || t('Total Accepted Risks')}
         </Typography>
         {variant === 'inLine' ? (
           this.renderContent()
@@ -344,7 +384,7 @@ class CyioCoreObjectActiveRisksDonut extends Component {
   }
 }
 
-CyioCoreObjectActiveRisksDonut.propTypes = {
+CyioCoreObjectTotalActiveRiskDonutChart.propTypes = {
   relationshipType: PropTypes.string,
   toTypes: PropTypes.array,
   title: PropTypes.string,
@@ -363,4 +403,4 @@ export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(CyioCoreObjectActiveRisksDonut);
+)(CyioCoreObjectTotalActiveRiskDonutChart);
