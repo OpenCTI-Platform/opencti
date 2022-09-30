@@ -33,6 +33,7 @@ class StixCyberObservableTypes(Enum):
     BANK_ACCOUNT = "Bank-Account"
     PHONE_NUMBER = "Phone-Number"
     PAYMENT_CARD = "Payment-Card"
+    MEDIA_CONTENT = "Media-Content"
     SIMPLE_OBSERVABLE = "Simple-Observable"
 
     @classmethod

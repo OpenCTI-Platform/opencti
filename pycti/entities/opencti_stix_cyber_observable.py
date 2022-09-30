@@ -679,7 +679,7 @@ class StixCyberObservable:
                     $BankAccount: BankAccountAddInput
                     $PhoneNumber: PhoneNumberAddInput
                     $PaymentCard: PaymentCardAddInput
-                    $MediaContent: MediaContent
+                    $MediaContent: MediaContentAddInput
                 ) {
                     stixCyberObservableAdd(
                         type: $type,

@@ -19,6 +19,10 @@ STIX_CYBER_OBSERVABLE_MAPPING = {
     "windows-registry-key": "Windows-Registry-Key",
     "windows-registry-value-type": "Windows-Registry-Value-Type",
     "hostname": "Hostname",
+    "bank-account": "Bank-Account",
+    "phone-number": "Phone-Number",
+    "payment-card": "Payment-Card",
+    "media-content": "Media-Content",
 }
 
 PATTERN_MAPPING = {
@@ -45,6 +49,10 @@ PATTERN_MAPPING = {
     "Windows-Registry-Key": ["key"],
     "Windows-Registry-Value-Type": ["name"],
     "Hostname": ["value"],
+    "Bank-Account": ["iban"],
+    "Phone-Number": ["value"],
+    "Payment-Card": ["card_number"],
+    "Media-Content": ["url"],
 }
 
 OBSERVABLES_VALUE_INT = [
