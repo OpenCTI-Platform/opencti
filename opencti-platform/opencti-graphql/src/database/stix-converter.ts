@@ -78,7 +78,8 @@ import {
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
-  ENTITY_AUTONOMOUS_SYSTEM, ENTITY_BANK_ACCOUNT,
+  ENTITY_AUTONOMOUS_SYSTEM,
+  ENTITY_BANK_ACCOUNT,
   ENTITY_CRYPTOGRAPHIC_KEY,
   ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
@@ -93,6 +94,7 @@ import {
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
   ENTITY_MAC_ADDR,
+  ENTITY_MEDIA_CONTENT,
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PAYMENT_CARD,
@@ -892,6 +894,27 @@ const convertPhoneNumberToStix = (instance: StoreCyberObservable, type: string):
     }
   };
 };
+const convertMediaContentToStix = (instance: StoreCyberObservable, type: string): SCO.StixMediaContent => {
+  assertType(ENTITY_MEDIA_CONTENT, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    title: instance.title,
+    description: instance.x_opencti_description,
+    content: instance.content,
+    media_category: instance.media_category,
+    url: instance.url,
+    publication_date: instance.publication_date,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
 const convertPaymentCardToStix = (instance: StoreCyberObservable, type: string): SCO.StixPaymentCard => {
   assertType(ENTITY_PAYMENT_CARD, type);
   const stixCyberObject = buildStixCyberObservable(instance);
@@ -917,6 +940,7 @@ const convertURLToStix = (instance: StoreCyberObservable, type: string): SCO.Sti
   return {
     ...buildStixCyberObservable(instance),
     value: instance.value,
+    score: instance.x_opencti_score,
   };
 };
 const convertUserAccountToStix = (instance: StoreCyberObservable, type: string): SCO.StixUserAccount => {
@@ -1326,6 +1350,9 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     }
     if (ENTITY_MAC_ADDR === type) {
       return convertMacAddressToStix(cyber, type);
+    }
+    if (ENTITY_MEDIA_CONTENT === type) {
+      return convertMediaContentToStix(cyber, type);
     }
     if (ENTITY_MUTEX === type) {
       return convertMutexToStix(cyber, type);

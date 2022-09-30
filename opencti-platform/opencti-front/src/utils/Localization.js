@@ -1322,6 +1322,7 @@ const i18n = {
       'entity_Bank-Account': 'Cuenta bancaria',
       'entity_Phone-Number': 'Número de teléfono',
       'entity_Payment-Card': 'Tarjeta bancaria',
+      'entity_Media-Content': 'Contenido multimedia',
       // Relations
       relationship_All: 'Todos los tipos de relación',
       relationship_object: 'contiene',
@@ -2843,6 +2844,7 @@ const i18n = {
       'entity_Bank-Account': 'Compte bancaire',
       'entity_Phone-Number': 'Numéro de téléphone',
       'entity_Payment-Card': 'Carte de paiement',
+      'entity_Media-Content': 'Contenu média',
       // Relations
       relationship_All: 'Tous les types de relation',
       relationship_object: 'contient',
@@ -4246,6 +4248,7 @@ const i18n = {
       'entity_Bank-Account': '银行账户',
       'entity_Phone-Number': '电话号码',
       'entity_Payment-Card': '支付卡',
+      'entity_Media-Content': '媒体内容',
       // Relations
       relationship_All: '所有关系',
       relationship_object: '对象',
@@ -4543,6 +4546,7 @@ const i18n = {
       'entity_Bank-Account': 'Bank account',
       'entity_Phone-Number': 'Phone number',
       'entity_Payment-Card': 'Payment card',
+      'entity_Media-Content': 'Media content',
       // Relations
       relationship_All: 'All types of relationship',
       relationship_object: 'contains',

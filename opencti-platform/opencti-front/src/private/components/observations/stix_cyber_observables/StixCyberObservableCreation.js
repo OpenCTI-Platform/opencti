@@ -97,6 +97,7 @@ export const dateAttributes = [
   'account_first_login',
   'account_last_login',
   'expiration_date',
+  'publication_date',
 ];
 
 export const numberAttributes = [
@@ -234,6 +235,7 @@ const stixCyberObservableMutation = graphql`
     $BankAccount: BankAccountAddInput
     $PhoneNumber: PhoneNumberAddInput
     $PaymentCard: PaymentCardAddInput
+    $MediaContent: MediaContentAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -272,6 +274,7 @@ const stixCyberObservableMutation = graphql`
       BankAccount: $BankAccount
       PhoneNumber: $PhoneNumber
       PaymentCard: $PaymentCard
+      MediaContent: $MediaContent
     ) {
       id
       entity_type

@@ -8306,7 +8306,103 @@ input PaymentCardAddInput {
   cvv: Int
   holder_name: String
 }
-
+type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+  ): StixCyberObservableRelationshipConnection
+  # MediaContent
+  title: String
+  description: String
+  content: String
+  media_category: String
+  url: String
+  publication_date: DateTime
+  # Technical
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input MediaContentAddInput {
+  title: String
+  content: String
+  media_category: String
+  url: String!
+  publication_date: DateTime
+}
 ###### RELATIONSHIPS
 
 interface BasicRelationship {
@@ -8450,6 +8546,7 @@ union StixObjectOrStixRelationship =
   | BankAccount
   | PhoneNumber
   | PaymentCard
+  | MediaContent
   | StixCoreRelationship
   | StixMetaRelationship
   | StixSightingRelationship
@@ -8511,6 +8608,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | BankAccount
   | PhoneNumber
   | PaymentCard
+  | MediaContent
   | StixCoreRelationship
 
 enum StixRelationshipsOrdering {
@@ -10582,6 +10680,7 @@ type Mutation {
     BankAccount: BankAccountAddInput
     PhoneNumber: PhoneNumberAddInput
     PaymentCard: PaymentCardAddInput
+    MediaContent: MediaContentAddInput
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(

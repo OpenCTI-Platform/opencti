@@ -42,6 +42,7 @@ PATTERN_MAPPING = {
     "Bank-Account": ["iban"],
     "Phone-Number": ["value"],
     "Payment-Card": ["card_number"],
+    "Media-Content": ["url"],
 }
 
 

@@ -7,7 +7,7 @@ import {
   ENTITY_EMAIL_MESSAGE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
+  ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, ENTITY_MEDIA_CONTENT,
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PAYMENT_CARD,
@@ -105,6 +105,8 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.attribute_key || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
       return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
+    case ENTITY_MEDIA_CONTENT:
+      return stixCyberObservable.url || stixCyberObservable.title || 'Unknown';
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }
@@ -222,6 +224,12 @@ export const runtimeFieldObservableValueScript = () => {
     } else if (type == 'payment-card') {
        if (have(doc, 'card_number')) {
          emit(doc['card_number.keyword'].value)
+       } else {
+         emit('Unknown')
+       }
+    } else if (type == 'media-content') {
+       if (have(doc, 'url')) {
+         emit(doc['url.keyword'].value)
        } else {
          emit('Unknown')
        }

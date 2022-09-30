@@ -378,6 +378,9 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   holder_name: string;
   card_number: string;
   account_number: string;
+  title: string;
+  content: string;
+  media_category: string;
   // date
   attribute_date: Date;
   ctime: Date;
@@ -397,6 +400,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   private_key_usage_period_not_before: Date;
   private_key_usage_period_not_after: Date;
   expiration_date: Date;
+  publication_date: Date,
   // boolean
   defanged: boolean;
   is_multipart: boolean;

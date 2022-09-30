@@ -718,6 +718,13 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           cvv
           holder_name
         }
+        ... on MediaContent {
+          title
+          content
+          media_category
+          url
+          publication_date
+        }
         x_opencti_score
         x_opencti_description
         createdBy {

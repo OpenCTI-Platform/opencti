@@ -170,6 +170,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Bank-Account':
     case 'Phone-Number':
     case 'Payment-Card':
+    case 'Media-Content':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
       return <Visibility style={style} fontSize={fontSize} role="img" />;

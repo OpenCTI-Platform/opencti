@@ -59,7 +59,9 @@ class StixCyberObservableDetailsComponent extends Component {
                   {t('File')}
                 </Typography>
                 <Button
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                    file.id,
+                  )}`}
                   variant="outlined"
                   color="secondary"
                   size="small"
@@ -336,9 +338,16 @@ const StixCyberObservableDetails = createFragmentContainer(
         }
         ... on PaymentCard {
           card_number
-          expiration_date   
+          expiration_date
           cvv
           holder_name
+        }
+        ... on MediaContent {
+          title
+          content
+          media_category
+          url
+          publication_date
         }
         ...StixCyberObservableIndicators_stixCyberObservable
       }

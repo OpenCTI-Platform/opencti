@@ -43,6 +43,7 @@ export const ENTITY_USER_AGENT = 'User-Agent'; // Custom
 export const ENTITY_BANK_ACCOUNT = 'Bank-Account'; // Custom
 export const ENTITY_PHONE_NUMBER = 'Phone-Number'; // Custom
 export const ENTITY_PAYMENT_CARD = 'Payment-Card'; // Custom
+export const ENTITY_MEDIA_CONTENT = 'Media-Content'; // Custom
 
 const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -79,6 +80,7 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_BANK_ACCOUNT,
   ENTITY_PHONE_NUMBER,
   ENTITY_PAYMENT_CARD,
+  ENTITY_MEDIA_CONTENT,
 ];
 schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 
@@ -780,6 +782,25 @@ const stixCyberObservablesAttributes = {
     'expiration_date',
     'cvv',
     'holder_name'
+  ],
+  [ENTITY_MEDIA_CONTENT]: [
+    'internal_id',
+    'standard_id',
+    'entity_type',
+    'x_opencti_stix_ids',
+    'spec_version',
+    'created_at',
+    'i_created_at_day',
+    'i_created_at_month',
+    'i_created_at_year',
+    'updated_at',
+    'x_opencti_description',
+    'x_opencti_score',
+    'title',
+    'content',
+    'media_category',
+    'url',
+    'publication_date',
   ],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), stixCyberObservablesAttributes);

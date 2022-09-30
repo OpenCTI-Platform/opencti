@@ -445,6 +445,7 @@ interface StixSoftware extends StixCyberObject {
 // URL Object Specific Properties
 // value
 interface StixURL extends StixCyberObject {
+  score: number;
   value: string; // optional
 }
 
@@ -542,5 +543,25 @@ interface StixX509Certificate extends StixCyberObject {
     private_key_usage_period_not_after: Date; // optional
     certificate_policies: string; // optional
     policy_mappings: string; // optional
+  }
+}
+
+// Custom object extension - Media Content
+// value
+interface StixMediaContent extends StixCyberObject {
+  title: string;
+  description: string;
+  content: string;
+  media_category: string;
+  url: string;
+  publication_date: Date;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
   }
 }
