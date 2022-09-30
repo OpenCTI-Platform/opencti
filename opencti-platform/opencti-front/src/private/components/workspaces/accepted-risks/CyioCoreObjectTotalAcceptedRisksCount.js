@@ -31,6 +31,7 @@ const styles = (theme) => ({
     borderRadius: 6,
     display: 'grid',
     alignItems: 'center',
+    border: 'none',
   },
   number: {
     marginTop: '1rem',
