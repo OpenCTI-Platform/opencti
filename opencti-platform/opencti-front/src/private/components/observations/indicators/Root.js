@@ -119,6 +119,7 @@ class RootIndicator extends Component {
                               'Region',
                               'Country',
                               'City',
+                              'Sector',
                               'Organization',
                               'Individual',
                               'System',

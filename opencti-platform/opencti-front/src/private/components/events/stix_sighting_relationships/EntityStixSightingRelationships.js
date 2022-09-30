@@ -200,6 +200,10 @@ class EntityStixSightingRelationships extends Component {
                     || includes('Identity', targetStixDomainObjectTypes)) && (
                     <MenuItem value="City">{t('City')}</MenuItem>
                   )}
+                  {(includes('Sector', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes)) && (
+                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                  )}
                   {(includes('Organization', targetStixDomainObjectTypes)
                     || includes('Identity', targetStixDomainObjectTypes)) && (
                     <MenuItem value="Organization">

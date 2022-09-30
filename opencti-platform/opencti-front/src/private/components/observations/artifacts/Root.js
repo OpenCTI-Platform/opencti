@@ -16,6 +16,7 @@ import StixCyberObservableHeader from '../stix_cyber_observables/StixCyberObserv
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FileManager from '../../common/files/FileManager';
+import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const subscription = graphql`
   subscription RootArtifactSubscription($id: ID!) {
@@ -183,6 +184,21 @@ class RootArtifact extends Component {
                           entityId={observableId}
                           {...routeProps}
                         />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/artifacts/:observableId/knowledge/sightings/:sightingId"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixCyberObservableHeader
+                            stixCyberObservable={props.stixCyberObservable}
+                          />
+                          <StixSightingRelationship
+                            entityId={observableId}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                   </div>
