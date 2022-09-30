@@ -27,7 +27,8 @@ import {
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HOSTNAME, ENTITY_MEDIA_CONTENT,
   ENTITY_TEXT,
-  ENTITY_URL, ENTITY_USER_ACCOUNT
+  ENTITY_URL,
+  ENTITY_USER_ACCOUNT
 } from '../../schema/stixCyberObservable';
 import { REL_EXTENDED, REL_NEW } from '../../database/stix';
 
@@ -98,6 +99,8 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
     { name: RELATION_BELONGS_TO,
       targets: [
         { name: ENTITY_USER_ACCOUNT, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
       ] }
   ],
   converter: convertChannelToStix
