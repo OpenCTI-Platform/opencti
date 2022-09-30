@@ -1151,7 +1151,8 @@ class StixCyberObservable:
                     "media_category": observable_data["media_category"]
                     if "media_category" in observable_data
                     else None,
-                    "url": observable_data["url"]
+                    "url": observable_data["url"] if "url" in observable_data else None,
+                    "publication_date": observable_data["publication_date"]
                     if "publication_date" in observable_data
                     else None,
                 }
