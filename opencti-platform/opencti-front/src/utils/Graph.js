@@ -537,7 +537,7 @@ export const buildCorrelationData = (
     filterAdjust.selectedTimeRangeInterval,
   );
   const thisReportLinkNodes = R.filter(
-    (n) => n.reports && n.parent_types && n.reports.edges.length > 0,
+    (n) => n.reports && n.parent_types && n.reports.edges.length > 1,
     filteredObjects,
   );
   const relatedReportNodes = applyNodeFilters(

@@ -1055,20 +1055,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
             }
           }
         }
-        objects(
-          types: [
-            "Threat-Actor"
-            "Intrusion-Set"
-            "Campaign"
-            "Incident"
-            "Malware"
-            "Tool"
-            "Vulnerability"
-            "Stix-Cyber-Observable"
-            "Indicator"
-          ]
-          first: 100
-        ) {
+        objects {
           edges {
             node {
               ... on BasicObject {
@@ -1093,7 +1080,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                     }
                   }
                 }
-                reports(first: 10) {
+                reports {
                   edges {
                     node {
                       id
@@ -1196,7 +1183,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                reports(first: 10) {
+                reports {
                   edges {
                     node {
                       id
