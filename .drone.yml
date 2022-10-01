@@ -42,15 +42,15 @@ steps:
 
 services:
   - name: redis
-    image: redis:7.0.4
+    image: redis:7.0.5
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.2
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
       ES_JAVA_OPTS: -Xms2g -Xmx2g
   - name: minio
-    image: minio/minio:RELEASE.2022-08-26T19-53-15Z
+    image: minio/minio:latest
     environment:
       MINIO_ROOT_USER: ChangeMe
       MINIO_ROOT_PASSWORD: ChangeMe
@@ -77,5 +77,4 @@ services:
       - cd /tmp/opencti/opencti-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      #      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
