@@ -106,7 +106,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
       return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
     case ENTITY_MEDIA_CONTENT:
-      return stixCyberObservable.url || stixCyberObservable.title || 'Unknown';
+      return stixCyberObservable.content || stixCyberObservable.title || stixCyberObservable.url || 'Unknown';
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }
@@ -228,7 +228,11 @@ export const runtimeFieldObservableValueScript = () => {
          emit('Unknown')
        }
     } else if (type == 'media-content') {
-       if (have(doc, 'url')) {
+       if (have(doc, 'content')) {
+         emit(doc['content.keyword'].value)
+       } else if (have(doc, 'title')) {
+         emit(doc['title.keyword'].value)
+       } else if (have(doc, 'url')) {
          emit(doc['url.keyword'].value)
        } else {
          emit('Unknown')
