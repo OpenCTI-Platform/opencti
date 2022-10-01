@@ -68,6 +68,12 @@ class ChannelLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.channel_types.width }}
+              >
+                {node.channel_types.join(', ')}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
                 <StixCoreObjectLabels
@@ -112,6 +118,7 @@ const ChannelLineFragment = createFragmentContainer(ChannelLineComponent, {
     fragment ChannelLine_node on Channel {
       id
       name
+      channel_types
       created
       modified
       objectLabel {
@@ -151,6 +158,17 @@ class ChannelLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.channel_types.width }}
               >
                 <Skeleton
                   animation="wave"

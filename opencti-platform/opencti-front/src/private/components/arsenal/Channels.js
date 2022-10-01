@@ -106,12 +106,17 @@ class Channels extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '30%',
+        isSortable: true,
+      },
+      channel_types: {
+        label: 'Types',
+        width: '15%',
         isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
-        width: '25%',
+        width: '20%',
         isSortable: false,
       },
       created: {
@@ -142,6 +147,7 @@ class Channels extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'channel_types',
           'labelledBy',
           'markedBy',
           'created_start_date',

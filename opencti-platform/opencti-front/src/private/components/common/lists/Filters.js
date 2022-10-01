@@ -109,6 +109,7 @@ const styles = (theme) => ({
 
 const directFilters = [
   'report_types',
+  'channel_types',
   'sightedBy',
   'container_type',
   'toSightingId',
@@ -844,6 +845,33 @@ class Filters extends Component {
                 report_types: R.union(
                   reportTypesEntities,
                   this.state.entities.report_types,
+                ),
+              },
+            });
+          });
+        break;
+      case 'channel_types':
+        fetchQuery(attributesSearchQuery, {
+          attributeName: 'channel_types',
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const channelTypesEntities = R.pipe(
+              R.pathOr([], ['runtimeAttributes', 'edges']),
+              R.map((n) => ({
+                label: t(n.node.value),
+                value: n.node.value,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                channel_types: R.union(
+                  channelTypesEntities,
+                  this.state.entities.channel_types,
                 ),
               },
             });
