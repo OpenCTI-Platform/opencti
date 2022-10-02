@@ -1,0 +1,93 @@
+extend type Query {
+  # Dashboard Wizard Configuration
+  workspaceWizardConfig: String!
+
+  # Asset dashboard query support
+  """
+  Retrieves the total number of assets that match the filter
+  and counts those that have been created since the specified
+  end date and time.
+  """
+  assetsCount(
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    endDate: DateTime
+  ): Number
+  """
+  Retrieves the total number of assets that were created between the
+  start and end date that match the filter, and buckets the counts 
+  into intervals, as specified.
+  """
+  assetsTimeSeries(
+    objectId: ID
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: Interval!
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+
+
+  # Risk dashboard query support
+  """
+  Retrieves the total number of risks that match the filter
+  and counts those that have been created since the specified
+  end date and time.
+  """
+  risksCount(
+    "field on which to match risk"
+    field: String!
+    "list of value(s) that the specified field must match at least one"
+    match: [String]
+    operation: StatsOperation
+    endDate: DateTime!
+  ): Number
+  """
+  Retrieves the total number of risks that were created between the
+  start and end date that match the filter, and buckets the counts 
+  into intervals, as specified.
+  """
+  risksTimeSeries(
+    objectId: ID
+    "field on which to match risk"
+    field: String!
+    "list value(s) that the specified field must match at least one"
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    "interval into which counts are to be accumulated"
+    interval: Interval!
+  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  """
+  Retrieves the total number of risks that were created between the
+  start and end date that match the filter, and returns only as many
+  as the limit specifies
+  """
+  risksDistribution(
+    objectId: ID
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    limit: Int
+  ): [CyioDistribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+}
+
+enum Interval {
+  day
+  week
+  month
+  year
+}
+
+union CyioObject = Risk | Component | InventoryItem
+
+type CyioDistribution {
+  label: String!
+  entity: CyioObject
+  value: Int
+}
