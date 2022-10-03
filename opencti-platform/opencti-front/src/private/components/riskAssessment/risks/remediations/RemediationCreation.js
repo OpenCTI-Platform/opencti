@@ -179,6 +179,7 @@ class RemediationCreation extends Component {
       t,
       history,
       riskId,
+      location,
     } = this.props;
     return (
       <>
@@ -442,8 +443,9 @@ class RemediationCreation extends Component {
         </Dialog>
         <Dialog
           open={this.state.close}
+          onClose={this.handleCancelCloseClick.bind(this)}
           keepMounted={true}
-        // TransitionComponent={Transition}
+          TransitionComponent={Transition}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>
@@ -467,10 +469,13 @@ class RemediationCreation extends Component {
             </Button>
             <Button
               onClick={() =>
-                history.push(
-                  `/activities/risk assessment/risks/${this.props.riskId}/remediation`
+              {   
+                // window.location.reload() 
+                this.props.history.push(
+                  `/activities/risk assessment/risks/${this.props.riskId}`
                 )
-              }
+                // this.props.history.push(location.pathname)
+              }}
               color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
