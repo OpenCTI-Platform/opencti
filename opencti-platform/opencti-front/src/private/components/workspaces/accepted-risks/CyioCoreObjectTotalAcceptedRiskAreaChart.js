@@ -231,10 +231,11 @@ class CyioCoreObjectTotalAcceptedRiskAreaChart extends Component {
           <Legend />
           <Area
             dataKey="accepted"
-            stroke={theme.palette.primary.main}
+            // stroke={theme.palette.primary.main}
+            stroke='#40CC4D'
             strokeWidth={2}
             // fill={theme.palette.primary.main}
-            fill='#49B8FC'
+            fill='#40CC4D'
             fillOpacity={0.3}
           />
         </AreaChart>
