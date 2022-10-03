@@ -281,7 +281,7 @@ class CyioCoreObjectTotalActiveRiskAreaChart extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Total Accepted Risks')}
+          {title || t('Total Active Risks')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
