@@ -646,7 +646,7 @@ class RiskLogCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${riskId}/tracking`)}
+              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${riskId}`)}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
