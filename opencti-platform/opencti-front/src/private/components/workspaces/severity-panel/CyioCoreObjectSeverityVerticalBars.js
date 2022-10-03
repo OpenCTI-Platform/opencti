@@ -230,18 +230,6 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
             dataKey="amt"
             barSize={20}
           />
-          <Bar
-            // fill={theme.palette.primary.main}
-            fill="#83ADE9"
-            dataKey="pv"
-            barSize={20}
-          />
-          <Bar
-            // fill={theme.palette.primary.main}
-            fill="#FFFFFF"
-            dataKey="uv"
-            barSize={20}
-          />
         </BarChart>
       </ResponsiveContainer>
       //       );
