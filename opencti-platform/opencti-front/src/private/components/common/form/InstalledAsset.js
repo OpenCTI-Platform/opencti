@@ -39,6 +39,7 @@ const installedSoftwareAssetQuery = graphql`
           id
           name
           asset_type
+          version
         }
       }
     }
@@ -93,6 +94,7 @@ class InstalledAsset extends Component {
                   id: n.node.id,
                   name: n.node.name,
                   type: n.node.vendor_name,
+                  version: n.node.version,
                 })),
               )(data);
               this.setState({
@@ -127,7 +129,16 @@ class InstalledAsset extends Component {
       [],
       ['installedHardwareEntities'],
       this.state.devices,
+    ); 
+
+    const sort = R.sortWith(
+      [
+        R.ascend(R.prop('name'))
+      ]
     );
+
+    const sortedDeviceList = sort(devices);
+
     return (
       <div>
         <Field
@@ -143,7 +154,7 @@ class InstalledAsset extends Component {
           style={style}
           helperText={helperText}
         >
-          {devices.map((device) => (
+          {sortedDeviceList.map((device) => (
             <MenuItem key={device.id} value={device.id}>
               {device.name && t(device.name)}
             </MenuItem>
@@ -174,6 +185,15 @@ class InstalledAsset extends Component {
       ['installedSoftwareEntities'],
       this.state.softwareList,
     );
+
+    const sort = R.sortWith(
+      [
+        R.ascend(R.prop('name')),
+        R.descend(R.prop('version'))
+      ]
+    );
+
+    const sortedSoftwareList = sort(softwareList);
     return (
       <Field
         component={SelectField}
@@ -188,12 +208,18 @@ class InstalledAsset extends Component {
         style={style}
         helperText={helperText}
       >
-        {softwareList.map((software) => (
-          software.name
-          && <MenuItem key={software.id} value={software.id}>
-              {t(software.name)}
-          </MenuItem>
-        ))}
+        {sortedSoftwareList.map((software) => 
+          {
+            const softwareName = R.concat(software.name, " ");
+            const softwareNameWithVersion = R.concat(softwareName, software.version !== null ? software.version : "");
+            return(
+              software.name
+                && <MenuItem key={software.id} value={software.id}>
+                  {t(softwareNameWithVersion)}
+                </MenuItem>
+            )
+          }
+        )}
       </Field>
     );
   }
