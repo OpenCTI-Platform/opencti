@@ -133,7 +133,8 @@ class RemediationCreation extends Component {
   }
 
   handleCancelCloseClick() {
-    this.setState({ close: false });
+    this.setState({ open: false, displayCancel: false, close: false });
+    this.props.handleOpenCreation();
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -466,11 +467,7 @@ class RemediationCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() =>
-                history.push(
-                  `/activities/risk assessment/risks/${this.props.riskId}/remediation`
-                )
-              }
+              onClick={this.handleCancelCloseClick.bind(this)}
               color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
