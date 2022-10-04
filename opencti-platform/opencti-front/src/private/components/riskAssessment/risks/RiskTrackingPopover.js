@@ -37,6 +37,7 @@ import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import ErrorBox from '../../common/form/ErrorBox';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
@@ -142,8 +143,12 @@ class RiskTrackingPopover extends Component {
     this.setState({ displayDelete: false });
   }
 
-  handleCancelButton() {
+  handleBackButton() {
     this.setState({ displayCancel: false });
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false, displayUpdate: false });
   }
 
   onSubmit(values, { setSubmitting }) {
@@ -656,7 +661,7 @@ class RiskTrackingPopover extends Component {
             <Button
               // onClick={this.handleCloseDelete.bind(this)}
               // disabled={this.state.deleting}
-              onClick={this.handleCancelButton.bind(this)}
+              onClick={this.handleBackButton.bind(this)}
               classes={{ root: classes.buttonPopover }}
               variant="outlined"
               size="small"
@@ -666,7 +671,7 @@ class RiskTrackingPopover extends Component {
             <Button
               // onClick={this.submitDelete.bind(this)}
               // disabled={this.state.deleting}
-              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/tracking`)}
+              onClick={() => this.handleCancelButton()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
