@@ -216,7 +216,7 @@ export function getSelectSparqlQuery( type, select, id, filters, ) {
 
   if ( filters !== undefined && id === undefined ) {
     for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      if (!select.includes(filter.key)) select.push( filter.key );
     }
   }
 
@@ -383,13 +383,13 @@ export const selectAllLocations = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
