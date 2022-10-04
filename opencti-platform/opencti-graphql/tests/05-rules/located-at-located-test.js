@@ -25,8 +25,8 @@ describe('Located at located rule', () => {
     'Should rule successfully activated',
     async () => {
       await startModules();
-      const TLP_CLEAR_INSTANCE = await internalLoadById(SYSTEM_USER, TLP_CLEAR_ID);
-      const TLP_TEST_INSTANCE = await internalLoadById(SYSTEM_USER, TLP_TEST_ID);
+      const TLP_CLEAR_INSTANCE = await internalLoadById(context, SYSTEM_USER, TLP_CLEAR_ID);
+      const TLP_TEST_INSTANCE = await internalLoadById(context, SYSTEM_USER, TLP_TEST_ID);
       // Check that no inferences exists
       const beforeActivationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(beforeActivationRelations.length).toBe(0);
@@ -69,8 +69,8 @@ describe('Located at located rule', () => {
       // ---- inferences that will be created
       // PARIS > located-in > WESTERN EUROPE
       // PARIS > located-in > EUROPE (2 explanations)
-      const paris = await addCity(SYSTEM_USER, { name: 'Paris' });
-      const parisLocatedToFrance = await createRelation(SYSTEM_USER, {
+      const paris = await addCity(context, SYSTEM_USER, { name: 'Paris' });
+      const parisLocatedToFrance = await createRelation(context, SYSTEM_USER, {
         fromId: paris.id,
         toId: FRANCE,
         start_time: '2020-01-20T20:30:00.000Z',
@@ -102,17 +102,17 @@ describe('Located at located rule', () => {
       expect(parisToEuropeMarkings.includes(TLP_CLEAR_INSTANCE.internal_id)).toBeTruthy();
       expect(parisToEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       // Remove the relation must remove the inferences
-      await internalDeleteElementById(SYSTEM_USER, parisLocatedToFrance.internal_id);
+      await internalDeleteElementById(context, SYSTEM_USER, parisLocatedToFrance.internal_id);
       await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterRelDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRelDeletionRelations.length).toBe(3);
       // Recreate the relation
-      await createRelation(SYSTEM_USER, { fromId: paris.id, toId: FRANCE, relationship_type: RELATION_LOCATED_AT });
+      await createRelation(context, SYSTEM_USER, { fromId: paris.id, toId: FRANCE, relationship_type: RELATION_LOCATED_AT });
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterRecreationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRecreationRelations.length).toBe(5);
       // Remove the city
-      await internalDeleteElementById(SYSTEM_USER, paris.internal_id);
+      await internalDeleteElementById(context, SYSTEM_USER, paris.internal_id);
       await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterParisDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterParisDeletionRelations.length).toBe(3);

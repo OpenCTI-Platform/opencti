@@ -1,15 +1,40 @@
 import * as R from 'ramda';
 import type { Request } from 'express';
+import { context as telemetryContext, trace } from '@opentelemetry/api';
+import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { INPUT_MARKINGS, OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { basePath, baseUrl } from '../config/conf';
 import type { StixCoreObject } from '../types/stix-common';
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import type { StoreCommon } from '../types/store';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
+
+class TracingContext {
+  ctx: Context | undefined;
+
+  tracer: Tracer;
+
+  constructor(tracer: Tracer) {
+    this.tracer = tracer;
+    this.ctx = undefined;
+  }
+
+  getCtx() { return this.ctx; }
+
+  getTracer() { return this.tracer; }
+
+  setCurrentCtx(span: Span) { this.ctx = trace.setSpan(telemetryContext.active(), span); }
+}
+
+export const executionContext = (source: string): AuthContext => {
+  const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
+  const tracing = new TracingContext(tracer);
+  return { source, tracing };
+};
 
 export const SYSTEM_USER: AuthUser = {
   id: OPENCTI_SYSTEM_UUID,

@@ -154,7 +154,7 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data.report.id).toEqual(reportInternalId);
   });
   it('should report stix objects sor stix relationships accurate', async () => {
-    const report = await elLoadById(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const report = await elLoadById(context, ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     datasetReportInternalId = report.internal_id;
     const REPORT_STIX_DOMAIN_ENTITIES = gql`
       query report($id: String!) {
@@ -188,8 +188,8 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data.report.objects.edges.length).toEqual(26);
   });
   it('should report contains stix object or stix relationship accurate', async () => {
-    const intrusionSet = await elLoadById(ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const stixRelationship = await elLoadById(ADMIN_USER, 'relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
+    const intrusionSet = await elLoadById(context, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const stixRelationship = await elLoadById(context, ADMIN_USER, 'relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
     const REPORT_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP = gql`
       query reportContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
         reportContainsStixObjectOrStixRelationship(
@@ -239,7 +239,7 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data.reportsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries reports for entity to be accurate', async () => {
-    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(context, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     datasetMalwareInternalId = malware.internal_id;
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
@@ -257,7 +257,7 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data.reportsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries reports for author to be accurate', async () => {
-    const identity = await elLoadById(ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
+    const identity = await elLoadById(context, ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {

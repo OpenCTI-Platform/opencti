@@ -44,7 +44,7 @@ import {
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
@@ -82,10 +82,10 @@ const findTaskToExecute = async () => {
   }
   return R.head(tasks);
 };
-const computeRuleTaskElements = async (task) => {
+const computeRuleTaskElements = async (context, task) => {
   const { task_position, rule, enable } = task;
   const processingElements = [];
-  const ruleDefinition = await getRule(rule);
+  const ruleDefinition = await getRule(context, rule);
   if (enable) {
     const { scan } = ruleDefinition;
     const options = {
@@ -95,7 +95,7 @@ const computeRuleTaskElements = async (task) => {
       after: task_position,
       ...buildFilters(scan),
     };
-    const { edges: elements } = await elPaginate(RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
+    const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
     // Apply the actions for each element
     for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
       const element = elements[elementIndex];
@@ -111,7 +111,7 @@ const computeRuleTaskElements = async (task) => {
       after: task_position,
       filters,
     };
-    const { edges: elements } = await elPaginate(RULE_MANAGER_USER, READ_DATA_INDICES, options);
+    const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES, options);
     // Apply the actions for each element
     for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
       const element = elements[elementIndex];
@@ -121,11 +121,11 @@ const computeRuleTaskElements = async (task) => {
   }
   return processingElements;
 };
-const computeQueryTaskElements = async (user, task) => {
+const computeQueryTaskElements = async (context, user, task) => {
   const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
   const processingElements = [];
   // Fetch the information
-  const data = await executeTaskQuery(user, task_filters, task_search, task_position);
+  const data = await executeTaskQuery(context, user, task_filters, task_search, task_position);
   // const expectedNumber = data.pageInfo.globalCount;
   const elements = data.edges;
   // Apply the actions for each element
@@ -137,7 +137,7 @@ const computeQueryTaskElements = async (user, task) => {
   }
   return processingElements;
 };
-const computeListTaskElements = async (user, task) => {
+const computeListTaskElements = async (context, user, task) => {
   const { actions, task_position, task_ids } = task;
   const processingElements = [];
   // const expectedNumber = task_ids.length;
@@ -146,7 +146,7 @@ const computeListTaskElements = async (user, task) => {
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
   for (let elementId = 0; elementId < ids.length; elementId += 1) {
     const elementToResolve = task_ids[elementId];
-    const element = await internalLoadById(user, elementToResolve);
+    const element = await internalLoadById(context, user, elementToResolve);
     if (element) {
       processingElements.push({ element, actions, next: element.id });
     }
@@ -168,78 +168,78 @@ const appendTaskErrors = async (taskId, errors) => {
   });
 };
 
-const executeDelete = async (user, element) => {
-  await deleteElementById(user, element.internal_id, element.entity_type);
+const executeDelete = async (context, user, element) => {
+  await deleteElementById(context, user, element.internal_id, element.entity_type);
 };
-const executeAdd = async (user, context, element) => {
-  const { field, type: contextType, values } = context;
+const executeAdd = async (context, user, actionContext, element) => {
+  const { field, type: contextType, values } = actionContext;
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await createRelation(user, { fromId: element.id, toId: target, relationship_type: field });
+      await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
     }
   }
   if (contextType === ACTION_TYPE_REVERSED_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await createRelation(user, { fromId: target, toId: element.id, relationship_type: field });
+      await createRelation(context, user, { fromId: target, toId: element.id, relationship_type: field });
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
     const patch = { [field]: values };
-    await patchAttribute(user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_ADD });
+    await patchAttribute(context, user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_ADD });
   }
 };
-const executeRemove = async (user, context, element) => {
-  const { field, type: contextType, values } = context;
+const executeRemove = async (context, user, actionContext, element) => {
+  const { field, type: contextType, values } = actionContext;
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await deleteRelationsByFromAndTo(user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
+      await deleteRelationsByFromAndTo(context, user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
     }
   }
   if (contextType === ACTION_TYPE_REVERSED_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await deleteRelationsByFromAndTo(user, target, element.id, field, ABSTRACT_BASIC_RELATIONSHIP);
+      await deleteRelationsByFromAndTo(context, user, target, element.id, field, ABSTRACT_BASIC_RELATIONSHIP);
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
     const patch = { [field]: values };
-    await patchAttribute(user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_REMOVE });
+    await patchAttribute(context, user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_REMOVE });
   }
 };
-const executeReplace = async (user, context, element) => {
-  const { field, type: contextType, values } = context;
+const executeReplace = async (context, user, actionContext, element) => {
+  const { field, type: contextType, values } = actionContext;
   if (contextType === ACTION_TYPE_RELATION) {
     // 01 - Delete all relations of the element
-    const rels = await listAllRelations(user, field, { fromId: element.id });
+    const rels = await listAllRelations(context, user, field, { fromId: element.id });
     for (let indexRel = 0; indexRel < rels.length; indexRel += 1) {
       const rel = rels[indexRel];
-      await deleteElementById(user, rel.id, rel.entity_type);
+      await deleteElementById(context, user, rel.id, rel.entity_type);
     }
     // 02 - Create new ones
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await createRelation(user, { fromId: element.id, toId: target, relationship_type: field });
+      await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
     const patch = { [field]: values };
-    await patchAttribute(user, element.id, element.entity_type, patch);
+    await patchAttribute(context, user, element.id, element.entity_type, patch);
   }
 };
-const executeMerge = async (user, context, element) => {
-  const { values } = context;
-  await mergeEntities(user, element.internal_id, values);
+const executeMerge = async (context, user, actionContext, element) => {
+  const { values } = actionContext;
+  await mergeEntities(context, user, element.internal_id, values);
 };
-const executeEnrichment = async (user, context, element) => {
-  const askConnectors = await internalFindByIds(user, context.values);
+const executeEnrichment = async (context, user, actionContext, element) => {
+  const askConnectors = await internalFindByIds(context, user, actionContext.values);
   await BluePromise.map(askConnectors, async (connector) => {
-    await askElementEnrichmentForConnector(user, element.internal_id, connector.internal_id);
+    await askElementEnrichmentForConnector(context, user, element.internal_id, connector.internal_id);
   }, { concurrency: ES_MAX_CONCURRENCY });
 };
-const executePromote = async (user, element) => {
+const executePromote = async (context, user, element) => {
   // If indicator, promote to observable
   if (element.entity_type === ENTITY_TYPE_INDICATOR) {
     await promoteIndicatorToObservable(user, element.internal_id);
@@ -249,20 +249,20 @@ const executePromote = async (user, element) => {
     await promoteObservableToIndicator(user, element.internal_id);
   }
 };
-const executeRuleApply = async (user, context, element) => {
-  const { rule } = context;
+const executeRuleApply = async (context, user, actionContext, element) => {
+  const { rule } = actionContext;
   // Execute rules over one element, act as element creation
-  const instance = await storeLoadByIdWithRefs(user, element.internal_id);
-  const event = await storeCreateEntityEvent(user, instance, '-', { publishStreamEvent: false });
+  const instance = await storeLoadByIdWithRefs(context, user, element.internal_id);
+  const event = await storeCreateEntityEvent(context, user, instance, '-', { publishStreamEvent: false });
   await rulesApplyHandler([event], [rule]);
 };
-const executeRuleClean = async (context, element) => {
-  const { rule } = context;
+const executeRuleClean = async (context, actionContext, element) => {
+  const { rule } = actionContext;
   await rulesCleanHandler([element], [rule]);
 };
-const executeRuleElementRescan = async (user, context, element) => {
-  const { rules } = context ?? {};
-  const activatedRules = await getActivatedRules();
+const executeRuleElementRescan = async (context, user, actionContext, element) => {
+  const { rules } = actionContext ?? {};
+  const activatedRules = await getActivatedRules(context);
   // Filter activated rules by context specification
   const rulesToApply = rules ? activatedRules.filter((r) => rules.includes(r.id)) : activatedRules;
   if (rulesToApply.length > 0) {
@@ -276,7 +276,7 @@ const executeRuleElementRescan = async (user, context, element) => {
       }
     } else if (isStixObject(element.entity_type)) {
       const args = { connectionFormat: false, fromId: element.internal_id };
-      const relations = await listAllRelations(user, ABSTRACT_STIX_RELATIONSHIP, args);
+      const relations = await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
       for (let index = 0; index < relations.length; index += 1) {
         const relation = relations[index];
         const needRescan = ruleRescanTypes.includes(relation.entity_type);
@@ -290,43 +290,43 @@ const executeRuleElementRescan = async (user, context, element) => {
   }
 };
 
-const executeProcessing = async (user, processingElements) => {
+const executeProcessing = async (context, user, processingElements) => {
   const errors = [];
   for (let index = 0; index < processingElements.length; index += 1) {
     const { element, actions } = processingElements[index];
     try {
       for (let actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
-        const { type, context } = actions[actionIndex];
+        const { type, context: actionContext } = actions[actionIndex];
         if (type === ACTION_TYPE_DELETE) {
-          await executeDelete(user, element);
+          await executeDelete(context, user, element);
           break; // You cant have multiple actions on deletion, just stopping the loop.
         }
         if (type === ACTION_TYPE_ADD) {
-          await executeAdd(user, context, element);
+          await executeAdd(context, user, actionContext, element);
         }
         if (type === ACTION_TYPE_REMOVE) {
-          await executeRemove(user, context, element);
+          await executeRemove(context, user, actionContext, element);
         }
         if (type === ACTION_TYPE_REPLACE) {
-          await executeReplace(user, context, element);
+          await executeReplace(context, user, actionContext, element);
         }
         if (type === ACTION_TYPE_MERGE) {
-          await executeMerge(user, context, element);
+          await executeMerge(context, user, actionContext, element);
         }
         if (type === ACTION_TYPE_PROMOTE) {
-          await executePromote(user, element);
+          await executePromote(context, user, element);
         }
         if (type === ACTION_TYPE_ENRICHMENT) {
-          await executeEnrichment(user, context, element);
+          await executeEnrichment(context, user, actionContext, element);
         }
         if (type === ACTION_TYPE_RULE_APPLY) {
-          await executeRuleApply(user, context, element);
+          await executeRuleApply(context, user, actionContext, element);
         }
         if (type === ACTION_TYPE_RULE_CLEAR) {
-          await executeRuleClean(context, element);
+          await executeRuleClean(context, actionContext, element);
         }
         if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
-          await executeRuleElementRescan(user, context, element);
+          await executeRuleElementRescan(context, user, actionContext, element);
         }
       }
     } catch (err) {
@@ -342,6 +342,7 @@ const taskHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
+    const context = executionContext('task_manager');
     const task = await findTaskToExecute();
     // region Task checking
     if (!task) {
@@ -357,23 +358,23 @@ const taskHandler = async () => {
     }
     // endregion
     const startPatch = { last_execution_date: now() };
-    await updateTask(task.id, startPatch);
+    await updateTask(context, task.id, startPatch);
     // Fetch the user responsible for the task
-    const rawUser = await resolveUserById(task.initiator_id);
+    const rawUser = await resolveUserById(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
     let processingElements;
     if (isQueryTask) {
-      processingElements = await computeQueryTaskElements(user, task);
+      processingElements = await computeQueryTaskElements(context, user, task);
     }
     if (isListTask) {
-      processingElements = await computeListTaskElements(user, task);
+      processingElements = await computeListTaskElements(context, user, task);
     }
     if (isRuleTask) {
-      processingElements = await computeRuleTaskElements(task);
+      processingElements = await computeRuleTaskElements(context, task);
     }
     // Process the elements (empty = end of execution)
     if (processingElements.length > 0) {
-      const errors = await executeProcessing(user, processingElements);
+      const errors = await executeProcessing(context, user, processingElements);
       await appendTaskErrors(task.id, errors);
     }
     // Update the task
@@ -384,7 +385,7 @@ const taskHandler = async () => {
       task_processed_number: processedNumber,
       completed: processingElements.length < MAX_TASK_ELEMENTS,
     };
-    await updateTask(task.id, patch);
+    await updateTask(context, task.id, patch);
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');

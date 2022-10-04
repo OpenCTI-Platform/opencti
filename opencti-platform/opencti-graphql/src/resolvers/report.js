@@ -31,34 +31,34 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 
 const reportResolvers = {
   Query: {
-    report: (_, { id }, { user }) => findById(user, id),
-    reports: (_, args, { user }) => findAll(user, args),
-    reportsTimeSeries: (_, args, { user }) => {
+    report: (_, { id }, context) => findById(context, context.user, id),
+    reports: (_, args, context) => findAll(context, context.user, args),
+    reportsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsTimeSeriesByEntity(user, args);
+        return reportsTimeSeriesByEntity(context, context.user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return reportsTimeSeriesByAuthor(user, args);
+        return reportsTimeSeriesByAuthor(context, context.user, args);
       }
-      return reportsTimeSeries(user, args);
+      return reportsTimeSeries(context, context.user, args);
     },
-    reportsNumber: (_, args, { user }) => {
+    reportsNumber: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsNumberByEntity(user, args);
+        return reportsNumberByEntity(context, context.user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return reportsNumberByAuthor(user, args);
+        return reportsNumberByAuthor(context, context.user, args);
       }
-      return reportsNumber(user, args);
+      return reportsNumber(context, context.user, args);
     },
-    reportsDistribution: (_, args, { user }) => {
+    reportsDistribution: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsDistributionByEntity(user, args);
+        return reportsDistributionByEntity(context, context.user, args);
       }
-      return distributionEntities(user, ENTITY_TYPE_CONTAINER_REPORT, [], args);
+      return distributionEntities(context, context.user, ENTITY_TYPE_CONTAINER_REPORT, [], args);
     },
-    reportContainsStixObjectOrStixRelationship: (_, args, { user }) => {
-      return reportContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
+    reportContainsStixObjectOrStixRelationship: (_, args, context) => {
+      return reportContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   ReportsFilter: {
@@ -68,15 +68,15 @@ const reportResolvers = {
     objectContains: buildRefRelationKey(RELATION_OBJECT),
   },
   Mutation: {
-    reportEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    reportEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    reportAdd: (_, { input }, { user }) => addReport(user, input),
+    reportAdd: (_, { input }, context) => addReport(context, context.user, input),
   },
 };
 

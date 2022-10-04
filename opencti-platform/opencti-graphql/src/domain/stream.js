@@ -21,7 +21,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 
 // Stream graphQL handlers
-export const createStreamCollection = async (user, input) => {
+export const createStreamCollection = async (context, user, input) => {
   const collectionId = generateInternalId();
   const relatedGroups = input.groups || [];
   // Insert the collection
@@ -43,40 +43,40 @@ export const createStreamCollection = async (user, input) => {
   );
   return data;
 };
-export const streamCollectionGroups = async (user, collection) => {
+export const streamCollectionGroups = async (context, user, collection) => {
   return listThroughGetFrom(user, collection.id, RELATION_ACCESSES_TO, ENTITY_TYPE_GROUP);
 };
-export const findById = async (user, collectionId) => {
-  return storeLoadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+export const findById = async (context, user, collectionId) => {
+  return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
 };
-export const deleteGroupRelation = async (user, collectionId, groupId) => {
-  await deleteRelationsByFromAndTo(user, groupId, collectionId, RELATION_ACCESSES_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
-  return findById(user, collectionId);
+export const deleteGroupRelation = async (context, user, collectionId, groupId) => {
+  await deleteRelationsByFromAndTo(context, user, groupId, collectionId, RELATION_ACCESSES_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
+  return findById(context, user, collectionId);
 };
-export const createGroupRelation = async (user, collectionId, groupId) => {
-  await createRelation(user, { fromId: groupId, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
-  return findById(user, collectionId);
+export const createGroupRelation = async (context, user, collectionId, groupId) => {
+  await createRelation(context, user, { fromId: groupId, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
+  return findById(context, user, collectionId);
 };
-export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_STREAM_COLLECTION], args);
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_STREAM_COLLECTION], args);
 };
-export const streamCollectionEditField = async (user, collectionId, input) => {
-  const { element } = await updateAttribute(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION, input);
+export const streamCollectionEditField = async (context, user, collectionId, input) => {
+  const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, element, user);
 };
-export const streamCollectionDelete = async (user, collectionId) => {
-  await deleteElementById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+export const streamCollectionDelete = async (context, user, collectionId) => {
+  await deleteElementById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
   return collectionId;
 };
-export const streamCollectionCleanContext = async (user, collectionId) => {
+export const streamCollectionCleanContext = async (context, user, collectionId) => {
   await delEditContext(user, collectionId);
-  return storeLoadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
+  return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
   });
 };
-export const streamCollectionEditContext = async (user, collectionId, input) => {
+export const streamCollectionEditContext = async (context, user, collectionId, input) => {
   await setEditContext(user, collectionId, input);
-  return storeLoadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
+  return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
   });
 };

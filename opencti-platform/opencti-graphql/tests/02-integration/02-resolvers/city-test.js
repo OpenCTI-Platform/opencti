@@ -96,7 +96,7 @@ describe('City resolver standard behavior', () => {
     expect(queryResult.data.city.id).toEqual(cityInternalId);
   });
   it('should city country to be accurate', async () => {
-    const city = await elLoadById(ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c');
+    const city = await elLoadById(context, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: city.internal_id },

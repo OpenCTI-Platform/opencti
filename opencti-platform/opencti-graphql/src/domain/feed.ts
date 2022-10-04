@@ -2,7 +2,7 @@
 import { ENTITY_TYPE_FEED } from '../schema/internalObject';
 import { createEntity, deleteElementById, storeLoadById } from '../database/middleware';
 import { listEntitiesPaginated } from '../database/middleware-loader';
-import type { AuthUser } from '../types/user';
+import type { AuthUser, AuthContext } from '../types/user';
 import type { FeedAddInput, QueryFeedsArgs } from '../generated/graphql';
 import type { StoreEntityFeed } from '../types/store';
 import { elReplace } from '../database/engine';
@@ -35,26 +35,26 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
   }
 };
 
-export const createFeed = async (user: AuthUser, input: FeedAddInput): Promise<StoreEntityFeed> => {
+export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<StoreEntityFeed> => {
   checkFeedIntegrity(input);
-  return createEntity(user, input, ENTITY_TYPE_FEED);
+  return createEntity(context, user, input, ENTITY_TYPE_FEED);
 };
-export const findById = async (user: AuthUser, feedId: string): Promise<StoreEntityFeed> => {
-  return storeLoadById(user, feedId, ENTITY_TYPE_FEED) as unknown as StoreEntityFeed;
+export const findById = async (context: AuthContext, user: AuthUser, feedId: string): Promise<StoreEntityFeed> => {
+  return storeLoadById(context, user, feedId, ENTITY_TYPE_FEED) as unknown as StoreEntityFeed;
 };
-export const editFeed = async (user: AuthUser, id: string, input: FeedAddInput): Promise<StoreEntityFeed> => {
+export const editFeed = async (context: AuthContext, user: AuthUser, id: string, input: FeedAddInput): Promise<StoreEntityFeed> => {
   checkFeedIntegrity(input);
-  const feed = await findById(user, id);
+  const feed = await findById(context, user, id);
   if (!feed) {
     throw FunctionalError(`Feed ${id} cant be found`);
   }
   await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: input });
-  return findById(user, id);
+  return findById(context, user, id);
 };
-export const findAll = (user: AuthUser, opts: QueryFeedsArgs) => {
-  return listEntitiesPaginated<StoreEntityFeed>(user, [ENTITY_TYPE_FEED], opts);
+export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
+  return listEntitiesPaginated<StoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], opts);
 };
-export const feedDelete = async (user: AuthUser, feedId: string) => {
-  await deleteElementById(user, feedId, ENTITY_TYPE_FEED);
+export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
+  await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);
   return feedId;
 };

@@ -135,7 +135,7 @@ describe('Role resolver standard behavior', () => {
   });
   it('should add relation in role', async () => {
     const capabilityStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
-    const capability = await elLoadById(ADMIN_USER, capabilityStandardId);
+    const capability = await elLoadById(context, ADMIN_USER, capabilityStandardId);
     capabilityId = capability.id;
     const RELATION_ADD_QUERY = gql`
       mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {

@@ -12,11 +12,11 @@ import { ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
 describe('Identifier generation test', () => {
   it('should way change detected correctly', async () => {
     // [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }]
-    const malware = await elLoadById(ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+    const malware = await elLoadById(context, ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const isMalwareChangeWay = isStandardIdSameWay(malware, malware);
     expect(isMalwareChangeWay).toBeTruthy();
     // [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]]
-    const course = await elLoadById(ADMIN_USER, 'course-of-action--2d3af28d-aa36-59ad-ac57-65aa27664752');
+    const course = await elLoadById(context, ADMIN_USER, 'course-of-action--2d3af28d-aa36-59ad-ac57-65aa27664752');
     let isCourseChangeWay = isStandardIdSameWay(course, course);
     expect(isCourseChangeWay).toBeTruthy();
     // add the mitreID, way will change
@@ -24,7 +24,7 @@ describe('Identifier generation test', () => {
     isCourseChangeWay = isStandardIdSameWay(course, changeCourse);
     expect(isCourseChangeWay).toBeFalsy();
     // [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition' }, { src: 'definition_type' }]
-    const marking = await elLoadById(ADMIN_USER, 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
+    const marking = await elLoadById(context, ADMIN_USER, 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
     let isMarkingChangeWay = isStandardIdSameWay(marking, marking);
     expect(isMarkingChangeWay).toBeTruthy();
     const changeMarking = { ...marking };

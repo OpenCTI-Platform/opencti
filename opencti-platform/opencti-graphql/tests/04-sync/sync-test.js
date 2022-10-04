@@ -83,19 +83,19 @@ const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
 
 describe('Database sync testing', () => {
   const checkPreSyncContent = async () => {
-    const initObjectAggregation = await elAggregationCount(ADMIN_USER, 'Stix-Object', 'entity_type');
+    const initObjectAggregation = await elAggregationCount(context, ADMIN_USER, 'Stix-Object', 'entity_type');
     const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
     expect(objectMap.get('Indicator')).toEqual(28);
     expect(objectMap.get('Malware')).toEqual(27);
     expect(objectMap.get('Label')).toEqual(13);
     // Relations
-    const initRelationAggregation = await elAggregationCount(ADMIN_USER, 'stix-relationship', 'entity_type');
+    const initRelationAggregation = await elAggregationCount(context, ADMIN_USER, 'stix-relationship', 'entity_type');
     const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
     expect(relMap.get('Object')).toEqual(191);
     expect(relMap.get('Indicates')).toEqual(59);
     expect(relMap.get('Uses')).toEqual(28);
     // Report content
-    const initReport = await storeLoadByIdWithRefs(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
+    const initReport = await storeLoadByIdWithRefs(context, ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
     const initStixReport = convertStoreToStix(initReport);
     return { objectMap, relMap, initStixReport };
   };
@@ -184,7 +184,7 @@ describe('Database sync testing', () => {
         filename: 'DATA-TEST-STIX2_v2.json',
         mimetype: 'application/json',
       };
-      await stixCoreObjectImportPush(SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
+      await stixCoreObjectImportPush(context, SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
       // Need to create the synchronizer on the remote host
       const SYNC_CREATE = {
         input: {

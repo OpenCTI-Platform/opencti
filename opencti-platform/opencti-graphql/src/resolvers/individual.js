@@ -15,11 +15,11 @@ const organizationsLoader = batchLoader(batchOrganizations);
 
 const individualResolvers = {
   Query: {
-    individual: (_, { id }, { user }) => findById(user, id),
-    individuals: (_, args, { user }) => findAll(user, args),
+    individual: (_, { id }, context) => findById(context, context.user, id),
+    individuals: (_, args, context) => findAll(context, context.user, args),
   },
   Individual: {
-    organizations: (individual, _, { user }) => organizationsLoader.load(individual.id, user),
+    organizations: (individual, _, context) => organizationsLoader.load(individual.id, context, context.user),
   },
   IndividualsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -27,15 +27,15 @@ const individualResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    individualEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    individualEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    individualAdd: (_, { input }, { user }) => addIndividual(user, input),
+    individualAdd: (_, { input }, context) => addIndividual(context, context.user, input),
   },
 };
 

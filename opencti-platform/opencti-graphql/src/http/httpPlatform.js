@@ -6,12 +6,16 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import bodyParser from 'body-parser';
 import prometheus from 'express-prometheus-middleware';
+import nodeMetrics from 'opentelemetry-node-metrics';
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import showdown from 'showdown';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
+import { MeterProvider } from '@opentelemetry/sdk-metrics';
+import { HostMetrics } from '@opentelemetry/host-metrics';
 import { basePath, booleanConf, DEV_MODE, formatPath, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
@@ -20,6 +24,7 @@ import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { LOGIN_ACTION } from '../config/audit';
 import initHttpRollingFeeds from './httpRollingFeed';
+import { executionContext } from '../utils/access';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -89,6 +94,13 @@ const createApp = async (app) => {
   // -- Telemetry
   const exposePrometheusMetrics = booleanConf('app:telemetry:prometheus:enabled', false);
   if (exposePrometheusMetrics) {
+    const options = { port: 9464, startServer: true };
+    const exporter = new PrometheusExporter(options);
+    const meterProvider = new MeterProvider();
+    meterProvider.addMetricReader(exporter);
+    const hostMetrics = new HostMetrics({ meterProvider, name: 'example-host-metrics' });
+    hostMetrics.start();
+    nodeMetrics(meterProvider);
     const metricsPath = nconf.get('app:telemetry:prometheus:metrics_path') || '/prometheus/metrics';
     const fullMetricsPath = `${basePath}${formatPath(metricsPath)}`;
     logApp.info(`Adding prometheus middleware (for metrics) on path: ${fullMetricsPath}`);
@@ -124,7 +136,8 @@ const createApp = async (app) => {
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUserFromRequest(req, res);
+      const executeContext = executionContext('storage_get');
+      const auth = await authenticateUserFromRequest(executeContext, req, res);
       if (!auth) {
         res.sendStatus(403);
         return;
@@ -142,7 +155,8 @@ const createApp = async (app) => {
   // -- File view
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUserFromRequest(req, res);
+      const executeContext = executionContext('storage_view');
+      const auth = await authenticateUserFromRequest(executeContext, req, res);
       if (!auth) {
         res.sendStatus(403);
         return;
@@ -169,7 +183,8 @@ const createApp = async (app) => {
   // -- Pdf view
   app.get(`${basePath}/storage/html/:file(*)`, async (req, res, next) => {
     try {
-      const auth = await authenticateUserFromRequest(req, res);
+      const executeContext = executionContext('storage_html');
+      const auth = await authenticateUserFromRequest(executeContext, req, res);
       if (!auth) {
         res.sendStatus(403);
         return;
@@ -195,6 +210,7 @@ const createApp = async (app) => {
   // -- Client HTTPS Cert login custom strategy
   app.get(`${basePath}/auth/cert`, (req, res, next) => {
     try {
+      const context = executionContext('cert_strategy');
       const redirect = extractRefererPathFromReq(req);
       const isActivated = isStrategyActivated(STRATEGY_CERT);
       if (!isActivated) {
@@ -211,7 +227,7 @@ const createApp = async (app) => {
             const userInfo = { email: emailAddress, name: empty(CN) ? emailAddress : CN };
             loginFromProvider(userInfo)
               .then(async (user) => {
-                await authenticateUser(req, user, 'cert');
+                await authenticateUser(context, req, user, 'cert');
                 res.redirect(redirect);
               })
               .catch((err) => {
@@ -250,6 +266,7 @@ const createApp = async (app) => {
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
     const { provider } = req.params;
     const { referer } = req.session;
+    const context = executionContext(`${provider}_strategy`);
     passport.authenticate(provider, {}, async (err, user) => {
       if (err || !user) {
         logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
@@ -257,7 +274,7 @@ const createApp = async (app) => {
         return res.redirect(referer ?? '/');
       }
       // noinspection UnnecessaryLocalVariableJS
-      await authenticateUser(req, user, provider);
+      await authenticateUser(context, req, user, provider);
       req.session.referer = null;
       return res.redirect(referer ?? '/');
     })(req, res, next);

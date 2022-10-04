@@ -50,7 +50,7 @@ import { elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
 import { askEntityExport } from './stix';
 
-export const findAll = async (user, args) => {
+export const findAll = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = R.filter((type) => isStixCoreObject(type), args.types);
@@ -58,63 +58,63 @@ export const findAll = async (user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  return listEntities(user, types, args);
+  return listEntities(context, user, types, args);
 };
 
-export const findById = async (user, stixCoreObjectId) => storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+export const findById = async (context, user, stixCoreObjectId) => storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
-export const batchCreatedBy = async (user, stixCoreObjectIds) => {
-  return batchLoadThroughGetTo(user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+export const batchCreatedBy = async (context, user, stixCoreObjectIds) => {
+  return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
 };
 
-export const batchReports = async (user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, args);
+export const batchReports = async (context, user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, args);
 };
 
-export const batchNotes = (user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, args);
+export const batchNotes = (context, user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, args);
 };
 
-export const batchOpinions = (user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, args);
+export const batchOpinions = (context, user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, args);
 };
 
-export const batchObservedData = (user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, args);
+export const batchObservedData = (context, user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, args);
 };
 
-export const batchLabels = (user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+export const batchLabels = (context, user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const batchMarkingDefinitions = (user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
+export const batchMarkingDefinitions = (context, user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const batchExternalReferences = (user, stixDomainObjectIds) => {
-  return batchListThroughGetTo(user, stixDomainObjectIds, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
+export const batchExternalReferences = (context, user, stixDomainObjectIds) => {
+  return batchListThroughGetTo(context, user, stixDomainObjectIds, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
-export const batchKillChainPhases = (user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
+export const batchKillChainPhases = (context, user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
-export const stixCoreRelationships = (user, stixCoreObjectId, args) => {
+export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('elementId', stixCoreObjectId, args);
   return relationFindAll(user, finalArgs);
 };
 
-export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) => {
-  const data = await internalLoadById(user, stixCoreObjectId);
+export const stixCoreObjectAddRelation = async (context, user, stixCoreObjectId, input) => {
+  const data = await internalLoadById(context, user, stixCoreObjectId);
   if (!isStixCoreObject(data.entity_type) || !isStixRelationship(input.relationship_type)) {
     throw FunctionalError('Only stix-meta-relationship can be added through this method.', { stixCoreObjectId, input });
   }
   const finalInput = R.assoc('fromId', stixCoreObjectId, input);
-  return createRelation(user, finalInput);
+  return createRelation(context, user, finalInput);
 };
 
-export const stixCoreObjectAddRelations = async (user, stixCoreObjectId, input) => {
-  const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId, input) => {
+  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot add the relation, Stix-Core-Object cannot be found.');
   }
@@ -125,38 +125,38 @@ export const stixCoreObjectAddRelations = async (user, stixCoreObjectId, input) 
     (n) => ({ fromId: stixCoreObjectId, toId: n, relationship_type: input.relationship_type }),
     input.toIds
   );
-  await createRelations(user, finalInput);
-  return storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user));
+  await createRelations(context, user, finalInput);
+  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user));
 };
 
-export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId, relationshipType) => {
-  const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObjectId, toId, relationshipType) => {
+  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the relation, Stix-Core-Object cannot be found.');
   }
   if (!isStixMetaRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
+  await deleteRelationsByFromAndTo(context, user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
 };
 
-export const stixCoreObjectDelete = async (user, stixCoreObjectId) => {
-  const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
+  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
   }
-  return deleteElementById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  return deleteElementById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 };
 
-export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
-  return mergeEntities(user, targetId, sourceIds);
+export const stixCoreObjectMerge = async (context, user, targetId, sourceIds) => {
+  return mergeEntities(context, user, targetId, sourceIds);
 };
 // endregion
 
-export const askElementEnrichmentForConnector = async (user, elementId, connectorId) => {
-  const connector = await storeLoadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
-  const work = await createWork(user, connector, 'Manual enrichment', elementId);
+export const askElementEnrichmentForConnector = async (context, user, elementId, connectorId) => {
+  const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const work = await createWork(context, user, connector, 'Manual enrichment', elementId);
   const message = {
     internal: {
       work_id: work.id, // Related action for history
@@ -166,29 +166,29 @@ export const askElementEnrichmentForConnector = async (user, elementId, connecto
       entity_id: elementId,
     },
   };
-  await pushToConnector(connector, message);
+  await pushToConnector(context, connector, message);
   return work;
 };
 
-export const stixCoreObjectExportAsk = async (user, args) => {
+export const stixCoreObjectExportAsk = async (context, user, args) => {
   const { format, stixCoreObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
-  const entity = stixCoreObjectId ? await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
-  const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
+  const entity = stixCoreObjectId ? await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
 };
-export const stixCoreObjectExportPush = async (user, entityId, file) => {
-  const entity = await internalLoadById(user, entityId);
+export const stixCoreObjectExportPush = async (context, user, entityId, file) => {
+  const entity = await internalLoadById(context, user, entityId);
   if (!entity) {
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
-  await upload(user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
   return true;
 };
 // endregion
 
-export const stixCoreObjectImportPush = async (user, id, file, noTriggerImport = false) => {
+export const stixCoreObjectImportPush = async (context, user, id, file, noTriggerImport = false) => {
   let lock;
-  const previous = await storeLoadByIdWithRefs(user, id);
+  const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
   }
@@ -197,14 +197,14 @@ export const stixCoreObjectImportPush = async (user, id, file, noTriggerImport =
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
     const { internal_id: internalId } = previous;
-    const up = await upload(user, `import/${previous.entity_type}/${internalId}`, file, { entity_id: internalId }, noTriggerImport);
+    const up = await upload(context, user, `import/${previous.entity_type}/${internalId}`, file, { entity_id: internalId }, noTriggerImport);
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
     await elUpdateElement({ _index: previous._index, internal_id: internalId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(user, previous, instance, `adds \`${up.name}\` in \`files\``);
+    await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -216,14 +216,14 @@ export const stixCoreObjectImportPush = async (user, id, file, noTriggerImport =
   }
 };
 
-export const stixCoreObjectImportDelete = async (user, fileId) => {
+export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   if (!fileId.startsWith('import')) {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
   // Get the context
   const up = await loadFile(user, fileId);
   const entityId = up.metaData.entity_id;
-  const previous = await storeLoadByIdWithRefs(user, entityId);
+  const previous = await storeLoadByIdWithRefs(context, user, entityId);
   if (!previous) {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
   }
@@ -239,7 +239,7 @@ export const stixCoreObjectImportDelete = async (user, fileId) => {
     await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(user, previous, instance, `removes \`${up.name}\` in \`files\``);
+    await storeUpdateEvent(context, user, previous, instance, `removes \`${up.name}\` in \`files\``);
     return true;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {

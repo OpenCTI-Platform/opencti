@@ -96,7 +96,7 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization.id).toEqual(organizationInternalId);
   });
   it('should organization sectors be accurate', async () => {
-    const organization = await elLoadById(ADMIN_USER, 'identity--c017f212-546b-4f21-999d-97d3dc558f7b');
+    const organization = await elLoadById(context, ADMIN_USER, 'identity--c017f212-546b-4f21-999d-97d3dc558f7b');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: organization.internal_id },

@@ -29,32 +29,32 @@ import { buildRefRelationKey } from '../schema/general';
 
 const opinionResolvers = {
   Query: {
-    opinion: (_, { id }, { user }) => findById(user, id),
-    opinions: (_, args, { user }) => findAll(user, args),
-    myOpinion: (_, { id }, { user }) => findMyOpinion(user, id),
-    opinionsTimeSeries: (_, args, { user }) => {
+    opinion: (_, { id }, context) => findById(context, context.user, id),
+    opinions: (_, args, context) => findAll(context, context.user, args),
+    myOpinion: (_, { id }, context) => findMyOpinion(context, context.user, id),
+    opinionsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return opinionsTimeSeriesByEntity(user, args);
+        return opinionsTimeSeriesByEntity(context, context.user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return opinionsTimeSeriesByAuthor(user, args);
+        return opinionsTimeSeriesByAuthor(context, context.user, args);
       }
-      return opinionsTimeSeries(user, args);
+      return opinionsTimeSeries(context, context.user, args);
     },
-    opinionsNumber: (_, args, { user }) => {
+    opinionsNumber: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return opinionsNumberByEntity(user, args);
+        return opinionsNumberByEntity(context, context.user, args);
       }
-      return opinionsNumber(user, args);
+      return opinionsNumber(context, context.user, args);
     },
-    opinionsDistribution: (_, args, { user }) => {
+    opinionsDistribution: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return opinionsDistributionByEntity(user, args);
+        return opinionsDistributionByEntity(context, context.user, args);
       }
       return [];
     },
-    opinionContainsStixObjectOrStixRelationship: (_, args, { user }) => {
-      return opinionContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
+    opinionContainsStixObjectOrStixRelationship: (_, args, context) => {
+      return opinionContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   OpinionsFilter: {
@@ -64,15 +64,15 @@ const opinionResolvers = {
     objectContains: buildRefRelationKey(RELATION_OBJECT),
   },
   Mutation: {
-    opinionEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    opinionEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    opinionAdd: (_, { input }, { user }) => addOpinion(user, input),
+    opinionAdd: (_, { input }, context) => addOpinion(context, context.user, input),
   },
 };
 

@@ -17,7 +17,7 @@ import { applyMigration, lastAvailableMigrationTime } from './database/migration
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from './config/errors';
-import { BYPASS, BYPASS_REFERENCE, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
+import { BYPASS, BYPASS_REFERENCE, executionContext, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { createStatus, createStatusTemplate } from './domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
@@ -151,18 +151,18 @@ const initializeSchema = async () => {
   return true;
 };
 
-const initializeMigration = async () => {
+const initializeMigration = async (context) => {
   logApp.info('[INIT] Creating migration structure');
   const time = lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
   const migrationStatus = { internal_id: uuidv4(), lastRun };
-  await createEntity(SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
+  await createEntity(context, SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
 };
 
 // This code will patch release <= 4.0.1
 // This prevent some complex procedure for users. To be removed after some times
-const alignMigrationLastRun = async () => {
-  const migrationStatus = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+const alignMigrationLastRun = async (context) => {
+  const migrationStatus = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
   const { lastRun } = migrationStatus;
   const [lastRunTime] = lastRun.split('-');
   const lastRunStamp = parseInt(lastRunTime, 10);
@@ -170,7 +170,7 @@ const alignMigrationLastRun = async () => {
   if (lastRunStamp > timeAvailableMigrationTimestamp) {
     // Reset the last run to apply migration.
     const patch = { lastRun: '1608026400000-init' };
-    await patchAttribute(SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, patch);
+    await patchAttribute(context, SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, patch);
   }
 };
 
@@ -289,17 +289,17 @@ const initializeData = async (withMarkings = true) => {
   return true;
 };
 
-const isExistingPlatform = async () => {
+const isExistingPlatform = async (context) => {
   try {
-    const migration = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+    const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
     return migration !== undefined;
   } catch {
     return false;
   }
 };
 
-const isCompatiblePlatform = async () => {
-  const migration = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+const isCompatiblePlatform = async (context) => {
+  const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
   const { platformVersion } = migration;
   // For old platform, version is not set yet, continue
   if (!platformVersion) return;
@@ -317,21 +317,22 @@ const platformInit = async (withMarkings = true) => {
   try {
     await cachePurge();
     lock = await lockResource([PLATFORM_LOCK_ID]);
+    const context = executionContext('platform_initialization');
     logApp.info('[INIT] Starting platform initialization');
-    const alreadyExists = await isExistingPlatform();
+    const alreadyExists = await isExistingPlatform(context);
     if (!alreadyExists) {
       logApp.info('[INIT] New platform detected, initialization...');
       await initializeBucket();
       await initializeSchema();
-      await initializeMigration();
+      await initializeMigration(context);
       await initializeData(withMarkings);
-      await initializeAdminUser();
+      await initializeAdminUser(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
-      await isCompatiblePlatform();
-      await initializeAdminUser();
-      await alignMigrationLastRun();
-      await applyMigration();
+      await isCompatiblePlatform(context);
+      await initializeAdminUser(context);
+      await alignMigrationLastRun(context);
+      await applyMigration(context);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

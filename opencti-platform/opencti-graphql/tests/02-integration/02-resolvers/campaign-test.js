@@ -135,7 +135,7 @@ describe('Campaign resolver standard behavior', () => {
     expect(queryResult.data.campaignsTimeSeries[2].value).toEqual(1);
   });
   it("should timeseries of an entity's campaigns", async () => {
-    const intrusionSet = await elLoadById(ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const intrusionSet = await elLoadById(context, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {

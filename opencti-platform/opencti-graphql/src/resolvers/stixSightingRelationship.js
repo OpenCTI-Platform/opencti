@@ -42,14 +42,15 @@ const loadByIdLoader = batchLoader(elBatchIds);
 
 const stixSightingRelationshipResolvers = {
   Query: {
-    stixSightingRelationship: (_, { id }, { user }) => findById(user, id),
-    stixSightingRelationships: (_, args, { user }) => findAll(user, args),
-    stixSightingRelationshipsTimeSeries: (_, args, { user }) => timeSeriesRelations(user, args),
-    stixSightingRelationshipsDistribution: (_, args, { user }) => distributionRelations(
-      user,
+    stixSightingRelationship: (_, { id }, context) => findById(context, context.user, id),
+    stixSightingRelationships: (_, args, context) => findAll(context, context.user, args),
+    stixSightingRelationshipsTimeSeries: (_, args, context) => timeSeriesRelations(context, context.user, args),
+    stixSightingRelationshipsDistribution: (_, args, context) => distributionRelations(
+      context,
+      context.user,
       R.pipe(R.assoc('relationship_type', 'stix-sighting-relationship'), R.assoc('isTo', true))(args)
     ),
-    stixSightingRelationshipsNumber: (_, args, { user }) => stixSightingRelationshipsNumber(user, args),
+    stixSightingRelationshipsNumber: (_, args, context) => stixSightingRelationshipsNumber(context, context.user, args),
   },
   StixSightingRelationshipsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -58,49 +59,49 @@ const stixSightingRelationshipResolvers = {
   },
   StixSightingRelationship: {
     relationship_type: () => 'stix-sighting-relationship',
-    from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
-    to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
-    toStix: (rel, _, { user }) => stixLoadByIdStringify(user, rel.id),
-    creator: (rel, _, { user }) => creator(user, rel.id, STIX_SIGHTING_RELATIONSHIP),
-    createdBy: (rel, _, { user }) => createdByLoader.load(rel.id, user),
-    objectMarking: (rel, _, { user }) => markingDefinitionsLoader.load(rel.id, user),
-    objectLabel: (rel, _, { user }) => labelsLoader.load(rel.id, user),
-    externalReferences: (rel, _, { user }) => externalReferencesLoader.load(rel.id, user),
-    reports: (rel, _, { user }) => reportsLoader.load(rel.id, user),
-    notes: (rel, _, { user }) => notesLoader.load(rel.id, user),
-    opinions: (rel, _, { user }) => opinionsLoader.load(rel.id, user),
+    from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
+    to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
+    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
+    creator: (rel, _, context) => creator(context, context.user, rel.id, STIX_SIGHTING_RELATIONSHIP),
+    createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
+    objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),
+    objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),
+    externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
+    reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
+    notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
+    opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),
-    status: (entity, _, { user }) => (entity.x_opencti_workflow_id ? findStatusById(user, entity.x_opencti_workflow_id) : null),
-    workflowEnabled: async (entity, _, { user }) => {
-      const statusesEdges = await getTypeStatuses(user, entity.entity_type);
+    status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
+    workflowEnabled: async (entity, _, context) => {
+      const statusesEdges = await getTypeStatuses(context, context.user, entity.entity_type);
       return statusesEdges.edges.length > 0;
     },
   },
   Mutation: {
-    stixSightingRelationshipEdit: (_, { id }, { user }) => ({
-      delete: () => stixSightingRelationshipDelete(user, id),
-      fieldPatch: ({ input }) => stixSightingRelationshipEditField(user, id, input),
-      contextPatch: ({ input }) => stixSightingRelationshipEditContext(user, id, input),
-      contextClean: () => stixSightingRelationshipCleanContext(user, id),
-      relationAdd: ({ input }) => stixSightingRelationshipAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixSightingRelationshipDeleteRelation(user, id, toId, relationshipType),
+    stixSightingRelationshipEdit: (_, { id }, context) => ({
+      delete: () => stixSightingRelationshipDelete(context, context.user, id),
+      fieldPatch: ({ input }) => stixSightingRelationshipEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => stixSightingRelationshipEditContext(context, context.user, id, input),
+      contextClean: () => stixSightingRelationshipCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixSightingRelationshipAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    stixSightingRelationshipAdd: (_, { input }, { user }) => addStixSightingRelationship(user, input),
+    stixSightingRelationshipAdd: (_, { input }, context) => addStixSightingRelationship(context, context.user, input),
   },
   Subscription: {
     stixSightingRelationship: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        stixSightingRelationshipEditContext(user, id);
+      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+        stixSightingRelationshipEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
-        )(_, { id }, { user });
+        )(_, { id }, context);
         return withCancel(filtering, () => {
-          stixSightingRelationshipCleanContext(user, id);
+          stixSightingRelationshipCleanContext(context, context.user, id);
         });
       },
     },

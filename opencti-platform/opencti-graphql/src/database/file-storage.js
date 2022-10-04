@@ -191,9 +191,9 @@ export const rawFilesListing = async (user, directory, recursive = false) => {
   return BluePromise.map(filteredObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
 
-export const uploadJobImport = async (user, fileId, fileMime, entityId, opts = {}) => {
+export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
   const { manual = false, connectorId = null, bypassValidation = false } = opts;
-  let connectors = await connectorsForImport(user, fileMime, true, !manual);
+  let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
   }
@@ -203,7 +203,7 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId, opts = {
   if (connectors.length > 0) {
     // Create job and send ask to broker
     const createConnectorWork = async (connector) => {
-      const work = await createWork(user, connector, 'Manual import', fileId);
+      const work = await createWork(context, user, connector, 'Manual import', fileId);
       return { connector, work };
     };
     const actionList = await Promise.all(R.map((connector) => createConnectorWork(connector), connectors));
@@ -227,13 +227,13 @@ export const uploadJobImport = async (user, fileId, fileMime, entityId, opts = {
     const pushMessage = (data) => {
       const { connector } = data;
       const message = buildConnectorMessage(data);
-      return pushToConnector(connector, message);
+      return pushToConnector(context, connector, message);
     };
     await Promise.all(R.map((data) => pushMessage(data), actionList));
   }
 };
 
-export const upload = async (user, path, fileUpload, meta = {}, noTriggerImport = false) => {
+export const upload = async (context, user, path, fileUpload, meta = {}, noTriggerImport = false) => {
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
   // Upload the data
   const readStream = createReadStream();
@@ -272,14 +272,14 @@ export const upload = async (user, path, fileUpload, meta = {}, noTriggerImport 
   };
   // Trigger a enrich job for import file if needed
   if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
-    await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id);
+    await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
   return file;
 };
 
-export const filesListing = async (user, first, path, entityId = null) => {
+export const filesListing = async (context, user, first, path, entityId = null) => {
   const files = await rawFilesListing(user, path);
-  const inExport = await loadExportWorksAsProgressFiles(user, path);
+  const inExport = await loadExportWorksAsProgressFiles(context, user, path);
   const allFiles = R.concat(inExport, files);
   const sortedFiles = R.sort((a, b) => b.lastModified - a.lastModified, allFiles);
   let fileNodes = R.map((f) => ({ node: f }), sortedFiles);
@@ -289,9 +289,9 @@ export const filesListing = async (user, first, path, entityId = null) => {
   return buildPagination(first, null, fileNodes, allFiles.length);
 };
 
-export const deleteAllFiles = async (user, path) => {
+export const deleteAllFiles = async (context, user, path) => {
   const files = await rawFilesListing(user, path);
-  const inExport = await loadExportWorksAsProgressFiles(user, path);
+  const inExport = await loadExportWorksAsProgressFiles(context, user, path);
   const allFiles = R.concat(inExport, files);
   const ids = allFiles.map((file) => file.id);
   return deleteFiles(user, ids);

@@ -16,40 +16,35 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 
-export const STATUS_STATUS_NEW = 0;
-export const STATUS_STATUS_PROGRESS = 1;
-export const STATUS_STATUS_ANALYZED = 2;
-export const STATUS_STATUS_CLOSED = 3;
-
-export const findById = (user, reportId) => {
-  return storeLoadById(user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
+export const findById = (context, user, reportId) => {
+  return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const findAll = async (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_CONTAINER_REPORT], args);
+export const findAll = async (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
 };
 
 // Entities tab
-export const reportContainsStixObjectOrStixRelationship = async (user, reportId, thingId) => {
-  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(user, thingId)).id : thingId;
+export const reportContainsStixObjectOrStixRelationship = async (context, user, reportId, thingId) => {
+  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
   const args = {
     filters: [
       { key: 'internal_id', values: [reportId] },
       { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
     ],
   };
-  const reportFound = await findAll(user, args);
+  const reportFound = await findAll(context, user, args);
   return reportFound.edges.length > 0;
 };
 
 // region series
-export const reportsTimeSeries = (user, args) => {
+export const reportsTimeSeries = (context, user, args) => {
   const { reportClass } = args;
   const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }] : [];
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-export const reportsNumber = (user, args) => ({
+export const reportsNumber = (context, user, args) => ({
   count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
   total: elCount(
     user,
@@ -58,19 +53,19 @@ export const reportsNumber = (user, args) => ({
   ),
 });
 
-export const reportsTimeSeriesByEntity = (user, args) => {
+export const reportsTimeSeriesByEntity = (context, user, args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-export const reportsTimeSeriesByAuthor = async (user, args) => {
+export const reportsTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId, reportClass } = args;
   const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
   if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-export const reportsNumberByEntity = (user, args) => ({
+export const reportsNumberByEntity = (context, user, args) => ({
   count: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
@@ -94,7 +89,7 @@ export const reportsNumberByEntity = (user, args) => ({
   ),
 });
 
-export const reportsNumberByAuthor = (user, args) => ({
+export const reportsNumberByAuthor = (context, user, args) => ({
   count: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
@@ -118,17 +113,17 @@ export const reportsNumberByAuthor = (user, args) => ({
   ),
 });
 
-export const reportsDistributionByEntity = async (user, args) => {
+export const reportsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 // endregion
 
 // region mutations
-export const addReport = async (user, report) => {
+export const addReport = async (context, user, report) => {
   const finalReport = R.assoc('created', report.published, report);
-  const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
+  const created = await createEntity(context, user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

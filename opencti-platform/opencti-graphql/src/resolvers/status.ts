@@ -3,13 +3,13 @@ import type { Resolvers } from '../generated/graphql';
 
 const statusResolvers: Resolvers = {
   Query: {
-    statusTemplate: (_, { id }, { user }) => findTemplateById(user, id),
-    statusTemplates: (_, args, { user }) => findAllTemplates(user, args),
-    status: (_, { id }, { user }) => findById(user, id),
-    statuses: (_, args, { user }) => findAll(user, args),
+    statusTemplate: (_, { id }, context) => findTemplateById(context, context.user, id),
+    statusTemplates: (_, args, context) => findAllTemplates(context, context.user, args),
+    status: (_, { id }, context) => findById(context, context.user, id),
+    statuses: (_, args, context) => findAll(context, context.user, args),
   },
   Status: {
-    template: (current, _, { user }) => findTemplateById(user, current.template_id),
+    template: (current, _, context) => findTemplateById(context, context.user, current.template_id),
   },
 };
 

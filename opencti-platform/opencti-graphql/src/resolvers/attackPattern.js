@@ -29,15 +29,15 @@ const isSubAttackPatternLoader = batchLoader(batchIsSubAttackPattern);
 
 const attackPatternResolvers = {
   Query: {
-    attackPattern: (_, { id }, { user }) => findById(user, id),
-    attackPatterns: (_, args, { user }) => findAll(user, args),
+    attackPattern: (_, { id }, context) => findById(context, context.user, id),
+    attackPatterns: (_, args, context) => findAll(context, context.user, args),
   },
   AttackPattern: {
-    killChainPhases: (attackPattern, _, { user }) => killChainPhasesLoader.load(attackPattern.id, user),
-    coursesOfAction: (attackPattern, _, { user }) => coursesOfActionLoader.load(attackPattern.id, user),
-    parentAttackPatterns: (attackPattern, _, { user }) => parentAttackPatternsLoader.load(attackPattern.id, user),
-    subAttackPatterns: (attackPattern, _, { user }) => subAttackPatternsLoader.load(attackPattern.id, user),
-    isSubAttackPattern: (attackPattern, _, { user }) => isSubAttackPatternLoader.load(attackPattern.id, user),
+    killChainPhases: (attackPattern, _, context) => killChainPhasesLoader.load(attackPattern.id, context, context.user),
+    coursesOfAction: (attackPattern, _, context) => coursesOfActionLoader.load(attackPattern.id, context, context.user),
+    parentAttackPatterns: (attackPattern, _, context) => parentAttackPatternsLoader.load(attackPattern.id, context, context.user),
+    subAttackPatterns: (attackPattern, _, context) => subAttackPatternsLoader.load(attackPattern.id, context, context.user),
+    isSubAttackPattern: (attackPattern, _, context) => isSubAttackPatternLoader.load(attackPattern.id, context, context.user),
   },
   AttackPatternsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -46,15 +46,15 @@ const attackPatternResolvers = {
     mitigatedBy: buildRefRelationKey(RELATION_MITIGATES),
   },
   Mutation: {
-    attackPatternEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    attackPatternEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    attackPatternAdd: (_, { input }, { user }) => addAttackPattern(user, input),
+    attackPatternAdd: (_, { input }, context) => addAttackPattern(context, context.user, input),
   },
 };
 

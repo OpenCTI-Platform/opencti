@@ -10,12 +10,14 @@ import type { BasicStoreRelation, StoreObject } from '../types/store';
 import type { StixRelation } from '../types/stix-sro';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { executionContext } from '../utils/access';
 
 const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   // Execution
   const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
+    const context = executionContext(ruleDefinition.name);
     const events: Array<Event> = [];
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
@@ -49,7 +51,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
             stop_time: range.end,
             objectMarking: elementMarkings,
           });
-          const event = await createInferredRelation(input, ruleContent) as Event;
+          const event = await createInferredRelation(context, input, ruleContent) as Event;
           // Re inject event if needed
           if (event) {
             events.push(event);
@@ -57,7 +59,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
         }
       };
       const listFromArgs = { toId: sourceRef, callback: listFromCallback };
-      await listAllRelations(RULE_MANAGER_USER, leftType, listFromArgs);
+      await listAllRelations(context, RULE_MANAGER_USER, leftType, listFromArgs);
     }
     // Need to discover on the from and the to if attributed-to also exists
     // (A) -> leftType -> (B)
@@ -91,7 +93,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
         }
       };
       const listToArgs = { fromId: targetRef, callback: listToCallback };
-      await listAllRelations(RULE_MANAGER_USER, rightType, listToArgs);
+      await listAllRelations(context, RULE_MANAGER_USER, rightType, listToArgs);
     }
     return events;
   };

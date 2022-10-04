@@ -44,8 +44,8 @@ export const getApplicationInfo = () => ({
   debugStats: {}, // Lazy loaded
 });
 
-export const getSettings = async () => {
-  const platformSettings = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+export const getSettings = async (context) => {
+  const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const featureFlags = [
     // List of specific feature flags
     { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
@@ -59,22 +59,22 @@ export const getSettings = async () => {
   };
 };
 
-export const addSettings = async (user, settings) => {
-  const created = await createEntity(user, settings, ENTITY_TYPE_SETTINGS);
+export const addSettings = async (context, user, settings) => {
+  const created = await createEntity(context, user, settings, ENTITY_TYPE_SETTINGS);
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 
-export const settingsCleanContext = (user, settingsId) => {
+export const settingsCleanContext = (context, user, settingsId) => {
   delEditContext(user, settingsId);
-  return storeLoadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
+  return storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
-export const settingsEditContext = (user, settingsId, input) => {
+export const settingsEditContext = (context, user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return storeLoadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
+  return storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
-export const settingsEditField = async (user, settingsId, input) => {
-  const { element } = await updateAttribute(user, settingsId, ENTITY_TYPE_SETTINGS, input);
+export const settingsEditField = async (context, user, settingsId, input) => {
+  const { element } = await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, input);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
 };

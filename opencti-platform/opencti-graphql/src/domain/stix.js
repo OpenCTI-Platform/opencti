@@ -10,19 +10,19 @@ import { now, observableValue } from '../utils/format';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 
-export const stixDelete = async (user, id) => {
-  const element = await internalLoadById(user, id);
+export const stixDelete = async (context, user, id) => {
+  const element = await internalLoadById(context, user, id);
   if (element) {
     if (isStixObject(element.entity_type) || isStixRelationship(element.entity_type)) {
-      return deleteElementById(user, element.id, element.entity_type);
+      return deleteElementById(context, user, element.id, element.entity_type);
     }
     throw UnsupportedError('This method can only delete Stix element');
   }
   throw FunctionalError(`Cannot delete the stix element, ${id} cannot be found.`);
 };
 
-export const askListExport = async (user, format, entityType, listParams, type = 'simple', maxMarkingId = null) => {
-  const connectors = await connectorsForExport(user, format, true);
+export const askListExport = async (context, user, format, entityType, listParams, type = 'simple', maxMarkingId = null) => {
+  const connectors = await connectorsForExport(context, user, format, true);
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entityType}_${type}.${mime.extension(format)}`;
@@ -50,17 +50,17 @@ export const askListExport = async (user, format, entityType, listParams, type =
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
       const path = `export/${entityType}/`;
-      const work = await createWork(user, connector, fileIdentifier, path);
+      const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
-      await pushToConnector(connector, message);
+      await pushToConnector(context, connector, message);
       return work;
     }, connectors)
   );
   return worksForExport;
 };
 
-export const askEntityExport = async (user, format, entity, type = 'simple', maxMarkingId = null) => {
-  const connectors = await connectorsForExport(user, format, true);
+export const askEntityExport = async (context, user, format, entity, type = 'simple', maxMarkingId = null) => {
+  const connectors = await connectorsForExport(context, user, format, true);
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(
@@ -90,9 +90,9 @@ export const askEntityExport = async (user, format, entity, type = 'simple', max
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity.entity_type}/${entity.id}/`;
-      const work = await createWork(user, connector, fileIdentifier, path);
+      const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
-      await pushToConnector(connector, message);
+      await pushToConnector(context, connector, message);
       return work;
     }, connectors)
   );

@@ -51,6 +51,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
 import { getUserSubscriptions } from '../domain/userSubscription';
+import { executionContext } from '../utils/access';
 
 const groupsLoader = batchLoader(batchGroups);
 const rolesLoader = batchLoader(batchRoles);
@@ -58,42 +59,42 @@ const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
 
 const userResolvers = {
   Query: {
-    user: (_, { id }, { user }) => findById(user, id),
-    otpGeneration: (_, __, { user }) => otpUserGeneration(user),
-    users: (_, args, { user }) => findAll(user, args),
-    role: (_, { id }, { user }) => findRoleById(user, id),
-    roles: (_, args, { user }) => findRoles(user, args),
+    user: (_, { id }, context) => findById(context, context.user, id),
+    otpGeneration: (_, __, context) => otpUserGeneration(context.user),
+    users: (_, args, context) => findAll(context, context.user, args),
+    role: (_, { id }, context) => findRoleById(context, context.user, id),
+    roles: (_, args, context) => findRoles(context, context.user, args),
     sessions: () => findSessions(),
-    capabilities: (_, args, { user }) => findCapabilities(user, args),
-    me: (_, args, { user }) => findById(user, user.id),
-    bookmarks: (_, { types }, { user }) => bookmarks(user, types),
+    capabilities: (_, args, context) => findCapabilities(context, context.user, args),
+    me: (_, args, context) => findById(context, context.user, context.user.id),
+    bookmarks: (_, { types }, context) => bookmarks(context, context.user, types),
   },
   User: {
-    groups: (current, _, { user }) => groupsLoader.load(current.id, user),
-    roles: (current, _, { user }) => rolesLoader.load(current.id, user),
-    allowed_marking: (current, _, { user }) => getMarkings(current.id, user.capabilities),
-    capabilities: (current) => getCapabilities(current.id),
+    groups: (current, _, context) => groupsLoader.load(context, current.id, context),
+    roles: (current, _, context) => rolesLoader.load(context, current.id, context),
+    allowed_marking: (current, _, context) => getMarkings(context, current.id, context.user.capabilities),
+    capabilities: (current, _, context) => getCapabilities(context, current.id),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
-    userSubscriptions: (current, _, { user }) => getUserSubscriptions(user, current.id),
+    userSubscriptions: (current, _, context) => getUserSubscriptions(context, context.user, current.id),
   },
   MeUser: {
-    capabilities: (current) => getCapabilities(current.id),
-    userSubscriptions: (current, _, { user }) => getUserSubscriptions(user, current.id),
+    capabilities: (current, _, context) => getCapabilities(context, current.id),
+    userSubscriptions: (current, _, context) => getUserSubscriptions(context, context.user, current.id),
   },
   UserSession: {
-    user: (session, _, { user }) => findById(user, session.user_id),
+    user: (session, _, context) => findById(context, context.user, session.user_id),
   },
   SessionDetail: {
     ttl: (session) => fetchSessionTtl(session),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
-    capabilities: (role, _, { user }) => rolesCapabilitiesLoader.load(role.id, user),
+    capabilities: (role, _, context) => rolesCapabilitiesLoader.load(role.id, context, context.user),
   },
   Mutation: {
-    otpActivation: (_, { input }, { user }) => otpUserActivation(user, input),
-    otpDeactivation: (_, __, { user }) => otpUserDeactivation(user, user.id),
+    otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),
+    otpDeactivation: (_, __, context) => otpUserDeactivation(context, context.user, context.user.id),
     otpLogin: (_, { input }, { req, user }) => otpUserLogin(req, user, input),
     token: async (_, { input }, { req }) => {
       // We need to iterate on each provider to find one that validated the credentials
@@ -117,7 +118,8 @@ const userResolvers = {
         });
         // As soon as credential is validated, stop looking for another provider
         if (user) {
-          loggedUser = await authenticateUser(req, user, provider);
+          const context = executionContext(`${provider}_strategy`);
+          loggedUser = await authenticateUser(context, req, user, provider);
           break;
         }
       }
@@ -128,47 +130,47 @@ const userResolvers = {
       throw AuthenticationFailure();
     },
     sessionKill: (_, { id }) => killSession(id),
-    otpUserDeactivation: (_, { id }, { user }) => otpUserDeactivation(user, id),
+    otpUserDeactivation: (_, { id }, context) => otpUserDeactivation(context, context.user, id),
     userSessionsKill: (_, { id }) => killUserSessions(id),
     logout: (_, args, context) => logout(context.user, context.req, context.res),
-    roleEdit: (_, { id }, { user }) => ({
-      delete: () => roleDelete(user, id),
-      fieldPatch: ({ input }) => roleEditField(user, id, input),
-      contextPatch: ({ input }) => roleEditContext(user, id, input),
-      contextClean: () => roleCleanContext(user, id),
-      relationAdd: ({ input }) => roleAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => roleDeleteRelation(user, id, toId, relationshipType),
+    roleEdit: (_, { id }, context) => ({
+      delete: () => roleDelete(context, context.user, id),
+      fieldPatch: ({ input }) => roleEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => roleEditContext(context, context.user, id, input),
+      contextClean: () => roleCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => roleAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => roleDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    roleAdd: (_, { input }, { user }) => addRole(user, input),
-    userEdit: (_, { id }, { user }) => ({
-      delete: () => userDelete(user, id),
-      fieldPatch: ({ input }) => userEditField(user, id, input),
-      contextPatch: ({ input }) => userEditContext(user, id, input),
-      contextClean: () => userCleanContext(user, id),
-      tokenRenew: () => userRenewToken(user, id),
-      relationAdd: ({ input }) => userAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => userIdDeleteRelation(user, id, toId, relationshipType),
+    roleAdd: (_, { input }, context) => addRole(context, context.user, input),
+    userEdit: (_, { id }, context) => ({
+      delete: () => userDelete(context, context.user, id),
+      fieldPatch: ({ input }) => userEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => userEditContext(context, context.user, id, input),
+      contextClean: () => userCleanContext(context, context.user, id),
+      tokenRenew: () => userRenewToken(context, context.user, id),
+      relationAdd: ({ input }) => userAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => userIdDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    meEdit: (_, { input, password }, { user }) => meEditField(user, user.id, input, password),
-    meTokenRenew: (_, __, { user }) => userRenewToken(user, user.id),
-    userAdd: (_, { input }, { user }) => addUser(user, input),
-    bookmarkAdd: (_, { id, type }, { user }) => addBookmark(user, id, type),
-    bookmarkDelete: (_, { id }, { user }) => deleteBookmark(user, id),
+    meEdit: (_, { input, password }, context) => meEditField(context, context.user, context.user.id, input, password),
+    meTokenRenew: (_, __, context) => userRenewToken(context, context.user, context.user.id),
+    userAdd: (_, { input }, context) => addUser(context, context.user, input),
+    bookmarkAdd: (_, { id, type }, context) => addBookmark(context, context.user, id, type),
+    bookmarkDelete: (_, { id }, context) => deleteBookmark(context, context.user, id),
   },
   Subscription: {
     user: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        userEditContext(user, id);
+      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+        userEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
-        )(_, { id }, { user });
+        )(_, { id }, context);
         return withCancel(filtering, () => {
-          userCleanContext(user, id);
+          userCleanContext(context, context.user, id);
         });
       },
     },

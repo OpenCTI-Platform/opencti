@@ -1,4 +1,4 @@
-import type { AuthUser } from '../../types/user';
+import type { AuthUser, AuthContext } from '../../types/user';
 import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, storeLoadById } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -9,25 +9,25 @@ import { BasicStoreEntityNarrative, ENTITY_TYPE_NARRATIVE } from './narrative-ty
 import { RELATION_SUBNARRATIVE_OF, RELATION_SUBTECHNIQUE_OF } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 
-export const findById = (user: AuthUser, narrativeId: string): BasicStoreEntityNarrative => {
-  return storeLoadById(user, narrativeId, ENTITY_TYPE_NARRATIVE) as unknown as BasicStoreEntityNarrative;
+export const findById = (context: AuthContext, user: AuthUser, narrativeId: string): BasicStoreEntityNarrative => {
+  return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NARRATIVE) as unknown as BasicStoreEntityNarrative;
 };
 
-export const findAll = (user: AuthUser, opts: QueryNarrativesArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityNarrative>(user, [ENTITY_TYPE_NARRATIVE], opts);
+export const findAll = (context: AuthContext, user: AuthUser, opts: QueryNarrativesArgs) => {
+  return listEntitiesPaginated<BasicStoreEntityNarrative>(context, user, [ENTITY_TYPE_NARRATIVE], opts);
 };
 
-export const addNarrative = async (user: AuthUser, narrative: NarrativeAddInput) => {
-  const created = await createEntity(user, narrative, ENTITY_TYPE_NARRATIVE);
+export const addNarrative = async (context: AuthContext, user: AuthUser, narrative: NarrativeAddInput) => {
+  const created = await createEntity(context, user, narrative, ENTITY_TYPE_NARRATIVE);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchParentNarratives = (user: AuthUser, narrativeIds: Array<string>) => {
-  return batchListThroughGetTo(user, narrativeIds, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE);
+export const batchParentNarratives = (context: AuthContext, user: AuthUser, narrativeIds: Array<string>) => {
+  return batchListThroughGetTo(context, user, narrativeIds, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE);
 };
 
-export const batchSubNarratives = (user: AuthUser, narrativeIds: Array<string>) => {
-  return batchListThroughGetFrom(user, narrativeIds, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE);
+export const batchSubNarratives = (context: AuthContext, user: AuthUser, narrativeIds: Array<string>) => {
+  return batchListThroughGetFrom(context, user, narrativeIds, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE);
 };
 
 export const batchIsSubNarrative = async (user: AuthUser, narrativeIds: Array<string>) => {

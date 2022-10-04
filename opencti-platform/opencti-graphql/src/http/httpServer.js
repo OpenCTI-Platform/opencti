@@ -86,9 +86,7 @@ const createHttpServer = async () => {
   apolloServer.applyMiddleware({
     app,
     cors: true,
-    bodyParserConfig: {
-      limit: requestSizeLimit,
-    },
+    bodyParserConfig: { limit: requestSizeLimit },
     onHealthCheck,
     path: `${basePath}/graphql`,
   });

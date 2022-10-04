@@ -18,7 +18,7 @@ import SightingObservableRule from '../rules/sighting-observable/SightingObserva
 import SightingIndicatorRule from '../rules/sighting-indicator/SightingIndicatorRule';
 import { BUS_TOPICS, DEV_MODE, ENABLED_RULE_ENGINE } from '../config/conf';
 import { getEntitiesFromCache } from '../manager/cacheManager';
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 import { createEntity } from '../database/middleware';
@@ -47,8 +47,8 @@ if (DEV_MODE) {
   RULES_DECLARATION.push(RelatedToRelatedRule);
 }
 
-export const getRules = async (): Promise<Array<RuleRuntime>> => {
-  const rules = await getEntitiesFromCache<BasicRuleEntity>(ENTITY_TYPE_RULE);
+export const getRules = async (context: AuthContext): Promise<Array<RuleRuntime>> => {
+  const rules = await getEntitiesFromCache<BasicRuleEntity>(context, ENTITY_TYPE_RULE);
   return RULES_DECLARATION.map((def: RuleRuntime) => {
     const esRule = rules.find((e) => e.internal_id === def.id);
     const isActivated = esRule?.active === true;
@@ -56,23 +56,23 @@ export const getRules = async (): Promise<Array<RuleRuntime>> => {
   });
 };
 
-export const getActivatedRules = async (): Promise<Array<RuleRuntime>> => {
-  const rules = await getRules();
+export const getActivatedRules = async (context: AuthContext): Promise<Array<RuleRuntime>> => {
+  const rules = await getRules(context);
   return rules.filter((r) => r.activated);
 };
 
-export const getRule = async (id: string): Promise<RuleDefinition | undefined> => {
-  const rules = await getRules();
+export const getRule = async (context: AuthContext, id: string): Promise<RuleDefinition | undefined> => {
+  const rules = await getRules(context);
   return rules.find((e) => e.id === id);
 };
 
-export const setRuleActivation = async (user: AuthUser, ruleId: string, active: boolean): Promise<RuleDefinition | undefined> => {
-  const resolvedRule = await getRule(ruleId);
+export const setRuleActivation = async (context: AuthContext, user: AuthUser, ruleId: string, active: boolean): Promise<RuleDefinition | undefined> => {
+  const resolvedRule = await getRule(context, ruleId);
   if (isEmptyField(resolvedRule)) {
     throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
   }
   // Update the rule
-  const rule = await createEntity(user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
+  const rule = await createEntity(context, user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, rule, user);
   // Refresh the activated rules
@@ -80,9 +80,9 @@ export const setRuleActivation = async (user: AuthUser, ruleId: string, active: 
   if (ENABLED_RULE_ENGINE) {
     const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
     const args = { filters: tasksFilters, connectionFormat: false };
-    const tasks = await listEntities<BasicTaskEntity>(user, [ENTITY_TYPE_TASK], args);
+    const tasks = await listEntities<BasicTaskEntity>(context, user, [ENTITY_TYPE_TASK], args);
     await Promise.all(tasks.map((t) => deleteTask(user, t.internal_id)));
     await createRuleTask(user, resolvedRule, { rule: ruleId, enable: active });
   }
-  return getRule(ruleId);
+  return getRule(context, ruleId);
 };

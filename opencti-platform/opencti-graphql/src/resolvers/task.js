@@ -3,13 +3,13 @@ import { findById as findUser } from '../domain/user';
 
 const taskResolvers = {
   Query: {
-    task: (_, { id }, { user }) => findById(user, id),
-    tasks: (_, args, { user }) => findAll(user, args),
+    task: (_, { id }, context) => findById(context, context.user, id),
+    tasks: (_, args, context) => findAll(context, context.user, args),
   },
   Mutation: {
-    listTaskAdd: (_, { input }, { user }) => createListTask(user, input),
-    queryTaskAdd: (_, { input }, { user }) => createQueryTask(user, input),
-    deleteTask: (_, { id }, { user }) => deleteTask(user, id),
+    listTaskAdd: (_, { input }, context) => createListTask(context, context.user, input),
+    queryTaskAdd: (_, { input }, context) => createQueryTask(context, context.user, input),
+    deleteTask: (_, { id }, context) => deleteTask(context, context.user, id),
   },
   Task: {
     // eslint-disable-next-line
@@ -20,7 +20,7 @@ const taskResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
-    initiator: (task, _, { user }) => findUser(user, task.initiator_id),
+    initiator: (task, _, context) => findUser(context, context.user, task.initiator_id),
   },
 };
 

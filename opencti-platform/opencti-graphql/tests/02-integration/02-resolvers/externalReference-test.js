@@ -157,7 +157,7 @@ describe('ExternalReference resolver standard behavior', () => {
     expect(queryResult.data.externalReferenceEdit.contextClean.id).toEqual(externalReferenceInternalId);
   });
   it('should add relation in externalReference', async () => {
-    const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaign = await elLoadById(context, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     campaignId = campaign.internal_id;
     const RELATION_ADD_QUERY = gql`
       mutation ExternalReferenceEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {

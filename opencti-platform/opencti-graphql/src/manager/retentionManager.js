@@ -5,7 +5,7 @@ import { findAll as findRetentionRulesToExecute } from '../domain/retentionRule'
 import conf, { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { RETENTION_MANAGER_USER } from '../utils/access';
+import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { now, utcDate } from '../utils/format';
 import { READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_STIX_INDICES } from '../database/utils';
@@ -20,7 +20,7 @@ const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retenti
 const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
 const RETENTION_INDICES = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS];
 
-const executeProcessing = async (retentionRule) => {
+const executeProcessing = async (context, retentionRule) => {
   const { id, name, max_retention: maxDays, filters } = retentionRule;
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
   const jsonFilters = JSON.parse(filters || '{}');
@@ -48,7 +48,7 @@ const executeProcessing = async (retentionRule) => {
     remaining_count: remainingDeletions,
     last_deleted_count: elements.length,
   };
-  await patchAttribute(RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
+  await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
 };
 
 const retentionHandler = async () => {
@@ -57,13 +57,14 @@ const retentionHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([RETENTION_MANAGER_KEY]);
+    const context = executionContext('retention_manager');
     const retentionRules = await findRetentionRulesToExecute(RETENTION_MANAGER_USER, { connectionFormat: false });
     logApp.debug(`[OPENCTI] Retention manager execution for ${retentionRules.length} rules`);
     // Execution of retention rules
     if (retentionRules.length > 0) {
       for (let index = 0; index < retentionRules.length; index += 1) {
         const retentionRule = retentionRules[index];
-        await executeProcessing(retentionRule);
+        await executeProcessing(context, retentionRule);
       }
     }
   } catch (e) {

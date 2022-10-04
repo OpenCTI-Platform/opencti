@@ -52,11 +52,11 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
       const fetchAttr = loaded[attributeKey];
       let rebuildAttr = rebuilt[attributeKey];
       if (attributeKey.endsWith('_ref')) {
-        const data = await idLoader(ADMIN_USER, rebuildAttr);
+        const data = await idLoader(context, ADMIN_USER, rebuildAttr);
         rebuildAttr = data.standard_id;
       }
       if (attributeKey.endsWith('_refs')) {
-        const data = await Promise.all(rebuildAttr.map(async (r) => idLoader(ADMIN_USER, r)));
+        const data = await Promise.all(rebuildAttr.map(async (r) => idLoader(context, ADMIN_USER, r)));
         rebuildAttr = data.map((r) => r.standard_id);
       }
       if (Array.isArray(fetchAttr)) {

@@ -105,7 +105,7 @@ describe('Sector resolver standard behavior', () => {
     expect(queryResult.data.sector.id).toEqual(sectorInternalId);
   });
   it('should sector subsectors be accurate', async () => {
-    const sector = await elLoadById(ADMIN_USER, 'identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6');
+    const sector = await elLoadById(context, ADMIN_USER, 'identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: sector.internal_id },
@@ -120,7 +120,7 @@ describe('Sector resolver standard behavior', () => {
     );
   });
   it('should sector parent sectors be accurate', async () => {
-    const sector = await elLoadById(ADMIN_USER, 'identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023');
+    const sector = await elLoadById(context, ADMIN_USER, 'identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: sector.internal_id },

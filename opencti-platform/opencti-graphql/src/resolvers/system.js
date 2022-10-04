@@ -15,11 +15,11 @@ const organizationsLoader = batchLoader(batchOrganizations);
 
 const systemResolvers = {
   Query: {
-    system: (_, { id }, { user }) => findById(user, id),
-    systems: (_, args, { user }) => findAll(user, args),
+    system: (_, { id }, context) => findById(context, context.user, id),
+    systems: (_, args, context) => findAll(context, context.user, args),
   },
   System: {
-    organizations: (system, _, { user }) => organizationsLoader.load(system.id, user),
+    organizations: (system, _, context) => organizationsLoader.load(system.id, context, context.user),
   },
   SystemsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -27,15 +27,15 @@ const systemResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    systemEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    systemEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    systemAdd: (_, { input }, { user }) => addSystem(user, input),
+    systemAdd: (_, { input }, context) => addSystem(context, context.user, input),
   },
 };
 

@@ -6,18 +6,19 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 
 const logResolvers = {
   Query: {
-    logs: (_, args, { user }) => findAll(user, args),
-    logsTimeSeries: (_, args, { user }) => logsTimeSeries(user, args),
+    logs: (_, args, context) => findAll(context, context.user, args),
+    logsTimeSeries: (_, args, context) => logsTimeSeries(context, context.user, args),
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
-    user: async (log, _, { user }) => {
-      const findUser = await findById(user, log.applicant_id || log.user_id);
+    user: async (log, _, context) => {
+      const findUser = await findById(context, context.user, log.applicant_id || log.user_id);
       return findUser || SYSTEM_USER;
     },
   },
   ContextData: {
-    references: (data, _, { user }) => Promise.all((data.references || []).map((n) => storeLoadById(user, n, ENTITY_TYPE_EXTERNAL_REFERENCE))),
+    references: (data, _, context) => Promise.all((data.references || [])
+      .map((n) => storeLoadById(context, context.user, n, ENTITY_TYPE_EXTERNAL_REFERENCE))),
   },
   LogsFilter: {
     entity_id: 'context_data.id',

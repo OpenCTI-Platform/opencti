@@ -28,7 +28,7 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, isBypassUser, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
@@ -108,7 +108,8 @@ const createBroadcastClient = (channel) => {
 
 const authenticate = async (req, res, next) => {
   try {
-    const auth = await authenticateUserFromRequest(req, res);
+    const executeContext = executionContext('stream_authenticate');
+    const auth = await authenticateUserFromRequest(executeContext, req, res);
     if (auth) {
       req.userId = auth.id;
       req.capabilities = auth.capabilities;
@@ -409,12 +410,12 @@ const createSeeMiddleware = () => {
     }
     return true;
   };
-  const resolveAndPublishMissingRefs = async (cache, channel, req, streamFilters, eventId, stixData) => {
+  const resolveAndPublishMissingRefs = async (context, cache, channel, req, streamFilters, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
     const missingElements = await resolveMissingReferences(req, streamFilters, refs, cache);
     for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
       const missingRef = missingElements[missingIndex];
-      const missingInstance = await storeLoadByIdWithRefs(req.session.user, missingRef);
+      const missingInstance = await storeLoadByIdWithRefs(context, req.session.user, missingRef);
       // missingElements is already cache filtered
       if (isFullVisibleElement(missingInstance)) {
         const missingData = convertStoreToStix(missingInstance);
@@ -427,20 +428,20 @@ const createSeeMiddleware = () => {
       }
     }
   };
-  const resolveAndPublishDependencies = async (noDependencies, cache, channel, req, streamFilters, eventId, stix) => {
+  const resolveAndPublishDependencies = async (context, noDependencies, cache, channel, req, streamFilters, eventId, stix) => {
     // Resolving REFS
-    await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stix);
+    await resolveAndPublishMissingRefs(context, cache, channel, req, streamFilters, eventId, stix);
     // Resolving CORE RELATIONS
     if (noDependencies === false) {
       const allRelCallback = async (relations) => {
         const notCachedRelations = relations.filter((m) => !cache.has(m.standard_id));
         for (let relIndex = 0; relIndex < notCachedRelations.length; relIndex += 1) {
           const relation = notCachedRelations[relIndex];
-          const missingRelation = await storeLoadByIdWithRefs(req.session.user, relation.id);
+          const missingRelation = await storeLoadByIdWithRefs(context, req.session.user, relation.id);
           if (isFullVisibleElement(missingRelation)) {
             const stixRelation = convertStoreToStix(missingRelation);
             // Resolve refs
-            await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stixRelation);
+            await resolveAndPublishMissingRefs(context, cache, channel, req, streamFilters, eventId, stixRelation);
             // Publish relations
             const message = generateCreateMessage(missingRelation);
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
@@ -457,7 +458,7 @@ const createSeeMiddleware = () => {
         callback: allRelCallback
       };
       const relationTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP];
-      await listAllRelations(req.session.user, relationTypes, allRelOptions);
+      await listAllRelations(context, req.session.user, relationTypes, allRelOptions);
     }
   };
   const isFiltersEntityTypeMatch = (filters, type) => {
@@ -471,7 +472,7 @@ const createSeeMiddleware = () => {
     }
     return match;
   };
-  const publishRelationDependencies = async (client, noDependencies, cache, filterCache, channel, req, streamFilters, element) => {
+  const publishRelationDependencies = async (context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element) => {
     const { user } = req.session;
     const { id: eventId, data: eventData } = element;
     const { type, data: stix, message } = eventData;
@@ -496,7 +497,7 @@ const createSeeMiddleware = () => {
       const isFromVisible = await isInstanceMatchFilters(fromStix, streamFilters, filterCache);
       const isToVisible = await isInstanceMatchFilters(toStix, streamFilters, filterCache);
       if (isFromVisible || isToVisible) {
-        await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stix);
+        await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
         // await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stix);
         // From or to are visible, consider it as a dependency
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
@@ -510,6 +511,7 @@ const createSeeMiddleware = () => {
     const { id } = req.params;
     try {
       const { user } = req.session;
+      const context = executionContext('live_stream');
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       let startFrom = (paramStartFrom === '0' || paramStartFrom === '0-0') ? FROM_START_STR : paramStartFrom;
       // Also handle event id with redis format stamp or stamp-index
@@ -533,7 +535,7 @@ const createSeeMiddleware = () => {
       // Build filters
       let streamFilters = {};
       if (id !== DEFAULT_LIVE_STREAM) {
-        const collection = await findById(user, id);
+        const collection = await findById(context, user, id);
         if (!collection) {
           res.statusMessage = 'This live stream doesnt exists';
           res.status(404).end();
@@ -589,7 +591,7 @@ const createSeeMiddleware = () => {
         for (let index = 0; index < elements.length; index += 1) {
           const element = elements[index];
           const { id: eventId, event, data: eventData } = element;
-          const { type, data: stix, version: eventVersion, context } = eventData;
+          const { type, data: stix, version: eventVersion, context: evenContext } = eventData;
           const isRelation = stix.type === 'relationship' || stix.type === 'sighting';
           // New stream support only v4+ events.
           const isCompatibleVersion = parseInt(eventVersion ?? '0', 10) >= 4;
@@ -599,20 +601,20 @@ const createSeeMiddleware = () => {
             if (!isInferredData || (isInferredData && withInferences)) {
               const isCurrentlyVisible = await isInstanceMatchFilters(stix, streamFilters, filterCache);
               if (type === EVENT_TYPE_UPDATE) {
-                const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), context.reverse_patch);
+                const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
                 const isPreviouslyVisible = await isInstanceMatchFilters(previous, streamFilters, filterCache);
                 if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                   client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                 } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
-                  await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stix);
+                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
                   client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
                 } else if (isCurrentlyVisible) { // Just an update
-                  await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stix);
+                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
                   client.sendEvent(eventId, event, eventData);
                 } else if (noDependencies === false && isRelation) { // Update but not visible
                   // In case of relationship publication, from or to can be related to something that
                   // is part of the filtering. We can consider this as dependencies
-                  await publishRelationDependencies(client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                  await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
                 }
               } else if (isCurrentlyVisible) {
                 if (type === EVENT_TYPE_DELETE) {
@@ -620,13 +622,13 @@ const createSeeMiddleware = () => {
                     client.sendEvent(eventId, event, eventData);
                   }
                 } else { // Create and merge
-                  await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stix);
+                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
                   client.sendEvent(eventId, event, eventData);
                 }
               } else if (noDependencies === false && isRelation) { // Not an update and not visible
                 // In case of relationship publication, from or to can be related to something that
                 // is part of the filtering. We can consider this as dependencies
-                await publishRelationDependencies(client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
               }
             }
             // Delete eventual filtering cache
@@ -647,14 +649,14 @@ const createSeeMiddleware = () => {
           for (let index = 0; index < elements.length; index += 1) {
             const { internal_id: elemId, standard_id: standardId } = elements[index];
             if (!cache.has(standardId)) { // With dependency resolving, id can be added in a previous iteration
-              const instance = await storeLoadByIdWithRefs(user, elemId);
+              const instance = await storeLoadByIdWithRefs(context, user, elemId);
               if (isFullVisibleElement(instance)) {
                 const stixData = convertStoreToStix(instance);
                 const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
                 const eventId = `${utcDate(stixUpdatedAt).toDate().getTime()}-0`;
                 if (channel.connected()) {
                   // publish missing dependencies if needed
-                  await resolveAndPublishDependencies(noDependencies, cache, channel, req, streamFilters, eventId, stixData);
+                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stixData);
                   // publish element
                   if (!cache.has(stixData.id)) {
                     const message = generateCreateMessage(instance);

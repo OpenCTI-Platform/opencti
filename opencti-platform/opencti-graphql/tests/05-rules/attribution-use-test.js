@@ -23,11 +23,11 @@ describe('Attribute use rule', () => {
       await startModules();
       // ---- Create the dataset
       // 01. Create a threat actor
-      const threat = await addThreatActor(SYSTEM_USER, { name: 'MY TREAT ACTOR' });
+      const threat = await addThreatActor(context, SYSTEM_USER, { name: 'MY TREAT ACTOR' });
       const MY_THREAT = threat.standard_id;
       // 02. Create require relation
       // APT41 -> attributed to -> MY TREAT ACTOR
-      await createRelation(SYSTEM_USER, {
+      await createRelation(context, SYSTEM_USER, {
         fromId: APT41,
         toId: threat.id,
         start_time: '2020-01-20T20:30:00.000Z',
@@ -54,7 +54,7 @@ describe('Attribute use rule', () => {
       // Create new element to trigger a live event
       // ---- base
       // APT41 -> uses -> Spelevo (start: 2020-01-10T20:30:00.000Z, stop: 2020-02-19T14:00:00.000Z, confidence: 30)
-      const aptUseSpelevo = await createRelation(SYSTEM_USER, {
+      const aptUseSpelevo = await createRelation(context, SYSTEM_USER, {
         fromId: APT41,
         toId: SPELEVO,
         start_time: '2020-01-10T20:30:00.000Z',
@@ -79,8 +79,8 @@ describe('Attribute use rule', () => {
       const afterDisableRelations = await getInferences(RELATION_USES);
       expect(afterDisableRelations.length).toBe(0);
       // Clean
-      await internalDeleteElementById(SYSTEM_USER, aptUseSpelevo.internal_id);
-      await internalDeleteElementById(SYSTEM_USER, threat.internal_id);
+      await internalDeleteElementById(context, SYSTEM_USER, aptUseSpelevo.internal_id);
+      await internalDeleteElementById(context, SYSTEM_USER, threat.internal_id);
       // Stop
       await shutdownModules();
     },

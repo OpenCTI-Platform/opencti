@@ -4,7 +4,7 @@ import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { mergeEntities, patchAttribute } from '../database/middleware';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
   // region find duplicates
@@ -29,7 +29,7 @@ export const up = async (next) => {
       },
     },
   };
-  const duplicates = await elRawSearch(query);
+  const duplicates = await elRawSearch(executionContext(), SYSTEM_USER, 'Url', query);
   const { buckets } = duplicates.aggregations.url.duplicateUri;
   logApp.info(`[MIGRATION] Merging ${buckets.length} URL`);
   // end region
@@ -53,7 +53,7 @@ export const up = async (next) => {
         sort: [{ 'internal_id.keyword': 'desc' }],
       },
     };
-    const data = await elRawSearch(findQuery);
+    const data = await elRawSearch(executionContext(), SYSTEM_USER, 'Url', findQuery);
     const urlsToMerge = data.hits.hits;
     const target = R.head(urlsToMerge)._source;
     // 1. Update the standard_id of the target

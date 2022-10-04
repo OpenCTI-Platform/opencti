@@ -15,30 +15,37 @@ import type {
   EditInput,
 } from '../generated/graphql';
 import { OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
+import { getEntitiesFromCache } from '../manager/cacheManager';
 
-export const findTemplateById = (user: AuthUser, statusTemplateId: string): StatusTemplate => {
-  return storeLoadById(user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
+export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
+  return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
 };
-export const findAllTemplates = async (user: AuthUser, args: QueryStatusTemplatesArgs) => {
-  return listEntitiesPaginated<BasicStoreEntity>(user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
+export const findAllTemplates = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
+  return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
-export const findById = (user: AuthUser, statusId: string): Status => {
-  return storeLoadById(user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
+export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<Status> => {
+  const platformStatuses = await getEntitiesFromCache<BasicWorkflowStatus>(context, ENTITY_TYPE_STATUS);
+  const basicWorkflowStatus = platformStatuses.find((status) => status.id === statusId);
+  return basicWorkflowStatus ?? await storeLoadById(user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
 };
-export const findAll = (user: AuthUser, args: QueryStatusesArgs) => {
-  return listEntitiesPaginated<BasicWorkflowStatus>(user, [ENTITY_TYPE_STATUS], args);
+export const findByType = async (context: AuthContext, user: AuthUser, statusType: string): Promise<Array<Status>> => {
+  const platformStatuses = await getEntitiesFromCache<BasicWorkflowStatus>(context, ENTITY_TYPE_STATUS);
+  return platformStatuses.filter((status) => status.type === statusType);
 };
-export const getTypeStatuses = async (user: AuthUser, type: string) => {
+export const findAll = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
+  return listEntitiesPaginated<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+};
+export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type: string) => {
   const args = {
     orderBy: StatusOrdering.Order,
     orderMode: OrderingMode.Asc,
     filters: [{ key: StatusFilter.Type, values: [type] }],
   };
-  return findAll(user, args);
+  return findAll(context, user, args);
 };
 export const createStatusTemplate = async (user: AuthUser, input: StatusTemplateInput) => {
   const statusTemplateId = generateInternalId();
@@ -74,14 +81,14 @@ export const createStatus = async (user: AuthUser, subTypeId: string, input: Sta
   }
   return findSubTypeById(subTypeId);
 };
-export const statusEditField = async (user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
-  const { element } = await updateAttribute(user, statusId, ENTITY_TYPE_STATUS, input);
+export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
+  const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return findSubTypeById(subTypeId);
 };
-export const statusDelete = async (user: AuthUser, subTypeId: string, statusId: string) => {
-  const { element: deleted } = await internalDeleteElementById(user, statusId);
+export const statusDelete = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string) => {
+  const { element: deleted } = await internalDeleteElementById(context, user, statusId);
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, user);
   return findSubTypeById(subTypeId);

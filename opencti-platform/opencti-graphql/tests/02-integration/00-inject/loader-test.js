@@ -15,11 +15,11 @@ describe('Database provision', () => {
   it(
     'Should import creation succeed',
     async () => {
-      await startModules();
+      // await startModules();
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      await shutdownModules();
+      // await shutdownModules();
     },
     FIVE_MINUTES
   );

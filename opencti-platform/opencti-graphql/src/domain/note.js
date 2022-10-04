@@ -17,32 +17,32 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 
-export const findById = (user, noteId) => {
-  return storeLoadById(user, noteId, ENTITY_TYPE_CONTAINER_NOTE);
+export const findById = (context, user, noteId) => {
+  return storeLoadById(context, user, noteId, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const findAll = async (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_CONTAINER_NOTE], args);
+export const findAll = async (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], args);
 };
 
-export const noteContainsStixObjectOrStixRelationship = async (user, noteId, thingId) => {
-  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(user, thingId)).id : thingId;
+export const noteContainsStixObjectOrStixRelationship = async (context, user, noteId, thingId) => {
+  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
   const args = {
     filters: [
       { key: 'internal_id', values: [noteId] },
       { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
     ],
   };
-  const noteFound = await findAll(user, args);
+  const noteFound = await findAll(context, user, args);
   return noteFound.edges.length > 0;
 };
 
 // region series
-export const notesTimeSeries = (user, args) => {
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_NOTE, [], args);
+export const notesTimeSeries = (context, user, args) => {
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_NOTE, [], args);
 };
 
-export const notesNumber = (user, args) => ({
+export const notesNumber = (context, user, args) => ({
   count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
   total: elCount(
     user,
@@ -51,12 +51,12 @@ export const notesNumber = (user, args) => ({
   ),
 });
 
-export const notesTimeSeriesByEntity = (user, args) => {
+export const notesTimeSeriesByEntity = (context, user, args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
 };
 
-export const notesTimeSeriesByAuthor = async (user, args) => {
+export const notesTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId } = args;
   const filters = [
     {
@@ -67,10 +67,10 @@ export const notesTimeSeriesByAuthor = async (user, args) => {
       value: authorId,
     },
   ];
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
 };
 
-export const notesNumberByEntity = (user, args) => ({
+export const notesNumberByEntity = (context, user, args) => ({
   count: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
@@ -94,28 +94,28 @@ export const notesNumberByEntity = (user, args) => ({
   ),
 });
 
-export const notesDistributionByEntity = async (user, args) => {
+export const notesDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
 };
 // endregion
 
 // region mutations
-export const addNote = async (user, note) => {
+export const addNote = async (context, user, note) => {
   const noteToCreate = note;
   // For note, auto assign current user as author
   if (!note.createdBy) {
     const args = { filters: [{ key: 'contact_information', values: [user.user_email] }], connectionFormat: false };
-    const individuals = await findIndividuals(user, args);
+    const individuals = await findIndividuals(context, user, args);
     if (individuals.length > 0) {
       noteToCreate.createdBy = R.head(individuals).id;
     } else {
-      const individual = await addIndividual(user, { name: user.name, contact_information: user.user_email });
+      const individual = await addIndividual(context, user, { name: user.name, contact_information: user.user_email });
       noteToCreate.createdBy = individual.id;
     }
   }
-  const created = await createEntity(user, noteToCreate, ENTITY_TYPE_CONTAINER_NOTE);
+  const created = await createEntity(context, user, noteToCreate, ENTITY_TYPE_CONTAINER_NOTE);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

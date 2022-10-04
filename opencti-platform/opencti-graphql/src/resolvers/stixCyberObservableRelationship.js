@@ -25,40 +25,40 @@ const reportsLoader = batchLoader(batchReports);
 
 const stixCyberObservableRelationshipResolvers = {
   Query: {
-    stixCyberObservableRelationship: (_, { id }, { user }) => findById(user, id),
-    stixCyberObservableRelationships: (_, args, { user }) => findAll(user, args),
+    stixCyberObservableRelationship: (_, { id }, context) => findById(context, context.user, id),
+    stixCyberObservableRelationships: (_, args, context) => findAll(context, context.user, args),
   },
   StixCyberObservableRelationship: {
-    from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
-    to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
-    reports: (rel, _, { user }) => reportsLoader.load(rel.id, user),
-    notes: (rel, _, { user }) => notesLoader.load(rel.id, user),
-    opinions: (rel, _, { user }) => opinionsLoader.load(rel.id, user),
+    from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
+    to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
+    reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
+    notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
+    opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),
   },
   Mutation: {
-    stixCyberObservableRelationshipEdit: (_, { id }, { user }) => ({
-      delete: () => stixCyberObservableRelationshipDelete(user, id),
-      fieldPatch: ({ input }) => stixCyberObservableRelationshipEditField(user, id, input),
-      contextPatch: ({ input }) => stixCyberObservableRelationshipEditContext(user, id, input),
-      contextClean: () => stixCyberObservableRelationshipCleanContext(user, id),
+    stixCyberObservableRelationshipEdit: (_, { id }, context) => ({
+      delete: () => stixCyberObservableRelationshipDelete(context, context.user, id),
+      fieldPatch: ({ input }) => stixCyberObservableRelationshipEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => stixCyberObservableRelationshipEditContext(context, context.user, id, input),
+      contextClean: () => stixCyberObservableRelationshipCleanContext(context, context.user, id),
     }),
-    stixCyberObservableRelationshipAdd: (_, { input }, { user }) => addStixCyberObservableRelationship(user, input),
+    stixCyberObservableRelationshipAdd: (_, { input }, context) => addStixCyberObservableRelationship(context, context.user, input),
   },
   Subscription: {
     stixCyberObservableRelationship: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        stixCyberObservableRelationshipEditContext(user, id);
+      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+        stixCyberObservableRelationshipEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
-        )(_, { id }, { user });
+        )(_, { id }, context);
         return withCancel(filtering, () => {
-          stixCyberObservableRelationshipCleanContext(user, id);
+          stixCyberObservableRelationshipCleanContext(context, context.user, id);
         });
       },
     },

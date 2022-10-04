@@ -8,18 +8,18 @@ import { storeLoadById, timeSeriesEntities } from '../database/middleware';
 import { READ_INDEX_HISTORY, INDEX_HISTORY } from '../database/utils';
 import { SYSTEM_USER } from '../utils/access';
 
-export const findAll = (user, args) => {
+export const findAll = (context, user, args) => {
   const finalArgs = R.pipe(
     R.assoc('types', ['history']),
     R.assoc('orderBy', args.orderBy || 'timestamp'),
     R.assoc('orderMode', args.orderMode || 'desc')
   )(args);
-  return elPaginate(user, READ_INDEX_HISTORY, finalArgs);
+  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
-export const creator = async (user, entityId, type) => {
-  const entity = await storeLoadById(user, entityId, type);
-  return elPaginate(user, READ_INDEX_HISTORY, {
+export const creator = async (context, user, entityId, type) => {
+  const entity = await storeLoadById(context, user, entityId, type);
+  return elPaginate(context, user, READ_INDEX_HISTORY, {
     orderBy: 'timestamp',
     orderMode: 'asc',
     filters: [
@@ -29,17 +29,17 @@ export const creator = async (user, entityId, type) => {
     connectionFormat: false,
   }).then(async (logs) => {
     const applicant = logs.length > 0 ? head(logs).applicant_id || head(logs).user_id : null;
-    const finalUser = applicant ? await findById(user, applicant) : undefined;
+    const finalUser = applicant ? await findById(context, user, applicant) : undefined;
     return finalUser || SYSTEM_USER;
   });
 };
 
-export const logsTimeSeries = (user, args) => {
+export const logsTimeSeries = (context, user, args) => {
   let filters = [];
   if (args.userId) {
     filters = [{ isRelation: false, type: '*_id', value: args.userId }];
   }
-  return timeSeriesEntities(user, null, filters, args);
+  return timeSeriesEntities(context, user, null, filters, args);
 };
 
 export const logsWorkerConfig = () => {

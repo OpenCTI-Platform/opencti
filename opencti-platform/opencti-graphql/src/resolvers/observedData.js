@@ -24,35 +24,35 @@ import { buildRefRelationKey } from '../schema/general';
 
 const observedDataResolvers = {
   Query: {
-    observedData: (_, { id }, { user }) => findById(user, id),
-    observedDatas: (_, args, { user }) => findAll(user, args),
-    observedDatasTimeSeries: (_, args, { user }) => {
+    observedData: (_, { id }, context) => findById(context, context.user, id),
+    observedDatas: (_, args, context) => findAll(context, context.user, args),
+    observedDatasTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return observedDatasTimeSeriesByEntity(user, args);
+        return observedDatasTimeSeriesByEntity(context, context.user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return observedDatasTimeSeriesByAuthor(user, args);
+        return observedDatasTimeSeriesByAuthor(context, context.user, args);
       }
-      return observedDatasTimeSeries(user, args);
+      return observedDatasTimeSeries(context, context.user, args);
     },
-    observedDatasNumber: (_, args, { user }) => {
+    observedDatasNumber: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return observedDatasNumberByEntity(user, args);
+        return observedDatasNumberByEntity(context, context.user, args);
       }
-      return observedDatasNumber(user, args);
+      return observedDatasNumber(context, context.user, args);
     },
-    observedDatasDistribution: (_, args, { user }) => {
+    observedDatasDistribution: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return observedDatasDistributionByEntity(user, args);
+        return observedDatasDistributionByEntity(context, context.user, args);
       }
       return [];
     },
-    observedDataContainsStixObjectOrStixRelationship: (_, args, { user }) => {
-      return observedDataContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
+    observedDataContainsStixObjectOrStixRelationship: (_, args, context) => {
+      return observedDataContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   ObservedData: {
-    name: (observedData, _, { user }) => resolveName(user, observedData),
+    name: (observedData, _, context) => resolveName(context, context.user, observedData),
   },
   ObservedDatasFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -61,15 +61,15 @@ const observedDataResolvers = {
     objectContains: buildRefRelationKey(RELATION_OBJECT),
   },
   Mutation: {
-    observedDataEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    observedDataEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    observedDataAdd: (_, { input }, { user }) => addObservedData(user, input),
+    observedDataAdd: (_, { input }, context) => addObservedData(context, context.user, input),
   },
 };
 

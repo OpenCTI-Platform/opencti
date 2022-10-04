@@ -7,17 +7,17 @@ const subTypeResolvers = {
     subTypes: (_, args) => findAll(args),
   },
   SubType: {
-    workflowEnabled: async (current, _, { user }) => {
-      const statusesEdges = await getTypeStatuses(user, current.label);
+    workflowEnabled: async (current, _, context) => {
+      const statusesEdges = await getTypeStatuses(context, context.user, current.label);
       return statusesEdges.edges.length > 0;
     },
-    statuses: (current, _, { user }) => getTypeStatuses(user, current.id),
+    statuses: (current, _, context) => getTypeStatuses(context, context.user, current.id),
   },
   Mutation: {
-    subTypeEdit: (_, { id }, { user }) => ({
-      statusAdd: ({ input }) => createStatus(user, id, input),
-      statusFieldPatch: ({ statusId, input }) => statusEditField(user, id, statusId, input),
-      statusDelete: ({ statusId }) => statusDelete(user, id, statusId),
+    subTypeEdit: (_, { id }, context) => ({
+      statusAdd: ({ input }) => createStatus(context, context.user, id, input),
+      statusFieldPatch: ({ statusId, input }) => statusEditField(context, context.user, id, statusId, input),
+      statusDelete: ({ statusId }) => statusDelete(context, context.user, id, statusId),
     }),
   },
 };

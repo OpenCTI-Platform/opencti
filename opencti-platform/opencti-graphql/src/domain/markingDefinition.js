@@ -9,21 +9,21 @@ import { SYSTEM_USER } from '../utils/access';
 import { groupAddRelation } from './group';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 
-export const findById = (user, markingDefinitionId) => {
-  return storeLoadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+export const findById = (context, user, markingDefinitionId) => {
+  return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_MARKING_DEFINITION], args);
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], args);
 };
 
-export const addMarkingDefinition = async (user, markingDefinition) => {
+export const addMarkingDefinition = async (context, user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
   const markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
-  const created = await createEntity(user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION);
+  const created = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION);
   const filters = [{ key: 'auto_new_marking', values: [true] }];
   // Bypass current right to read group
-  const groups = await listEntities(SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
+  const groups = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
   if (groups && groups.length > 0) {
     await Promise.all(
       groups.map((group) => {
@@ -37,25 +37,25 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
 };
 
-export const markingDefinitionDelete = (user, markingDefinitionId) => {
-  return deleteElementById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+export const markingDefinitionDelete = (context, user, markingDefinitionId) => {
+  return deleteElementById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const markingDefinitionEditField = async (user, markingDefinitionId, input, opts = {}) => {
-  const { element } = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, opts);
+export const markingDefinitionEditField = async (context, user, markingDefinitionId, input, opts = {}) => {
+  const { element } = await updateAttribute(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, element, user);
 };
 
-export const markingDefinitionCleanContext = async (user, markingDefinitionId) => {
+export const markingDefinitionCleanContext = async (context, user, markingDefinitionId) => {
   await delEditContext(user, markingDefinitionId);
-  return storeLoadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
+  return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
   });
 };
 
-export const markingDefinitionEditContext = async (user, markingDefinitionId, input) => {
+export const markingDefinitionEditContext = async (context, user, markingDefinitionId, input) => {
   await setEditContext(user, markingDefinitionId, input);
-  return storeLoadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
+  return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
   });
 };

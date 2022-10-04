@@ -1,3 +1,4 @@
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { pubsub } from '../database/redis';
 import { connectors } from '../database/repository';
@@ -7,30 +8,55 @@ import {
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_STATUS_TEMPLATE
 } from '../schema/internalObject';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { UnsupportedError } from '../config/errors';
 import type { BasicStoreEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
 import { EntityOptions, listEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import type { AuthContext } from '../types/user';
 
 let cache: any = {};
 
-export const getEntitiesFromCache = async<T extends BasicStoreEntity>(type: string): Promise<Array<T>> => {
-  const fromCache = cache[type];
-  if (!fromCache) {
-    throw UnsupportedError(`${type} is not supported in cache configuration`);
+export const getEntitiesFromCache = async<T extends BasicStoreEntity>(context: AuthContext, type: string): Promise<Array<T>> => {
+  let tracingSpan;
+  try {
+    if (context.tracing) {
+      const tracer = context.tracing.getTracer();
+      const ctx = context.tracing.getCtx();
+      tracingSpan = tracer.startSpan(`CACHE ${type}`, {
+        attributes: {
+          [SemanticAttributes.DB_NAME]: 'cache_engine',
+          [SemanticAttributes.DB_OPERATION]: 'select',
+        },
+        kind: 2 // Client
+      }, ctx);
+    }
+    const fromCache = cache[type];
+    if (!fromCache) {
+      throw UnsupportedError(`${type} is not supported in cache configuration`);
+    }
+    if (!fromCache.values) {
+      fromCache.values = await fromCache.fn();
+    }
+    if (tracingSpan) {
+      tracingSpan.setStatus({ code: 1 });
+      tracingSpan.end();
+    }
+    return fromCache.values;
+  } catch (err) {
+    if (tracingSpan) {
+      tracingSpan.setStatus({ code: 2 });
+      tracingSpan.end();
+    }
+    throw err;
   }
-  if (!fromCache.values) {
-    fromCache.values = await fromCache.fn();
-  }
-  return fromCache.values;
 };
 
-const workflowStatuses = async () => {
+const workflowStatuses = async (context: AuthContext) => {
   const reloadStatuses = async () => {
-    const templates = await listEntities<BasicWorkflowTemplateEntity>(SYSTEM_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { connectionFormat: false });
+    const templates = await listEntities<BasicWorkflowTemplateEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { connectionFormat: false });
     const args:EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: 'asc', connectionFormat: false };
-    const statuses = await listEntities<BasicWorkflowStatusEntity>(SYSTEM_USER, [ENTITY_TYPE_STATUS], args);
+    const statuses = await listEntities<BasicWorkflowStatusEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS], args);
     return statuses.map((status) => {
       const template = templates.find((t) => t.internal_id === status.template_id);
       return { ...status, name: template?.name ?? 'Error with template association' };
@@ -38,21 +64,21 @@ const workflowStatuses = async () => {
   };
   return { values: await reloadStatuses(), fn: reloadStatuses };
 };
-const platformConnectors = async () => {
+const platformConnectors = async (context: AuthContext) => {
   const reloadConnectors = async () => {
-    return connectors(SYSTEM_USER);
+    return connectors(context, SYSTEM_USER);
   };
   return { values: await reloadConnectors(), fn: reloadConnectors };
 };
-const platformRules = async () => {
+const platformRules = async (context: AuthContext) => {
   const reloadRules = async () => {
-    return listEntities(SYSTEM_USER, [ENTITY_TYPE_RULE], { connectionFormat: false });
+    return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_RULE], { connectionFormat: false });
   };
   return { values: await reloadRules(), fn: reloadRules };
 };
-const platformMarkings = async () => {
+const platformMarkings = async (context: AuthContext) => {
   const reloadMarkings = async () => {
-    return listEntities(SYSTEM_USER, [ENTITY_TYPE_MARKING_DEFINITION], { connectionFormat: false });
+    return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_MARKING_DEFINITION], { connectionFormat: false });
   };
   return { values: await reloadMarkings(), fn: reloadMarkings };
 };
@@ -62,11 +88,12 @@ const initCacheManager = () => {
   return {
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Initializing cache manager');
+      const context = executionContext('cache_manager');
       // Load initial data used for cache
-      cache[ENTITY_TYPE_STATUS] = await workflowStatuses();
-      cache[ENTITY_TYPE_CONNECTOR] = await platformConnectors();
-      cache[ENTITY_TYPE_RULE] = await platformRules();
-      cache[ENTITY_TYPE_MARKING_DEFINITION] = await platformMarkings();
+      cache[ENTITY_TYPE_STATUS] = await workflowStatuses(context);
+      cache[ENTITY_TYPE_CONNECTOR] = await platformConnectors(context);
+      cache[ENTITY_TYPE_RULE] = await platformRules(context);
+      cache[ENTITY_TYPE_MARKING_DEFINITION] = await platformMarkings(context);
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
       subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {

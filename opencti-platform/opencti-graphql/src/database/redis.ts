@@ -5,6 +5,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, configureCA, DEV_MODE, ENABLED_CACHING, getStoppingState, logApp } from '../config/conf';
 import {
   generateCreateMessage,
@@ -23,7 +24,7 @@ import SessionStoreMemory from './sessionStore-memory';
 import { getInstanceIds } from '../schema/identifier';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import type {
   CommitContext,
   CreateEventOpts,
@@ -378,12 +379,36 @@ const mapJSToStream = (event: any) => {
   return cmdArgs;
 };
 
-const pushToStream = async (client: Redis, instance: StoreObject, event: Event) => {
+const pushToStream = async (context: AuthContext, user: AuthUser, client: Redis, instance: StoreObject, event: Event) => {
   if (isStreamPublishable(instance)) {
-    if (streamTrimming) {
-      await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
-    } else {
-      await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
+    let tracingSpan;
+    try {
+      if (context.tracing) {
+        const tracer = context.tracing.getTracer();
+        const ctx = context.tracing.getCtx();
+        tracingSpan = tracer.startSpan('INSERT STREAM', {
+          attributes: {
+            [SemanticAttributes.DB_NAME]: 'stream_engine',
+            [SemanticAttributes.ENDUSER_ID]: user.id,
+          },
+          kind: 2 // Client
+        }, ctx);
+      }
+      if (streamTrimming) {
+        await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
+      } else {
+        await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
+      }
+      if (tracingSpan) {
+        tracingSpan.setStatus({ code: 1 });
+        tracingSpan.end();
+      }
+    } catch (err) {
+      if (tracingSpan) {
+        tracingSpan.setStatus({ code: 2 });
+        tracingSpan.end();
+      }
+      throw err;
     }
   }
 };
@@ -409,10 +434,17 @@ const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreO
     }
   };
 };
-export const storeMergeEvent = async (user: AuthUser, initialInstance: StoreObject, mergedInstance: StoreObject, sourceEntities: Array<StoreObject>, impacts: any) => {
+export const storeMergeEvent = async (
+  context: AuthContext,
+  user: AuthUser,
+  initialInstance: StoreObject,
+  mergedInstance: StoreObject,
+  sourceEntities: Array<StoreObject>,
+  impacts: any
+) => {
   try {
     const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
-    await pushToStream(clientBase, mergedInstance, event);
+    await pushToStream(context, user, clientBase, mergedInstance, event);
     return event;
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
@@ -444,12 +476,12 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
     }
   };
 };
-export const storeUpdateEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
+export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
   try {
     if (isStixData(instance)) {
       const event = buildUpdateEvent(user, previous, instance, message, opts.commit);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
-        await pushToStream(clientBase, instance, event);
+        await pushToStream(context, user, clientBase, instance, event);
       }
       return event;
     }
@@ -469,14 +501,14 @@ const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string
     data: stix,
   };
 };
-export const storeCreateRelationEvent = async (user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
+export const storeCreateRelationEvent = async (context: AuthContext, user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
   try {
     if (isStixData(instance)) {
       const { withoutMessage = false } = opts;
       const message = withoutMessage ? '-' : generateCreateMessage(instance);
       const event = buildCreateEvent(user, instance, message);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
-        await pushToStream(clientBase, instance, event);
+        await pushToStream(context, user, clientBase, instance, event);
       }
       return event;
     }
@@ -485,12 +517,12 @@ export const storeCreateRelationEvent = async (user: AuthUser, instance: StoreRe
     throw DatabaseError('Error in store create relation event', { error: e });
   }
 };
-export const storeCreateEntityEvent = async (user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
+export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
     if (isStixData(instance)) {
       const event = buildCreateEvent(user, instance, message);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
-        await pushToStream(clientBase, instance, event);
+        await pushToStream(context, user, clientBase, instance, event);
       }
       return event;
     }
@@ -514,13 +546,13 @@ const buildDeleteEvent = async (user: AuthUser, instance: StoreObject, message: 
     }
   };
 };
-export const storeDeleteEvent = async (user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: DeleteEventOpts = {}) => {
+export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: DeleteEventOpts = {}) => {
   try {
     if (isStixData(instance)) {
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message, deletions);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
-        await pushToStream(clientBase, instance, event);
+        await pushToStream(context, user, clientBase, instance, event);
       }
       return event;
     }

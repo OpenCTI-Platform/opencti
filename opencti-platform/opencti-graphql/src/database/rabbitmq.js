@@ -172,7 +172,7 @@ export const pushToSync = (message) => {
   return send(WORKER_EXCHANGE, pushRouting('sync'), JSON.stringify(message));
 };
 
-export const pushToConnector = (connector, message) => {
+export const pushToConnector = (context, connector, message) => {
   return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id), JSON.stringify(message));
 };
 
