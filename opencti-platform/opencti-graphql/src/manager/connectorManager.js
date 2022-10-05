@@ -5,7 +5,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
 import { elDeleteInstances, elUpdate } from '../database/engine';
 import { elList } from '../database/middleware-loader';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { INDEX_HISTORY } from '../database/utils';
 import { now, sinceNowInDays } from '../utils/format';
 
@@ -17,7 +17,7 @@ const SCHEDULE_TIME = conf.get('connector_manager:interval');
 const CONNECTOR_MANAGER_KEY = conf.get('connector_manager:lock_key');
 const CONNECTOR_WORK_RANGE = conf.get('connector_manager:works_day_range');
 
-const closeOldWorks = async (connector) => {
+const closeOldWorks = async (context, connector) => {
   // Get current status from Redis
   const status = await redisGetConnectorStatus(connector.internal_id);
   // If status is here we can try to close all old open works
@@ -59,7 +59,7 @@ const closeOldWorks = async (connector) => {
         }
       }
     };
-    await elList(SYSTEM_USER, [INDEX_HISTORY], {
+    await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
       filters,
       types: ['Work'],
       connectionFormat: false,
@@ -68,7 +68,7 @@ const closeOldWorks = async (connector) => {
   }
 };
 
-const deleteCompletedWorks = async (connector) => {
+const deleteCompletedWorks = async (context, connector) => {
   const filters = [
     { key: 'event_source_id', values: [connector.internal_id] },
     { key: 'status', values: ['complete'] },
@@ -81,7 +81,7 @@ const deleteCompletedWorks = async (connector) => {
     await redisDeleteWorks(ids);
     await elDeleteInstances(elements);
   };
-  await elList(SYSTEM_USER, [INDEX_HISTORY], {
+  await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
     filters,
     types: ['Work'],
     connectionFormat: false,
@@ -94,14 +94,15 @@ const connectorHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([CONNECTOR_MANAGER_KEY]);
+    const context = executionContext('connector_manager');
     // Execute the cleaning
-    const platformConnectors = await connectors(SYSTEM_USER);
+    const platformConnectors = await connectors(context, SYSTEM_USER);
     for (let index = 0; index < platformConnectors.length; index += 1) {
       const platformConnector = platformConnectors[index];
       // Force close all needed works
-      await closeOldWorks(platformConnector);
+      await closeOldWorks(context, platformConnector);
       // Cleanup too old complete works
-      await deleteCompletedWorks(platformConnector);
+      await deleteCompletedWorks(context, platformConnector);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

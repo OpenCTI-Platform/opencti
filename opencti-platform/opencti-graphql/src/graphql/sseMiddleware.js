@@ -287,7 +287,7 @@ const createSeeMiddleware = () => {
     }
     return true;
   };
-  const filterCacheResolver = async (values, filterCache) => {
+  const filterCacheResolver = async (context, values, filterCache) => {
     const filterIds = values.map((v) => v.id);
     const filterRefs = [];
     for (let i = 0; i < filterIds.length; i += 1) {
@@ -296,14 +296,14 @@ const createSeeMiddleware = () => {
       if (fromCache) {
         filterRefs.push(fromCache.standard_id);
       } else {
-        const creator = await internalLoadById(SYSTEM_USER, filterId);
+        const creator = await internalLoadById(context, SYSTEM_USER, filterId);
         filterRefs.push(creator.standard_id);
         filterCache.set(filterId, creator);
       }
     }
     return filterRefs;
   };
-  const isInstanceMatchFilters = async (instance, filters, filterCache) => {
+  const isInstanceMatchFilters = async (context, instance, filters, filterCache) => {
     // Pre-filter transformation to handle specific frontend format
     const adaptedFilters = adaptFiltersFrontendFormat(filters);
     // User is granted, but we still need to apply filters if needed
@@ -319,7 +319,7 @@ const createSeeMiddleware = () => {
         if (values.length > 0 && markings.length === 0) {
           return false;
         }
-        const filterMarkingRefs = await filterCacheResolver(values, filterCache);
+        const filterMarkingRefs = await filterCacheResolver(context, values, filterCache);
         const found = filterMarkingRefs.some((r) => markings.includes(r));
         if (!found) {
           return false;
@@ -352,7 +352,7 @@ const createSeeMiddleware = () => {
         if (values.length > 0 && instance.created_by_ref === undefined) {
           return false;
         }
-        const filterCreationRefs = await filterCacheResolver(values, filterCache);
+        const filterCreationRefs = await filterCacheResolver(context, values, filterCache);
         const found = filterCreationRefs.includes(instance.created_by_ref);
         if (!found) {
           return false;
@@ -494,8 +494,8 @@ const createSeeMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
-      const isFromVisible = await isInstanceMatchFilters(fromStix, streamFilters, filterCache);
-      const isToVisible = await isInstanceMatchFilters(toStix, streamFilters, filterCache);
+      const isFromVisible = await isInstanceMatchFilters(context, fromStix, streamFilters, filterCache);
+      const isToVisible = await isInstanceMatchFilters(context, toStix, streamFilters, filterCache);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
         // await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stix);
@@ -542,7 +542,7 @@ const createSeeMiddleware = () => {
           return;
         }
         const userGroups = await batchGroups(user, user.id, { batched: false, paginate: false });
-        const collectionGroups = await streamCollectionGroups(user, collection);
+        const collectionGroups = await streamCollectionGroups(context, user, collection);
         if (collectionGroups.length > 0) {
           // User must have one of the collection groups
           const collectionGroupIds = collectionGroups.map((g) => g.id);
@@ -599,10 +599,10 @@ const createSeeMiddleware = () => {
             // Check for inferences
             const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
             if (!isInferredData || (isInferredData && withInferences)) {
-              const isCurrentlyVisible = await isInstanceMatchFilters(stix, streamFilters, filterCache);
+              const isCurrentlyVisible = await isInstanceMatchFilters(context, stix, streamFilters, filterCache);
               if (type === EVENT_TYPE_UPDATE) {
                 const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
-                const isPreviouslyVisible = await isInstanceMatchFilters(previous, streamFilters, filterCache);
+                const isPreviouslyVisible = await isInstanceMatchFilters(context, previous, streamFilters, filterCache);
                 if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                   client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                 } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible

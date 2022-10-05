@@ -105,7 +105,7 @@ export const generateDigestForSubscription = async (context, subscription) => {
   // Resolve the user
   const rawUser = await resolveUserById(context, subscription.user_id);
   if (!rawUser) {
-    await userSubscriptionDelete(SYSTEM_USER, subscription.id);
+    await userSubscriptionDelete(context, SYSTEM_USER, subscription.id);
     return null;
   }
   const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
@@ -221,7 +221,7 @@ export const generateDigestForSubscription = async (context, subscription) => {
       types: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : ['Stix-Core-Object'],
       connectionFormat: false,
     };
-    data.entitiesData = await findAllStixCoreObjects(user, params);
+    data.entitiesData = await findAllStixCoreObjects(context, user, params);
   }
   if (subscription.options.includes('CONTAINERS')) {
     const containersParams = {
@@ -235,7 +235,7 @@ export const generateDigestForSubscription = async (context, subscription) => {
     if (subscription.entities_ids && subscription.entities_ids.length > 0) {
       // eslint-disable-next-line no-restricted-syntax
       for (const entityId of subscription.entities_ids) {
-        const result = await findAllStixMetaRelationships(user, {
+        const result = await findAllStixMetaRelationships(context, user, {
           ...containersParams,
           toId: entityId,
           relationship_type: 'object',
@@ -243,7 +243,7 @@ export const generateDigestForSubscription = async (context, subscription) => {
         containersData = [...containersData, ...result];
       }
     } else {
-      const result = await findAllContainers(user, containersParams);
+      const result = await findAllContainers(context, user, containersParams);
       containersData = [...containersData, ...result];
     }
     data.containersData = containersData;

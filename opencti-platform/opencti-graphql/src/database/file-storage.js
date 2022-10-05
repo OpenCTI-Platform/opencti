@@ -78,7 +78,7 @@ export const initializeBucket = async () => {
 
 export const isStorageAlive = () => initializeBucket();
 
-export const deleteFile = async (user, id) => {
+export const deleteFile = async (context, user, id) => {
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
@@ -88,16 +88,16 @@ export const deleteFile = async (user, id) => {
   return true;
 };
 
-export const deleteFiles = async (user, ids) => {
+export const deleteFiles = async (context, user, ids) => {
   logApp.debug(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
   for (let i = 0; i < ids.length; i += 1) {
     const id = ids[i];
-    await deleteFile(user, id);
+    await deleteFile(context, user, id);
   }
   return true;
 };
 
-export const downloadFile = async (id) => {
+export const downloadFile = async (context, id) => {
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
@@ -136,7 +136,7 @@ export const storeFileConverter = (user, file) => {
   };
 };
 
-export const loadFile = async (user, filename) => {
+export const loadFile = async (context, user, filename) => {
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
@@ -165,7 +165,7 @@ export const isFileObjectExcluded = (id) => {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
-export const rawFilesListing = async (user, directory, recursive = false) => {
+export const rawFilesListing = async (context, user, directory, recursive = false) => {
   const storageObjects = [];
   const requestParams = {
     Bucket: bucketName,
@@ -188,7 +188,7 @@ export const rawFilesListing = async (user, directory, recursive = false) => {
   }
   const filteredObjects = storageObjects.filter((obj) => !isFileObjectExcluded(obj.Key));
   // Load file metadata with 5 // call maximum
-  return BluePromise.map(filteredObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
+  return BluePromise.map(filteredObjects, (f) => loadFile(context, user, f.Key), { concurrency: 5 });
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
@@ -278,7 +278,7 @@ export const upload = async (context, user, path, fileUpload, meta = {}, noTrigg
 };
 
 export const filesListing = async (context, user, first, path, entityId = null) => {
-  const files = await rawFilesListing(user, path);
+  const files = await rawFilesListing(context, user, path);
   const inExport = await loadExportWorksAsProgressFiles(context, user, path);
   const allFiles = R.concat(inExport, files);
   const sortedFiles = R.sort((a, b) => b.lastModified - a.lastModified, allFiles);
@@ -290,7 +290,7 @@ export const filesListing = async (context, user, first, path, entityId = null) 
 };
 
 export const deleteAllFiles = async (context, user, path) => {
-  const files = await rawFilesListing(user, path);
+  const files = await rawFilesListing(context, user, path);
   const inExport = await loadExportWorksAsProgressFiles(context, user, path);
   const allFiles = R.concat(inExport, files);
   const ids = allFiles.map((file) => file.id);

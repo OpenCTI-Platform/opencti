@@ -1,14 +1,15 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { deleteFiles, rawFilesListing, storeFileConverter } from '../database/file-storage';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { internalLoadById } from '../database/middleware';
 import { logApp } from '../config/conf';
 
 export const up = async (next) => {
+  const context = executionContext('migration');
   logApp.info('[MIGRATION] Starting files artifacts migration');
-  const imports = await rawFilesListing(SYSTEM_USER, '/import/Artifact', true);
+  const imports = await rawFilesListing(context, SYSTEM_USER, '/import/Artifact', true);
   const importGroups = R.groupBy((i) => i.metaData.entity_id, imports);
   const groupSize = Object.keys(importGroups).length;
   logApp.info(`[MIGRATION] Migrating ${groupSize} artifacts references`);
@@ -16,15 +17,15 @@ export const up = async (next) => {
   let migratedCount = 0;
   const concurrentChange = (entry) => {
     const [id, groupFiles] = entry;
-    return internalLoadById(SYSTEM_USER, id).then((element) => {
+    return internalLoadById(context, SYSTEM_USER, id).then((element) => {
       if (element) {
-        const eventFiles = groupFiles.map((f) => storeFileConverter(SYSTEM_USER, f));
+        const eventFiles = groupFiles.map((f) => storeFileConverter(context, SYSTEM_USER, f));
         const source = 'ctx._source.x_opencti_files = params.files;';
         return elUpdate(element._index, element.internal_id, {
           script: { source, lang: 'painless', params: { files: eventFiles } },
         });
       }
-      return deleteFiles(SYSTEM_USER, groupFiles.map((g) => g.id));
+      return deleteFiles(context, SYSTEM_USER, groupFiles.map((g) => g.id));
     }).then(() => {
       migratedCount += 1;
       if (migratedCount % 100 === 0) {

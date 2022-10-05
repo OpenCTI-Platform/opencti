@@ -1,12 +1,13 @@
 import { connectors } from '../database/repository';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { patchAttribute } from '../database/middleware';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { logApp } from '../config/conf';
 
 export const up = async (next) => {
+  const context = executionContext('migration');
   logApp.info('[MIGRATION] Rewriting stream connector erroneous state');
-  const connectorsList = await connectors(SYSTEM_USER);
+  const connectorsList = await connectors(context, SYSTEM_USER);
   await Promise.all(connectorsList.map((connector) => {
     try {
       const state = connector.connector_state;
@@ -14,7 +15,7 @@ export const up = async (next) => {
       if (decodedState.start_from && decodedState.start_from.includes('-0-0')) {
         decodedState.start_from = decodedState.start_from.replace('-0-0', '-0');
         const updatePatch = { connector_state: JSON.stringify(decodedState) };
-        return patchAttribute(SYSTEM_USER, connector.id, ENTITY_TYPE_CONNECTOR, updatePatch);
+        return patchAttribute(context, SYSTEM_USER, connector.id, ENTITY_TYPE_CONNECTOR, updatePatch);
       }
       // Not necessary to migrate
       return Promise.resolve(true);

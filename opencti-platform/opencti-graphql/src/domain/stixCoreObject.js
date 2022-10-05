@@ -221,7 +221,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
   // Get the context
-  const up = await loadFile(user, fileId);
+  const up = await loadFile(context, user, fileId);
   const entityId = up.metaData.entity_id;
   const previous = await storeLoadByIdWithRefs(context, user, entityId);
   if (!previous) {
@@ -233,7 +233,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
     // Delete the file
-    await deleteFile(user, fileId);
+    await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
     const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
     await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });

@@ -5,9 +5,10 @@ import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../schema/general';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
+  const context = executionContext('migration');
   const start = new Date().getTime();
   logApp.info('[MIGRATION] Rewriting standard ids for Locations and Identities');
   const bulkOperations = [];
@@ -24,7 +25,7 @@ export const up = async (next) => {
     bulkOperations.push(...op);
   };
   const opts = { types: [ENTITY_TYPE_LOCATION, ENTITY_TYPE_IDENTITY], callback };
-  await elList(SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
+  await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
   // Apply operations.
   let currentProcessing = 0;
   const groupsOfOperations = R.splitEvery(MAX_SPLIT, bulkOperations);

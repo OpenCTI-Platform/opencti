@@ -103,14 +103,14 @@ const syncManagerInstance = (syncId) => {
     }
     return processingData;
   };
-  const saveCurrentState = async (sync, eventId) => {
+  const saveCurrentState = async (context, sync, eventId) => {
     const currentTime = new Date().getTime();
     const [time] = eventId.split('-');
     const dateTime = parseInt(time, 10);
     const eventDate = utcDate(dateTime).toISOString();
     if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
       logApp.info(`[OPENCTI] Sync ${sync.name}: saving state to ${eventDate}`);
-      await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
+      await patchSync(context, SYSTEM_USER, syncId, { current_state: eventDate });
       lastState = dateTime;
       lastStateSaveTime = currentTime;
     }
@@ -135,13 +135,13 @@ const syncManagerInstance = (syncId) => {
             currentDelay = manageBackPressure(sync, currentDelay);
             const { id: eventId, type: eventType, data, context: eventContext } = event;
             if (eventType === 'heartbeat') {
-              await saveCurrentState(sync, eventId);
+              await saveCurrentState(context, sync, eventId);
             } else {
               const syncData = await transformDataWithReverseIdAndFilesData(data, eventContext);
               const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context: eventContext });
               const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
               await pushToSync({ type: 'event', applicant_id: OPENCTI_SYSTEM_UUID, content });
-              await saveCurrentState(sync, eventId);
+              await saveCurrentState(context, sync, eventId);
             }
           } catch (e) {
             logApp.error('[OPENCTI] Sync error processing event', { error: e });

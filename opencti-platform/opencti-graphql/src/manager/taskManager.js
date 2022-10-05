@@ -69,8 +69,8 @@ const ACTION_TYPE_ATTRIBUTE = 'ATTRIBUTE';
 const ACTION_TYPE_RELATION = 'RELATION';
 const ACTION_TYPE_REVERSED_RELATION = 'REVERSED_RELATION';
 
-const findTaskToExecute = async () => {
-  const tasks = await findAll(SYSTEM_USER, {
+const findTaskToExecute = async (context) => {
+  const tasks = await findAll(context, SYSTEM_USER, {
     connectionFormat: false,
     orderBy: 'created_at',
     orderMode: 'asc',
@@ -343,7 +343,7 @@ const taskHandler = async () => {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
     const context = executionContext('task_manager');
-    const task = await findTaskToExecute();
+    const task = await findTaskToExecute(context);
     // region Task checking
     if (!task) {
       // Nothing to execute.

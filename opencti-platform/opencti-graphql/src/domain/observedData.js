@@ -28,7 +28,7 @@ export const findAll = async (context, user, args) => {
 };
 
 export const resolveName = async (context, user, observedData) => {
-  const observedDataObjects = await objects(user, observedData.id, {
+  const observedDataObjects = await objects(context, user, observedData.id, {
     first: 1,
     types: [ABSTRACT_STIX_CORE_OBJECT],
     connectionFormat: false,

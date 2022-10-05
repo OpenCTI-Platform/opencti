@@ -38,6 +38,7 @@ export const createStreamCollection = async (context, user, input) => {
   // Create groups relations
   const relBuilder = (g) => ({ fromId: g, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
   await createRelations(
+    context,
     user,
     relatedGroups.map((g) => relBuilder(g))
   );

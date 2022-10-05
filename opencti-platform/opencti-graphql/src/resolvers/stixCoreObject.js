@@ -82,7 +82,7 @@ const stixCoreObjectResolvers = {
       relationsAdd: ({ input }) => stixCoreObjectAddRelations(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       merge: ({ stixCoreObjectsIds }) => stixCoreObjectMerge(context, context.user, id, stixCoreObjectsIds),
-      askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context, context.user, id, connectorId),
+      askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
       importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(context, context.user, id, file, noTriggerImport),
       exportAsk: (args) => stixCoreObjectExportAsk(context, context.user, R.assoc('stixCoreObjectId', id, args)),
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),

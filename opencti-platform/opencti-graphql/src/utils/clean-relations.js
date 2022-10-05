@@ -63,7 +63,7 @@ const computeMissingRelationsForType = async (context, relationType) => {
           },
         },
       };
-      const data = await elRawSearch(SYSTEM_USER, relationType, findQuery);
+      const data = await elRawSearch(context, SYSTEM_USER, relationType, findQuery);
       const resolvedConns = data.hits.hits.map((i) => i._source);
       const resolvedIds = resolvedConns.map((r) => r.internal_id);
       const relationsToRemove = hits
@@ -103,7 +103,7 @@ export const cleanInconsistentRelations = async (context) => {
   const relations = await getMissingRelations(context);
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
-    await deleteElementById(SYSTEM_USER, relation.internal_id, relation.entity_type);
+    await deleteElementById(context, SYSTEM_USER, relation.internal_id, relation.entity_type);
   }
   logApp.info('[TOOLS] Fix missing script migration done');
 };

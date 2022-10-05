@@ -143,7 +143,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const stream = await downloadFile(file);
+      const stream = await downloadFile(executeContext, file);
       res.attachment(file);
       stream.pipe(res);
     } catch (e) {
@@ -162,7 +162,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(auth, file);
+      const data = await loadFile(executeContext, auth, file);
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
@@ -190,7 +190,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(auth, file);
+      const data = await loadFile(executeContext, auth, file);
       if (data.metaData.mimetype === 'text/markdown') {
         const markDownData = await getFileContent(file);
         const converter = new showdown.Converter();

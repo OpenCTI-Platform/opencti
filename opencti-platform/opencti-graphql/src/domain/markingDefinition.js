@@ -27,7 +27,7 @@ export const addMarkingDefinition = async (context, user, markingDefinition) => 
   if (groups && groups.length > 0) {
     await Promise.all(
       groups.map((group) => {
-        return groupAddRelation(SYSTEM_USER, group.id, {
+        return groupAddRelation(context, SYSTEM_USER, group.id, {
           relationship_type: RELATION_ACCESSES_TO,
           toId: created.id,
         });

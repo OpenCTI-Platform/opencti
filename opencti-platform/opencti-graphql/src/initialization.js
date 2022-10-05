@@ -174,33 +174,33 @@ const alignMigrationLastRun = async (context) => {
   }
 };
 
-const createMarkingDefinitions = async () => {
+const createMarkingDefinitions = async (context) => {
   // Create marking defs
-  await addMarkingDefinition(SYSTEM_USER, {
+  await addMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:CLEAR',
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
-  await addMarkingDefinition(SYSTEM_USER, {
+  await addMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
-  await addMarkingDefinition(SYSTEM_USER, {
+  await addMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
-  await addMarkingDefinition(SYSTEM_USER, {
+  await addMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:AMBER+STRICT',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
-  await addMarkingDefinition(SYSTEM_USER, {
+  await addMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:RED',
     x_opencti_color: '#c62828',
@@ -221,34 +221,34 @@ const createDefaultStatusTemplates = async () => {
   await createStatus(SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusClosed.id, order: 4 }, true);
 };
 
-export const createCapabilities = async (capabilities, parentName = '') => {
+export const createCapabilities = async (context, capabilities, parentName = '') => {
   for (let i = 0; i < capabilities.length; i += 1) {
     const capability = capabilities[i];
     const { name, description, attribute_order: AttributeOrder } = capability;
     const capabilityName = `${parentName}${name}`;
-    await addCapability(SYSTEM_USER, { name: capabilityName, description, attribute_order: AttributeOrder });
+    await addCapability(context, SYSTEM_USER, { name: capabilityName, description, attribute_order: AttributeOrder });
     if (capability.dependencies && capability.dependencies.length > 0) {
       await createCapabilities(capability.dependencies, `${capabilityName}_`);
     }
   }
 };
 
-export const createBasicRolesAndCapabilities = async () => {
+export const createBasicRolesAndCapabilities = async (context) => {
   // Create capabilities
-  await createCapabilities(CAPABILITIES);
+  await createCapabilities(context, CAPABILITIES);
   // Create roles
-  await addRole(SYSTEM_USER, {
+  await addRole(context, SYSTEM_USER, {
     name: ROLE_DEFAULT,
     description: 'Default role associated to all users',
     capabilities: [KNOWLEDGE_CAPABILITY],
     default_assignation: true,
   });
-  await addRole(SYSTEM_USER, {
+  await addRole(context, SYSTEM_USER, {
     name: ROLE_ADMINISTRATOR,
     description: 'Administrator role that bypass every capabilities',
     capabilities: [BYPASS],
   });
-  await addRole(SYSTEM_USER, {
+  await addRole(context, SYSTEM_USER, {
     name: 'Connector',
     description: 'Connector role that has the recommended capabilities',
     capabilities: [
@@ -267,24 +267,24 @@ export const createBasicRolesAndCapabilities = async () => {
   });
 };
 
-const initializeDefaultValues = async (withMarkings = true) => {
+const initializeDefaultValues = async (context, withMarkings = true) => {
   logApp.info('[INIT] Initialization of settings and basic elements');
   // Create default elements
-  await addSettings(SYSTEM_USER, {
+  await addSettings(context, SYSTEM_USER, {
     platform_title: 'Cyber threat intelligence platform',
     platform_email: 'admin@opencti.io',
     platform_theme: 'dark',
     platform_language: 'auto',
   });
   await createDefaultStatusTemplates();
-  await createBasicRolesAndCapabilities();
+  await createBasicRolesAndCapabilities(context);
   if (withMarkings) {
-    await createMarkingDefinitions();
+    await createMarkingDefinitions(context);
   }
 };
 
-const initializeData = async (withMarkings = true) => {
-  await initializeDefaultValues(withMarkings);
+const initializeData = async (context, withMarkings = true) => {
+  await initializeDefaultValues(context, withMarkings);
   logApp.info('[INIT] Platform default initialized');
   return true;
 };
@@ -325,7 +325,7 @@ const platformInit = async (withMarkings = true) => {
       await initializeBucket();
       await initializeSchema();
       await initializeMigration(context);
-      await initializeData(withMarkings);
+      await initializeData(context, withMarkings);
       await initializeAdminUser(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');

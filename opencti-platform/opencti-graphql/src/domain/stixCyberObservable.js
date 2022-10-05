@@ -143,7 +143,7 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
         externalReferences: input.externalReferences,
         update: true,
       };
-      await addIndicator(user, indicatorToCreate);
+      await addIndicator(context, user, indicatorToCreate);
     } else {
       logApp.warn(`[OPENCTI] Cannot create indicator for ${key} / ${value} - cant generate pattern`);
     }
@@ -402,7 +402,7 @@ export const artifactImport = async (context, user, args) => {
     objectMarking,
     objectLabel,
   };
-  const artifact = await addStixCyberObservable(user, artifactData);
+  const artifact = await addStixCyberObservable(context, user, artifactData);
   await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id, version });
   return artifact;
 };

@@ -411,7 +411,7 @@ export const meEditField = (context, user, userId, inputs, password = null) => {
   if (key === 'api_token') {
     throw ForbiddenAccess();
   }
-  return userEditField(user, userId, inputs);
+  return userEditField(context, user, userId, inputs);
 };
 
 export const userDelete = async (context, user, userId) => {
