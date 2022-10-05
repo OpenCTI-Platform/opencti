@@ -1515,6 +1515,16 @@ export const responsiblePartyPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  created: {
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  modified: {
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   labels: {
     predicate: "<http://darklight.ai/ns/common#labels>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
