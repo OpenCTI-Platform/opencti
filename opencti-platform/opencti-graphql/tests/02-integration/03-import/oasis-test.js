@@ -1,6 +1,6 @@
 import platformInit from '../../../src/initialization';
 import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI, testContext, ADMIN_USER } from '../../utils/testQuery';
-import { execPython3 } from '../../../src/python/pythonBridge';
+import { execTestingPython } from '../../../src/python/pythonBridge';
 import { shutdownModules, startModules } from '../../../src/modules';
 
 describe('Database provision', () => {
@@ -16,7 +16,7 @@ describe('Database provision', () => {
     'Should import creation succeed',
     async () => {
       await startModules();
-      const execution = await execPython3(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
+      const execution = await execTestingPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();

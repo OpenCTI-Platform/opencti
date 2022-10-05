@@ -92,6 +92,7 @@
     "moment": "2.29.4",
     "moment-range": "4.0.2",
     "nconf": "0.12.0",
+    "node-calls-python": "1.7.2",
     "nodemailer": "6.7.8",
     "openid-client": "5.1.8",
     "opentelemetry-node-metrics": "^2.0.0",
@@ -163,7 +164,8 @@
     "node-fetch": "2.6.7",
     "nconf": "patch:nconf@0.12.0#./patch/nconf-0.12.0.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
-    "passport-auth0": "patch:passport-auth0@1.4.2#./patch/passport-auth0-1.4.2.patch"
+    "passport-auth0": "patch:passport-auth0@1.4.2#./patch/passport-auth0-1.4.2.patch",
+    "node-calls-python": "patch:node-calls-python@1.7.2#./patch/node-calls-python-1.7.2.patch"
   },
   "babel": {
     "presets": [

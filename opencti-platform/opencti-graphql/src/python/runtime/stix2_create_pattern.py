@@ -1,14 +1,9 @@
-import sys
-
 from stix2 import (
     EqualityComparisonExpression,
     ObjectPath,
     ObservationExpression,
     OrBooleanExpression,
 )
-
-from lib.messages import MISSING_ARGUMENT
-from lib.utils import return_data
 
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],
@@ -58,15 +53,9 @@ def generate_part(observable_type, observable_value):
     return None
 
 
-def main():
-    if len(sys.argv) <= 2:
-        return_data(MISSING_ARGUMENT)
-
-    if sys.argv[1] == "check":
-        return_data({"status": "success"})
-
-    observable_type = sys.argv[1]
-    observable_value = sys.argv[2]
+def stix2_create_pattern(observable_type, observable_value):
+    if observable_type == "check":
+        return {"status": "success", "data": "check"}
     pattern = None
     if "__" in observable_type:
         observable_types = observable_type.split("__")
@@ -84,10 +73,6 @@ def main():
         if ece is not None:
             pattern = ObservationExpression(ece)
     if pattern is not None:
-        return_data({"status": "success", "data": str(pattern)})
+        return {"status": "success", "data": str(pattern)}
     else:
-        return_data({"status": "unknown", "data": None})
-
-
-if __name__ == "__main__":
-    main()
+        return {"status": "unknown", "data": None}

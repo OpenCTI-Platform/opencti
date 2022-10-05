@@ -17,7 +17,7 @@ import {
   SYNC_TEST_REMOTE_URI, testContext,
 } from '../utils/testQuery';
 import { elAggregationCount } from '../../src/database/engine';
-import { execPython3, executePython } from '../../src/python/pythonBridge';
+import { execTestingPython } from '../../src/python/pythonBridge';
 import { checkInstanceDiff } from '../utils/testStream';
 import { shutdownModules, startModules } from '../../src/modules';
 import { FROM_START, now } from '../../src/utils/format';
@@ -135,7 +135,7 @@ describe('Database sync testing', () => {
       // Sync
       await startModules();
       const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, RAW_EVENTS_SIZE, '0', 'None'];
-      const execution = await execPython3(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
+      const execution = await execTestingPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();
@@ -162,7 +162,7 @@ describe('Database sync testing', () => {
         'live',
       ];
       await startModules();
-      const execution = await execPython3(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
+      const execution = await execTestingPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();
@@ -241,7 +241,7 @@ describe('Database sync testing', () => {
       },
     };
     const backupConf = JSON.stringify(BACKUP_CONFIG);
-    await executePython(
+    await execTestingPython(
       testContext,
       ADMIN_USER,
       path.resolve('../../opencti-connectors/stream/backup-files/src'),
@@ -275,7 +275,7 @@ describe('Database sync testing', () => {
       },
     };
     const restoreConf = JSON.stringify(RESTORE_CONFIG);
-    await executePython(
+    await execTestingPython(
       testContext,
       ADMIN_USER,
       path.resolve('../../opencti-connectors/external-import/restore-files/src'),

@@ -10,7 +10,7 @@ import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
-import { checkPythonStix2 } from './python/pythonBridge';
+import { checkPythonAvailability } from './python/pythonBridge';
 import { cachePurge, lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
@@ -132,7 +132,7 @@ export const checkSystemDependencies = async () => {
   }
   // Check if Python is available
   const context = executionContext('system_dependencies');
-  await checkPythonStix2(context, SYSTEM_USER);
+  await checkPythonAvailability(context, SYSTEM_USER);
   logApp.info('[CHECK] Python3 is available');
   return true;
 };

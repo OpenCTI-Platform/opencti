@@ -16,7 +16,7 @@ export const SYNC_TEST_REMOTE_URI = 'http://api-tests:4000';
 export const RAW_EVENTS_SIZE = 433;
 export const SYNC_LIVE_EVENTS_SIZE = 247;
 
-export const PYTHON_PATH = './src/python';
+export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
 export const API_TOKEN = conf.get('app:admin:token');
 export const API_EMAIL = conf.get('app:admin:email');

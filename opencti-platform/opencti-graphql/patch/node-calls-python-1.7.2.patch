@@ -1,0 +1,13 @@
+diff --git a/index.js b/index.js
+index d042863..0fea515 100644
+--- a/index.js
++++ b/index.js
+@@ -1,7 +1,7 @@
+ const { execSync } = require("child_process");
+ const fs = require("fs");
+ const path = require("path");
+-const nodecallspython = require("./build/Release/nodecallspython");
++const nodecallspython = require("./build/Release/nodecallspython.node");
+
+ class Interpreter
+ {
