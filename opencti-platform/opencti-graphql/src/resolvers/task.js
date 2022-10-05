@@ -7,7 +7,7 @@ const taskResolvers = {
     tasks: (_, args, context) => findAll(context, context.user, args),
   },
   Mutation: {
-    listTaskAdd: (_, { input }, context) => createListTask(context, context.user, input),
+    listTaskAdd: (_, { input }, context) => createListTask(context.user, input),
     queryTaskAdd: (_, { input }, context) => createQueryTask(context, context.user, input),
     deleteTask: (_, { id }, context) => deleteTask(context, context.user, id),
   },

@@ -85,7 +85,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
             stop_time: range.end,
             objectMarking: elementMarkings,
           });
-          const event = await createInferredRelation(input, ruleContent) as Event;
+          const event = await createInferredRelation(context, input, ruleContent) as Event;
           // Re inject event if needed
           if (event) {
             events.push(event);

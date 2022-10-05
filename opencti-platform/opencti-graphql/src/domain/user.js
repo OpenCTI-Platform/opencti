@@ -566,7 +566,7 @@ export const logout = async (context, user, req, res) => {
   });
 };
 
-const buildSessionUser = (context, user, provider) => {
+const buildSessionUser = (user, provider) => {
   return {
     id: user.id,
     session_creation: now(),
@@ -627,7 +627,7 @@ export const authenticateUser = async (context, req, user, provider, token = '')
   // Build the user session with only required fields
   const completeUser = await buildCompleteUser(context, user);
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
-  const sessionUser = buildSessionUser(context, completeUser, provider);
+  const sessionUser = buildSessionUser(completeUser, provider);
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
   return sessionUser;

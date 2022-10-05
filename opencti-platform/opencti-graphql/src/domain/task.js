@@ -29,7 +29,7 @@ export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
 export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 
-const createDefaultTask = (context, user, input, taskType, taskExpectedNumber) => {
+const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();
   return {
     id: taskId,
@@ -93,7 +93,7 @@ export const executeTaskQuery = async (context, user, filters, search, start = n
   return elPaginate(context, user, READ_STIX_INDICES, options);
 };
 
-const checkActionValidity = (context, user, actions) => {
+const checkActionValidity = (user, actions) => {
   const askForDeletion = actions.filter((a) => a.type === ACTION_TYPE_DELETE).length > 0;
   if (askForDeletion) {
     // If deletion action available, user need to have the right capability
@@ -119,8 +119,8 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
 
 export const createQueryTask = async (context, user, input) => {
   const { actions, filters, excluded_ids = [], search = null } = input;
-  checkActionValidity(context, user, actions);
-  const queryData = await executeTaskQuery(user, filters, search);
+  checkActionValidity(user, actions);
+  const queryData = await executeTaskQuery(context, user, filters, search);
   const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
   const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected);
   const queryTask = { ...task, actions, task_filters: filters, task_search: search, task_excluded_ids: excluded_ids };
@@ -128,9 +128,9 @@ export const createQueryTask = async (context, user, input) => {
   return queryTask;
 };
 
-export const createListTask = async (context, user, input) => {
+export const createListTask = async (user, input) => {
   const { actions, ids } = input;
-  checkActionValidity(context, user, actions);
+  checkActionValidity(user, actions);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length);
   const listTask = { ...task, actions, task_ids: ids };
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);

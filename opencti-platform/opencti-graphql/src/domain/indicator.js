@@ -81,7 +81,7 @@ const OpenCTITimeToLive = {
   },
 };
 
-const computeValidUntil = async (context, user, indicator) => {
+const computeValidUntil = async (user, indicator) => {
   let validFrom = moment().utc();
   if (indicator.valid_from) {
     validFrom = moment(indicator.valid_from).utc();
@@ -184,7 +184,7 @@ export const addIndicator = async (context, user, indicator) => {
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
-  const validUntil = isEmptyField(indicator.valid_until) ? await computeValidUntil(context, user, indicator) : indicator.valid_until;
+  const validUntil = isEmptyField(indicator.valid_until) ? await computeValidUntil(user, indicator) : indicator.valid_until;
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),

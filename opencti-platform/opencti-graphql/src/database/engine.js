@@ -972,7 +972,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
   return hits;
 };
 
-const loadFromCache = async (context, user, id, type) => {
+const loadFromCache = async (user, id, type) => {
   const data = await cacheGet(id);
   const cachedValues = data ? Object.values(data).filter((e) => isNotEmptyField(e)) : [];
   const cached = R.flatten(cachedValues.map((v) => getInstanceIds(v)));
@@ -1003,7 +1003,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
-  const { cached, accessible } = await loadFromCache(context, user, ids, type);
+  const { cached, accessible } = await loadFromCache(user, ids, type);
   const cacheHits = { ...accessible };
   const remainingIds = processIds.filter((id) => !cached.includes(id));
   const elasticHits = {};

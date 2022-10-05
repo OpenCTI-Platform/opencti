@@ -258,7 +258,7 @@ const executeRuleApply = async (context, user, actionContext, element) => {
 };
 const executeRuleClean = async (context, actionContext, element) => {
   const { rule } = actionContext;
-  await rulesCleanHandler([element], [rule]);
+  await rulesCleanHandler(context, [element], [rule]);
 };
 const executeRuleElementRescan = async (context, user, actionContext, element) => {
   const { rules } = actionContext ?? {};
