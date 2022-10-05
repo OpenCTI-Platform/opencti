@@ -4,7 +4,6 @@ import { execPython3 } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { startModules, shutdownModules } from '../../../src/modules';
-import { executionContext } from '../../../src/utils/access';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {

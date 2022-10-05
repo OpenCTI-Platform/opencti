@@ -116,7 +116,7 @@ describe('Database sync testing', () => {
       id: 'report--f2b63e80-b523-4747-a069-35c002c690db',
     });
     const stixReport = JSON.parse(reportData.report.toStix);
-    const idLoader = async (user, id) => {
+    const idLoader = async (context, user, id) => {
       const dataId = await executeExternalQuery(remoteUri, STANDARD_LOADER_QUERY, { id });
       return dataId.stixObjectOrStixRelationship;
     };
