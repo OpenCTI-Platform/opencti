@@ -92,7 +92,7 @@ const createApp = async (app) => {
   app.use(securityMiddleware);
   app.use(compression({}));
   // -- Telemetry
-  const exposePrometheusMetrics = booleanConf('app:telemetry:prometheus:enabled', false);
+  const exposePrometheusMetrics = booleanConf('app:telemetry:metrics_prometheus:enabled', false);
   if (exposePrometheusMetrics) {
     const options = { port: 9464, startServer: true };
     const exporter = new PrometheusExporter(options);
@@ -101,7 +101,7 @@ const createApp = async (app) => {
     const hostMetrics = new HostMetrics({ meterProvider, name: 'example-host-metrics' });
     hostMetrics.start();
     nodeMetrics(meterProvider);
-    const metricsPath = nconf.get('app:telemetry:prometheus:metrics_path') || '/prometheus/metrics';
+    const metricsPath = nconf.get('app:telemetry:metrics_prometheus:metrics_path') || '/prometheus/metrics';
     const fullMetricsPath = `${basePath}${formatPath(metricsPath)}`;
     logApp.info(`Adding prometheus middleware (for metrics) on path: ${fullMetricsPath}`);
     app.use(
