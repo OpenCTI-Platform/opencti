@@ -5,6 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
 import mime from 'mime-types';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, logApp, logAudit } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { UPLOAD_ACTION } from '../config/audit';
@@ -13,6 +14,7 @@ import { createWork, deleteWorkForFile, loadExportWorksAsProgressFiles } from '.
 import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
+import { telemetry } from '../config/tracing';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -278,15 +280,21 @@ export const upload = async (context, user, path, fileUpload, meta = {}, noTrigg
 };
 
 export const filesListing = async (context, user, first, path, entityId = null) => {
-  const files = await rawFilesListing(context, user, path);
-  const inExport = await loadExportWorksAsProgressFiles(context, user, path);
-  const allFiles = R.concat(inExport, files);
-  const sortedFiles = R.sort((a, b) => b.lastModified - a.lastModified, allFiles);
-  let fileNodes = R.map((f) => ({ node: f }), sortedFiles);
-  if (entityId) {
-    fileNodes = R.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
-  }
-  return buildPagination(first, null, fileNodes, allFiles.length);
+  const filesListingFn = async () => {
+    const files = await rawFilesListing(context, user, path);
+    const inExport = await loadExportWorksAsProgressFiles(context, user, path);
+    const allFiles = R.concat(inExport, files);
+    const sortedFiles = R.sort((a, b) => b.lastModified - a.lastModified, allFiles);
+    let fileNodes = R.map((f) => ({ node: f }), sortedFiles);
+    if (entityId) {
+      fileNodes = R.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
+    }
+    return buildPagination(first, null, fileNodes, allFiles.length);
+  };
+  return telemetry(context, user, `STORAGE ${path}`, {
+    [SemanticAttributes.DB_NAME]: 'storage_engine',
+    [SemanticAttributes.DB_OPERATION]: 'listing',
+  }, filesListingFn);
 };
 
 export const deleteAllFiles = async (context, user, path) => {

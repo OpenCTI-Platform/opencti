@@ -73,6 +73,7 @@ import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { telemetry } from '../config/tracing';
 
 const ELK_ENGINE = 'elk';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -194,68 +195,14 @@ const oebp = (queryResult) => {
   }
   return queryResult.body;
 };
-const queryTracing = (context, user, type, query, fn) => {
-  let tracingSpan;
-  if (context.tracing) {
-    const tracer = context.tracing.getTracer();
-    const ctx = context.tracing.getCtx();
-    tracingSpan = tracer.startSpan(`SELECT ${type}`, {
-      attributes: {
-        [SemanticAttributes.DB_NAME]: 'search_engine',
-        [SemanticAttributes.DB_OPERATION]: 'read',
-        [SemanticAttributes.ENDUSER_ID]: user.id,
-        [SemanticAttributes.DB_STATEMENT]: JSON.stringify(query),
-      },
-      kind: 2 // Client
-    }, ctx);
-  }
-  return fn().then((data) => {
-    if (tracingSpan) {
-      tracingSpan.setStatus({ code: 1 });
-      tracingSpan.end();
-    }
-    return data;
-  }).catch((err) => {
-    if (tracingSpan) {
-      tracingSpan.setStatus({ code: 2 });
-      tracingSpan.end();
-    }
-    throw err;
-  });
-};
-
-const writeTracing = (context, user, message, fn) => {
-  let tracingSpan;
-  if (context.tracing) {
-    const tracer = context.tracing.getTracer();
-    const ctx = context.tracing.getCtx();
-    tracingSpan = tracer.startSpan(`INSERT ${message}`, {
-      attributes: {
-        [SemanticAttributes.DB_NAME]: 'search_engine',
-        [SemanticAttributes.DB_OPERATION]: 'insert',
-        [SemanticAttributes.ENDUSER_ID]: user.id,
-      },
-      kind: 2 // Client
-    }, ctx);
-  }
-  return fn().then((data) => {
-    if (tracingSpan) {
-      tracingSpan.setStatus({ code: 1 });
-      tracingSpan.end();
-    }
-    return data;
-  }).catch((err) => {
-    if (tracingSpan) {
-      tracingSpan.setStatus({ code: 2 });
-      tracingSpan.end();
-    }
-    throw err;
-  });
-};
 
 export const elRawSearch = (context, user, type, query) => {
-  const searchFunction = () => engine.search(query).then((r) => oebp(r));
-  return queryTracing(context, user, type, query, searchFunction);
+  const elRawSearchFn = () => engine.search(query).then((r) => oebp(r));
+  return telemetry(context, user, `SELECT ${type}`, {
+    [SemanticAttributes.DB_NAME]: 'search_engine',
+    [SemanticAttributes.DB_OPERATION]: 'read',
+    [SemanticAttributes.DB_STATEMENT]: JSON.stringify(query),
+  }, elRawSearchFn);
 };
 export const elRawDeleteByQuery = (query) => engine.deleteByQuery(query).then((r) => oebp(r));
 export const elRawBulk = (args) => engine.bulk(args).then((r) => oebp(r));
@@ -2085,7 +2032,7 @@ const prepareIndexing = async (elements) => {
   );
 };
 export const elIndexElements = async (context, user, message, elements) => {
-  const innerIndexFn = async () => {
+  const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(elements);
     // 01. Bulk the indexing of row elements
@@ -2166,7 +2113,10 @@ export const elIndexElements = async (context, user, message, elements) => {
     }
     return transformedElements.length;
   };
-  return writeTracing(context, user, message, innerIndexFn);
+  return telemetry(context, user, `INSERT ${message}`, {
+    [SemanticAttributes.DB_NAME]: 'search_engine',
+    [SemanticAttributes.DB_OPERATION]: 'insert',
+  }, elIndexElementsFn);
 };
 
 export const elUpdateAttributeValue = async (context, key, previousValue, value) => {

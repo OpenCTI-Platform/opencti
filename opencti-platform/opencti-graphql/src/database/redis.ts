@@ -39,6 +39,7 @@ import type {
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
 import { BYPASS } from '../utils/access';
+import { telemetry } from '../config/tracing';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
@@ -381,35 +382,16 @@ const mapJSToStream = (event: any) => {
 
 const pushToStream = async (context: AuthContext, user: AuthUser, client: Redis, instance: StoreObject, event: Event) => {
   if (isStreamPublishable(instance)) {
-    let tracingSpan;
-    try {
-      if (context.tracing) {
-        const tracer = context.tracing.getTracer();
-        const ctx = context.tracing.getCtx();
-        tracingSpan = tracer.startSpan('INSERT STREAM', {
-          attributes: {
-            [SemanticAttributes.DB_NAME]: 'stream_engine',
-            [SemanticAttributes.ENDUSER_ID]: user.id,
-          },
-          kind: 2 // Client
-        }, ctx);
-      }
+    const pushToStreamFn = async () => {
       if (streamTrimming) {
         await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
       } else {
         await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
       }
-      if (tracingSpan) {
-        tracingSpan.setStatus({ code: 1 });
-        tracingSpan.end();
-      }
-    } catch (err) {
-      if (tracingSpan) {
-        tracingSpan.setStatus({ code: 2 });
-        tracingSpan.end();
-      }
-      throw err;
-    }
+    };
+    telemetry(context, user, 'INSERT STREAM', {
+      [SemanticAttributes.DB_NAME]: 'stream_engine',
+    }, pushToStreamFn);
   }
 };
 

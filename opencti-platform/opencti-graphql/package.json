@@ -39,6 +39,7 @@
     "@opentelemetry/api": "1.2.0",
     "@opentelemetry/exporter-prometheus": "0.33.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.33.0",
+    "@opentelemetry/exporter-zipkin": "^1.7.0",
     "@opentelemetry/host-metrics": "^0.30.1",
     "@opentelemetry/instrumentation": "0.32.0",
     "@opentelemetry/resources": "1.7.0",

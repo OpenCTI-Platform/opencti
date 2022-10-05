@@ -47,8 +47,8 @@ if (DEV_MODE) {
   RULES_DECLARATION.push(RelatedToRelatedRule);
 }
 
-export const getRules = async (context: AuthContext): Promise<Array<RuleRuntime>> => {
-  const rules = await getEntitiesFromCache<BasicRuleEntity>(context, ENTITY_TYPE_RULE);
+export const getRules = async (context: AuthContext, user: AuthUser): Promise<Array<RuleRuntime>> => {
+  const rules = await getEntitiesFromCache<BasicRuleEntity>(context, user, ENTITY_TYPE_RULE);
   return RULES_DECLARATION.map((def: RuleRuntime) => {
     const esRule = rules.find((e) => e.internal_id === def.id);
     const isActivated = esRule?.active === true;
@@ -56,18 +56,18 @@ export const getRules = async (context: AuthContext): Promise<Array<RuleRuntime>
   });
 };
 
-export const getActivatedRules = async (context: AuthContext): Promise<Array<RuleRuntime>> => {
-  const rules = await getRules(context);
+export const getActivatedRules = async (context: AuthContext, user: AuthUser): Promise<Array<RuleRuntime>> => {
+  const rules = await getRules(context, user);
   return rules.filter((r) => r.activated);
 };
 
-export const getRule = async (context: AuthContext, id: string): Promise<RuleDefinition | undefined> => {
-  const rules = await getRules(context);
+export const getRule = async (context: AuthContext, user: AuthUser, id: string): Promise<RuleDefinition | undefined> => {
+  const rules = await getRules(context, user);
   return rules.find((e) => e.id === id);
 };
 
 export const setRuleActivation = async (context: AuthContext, user: AuthUser, ruleId: string, active: boolean): Promise<RuleDefinition | undefined> => {
-  const resolvedRule = await getRule(context, ruleId);
+  const resolvedRule = await getRule(context, user, ruleId);
   if (isEmptyField(resolvedRule)) {
     throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
   }
@@ -84,5 +84,5 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
     await Promise.all(tasks.map((t) => deleteTask(user, t.internal_id)));
     await createRuleTask(context, user, resolvedRule, { rule: ruleId, enable: active });
   }
-  return getRule(context, ruleId);
+  return getRule(context, user, ruleId);
 };

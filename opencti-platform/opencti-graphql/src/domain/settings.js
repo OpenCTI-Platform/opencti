@@ -33,12 +33,12 @@ export const getModules = () => {
   return modules;
 };
 
-export const getApplicationInfo = () => ({
+export const getApplicationInfo = (context) => ({
   version: PLATFORM_VERSION,
   memory: getMemoryStatistics(),
   dependencies: [
     { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.distribution || 'elk'} - ${v.number}`) },
-    { name: 'RabbitMQ', version: getRabbitMQVersion() },
+    { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
     { name: 'Redis', version: getRedisVersion() },
   ],
   debugStats: {}, // Lazy loaded

@@ -1126,7 +1126,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     }
   }
   // eslint-disable-next-line no-use-before-define
-  const data = await updateAttributeRaw(context, targetEntity, updateAttributes);
+  const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
   const { impactedInputs } = data;
   // region Update elasticsearch
   // Elastic update with partial instance to prevent data override
@@ -1331,7 +1331,7 @@ const updateDateRangeValidation = (instance, inputs, from, to) => {
     throw DatabaseError(`You cant update an element with ${to} less than ${from}`, data);
   }
 };
-export const updateAttributeRaw = async (context, instance, inputs, opts = {}) => {
+export const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) => {
   // Upsert option is only useful to force aliases to be kept when upserting the entity
   const { impactStandardId = true, upsert = false } = opts;
   const elements = Array.isArray(inputs) ? inputs : [inputs];
@@ -1476,7 +1476,7 @@ export const updateAttributeRaw = async (context, instance, inputs, opts = {}) =
   const updatedInputs = [];
   const impactedInputs = [];
   const isWorkflowChange = inputKeys.includes(X_WORKFLOW_ID);
-  const platformStatuses = isWorkflowChange ? await getEntitiesFromCache(context, ENTITY_TYPE_STATUS) : [];
+  const platformStatuses = isWorkflowChange ? await getEntitiesFromCache(context, user, ENTITY_TYPE_STATUS) : [];
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
@@ -1657,7 +1657,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       throw FunctionalError('This update will produce a duplicate', { id: initial.id, type });
     }
     // noinspection UnnecessaryLocalVariableJS
-    const data = await updateAttributeRaw(context, initial, attributes, opts);
+    const data = await updateAttributeRaw(context, user, initial, attributes, opts);
     const { updatedInstance, impactedInputs, updatedInputs } = data;
     // Check the consistency of the observable.
     if (isStixCyberObservable(updatedInstance.entity_type)) {
@@ -1783,9 +1783,9 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     if (lock) await lock.unlock();
   }
 };
-export const patchAttributeRaw = async (context, instance, patch, opts = {}) => {
+export const patchAttributeRaw = async (context, user, instance, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
-  return updateAttributeRaw(context, instance, inputs, opts);
+  return updateAttributeRaw(context, user, instance, inputs, opts);
 };
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
@@ -2002,7 +2002,7 @@ const buildInnerRelation = (from, to, type) => {
   }
   return relations;
 };
-const upsertIdentifiedFields = async (context, element, input, fields) => {
+const upsertIdentifiedFields = async (context, user, element, input, fields) => {
   const upsertUpdated = [];
   const upsertImpacted = [];
   if (fields) {
@@ -2021,7 +2021,7 @@ const upsertIdentifiedFields = async (context, element, input, fields) => {
       }
     }
     if (!R.isEmpty(patch)) {
-      const patched = await patchAttributeRaw(context, element, patch, { upsert: true });
+      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
       upsertImpacted.push(...patched.impactedInputs);
       upsertUpdated.push(...patched.updatedInputs);
     }
@@ -2123,7 +2123,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     if (ids.length > 0) {
       const patch = { x_opencti_stix_ids: ids };
       const operations = { x_opencti_stix_ids: UPDATE_OPERATION_ADD };
-      const patched = await patchAttributeRaw(context, element, patch, { operations, upsert: true });
+      const patched = await patchAttributeRaw(context, user, element, patch, { operations, upsert: true });
       impactedInputs.push(...patched.impactedInputs);
       patchInputs.push(...patched.updatedInputs);
     }
@@ -2135,7 +2135,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     if (isNotEmptyField(timePatch)) {
       const basePatch = { number_observed: element.number_observed + updatePatch.number_observed };
       const patch = { ...basePatch, ...timePatch };
-      const patched = await patchAttributeRaw(context, element, patch, { upsert: true });
+      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
       impactedInputs.push(...patched.impactedInputs);
       patchInputs.push(...patched.updatedInputs);
     }
@@ -2152,7 +2152,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     const timePatch = handleRelationTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
     const patch = { ...basePatch, ...timePatch };
     if (isNotEmptyField(patch)) {
-      const patched = await patchAttributeRaw(context, element, patch, { upsert: true });
+      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
       impactedInputs.push(...patched.impactedInputs);
       patchInputs.push(...patched.updatedInputs);
     }
@@ -2169,7 +2169,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     const countPatch = isNotEmptyField(timePatch) ? { attribute_count: element.attribute_count + updatePatch.attribute_count, ...timePatch } : {};
     const patch = { ...basePatch, ...countPatch };
     if (isNotEmptyField(patch)) {
-      const patched = await patchAttributeRaw(context, element, patch, { upsert: true });
+      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
       impactedInputs.push(...patched.impactedInputs);
       patchInputs.push(...patched.updatedInputs);
     }
@@ -2177,26 +2177,26 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   // Upsert entities
   if (isInternalObject(type) && forceUpdate) {
     const fields = schemaTypes.getUpsertAttributes(type);
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixDomainObject(type) && forceUpdate) {
     const fields = schemaTypes.getUpsertAttributes(type);
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixMetaObject(type) && forceUpdate) {
     const fields = schemaTypes.getUpsertAttributes(type);
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   // Upsert SCOs
   if (isStixCyberObservable(type) && forceUpdate) {
     const fields = schemaTypes.getUpsertAttributes(type);
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, element, updatePatch, fields);
+    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, fields);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
@@ -2317,7 +2317,7 @@ const isRelationConsistent = (relationshipType, from, to) => {
     return false;
   }
 };
-const buildRelationData = async (context, input, opts = {}) => {
+const buildRelationData = async (context, user, input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
@@ -2363,7 +2363,7 @@ const buildRelationData = async (context, input, opts = {}) => {
     }
     if (type) {
       // Get statuses
-      const platformStatuses = await getEntitiesFromCache(context, ENTITY_TYPE_STATUS);
+      const platformStatuses = await getEntitiesFromCache(context, user, ENTITY_TYPE_STATUS);
       const statusesForType = platformStatuses.filter((p) => p.type === type);
       if (statusesForType.length > 0) {
         data[X_WORKFLOW_ID] = R.head(statusesForType).id;
@@ -2571,7 +2571,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
         }
       }
       // Just build a standard relationship
-      dataRel = await buildRelationData(context, resolvedInput, opts);
+      dataRel = await buildRelationData(context, user, resolvedInput, opts);
     }
     // Index the created element
     await indexCreatedElement(context, user, dataRel);
@@ -2713,7 +2713,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
     // Get statuses
-    const platformStatuses = await getEntitiesFromCache(context, ENTITY_TYPE_STATUS);
+    const platformStatuses = await getEntitiesFromCache(context, user, ENTITY_TYPE_STATUS);
     const statusesForType = platformStatuses.filter((p) => p.type === type);
     if (statusesForType.length > 0) {
       data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);

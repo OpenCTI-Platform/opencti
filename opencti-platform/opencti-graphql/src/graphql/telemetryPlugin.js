@@ -13,7 +13,7 @@ export default {
         const endUserId = context.user?.origin?.user_id ?? 'anonymous';
         tracingSpan = context.tracing.getTracer().startSpan(`${operationType} ${resolveContext.operationName}`, {
           attributes: {
-            [SemanticAttributes.DB_NAME]: context.source,
+            'enduser.type': context.source,
             [SemanticAttributes.DB_OPERATION]: operationType,
             [SemanticAttributes.ENDUSER_ID]: endUserId,
           },

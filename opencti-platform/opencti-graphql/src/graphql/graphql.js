@@ -1,12 +1,10 @@
-// noinspection ES6CheckImport
-
 import { ApolloServer, UserInputError } from 'apollo-server-express';
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { dissocPath } from 'ramda';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
-import { basePath, DEV_MODE } from '../config/conf';
+import { basePath, DEV_MODE, ENABLED_TRACING } from '../config/conf';
 import { authenticateUserFromRequest } from '../domain/user';
 import { ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
@@ -23,6 +21,10 @@ const createApolloServer = () => {
     faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`
   };
   const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
+  const appolloPlugins = [playgroundPlugin, loggerPlugin, httpResponsePlugin];
+  if (ENABLED_TRACING) {
+    appolloPlugins.push(telemetryPlugin);
+  }
   const apolloServer = new ApolloServer({
     schema,
     introspection: true,
@@ -36,7 +38,7 @@ const createApolloServer = () => {
       return executeContext;
     },
     tracing: DEV_MODE,
-    plugins: [playgroundPlugin, loggerPlugin, telemetryPlugin, httpResponsePlugin],
+    plugins: appolloPlugins,
     formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof UserInputError) {

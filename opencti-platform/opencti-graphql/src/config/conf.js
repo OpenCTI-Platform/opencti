@@ -307,6 +307,7 @@ export const configureCA = (certificates) => {
 
 // Default activated managers
 export const ENABLED_API = booleanConf('app:enabled', true);
+export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
 export const ENABLED_RETENTION_MANAGER = booleanConf('retention_manager:enabled', true);
 export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
 // Default deactivated managers

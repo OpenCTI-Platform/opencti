@@ -47,7 +47,7 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
-  const markings = await getEntitiesFromCache<BasicRuleEntity>(context, ENTITY_TYPE_MARKING_DEFINITION);
+  const markings = await getEntitiesFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const markingsById = new Map();
   for (let i = 0; i < markings.length; i += 1) {
     const marking = markings[i];

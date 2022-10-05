@@ -2,8 +2,11 @@ import { readFileSync } from 'node:fs';
 import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, configureCA } from '../config/conf';
 import { DatabaseError, UnknownError } from '../config/errors';
+import { SYSTEM_USER } from '../utils/access';
+import { telemetry } from '../config/tracing';
 
 export const INTERNAL_SYNC_QUEUE = 'sync';
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
@@ -69,43 +72,47 @@ const amqpExecute = async (execute) => {
   }
 };
 
-// { deliveryMode: 2 } = persistent message
 export const send = (exchangeName, routingKey, message) => {
   return amqpExecute((channel) => channel.publish(exchangeName, routingKey, Buffer.from(message), { deliveryMode: 2 }));
 };
 
-export const metrics = async () => {
-  const ssl = USE_SSL_MGMT ? 's' : '';
-  const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
-
-  const overview = await axios
-    .get('/api/overview', {
-      baseURL,
-      withCredentials: true,
-      auth: {
-        username: USERNAME,
-        password: PASSWORD,
-      },
-    })
-    .then((response) => {
-      return response.data;
-    });
-  const queues = await axios
-    .get(`/api/queues${VHOST_PATH}`, {
-      baseURL,
-      withCredentials: true,
-      auth: {
-        username: USERNAME,
-        password: PASSWORD,
-      },
-    })
-    .then((response) => {
-      return response.data;
-    });
-  // Compute number of push queues
-  const pushQueues = R.filter((q) => R.includes('push_', q.name) && q.consumers > 0, queues);
-  const consumers = R.head(pushQueues) ? R.head(pushQueues).consumers : 0;
-  return { overview, consumers, queues };
+export const metrics = async (context, user) => {
+  const metricApi = async () => {
+    const ssl = USE_SSL_MGMT ? 's' : '';
+    const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
+    const overview = await axios
+      .get('/api/overview', {
+        baseURL,
+        withCredentials: true,
+        auth: {
+          username: USERNAME,
+          password: PASSWORD,
+        },
+      })
+      .then((response) => {
+        return response.data;
+      });
+    const queues = await axios
+      .get(`/api/queues${VHOST_PATH}`, {
+        baseURL,
+        withCredentials: true,
+        auth: {
+          username: USERNAME,
+          password: PASSWORD,
+        },
+      })
+      .then((response) => {
+        return response.data;
+      });
+    // Compute number of push queues
+    const pushQueues = R.filter((q) => R.includes('push_', q.name) && q.consumers > 0, queues);
+    const consumers = R.head(pushQueues) ? R.head(pushQueues).consumers : 0;
+    return { overview, consumers, queues };
+  };
+  return telemetry(context, user, 'QUEUE metrics', {
+    [SemanticAttributes.DB_NAME]: 'messaging_engine',
+    [SemanticAttributes.DB_OPERATION]: 'metrics',
+  }, metricApi);
 };
 
 export const connectorConfig = (id) => ({
@@ -176,8 +183,8 @@ export const pushToConnector = (context, connector, message) => {
   return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id), JSON.stringify(message));
 };
 
-export const getRabbitMQVersion = () => {
-  return metrics()
+export const getRabbitMQVersion = (context) => {
+  return metrics(context, SYSTEM_USER)
     .then((data) => data.overview.rabbitmq_version)
     .catch(/* istanbul ignore next */ () => 'Disconnected');
 };

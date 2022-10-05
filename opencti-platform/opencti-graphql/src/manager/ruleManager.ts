@@ -176,16 +176,16 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
   const callback = (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    return rulesCleanHandler(context, elements, RULES_DECLARATION, deletionIds);
+    return rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);
   };
   await elList<BasicStoreCommon>(context, RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
 };
 
-export const rulesApplyHandler = async (context: AuthContext, events: Array<Event>, forRules: Array<RuleRuntime> = []) => {
+export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<Event>, forRules: Array<RuleRuntime> = []) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
-  const rules = forRules.length > 0 ? forRules : await getActivatedRules(context);
+  const rules = forRules.length > 0 ? forRules : await getActivatedRules(context, user);
   // Execute the events
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
@@ -197,7 +197,7 @@ export const rulesApplyHandler = async (context: AuthContext, events: Array<Even
         const mergeEvent = event as MergeEvent;
         const derivedEvents = await ruleMergeHandler(mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        await rulesApplyHandler(context, derivedEvents);
+        await rulesApplyHandler(context, user, derivedEvents);
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
@@ -225,7 +225,7 @@ export const rulesApplyHandler = async (context: AuthContext, events: Array<Even
           // Rule match, need to apply
           if (isCurrentMatched) {
             const derivedEvents = await rule.insert(data);
-            await rulesApplyHandler(context, derivedEvents);
+            await rulesApplyHandler(context, user, derivedEvents);
           }
         }
       }
@@ -236,7 +236,7 @@ export const rulesApplyHandler = async (context: AuthContext, events: Array<Even
           const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
             const derivedEvents = await rule.insert(data);
-            await rulesApplyHandler(context, derivedEvents);
+            await rulesApplyHandler(context, user, derivedEvents);
           }
         }
       }
@@ -246,7 +246,13 @@ export const rulesApplyHandler = async (context: AuthContext, events: Array<Even
   }
 };
 
-export const rulesCleanHandler = async (context: AuthContext, instances: Array<BasicStoreCommon>, rules: Array<RuleRuntime>, deletedDependencies: Array<string> = []) => {
+export const rulesCleanHandler = async (
+  context: AuthContext,
+  user: AuthUser,
+  instances: Array<BasicStoreCommon>,
+  rules: Array<RuleRuntime>,
+  deletedDependencies: Array<string> = []
+) => {
   for (let i = 0; i < instances.length; i += 1) {
     const instance = instances[i];
     for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
@@ -257,7 +263,7 @@ export const rulesCleanHandler = async (context: AuthContext, instances: Array<B
         // In case of "inference of inference", element can be recursively cleanup by the deletion system
         if (processingElement) {
           const derivedEvents = await rule.clean(processingElement, deletedDependencies);
-          await rulesApplyHandler(context, derivedEvents);
+          await rulesApplyHandler(context, user, derivedEvents);
         }
       }
     }
@@ -280,7 +286,7 @@ const ruleStreamHandler = async (streamEvents: Array<StreamEvent>, lastEventId: 
   if (compatibleEvents.length > 0) {
     const ruleEvents: Array<Event> = compatibleEvents.map((e) => e.data);
     // Execute the events
-    await rulesApplyHandler(context, ruleEvents);
+    await rulesApplyHandler(context, RULE_MANAGER_USER, ruleEvents);
   }
   // Save the last processed event
   logApp.debug(`[OPENCTI] Rule manager saving state to ${lastEventId}`);

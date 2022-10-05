@@ -25,7 +25,12 @@
       "logs_directory": "./logs"
     },
     "telemetry": {
-      "prometheus": {
+      "tracing": {
+        "enabled": false,
+        "exporter_otlp": "http://xxxx:4318/v1/traces",
+        "exporter_zipkin": "http://xxxx:9411/api/v2/spans"
+      },
+      "metrics_prometheus": {
         "enabled": false,
         "metrics_path": "/prometheus/metrics"
       }

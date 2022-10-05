@@ -13,24 +13,13 @@ import { UnsupportedError } from '../config/errors';
 import type { BasicStoreEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
 import { EntityOptions, listEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import type { AuthContext } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
+import { telemetry } from '../config/tracing';
 
 let cache: any = {};
 
-export const getEntitiesFromCache = async<T extends BasicStoreEntity>(context: AuthContext, type: string): Promise<Array<T>> => {
-  let tracingSpan;
-  try {
-    if (context.tracing) {
-      const tracer = context.tracing.getTracer();
-      const ctx = context.tracing.getCtx();
-      tracingSpan = tracer.startSpan(`CACHE ${type}`, {
-        attributes: {
-          [SemanticAttributes.DB_NAME]: 'cache_engine',
-          [SemanticAttributes.DB_OPERATION]: 'select',
-        },
-        kind: 2 // Client
-      }, ctx);
-    }
+export const getEntitiesFromCache = async<T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, type: string): Promise<Array<T>> => {
+  const getEntitiesFromCacheFn = async () => {
     const fromCache = cache[type];
     if (!fromCache) {
       throw UnsupportedError(`${type} is not supported in cache configuration`);
@@ -38,18 +27,12 @@ export const getEntitiesFromCache = async<T extends BasicStoreEntity>(context: A
     if (!fromCache.values) {
       fromCache.values = await fromCache.fn();
     }
-    if (tracingSpan) {
-      tracingSpan.setStatus({ code: 1 });
-      tracingSpan.end();
-    }
     return fromCache.values;
-  } catch (err) {
-    if (tracingSpan) {
-      tracingSpan.setStatus({ code: 2 });
-      tracingSpan.end();
-    }
-    throw err;
-  }
+  };
+  return telemetry(context, user, `CACHE ${type}`, {
+    [SemanticAttributes.DB_NAME]: 'cache_engine',
+    [SemanticAttributes.DB_OPERATION]: 'select',
+  }, getEntitiesFromCacheFn);
 };
 
 const workflowStatuses = async (context: AuthContext) => {

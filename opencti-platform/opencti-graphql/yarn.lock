@@ -3466,6 +3466,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@opentelemetry/exporter-zipkin@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "@opentelemetry/exporter-zipkin@npm:1.7.0"
+  dependencies:
+    "@opentelemetry/core": 1.7.0
+    "@opentelemetry/resources": 1.7.0
+    "@opentelemetry/sdk-trace-base": 1.7.0
+    "@opentelemetry/semantic-conventions": 1.7.0
+  peerDependencies:
+    "@opentelemetry/api": ^1.0.0
+  checksum: e018add48f7134eb4778f0fe5b2faca2728d06b0eb67e2f3a4cccdab9855c86e98d33344e21a73ce7e0665c00564c79ac2a8e31f9e3d7bd73ebb934ee892de27
+  languageName: node
+  linkType: hard
+
 "@opentelemetry/host-metrics@npm:^0.30.1":
   version: 0.30.1
   resolution: "@opentelemetry/host-metrics@npm:0.30.1"
@@ -11734,6 +11748,7 @@ __metadata:
     "@opentelemetry/api": 1.2.0
     "@opentelemetry/exporter-prometheus": 0.33.0
     "@opentelemetry/exporter-trace-otlp-http": ^0.33.0
+    "@opentelemetry/exporter-zipkin": ^1.7.0
     "@opentelemetry/host-metrics": ^0.30.1
     "@opentelemetry/instrumentation": 0.32.0
     "@opentelemetry/resources": 1.7.0

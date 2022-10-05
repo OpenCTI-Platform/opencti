@@ -8,7 +8,7 @@ import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
 export const createEntityAutoEnrichment = async (context, user, stixCoreObjectId, scope) => {
   // Get the list of compatible connectors
-  const connectors = await getEntitiesFromCache(context, ENTITY_TYPE_CONNECTOR);
+  const connectors = await getEntitiesFromCache(context, user, ENTITY_TYPE_CONNECTOR);
   const targetConnectors = connectorsEnrichment(connectors, scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(

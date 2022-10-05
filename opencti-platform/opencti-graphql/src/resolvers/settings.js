@@ -17,7 +17,7 @@ import { elAggregationCount } from '../database/engine';
 
 const settingsResolvers = {
   Query: {
-    about: () => getApplicationInfo(),
+    about: (_, __, context) => getApplicationInfo(context),
     settings: (_, __, context) => getSettings(context),
   },
   AppDebugStatistics: {

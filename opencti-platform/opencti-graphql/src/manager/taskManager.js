@@ -82,10 +82,10 @@ const findTaskToExecute = async (context) => {
   }
   return R.head(tasks);
 };
-const computeRuleTaskElements = async (context, task) => {
+const computeRuleTaskElements = async (context, user, task) => {
   const { task_position, rule, enable } = task;
   const processingElements = [];
-  const ruleDefinition = await getRule(context, rule);
+  const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
     const options = {
@@ -254,11 +254,11 @@ const executeRuleApply = async (context, user, actionContext, element) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, element.internal_id);
   const event = await storeCreateEntityEvent(context, user, instance, '-', { publishStreamEvent: false });
-  await rulesApplyHandler([event], [rule]);
+  await rulesApplyHandler([event], user, [rule]);
 };
-const executeRuleClean = async (context, actionContext, element) => {
+const executeRuleClean = async (context, user, actionContext, element) => {
   const { rule } = actionContext;
-  await rulesCleanHandler(context, [element], [rule]);
+  await rulesCleanHandler(context, user, [element], [rule]);
 };
 const executeRuleElementRescan = async (context, user, actionContext, element) => {
   const { rules } = actionContext ?? {};
@@ -323,7 +323,7 @@ const executeProcessing = async (context, user, processingElements) => {
           await executeRuleApply(context, user, actionContext, element);
         }
         if (type === ACTION_TYPE_RULE_CLEAR) {
-          await executeRuleClean(context, actionContext, element);
+          await executeRuleClean(context, user, actionContext, element);
         }
         if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
           await executeRuleElementRescan(context, user, actionContext, element);
@@ -370,7 +370,7 @@ const taskHandler = async () => {
       processingElements = await computeListTaskElements(context, user, task);
     }
     if (isRuleTask) {
-      processingElements = await computeRuleTaskElements(context, task);
+      processingElements = await computeRuleTaskElements(context, user, task);
     }
     // Process the elements (empty = end of execution)
     if (processingElements.length > 0) {
