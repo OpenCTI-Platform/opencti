@@ -180,7 +180,7 @@ export const addIndicator = async (context, user, indicator) => {
     throw FunctionalError(`Observable type ${indicator.x_opencti_main_observable_type} is not supported.`);
   }
   // check indicator syntax
-  const check = await checkIndicatorSyntax(indicator.pattern_type.toLowerCase(), indicator.pattern);
+  const check = await checkIndicatorSyntax(context, user, indicator.pattern_type.toLowerCase(), indicator.pattern);
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }

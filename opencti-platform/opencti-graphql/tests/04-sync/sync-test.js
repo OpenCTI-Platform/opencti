@@ -127,7 +127,7 @@ describe('Database sync testing', () => {
     expect(diffElements.length).toBe(0);
   };
 
-  it.skip(
+  it(
     'Should python raw sync succeed',
     async () => {
       // Pre check
@@ -135,7 +135,7 @@ describe('Database sync testing', () => {
       // Sync
       await startModules();
       const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, RAW_EVENTS_SIZE, '0', 'None'];
-      const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
+      const execution = await execPython3(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();
@@ -145,7 +145,7 @@ describe('Database sync testing', () => {
     FIFTEEN_MINUTES
   );
 
-  it.skip(
+  it(
     'Should python live sync succeed',
     async () => {
       // Pre check
@@ -162,7 +162,7 @@ describe('Database sync testing', () => {
         'live',
       ];
       await startModules();
-      const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
+      const execution = await execPython3(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();
@@ -242,6 +242,8 @@ describe('Database sync testing', () => {
     };
     const backupConf = JSON.stringify(BACKUP_CONFIG);
     await executePython(
+      testContext,
+      ADMIN_USER,
       path.resolve('../../opencti-connectors/stream/backup-files/src'),
       'backup-files.py',
       [backupConf],
@@ -274,6 +276,8 @@ describe('Database sync testing', () => {
     };
     const restoreConf = JSON.stringify(RESTORE_CONFIG);
     await executePython(
+      testContext,
+      ADMIN_USER,
       path.resolve('../../opencti-connectors/external-import/restore-files/src'),
       'restore-files.py',
       [restoreConf],
@@ -281,7 +285,7 @@ describe('Database sync testing', () => {
     );
   };
 
-  it.skip(
+  it(
     'Should backup/restore sync succeed',
     async () => {
       // Pre check

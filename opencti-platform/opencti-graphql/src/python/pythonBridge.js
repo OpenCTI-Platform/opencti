@@ -1,9 +1,11 @@
 import { PythonShell } from 'python-shell';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { DEV_MODE, logApp } from '../config/conf';
 import { ConfigurationError } from '../config/errors';
+import { telemetry } from '../config/tracing';
 
-export const execPython3 = async (scriptPath, scriptName, args, stopCondition) => {
-  try {
+export const execPython3 = async (context, user, scriptPath, scriptName, args, stopCondition) => {
+  const execPython3Fn = () => {
     return new Promise((resolve, reject) => {
       const messages = [];
       const options = {
@@ -46,29 +48,33 @@ export const execPython3 = async (scriptPath, scriptName, args, stopCondition) =
         }
         resolve(jsonResult);
       });
+    }).catch((err) => {
+      /* istanbul ignore next */
+      throw ConfigurationError('Python3 is missing or script not found', { detail: err.message });
     });
-  } catch (err) {
-    /* istanbul ignore next */
-    throw ConfigurationError('Python3 is missing or script not found', { detail: err.message });
-  }
+  };
+  return telemetry(context, user, `PYTHON ${scriptName}`, {
+    [SemanticAttributes.DB_NAME]: 'python_engine',
+    [SemanticAttributes.DB_OPERATION]: 'listing',
+  }, execPython3Fn);
 };
 
-export const checkPythonStix2 = () => {
-  return execPython3('./src/python', 'stix2_create_pattern.py', ['check', 'health']);
+export const checkPythonStix2 = (context, user) => {
+  return execPython3(context, user, './src/python', 'stix2_create_pattern.py', ['check', 'health']);
 };
 
-export const createStixPattern = async (observableType, observableValue) => {
+export const createStixPattern = async (context, user, observableType, observableValue) => {
   try {
-    const result = await execPython3('./src/python', 'stix2_create_pattern.py', [observableType, observableValue]);
+    const result = await execPython3(context, user, './src/python', 'stix2_create_pattern.py', [observableType, observableValue]);
     return result.data;
   } catch (err) {
     return null;
   }
 };
 
-export const checkIndicatorSyntax = async (patternType, indicatorValue) => {
+export const checkIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
   try {
-    const result = await execPython3('./src/python', 'check_indicator.py', [patternType, indicatorValue]);
+    const result = await execPython3(context, user, './src/python', 'check_indicator.py', [patternType, indicatorValue]);
     return result.data;
   } catch (err) {
     logApp.warn(`[BRIDGE] extractObservables error > ${err.message}`);
@@ -76,9 +82,9 @@ export const checkIndicatorSyntax = async (patternType, indicatorValue) => {
   }
 };
 
-export const executePython = async (path, file, args, stopCondition) => {
+export const executePython = async (context, user, path, file, args, stopCondition) => {
   try {
-    const result = await execPython3(path, file, args, stopCondition);
+    const result = await execPython3(context, user, path, file, args, stopCondition);
     return result.data;
   } catch (err) {
     logApp.warn(`[BRIDGE] executePython error > ${err.message}`);

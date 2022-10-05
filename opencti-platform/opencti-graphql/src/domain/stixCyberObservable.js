@@ -125,7 +125,7 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
       key = key.replaceAll('Artifact', 'File');
       entityType = 'StixFile';
     }
-    const pattern = await createStixPattern(key, value);
+    const pattern = await createStixPattern(context, user, key, value);
     if (pattern) {
       const indicatorToCreate = {
         pattern_type: 'stix',

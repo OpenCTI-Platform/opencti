@@ -25,7 +25,7 @@ describe('File storage file listing', () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const importOpts = [API_URI, API_TOKEN, malware.id, exportFileName];
     // local exporter create an export and also upload the file as an import
-    const execution = await execPython3(PYTHON_PATH, 'local_exporter.py', importOpts);
+    const execution = await execPython3(testContext, ADMIN_USER, PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
     await shutdownModules();

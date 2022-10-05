@@ -131,7 +131,8 @@ export const checkSystemDependencies = async () => {
     logApp.info('[CHECK] SMTP is alive');
   }
   // Check if Python is available
-  await checkPythonStix2();
+  const context = executionContext('system_dependencies');
+  await checkPythonStix2(context, SYSTEM_USER);
   logApp.info('[CHECK] Python3 is available');
   return true;
 };
