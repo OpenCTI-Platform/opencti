@@ -127,7 +127,7 @@ describe('Database sync testing', () => {
     expect(diffElements.length).toBe(0);
   };
 
-  it(
+  it.skip(
     'Should python raw sync succeed',
     async () => {
       // Pre check
@@ -145,7 +145,7 @@ describe('Database sync testing', () => {
     FIFTEEN_MINUTES
   );
 
-  it(
+  it.skip(
     'Should python live sync succeed',
     async () => {
       // Pre check
@@ -281,7 +281,7 @@ describe('Database sync testing', () => {
     );
   };
 
-  it(
+  it.skip(
     'Should backup/restore sync succeed',
     async () => {
       // Pre check
