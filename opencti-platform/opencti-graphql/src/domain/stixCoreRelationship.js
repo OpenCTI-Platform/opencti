@@ -76,6 +76,7 @@ export const stixCoreRelationshipsNumber = (context, user, args) => {
 
 export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => {
   const batchCreators = await batchListThroughGetTo(
+    context,
     user,
     stixCoreRelationshipIds,
     RELATION_CREATED_BY,
@@ -106,6 +107,7 @@ export const batchMarkingDefinitions = (context, user, stixCoreRelationshipIds) 
 
 export const batchExternalReferences = (context, user, stixCoreRelationshipIds) => {
   return batchListThroughGetTo(
+    context,
     user,
     stixCoreRelationshipIds,
     RELATION_EXTERNAL_REFERENCE,
@@ -229,6 +231,7 @@ export const stixCoreRelationshipDeleteRelation = async (context, user, stixCore
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(
+    context,
     user,
     stixCoreRelationshipId,
     toId,

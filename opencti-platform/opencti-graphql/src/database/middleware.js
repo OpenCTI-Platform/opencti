@@ -3062,7 +3062,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     if (rebuildRuleContent.length === 0) {
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
-        const { event } = await internalDeleteElementById(RULE_MANAGER_USER, instance.id);
+        const { event } = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id);
         derivedEvents.push(event);
       } else {
         // If not we need to clean the rule and keep the element for other rules.

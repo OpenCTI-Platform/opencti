@@ -70,8 +70,8 @@ const userResolvers = {
     bookmarks: (_, { types }, context) => bookmarks(context, context.user, types),
   },
   User: {
-    groups: (current, _, context) => groupsLoader.load(context, current.id, context),
-    roles: (current, _, context) => rolesLoader.load(context, current.id, context),
+    groups: (current, _, context) => groupsLoader.load(current.id, context, context.user),
+    roles: (current, _, context) => rolesLoader.load(current.id, context, context.user),
     allowed_marking: (current, _, context) => getMarkings(context, current.id, context.user.capabilities),
     capabilities: (current, _, context) => getCapabilities(context, current.id),
     editContext: (current) => fetchEditContext(current.id),

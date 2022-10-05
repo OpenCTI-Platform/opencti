@@ -84,7 +84,7 @@ export const deleteFile = async (context, user, id) => {
     Bucket: bucketName,
     Key: id
   }));
-  await deleteWorkForFile(user, id);
+  await deleteWorkForFile(context, user, id);
   return true;
 };
 

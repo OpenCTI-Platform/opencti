@@ -1,7 +1,7 @@
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
 // 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
 
-import { FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
+import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
 import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSightingRule';
 import { RULE_PREFIX } from '../../src/schema/general';
 import { shutdownModules, startModules } from '../../src/modules';
@@ -38,10 +38,10 @@ describe('Observed sighting rule', () => {
       // Check default state
       await assertInferencesSize(0);
       // OBSERVED_DATA have no created-by Organization (must be updated)
-      await patchAttribute(context, SYSTEM_USER, OBSERVED_DATA, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { createdBy: ANSSI });
+      await patchAttribute(testContext, SYSTEM_USER, OBSERVED_DATA, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { createdBy: ANSSI });
       await assertInferencesSize(0);
       // PARADISE_RANSOMWARE is not based on an Indicator (relation must be created)
-      const cbrickToFile = await createRelation(context, SYSTEM_USER, {
+      const cbrickToFile = await createRelation(testContext, SYSTEM_USER, {
         fromId: CBRICKSDOC,
         toId: OBSERVED_FILE,
         revoked: false,
@@ -63,12 +63,12 @@ describe('Observed sighting rule', () => {
       expect(cbrickToAnssi.i_inference_weight).toBeUndefined();
       expect((cbrickToAnssi.object_marking_refs || []).length).toBe(0);
       // Change the organization
-      await patchAttribute(context, SYSTEM_USER, OBSERVED_DATA, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { createdBy: MITRE });
+      await patchAttribute(testContext, SYSTEM_USER, OBSERVED_DATA, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { createdBy: MITRE });
       const afterOrgaRelations = await assertInferencesSize(1);
       const cbrickToMitre = await inferenceLookup(afterOrgaRelations, CBRICKSDOC, MITRE, STIX_SIGHTING_RELATIONSHIP);
       expect(cbrickToMitre).not.toBeNull();
       // Invalidate the rule with x_opencti_detection = true
-      await patchAttribute(context, SYSTEM_USER, CBRICKSDOC, ENTITY_TYPE_INDICATOR, { x_opencti_detection: true });
+      await patchAttribute(testContext, SYSTEM_USER, CBRICKSDOC, ENTITY_TYPE_INDICATOR, { x_opencti_detection: true });
       await assertInferencesSize(1);
       // ---- 02. Test rescan behavior
       // Disable the rule
@@ -85,7 +85,7 @@ describe('Observed sighting rule', () => {
       expect(cbrickToMitreRescan.i_inference_weight).toBeUndefined();
       expect((cbrickToMitreRescan.object_marking_refs || []).length).toBe(0);
       // Cleanup
-      await internalDeleteElementById(context, SYSTEM_USER, cbrickToFile.internal_id);
+      await internalDeleteElementById(testContext, SYSTEM_USER, cbrickToFile.internal_id);
       await assertInferencesSize(0);
       // Disable the rule
       await disableRule(RuleObserveSighting.id);

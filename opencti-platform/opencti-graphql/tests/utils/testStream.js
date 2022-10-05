@@ -1,7 +1,7 @@
 import EventSource from 'eventsource';
 import * as R from 'ramda';
 import { validate as isUuid } from 'uuid';
-import { ADMIN_USER, generateBasicAuth } from './testQuery';
+import { ADMIN_USER, generateBasicAuth, testContext } from './testQuery';
 import { internalLoadById } from '../../src/database/middleware';
 import { isStixId } from '../../src/schema/schemaUtils';
 import { EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
@@ -52,11 +52,11 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
       const fetchAttr = loaded[attributeKey];
       let rebuildAttr = rebuilt[attributeKey];
       if (attributeKey.endsWith('_ref')) {
-        const data = await idLoader(context, ADMIN_USER, rebuildAttr);
+        const data = await idLoader(testContext, ADMIN_USER, rebuildAttr);
         rebuildAttr = data.standard_id;
       }
       if (attributeKey.endsWith('_refs')) {
-        const data = await Promise.all(rebuildAttr.map(async (r) => idLoader(context, ADMIN_USER, r)));
+        const data = await Promise.all(rebuildAttr.map(async (r) => idLoader(testContext, ADMIN_USER, r)));
         rebuildAttr = data.map((r) => r.standard_id);
       }
       if (Array.isArray(fetchAttr)) {

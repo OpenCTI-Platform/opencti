@@ -30,8 +30,9 @@ export const batchSubNarratives = (context: AuthContext, user: AuthUser, narrati
   return batchListThroughGetFrom(context, user, narrativeIds, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE);
 };
 
-export const batchIsSubNarrative = async (user: AuthUser, narrativeIds: Array<string>) => {
+export const batchIsSubNarrative = async (context: AuthContext, user: AuthUser, narrativeIds: Array<string>) => {
   const batchNarratives = await batchListThroughGetTo(
+    context,
     user,
     narrativeIds,
     RELATION_SUBTECHNIQUE_OF,

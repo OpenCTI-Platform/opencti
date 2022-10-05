@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
@@ -105,7 +105,7 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult.data.region.id).toEqual(regionInternalId);
   });
   it('should region subregions be accurate', async () => {
-    const region = await elLoadById(context, ADMIN_USER, 'location--bc9f5d2c-7209-4b24-903e-587c7cf00ab1');
+    const region = await elLoadById(testContext, ADMIN_USER, 'location--bc9f5d2c-7209-4b24-903e-587c7cf00ab1');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: region.internal_id },
@@ -120,7 +120,7 @@ describe('Region resolver standard behavior', () => {
     );
   });
   it('should region parent regions be accurate', async () => {
-    const region = await elLoadById(context, ADMIN_USER, 'location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2');
+    const region = await elLoadById(testContext, ADMIN_USER, 'location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: region.internal_id },

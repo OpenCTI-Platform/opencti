@@ -7,6 +7,7 @@ import {
   unregisterConnector,
 } from '../../../src/database/rabbitmq';
 import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/schema/general';
+import { testContext } from '../../utils/testQuery';
 
 describe('Rabbit basic and utils', () => {
   it('should rabbit in correct version', async () => {
@@ -46,7 +47,7 @@ describe('Rabbit connector management', () => {
   });
   it('should push message to connector', async () => {
     const connector = { internal_id: connectorId };
-    await pushToConnector(connector, { id: uuid() });
+    await pushToConnector(testContext, connector, { id: uuid() });
   });
   it('should delete connector', async () => {
     const unregister = await unregisterConnector(connectorId);

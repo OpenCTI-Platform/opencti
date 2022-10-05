@@ -1899,11 +1899,11 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
     await BluePromise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
 };
-export const getRelationsToRemove = async (user, elements) => {
+export const getRelationsToRemove = async (context, user, elements) => {
   const relationsToRemoveMap = new Map();
   const relationsToRemove = [];
   const ids = elements.map((e) => e.internal_id);
-  await getRelatedRelations(user, ids, relationsToRemove, 0, relationsToRemoveMap);
+  await getRelatedRelations(context, user, ids, relationsToRemove, 0, relationsToRemoveMap);
   return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
 export const elDeleteInstances = async (instances) => {
@@ -1975,9 +1975,9 @@ export const elDeleteElements = async (context, user, elements, stixLoadById) =>
   if (elements.length === 0) return [];
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const opts = { concurrency: ES_MAX_CONCURRENCY };
-  const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
   const stixRelations = relations.filter((r) => isStixRelationShipExceptMeta(r.relationship_type));
-  const dependencyDeletions = await BluePromise.map(stixRelations, (r) => stixLoadById(user, r.internal_id), opts);
+  const dependencyDeletions = await BluePromise.map(stixRelations, (r) => stixLoadById(context, user, r.internal_id), opts);
   // Compute the id that needs to be remove from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   const cleanupRelations = relations.concat(basicCleanup);

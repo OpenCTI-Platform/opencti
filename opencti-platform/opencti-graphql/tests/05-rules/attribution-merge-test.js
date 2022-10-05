@@ -6,7 +6,7 @@ import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCore
 import { RULE_PREFIX } from '../../src/schema/general';
 import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRule';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import { ADMIN_USER, FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
+import { ADMIN_USER, testContext, FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
 import { wait } from '../../src/database/utils';
 
 const RULE = RULE_PREFIX + AttributionUseRule.id;
@@ -22,11 +22,11 @@ describe('Attribute use rule when merging', () => {
       await startModules();
       // ---- Create the dataset
       // 01. Create a threat actor
-      const threat = await addThreatActor(context, SYSTEM_USER, { name: 'MY TREAT ACTOR' });
+      const threat = await addThreatActor(testContext, SYSTEM_USER, { name: 'MY TREAT ACTOR' });
       const MY_THREAT = threat.standard_id;
       // 02. Create require relation
       // APT41 -> uses -> Paradise (start: 2020-02-28T23:00:00.000Z, stop: 2020-02-29T23:00:00.000Z, confidence: 30)
-      await createRelation(context, SYSTEM_USER, {
+      await createRelation(testContext, SYSTEM_USER, {
         fromId: APT41,
         toId: threat.id,
         confidence: 10,
@@ -47,15 +47,15 @@ describe('Attribute use rule when merging', () => {
       expect(myThreatToParadise[RULE].length).toBe(1);
       expect(myThreatToParadise.confidence).toBe(20); // AVG 2 relations (30 + 10) = 20
       // 02. Create a second threat actor
-      const secondThreat = await addThreatActor(context, SYSTEM_USER, { name: 'MY SECOND TREAT ACTOR', description: 'Threat' });
+      const secondThreat = await addThreatActor(testContext, SYSTEM_USER, { name: 'MY SECOND TREAT ACTOR', description: 'Threat' });
       // 02. Create require relation
       // APT41 -> uses -> Paradise (start: 2020-02-28T23:00:00.000Z, stop: 2020-02-29T23:00:00.000Z, confidence: 30)
-      await createRelation(context, SYSTEM_USER, { fromId: APT41, toId: secondThreat.id, relationship_type: RELATION_ATTRIBUTED_TO });
+      await createRelation(testContext, SYSTEM_USER, { fromId: APT41, toId: secondThreat.id, relationship_type: RELATION_ATTRIBUTED_TO });
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterLiveRelations = await getInferences(RELATION_USES);
       expect(afterLiveRelations.length).toBe(2);
       // 03. Merge the two threat
-      await mergeEntities(context, ADMIN_USER, threat.internal_id, [secondThreat.internal_id]);
+      await mergeEntities(testContext, ADMIN_USER, threat.internal_id, [secondThreat.internal_id]);
       // After this merge, only MY TREAT ACTOR will remains
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterMergeRelations = await getInferences(RELATION_USES);
@@ -63,7 +63,7 @@ describe('Attribute use rule when merging', () => {
       // Disable the rule
       await disableRule(AttributionUseRule.id);
       // Clean
-      await internalDeleteElementById(context, SYSTEM_USER, threat.internal_id);
+      await internalDeleteElementById(testContext, SYSTEM_USER, threat.internal_id);
       // Stop
       await shutdownModules();
     },

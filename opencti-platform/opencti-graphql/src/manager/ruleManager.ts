@@ -79,7 +79,7 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
     const shifts = context.shifts ?? [];
     for (let index = 0; index < shifts.length; index += 1) {
       const shift = shifts[index];
-      const shiftedElement = await stixLoadById(RULE_MANAGER_USER, shift) as StixCoreObject;
+      const shiftedElement = await stixLoadById(context, RULE_MANAGER_USER, shift) as StixCoreObject;
       // In past reprocess the shift element can already have been deleted.
       if (shiftedElement) {
         // We need to cleanup the element associated with this relation and then rescan it

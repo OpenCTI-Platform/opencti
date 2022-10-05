@@ -1,7 +1,7 @@
 import { head } from 'ramda';
 import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/file-storage';
 import { execPython3 } from '../../../src/python/pythonBridge';
-import { ADMIN_USER, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { startModules, shutdownModules } from '../../../src/modules';
 import { executionContext } from '../../../src/utils/access';
@@ -23,7 +23,7 @@ const importFileId = `import/global/${exportFileName}`;
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {
     await startModules();
-    const malware = await elLoadById(context, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const importOpts = [API_URI, API_TOKEN, malware.id, exportFileName];
     // local exporter create an export and also upload the file as an import
     const execution = await execPython3(PYTHON_PATH, 'local_exporter.py', importOpts);
@@ -32,9 +32,8 @@ describe('File storage file listing', () => {
     await shutdownModules();
   });
   it('should file listing', async () => {
-    const context = executionContext('should_file_listing');
-    const malware = await elLoadById(context, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    let list = await filesListing(context, ADMIN_USER, 25, `export/Malware/${malware.id}/`);
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    let list = await filesListing(testContext, ADMIN_USER, 25, `export/Malware/${malware.id}/`);
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     let file = head(list.edges).node;
@@ -45,7 +44,7 @@ describe('File storage file listing', () => {
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
     expect(file.metaData.mimetype).toEqual('application/json');
-    list = await filesListing(context, ADMIN_USER, 25, 'import/global/');
+    list = await filesListing(testContext, ADMIN_USER, 25, 'import/global/');
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
@@ -54,8 +53,8 @@ describe('File storage file listing', () => {
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
-    const malware = await elLoadById(context, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const fileStream = await downloadFile(context, exportFileId(malware));
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const fileStream = await downloadFile(testContext, exportFileId(malware));
     expect(fileStream).not.toBeNull();
     const data = await streamConverter(fileStream);
     expect(data).not.toBeNull();
@@ -66,18 +65,18 @@ describe('File storage file listing', () => {
     expect(user.name).toEqual('Paradise Ransomware');
   });
   it('should load file', async () => {
-    const malware = await elLoadById(context, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const file = await loadFile(context, ADMIN_USER, exportFileId(malware));
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const file = await loadFile(testContext, ADMIN_USER, exportFileId(malware));
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
     expect(file.size).toEqual(10566);
   });
   it('should delete file', async () => {
-    const malware = await elLoadById(context, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    let deleted = await deleteFile(context, ADMIN_USER, exportFileId(malware));
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    let deleted = await deleteFile(testContext, ADMIN_USER, exportFileId(malware));
     expect(deleted).toBeTruthy();
-    deleted = await deleteFile(context, ADMIN_USER, importFileId);
+    deleted = await deleteFile(testContext, ADMIN_USER, importFileId);
     expect(deleted).toBeTruthy();
   });
 });

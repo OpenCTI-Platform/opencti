@@ -100,12 +100,12 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
 };
 
-export const batchGroups = async (context, userId, opts = {}) => {
-  return batchListThroughGetTo(context, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
+export const batchGroups = async (context, user, userId, opts = {}) => {
+  return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
 
-export const batchRoles = async (context, userId) => {
-  return batchListThroughGetTo(context, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
+export const batchRoles = async (context, user, userId) => {
+  return batchListThroughGetTo(context, user, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
 };
 
 export const computeAvailableMarkings = (markings, all) => {

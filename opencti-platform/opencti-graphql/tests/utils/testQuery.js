@@ -2,7 +2,7 @@ import { ApolloServer } from 'apollo-server-express';
 import axios from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf from '../../src/config/conf';
-import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/utils/access';
+import {BYPASS, executionContext, ROLE_ADMINISTRATOR} from '../../src/utils/access';
 
 // region static graphql modules
 import '../../src/modules/index';
@@ -26,6 +26,8 @@ export const ONE_MINUTE = 60 * ONE_SECOND;
 export const TEN_SECONDS = 10 * ONE_SECOND;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
 export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
+
+export const testContext = executionContext('testing');
 
 export const generateBasicAuth = () => {
   const buff = Buffer.from(`${API_EMAIL}:${API_PASSWORD}`, 'utf-8');

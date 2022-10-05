@@ -228,7 +228,7 @@ export const createCapabilities = async (context, capabilities, parentName = '')
     const capabilityName = `${parentName}${name}`;
     await addCapability(context, SYSTEM_USER, { name: capabilityName, description, attribute_order: AttributeOrder });
     if (capability.dependencies && capability.dependencies.length > 0) {
-      await createCapabilities(capability.dependencies, `${capabilityName}_`);
+      await createCapabilities(context, capability.dependencies, `${capabilityName}_`);
     }
   }
 };

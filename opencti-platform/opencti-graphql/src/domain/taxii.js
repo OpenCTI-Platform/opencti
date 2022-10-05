@@ -103,7 +103,7 @@ const collectionQuery = async (context, user, collectionId, args) => {
 export const restCollectionStix = async (context, user, id, args) => {
   const { edges, pageInfo } = await collectionQuery(context, user, id, args);
   const edgeIds = edges.map((e) => e.node.internal_id);
-  const instances = await stixLoadByIds(user, edgeIds);
+  const instances = await stixLoadByIds(context, user, edgeIds);
   return {
     more: pageInfo.hasNextPage,
     next: R.last(edges)?.cursor || '',

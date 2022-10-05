@@ -45,7 +45,7 @@ export const createStreamCollection = async (context, user, input) => {
   return data;
 };
 export const streamCollectionGroups = async (context, user, collection) => {
-  return listThroughGetFrom(user, collection.id, RELATION_ACCESSES_TO, ENTITY_TYPE_GROUP);
+  return listThroughGetFrom(context, user, collection.id, RELATION_ACCESSES_TO, ENTITY_TYPE_GROUP);
 };
 export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);

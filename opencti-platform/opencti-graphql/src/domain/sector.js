@@ -37,7 +37,7 @@ export const batchIsSubSector = async (context, user, sectorIds) => {
 };
 
 export const targetedOrganizations = async (context, user, sectorId) => {
-  const organizations = await listThroughGetFrom(user, sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  const organizations = await listThroughGetFrom(context, user, sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   const targets = await Promise.all(
     organizations.map((organization) => listRelations(context, user, RELATION_TARGETS, { fromId: organization.id }))
   );

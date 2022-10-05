@@ -242,6 +242,7 @@ export const stixCyberObservableDeleteRelation = async (context, user, stixCyber
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(
+    context,
     user,
     stixCyberObservableId,
     toId,
@@ -256,6 +257,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   if (isNotEmptyField(originalStixCyberObservable.payload_bin) && input[0].key === 'url') {
     if (isNotEmptyField(originalStixCyberObservable.url)) {
       await updateAttribute(
+        context,
         user,
         stixCyberObservableId,
         ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -267,6 +269,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   } else if (isNotEmptyField(originalStixCyberObservable.url) && input[0].key === 'payload_bin') {
     if (isNotEmptyField(originalStixCyberObservable.payload_bin)) {
       await updateAttribute(
+        context,
         user,
         stixCyberObservableId,
         ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -277,6 +280,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
   const { element: stixCyberObservable } = await updateAttribute(
+    context,
     user,
     stixCyberObservableId,
     ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -285,6 +289,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   );
   if (input[0].key === 'x_opencti_score') {
     const indicators = await listThroughGetFrom(
+      context,
       user,
       [stixCyberObservableId],
       RELATION_BASED_ON,

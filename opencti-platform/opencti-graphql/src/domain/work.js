@@ -112,10 +112,10 @@ export const pingWork = async (context, user, workId) => {
 };
 
 export const deleteWorkForConnector = async (context, user, connectorId) => {
-  let works = await worksForConnector(user, connectorId, { first: 500 });
+  let works = await worksForConnector(context, user, connectorId, { first: 500 });
   while (works.length > 0) {
     await deleteWorksRaw(works);
-    works = await worksForConnector(user, connectorId, { first: 500 });
+    works = await worksForConnector(context, user, connectorId, { first: 500 });
   }
   return true;
 };

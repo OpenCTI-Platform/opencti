@@ -270,7 +270,7 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
     if (isStixRelationship(element.entity_type)) {
       const needRescan = ruleRescanTypes.includes(element.entity_type);
       if (needRescan) {
-        const data = await stixLoadById(user, element.internal_id);
+        const data = await stixLoadById(context, user, element.internal_id);
         const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
         await rulesApplyHandler([event]);
       }
@@ -281,7 +281,7 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
         const relation = relations[index];
         const needRescan = ruleRescanTypes.includes(relation.entity_type);
         if (needRescan) {
-          const data = await stixLoadById(user, relation.internal_id);
+          const data = await stixLoadById(context, user, relation.internal_id);
           const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
           await rulesApplyHandler([event], rulesToApply);
         }

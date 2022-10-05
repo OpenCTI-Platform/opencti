@@ -3,7 +3,7 @@
 // '`targets` **identity B**.';
 
 import * as R from 'ramda';
-import { FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
+import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
 import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences } from '../utils/rule-utils';
 import { internalLoadById, patchAttribute } from '../../src/database/middleware';
@@ -36,26 +36,26 @@ describe('Sighting incident rule', () => {
       // All sighted indicators are revoked
       await assertInferencesSize(ENTITY_TYPE_INCIDENT, 0);
       // Update the valid until to change the revoked to false
-      await patchAttribute(context, SYSTEM_USER, ONE_CLAP, ENTITY_TYPE_INDICATOR, { valid_until: '2024-02-17T23:00:00.000Z' });
+      await patchAttribute(testContext, SYSTEM_USER, ONE_CLAP, ENTITY_TYPE_INDICATOR, { valid_until: '2024-02-17T23:00:00.000Z' });
       const inferences = await assertInferencesSize(ENTITY_TYPE_INCIDENT, 1);
       const inference = R.head(inferences);
       expect(inference).not.toBeNull();
       expect((inference[RELATION_OBJECT_MARKING] || []).length).toBe(1);
-      const clear = await internalLoadById(context, SYSTEM_USER, TLP_CLEAR_ID);
+      const clear = await internalLoadById(testContext, SYSTEM_USER, TLP_CLEAR_ID);
       expect(R.head(inference[RELATION_OBJECT_MARKING])).toBe(clear.internal_id);
       expect(inference.first_seen).toBe('2016-08-06T20:08:31.000Z');
       expect(inference.last_seen).toBe('2016-08-07T20:08:31.000Z');
       const relArgs = { fromId: inference.id, connectionFormat: false };
-      const related = await listRelations(context, SYSTEM_USER, RELATION_RELATED_TO, relArgs);
+      const related = await listRelations(testContext, SYSTEM_USER, RELATION_RELATED_TO, relArgs);
       expect(related.length).toBe(1);
-      const targets = await listRelations(context, SYSTEM_USER, RELATION_TARGETS, relArgs);
+      const targets = await listRelations(testContext, SYSTEM_USER, RELATION_TARGETS, relArgs);
       expect(targets.length).toBe(1);
       // ---- 02. Test rescan behavior
       await disableRule(RuleSightingIncident.id);
       await activateRule(RuleSightingIncident.id);
       await assertInferencesSize(ENTITY_TYPE_INCIDENT, 1);
       // Invalidate the rule with < valid until
-      await patchAttribute(context, SYSTEM_USER, ONE_CLAP, ENTITY_TYPE_INDICATOR, { valid_until: '2017-02-17T23:00:00.000Z' });
+      await patchAttribute(testContext, SYSTEM_USER, ONE_CLAP, ENTITY_TYPE_INDICATOR, { valid_until: '2017-02-17T23:00:00.000Z' });
       await assertInferencesSize(ENTITY_TYPE_INCIDENT, 0);
       // Disable the rule
       await disableRule(RuleSightingIncident.id);

@@ -33,6 +33,7 @@ export const batchSubAttackPatterns = (context, user, attackPatternIds) => {
 
 export const batchIsSubAttackPattern = async (context, user, attackPatternIds) => {
   const batchAttackPatterns = await batchListThroughGetTo(
+    context,
     user,
     attackPatternIds,
     RELATION_SUBTECHNIQUE_OF,

@@ -141,7 +141,7 @@ const createSeeMiddleware = () => {
     const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
     return R.find(capabilityControl, user.capabilities || []) !== undefined;
   };
-  const resolveMissingReferences = async (req, streamFilters, missingRefs, cache) => {
+  const resolveMissingReferences = async (context, req, streamFilters, missingRefs, cache) => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     const missingElements = [];
     if (refsToResolve.length > 0) {
@@ -150,17 +150,17 @@ const createSeeMiddleware = () => {
       const groupsOfRefsToResolve = R.splitEvery(MAX_SPLIT, refsToResolve);
       const missingRefsResolver = async (refs) => {
         const idsOpts = { ids: refs, connectionFormat: false };
-        const findMissing = await elList(req.session.user, queryIndices, idsOpts);
+        const findMissing = await elList(context, req.session.user, queryIndices, idsOpts);
         missingIds.push(...R.uniq(findMissing.map((f) => f.standard_id)));
       };
       await Promise.map(groupsOfRefsToResolve, missingRefsResolver, { concurrency: ES_MAX_CONCURRENCY });
       missingElements.push(...missingIds);
       // Resolve every missing element
       const uniqueIds = R.uniq(missingIds);
-      const resolvedElements = await stixLoadByIds(req.session.user, uniqueIds);
+      const resolvedElements = await stixLoadByIds(context, req.session.user, uniqueIds);
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
-        const newMissing = await resolveMissingReferences(req, streamFilters, parentRefs, cache);
+        const newMissing = await resolveMissingReferences(context, req, streamFilters, parentRefs, cache);
         missingElements.unshift(...newMissing);
       }
     }
@@ -412,7 +412,7 @@ const createSeeMiddleware = () => {
   };
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, streamFilters, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
-    const missingElements = await resolveMissingReferences(req, streamFilters, refs, cache);
+    const missingElements = await resolveMissingReferences(context, req, streamFilters, refs, cache);
     for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
       const missingRef = missingElements[missingIndex];
       const missingInstance = await storeLoadByIdWithRefs(context, req.session.user, missingRef);
@@ -490,7 +490,7 @@ const createSeeMiddleware = () => {
         return;
       }
     }
-    const [fromStix, toStix] = await Promise.all([stixLoadById(user, fromId), stixLoadById(user, toId)]);
+    const [fromStix, toStix] = await Promise.all([stixLoadById(context, user, fromId), stixLoadById(context, user, toId)]);
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
@@ -676,7 +676,7 @@ const createSeeMiddleware = () => {
         };
         const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startFrom, before: recoverTo });
         queryOptions.callback = queryCallback;
-        await elList(user, queryIndices, queryOptions);
+        await elList(context, user, queryIndices, queryOptions);
       }
       // After recovery start the stream listening
       const streamStartDate = (recoverTo || startFrom) ? utcDate(recoverTo || startFrom) : undefined;

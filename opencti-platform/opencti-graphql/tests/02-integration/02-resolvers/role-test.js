@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
 import { generateStandardId } from '../../../src/schema/identifier';
@@ -135,7 +135,7 @@ describe('Role resolver standard behavior', () => {
   });
   it('should add relation in role', async () => {
     const capabilityStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
-    const capability = await elLoadById(context, ADMIN_USER, capabilityStandardId);
+    const capability = await elLoadById(testContext, ADMIN_USER, capabilityStandardId);
     capabilityId = capability.id;
     const RELATION_ADD_QUERY = gql`
       mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {
