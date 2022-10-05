@@ -208,10 +208,33 @@ const responsiblePartyResolvers = {
       if (input.role !== undefined) {
         role = input.role;
       }
+      
+      // AB#5859 - Verify no other ResponsibleParty exists with the specified role
+      let sparqlQuery = selectAllResponsibleParties(['id','role']);
+      let results;
+      try {
+        results = await dataSources.Stardog.queryAll({
+          dbName,
+          sparqlQuery,
+          queryId: "Select List of Responsible Parties",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      // check if there is already a Responsible Party defined with the specified Role
+      if (results !== undefined && results.length > 0) {
+        for(let respParty of results) {
+          if (`<${respParty.role[0]}>` === `<http://csrc.nist.gov/ns/oscal/common#Role-${role}>`) {
+            throw new UserInputError("Only one Responsible Party can be assigned the specified Responsibility");
+          }
+        }
+      }
 
       // create the Responsible Party
       const { iri, id, query } = insertResponsiblePartyQuery(input);
-      console.log("creating ResponsibleParty")
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
@@ -371,6 +394,11 @@ const responsiblePartyResolvers = {
           switch(editItem.key) {
             case 'role':
               objType = 'oscal-role';
+              // skip if not attempting to be changed
+              if (response[0].role[0] === `http://csrc.nist.gov/ns/oscal/common#Role-${value}`) {
+                editItem.operation = 'skip';
+                break;
+              }
               break;
             case 'parties':
               objType = 'oscal-party';
@@ -392,6 +420,32 @@ const responsiblePartyResolvers = {
             iris.push(`<${result[0].iri}>`);    
           }
         }
+
+        if (editItem.key === 'role') {
+          let sparqlQuery = selectAllResponsibleParties(['id','role']);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryAll({
+              dbName,
+              sparqlQuery,
+              queryId: "Select List of Responsible Parties",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          // check if there is already a Responsible Party defined with the specified Role
+          if (response !== undefined && response.length > 0) {
+            for(let respParty of response) {
+              if (`<${respParty.role[0]}>` === iris[0] && respParty.id !== id) {
+                throw new UserInputError("Only one Responsible Party can be assigned the specified Responsibility");
+              }
+            }
+          }
+        }
+
+        // update value with array of IRIs
         if (iris.length > 0) editItem.value = iris;
       }
 
