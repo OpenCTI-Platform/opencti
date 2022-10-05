@@ -21,6 +21,7 @@ import {
   selectRoleByIriQuery,  
   responsiblePartyPredicateMap,
 } from './sparql-query.js';
+import { selectObjectIriByIdQuery } from '../../../global/global-utils.js'
 
 const responsibleRoleResolvers = {
   Query: {
@@ -331,24 +332,77 @@ const responsibleRoleResolvers = {
       let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
       input.push(update);
 
+      // obtain the IRIs for the referenced objects so that if one doesn't 
+      // exists we have created anything yet.  For complex objects that are
+      // private to this object, remove them (if needed) and add the new instances
+      for (let editItem  of input) {
+        let value, objType, objArray, iris=[], isId = true;
+        let relationshipQuery, queryDetails;
+        for (value of editItem.value) {
+          switch(editItem.key) {
+            case 'role':
+              objType = 'oscal-role';
+              break;
+            case 'parties':
+              objType = 'oscal-party';
+              break
+            default:
+              isId = false;
+              break;
+          }
+
+          if (isId) {
+            let query = selectObjectIriByIdQuery(value, objType);
+            let result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery: query,
+              queryId: "Obtaining IRI for object by id",
+              singularizeSchema
+            });
+            if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${value}`);
+            iris.push(`<${result[0].iri}>`);    
+          }
+        }
+        if (iris.length > 0) editItem.value = iris;
+      }
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/common#ResponsibleRole-${id}`,
         "http://csrc.nist.gov/ns/oscal/common#ResponsibleRole",
         input,
         responsiblePartyPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update OSCAL Responsible Role"
-      });
+      );
+      if (query !== null) {
+        response = await dataSources.Stardog.edit({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Update OSCAL Responsible Role"
+        });
+        if (response !== undefined && 'status' in response) {
+          if (response.ok === false || response.status > 299) {
+            // Handle reporting Stardog Error
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
+        }
+      }
+
       const select = selectResponsibleRoleQuery(id, selectMap.getNode("editOscalResponsibleRole"));
-      const result = await dataSources.Stardog.queryById({
-        dbName,
-        sparqlQuery: select,
-        queryId: "Select OSCAL Responsible Role",
-        singularizeSchema
-      });
+      let result;
+      try {
+        result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: select,
+          queryId: "Select OSCAL Responsible Role",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
       const reducer = getReducer("RESPONSIBLE-ROLE");
       return reducer(result[0]);
     },
