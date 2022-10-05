@@ -4,6 +4,7 @@ import { READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait }
 import { ENTITY_TYPE_TASK } from '../../src/schema/internalObject';
 import { setRuleActivation } from '../../src/domain/rules';
 import { listEntities } from '../../src/database/middleware-loader';
+import { testContext } from './testQuery';
 
 export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
   for (let index = 0; index < inferences.length; index += 1) {

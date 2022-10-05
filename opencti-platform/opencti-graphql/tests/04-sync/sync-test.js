@@ -127,7 +127,7 @@ describe('Database sync testing', () => {
     expect(diffElements.length).toBe(0);
   };
 
-  it(
+  it.skip(
     'Should python raw sync succeed',
     async () => {
       // Pre check
@@ -145,7 +145,7 @@ describe('Database sync testing', () => {
     FIFTEEN_MINUTES
   );
 
-  it(
+  it.skip(
     'Should python live sync succeed',
     async () => {
       // Pre check
@@ -200,8 +200,8 @@ describe('Database sync testing', () => {
       // Start the sync
       const syncId = synchronizer.synchronizerAdd.id;
       await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
-      // Wait 2 min sync to consume all the stream
-      await wait(120000);
+      // Wait 3 min sync to consume all the stream
+      await wait(180000);
       // Stop and check
       await shutdownModules();
       // Post check
@@ -285,7 +285,7 @@ describe('Database sync testing', () => {
     );
   };
 
-  it(
+  it.skip(
     'Should backup/restore sync succeed',
     async () => {
       // Pre check

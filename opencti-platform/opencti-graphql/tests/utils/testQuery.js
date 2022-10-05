@@ -2,7 +2,7 @@ import { ApolloServer } from 'apollo-server-express';
 import axios from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf from '../../src/config/conf';
-import {BYPASS, executionContext, ROLE_ADMINISTRATOR} from '../../src/utils/access';
+import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/access';
 
 // region static graphql modules
 import '../../src/modules/index';
