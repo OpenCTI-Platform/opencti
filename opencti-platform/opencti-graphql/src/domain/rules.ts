@@ -81,7 +81,7 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
     const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
     const args = { filters: tasksFilters, connectionFormat: false };
     const tasks = await listEntities<BasicTaskEntity>(context, user, [ENTITY_TYPE_TASK], args);
-    await Promise.all(tasks.map((t) => deleteTask(user, t.internal_id)));
+    await Promise.all(tasks.map((t) => deleteTask(context, user, t.internal_id)));
     await createRuleTask(context, user, resolvedRule, { rule: ruleId, enable: active });
   }
   return getRule(context, user, ruleId);
