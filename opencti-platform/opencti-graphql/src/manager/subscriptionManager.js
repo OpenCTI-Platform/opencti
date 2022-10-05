@@ -33,7 +33,7 @@ const subscriptionHandler = async () => {
       const concurrentSend = async (element) => {
         let mailContent;
         try {
-          mailContent = await generateDigestForSubscription(element);
+          mailContent = await generateDigestForSubscription(context, element);
         } catch (e) {
           logApp.error('[OPENCTI-MODULE] Subscription manager failed to generate the digest', { element, error: e });
         }

@@ -294,5 +294,5 @@ export const deleteAllFiles = async (context, user, path) => {
   const inExport = await loadExportWorksAsProgressFiles(context, user, path);
   const allFiles = R.concat(inExport, files);
   const ids = allFiles.map((file) => file.id);
-  return deleteFiles(user, ids);
+  return deleteFiles(context, user, ids);
 };

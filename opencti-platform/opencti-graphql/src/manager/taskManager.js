@@ -242,11 +242,11 @@ const executeEnrichment = async (context, user, actionContext, element) => {
 const executePromote = async (context, user, element) => {
   // If indicator, promote to observable
   if (element.entity_type === ENTITY_TYPE_INDICATOR) {
-    await promoteIndicatorToObservable(user, element.internal_id);
+    await promoteIndicatorToObservable(context, user, element.internal_id);
   }
   // If observable, promote to indicator
   if (isStixCyberObservable(element.entity_type)) {
-    await promoteObservableToIndicator(user, element.internal_id);
+    await promoteObservableToIndicator(context, user, element.internal_id);
   }
 };
 const executeRuleApply = async (context, user, actionContext, element) => {

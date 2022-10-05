@@ -100,12 +100,12 @@ describe('Elasticsearch document loader', () => {
 describe('Elasticsearch computation', () => {
   it('should count accurate', async () => {
     // const { endDate = null, type = null, types = null } = options;
-    const malwaresCount = await elCount(context, ADMIN_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
+    const malwaresCount = await elCount(ADMIN_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
     const mostRecentMalware = await elLoadById(context, ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
-    const malwaresCount = await elCount(context, ADMIN_USER, READ_ENTITIES_INDICES, {
+    const malwaresCount = await elCount(ADMIN_USER, READ_ENTITIES_INDICES, {
       types: ['Malware'],
       endDate: mostRecentMalware.created_at,
     });
@@ -116,6 +116,7 @@ describe('Elasticsearch computation', () => {
     // "from", "to" is not use in elastic
     // Aggregate all stix domain by entity type, no filtering
     const malwaresAggregation = await elAggregationCount(
+      context,
       ADMIN_USER,
       'Stix-Domain-Object',
       'entity_type',
@@ -150,6 +151,7 @@ describe('Elasticsearch computation', () => {
     // Aggregate with relation filter on marking definition TLP:RED
     const marking = await elLoadById(context, ADMIN_USER, 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
     const malwaresAggregation = await elAggregationCount(
+      context,
       ADMIN_USER,
       'Stix-Domain-Object',
       'entity_type',
