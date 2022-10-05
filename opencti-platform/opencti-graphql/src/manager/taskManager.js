@@ -254,7 +254,7 @@ const executeRuleApply = async (context, user, actionContext, element) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, element.internal_id);
   const event = await storeCreateEntityEvent(context, user, instance, '-', { publishStreamEvent: false });
-  await rulesApplyHandler([event], user, [rule]);
+  await rulesApplyHandler(context, user, [event], [rule]);
 };
 const executeRuleClean = async (context, user, actionContext, element) => {
   const { rule } = actionContext;
@@ -272,7 +272,7 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
       if (needRescan) {
         const data = await stixLoadById(context, user, element.internal_id);
         const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
-        await rulesApplyHandler([event]);
+        await rulesApplyHandler(context, user, [event]);
       }
     } else if (isStixObject(element.entity_type)) {
       const args = { connectionFormat: false, fromId: element.internal_id };
@@ -283,7 +283,7 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
         if (needRescan) {
           const data = await stixLoadById(context, user, relation.internal_id);
           const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
-          await rulesApplyHandler([event], rulesToApply);
+          await rulesApplyHandler(context, user, [event], rulesToApply);
         }
       }
     }
