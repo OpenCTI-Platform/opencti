@@ -12,8 +12,8 @@ import {
 
 const languageResolvers: Resolvers = {
   Query: {
-    language: (_, { id }, { user }) => findById(user, id),
-    languages: (_, args, { user }) => findAll(user, args),
+    language: (_, { id }, context) => findById(context, context.user, id),
+    languages: (_, args, context) => findAll(context, context.user, args),
   },
   LanguagesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -21,26 +21,26 @@ const languageResolvers: Resolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    languageAdd: (_, { input }, { user }) => {
-      return addLanguage(user, input);
+    languageAdd: (_, { input }, context) => {
+      return addLanguage(context, context.user, input);
     },
-    languageDelete: (_, { id }, { user }) => {
-      return stixDomainObjectDelete(user, id);
+    languageDelete: (_, { id }, context) => {
+      return stixDomainObjectDelete(context, context.user, id);
     },
-    languageFieldPatch: (_, { id, input, commitMessage, references }, { user }) => {
-      return stixDomainObjectEditField(user, id, input, { commitMessage, references });
+    languageFieldPatch: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },
-    languageContextPatch: (_, { id, input }, { user }) => {
-      return stixDomainObjectEditContext(user, id, input);
+    languageContextPatch: (_, { id, input }, context) => {
+      return stixDomainObjectEditContext(context, context.user, id, input);
     },
-    languageContextClean: (_, { id }, { user }) => {
-      return stixDomainObjectCleanContext(user, id);
+    languageContextClean: (_, { id }, context) => {
+      return stixDomainObjectCleanContext(context, context.user, id);
     },
-    languageRelationAdd: (_, { id, input }, { user }) => {
-      return stixDomainObjectAddRelation(user, id, input);
+    languageRelationAdd: (_, { id, input }, context) => {
+      return stixDomainObjectAddRelation(context, context.user, id, input);
     },
-    languageRelationDelete: (_, { id, toId, relationship_type: relationshipType }, { user }) => {
-      return stixDomainObjectDeleteRelation(user, id, toId, relationshipType);
+    languageRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },
 };

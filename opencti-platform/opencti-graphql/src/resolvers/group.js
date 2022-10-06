@@ -23,39 +23,39 @@ const membersLoader = batchLoader(batchMembers);
 
 const groupResolvers = {
   Query: {
-    group: (_, { id }, { user }) => findById(user, id),
-    groups: (_, args, { user }) => findAll(user, args),
+    group: (_, { id }, context) => findById(context, context.user, id),
+    groups: (_, args, context) => findAll(context, context.user, args),
   },
   Group: {
-    allowed_marking: (stixCoreObject, _, { user }) => markingsLoader.load(stixCoreObject.id, user),
-    members: (group, _, { user }) => membersLoader.load(group.id, user),
+    allowed_marking: (stixCoreObject, _, context) => markingsLoader.load(stixCoreObject.id, context, context.user),
+    members: (group, _, context) => membersLoader.load(group.id, context, context.user),
     editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {
-    groupEdit: (_, { id }, { user }) => ({
-      delete: () => groupDelete(user, id),
-      fieldPatch: ({ input }) => groupEditField(user, id, input),
-      contextPatch: ({ input }) => groupEditContext(user, id, input),
-      contextClean: () => groupCleanContext(user, id),
-      relationAdd: ({ input }) => groupAddRelation(user, id, input),
-      relationDelete: ({ fromId, toId, relationship_type: relationshipType }) => groupDeleteRelation(user, id, fromId, toId, relationshipType),
+    groupEdit: (_, { id }, context) => ({
+      delete: () => groupDelete(context, context.user, id),
+      fieldPatch: ({ input }) => groupEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => groupEditContext(context, context.user, id, input),
+      contextClean: () => groupCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => groupAddRelation(context, context.user, id, input),
+      relationDelete: ({ fromId, toId, relationship_type: relationshipType }) => groupDeleteRelation(context, context.user, id, fromId, toId, relationshipType),
     }),
-    groupAdd: (_, { input }, { user }) => addGroup(user, input),
+    groupAdd: (_, { input }, context) => addGroup(context, context.user, input),
   },
   Subscription: {
     group: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        groupEditContext(user, id);
+      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+        groupEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
-        )(_, { id }, { user });
+        )(_, { id }, context);
         return withCancel(filtering, () => {
-          groupCleanContext(user, id);
+          groupCleanContext(context, context.user, id);
         });
       },
     },

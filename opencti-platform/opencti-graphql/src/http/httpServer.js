@@ -13,6 +13,7 @@ import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession, initializeSession } from '../database/session';
 import { checkSystemDependencies } from '../initialization';
 import { getSettings } from '../domain/settings';
+import { executionContext } from '../utils/access';
 
 const MIN_20 = 20 * 60 * 1000;
 const PORT = conf.get('app:port');
@@ -61,7 +62,9 @@ const createHttpServer = async () => {
         });
         // We have a good session. attach to context
         if (wsSession.user) {
-          return { user: wsSession.user };
+          const context = executionContext('api');
+          context.user = wsSession.user;
+          return context;
         }
         throw new Error('User must be authenticated');
       },
@@ -86,9 +89,7 @@ const createHttpServer = async () => {
   apolloServer.applyMiddleware({
     app,
     cors: true,
-    bodyParserConfig: {
-      limit: requestSizeLimit,
-    },
+    bodyParserConfig: { limit: requestSizeLimit },
     onHealthCheck,
     path: `${basePath}/graphql`,
   });

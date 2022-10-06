@@ -4,7 +4,7 @@ import { createStreamProcessor, lockResource, StreamProcessor } from '../databas
 import conf, { logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StreamEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
@@ -19,6 +19,7 @@ import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-common';
 import { getEntitiesFromCache } from './cacheManager';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import type { AuthContext } from '../types/user';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -42,11 +43,11 @@ interface HistoryData extends StoreProxyEntity {
   'rel_object-marking.internal_id': Array<string>;
 }
 
-export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
+export const eventsApplyHandler = async (context: AuthContext, events: Array<StreamEvent>) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
-  const markings = await getEntitiesFromCache<BasicRuleEntity>(ENTITY_TYPE_MARKING_DEFINITION);
+  const markings = await getEntitiesFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const markingsById = new Map();
   for (let i = 0; i < markings.length; i += 1) {
     const marking = markings[i];
@@ -116,7 +117,7 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
     return data;
   });
   // Bulk the history data insertions
-  await elIndexElements(historyElements);
+  await elIndexElements(context, SYSTEM_USER, `history (${historyElements.length})`, historyElements);
 };
 
 const historyStreamHandler = async (streamEvents: Array<StreamEvent>) => {
@@ -130,7 +131,8 @@ const historyStreamHandler = async (streamEvents: Array<StreamEvent>) => {
     });
     if (compatibleEvents.length > 0) {
       // Execute the events
-      await eventsApplyHandler(compatibleEvents);
+      const context = executionContext('history_manager');
+      await eventsApplyHandler(context, compatibleEvents);
     }
   } catch (e) {
     logApp.error('[OPENCTI-MODULE] Error executing history manager', { error: e });
@@ -173,7 +175,8 @@ const initHistoryManager = () => {
     start: async () => {
       // To start the manager we need to find the last event id indexed
       // and restart the stream consumption from this point.
-      const histoElements = await listEntities<HistoryData>(SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
+      const context = executionContext('history_manager');
+      const histoElements = await listEntities<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
         first: 1,
         indices: [INDEX_HISTORY],
         connectionFormat: false,

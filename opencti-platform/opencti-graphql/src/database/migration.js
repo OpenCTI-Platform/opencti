@@ -6,7 +6,7 @@ import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
 import { createEntity, createRelation, listThroughGetTo, loadEntity, patchAttribute } from './middleware';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import migrations, { filenames as migrationsFilenames } from '../migrations/*.js';
 
@@ -39,9 +39,11 @@ export const lastAvailableMigrationTime = () => {
 const migrationStorage = {
   async load(fn) {
     // Get current status of migrations
-    const migration = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+    const context = executionContext('migration_manager');
+    const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
     const migrationId = migration.internal_id;
     const dbMigrations = await listThroughGetTo(
+      context,
       SYSTEM_USER,
       migrationId,
       RELATION_MIGRATES,
@@ -64,18 +66,19 @@ const migrationStorage = {
   },
   async save(set, fn) {
     try {
+      const context = executionContext('migration_manager');
       // Get current done migration
       const mig = R.head(R.filter((m) => m.title === set.lastRun, set.migrations));
       // Update the reference status to the last run
-      const migrationStatus = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+      const migrationStatus = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
       const statusPatch = { lastRun: set.lastRun };
-      await patchAttribute(SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
+      await patchAttribute(context, SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
       // Insert the migration reference
       const migrationRefInput = { title: mig.title, timestamp: mig.timestamp };
-      const migrationRef = await createEntity(SYSTEM_USER, migrationRefInput, ENTITY_TYPE_MIGRATION_REFERENCE);
+      const migrationRef = await createEntity(context, SYSTEM_USER, migrationRefInput, ENTITY_TYPE_MIGRATION_REFERENCE);
       // Attach the reference to the migration status.
       const migrationRel = { fromId: migrationStatus.id, toId: migrationRef.id, relationship_type: RELATION_MIGRATES };
-      await createRelation(SYSTEM_USER, migrationRel);
+      await createRelation(context, SYSTEM_USER, migrationRel);
       logApp.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
       return fn();
     } catch (err) {
@@ -85,7 +88,7 @@ const migrationStorage = {
   },
 };
 
-export const applyMigration = () => {
+export const applyMigration = (context) => {
   const set = new MigrationSet(migrationStorage);
   return new Promise((resolve, reject) => {
     migrationStorage.load((err, state) => {
@@ -129,7 +132,7 @@ export const applyMigration = () => {
   }).then(async (state) => {
     // After migration, path the current version runtime
     const statusPatch = { platformVersion: PLATFORM_VERSION };
-    await patchAttribute(SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
+    await patchAttribute(context, SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
     logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);
   });
 };

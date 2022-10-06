@@ -54,7 +54,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
 
 // Stream graphQL handlers
-export const createUserSubscription = async (user, input) => {
+export const createUserSubscription = async (context, user, input) => {
   const userSubscriptionId = generateInternalId();
   const data = {
     id: userSubscriptionId,
@@ -70,42 +70,42 @@ export const createUserSubscription = async (user, input) => {
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
   return data;
 };
-export const findById = async (user, subscriptionId) => {
-  return storeLoadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION);
+export const findById = async (context, user, subscriptionId) => {
+  return storeLoadById(context, user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION);
 };
-export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_USER_SUBSCRIPTION], args);
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_USER_SUBSCRIPTION], args);
 };
-export const getUserSubscriptions = async (user, userId) => {
+export const getUserSubscriptions = async (context, user, userId) => {
   const args = { filters: [{ key: 'user_id', values: [userId] }] };
-  return findAll(user, args);
+  return findAll(context, user, args);
 };
-export const userSubscriptionEditField = async (user, subscriptionId, input) => {
-  const { element } = await updateAttribute(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION, input);
+export const userSubscriptionEditField = async (context, user, subscriptionId, input) => {
+  const { element } = await updateAttribute(context, user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, element, user);
 };
-export const userSubscriptionDelete = async (user, subscriptionId) => {
-  await deleteElementById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION);
+export const userSubscriptionDelete = async (context, user, subscriptionId) => {
+  await deleteElementById(context, user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION);
   return subscriptionId;
 };
-export const userSubscriptionCleanContext = async (user, subscriptionId) => {
+export const userSubscriptionCleanContext = async (context, user, subscriptionId) => {
   await delEditContext(user, subscriptionId);
-  return storeLoadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((subscriptionToReturn) => {
+  return storeLoadById(context, user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((subscriptionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, subscriptionToReturn, user);
   });
 };
-export const userSubscriptionEditContext = async (user, subscriptionId, input) => {
+export const userSubscriptionEditContext = async (context, user, subscriptionId, input) => {
   await setEditContext(user, subscriptionId, input);
-  return storeLoadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((collectionToReturn) => {
+  return storeLoadById(context, user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, collectionToReturn, user);
   });
 };
 
-export const generateDigestForSubscription = async (subscription) => {
+export const generateDigestForSubscription = async (context, subscription) => {
   // Resolve the user
-  const rawUser = await resolveUserById(subscription.user_id);
+  const rawUser = await resolveUserById(context, subscription.user_id);
   if (!rawUser) {
-    await userSubscriptionDelete(SYSTEM_USER, subscription.id);
+    await userSubscriptionDelete(context, SYSTEM_USER, subscription.id);
     return null;
   }
   const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
@@ -141,7 +141,7 @@ export const generateDigestForSubscription = async (subscription) => {
     if (subscription.entities_ids && subscription.entities_ids.length > 0) {
       // eslint-disable-next-line no-restricted-syntax
       for (const entityId of subscription.entities_ids) {
-        const resultFrom = await findAllStixCoreRelationships(user, {
+        const resultFrom = await findAllStixCoreRelationships(context, user, {
           ...knowledgeParamsFrom,
           fromId: entityId,
           toTypes: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : [
@@ -159,7 +159,7 @@ export const generateDigestForSubscription = async (subscription) => {
           ],
         });
         knowledgeData = [...knowledgeData, ...resultFrom];
-        const resultTo = await findAllStixCoreRelationships(user, {
+        const resultTo = await findAllStixCoreRelationships(context, user, {
           ...knowledgeParamsTo,
           toId: entityId,
           fromTypes: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : [
@@ -179,7 +179,7 @@ export const generateDigestForSubscription = async (subscription) => {
         knowledgeData = [...knowledgeData, ...resultTo];
       }
     } else {
-      const result = await findAllStixCoreRelationships(user, {
+      const result = await findAllStixCoreRelationships(context, user, {
         ...knowledgeParamsFrom,
         fromTypes: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : [
           ENTITY_TYPE_THREAT_ACTOR,
@@ -221,7 +221,7 @@ export const generateDigestForSubscription = async (subscription) => {
       types: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : ['Stix-Core-Object'],
       connectionFormat: false,
     };
-    data.entitiesData = await findAllStixCoreObjects(user, params);
+    data.entitiesData = await findAllStixCoreObjects(context, user, params);
   }
   if (subscription.options.includes('CONTAINERS')) {
     const containersParams = {
@@ -235,7 +235,7 @@ export const generateDigestForSubscription = async (subscription) => {
     if (subscription.entities_ids && subscription.entities_ids.length > 0) {
       // eslint-disable-next-line no-restricted-syntax
       for (const entityId of subscription.entities_ids) {
-        const result = await findAllStixMetaRelationships(user, {
+        const result = await findAllStixMetaRelationships(context, user, {
           ...containersParams,
           toId: entityId,
           relationship_type: 'object',
@@ -243,7 +243,7 @@ export const generateDigestForSubscription = async (subscription) => {
         containersData = [...containersData, ...result];
       }
     } else {
-      const result = await findAllContainers(user, containersParams);
+      const result = await findAllContainers(context, user, containersParams);
       containersData = [...containersData, ...result];
     }
     data.containersData = containersData;
@@ -260,7 +260,7 @@ export const generateDigestForSubscription = async (subscription) => {
     if (subscription.entities_ids && subscription.entities_ids.length > 0) {
       // eslint-disable-next-line no-restricted-syntax
       for (const entityId of subscription.entities_ids) {
-        const result = await findAllStixCoreRelationships(user, {
+        const result = await findAllStixCoreRelationships(context, user, {
           ...technicalParams,
           elementId: entityId,
           elementWithTargetTypes: [ENTITY_TYPE_INDICATOR, ABSTRACT_STIX_CYBER_OBSERVABLE],
@@ -268,7 +268,7 @@ export const generateDigestForSubscription = async (subscription) => {
         technicalData = [...technicalData, ...result];
       }
     } else {
-      const result = await findAllStixCoreRelationships(user, {
+      const result = await findAllStixCoreRelationships(context, user, {
         ...technicalParams,
         elementWithTargetTypes: [ENTITY_TYPE_INDICATOR, ABSTRACT_STIX_CYBER_OBSERVABLE],
       });
@@ -282,7 +282,7 @@ export const generateDigestForSubscription = async (subscription) => {
   // Prepare HTML data
   let htmlData = '';
   const entities = subscription.entities_ids && subscription.entities_ids.length > 0
-    ? await Promise.all(subscription.entities_ids.map((n) => internalLoadById(user, n)))
+    ? await Promise.all(subscription.entities_ids.map((n) => internalLoadById(context, user, n)))
     : [];
   const entitiesNames = entities.filter((n) => isNotEmptyField(n)).map((n) => n.name);
   htmlData += header(baseUrl, entitiesNames);
@@ -297,7 +297,7 @@ export const generateDigestForSubscription = async (subscription) => {
     for (const containerEntry of R.take(10, data.containersData)) {
       const elementId = containerEntry.fromId ? containerEntry.fromId : containerEntry.id;
       const type = containerEntry.fromType ? containerEntry.fromType : containerEntry.entity_type;
-      const fullContainer = await storeLoadByIdWithRefs(user, elementId, { type });
+      const fullContainer = await storeLoadByIdWithRefs(context, user, elementId, { type });
       htmlData += containerToHtml(baseUrl, fullContainer);
     }
     htmlData += sectionFooter(footerNumber, 'containers');
@@ -311,7 +311,7 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     // eslint-disable-next-line no-restricted-syntax
     for (const entity of R.take(10, data.entitiesData)) {
-      const fullEntity = await storeLoadByIdWithRefs(user, entity.id, { type: ABSTRACT_STIX_CORE_OBJECT });
+      const fullEntity = await storeLoadByIdWithRefs(context, user, entity.id, { type: ABSTRACT_STIX_CORE_OBJECT });
       htmlData += entityToHtml(baseUrl, fullEntity);
     }
     htmlData += sectionFooter(footerNumber, 'entities');
@@ -325,7 +325,7 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     // eslint-disable-next-line no-restricted-syntax
     for (const relationship of R.take(10, data.knowledgeData)) {
-      const fullRelationship = await storeLoadByIdWithRefs(user, relationship.id, { type: ABSTRACT_STIX_CORE_RELATIONSHIP });
+      const fullRelationship = await storeLoadByIdWithRefs(context, user, relationship.id, { type: ABSTRACT_STIX_CORE_RELATIONSHIP });
       htmlData += relationshipToHtml(baseUrl, fullRelationship);
     }
     htmlData += sectionFooter(footerNumber, 'relationships');
@@ -343,7 +343,7 @@ export const generateDigestForSubscription = async (subscription) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const technicalRelationship of R.take(10, data.technicalData)) {
       const opts = { type: ABSTRACT_STIX_CORE_RELATIONSHIP };
-      const fullTechnicalRelationship = await storeLoadByIdWithRefs(user, technicalRelationship.id, opts);
+      const fullTechnicalRelationship = await storeLoadByIdWithRefs(context, user, technicalRelationship.id, opts);
       htmlData += technicalRelationToHtml(baseUrl, fullTechnicalRelationship);
     }
     htmlData += `

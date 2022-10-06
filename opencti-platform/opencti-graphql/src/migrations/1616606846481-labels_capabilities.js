@@ -1,8 +1,10 @@
 import { createCapabilities, SETTINGS_CAPABILITIES } from '../initialization';
+import { executionContext } from '../utils/access';
 
 export const up = async (next) => {
+  const context = executionContext('migration');
   // Create labels capabilities
-  await createCapabilities([SETTINGS_CAPABILITIES]);
+  await createCapabilities(context, [SETTINGS_CAPABILITIES]);
   next();
 };
 

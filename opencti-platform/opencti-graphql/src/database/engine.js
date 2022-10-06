@@ -5,6 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
 import { readFileSync } from 'node:fs';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import {
   buildPagination,
   cursorToOffset,
@@ -72,6 +73,7 @@ import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { telemetry } from '../config/tracing';
 
 const ELK_ENGINE = 'elk';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -130,14 +132,14 @@ const searchConfiguration = {
   },
 };
 
-const elkClient = new ElkClient(searchConfiguration);
-const openClient = new OpenClient(searchConfiguration);
+const elasticSearchClient = new ElkClient(searchConfiguration);
+const openSearchClient = new OpenClient(searchConfiguration);
 let isRuntimeSortingEnable = false;
-let el = openClient;
+let engine = openSearchClient;
 
 // Look for the engine version with OpenSearch client
 export const searchEngineVersion = () => {
-  return openClient
+  return openSearchClient
     .info()
     .then((info) => info.body.version)
     .catch(
@@ -148,7 +150,7 @@ export const searchEngineVersion = () => {
 };
 export const searchEngineInit = async () => {
   // region Check if search engine is accessible
-  await openClient
+  await openSearchClient
     .info()
     .then((info) => {
       /* istanbul ignore if */
@@ -174,10 +176,10 @@ export const searchEngineInit = async () => {
         isRuntimeSortingEnable ? 'enabled' : 'disabled'
       }`
     );
-    el = elkClient;
+    engine = elasticSearchClient;
   } else {
     logApp.info(`[SEARCH ENGINE] OpenSearch (${searchVersion}) client selected / runtime sorting disabled`);
-    el = openClient;
+    engine = openSearchClient;
   }
   // Everything is fine, return true
   return true;
@@ -188,15 +190,24 @@ export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
 // Starting ELK8+, response are no longer inside a body envelop
 // Query wrapping is still accepted in ELK8
 const oebp = (queryResult) => {
-  if (el instanceof ElkClient) {
+  if (engine instanceof ElkClient) {
     return queryResult;
   }
   return queryResult.body;
 };
-export const elRawSearch = (query) => el.search(query).then((r) => oebp(r));
-export const elRawDeleteByQuery = (query) => el.deleteByQuery(query).then((r) => oebp(r));
-export const elRawUpdateByQuery = (query) => el.updateByQuery(query).then((r) => oebp(r));
-const elGetTask = (taskId) => el.tasks.get({ task_id: taskId }).then((r) => oebp(r));
+
+export const elRawSearch = (context, user, type, query) => {
+  const elRawSearchFn = () => engine.search(query).then((r) => oebp(r));
+  return telemetry(context, user, `SELECT ${type}`, {
+    [SemanticAttributes.DB_NAME]: 'search_engine',
+    [SemanticAttributes.DB_OPERATION]: 'read',
+    [SemanticAttributes.DB_STATEMENT]: JSON.stringify(query),
+  }, elRawSearchFn);
+};
+export const elRawDeleteByQuery = (query) => engine.deleteByQuery(query).then((r) => oebp(r));
+export const elRawBulk = (args) => engine.bulk(args).then((r) => oebp(r));
+export const elRawUpdateByQuery = (query) => engine.updateByQuery(query).then((r) => oebp(r));
+const elGetTask = (taskId) => engine.tasks.get({ task_id: taskId }).then((r) => oebp(r));
 export const elUpdateByQueryForMigration = async (message, index, body) => {
   logApp.info(`${message} started`);
   // Execute the update by query in async mode
@@ -283,190 +294,186 @@ const buildMarkingRestriction = (user) => {
 };
 
 export const elIndexExists = async (indexName) => {
-  const existIndex = await el.indices.exists({ index: indexName });
+  const existIndex = await engine.indices.exists({ index: indexName });
   return oebp(existIndex) === true;
 };
 const elCreateIndexTemplate = async () => {
-  await el.cluster
-    .putComponentTemplate({
-      name: `${ES_INDEX_PREFIX}-core-settings`,
-      create: false,
-      body: {
-        template: {
-          settings: {
-            index: {
-              max_result_window: ES_MAX_RESULT_WINDOW,
-              number_of_shards: ES_INDEX_SHARD_NUMBER,
-              number_of_replicas: ES_INDEX_REPLICA_NUMBER,
-            },
-            analysis: {
-              normalizer: {
-                string_normalizer: {
-                  type: 'custom',
-                  filter: ['lowercase', 'asciifolding'],
-                },
+  await engine.cluster.putComponentTemplate({
+    name: `${ES_INDEX_PREFIX}-core-settings`,
+    create: false,
+    body: {
+      template: {
+        settings: {
+          index: {
+            max_result_window: ES_MAX_RESULT_WINDOW,
+            number_of_shards: ES_INDEX_SHARD_NUMBER,
+            number_of_replicas: ES_INDEX_REPLICA_NUMBER,
+          },
+          analysis: {
+            normalizer: {
+              string_normalizer: {
+                type: 'custom',
+                filter: ['lowercase', 'asciifolding'],
               },
             },
           },
         },
       },
-    })
-    .catch((e) => {
-      throw DatabaseError('Error creating opencti component', { error: e });
-    });
-  await el.indices
-    .putIndexTemplate({
-      name: `${ES_INDEX_PREFIX}-index-template`,
-      create: false,
-      body: {
-        index_patterns: [`${ES_INDEX_PREFIX}*`],
-        template: {
-          mappings: {
-            dynamic_templates: [
-              {
-                integers: {
-                  match_mapping_type: 'long',
-                  mapping: {
-                    type: 'integer',
-                  },
+    },
+  }).catch((e) => {
+    throw DatabaseError('Error creating opencti component', { error: e });
+  });
+  await engine.indices.putIndexTemplate({
+    name: `${ES_INDEX_PREFIX}-index-template`,
+    create: false,
+    body: {
+      index_patterns: [`${ES_INDEX_PREFIX}*`],
+      template: {
+        mappings: {
+          dynamic_templates: [
+            {
+              integers: {
+                match_mapping_type: 'long',
+                mapping: {
+                  type: 'integer',
                 },
               },
-              {
-                strings: {
-                  match_mapping_type: 'string',
-                  mapping: {
-                    type: 'text',
-                    fields: {
-                      keyword: {
-                        type: 'keyword',
-                        normalizer: 'string_normalizer',
-                        ignore_above: 512,
-                      },
+            },
+            {
+              strings: {
+                match_mapping_type: 'string',
+                mapping: {
+                  type: 'text',
+                  fields: {
+                    keyword: {
+                      type: 'keyword',
+                      normalizer: 'string_normalizer',
+                      ignore_above: 512,
                     },
                   },
                 },
               },
-            ],
-            properties: {
-              standard_id: {
-                type: 'text',
-                fields: {
-                  keyword: {
-                    type: 'keyword',
-                    normalizer: 'string_normalizer',
-                    ignore_above: 512,
-                  },
+            },
+          ],
+          properties: {
+            standard_id: {
+              type: 'text',
+              fields: {
+                keyword: {
+                  type: 'keyword',
+                  normalizer: 'string_normalizer',
+                  ignore_above: 512,
                 },
               },
-              timestamp: {
-                type: 'date',
-              },
-              created: {
-                type: 'date',
-              },
-              modified: {
-                type: 'date',
-              },
-              first_seen: {
-                type: 'date',
-              },
-              last_seen: {
-                type: 'date',
-              },
-              start_time: {
-                type: 'date',
-              },
-              stop_time: {
-                type: 'date',
-              },
-              published: {
-                type: 'date',
-              },
-              valid_from: {
-                type: 'date',
-              },
-              valid_until: {
-                type: 'date',
-              },
-              observable_date: {
-                type: 'date',
-              },
-              event_date: {
-                type: 'date',
-              },
-              received_time: {
-                type: 'date',
-              },
-              processed_time: {
-                type: 'date',
-              },
-              completed_time: {
-                type: 'date',
-              },
-              ctime: {
-                type: 'date',
-              },
-              mtime: {
-                type: 'date',
-              },
-              atime: {
-                type: 'date',
-              },
-              confidence: {
-                type: 'integer',
-              },
-              x_opencti_report_status: {
-                type: 'integer',
-              },
-              attribute_order: {
-                type: 'integer',
-              },
-              base_score: {
-                type: 'integer',
-              },
-              is_family: {
-                type: 'boolean',
-              },
-              number_observed: {
-                type: 'integer',
-              },
-              x_opencti_negative: {
-                type: 'boolean',
-              },
-              default_assignation: {
-                type: 'boolean',
-              },
-              x_opencti_detection: {
-                type: 'boolean',
-              },
-              x_opencti_order: {
-                type: 'integer',
-              },
-              import_expected_number: {
-                type: 'integer',
-              },
-              import_processed_number: {
-                type: 'integer',
-              },
-              x_opencti_score: {
-                type: 'integer',
-              },
-              connections: {
-                type: 'nested',
-              },
+            },
+            timestamp: {
+              type: 'date',
+            },
+            created: {
+              type: 'date',
+            },
+            modified: {
+              type: 'date',
+            },
+            first_seen: {
+              type: 'date',
+            },
+            last_seen: {
+              type: 'date',
+            },
+            start_time: {
+              type: 'date',
+            },
+            stop_time: {
+              type: 'date',
+            },
+            published: {
+              type: 'date',
+            },
+            valid_from: {
+              type: 'date',
+            },
+            valid_until: {
+              type: 'date',
+            },
+            observable_date: {
+              type: 'date',
+            },
+            event_date: {
+              type: 'date',
+            },
+            received_time: {
+              type: 'date',
+            },
+            processed_time: {
+              type: 'date',
+            },
+            completed_time: {
+              type: 'date',
+            },
+            ctime: {
+              type: 'date',
+            },
+            mtime: {
+              type: 'date',
+            },
+            atime: {
+              type: 'date',
+            },
+            confidence: {
+              type: 'integer',
+            },
+            x_opencti_report_status: {
+              type: 'integer',
+            },
+            attribute_order: {
+              type: 'integer',
+            },
+            base_score: {
+              type: 'integer',
+            },
+            is_family: {
+              type: 'boolean',
+            },
+            number_observed: {
+              type: 'integer',
+            },
+            x_opencti_negative: {
+              type: 'boolean',
+            },
+            default_assignation: {
+              type: 'boolean',
+            },
+            x_opencti_detection: {
+              type: 'boolean',
+            },
+            x_opencti_order: {
+              type: 'integer',
+            },
+            import_expected_number: {
+              type: 'integer',
+            },
+            import_processed_number: {
+              type: 'integer',
+            },
+            x_opencti_score: {
+              type: 'integer',
+            },
+            connections: {
+              type: 'nested',
             },
           },
         },
-        composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
-        version: 3,
-        _meta: {
-          description: 'To generate opencti expected index mappings',
-        },
       },
-    })
-    .catch((e) => {
-      throw DatabaseError('Error creating opencti template', { error: e });
-    });
+      composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
+      version: 3,
+      _meta: {
+        description: 'To generate opencti expected index mappings',
+      },
+    },
+  }).catch((e) => {
+    throw DatabaseError('Error creating opencti template', { error: e });
+  });
 };
 export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
   await elCreateIndexTemplate();
@@ -474,9 +481,9 @@ export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) 
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
     const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
-    const isExist = await el.indices.exists({ index: indexName }).then((r) => oebp(r));
+    const isExist = await engine.indices.exists({ index: indexName }).then((r) => oebp(r));
     if (!isExist) {
-      const createdIndex = await el.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
+      const createdIndex = await engine.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
       createdIndices.push(oebp(createdIndex));
     }
   }
@@ -485,7 +492,7 @@ export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) 
 export const elDeleteIndexes = async (indexesToDelete) => {
   return Promise.all(
     indexesToDelete.map((index) => {
-      return el.indices.delete({ index })
+      return engine.indices.delete({ index })
         .then((response) => oebp(response))
         .catch((err) => {
         /* istanbul ignore next */
@@ -520,9 +527,9 @@ export const RUNTIME_ATTRIBUTES = {
           emit('Unknown')
         }
     `,
-    getParams: async (user) => {
+    getParams: async (context, user) => {
       // eslint-disable-next-line no-use-before-define
-      const identities = await elPaginate(user, READ_ENTITIES_INDICES, {
+      const identities = await elPaginate(context, user, READ_ENTITIES_INDICES, {
         types: [ENTITY_TYPE_IDENTITY],
         first: MAX_SEARCH_SIZE,
         connectionFormat: false,
@@ -546,9 +553,9 @@ export const RUNTIME_ATTRIBUTES = {
           emit('Unknown')
         }
     `,
-    getParams: async (user) => {
+    getParams: async (context, user) => {
       // eslint-disable-next-line no-use-before-define
-      const identities = await elPaginate(user, READ_ENTITIES_INDICES, {
+      const identities = await elPaginate(context, user, READ_ENTITIES_INDICES, {
         types: [ENTITY_TYPE_MARKING_DEFINITION],
         first: MAX_SEARCH_SIZE,
         connectionFormat: false,
@@ -692,8 +699,7 @@ export const elCount = (user, indexName, options = {}) => {
     },
   };
   logApp.debug('[SEARCH ENGINE] countEntities', { query });
-  return el
-    .count(query)
+  return engine.count(query)
     .then((data) => {
       return oebp(data).count;
     })
@@ -701,7 +707,7 @@ export const elCount = (user, indexName, options = {}) => {
       throw DatabaseError('Count data fail', { error: err, query });
     });
 };
-export const elAggregationCount = (user, type, aggregationField, start, end, filters = []) => {
+export const elAggregationCount = (context, user, type, aggregationField, start, end, filters = []) => {
   const isIdFields = aggregationField.endsWith('internal_id');
   const haveRange = start && end;
   const dateFilter = [];
@@ -767,7 +773,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
     },
   };
   logApp.debug('[SEARCH ENGINE] aggregationCount', { query });
-  return elRawSearch(query)
+  return elRawSearch(context, user, type, query)
     .then((data) => {
       const { buckets } = data.aggregations.genres;
       return R.map((b) => {
@@ -856,7 +862,7 @@ const elDataConverter = (esHit) => {
 };
 // endregion
 
-export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) => {
+export const elFindByFromAndTo = async (context, user, fromId, toId, relationshipType) => {
   const mustTerms = [];
   const markingRestrictions = buildMarkingRestriction(user);
   mustTerms.push(...markingRestrictions.must);
@@ -902,7 +908,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
       },
     },
   };
-  const data = await elRawSearch(query).catch((e) => {
+  const data = await elRawSearch(context, user, relationshipType, query).catch((e) => {
     throw DatabaseError('Find by from and to fail', { error: e, query });
   });
   const hits = [];
@@ -937,7 +943,7 @@ const loadFromCache = async (user, id, type) => {
   const uniqByInternal = R.mergeAll(Object.entries(accessible).map(([, v]) => ({ [v.internal_id]: v })));
   return { cached, accessible: uniqByInternal };
 };
-export const elFindByIds = async (user, ids, opts = {}) => {
+export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false, type = null } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -1002,7 +1008,8 @@ export const elFindByIds = async (user, ids, opts = {}) => {
         },
       };
       logApp.debug('[SEARCH ENGINE] elInternalLoadById', { query });
-      const data = await elRawSearch(query).catch((err) => {
+      const searchType = `${ids} (${type !== null ? type : 'Any'})`;
+      const data = await elRawSearch(context, user, searchType, query).catch((err) => {
         throw DatabaseError('Error loading ids', { error: err, query });
       });
       for (let j = 0; j < data.hits.hits.length; j += 1) {
@@ -1017,8 +1024,8 @@ export const elFindByIds = async (user, ids, opts = {}) => {
   return toMap ? hits : Object.values(hits);
 };
 
-export const elLoadById = async (user, id, type = null, indices = READ_DATA_INDICES) => {
-  const hits = await elFindByIds(user, id, { type, indices });
+export const elLoadById = async (context, user, id, type = null, indices = READ_DATA_INDICES) => {
+  const hits = await elFindByIds(context, user, id, { type, indices });
   /* istanbul ignore if */
   if (hits.length > 1) {
     const errorMeta = { id, type, hits: hits.length };
@@ -1026,13 +1033,13 @@ export const elLoadById = async (user, id, type = null, indices = READ_DATA_INDI
   }
   return R.head(hits);
 };
-export const elBatchIds = async (user, ids) => {
-  const hits = await elFindByIds(user, ids);
+export const elBatchIds = async (context, user, ids) => {
+  const hits = await elFindByIds(context, user, ids);
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 
 // field can be "entity_type" or "internal_id"
-export const elAggregationRelationsCount = async (user, type, opts) => {
+export const elAggregationRelationsCount = async (context, user, type, opts) => {
   const { startDate: start, endDate: end = now(), toTypes = [], dateAttribute = 'created_at' } = opts;
   const { fromId = null, field = null, isTo = false, noDirection = false } = opts;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
@@ -1146,7 +1153,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
     },
   };
   logApp.debug('[SEARCH ENGINE] aggregationRelationsCount', { query });
-  return elRawSearch(query)
+  return elRawSearch(context, user, type, query)
     .then(async (data) => {
       if (field === 'internal_id') {
         const { buckets } = data.aggregations.connections.filtered.genres;
@@ -1155,7 +1162,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       }
       let fromType = null;
       if (fromId) {
-        const fromEntity = await elLoadById(user, fromId);
+        const fromEntity = await elLoadById(context, user, fromId);
         fromType = fromEntity.entity_type;
       }
       const types = R.pipe(
@@ -1177,7 +1184,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       throw DatabaseError('Fail processing AggregationRelationsCount', { error: e });
     });
 };
-export const elHistogramCount = async (user, type, field, interval, start, end, toTypes, filters) => {
+export const elHistogramCount = async (context, user, type, field, interval, start, end, toTypes, filters) => {
   const histogramFilters = R.map((f) => {
     const { isRelation = false, isNested = false, type: filterType, value, operator = 'eq' } = f;
     if (isNested) {
@@ -1301,7 +1308,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
     },
   };
   logApp.debug('[SEARCH ENGINE] histogramCount', { query });
-  return elRawSearch(query).then((data) => {
+  return elRawSearch(context, user, type, query).then((data) => {
     const { buckets } = data.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
     return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
@@ -1422,7 +1429,7 @@ export const elGenerateFullTextSearchShould = (search) => {
 
 const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type', 'entity_type',
   'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
-export const elPaginate = async (user, indexName, options = {}) => {
+export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], baseData = false, first = 200, after, orderBy = null, orderMode = 'asc' } = options;
   const { types = null, filters = [], filterMode = 'and', search = null, connectionFormat = true } = options;
@@ -1583,7 +1590,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
       throw UnsupportedError(`Unsupported runtime field ${orderBy}`);
     }
     const source = await runtime.getSource();
-    const params = await runtime.getParams(user);
+    const params = await runtime.getParams(context, user);
     runtimeMappings[runtime.field] = {
       type: runtime.type,
       script: { source, params },
@@ -1624,7 +1631,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     body,
   };
   logApp.debug('[SEARCH ENGINE] paginate', { query });
-  return elRawSearch(query)
+  return elRawSearch(context, user, types !== null ? types : 'Any', query)
     .then((data) => {
       const convertedHits = R.map((n) => elDataConverter(n), data.hits.hits);
       if (connectionFormat) {
@@ -1656,7 +1663,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
       }
     );
 };
-export const elList = async (user, indexName, options = {}) => {
+export const elList = async (context, user, indexName, options = {}) => {
   const { first = MAX_SEARCH_SIZE, infinite = false } = options;
   let hasNextPage = true;
   let continueProcess = true;
@@ -1674,7 +1681,7 @@ export const elList = async (user, indexName, options = {}) => {
   while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
     const opts = { ...options, first, after: searchAfter, connectionFormat: false };
-    const elements = await elPaginate(user, indexName, opts);
+    const elements = await elPaginate(context, user, indexName, opts);
     if (!infinite && (elements.length === 0 || elements.length < first)) {
       if (elements.length > 0) {
         await publish(elements);
@@ -1688,13 +1695,13 @@ export const elList = async (user, indexName, options = {}) => {
   }
   return listing;
 };
-export const elLoadBy = async (user, field, value, type = null, indices = READ_DATA_INDICES) => {
+export const elLoadBy = async (context, user, field, value, type = null, indices = READ_DATA_INDICES) => {
   const opts = { filters: [{ key: field, values: [value] }], connectionFormat: false, types: type ? [type] : [] };
-  const hits = await elPaginate(user, indices, opts);
+  const hits = await elPaginate(context, user, indices, opts);
   if (hits.length > 1) throw UnsupportedError(`Expected only one response, found ${hits.length}`);
   return R.head(hits);
 };
-export const elAttributeValues = async (user, field, opts = {}) => {
+export const elAttributeValues = async (context, user, field, opts = {}) => {
   const { first, orderMode = 'asc', search } = opts;
   const markingRestrictions = buildMarkingRestriction(user);
   const isDateOrNumber = dateAttributes.includes(field) || numericOrBooleanAttributes.includes(field);
@@ -1732,7 +1739,7 @@ export const elAttributeValues = async (user, field, opts = {}) => {
     ignore_throttled: ES_IGNORE_THROTTLED,
     body,
   };
-  const data = await elRawSearch(query);
+  const data = await elRawSearch(context, user, field, query);
   const { buckets } = data.aggregations.values;
   const values = (buckets ?? []).map((n) => n.key);
   const nodeElements = values.map((val) => ({ node: { id: val, key: field, value: val } }));
@@ -1741,25 +1748,21 @@ export const elAttributeValues = async (user, field, opts = {}) => {
 // endregion
 
 export const elBulk = async (args) => {
-  return el
-    .bulk(args)
-    .then((result) => {
-      const data = oebp(result);
-      if (data.errors) {
-        const errors = data.items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
-        throw DatabaseError('Error executing bulk indexing', { errors });
-      }
-      return result;
-    })
-    .catch((e) => {
-      throw DatabaseError('Error updating elastic', { error: e });
-    });
+  return elRawBulk(args).then((data) => {
+    if (data.errors) {
+      const errors = data.items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
+      throw DatabaseError('Error executing bulk indexing', { errors });
+    }
+    return data;
+  }).catch((e) => {
+    throw DatabaseError('Error updating elastic', { error: e });
+  });
 };
 /* istanbul ignore next */
 export const elReindex = async (indices) => {
   return Promise.all(
     indices.map((indexMap) => {
-      return el.reindex({
+      return engine.reindex({
         timeout: '60m',
         body: {
           source: {
@@ -1777,33 +1780,29 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logApp.debug(`[SEARCH ENGINE] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
-  await el
-    .index({
-      index: indexName,
-      id: documentBody.internal_id,
-      refresh,
-      timeout: '60m',
-      body: R.dissoc('_index', documentBody),
-    })
-    .catch((err) => {
-      throw DatabaseError('Error indexing elastic', { error: err, body: documentBody });
-    });
+  await engine.index({
+    index: indexName,
+    id: documentBody.internal_id,
+    refresh,
+    timeout: '60m',
+    body: R.dissoc('_index', documentBody),
+  }).catch((err) => {
+    throw DatabaseError('Error indexing elastic', { error: err, body: documentBody });
+  });
   return documentBody;
 };
 /* istanbul ignore next */
 export const elUpdate = (indexName, documentId, documentBody, retry = ES_RETRY_ON_CONFLICT) => {
-  return el
-    .update({
-      id: documentId,
-      index: indexName,
-      retry_on_conflict: retry,
-      timeout: BULK_TIMEOUT,
-      refresh: true,
-      body: documentBody,
-    })
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
-    });
+  return engine.update({
+    id: documentId,
+    index: indexName,
+    retry_on_conflict: retry,
+    timeout: BULK_TIMEOUT,
+    refresh: true,
+    body: documentBody,
+  }).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
+  });
 };
 export const elReplace = (indexName, documentId, documentBody) => {
   const doc = R.dissoc('_index', documentBody.doc);
@@ -1823,11 +1822,11 @@ export const elReplace = (indexName, documentId, documentBody) => {
   });
 };
 
-const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
+const getRelatedRelations = async (context, user, targetIds, elements, level, cache) => {
   const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
   const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
-  const hits = await elList(user, READ_RELATIONSHIPS_INDICES, opts);
+  const hits = await elList(context, user, READ_RELATIONSHIPS_INDICES, opts);
   const groupResults = R.splitEvery(MAX_JS_PARAMS, hits);
   const foundRelations = [];
   for (let index = 0; index < groupResults.length; index += 1) {
@@ -1843,15 +1842,15 @@ const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {
     const groups = R.splitEvery(MAX_SPLIT, foundRelations);
-    const concurrentFetch = (gIds) => getRelatedRelations(user, gIds, elements, level + 1, cache);
+    const concurrentFetch = (gIds) => getRelatedRelations(context, user, gIds, elements, level + 1, cache);
     await BluePromise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
 };
-export const getRelationsToRemove = async (user, elements) => {
+export const getRelationsToRemove = async (context, user, elements) => {
   const relationsToRemoveMap = new Map();
   const relationsToRemove = [];
   const ids = elements.map((e) => e.internal_id);
-  await getRelatedRelations(user, ids, relationsToRemove, 0, relationsToRemoveMap);
+  await getRelatedRelations(context, user, ids, relationsToRemove, 0, relationsToRemoveMap);
   return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
 export const elDeleteInstances = async (instances) => {
@@ -1866,7 +1865,7 @@ export const elDeleteInstances = async (instances) => {
     await Promise.all([cachePromise, bulkPromise]);
   }
 };
-const elRemoveRelationConnection = async (user, relsFromTo) => {
+const elRemoveRelationConnection = async (context, user, relsFromTo) => {
   if (relsFromTo.length > 0) {
     const idsToResolve = R.uniq(
       relsFromTo
@@ -1878,7 +1877,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
         })
         .flat()
     );
-    const dataIds = await elFindByIds(user, idsToResolve);
+    const dataIds = await elFindByIds(context, user, idsToResolve);
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
     const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
       const type = buildRefRelationKey(relation.entity_type);
@@ -1919,13 +1918,13 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
   }
 };
 
-export const elDeleteElements = async (user, elements, stixLoadById) => {
+export const elDeleteElements = async (context, user, elements, stixLoadById) => {
   if (elements.length === 0) return [];
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const opts = { concurrency: ES_MAX_CONCURRENCY };
-  const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
   const stixRelations = relations.filter((r) => isStixRelationShipExceptMeta(r.relationship_type));
-  const dependencyDeletions = await BluePromise.map(stixRelations, (r) => stixLoadById(user, r.internal_id), opts);
+  const dependencyDeletions = await BluePromise.map(stixRelations, (r) => stixLoadById(context, user, r.internal_id), opts);
   // Compute the id that needs to be remove from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   const cleanupRelations = relations.concat(basicCleanup);
@@ -1953,7 +1952,7 @@ export const elDeleteElements = async (user, elements, stixLoadById) => {
   let currentRelationsCount = 0;
   const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromToImpacts);
   const concurrentRelsFromTo = async (relsToClean) => {
-    await elRemoveRelationConnection(user, relsToClean);
+    await elRemoveRelationConnection(context, user, relsToClean);
     currentRelationsCount += relsToClean.length;
     logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
   };
@@ -2032,89 +2031,95 @@ const prepareIndexing = async (elements) => {
     }, elements)
   );
 };
-export const elIndexElements = async (elements) => {
-  // 00. Relations must be transformed before indexing.
-  const transformedElements = await prepareIndexing(elements);
-  // 01. Bulk the indexing of row elements
-  const body = transformedElements.flatMap((doc) => [
-    { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-    R.pipe(R.dissoc('_index'))(doc),
-  ]);
-  if (body.length > 0) {
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
-  }
-  // 02. If relation, generate impacts for from and to sides
-  const cache = {};
-  const impactedEntities = R.pipe(
-    R.filter((e) => e.base_type === BASE_TYPE_RELATION),
-    R.map((e) => {
-      const { fromRole, toRole } = e;
-      const relationshipType = e.entity_type;
-      const impacts = [];
-      // We impact target entities of the relation only if not global entities like
-      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
-      cache[e.fromId] = e.from;
-      cache[e.toId] = e.to;
-      if (isImpactedRole(fromRole)) {
-        impacts.push({ from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
-      }
-      if (isImpactedRole(toRole)) {
-        impacts.push({ from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
-      }
-      return impacts;
-    }),
-    R.flatten,
-    R.groupBy((i) => i.from)
-  )(elements);
-  const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
-    const entity = cache[entityId];
-    const targets = impactedEntities[entityId];
-    // Build document fields to update ( per relation type )
-    const targetsByRelation = R.groupBy((i) => i.relationshipType, targets);
-    const targetsElements = R.map((relType) => {
-      const data = targetsByRelation[relType];
-      const resolvedData = R.map((d) => {
-        return { id: d.to.internal_id, side: d.side, type: d.type };
-      }, data);
-      return { relation: relType, elements: resolvedData };
-    }, Object.keys(targetsByRelation));
-    // Create params and scripted update
-    const params = { updated_at: now() };
-    const sources = R.map((t) => {
-      const field = buildRefRelationKey(t.relation);
-      let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-      script += `ctx._source['${field}'].addAll(params['${field}'])`;
-      if (isStixMetaRelationship(t.relation)) {
-        const fromSide = R.find((e) => e.side === 'from', t.elements);
-        if (fromSide && isUpdatedAtObject(fromSide.type)) {
-          script += '; ctx._source[\'updated_at\'] = params.updated_at';
-        }
-        if (fromSide && isModifiedObject(fromSide.type)) {
-          script += '; ctx._source[\'modified\'] = params.updated_at';
-        }
-      }
-      return script;
-    }, targetsElements);
-    const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
-    for (let index = 0; index < targetsElements.length; index += 1) {
-      const targetElement = targetsElements[index];
-      params[buildRefRelationKey(targetElement.relation)] = targetElement.elements.map((e) => e.id);
+export const elIndexElements = async (context, user, message, elements) => {
+  const elIndexElementsFn = async () => {
+    // 00. Relations must be transformed before indexing.
+    const transformedElements = await prepareIndexing(elements);
+    // 01. Bulk the indexing of row elements
+    const body = transformedElements.flatMap((doc) => [
+      { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      R.pipe(R.dissoc('_index'))(doc),
+    ]);
+    if (body.length > 0) {
+      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
     }
-    return { ...entity, id: entityId, data: { script: { source, params } } };
-  });
-  const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-    R.dissoc('_index', doc.data),
-  ]);
-  if (bodyUpdate.length > 0) {
-    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-    const cachePromise = cacheDel(elementsToUpdate);
-    await Promise.all([cachePromise, bulkPromise]);
-  }
-  return transformedElements.length;
+    // 02. If relation, generate impacts for from and to sides
+    const cache = {};
+    const impactedEntities = R.pipe(
+      R.filter((e) => e.base_type === BASE_TYPE_RELATION),
+      R.map((e) => {
+        const { fromRole, toRole } = e;
+        const relationshipType = e.entity_type;
+        const impacts = [];
+        // We impact target entities of the relation only if not global entities like
+        // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
+        cache[e.fromId] = e.from;
+        cache[e.toId] = e.to;
+        if (isImpactedRole(fromRole)) {
+          impacts.push({ from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
+        }
+        if (isImpactedRole(toRole)) {
+          impacts.push({ from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
+        }
+        return impacts;
+      }),
+      R.flatten,
+      R.groupBy((i) => i.from)
+    )(elements);
+    const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
+      const entity = cache[entityId];
+      const targets = impactedEntities[entityId];
+      // Build document fields to update ( per relation type )
+      const targetsByRelation = R.groupBy((i) => i.relationshipType, targets);
+      const targetsElements = R.map((relType) => {
+        const data = targetsByRelation[relType];
+        const resolvedData = R.map((d) => {
+          return { id: d.to.internal_id, side: d.side, type: d.type };
+        }, data);
+        return { relation: relType, elements: resolvedData };
+      }, Object.keys(targetsByRelation));
+      // Create params and scripted update
+      const params = { updated_at: now() };
+      const sources = R.map((t) => {
+        const field = buildRefRelationKey(t.relation);
+        let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
+        script += `ctx._source['${field}'].addAll(params['${field}'])`;
+        if (isStixMetaRelationship(t.relation)) {
+          const fromSide = R.find((e) => e.side === 'from', t.elements);
+          if (fromSide && isUpdatedAtObject(fromSide.type)) {
+            script += '; ctx._source[\'updated_at\'] = params.updated_at';
+          }
+          if (fromSide && isModifiedObject(fromSide.type)) {
+            script += '; ctx._source[\'modified\'] = params.updated_at';
+          }
+        }
+        return script;
+      }, targetsElements);
+      const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
+      for (let index = 0; index < targetsElements.length; index += 1) {
+        const targetElement = targetsElements[index];
+        params[buildRefRelationKey(targetElement.relation)] = targetElement.elements.map((e) => e.id);
+      }
+      return { ...entity, id: entityId, data: { script: { source, params } } };
+    });
+    const bodyUpdate = elementsToUpdate.flatMap((doc) => [
+      { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      R.dissoc('_index', doc.data),
+    ]);
+    if (bodyUpdate.length > 0) {
+      const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+      const cachePromise = cacheDel(elementsToUpdate);
+      await Promise.all([cachePromise, bulkPromise]);
+    }
+    return transformedElements.length;
+  };
+  return telemetry(context, user, `INSERT ${message}`, {
+    [SemanticAttributes.DB_NAME]: 'search_engine',
+    [SemanticAttributes.DB_OPERATION]: 'insert',
+  }, elIndexElementsFn);
 };
 
-export const elUpdateAttributeValue = async (key, previousValue, value) => {
+export const elUpdateAttributeValue = async (context, key, previousValue, value) => {
   const isMultiple = isMultipleAttribute(key);
   const source = !isMultiple
     ? 'ctx._source[params.key] = params.value'
@@ -2135,7 +2140,7 @@ export const elUpdateAttributeValue = async (key, previousValue, value) => {
     },
   };
   const cachePromise = cachePurge();
-  const updatePromise = el.updateByQuery(params).catch((err) => {
+  const updatePromise = elRawUpdateByQuery(params).catch((err) => {
     throw DatabaseError('Updating attribute value fail', { error: err, key, value });
   });
   await Promise.all([cachePromise, updatePromise]);
@@ -2191,27 +2196,25 @@ export const elUpdateEntityConnections = async (elements) => {
 export const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
   const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
     + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
-  return el
-    .updateByQuery({
-      index: READ_RELATIONSHIPS_INDICES,
-      refresh: true,
-      body: {
-        script: { source, params: { id: documentId, changes: documentBody } },
-        query: {
-          nested: {
-            path: 'connections',
-            query: {
-              bool: {
-                must: [{ match_phrase: { 'connections.internal_id.keyword': documentId } }],
-              },
+  return elRawUpdateByQuery({
+    index: READ_RELATIONSHIPS_INDICES,
+    refresh: true,
+    body: {
+      script: { source, params: { id: documentId, changes: documentBody } },
+      query: {
+        nested: {
+          path: 'connections',
+          query: {
+            bool: {
+              must: [{ match_phrase: { 'connections.internal_id.keyword': documentId } }],
             },
           },
         },
       },
-    })
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
-    });
+    },
+  }).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
+  });
 };
 export const elUpdateElement = async (instance) => {
   // Update the element it self
@@ -2228,7 +2231,7 @@ export const elUpdateElement = async (instance) => {
 };
 
 export const getStats = () => {
-  return el.indices
+  return engine.indices
     .stats({ index: READ_PLATFORM_INDICES }) //
     .then((result) => oebp(result)._all.total);
 };

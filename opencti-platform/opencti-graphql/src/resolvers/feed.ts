@@ -3,13 +3,13 @@ import type { Resolvers } from '../generated/graphql';
 
 const feedResolvers: Resolvers = {
   Query: {
-    feed: (_, { id }, { user }) => findById(user, id),
-    feeds: (_, args, { user }) => findAll(user, args),
+    feed: (_, { id }, context) => findById(context, context.user, id),
+    feeds: (_, args, context) => findAll(context, context.user, args),
   },
   Mutation: {
-    feedAdd: (_, { input }, { user }) => createFeed(user, input),
-    feedDelete: (_, { id }, { user }) => feedDelete(user, id),
-    feedEdit: (_, { id, input }, { user }) => editFeed(user, id, input),
+    feedAdd: (_, { input }, context) => createFeed(context, context.user, input),
+    feedDelete: (_, { id }, context) => feedDelete(context, context.user, id),
+    feedEdit: (_, { id, input }, context) => editFeed(context, context.user, id, input),
   },
 };
 

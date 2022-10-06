@@ -6,7 +6,7 @@ import { generateStandardId, idGen, normalizeName } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, OPENCTI_NAMESPACE } from '../schema/general';
 import { isStixDomainObjectIdentity } from '../schema/stixDomainObject';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 
 const generateAliases = (aliases, additionalFields = {}) => {
   return R.map((a) => {
@@ -17,6 +17,7 @@ const generateAliases = (aliases, additionalFields = {}) => {
 };
 
 export const up = async (next) => {
+  const context = executionContext('migration');
   const start = new Date().getTime();
   logApp.info('[MIGRATION] Rewriting i_aliases_ids for Locations and Identities');
   const bulkOperations = [];
@@ -53,7 +54,7 @@ export const up = async (next) => {
     bulkOperations.push(...op);
   };
   const opts = { types: [ENTITY_TYPE_LOCATION, ENTITY_TYPE_IDENTITY], callback };
-  await elList(SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
+  await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
   // Apply operations.
   let currentProcessing = 0;
   const groupsOfOperations = R.splitEvery(MAX_SPLIT, bulkOperations);

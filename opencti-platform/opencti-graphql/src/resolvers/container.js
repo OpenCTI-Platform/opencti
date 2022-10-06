@@ -17,9 +17,9 @@ import { buildRefRelationKey } from '../schema/general';
 
 const containerResolvers = {
   Query: {
-    container: (_, { id }, { user }) => findById(user, id),
-    containers: (_, args, { user }) => findAll(user, args),
-    containersObjectsOfObject: (_, args, { user }) => containersObjectsOfObject(user, args),
+    container: (_, { id }, context) => findById(context, context.user, id),
+    containers: (_, args, context) => findAll(context, context.user, args),
+    containersObjectsOfObject: (_, args, context) => containersObjectsOfObject(context, context.user, args),
   },
   Container: {
     __resolveType(obj) {
@@ -28,8 +28,8 @@ const containerResolvers = {
       }
       return 'Unknown';
     },
-    objects: (container, args, { user }) => objects(user, container.id, args),
-    relatedContainers: (container, args, { user }) => relatedContainers(user, container.id, args),
+    objects: (container, args, context) => objects(context, context.user, container.id, args),
+    relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
   },
   ContainersFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -38,13 +38,13 @@ const containerResolvers = {
     objectContains: buildRefRelationKey(RELATION_OBJECT),
   },
   Mutation: {
-    containerEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    containerEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
   },
 };

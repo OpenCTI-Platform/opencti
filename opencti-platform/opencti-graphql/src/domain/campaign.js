@@ -7,30 +7,30 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { FROM_START, UNTIL_END } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
 
-export const findById = (user, campaignId) => {
-  return storeLoadById(user, campaignId, ENTITY_TYPE_CAMPAIGN);
+export const findById = (context, user, campaignId) => {
+  return storeLoadById(context, user, campaignId, ENTITY_TYPE_CAMPAIGN);
 };
 
-export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_CAMPAIGN], args);
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_CAMPAIGN], args);
 };
 
 // region time series
-export const campaignsTimeSeries = (user, args) => {
-  return timeSeriesEntities(user, ENTITY_TYPE_CAMPAIGN, [], args);
+export const campaignsTimeSeries = (context, user, args) => {
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CAMPAIGN, [], args);
 };
 
-export const campaignsTimeSeriesByEntity = (user, args) => {
+export const campaignsTimeSeriesByEntity = (context, user, args) => {
   const filters = [{ isRelation: true, type: args.relationship_type, value: args.objectId }];
-  return timeSeriesEntities(user, ENTITY_TYPE_CAMPAIGN, filters, args);
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CAMPAIGN, filters, args);
 };
 // endregion
 
-export const addCampaign = async (user, campaign) => {
+export const addCampaign = async (context, user, campaign) => {
   const campaignToCreate = pipe(
     assoc('first_seen', isNil(campaign.first_seen) ? new Date(FROM_START) : campaign.first_seen),
     assoc('last_seen', isNil(campaign.last_seen) ? new Date(UNTIL_END) : campaign.last_seen)
   )(campaign);
-  const created = await createEntity(user, campaignToCreate, ENTITY_TYPE_CAMPAIGN);
+  const created = await createEntity(context, user, campaignToCreate, ENTITY_TYPE_CAMPAIGN);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

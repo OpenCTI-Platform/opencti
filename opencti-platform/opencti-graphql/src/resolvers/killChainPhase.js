@@ -17,37 +17,37 @@ import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 
 const killChainPhaseResolvers = {
   Query: {
-    killChainPhase: (_, { id }, { user }) => findById(user, id),
-    killChainPhases: (_, args, { user }) => findAll(user, args),
+    killChainPhase: (_, { id }, context) => findById(context, context.user, id),
+    killChainPhases: (_, args, context) => findAll(context, context.user, args),
   },
   KillChainPhase: {
     editContext: (killChainPhase) => fetchEditContext(killChainPhase.id),
   },
   Mutation: {
-    killChainPhaseEdit: (_, { id }, { user }) => ({
-      delete: () => killChainPhaseDelete(user, id),
-      fieldPatch: ({ input }) => killChainPhaseEditField(user, id, input),
-      contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
-      contextClean: () => killChainPhaseCleanContext(user, id),
-      relationAdd: ({ input }) => killChainPhaseAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => killChainPhaseDeleteRelation(user, id, relationId),
+    killChainPhaseEdit: (_, { id }, context) => ({
+      delete: () => killChainPhaseDelete(context, context.user, id),
+      fieldPatch: ({ input }) => killChainPhaseEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => killChainPhaseEditContext(context, context.user, id, input),
+      contextClean: () => killChainPhaseCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => killChainPhaseAddRelation(context, context.user, id, input),
+      relationDelete: ({ relationId }) => killChainPhaseDeleteRelation(context, context.user, id, relationId),
     }),
-    killChainPhaseAdd: (_, { input }, { user }) => addKillChainPhase(user, input),
+    killChainPhaseAdd: (_, { input }, context) => addKillChainPhase(context, context.user, input),
   },
   Subscription: {
     killChainPhase: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        killChainPhaseEditContext(user, id);
+      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+        killChainPhaseEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
-        )(_, { id }, { user });
+        )(_, { id }, context);
         return withCancel(filtering, () => {
-          killChainPhaseCleanContext(user, id);
+          killChainPhaseCleanContext(context, context.user, id);
         });
       },
     },

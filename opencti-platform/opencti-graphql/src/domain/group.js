@@ -18,37 +18,39 @@ import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
-export const findById = (user, groupId) => {
-  return storeLoadById(user, groupId, ENTITY_TYPE_GROUP);
+export const findById = (context, user, groupId) => {
+  return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
 };
 
-export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_GROUP], args);
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
-export const batchMembers = async (user, groupIds) => {
-  return batchListThroughGetFrom(user, groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+export const batchMembers = async (context, user, groupIds) => {
+  return batchListThroughGetFrom(context, user, groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
-export const batchMarkingDefinitions = async (user, groupIds) => {
+export const batchMarkingDefinitions = async (context, user, groupIds) => {
   const opts = { paginate: false };
-  return batchListThroughGetTo(user, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
+  return batchListThroughGetTo(context, user, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
 };
 
-export const addGroup = async (user, group) => {
-  const created = await createEntity(user, group, ENTITY_TYPE_GROUP);
+export const addGroup = async (context, user, group) => {
+  const created = await createEntity(context, user, group, ENTITY_TYPE_GROUP);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].ADDED_TOPIC, created, user);
 };
 
-export const groupDelete = (user, groupId) => deleteElementById(user, groupId, ENTITY_TYPE_GROUP);
+export const groupDelete = (context, user, groupId) => {
+  return deleteElementById(context, user, groupId, ENTITY_TYPE_GROUP);
+};
 
-export const groupEditField = async (user, groupId, input) => {
-  const { element } = await updateAttribute(user, groupId, ENTITY_TYPE_GROUP, input);
+export const groupEditField = async (context, user, groupId, input) => {
+  const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
 
-export const groupAddRelation = async (user, groupId, input) => {
-  const group = await storeLoadById(user, groupId, ENTITY_TYPE_GROUP);
+export const groupAddRelation = async (context, user, groupId, input) => {
+  const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
     throw FunctionalError('Cannot add the relation, Group cannot be found.');
   }
@@ -61,14 +63,14 @@ export const groupAddRelation = async (user, groupId, input) => {
   } else if (input.toId) {
     finalInput = assoc('fromId', groupId, input);
   }
-  return createRelation(user, finalInput).then((relationData) => {
+  return createRelation(context, user, finalInput).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 
-export const groupDeleteRelation = async (user, groupId, fromId, toId, relationshipType) => {
-  const group = await storeLoadById(user, groupId, ENTITY_TYPE_GROUP);
+export const groupDeleteRelation = async (context, user, groupId, fromId, toId, relationshipType) => {
+  const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
     throw FunctionalError('Cannot delete the relation, Group cannot be found.');
   }
@@ -76,19 +78,19 @@ export const groupDeleteRelation = async (user, groupId, fromId, toId, relations
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
   if (fromId) {
-    await deleteRelationsByFromAndTo(user, fromId, groupId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+    await deleteRelationsByFromAndTo(context, user, fromId, groupId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   } else if (toId) {
-    await deleteRelationsByFromAndTo(user, groupId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+    await deleteRelationsByFromAndTo(context, user, groupId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 
-export const groupCleanContext = async (user, groupId) => {
+export const groupCleanContext = async (context, user, groupId) => {
   await delEditContext(user, groupId);
-  return storeLoadById(user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+  return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };
 
-export const groupEditContext = async (user, groupId, input) => {
+export const groupEditContext = async (context, user, groupId, input) => {
   await setEditContext(user, groupId, input);
-  return storeLoadById(user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+  return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };

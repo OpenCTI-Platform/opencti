@@ -15,11 +15,11 @@ const sectorsLoader = batchLoader(batchSectors);
 
 const organizationResolvers = {
   Query: {
-    organization: (_, { id }, { user }) => findById(user, id),
-    organizations: (_, args, { user }) => findAll(user, args),
+    organization: (_, { id }, context) => findById(context, context.user, id),
+    organizations: (_, args, context) => findAll(context, context.user, args),
   },
   Organization: {
-    sectors: (organization, _, { user }) => sectorsLoader.load(organization.id, user),
+    sectors: (organization, _, context) => sectorsLoader.load(organization.id, context, context.user),
   },
   OrganizationsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -27,15 +27,15 @@ const organizationResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    organizationEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    organizationEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    organizationAdd: (_, { input }, { user }) => addOrganization(user, input),
+    organizationAdd: (_, { input }, context) => addOrganization(context, context.user, input),
   },
 };
 

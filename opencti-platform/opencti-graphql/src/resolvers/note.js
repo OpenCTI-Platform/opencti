@@ -28,31 +28,31 @@ import { buildRefRelationKey } from '../schema/general';
 
 const noteResolvers = {
   Query: {
-    note: (_, { id }, { user }) => findById(user, id),
-    notes: (_, args, { user }) => findAll(user, args),
-    notesTimeSeries: (_, args, { user }) => {
+    note: (_, { id }, context) => findById(context, context.user, id),
+    notes: (_, args, context) => findAll(context, context.user, args),
+    notesTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return notesTimeSeriesByEntity(user, args);
+        return notesTimeSeriesByEntity(context, context.user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return notesTimeSeriesByAuthor(user, args);
+        return notesTimeSeriesByAuthor(context, context.user, args);
       }
-      return notesTimeSeries(user, args);
+      return notesTimeSeries(context, context.user, args);
     },
-    notesNumber: (_, args, { user }) => {
+    notesNumber: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return notesNumberByEntity(user, args);
+        return notesNumberByEntity(context, context.user, args);
       }
-      return notesNumber(user, args);
+      return notesNumber(context, context.user, args);
     },
-    notesDistribution: (_, args, { user }) => {
+    notesDistribution: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return notesDistributionByEntity(user, args);
+        return notesDistributionByEntity(context, context.user, args);
       }
       return [];
     },
-    noteContainsStixObjectOrStixRelationship: (_, args, { user }) => {
-      return noteContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
+    noteContainsStixObjectOrStixRelationship: (_, args, context) => {
+      return noteContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   NotesFilter: {
@@ -62,15 +62,15 @@ const noteResolvers = {
     objectContains: buildRefRelationKey(RELATION_OBJECT),
   },
   Mutation: {
-    noteEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    noteEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    noteAdd: (_, { input }, { user }) => addNote(user, input),
+    noteAdd: (_, { input }, context) => addNote(context, context.user, input),
   },
 };
 

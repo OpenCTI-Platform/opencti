@@ -15,11 +15,11 @@ const batchCountryLoader = batchLoader(batchCountry);
 
 const cityResolvers = {
   Query: {
-    city: (_, { id }, { user }) => findById(user, id),
-    cities: (_, args, { user }) => findAll(user, args),
+    city: (_, { id }, context) => findById(context, context.user, id),
+    cities: (_, args, context) => findAll(context, context.user, args),
   },
   City: {
-    country: (city, _, { user }) => batchCountryLoader.load(city.id, user),
+    country: (city, _, context) => batchCountryLoader.load(city.id, context, context.user),
   },
   CitiesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -27,15 +27,15 @@ const cityResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    cityEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    cityEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    cityAdd: (_, { input }, { user }) => addCity(user, input),
+    cityAdd: (_, { input }, context) => addCity(context, context.user, input),
   },
 };
 

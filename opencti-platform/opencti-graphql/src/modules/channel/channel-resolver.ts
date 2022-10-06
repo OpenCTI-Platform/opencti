@@ -12,8 +12,8 @@ import {
 
 const channelResolvers: Resolvers = {
   Query: {
-    channel: (_, { id }, { user }) => findById(user, id),
-    channels: (_, args, { user }) => findAll(user, args),
+    channel: (_, { id }, context) => findById(context, context.user, id),
+    channels: (_, args, context) => findAll(context, context.user, args),
   },
   ChannelsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -21,26 +21,26 @@ const channelResolvers: Resolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    channelAdd: (_, { input }, { user }) => {
-      return addChannel(user, input);
+    channelAdd: (_, { input }, context) => {
+      return addChannel(context, context.user, input);
     },
-    channelDelete: (_, { id }, { user }) => {
-      return stixDomainObjectDelete(user, id);
+    channelDelete: (_, { id }, context) => {
+      return stixDomainObjectDelete(context, context.user, id);
     },
-    channelFieldPatch: (_, { id, input, commitMessage, references }, { user }) => {
-      return stixDomainObjectEditField(user, id, input, { commitMessage, references });
+    channelFieldPatch: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },
-    channelContextPatch: (_, { id, input }, { user }) => {
-      return stixDomainObjectEditContext(user, id, input);
+    channelContextPatch: (_, { id, input }, context) => {
+      return stixDomainObjectEditContext(context, context.user, id, input);
     },
-    channelContextClean: (_, { id }, { user }) => {
-      return stixDomainObjectCleanContext(user, id);
+    channelContextClean: (_, { id }, context) => {
+      return stixDomainObjectCleanContext(context, context.user, id);
     },
-    channelRelationAdd: (_, { id, input }, { user }) => {
-      return stixDomainObjectAddRelation(user, id, input);
+    channelRelationAdd: (_, { id, input }, context) => {
+      return stixDomainObjectAddRelation(context, context.user, id, input);
     },
-    channelRelationDelete: (_, { id, toId, relationship_type: relationshipType }, { user }) => {
-      return stixDomainObjectDeleteRelation(user, id, toId, relationshipType);
+    channelRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },
 };

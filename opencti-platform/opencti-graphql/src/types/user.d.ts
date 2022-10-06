@@ -26,3 +26,8 @@ interface AuthUser {
   allowed_marking: Array<StoreMarkingDefinition>;
   all_marking: Array<StoreMarkingDefinition>;
 }
+
+interface AuthContext {
+  source: string;
+  tracing: TracingContext
+}

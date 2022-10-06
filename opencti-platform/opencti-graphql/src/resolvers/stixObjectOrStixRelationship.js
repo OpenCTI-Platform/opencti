@@ -12,8 +12,8 @@ import { stixObjectOrStixRelationshipOptions } from '../schema/stixObjectOrStixR
 
 const stixObjectOrStixRelationshipResolvers = {
   Query: {
-    stixObjectOrStixRelationship: (_, { id }, { user }) => findById(user, id),
-    stixCoreObjectOrStixCoreRelationship: (_, { id }, { user }) => findById(user, id),
+    stixObjectOrStixRelationship: (_, { id }, context) => findById(context, context.user, id),
+    stixCoreObjectOrStixCoreRelationship: (_, { id }, context) => findById(context, context.user, id),
   },
   StixObject: {
     is_inferred: (object) => isInferredIndex(object._index),

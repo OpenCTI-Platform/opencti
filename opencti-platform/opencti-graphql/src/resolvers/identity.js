@@ -12,8 +12,8 @@ import { buildRefRelationKey } from '../schema/general';
 
 const identityResolvers = {
   Query: {
-    identity: (_, { id }, { user }) => findById(user, id),
-    identities: (_, args, { user }) => findAll(user, args),
+    identity: (_, { id }, context) => findById(context, context.user, id),
+    identities: (_, args, context) => findAll(context, context.user, args),
   },
   IdentitiesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -29,15 +29,15 @@ const identityResolvers = {
     },
   },
   Mutation: {
-    identityEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    identityEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    identityAdd: (_, { input }, { user }) => addIdentity(user, input),
+    identityAdd: (_, { input }, context) => addIdentity(context, context.user, input),
   },
 };
 

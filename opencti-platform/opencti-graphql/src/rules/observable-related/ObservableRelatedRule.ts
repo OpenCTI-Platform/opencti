@@ -11,10 +11,12 @@ import type { Event } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
+import { executionContext } from '../../utils/access';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
   const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
+    const context = executionContext(def.name);
     const events: Array<Event> = [];
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
@@ -46,7 +48,7 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const input = { fromId: targetRef, toId, relationship_type: RELATION_RELATED_TO };
-        const event = await createInferredRelation(input, ruleContent);
+        const event = await createInferredRelation(context, input, ruleContent);
         if (event) {
           events.push(event as Event);
         }
@@ -60,14 +62,14 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
-        const reverseEvent = await createInferredRelation(reverseInput, reverseRuleContent);
+        const reverseEvent = await createInferredRelation(context, reverseInput, reverseRuleContent);
         if (reverseEvent) {
           events.push(reverseEvent as Event);
         }
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
-    await listAllRelations(RULE_MANAGER_USER, RELATION_RELATED_TO, listFromArgs);
+    await listAllRelations(context, RULE_MANAGER_USER, RELATION_RELATED_TO, listFromArgs);
     return events;
   };
   // Contract

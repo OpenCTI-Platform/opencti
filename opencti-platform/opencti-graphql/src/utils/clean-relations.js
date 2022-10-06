@@ -7,7 +7,7 @@ import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES } from '../database/utils
 import { SYSTEM_USER } from './access';
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
-const computeMissingRelationsForType = async (relationType) => {
+const computeMissingRelationsForType = async (context, relationType) => {
   const paginationCount = 500;
   const relationsToTakeCare = [];
   let hasNextPage = true;
@@ -37,7 +37,7 @@ const computeMissingRelationsForType = async (relationType) => {
       track_total_hits: true,
       body,
     };
-    const queryRelations = await elRawSearch(query);
+    const queryRelations = await elRawSearch(context, SYSTEM_USER, relationType, query);
     const { hits, total: { value: valTotal } } = queryRelations.hits;
     if (hits.length === 0) {
       hasNextPage = false;
@@ -63,7 +63,7 @@ const computeMissingRelationsForType = async (relationType) => {
           },
         },
       };
-      const data = await elRawSearch(findQuery);
+      const data = await elRawSearch(context, SYSTEM_USER, relationType, findQuery);
       const resolvedConns = data.hits.hits.map((i) => i._source);
       const resolvedIds = resolvedConns.map((r) => r.internal_id);
       const relationsToRemove = hits
@@ -90,20 +90,20 @@ const computeMissingRelationsForType = async (relationType) => {
   }
   return relationsToTakeCare;
 };
-const getMissingRelations = async () => {
-  const data = await computeMissingRelationsForType(ABSTRACT_BASIC_RELATIONSHIP);
+const getMissingRelations = async (context) => {
+  const data = await computeMissingRelationsForType(context, ABSTRACT_BASIC_RELATIONSHIP);
   return R.flatten(data);
 };
 // eslint-disable-next-line import/prefer-default-export
-export const cleanInconsistentRelations = async () => {
+export const cleanInconsistentRelations = async (context) => {
   // Fix missing deleted data
   // In case of relation to relation, some deletion was not executed.
   // For each relations of the platform we need to check if the from and the to are available.
   logApp.info('[TOOLS] Starting script to fix missing deletion');
-  const relations = await getMissingRelations();
+  const relations = await getMissingRelations(context);
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
-    await deleteElementById(SYSTEM_USER, relation.internal_id, relation.entity_type);
+    await deleteElementById(context, SYSTEM_USER, relation.internal_id, relation.entity_type);
   }
   logApp.info('[TOOLS] Fix missing script migration done');
 };

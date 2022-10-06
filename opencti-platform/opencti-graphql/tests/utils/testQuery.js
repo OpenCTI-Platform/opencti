@@ -2,7 +2,7 @@ import { ApolloServer } from 'apollo-server-express';
 import axios from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf from '../../src/config/conf';
-import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/utils/access';
+import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/access';
 
 // region static graphql modules
 import '../../src/modules/index';
@@ -16,7 +16,7 @@ export const SYNC_TEST_REMOTE_URI = 'http://api-tests:4000';
 export const RAW_EVENTS_SIZE = 433;
 export const SYNC_LIVE_EVENTS_SIZE = 247;
 
-export const PYTHON_PATH = './src/python';
+export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
 export const API_TOKEN = conf.get('app:admin:token');
 export const API_EMAIL = conf.get('app:admin:email');
@@ -26,6 +26,8 @@ export const ONE_MINUTE = 60 * ONE_SECOND;
 export const TEN_SECONDS = 10 * ONE_SECOND;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
 export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
+
+export const testContext = executionContext('testing');
 
 export const generateBasicAuth = () => {
   const buff = Buffer.from(`${API_EMAIL}:${API_PASSWORD}`, 'utf-8');

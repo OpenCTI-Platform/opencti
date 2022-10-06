@@ -5,10 +5,11 @@ import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import { logApp } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 
 export const up = async (next) => {
+  const context = executionContext('migration');
   const start = new Date().getTime();
   logApp.info('[MIGRATION] Cleaning indicates for all entities and relationships');
   const bulkOperations = [];
@@ -26,7 +27,7 @@ export const up = async (next) => {
   };
   const filters = [{ key: buildRefRelationKey(RELATION_INDICATES), values: ['EXISTS'] }];
   const opts = { types: [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], filters, callback };
-  await elList(SYSTEM_USER, READ_DATA_INDICES, opts);
+  await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
   // Apply operations.
   let currentProcessing = 0;
   const groupsOfOperations = R.splitEvery(MAX_SPLIT, bulkOperations);

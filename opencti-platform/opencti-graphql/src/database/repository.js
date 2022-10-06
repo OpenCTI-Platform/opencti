@@ -85,13 +85,13 @@ export const completeConnector = (connector) => {
   return null;
 };
 
-export const connectors = (user) => {
-  return listEntities(user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false })
+export const connectors = (context, user) => {
+  return listEntities(context, user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false })
     .then((elements) => map((conn) => completeConnector(conn), elements));
 };
 
-export const connectorsForWorker = async (user) => {
-  const registeredConnectors = await connectors(user);
+export const connectorsForWorker = async (context, user) => {
+  const registeredConnectors = await connectors(context, user);
   registeredConnectors.push({
     id: 'sync',
     name: 'Internal sync connector',
@@ -114,20 +114,20 @@ const filterConnectors = (instances, type, scope, onlyAlive = false, onlyAuto = 
   )(instances);
 };
 
-export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
-  const connects = await connectors(user);
+export const connectorsFor = async (context, user, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
+  const connects = await connectors(context, user);
   return filterConnectors(connects, type, scope, onlyAlive, onlyAuto, onlyContextual);
 };
 
-export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) => {
-  return connectorsFor(user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
+export const connectorsForEnrichment = async (context, user, scope, onlyAlive = false, onlyAuto = false) => {
+  return connectorsFor(context, user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 };
 
 export const connectorsEnrichment = (instances, scope, onlyAlive = false, onlyAuto = false) => {
   return filterConnectors(instances, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 };
 
-export const connectorsForImport = async (user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
-  return connectorsFor(user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto, onlyContextual);
+export const connectorsForImport = async (context, user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
+  return connectorsFor(context, user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto, onlyContextual);
 };
 // endregion

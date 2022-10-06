@@ -5,7 +5,7 @@ import { elList, ES_MAX_CONCURRENCY } from '../database/engine';
 import { READ_PLATFORM_INDICES } from '../database/utils';
 import { hoursAgo, minutesAgo, now, prepareDate, utcDate } from '../utils/format';
 import conf, { logApp } from '../config/conf';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_USER_SUBSCRIPTION } from '../schema/internalObject';
 import { generateDigestForSubscription } from '../domain/userSubscription';
 import { sendMail } from '../database/smtp';
@@ -26,13 +26,14 @@ const subscriptionHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([SUBSCRIPTION_MANAGER_KEY]);
+    const context = executionContext('subscription_manager');
     // Execute the cleaning
     const callback = async (elements) => {
       logApp.debug(`[OPENCTI-MODULE] Subscription manager will send reports for ${elements.length} subscriptions`);
       const concurrentSend = async (element) => {
         let mailContent;
         try {
-          mailContent = await generateDigestForSubscription(element);
+          mailContent = await generateDigestForSubscription(context, element);
         } catch (e) {
           logApp.error('[OPENCTI-MODULE] Subscription manager failed to generate the digest', { element, error: e });
         }
@@ -45,7 +46,7 @@ const subscriptionHandler = async () => {
         } catch (e) {
           logApp.error('[OPENCTI-MODULE] Subscription manager failed to send the email', { error: e });
         }
-        await patchAttribute(SYSTEM_USER, element.id, element.entity_type, { last_run: now() });
+        await patchAttribute(context, SYSTEM_USER, element.id, element.entity_type, { last_run: now() });
       };
       await Promise.map(elements, concurrentSend, { concurrency: ES_MAX_CONCURRENCY });
     };
@@ -64,7 +65,7 @@ const subscriptionHandler = async () => {
         { key: 'last_run', values: [prepareDate(date)], operator: 'lt' },
       ];
       const opts = { filters, connectionFormat: false, callback };
-      await elList(SYSTEM_USER, READ_PLATFORM_INDICES, opts);
+      await elList(context, SYSTEM_USER, READ_PLATFORM_INDICES, opts);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

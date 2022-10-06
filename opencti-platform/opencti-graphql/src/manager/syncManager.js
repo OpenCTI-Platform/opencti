@@ -6,7 +6,7 @@ import * as jsonpatch from 'fast-json-patch';
 import https from 'node:https';
 import conf, { logApp } from '../config/conf';
 import { storeLoadById } from '../database/middleware';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import Queue from '../utils/queue';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
@@ -99,14 +99,14 @@ const syncManagerInstance = (syncId) => {
     }
     return processingData;
   };
-  const saveCurrentState = async (type, sync, eventId) => {
+  const saveCurrentState = async (context, type, sync, eventId) => {
     const currentTime = new Date().getTime();
     const [time] = eventId.split('-');
     const dateTime = parseInt(time, 10);
     const eventDate = utcDate(dateTime).toISOString();
     if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
       logApp.info(`[OPENCTI] Sync ${syncId}: saving state from ${type} to ${eventId}/${eventDate}`);
-      await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
+      await patchSync(context, SYSTEM_USER, syncId, { current_state: eventDate });
       eventSource.uri = createSyncHttpUri(sync, eventDate, false);
       lastState = dateTime;
       lastStateSaveTime = currentTime;
@@ -120,9 +120,9 @@ const syncManagerInstance = (syncId) => {
       eventSource.close();
       eventsQueue = null;
     },
-    start: async () => {
+    start: async (context) => {
       run = true;
-      const sync = await storeLoadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
+      const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
       const { token, ssl_verify: ssl = false } = sync;
       const httpClient = axios.create({
         responseType: 'arraybuffer',
@@ -138,15 +138,15 @@ const syncManagerInstance = (syncId) => {
         if (event) {
           try {
             currentDelay = manageBackPressure(httpClient, sync, currentDelay);
-            const { id: eventId, type: eventType, data, context } = event;
+            const { id: eventId, type: eventType, data, context: eventContext } = event;
             if (eventType === 'heartbeat') {
-              await saveCurrentState(eventType, sync, eventId);
+              await saveCurrentState(context, eventType, sync, eventId);
             } else {
-              const syncData = await transformDataWithReverseIdAndFilesData(sync, httpClient, data, context);
-              const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context });
+              const syncData = await transformDataWithReverseIdAndFilesData(sync, httpClient, data, eventContext);
+              const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context: eventContext });
               const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
               await pushToSync({ type: 'event', applicant_id: OPENCTI_SYSTEM_UUID, content });
-              await saveCurrentState('event', sync, eventId);
+              await saveCurrentState(context, 'event', sync, eventId);
             }
           } catch (e) {
             logApp.error(`[OPENCTI] Sync ${syncId}: error processing event`, { error: e });
@@ -165,7 +165,8 @@ const initSyncManager = () => {
   const syncManagers = new Map();
   const processStep = async () => {
     // Get syncs definition
-    const syncs = await listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], { connectionFormat: false });
+    const context = executionContext('sync_manager');
+    const syncs = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], { connectionFormat: false });
     // region Handle management of existing synchronizer
     for (let index = 0; index < syncs.length; index += 1) {
       const { id, running } = syncs[index];
@@ -173,7 +174,7 @@ const initSyncManager = () => {
       if (syncInstance) {
         // Sync already exist
         if (running && !syncInstance.isRunning()) {
-          syncInstance.start();
+          syncInstance.start(context);
         }
         if (!running && syncInstance.isRunning()) {
           syncInstance.stop();
@@ -183,7 +184,7 @@ const initSyncManager = () => {
         const manager = syncManagerInstance(id);
         syncManagers.set(id, manager);
         // noinspection ES6MissingAwait
-        manager.start();
+        manager.start(context);
       }
     }
     // endregion

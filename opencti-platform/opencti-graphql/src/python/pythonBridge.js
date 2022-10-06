@@ -1,9 +1,22 @@
 import { PythonShell } from 'python-shell';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+// import * as nodecallspython from 'node-calls-python';
 import { DEV_MODE, logApp } from '../config/conf';
-import { ConfigurationError } from '../config/errors';
+import { UnknownError } from '../config/errors';
+import { telemetry } from '../config/tracing';
 
-export const execPython3 = async (scriptPath, scriptName, args, stopCondition) => {
-  try {
+/*
+// Importing python runtime scripts
+const py = nodecallspython.interpreter;
+const pyCheckIndicator = py.importSync('./src/python/runtime/check_indicator.py');
+const CHECK_INDICATOR_SCRIPT = { fn: 'check_indicator', py: pyCheckIndicator };
+
+const pyCreatePattern = py.importSync('./src/python/runtime/stix2_create_pattern.py');
+const CREATE_PATTERN_SCRIPT = { fn: 'stix2_create_pattern', py: pyCreatePattern };
+*/
+
+export const execTestingPython = async (context, user, scriptPath, scriptName, args, stopCondition) => {
+  const execPythonTestingProcessFn = () => {
     return new Promise((resolve, reject) => {
       const messages = [];
       const options = {
@@ -24,7 +37,7 @@ export const execPython3 = async (scriptPath, scriptName, args, stopCondition) =
         }
       });
       shell.on('stderr', (stderr) => {
-        logApp.info(`[BRIDGE] ${stderr}`);
+        logApp.info(`[stderr] ${stderr}`);
         messages.push(stderr);
         /* istanbul ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
@@ -46,42 +59,80 @@ export const execPython3 = async (scriptPath, scriptName, args, stopCondition) =
         }
         resolve(jsonResult);
       });
+    }).catch((err) => {
+      /* istanbul ignore next */
+      throw UnknownError(`[BRIDGE] execPythonTesting error > ${err.message}`, { detail: err.message });
     });
-  } catch (err) {
-    /* istanbul ignore next */
-    throw ConfigurationError('Python3 is missing or script not found', { detail: err.message });
-  }
+  };
+  return telemetry(context, user, `PYTHON ${scriptName}`, {
+    [SemanticAttributes.DB_NAME]: 'python_testing_engine',
+  }, execPythonTestingProcessFn);
+};
+/*
+export const execNativePython = async (context, user, script, ...args) => {
+  const execNativePythonFn = async () => {
+    try {
+      const result = py.callSync(script.py, script.fn, ...args);
+      if (result.status === 'success') {
+        return result.data;
+      }
+      throw UnknownError('[BRIDGE] execNativePython error', { detail: result.data });
+    } catch (err) {
+      throw UnknownError(`[BRIDGE] execNativePython error > ${err.message}`, { detail: err.message });
+    }
+  };
+  return telemetry(context, user, `PYTHON ${script.fn}`, {
+    [SemanticAttributes.DB_NAME]: 'python_runtime_engine',
+  }, execNativePythonFn);
 };
 
-export const checkPythonStix2 = () => {
-  return execPython3('./src/python', 'stix2_create_pattern.py', ['check', 'health']);
+export const createStixPattern = async (context, user, observableType, observableValue) => {
+  return execNativePython(context, user, CREATE_PATTERN_SCRIPT, observableType, observableValue).catch((err) => {
+    logApp.warn(`[BRIDGE] createStixPattern error > ${err.message}`);
+    return null;
+  });
 };
+export const checkIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
+  return execNativePython(context, user, CHECK_INDICATOR_SCRIPT, patternType, indicatorValue).catch((err) => {
+    logApp.warn(`[BRIDGE] checkIndicatorSyntax error > ${err.message}`);
+    return null;
+  });
+};
+export const checkPythonAvailability = async (context, user) => {
+  return execNativePython(context, user, CREATE_PATTERN_SCRIPT, 'check', 'health');
+};
+*/
 
-export const createStixPattern = async (observableType, observableValue) => {
+export const createStixPattern = async (context, user, observableType, observableValue) => {
   try {
-    const result = await execPython3('./src/python', 'stix2_create_pattern.py', [observableType, observableValue]);
+    const result = await execTestingPython(
+      context,
+      user,
+      './src/python/runtime',
+      'stix2_create_pattern.py',
+      [observableType, observableValue]
+    );
     return result.data;
   } catch (err) {
+    logApp.warn(`[BRIDGE] createStixPattern error > ${err.message}`);
     return null;
   }
 };
-
-export const checkIndicatorSyntax = async (patternType, indicatorValue) => {
+export const checkIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
   try {
-    const result = await execPython3('./src/python', 'check_indicator.py', [patternType, indicatorValue]);
+    const result = await execTestingPython(
+      context,
+      user,
+      './src/python/runtime',
+      'check_indicator.py',
+      [patternType, indicatorValue]
+    );
     return result.data;
   } catch (err) {
     logApp.warn(`[BRIDGE] extractObservables error > ${err.message}`);
     return null;
   }
 };
-
-export const executePython = async (path, file, args, stopCondition) => {
-  try {
-    const result = await execPython3(path, file, args, stopCondition);
-    return result.data;
-  } catch (err) {
-    logApp.warn(`[BRIDGE] executePython error > ${err.message}`);
-    return null;
-  }
+export const checkPythonAvailability = (context, user) => {
+  return execTestingPython(context, user, './src/python/runtime', 'stix2_create_pattern.py', ['check', 'health']);
 };

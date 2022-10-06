@@ -10,10 +10,12 @@ import type { Event } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
+import { executionContext } from '../../utils/access';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
   const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
+    const context = executionContext(def.name);
     const events: Array<Event> = [];
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
@@ -42,7 +44,7 @@ const ruleLocalizationOfTargetsBuilder = () => {
         stop_time: range.end,
         objectMarking: elementMarkings,
       });
-      const event = await createInferredRelation(input, ruleContent) as Event;
+      const event = await createInferredRelation(context, input, ruleContent) as Event;
       // Re inject event if needed
       if (event) {
         events.push(event);

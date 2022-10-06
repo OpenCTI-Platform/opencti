@@ -11,22 +11,22 @@ import { internalLoadById } from '../database/middleware';
 
 const userSubscriptionResolvers = {
   Query: {
-    userSubscription: (_, { id }, { user }) => findById(user, id),
-    userSubscriptions: (_, args, { user }) => findAll(user, args),
+    userSubscription: (_, { id }, context) => findById(context, context.user, id),
+    userSubscriptions: (_, args, context) => findAll(context, context.user, args),
   },
   UserSubscription: {
-    user: (current, _, { user }) => internalLoadById(user, current.user_id),
-    entities: (current, _, { user }) => (current.entities_ids && current.entities_ids.length > 0
-      ? Promise.all(current.entities_ids.map((e) => internalLoadById(user, e)))
+    user: (current, _, context) => internalLoadById(context, context.user, current.user_id),
+    entities: (current, _, context) => (current.entities_ids && current.entities_ids.length > 0
+      ? Promise.all(current.entities_ids.map((e) => internalLoadById(context, context.user, e)))
       : null),
   },
   Mutation: {
-    userSubscriptionAdd: (_, { input }, { user }) => createUserSubscription(user, input),
-    userSubscriptionEdit: (_, { id }, { user }) => ({
-      delete: () => userSubscriptionDelete(user, id),
-      fieldPatch: ({ input }) => userSubscriptionEditField(user, id, input),
-      contextPatch: ({ input }) => userSubscriptionEditContext(user, id, input),
-      contextClean: () => userSubscriptionCleanContext(user, id),
+    userSubscriptionAdd: (_, { input }, context) => createUserSubscription(context, context.user, input),
+    userSubscriptionEdit: (_, { id }, context) => ({
+      delete: () => userSubscriptionDelete(context, context.user, id),
+      fieldPatch: ({ input }) => userSubscriptionEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => userSubscriptionEditContext(context, context.user, id, input),
+      contextClean: () => userSubscriptionCleanContext(context, context.user, id),
     }),
   },
 };

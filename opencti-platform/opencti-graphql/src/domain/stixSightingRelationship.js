@@ -36,15 +36,15 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { listRelations } from '../database/middleware-loader';
 
-export const findAll = async (user, args) => {
-  return listRelations(user, STIX_SIGHTING_RELATIONSHIP, args);
+export const findAll = async (context, user, args) => {
+  return listRelations(context, user, STIX_SIGHTING_RELATIONSHIP, args);
 };
 
-export const findById = (user, stixSightingRelationshipId) => {
-  return storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+export const findById = (context, user, stixSightingRelationshipId) => {
+  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 
-export const stixSightingRelationshipsNumber = (user, args) => ({
+export const stixSightingRelationshipsNumber = (context, user, args) => ({
   count: elCount(user, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, assoc('types', [STIX_SIGHTING_RELATIONSHIP], args)),
   total: elCount(
     user,
@@ -53,32 +53,33 @@ export const stixSightingRelationshipsNumber = (user, args) => ({
   ),
 });
 
-export const batchCreatedBy = async (user, stixCoreRelationshipIds) => {
-  return batchLoadThroughGetTo(user, stixCoreRelationshipIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => {
+  return batchLoadThroughGetTo(context, user, stixCoreRelationshipIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
 };
 
-export const batchReports = async (user, stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+export const batchReports = async (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const batchNotes = (user, stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+export const batchNotes = (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const batchOpinions = (user, stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
+export const batchOpinions = (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
-export const batchLabels = (user, stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(user, stixCoreRelationshipIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+export const batchLabels = (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(context, user, stixCoreRelationshipIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const batchMarkingDefinitions = (user, stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(user, stixCoreRelationshipIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
+export const batchMarkingDefinitions = (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(context, user, stixCoreRelationshipIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const batchExternalReferences = (user, stixCoreRelationshipIds) => {
+export const batchExternalReferences = (context, user, stixCoreRelationshipIds) => {
   return batchListThroughGetTo(
+    context,
     user,
     stixCoreRelationshipIds,
     RELATION_EXTERNAL_REFERENCE,
@@ -87,22 +88,23 @@ export const batchExternalReferences = (user, stixCoreRelationshipIds) => {
 };
 
 // region mutations
-export const addStixSightingRelationship = async (user, stixSightingRelationship) => {
+export const addStixSightingRelationship = async (context, user, stixSightingRelationship) => {
   const created = await createRelation(
+    context,
     user,
     assoc('relationship_type', STIX_SIGHTING_RELATIONSHIP, stixSightingRelationship)
   );
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
-export const stixSightingRelationshipDelete = async (user, stixSightingRelationshipId) => {
-  return deleteElementById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+export const stixSightingRelationshipDelete = async (context, user, stixSightingRelationshipId) => {
+  return deleteElementById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
-export const stixSightingRelationshipEditField = async (user, relationshipId, input, opts) => {
-  const { element } = await updateAttribute(user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input, opts);
+export const stixSightingRelationshipEditField = async (context, user, relationshipId, input, opts) => {
+  const { element } = await updateAttribute(context, user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input, opts);
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
-export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {
-  const stixSightingRelationship = await storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+export const stixSightingRelationshipAddRelation = async (context, user, stixSightingRelationshipId, input) => {
+  const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
   if (!stixSightingRelationship) {
     throw FunctionalError(`Cannot add the relation, ${ABSTRACT_STIX_META_RELATIONSHIP} cannot be found.`);
   }
@@ -110,18 +112,19 @@ export const stixSightingRelationshipAddRelation = async (user, stixSightingRela
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('fromId', stixSightingRelationshipId, input);
-  return createRelation(user, finalInput).then((relationData) => {
+  return createRelation(context, user, finalInput).then((relationData) => {
     notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const stixSightingRelationshipDeleteRelation = async (
+  context,
   user,
   stixSightingRelationshipId,
   toId,
   relationshipType
 ) => {
-  const stixSightingRelationship = await storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
   if (!stixSightingRelationship) {
     throw FunctionalError(`Cannot delete the relation, ${STIX_SIGHTING_RELATIONSHIP} cannot be found.`);
   }
@@ -129,6 +132,7 @@ export const stixSightingRelationshipDeleteRelation = async (
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(
+    context,
     user,
     stixSightingRelationshipId,
     toId,
@@ -140,15 +144,15 @@ export const stixSightingRelationshipDeleteRelation = async (
 // endregion
 
 // region context
-export const stixSightingRelationshipCleanContext = (user, stixSightingRelationshipId) => {
+export const stixSightingRelationshipCleanContext = (context, user, stixSightingRelationshipId) => {
   delEditContext(user, stixSightingRelationshipId);
-  return storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
+  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
     return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
   });
 };
-export const stixSightingRelationshipEditContext = (user, stixSightingRelationshipId, input) => {
+export const stixSightingRelationshipEditContext = (context, user, stixSightingRelationshipId, input) => {
   setEditContext(user, stixSightingRelationshipId, input);
-  return storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
+  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
     return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
   });
 };

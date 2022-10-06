@@ -16,8 +16,8 @@ const killChainPhaseLoader = batchLoader(batchKillChainPhases);
 
 const infrastructureResolvers = {
   Query: {
-    infrastructure: (_, { id }, { user }) => findById(user, id),
-    infrastructures: (_, args, { user }) => findAll(user, args),
+    infrastructure: (_, { id }, context) => findById(context, context.user, id),
+    infrastructures: (_, args, context) => findAll(context, context.user, args),
   },
   InfrastructuresFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -25,18 +25,18 @@ const infrastructureResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Infrastructure: {
-    killChainPhases: (infrastructure, _, { user }) => killChainPhaseLoader.load(infrastructure.id, user),
+    killChainPhases: (infrastructure, _, context) => killChainPhaseLoader.load(infrastructure.id, context, context.user),
   },
   Mutation: {
-    infrastructureEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    infrastructureEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    infrastructureAdd: (_, { input }, { user }) => addInfrastructure(user, input),
+    infrastructureAdd: (_, { input }, context) => addInfrastructure(context, context.user, input),
   },
 };
 

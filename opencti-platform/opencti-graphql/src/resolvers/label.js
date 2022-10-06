@@ -15,35 +15,35 @@ import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 
 const labelResolvers = {
   Query: {
-    label: (_, { id }, { user }) => findById(user, id),
-    labels: (_, args, { user }) => findAll(user, args),
+    label: (_, { id }, context) => findById(context, context.user, id),
+    labels: (_, args, context) => findAll(context, context.user, args),
   },
   Label: {
     editContext: (label) => fetchEditContext(label.id),
   },
   Mutation: {
-    labelEdit: (_, { id }, { user }) => ({
-      delete: () => labelDelete(user, id),
-      fieldPatch: ({ input }) => labelEditField(user, id, input),
-      contextPatch: ({ input }) => labelEditContext(user, id, input),
-      contextClean: () => labelCleanContext(user, id),
+    labelEdit: (_, { id }, context) => ({
+      delete: () => labelDelete(context, context.user, id),
+      fieldPatch: ({ input }) => labelEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => labelEditContext(context, context.user, id, input),
+      contextClean: () => labelCleanContext(context, context.user, id),
     }),
-    labelAdd: (_, { input }, { user }) => addLabel(user, input),
+    labelAdd: (_, { input }, context) => addLabel(context, context.user, input),
   },
   Subscription: {
     label: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        labelEditContext(user, id);
+      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+        labelEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
-        )(_, { id }, { user });
+        )(_, { id }, context);
         return withCancel(filtering, () => {
-          labelCleanContext(user, id);
+          labelCleanContext(context, context.user, id);
         });
       },
     },

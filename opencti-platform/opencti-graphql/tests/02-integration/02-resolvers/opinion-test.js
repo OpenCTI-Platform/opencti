@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
 
@@ -154,7 +154,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinion.id).toEqual(opinionInternalId);
   });
   it('should opinion stix objects sor stix relationships accurate', async () => {
-    const opinion = await elLoadById(ADMIN_USER, 'opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f');
+    const opinion = await elLoadById(testContext, ADMIN_USER, 'opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f');
     datasetOpinionInternalId = opinion.internal_id;
     const OPINION_STIX_DOMAIN_ENTITIES = gql`
       query opinion($id: String!) {
@@ -187,8 +187,8 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinion.objects.edges.length).toEqual(6);
   });
   it('should opinion contains stix object or stix relationship accurate', async () => {
-    const intrusionSet = await elLoadById(ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const stixRelationship = await elLoadById(ADMIN_USER, 'relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
+    const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const stixRelationship = await elLoadById(testContext, ADMIN_USER, 'relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
     const OPINION_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP = gql`
       query opinionContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
         opinionContainsStixObjectOrStixRelationship(
@@ -238,7 +238,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries opinions for entity to be accurate', async () => {
-    const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     datasetMalwareInternalId = malware.internal_id;
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
@@ -256,7 +256,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries opinions for author to be accurate', async () => {
-    const identity = await elLoadById(ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
+    const identity = await elLoadById(testContext, ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {

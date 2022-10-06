@@ -25,7 +25,7 @@ if __name__ == "__main__":
             api_token=sys.argv[2],
             config_file_path=os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
-                "../..",
+                "../../..",
                 sys.argv[3].lstrip(os.path.sep),
             ),
         ).inject()

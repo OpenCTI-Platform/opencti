@@ -18,19 +18,19 @@ import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 import { addIndividual, findAll as findIndividuals } from './individual';
 
-export const findById = (user, opinionId) => {
-  return storeLoadById(user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
+export const findById = (context, user, opinionId) => {
+  return storeLoadById(context, user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
 };
-export const findAll = async (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_CONTAINER_OPINION], args);
+export const findAll = async (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], args);
 };
-export const findMyOpinion = async (user, entityId) => {
+export const findMyOpinion = async (context, user, entityId) => {
   // Resolve the individual
   const individualsArgs = {
     filters: [{ key: 'contact_information', values: [user.user_email] }],
     connectionFormat: false,
   };
-  const individuals = await findIndividuals(user, individualsArgs);
+  const individuals = await findIndividuals(context, user, individualsArgs);
   if (individuals.length === 0) {
     return null;
   }
@@ -43,30 +43,30 @@ export const findMyOpinion = async (user, entityId) => {
     ],
     connectionFormat: false,
   };
-  const opinions = await findAll(user, opinionsArgs);
+  const opinions = await findAll(context, user, opinionsArgs);
   return opinions.length > 0 ? R.head(opinions) : null;
 };
 
 // Entities tab
 
-export const opinionContainsStixObjectOrStixRelationship = async (user, opinionId, thingId) => {
-  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(user, thingId)).id : thingId;
+export const opinionContainsStixObjectOrStixRelationship = async (context, user, opinionId, thingId) => {
+  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
   const args = {
     filters: [
       { key: 'internal_id', values: [opinionId] },
       { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
     ],
   };
-  const opinionFound = await findAll(user, args);
+  const opinionFound = await findAll(context, user, args);
   return opinionFound.edges.length > 0;
 };
 
 // region series
-export const opinionsTimeSeries = (user, args) => {
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_OPINION, [], args);
+export const opinionsTimeSeries = (context, user, args) => {
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, [], args);
 };
 
-export const opinionsNumber = (user, args) => ({
+export const opinionsNumber = (context, user, args) => ({
   count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args)),
   total: elCount(
     user,
@@ -75,12 +75,12 @@ export const opinionsNumber = (user, args) => ({
   ),
 });
 
-export const opinionsTimeSeriesByEntity = (user, args) => {
+export const opinionsTimeSeriesByEntity = (context, user, args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
 };
 
-export const opinionsTimeSeriesByAuthor = async (user, args) => {
+export const opinionsTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId } = args;
   const filters = [
     {
@@ -91,10 +91,10 @@ export const opinionsTimeSeriesByAuthor = async (user, args) => {
       value: authorId,
     },
   ];
-  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
+  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
 };
 
-export const opinionsNumberByEntity = (user, args) => ({
+export const opinionsNumberByEntity = (context, user, args) => ({
   count: elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
@@ -118,28 +118,28 @@ export const opinionsNumberByEntity = (user, args) => ({
   ),
 });
 
-export const opinionsDistributionByEntity = async (user, args) => {
+export const opinionsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
+  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
 };
 // endregion
 
 // region mutations
-export const addOpinion = async (user, opinion) => {
+export const addOpinion = async (context, user, opinion) => {
   const opinionToCreate = opinion;
   // For note, auto assign current user as author
   if (!opinion.createdBy) {
     const args = { filters: [{ key: 'contact_information', values: [user.user_email] }], connectionFormat: false };
-    const individuals = await findIndividuals(user, args);
+    const individuals = await findIndividuals(context, user, args);
     if (individuals.length > 0) {
       opinionToCreate.createdBy = R.head(individuals).id;
     } else {
-      const individual = await addIndividual(user, { name: user.name, contact_information: user.user_email });
+      const individual = await addIndividual(context, user, { name: user.name, contact_information: user.user_email });
       opinionToCreate.createdBy = individual.id;
     }
   }
-  const created = await createEntity(user, opinionToCreate, ENTITY_TYPE_CONTAINER_OPINION);
+  const created = await createEntity(context, user, opinionToCreate, ENTITY_TYPE_CONTAINER_OPINION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

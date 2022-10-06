@@ -17,13 +17,13 @@ const isSubNarrativeLoader = batchLoader(batchIsSubNarrative);
 
 const narrativeResolvers: Resolvers = {
   Query: {
-    narrative: (_, { id }, { user }) => findById(user, id),
-    narratives: (_, args, { user }) => findAll(user, args),
+    narrative: (_, { id }, context) => findById(context, context.user, id),
+    narratives: (_, args, context) => findAll(context, context.user, args),
   },
   Narrative: {
-    parentNarratives: (narrative, _, { user }) => parentNarrativesLoader.load(narrative.id, user),
-    subNarratives: (narrative, _, { user }) => subNarrativesLoader.load(narrative.id, user),
-    isSubNarrative: (narrative, _, { user }) => isSubNarrativeLoader.load(narrative.id, user),
+    parentNarratives: (narrative, _, context) => parentNarrativesLoader.load(narrative.id, context, context.user),
+    subNarratives: (narrative, _, context) => subNarrativesLoader.load(narrative.id, context, context.user),
+    isSubNarrative: (narrative, _, context) => isSubNarrativeLoader.load(narrative.id, context, context.user),
   },
   NarrativesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -31,26 +31,26 @@ const narrativeResolvers: Resolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    narrativeAdd: (_, { input }, { user }) => {
-      return addNarrative(user, input);
+    narrativeAdd: (_, { input }, context) => {
+      return addNarrative(context, context.user, input);
     },
-    narrativeDelete: (_, { id }, { user }) => {
-      return stixDomainObjectDelete(user, id);
+    narrativeDelete: (_, { id }, context) => {
+      return stixDomainObjectDelete(context, context.user, id);
     },
-    narrativeFieldPatch: (_, { id, input, commitMessage, references }, { user }) => {
-      return stixDomainObjectEditField(user, id, input, { commitMessage, references });
+    narrativeFieldPatch: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },
-    narrativeContextPatch: (_, { id, input }, { user }) => {
-      return stixDomainObjectEditContext(user, id, input);
+    narrativeContextPatch: (_, { id, input }, context) => {
+      return stixDomainObjectEditContext(context, context.user, id, input);
     },
-    narrativeContextClean: (_, { id }, { user }) => {
-      return stixDomainObjectCleanContext(user, id);
+    narrativeContextClean: (_, { id }, context) => {
+      return stixDomainObjectCleanContext(context, context.user, id);
     },
-    narrativeRelationAdd: (_, { id, input }, { user }) => {
-      return stixDomainObjectAddRelation(user, id, input);
+    narrativeRelationAdd: (_, { id, input }, context) => {
+      return stixDomainObjectAddRelation(context, context.user, id, input);
     },
-    narrativeRelationDelete: (_, { id, toId, relationship_type: relationshipType }, { user }) => {
-      return stixDomainObjectDeleteRelation(user, id, toId, relationshipType);
+    narrativeRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },
 };

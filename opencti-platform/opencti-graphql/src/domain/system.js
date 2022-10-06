@@ -7,16 +7,17 @@ import { ENTITY_TYPE_IDENTITY_SYSTEM, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_BELONGS_TO } from '../schema/stixCoreRelationship';
 
-export const findById = (user, systemId) => {
-  return storeLoadById(user, systemId, ENTITY_TYPE_IDENTITY_SYSTEM);
+export const findById = (context, user, systemId) => {
+  return storeLoadById(context, user, systemId, ENTITY_TYPE_IDENTITY_SYSTEM);
 };
 
-export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_IDENTITY_SYSTEM], args);
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_IDENTITY_SYSTEM], args);
 };
 
-export const addSystem = async (user, system) => {
+export const addSystem = async (context, user, system) => {
   const created = await createEntity(
+    context,
     user,
     assoc('identity_class', ENTITY_TYPE_IDENTITY_SYSTEM.toLowerCase(), system),
     ENTITY_TYPE_IDENTITY_SYSTEM
@@ -24,6 +25,6 @@ export const addSystem = async (user, system) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchOrganizations = (user, systemIds) => {
-  return batchListThroughGetTo(user, systemIds, RELATION_BELONGS_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+export const batchOrganizations = (context, user, systemIds) => {
+  return batchListThroughGetTo(context, user, systemIds, RELATION_BELONGS_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };

@@ -15,36 +15,36 @@ import { stixLoadByIdStringify } from '../database/middleware';
 
 const markingDefinitionResolvers = {
   Query: {
-    markingDefinition: (_, { id }, { user }) => findById(user, id),
-    markingDefinitions: (_, args, { user }) => findAll(user, args),
+    markingDefinition: (_, { id }, context) => findById(context, context.user, id),
+    markingDefinitions: (_, args, context) => findAll(context, context.user, args),
   },
   MarkingDefinition: {
-    toStix: (markingDefinition, _, { user }) => stixLoadByIdStringify(user, markingDefinition.id),
+    toStix: (markingDefinition, _, context) => stixLoadByIdStringify(context, context.user, markingDefinition.id),
     editContext: (markingDefinition) => fetchEditContext(markingDefinition.id),
   },
   Mutation: {
-    markingDefinitionEdit: (_, { id }, { user }) => ({
-      delete: () => markingDefinitionDelete(user, id),
-      fieldPatch: ({ input }) => markingDefinitionEditField(user, id, input),
-      contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
-      contextClean: () => markingDefinitionCleanContext(user, id),
+    markingDefinitionEdit: (_, { id }, context) => ({
+      delete: () => markingDefinitionDelete(context, context.user, id),
+      fieldPatch: ({ input }) => markingDefinitionEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => markingDefinitionEditContext(context, context.user, id, input),
+      contextClean: () => markingDefinitionCleanContext(context, context.user, id),
     }),
-    markingDefinitionAdd: (_, { input }, { user }) => addMarkingDefinition(user, input),
+    markingDefinitionAdd: (_, { input }, context) => addMarkingDefinition(context, context.user, input),
   },
   Subscription: {
     markingDefinition: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        markingDefinitionEditContext(user, id);
+      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+        markingDefinitionEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
-        )(_, { id }, { user });
+        )(_, { id }, context);
         return withCancel(filtering, () => {
-          markingDefinitionCleanContext(user, id);
+          markingDefinitionCleanContext(context, context.user, id);
         });
       },
     },

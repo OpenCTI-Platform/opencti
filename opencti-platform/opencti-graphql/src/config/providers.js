@@ -19,7 +19,7 @@ import { isNotEmptyField } from '../database/utils';
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
 // Admin user initialization
-export const initializeAdminUser = async () => {
+export const initializeAdminUser = async (context) => {
   const DEFAULT_CONF_VALUE = 'ChangeMe';
   const adminEmail = conf.get('app:admin:email');
   const adminPassword = conf.get('app:admin:password');
@@ -42,7 +42,7 @@ export const initializeAdminUser = async () => {
     }
     // Initialize the admin account
     // noinspection JSIgnoredPromiseFromCall
-    await initAdmin(adminEmail, adminPassword, adminToken);
+    await initAdmin(context, adminEmail, adminPassword, adminToken);
     logApp.info('[INIT] admin user initialized');
   }
 };

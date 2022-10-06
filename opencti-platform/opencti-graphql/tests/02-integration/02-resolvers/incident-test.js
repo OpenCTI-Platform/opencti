@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
@@ -133,7 +133,7 @@ describe('Incident resolver standard behavior', () => {
     expect(queryResult.data.incidentsTimeSeries[2].value).toEqual(1);
   });
   it("should timeseries of an entity's Incidents", async () => {
-    const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {

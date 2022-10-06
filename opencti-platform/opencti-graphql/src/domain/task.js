@@ -49,12 +49,12 @@ const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   };
 };
 
-export const findById = async (user, taskId) => {
-  return storeLoadById(user, taskId, ENTITY_TYPE_TASK);
+export const findById = async (context, user, taskId) => {
+  return storeLoadById(context, user, taskId, ENTITY_TYPE_TASK);
 };
 
-export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_TASK], args);
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_TASK], args);
 };
 
 const buildQueryFilters = (rawFilters, search, taskPosition) => {
@@ -88,9 +88,9 @@ const buildQueryFilters = (rawFilters, search, taskPosition) => {
     search: search && search.length > 0 ? search : null,
   };
 };
-export const executeTaskQuery = async (user, filters, search, start = null) => {
+export const executeTaskQuery = async (context, user, filters, search, start = null) => {
   const options = buildQueryFilters(filters, search, start);
-  return elPaginate(user, READ_STIX_INDICES, options);
+  return elPaginate(context, user, READ_STIX_INDICES, options);
 };
 
 const checkActionValidity = (user, actions) => {
@@ -105,11 +105,11 @@ const checkActionValidity = (user, actions) => {
   }
 };
 
-export const createRuleTask = async (user, ruleDefinition, input) => {
+export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const { rule, enable } = input;
   const { scan } = ruleDefinition;
   const opts = enable ? buildFilters(scan) : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
-  const queryData = await elPaginate(user, READ_DATA_INDICES, { ...opts, first: 1 });
+  const queryData = await elPaginate(context, user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
   const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);
   const ruleTask = { ...task, rule, enable };
@@ -117,10 +117,10 @@ export const createRuleTask = async (user, ruleDefinition, input) => {
   return ruleTask;
 };
 
-export const createQueryTask = async (user, input) => {
+export const createQueryTask = async (context, user, input) => {
   const { actions, filters, excluded_ids = [], search = null } = input;
   checkActionValidity(user, actions);
-  const queryData = await executeTaskQuery(user, filters, search);
+  const queryData = await executeTaskQuery(context, user, filters, search);
   const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
   const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected);
   const queryTask = { ...task, actions, task_filters: filters, task_search: search, task_excluded_ids: excluded_ids };
@@ -137,11 +137,11 @@ export const createListTask = async (user, input) => {
   return listTask;
 };
 
-export const deleteTask = async (user, taskId) => {
-  await deleteElementById(user, taskId, ENTITY_TYPE_TASK);
+export const deleteTask = async (context, user, taskId) => {
+  await deleteElementById(context, user, taskId, ENTITY_TYPE_TASK);
   return taskId;
 };
 
-export const updateTask = async (taskId, patch) => {
-  await patchAttribute(SYSTEM_USER, taskId, ENTITY_TYPE_TASK, patch);
+export const updateTask = async (context, taskId, patch) => {
+  await patchAttribute(context, SYSTEM_USER, taskId, ENTITY_TYPE_TASK, patch);
 };

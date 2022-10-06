@@ -9,7 +9,7 @@ import {
   restCollectionStix,
   restLoadCollectionById,
 } from '../domain/taxii';
-import { BYPASS, getBaseUrl } from '../utils/access';
+import { BYPASS, executionContext, getBaseUrl } from '../utils/access';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
@@ -27,10 +27,10 @@ const userHaveAccess = (user) => {
   const capabilities = user.capabilities.map((c) => c.name);
   return capabilities.includes(BYPASS) || capabilities.includes(TAXIIAPI);
 };
-const extractUserFromRequest = async (req, res) => {
+const extractUserFromRequest = async (context, req, res) => {
   res.setHeader('content-type', TAXII_VERSION);
   // noinspection UnnecessaryLocalVariableJS
-  const user = await authenticateUserFromRequest(req, res);
+  const user = await authenticateUserFromRequest(context, req, res);
   if (!user) {
     res.setHeader('WWW-Authenticate', 'Basic, Bearer');
     throw AuthRequired();
@@ -50,7 +50,8 @@ const initTaxiiApi = (app) => {
   // Discovery api
   app.get(`${basePath}/taxii2`, async (req, res) => {
     try {
-      await extractUserFromRequest(req, res);
+      const context = executionContext('taxii');
+      await extractUserFromRequest(context, req, res);
       const discovery = {
         title: 'OpenCTI TAXII Server',
         description: 'This TAXII Server exposes OpenCTI data through taxii protocol',
@@ -66,7 +67,8 @@ const initTaxiiApi = (app) => {
   // Root api
   app.get(`${basePath}/taxii2/root`, async (req, res) => {
     try {
-      await extractUserFromRequest(req, res);
+      const context = executionContext('taxii');
+      await extractUserFromRequest(context, req, res);
       const rootContent = {
         title: 'OpenCTI TAXII Server',
         description: 'A global and natively segregate taxii root',
@@ -82,8 +84,9 @@ const initTaxiiApi = (app) => {
   // Collection api
   app.get(`${basePath}/taxii2/root/collections`, async (req, res) => {
     try {
-      const user = await extractUserFromRequest(req, res);
-      const collections = await restAllCollections(user);
+      const context = executionContext('taxii');
+      const user = await extractUserFromRequest(context, req, res);
+      const collections = await restAllCollections(context, user);
       res.json({ collections });
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -93,8 +96,9 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id`, async (req, res) => {
     const { id } = req.params;
     try {
-      const user = await extractUserFromRequest(req, res);
-      const collection = await restLoadCollectionById(user, id);
+      const context = executionContext('taxii');
+      const user = await extractUserFromRequest(context, req, res);
+      const collection = await restLoadCollectionById(context, user, id);
       res.json(collection);
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -104,8 +108,9 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id/manifest`, async (req, res) => {
     const { id } = req.params;
     try {
-      const user = await extractUserFromRequest(req, res);
-      const manifest = await restCollectionManifest(user, id, req.query);
+      const context = executionContext('taxii');
+      const user = await extractUserFromRequest(context, req, res);
+      const manifest = await restCollectionManifest(context, user, id, req.query);
       res.set('X-TAXII-Date-Added-First', R.head(manifest.objects)?.updated_at);
       res.set('X-TAXII-Date-Added-Last', R.last(manifest.objects)?.updated_at);
       res.json(manifest);
@@ -117,8 +122,9 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id/objects`, async (req, res) => {
     const { id } = req.params;
     try {
-      const user = await extractUserFromRequest(req, res);
-      const stix = await restCollectionStix(user, id, req.query);
+      const context = executionContext('taxii');
+      const user = await extractUserFromRequest(context, req, res);
+      const stix = await restCollectionStix(context, user, id, req.query);
       res.set('X-TAXII-Date-Added-First', R.head(stix.objects)?.updated_at);
       res.set('X-TAXII-Date-Added-Last', R.last(stix.objects)?.updated_at);
       res.json(stix);
@@ -130,9 +136,10 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id`, async (req, res) => {
     const { id, object_id } = req.params;
     try {
-      const user = await extractUserFromRequest(req, res);
+      const context = executionContext('taxii');
+      const user = await extractUserFromRequest(context, req, res);
       const args = rebuildParamsForObject(object_id, req);
-      const stix = await restCollectionStix(user, id, args);
+      const stix = await restCollectionStix(context, user, id, args);
       res.set('X-TAXII-Date-Added-First', R.head(stix.objects)?.updated_at);
       res.set('X-TAXII-Date-Added-Last', R.last(stix.objects)?.updated_at);
       res.json(stix);
@@ -144,9 +151,10 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id/versions`, async (req, res) => {
     const { id, object_id } = req.params;
     try {
-      const user = await extractUserFromRequest(req, res);
+      const context = executionContext('taxii');
+      const user = await extractUserFromRequest(context, req, res);
       const args = rebuildParamsForObject(object_id, req);
-      const stix = await restCollectionStix(user, id, args);
+      const stix = await restCollectionStix(context, user, id, args);
       const data = R.head(stix.objects);
       res.set('X-TAXII-Date-Added-First', data?.updated_at);
       res.set('X-TAXII-Date-Added-Last', data?.updated_at);
