@@ -27,12 +27,13 @@
     "telemetry": {
       "tracing": {
         "enabled": false,
-        "exporter_otlp": "http://xxxx:4318/v1/traces",
-        "exporter_zipkin": "http://xxxx:9411/api/v2/spans"
+        "exporter_otlp": "",
+        "exporter_zipkin": ""
       },
-      "metrics_prometheus": {
+      "metrics": {
         "enabled": false,
-        "metrics_path": "/prometheus/metrics"
+        "exporter_otlp": "",
+        "exporter_prometheus": 14269
       }
     },
     "request_timeout": 1200000,

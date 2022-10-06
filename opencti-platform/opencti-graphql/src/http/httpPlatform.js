@@ -5,18 +5,13 @@ import { URL } from 'node:url';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import bodyParser from 'body-parser';
-import prometheus from 'express-prometheus-middleware';
-import nodeMetrics from 'opentelemetry-node-metrics';
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import showdown from 'showdown';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import { HostMetrics } from '@opentelemetry/host-metrics';
-import { basePath, booleanConf, DEV_MODE, formatPath, logApp, logAudit } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile } from '../database/file-storage';
@@ -91,29 +86,6 @@ const createApp = async (app) => {
   }
   app.use(securityMiddleware);
   app.use(compression({}));
-  // -- Telemetry
-  const exposePrometheusMetrics = booleanConf('app:telemetry:metrics_prometheus:enabled', false);
-  if (exposePrometheusMetrics) {
-    const options = { port: 9464, startServer: true };
-    const exporter = new PrometheusExporter(options);
-    const meterProvider = new MeterProvider();
-    meterProvider.addMetricReader(exporter);
-    const hostMetrics = new HostMetrics({ meterProvider, name: 'example-host-metrics' });
-    hostMetrics.start();
-    nodeMetrics(meterProvider);
-    const metricsPath = nconf.get('app:telemetry:metrics_prometheus:metrics_path') || '/prometheus/metrics';
-    const fullMetricsPath = `${basePath}${formatPath(metricsPath)}`;
-    logApp.info(`Adding prometheus middleware (for metrics) on path: ${fullMetricsPath}`);
-    app.use(
-      prometheus({
-        metricsPath: fullMetricsPath,
-        collectDefaultMetrics: true,
-        requestDurationBuckets: [0.1, 0.5, 1, 1.5],
-        requestLengthBuckets: [512, 1024, 5120, 10240, 51200, 102400],
-        responseLengthBuckets: [512, 1024, 5120, 10240, 51200, 102400],
-      })
-    );
-  }
 
   // -- Serv playground resources
   app.use(`${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static`, express.static('static/playground'));
