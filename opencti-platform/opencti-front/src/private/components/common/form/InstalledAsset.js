@@ -189,7 +189,7 @@ class InstalledAsset extends Component {
     const sort = R.sortWith(
       [
         R.ascend(R.prop('name')),
-        R.descend(R.prop('version'))
+        R.ascend(R.prop('version'))
       ]
     );
 
