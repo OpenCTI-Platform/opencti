@@ -1,3 +1,6 @@
+import sys
+
+from lib.utils import return_data
 from stix2 import (
     EqualityComparisonExpression,
     ObjectPath,
@@ -76,3 +79,14 @@ def stix2_create_pattern(observable_type, observable_value):
         return {"status": "success", "data": str(pattern)}
     else:
         return {"status": "unknown", "data": None}
+
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 2:
+        return_data({'status': 'error', 'message': 'Missing argument to the Python script'})
+
+    if sys.argv[1] == 'check':
+        return_data({'status': 'success'})
+
+    data = stix2_create_pattern(sys.argv[1], sys.argv[2])
+    return_data(data)

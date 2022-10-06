@@ -1,10 +1,15 @@
-import { checkPythonAvailability, createStixPattern, execTestingPython } from '../../../src/python/pythonBridge';
+import {
+  checkIndicatorSyntax,
+  checkPythonAvailability,
+  createStixPattern,
+  execTestingPython
+} from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 test('Check if python is well configured', async () => {
   const check = await checkPythonAvailability(testContext, ADMIN_USER);
   expect(check).not.toBeNull();
-  expect(check).toEqual('check');
+  expect(check.status).toEqual('success');
   // noinspection ES6MissingAwait
   expect(execTestingPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('An unknown error has occurred');
   // noinspection ES6MissingAwait
@@ -26,4 +31,14 @@ test('Check createStixPattern hash', async () => {
     'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88'
   );
   expect(check).toEqual("[file:hashes.'SHA-256' = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']");
+});
+
+test('Check stix indicator syntax', async () => {
+  const check = await checkIndicatorSyntax(testContext, ADMIN_USER, 'stix', '[ipv4-addr:value = \'195.206.105.217\']');
+  expect(check).toEqual(true);
+});
+
+test('Check stix indicator bad pattern', async () => {
+  const check = await checkIndicatorSyntax(testContext, ADMIN_USER, 'stix', '5.206.105.217');
+  expect(check).toEqual(false);
 });

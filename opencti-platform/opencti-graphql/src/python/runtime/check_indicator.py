@@ -1,5 +1,8 @@
+import sys
+
 import eql
 import plyara
+from lib.utils import return_data
 from parsuricata import parse_rules
 from sigma.parser.collection import SigmaCollectionParser
 from stix2patterns.validator import run_validator
@@ -61,3 +64,16 @@ def check_indicator(pattern_type, indicator_value):  # pylint: disable=too-many-
         return {"status": "success", "data": result}
 
     return {"status": "unknown", "data": None}
+
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 2:
+        return_data(
+            {"status": "error", "message": "Missing argument to the Python script"}
+        )
+
+    if sys.argv[1] == "check":
+        return_data({"status": "success"})
+
+    data = check_indicator(sys.argv[1], sys.argv[2])
+    return_data(data)
