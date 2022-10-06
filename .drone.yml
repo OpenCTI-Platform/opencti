@@ -25,7 +25,7 @@ steps:
       SMTP__PASSWORD: frhJ2mSPTfaEutpbug
       PYTHONUNBUFFERED: 1
     commands:
-      - apk add build-base git libffi-dev python3
+      - apk add build-base git libffi-dev python3 python3-dev
       - ln -sf python3 /usr/bin/python
       - python3 -m ensurepip
       - pip3 install --no-cache --upgrade pip setuptools
@@ -152,7 +152,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 90
-      - apk add build-base git libffi-dev
+      - apk add build-base git libffi-dev python3-dev
       - cp -a opencti-platform /tmp/live-start-platform
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
@@ -176,7 +176,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 60
-      - apk add build-base git libffi-dev
+      - apk add build-base git libffi-dev python3-dev
       - cp -a opencti-platform /tmp/direct-start-platform
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
@@ -214,7 +214,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 120
-      - apk add build-base git libffi-dev
+      - apk add build-base git libffi-dev python3-dev
       - cp -a opencti-platform /tmp/restore-start-platform
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
