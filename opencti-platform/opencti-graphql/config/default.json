@@ -101,7 +101,7 @@
     "interval": 10000
   },
   "retention_manager": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "retention_manager_lock",
     "interval": 60000
   },
