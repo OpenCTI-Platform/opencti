@@ -104,6 +104,7 @@
     "passport-ldapauth": "3.0.1",
     "passport-local": "1.0.0",
     "passport-saml": "3.2.1",
+    "prom-client": "^14.1.0",
     "python-shell": "3.0.1",
     "ramda": "0.28.0",
     "redlock": "5.0.0-beta.2",
