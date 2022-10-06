@@ -2,12 +2,12 @@ import sys
 
 import eql
 import plyara
-from lib.utils import return_data
+from utils.runtime_utils import return_data
 from parsuricata import parse_rules
 from sigma.parser.collection import SigmaCollectionParser
 from stix2patterns.validator import run_validator
 
-from lib.snortparser import Parser
+from snort.snort_parser import Parser
 
 
 def check_indicator(pattern_type, indicator_value):  # pylint: disable=too-many-branches

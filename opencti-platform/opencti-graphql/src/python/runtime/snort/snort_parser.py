@@ -2,11 +2,7 @@ import collections
 import ipaddress
 import re
 from typing import Any, Dict, List, Optional, Tuple
-
-try:
-    from .dicts import Dicts
-except ImportError:
-    from dicts import Dicts
+from .snort_dicts import Dicts
 
 
 class Parser:

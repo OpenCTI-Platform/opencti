@@ -1,6 +1,6 @@
 import sys
 
-from lib.utils import return_data
+from utils.runtime_utils import return_data
 from stix2 import (
     EqualityComparisonExpression,
     ObjectPath,
