@@ -239,7 +239,7 @@ jobs:
           only_on_fail: true
           webhook_url: $MS_TEAMS_WEBHOOK_URL
 
-  deploy_testing:
+  deploy_club:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:15-stretch
@@ -283,7 +283,7 @@ jobs:
           only_on_fail: true
           webhook_url: $MS_TEAMS_WEBHOOK_URL
 
-  deploy_club:
+  deploy_testing:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:15-stretch
@@ -612,6 +612,13 @@ workflows:
             branches:
               only:
                 - master
+      - deploy_testing:
+          requires:
+            - build_platform
+          filters:
+            branches:
+              only:
+                - master
       - docker_build_platform_rolling:
           requires:
             - build_frontend
@@ -647,6 +654,7 @@ workflows:
             - deploy_demo
             - deploy_lab
             - deploy_reference
+            - deploy_testing
             - package_rolling
             - package_rolling_musl
             - docker_build_platform_rolling
