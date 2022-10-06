@@ -158,8 +158,6 @@ class EntitiesAssessmentPlatformsCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               name: '',
-              created: null,
-              modified: null,
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
