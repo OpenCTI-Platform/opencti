@@ -6,19 +6,19 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import nconf from 'nconf';
 import { ZipkinExporter } from '@opentelemetry/exporter-zipkin';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import opentelemetryNodeMetrics from 'opentelemetry-node-metrics';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { boot } from './boot';
 import { ENABLED_METRICS, ENABLED_TRACING } from './config/conf';
 import { isNotEmptyField } from './database/utils';
+import { meterManager, meterProvider } from './config/tracing';
 
 // -- Apply telemetry
 // ------- Tracing
 if (ENABLED_TRACING) {
   const provider = new NodeTracerProvider({
     resource: Resource.default().merge(new Resource({
-      'service.name': 'opencti',
+      'service.name': 'opencti-platform',
     })),
   });
   // OTLP - JAEGER ...
@@ -38,7 +38,6 @@ if (ENABLED_TRACING) {
 }
 // ------- Metrics
 if (ENABLED_METRICS) {
-  const meterProvider = new MeterProvider({});
   // OTLP - JAEGER ...
   const exporterOtlp = nconf.get('app:telemetry:metrics:exporter_otlp');
   if (isNotEmptyField(exporterOtlp)) {
@@ -48,12 +47,11 @@ if (ENABLED_METRICS) {
   // PROMETHEUS
   const exporterPrometheus = nconf.get('app:telemetry:metrics:exporter_prometheus');
   if (isNotEmptyField(exporterPrometheus)) {
-    const options = { port: exporterPrometheus };
-    const exporter = new PrometheusExporter(options);
+    const exporter = new PrometheusExporter({ port: exporterPrometheus });
     meterProvider.addMetricReader(exporter);
   }
   // Register metrics
-  opentelemetryNodeMetrics(meterProvider);
+  meterManager.registerMetrics();
 }
 
 // -- Start the platform

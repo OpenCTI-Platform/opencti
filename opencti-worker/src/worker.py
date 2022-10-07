@@ -3,6 +3,7 @@
 
 import base64
 import ctypes
+import datetime
 import functools
 import json
 import logging
@@ -11,12 +12,16 @@ import random
 import sys
 import threading
 import time
+import pika
+import yaml
 from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any, Dict, List, Optional, Union
-
-import pika
-import yaml
+from opentelemetry import metrics
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.exporter.prometheus import PrometheusMetricReader
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+from prometheus_client import start_http_server
 from pika.adapters.blocking_connection import BlockingChannel
 from pycti import OpenCTIApiClient
 from pycti.connector.opencti_connector_helper import (
@@ -27,6 +32,46 @@ from requests.exceptions import RequestException, Timeout
 
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 60
+
+# Telemetry variables definition
+meter = metrics.get_meter(__name__)
+resource = Resource(attributes={SERVICE_NAME: "opencti-worker"})
+bundles_global_counter = meter.create_counter(
+    name="opencti_bundles_global_counter",
+    description="number of bundles processed",
+)
+bundles_success_counter = meter.create_counter(
+    name="opencti_bundles_success_counter",
+    description="number of bundles successfully processed",
+)
+bundles_timeout_error_counter = meter.create_counter(
+    name="opencti_bundles_timeout_error_counter",
+    description="number of bundles in timeout error",
+)
+bundles_request_error_counter = meter.create_counter(
+    name="opencti_bundles_request_error_counter",
+    description="number of bundles in request error",
+)
+bundles_technical_error_counter = meter.create_counter(
+    name="opencti_bundles_technical_error_counter",
+    description="number of bundles in technical error",
+)
+bundles_lock_error_counter = meter.create_counter(
+    name="opencti_bundles_lock_error_counter",
+    description="number of bundles in lock error",
+)
+bundles_missing_reference_error_counter = meter.create_counter(
+    name="opencti_bundles_missing_reference_error_counter",
+    description="number of bundles in missing reference error",
+)
+bundles_bad_gateway_error_counter = meter.create_counter(
+    name="opencti_bundles_bad_gateway_error_counter",
+    description="number of bundles in bad gateway error",
+)
+bundles_processing_time_gauge = meter.create_histogram(
+    name="opencti_bundles_processing_time_gauge",
+    description="number of bundles in bad gateway error",
+)
 
 
 @dataclass(unsafe_hash=True)
@@ -148,6 +193,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         delivery_tag: str,
         data: Dict[str, Any],
     ) -> Optional[bool]:
+        start_processing = datetime.datetime.now()
         # Set the API headers
         applicant_id = data["applicant_id"]
         self.api.set_applicant_id_header(applicant_id)
@@ -177,6 +223,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 if work_id is not None:
                     self.api.work.report_expectation(work_id, None)
                 self.processing_count = 0
+                bundles_success_counter.add(1)
                 return True
             elif event_type == "event":
                 event = base64.b64decode(data["content"]).decode("utf-8")
@@ -187,34 +234,37 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         "type": "bundle",
                         "objects": [event_content["data"]],
                     }
-                    self.api.stix2.import_bundle(
-                        bundle, True, types, processing_count
-                    )
+                    self.api.stix2.import_bundle(bundle, True, types, processing_count)
                 elif event_type == "delete":
                     delete_id = event_content["data"]["id"]
                     self.api.stix.delete(id=delete_id)
                 elif event_type == "merge":
                     # Start with a merge
                     target_id = event_content["data"]["id"]
-                    source_ids = list(map(lambda source: source["id"], event_content["context"]["sources"]))
+                    source_ids = list(
+                        map(
+                            lambda source: source["id"],
+                            event_content["context"]["sources"],
+                        )
+                    )
                     self.api.stix_core_object.merge(id=target_id, object_ids=source_ids)
                     # Update the target entity after merge
                     bundle = {
                         "type": "bundle",
                         "objects": [event_content["data"]],
                     }
-                    self.api.stix2.import_bundle(
-                        bundle, True, types, processing_count
-                    )
+                    self.api.stix2.import_bundle(bundle, True, types, processing_count)
                 # Ack the message
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
                 self.processing_count = 0
+                bundles_success_counter.add(1)
                 return True
             else:
                 # Unknown type, just move on.
                 return True
         except Timeout as te:
+            bundles_timeout_error_counter.add(1)
             logging.warning("%s", f"A connection timeout occurred: {{ {te} }}")
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.
             sleep_jitter = round(random.uniform(10, 30), 2)
@@ -222,10 +272,12 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.data_handler(connection, channel, delivery_tag, data)
             return True
         except RequestException as re:
+            bundles_request_error_counter.add(1, {"origin": "opencti-worker"})
             logging.error("%s", f"A connection error occurred: {{ {re} }}")
             time.sleep(60)
             logging.info(
-                "%s", f"Message (delivery_tag={delivery_tag}) NOT acknowledged"
+                "%s",
+                f"Message (delivery_tag={delivery_tag}) NOT acknowledged (RequestException)",
             )
             cb = functools.partial(self.nack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
@@ -234,6 +286,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         except Exception as ex:  # pylint: disable=broad-except
             error = str(ex)
             if "LockError" in error and self.processing_count < MAX_PROCESSING_COUNT:
+                bundles_lock_error_counter.add(1)
                 # Platform is under heavy load:
                 # wait for unlock & retry almost indefinitely.
                 sleep_jitter = round(random.uniform(10, 30), 2)
@@ -243,6 +296,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 "MissingReferenceError" in error
                 and self.processing_count < PROCESSING_COUNT
             ):
+                bundles_missing_reference_error_counter.add(1)
                 # In case of missing reference, wait & retry
                 sleep_jitter = round(random.uniform(1, 3), 2)
                 time.sleep(sleep_jitter)
@@ -255,16 +309,19 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 )
                 self.data_handler(connection, channel, delivery_tag, data)
             elif "Bad Gateway" in error:
+                bundles_bad_gateway_error_counter.add(1)
                 logging.error("%s", f"A connection error occurred: {{ {error} }}")
                 time.sleep(60)
                 logging.info(
-                    "%s", f"Message (delivery_tag={delivery_tag}) NOT acknowledged"
+                    "%s",
+                    f"Message (delivery_tag={delivery_tag}) NOT acknowledged (Bad Gateway)",
                 )
                 cb = functools.partial(self.nack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
                 self.processing_count = 0
                 return False
             else:
+                bundles_technical_error_counter.add(1)
                 # Platform does not know what to do and raises an error:
                 # fail and acknowledge the message.
                 logging.error(error)
@@ -283,6 +340,10 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     )
                 return False
             return None
+        finally:
+            bundles_global_counter.add(1)
+            processing_delta = datetime.datetime.now() - start_processing
+            bundles_processing_time_gauge.record(processing_delta.seconds)
 
     def run(self) -> None:
         try:
@@ -332,6 +393,38 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.log_level = get_config_variable(
             "WORKER_LOG_LEVEL", ["worker", "log_level"], config
         )
+        # Telemetry
+        self.telemetry_enabled = get_config_variable(
+            "WORKER_TELEMETRY_ENABLED",
+            ["worker", "telemetry_enabled"],
+            config,
+            False,
+            False,
+        )
+        self.telemetry_prometheus_port = get_config_variable(
+            "WORKER_PROMETHEUS_TELEMETRY_PORT",
+            ["worker", "telemetry_prometheus_port"],
+            config,
+            False,
+            14270,
+        )
+        self.telemetry_prometheus_host = get_config_variable(
+            "WORKER_PROMETHEUS_TELEMETRY_HOST",
+            ["worker", "telemetry_prometheus_host"],
+            config,
+            False,
+            "0.0.0.0",
+        )
+
+        # Telemetry
+        if self.telemetry_enabled:
+            start_http_server(
+                port=self.telemetry_prometheus_port, addr=self.telemetry_prometheus_host
+            )
+            provider = MeterProvider(
+                resource=resource, metric_readers=[PrometheusMetricReader()]
+            )
+            metrics.set_meter_provider(provider)
 
         # Check if openCTI is available
         self.api = OpenCTIApiClient(
@@ -427,6 +520,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
 if __name__ == "__main__":
     worker = Worker()
+
     try:
         worker.start()
     except Exception as e:  # pylint: disable=broad-except

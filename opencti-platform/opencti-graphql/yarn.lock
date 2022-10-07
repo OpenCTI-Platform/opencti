@@ -3476,7 +3476,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-metrics-otlp-http@npm:^0.33.0":
+"@opentelemetry/exporter-metrics-otlp-http@npm:0.33.0":
   version: 0.33.0
   resolution: "@opentelemetry/exporter-metrics-otlp-http@npm:0.33.0"
   dependencies:
@@ -3505,7 +3505,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-trace-otlp-http@npm:^0.33.0":
+"@opentelemetry/exporter-trace-otlp-http@npm:0.33.0":
   version: 0.33.0
   resolution: "@opentelemetry/exporter-trace-otlp-http@npm:0.33.0"
   dependencies:
@@ -3520,7 +3520,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-zipkin@npm:^1.7.0":
+"@opentelemetry/exporter-zipkin@npm:1.7.0":
   version: 1.7.0
   resolution: "@opentelemetry/exporter-zipkin@npm:1.7.0"
   dependencies:
@@ -4134,6 +4134,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/nconf@npm:0.10.3":
+  version: 0.10.3
+  resolution: "@types/nconf@npm:0.10.3"
+  checksum: f637e7af356fff278a008f73cb853c3d3145646b5461bc67d20bbe0bfcc72d61cf75727f6e2069bb2868f49ec2e0dc87ee9f8cb531ebbf3accd8d18882f31f6b
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:*":
   version: 18.7.8
   resolution: "@types/node@npm:18.7.8"
@@ -4599,7 +4606,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"antlr4@npm:^4.11.0":
+"antlr4@npm:4.11.0":
   version: 4.11.0
   resolution: "antlr4@npm:4.11.0"
   checksum: 640240640d5fd8fff4f494a20eb8e733ccc96a7e887f34e3ab534b258e2b8fa600cea8b2bea656fa9dac6022b07fc9d6fb2b825da43824c570559bf0fd5b4725
@@ -11516,10 +11523,11 @@ __metadata:
     "@luckycatfactory/esbuild-graphql-loader": 3.7.0
     "@opensearch-project/opensearch": 2.0.0
     "@opentelemetry/api": 1.2.0
-    "@opentelemetry/exporter-metrics-otlp-http": ^0.33.0
+    "@opentelemetry/api-metrics": 0.33.0
+    "@opentelemetry/exporter-metrics-otlp-http": 0.33.0
     "@opentelemetry/exporter-prometheus": 0.33.0
-    "@opentelemetry/exporter-trace-otlp-http": ^0.33.0
-    "@opentelemetry/exporter-zipkin": ^1.7.0
+    "@opentelemetry/exporter-trace-otlp-http": 0.33.0
+    "@opentelemetry/exporter-zipkin": 1.7.0
     "@opentelemetry/instrumentation": 0.32.0
     "@opentelemetry/resources": 1.7.0
     "@opentelemetry/sdk-metrics": 0.33.0
@@ -11532,12 +11540,13 @@ __metadata:
     "@types/dot-object": 2.1.2
     "@types/express": 4.17.13
     "@types/jest": 28.1.7
+    "@types/nconf": 0.10.3
     "@types/ramda": 0.28.15
     "@types/uuid": 8.3.4
     "@typescript-eslint/eslint-plugin": 5.36.1
     "@typescript-eslint/parser": 5.36.1
     amqplib: 0.10.3
-    antlr4: ^4.11.0
+    antlr4: 4.11.0
     apollo-errors: 1.9.0
     apollo-server-core: 3.10.2
     apollo-server-express: 3.10.2
@@ -11597,7 +11606,7 @@ __metadata:
     nconf: 0.12.0
     nodemailer: 6.8.0
     openid-client: 5.1.10
-    opentelemetry-node-metrics: ^2.0.0
+    opentelemetry-node-metrics: "https://github.com/richard-julien/opentelemetry-node-metrics.git"
     otplib: 12.0.1
     passport: 0.6.0
     passport-auth0: 1.4.2
@@ -11607,7 +11616,7 @@ __metadata:
     passport-ldapauth: 3.0.1
     passport-local: 1.0.0
     passport-saml: 3.2.1
-    prom-client: ^14.1.0
+    prom-client: 14.1.0
     python-shell: 3.0.1
     ramda: 0.28.0
     redlock: 5.0.0-beta.2
@@ -11640,10 +11649,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"opentelemetry-node-metrics@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "opentelemetry-node-metrics@npm:2.0.0"
-  checksum: 7cb9a866928fc670076c6aa7a2eca56cddf4fb340994313215832a174ad095f0f47ff7055c96cfdbea4e219757b8976e6804e9f25b7bf6d73a7fc5f21251918b
+"opentelemetry-node-metrics@https://github.com/richard-julien/opentelemetry-node-metrics.git":
+  version: 0.0.0-placeholder
+  resolution: "opentelemetry-node-metrics@https://github.com/richard-julien/opentelemetry-node-metrics.git#commit=17464705f8be3d5bda1a1618acedf6afc8d4df9c"
+  checksum: f908069432cc945cfa9a26160d282304c6391197298f9074cdfa80e1ebc38e673c0694f75894bf8ee5442997c69963ff4385367292ef989121a73abdf7f648c4
   languageName: node
   linkType: hard
 
@@ -12159,7 +12168,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prom-client@npm:^14.1.0":
+"prom-client@npm:14.1.0":
   version: 14.1.0
   resolution: "prom-client@npm:14.1.0"
   dependencies:

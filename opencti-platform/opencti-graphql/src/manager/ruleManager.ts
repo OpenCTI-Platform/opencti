@@ -315,7 +315,7 @@ const initRuleManager = () => {
     try {
       // Lock the manager
       lock = await lockResource([RULE_ENGINE_KEY]);
-      logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId}`);
+      logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
       // Start the stream listening
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
       await streamProcessor.start(lastEventId);
