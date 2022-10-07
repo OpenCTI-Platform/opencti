@@ -3,8 +3,8 @@ import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import type { RuleDefinition, RuleBehavior, RuleFilters, RuleScope } from '../../types/rules';
 
-const id = 'report_part_of_identity';
-const name = 'Report objects part of identities';
+const id = 'report_ref_identity_part_of';
+const name = 'Report objects identities part of';
 const description = 'If **report A** have `object_ref` **identity B** and **identity B** '
   + 'is `part-of (C)` **identity D**, then **report A** have `object_ref` **identity D** + **part-of (C)**.';
 

@@ -105,7 +105,6 @@ class ContainerStixDomainObjectLineComponent extends Component {
                 {node.x_mitre_id
                   ? `[${node.x_mitre_id}] ${node.name}`
                   : defaultValue(node)}
-                {isThroughInference && !isOnlyThroughInference && ' (+ inferred)'}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
                 <StixCoreObjectLabels

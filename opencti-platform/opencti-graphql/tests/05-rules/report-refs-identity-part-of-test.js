@@ -16,6 +16,8 @@ import { addOrganization } from '../../src/domain/organization';
 import { elDeleteElements } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../../src/schema/general';
+import { listEntities } from '../../src/database/middleware-loader';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../src/schema/stixDomainObject';
 
 describe('Report refs identity rule', () => {
   it(
@@ -44,6 +46,10 @@ describe('Report refs identity rule', () => {
       // 5. Remove a part of relation
 
       await startModules();
+      // Delete all reports
+      const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT], { connectionFormat: false });
+      await elDeleteElements(testContext, SYSTEM_USER, reports, storeLoadByIdWithRefs);
+
       // Check that no inferences exists
       const beforeActivationRelations = await getInferences(RELATION_OBJECT);
       expect(beforeActivationRelations.length).toBe(0);
@@ -155,14 +161,14 @@ describe('Report refs identity rule', () => {
         RELATION_OBJECT,
         ABSTRACT_STIX_META_RELATIONSHIP
       );
-      await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
+      await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteARelations = await getInferences(RELATION_OBJECT);
       expect(afterDeleteARelations.length).toBe(6); // IdentityB + Rel A-> part-of ->B
       // endregion
 
       // region 5............................ Remove a part of relation
       await deleteElementById(testContext, SYSTEM_USER, identityDEParOf.internal_id, identityDEParOf.entity_type);
-      await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
+      await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
       expect(afterDeleteARelations.length).toBe(2);
       // endregion
 

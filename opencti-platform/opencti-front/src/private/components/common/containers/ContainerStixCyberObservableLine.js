@@ -51,6 +51,7 @@ class ContainerStixCyberObservableLineComponent extends Component {
       fd,
       classes,
       node,
+      types,
       dataColumns,
       containerId,
       paginationOptions,
@@ -59,6 +60,9 @@ class ContainerStixCyberObservableLineComponent extends Component {
       deSelectedElements,
       selectAll,
     } = this.props;
+    const refTypes = types ?? ['manual'];
+    const isThroughInference = refTypes.includes('inferred');
+    const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -76,6 +80,7 @@ class ContainerStixCyberObservableLineComponent extends Component {
         >
           <Checkbox
             edge="start"
+            disabled={isOnlyThroughInference}
             checked={
               (selectAll && !(node.id in (deSelectedElements || {})))
               || node.id in (selectedElements || {})
@@ -83,7 +88,8 @@ class ContainerStixCyberObservableLineComponent extends Component {
             disableRipple={true}
           />
         </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        {/* eslint-disable-next-line max-len */}
+        <ListItemIcon classes={{ root: isOnlyThroughInference ? classes.itemIconDisabled : classes.itemIcon }}>
           <HexagonOutline />
         </ListItemIcon>
         <ListItemText
@@ -144,6 +150,7 @@ class ContainerStixCyberObservableLineComponent extends Component {
           <ContainerStixCoreObjectPopover
             containerId={containerId}
             toId={node.id}
+            menuDisable={isOnlyThroughInference}
             relationshipType="object"
             paginationKey="Pagination_objects"
             paginationOptions={paginationOptions}

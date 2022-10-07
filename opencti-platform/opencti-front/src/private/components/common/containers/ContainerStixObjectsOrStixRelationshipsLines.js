@@ -96,6 +96,7 @@ export default createPaginationContainer(
         objects(first: $count, orderBy: $orderBy, orderMode: $orderMode)
           @connection(key: "Pagination_objects") {
           edges {
+            types
             node {
               ... on BasicObject {
                 id

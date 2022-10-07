@@ -155,6 +155,7 @@ export default createPaginationContainer(
           filters: $filters
         ) @connection(key: "Pagination_objects") {
           edges {
+            types
             node {
               ...ContainerStixCyberObservableLine_node
             }
