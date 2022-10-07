@@ -16,7 +16,7 @@ import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRu
 import IndicateSightedRule from '../rules/indicate-sighted/IndicateSightedRule';
 import SightingObservableRule from '../rules/sighting-observable/SightingObservableRule';
 import SightingIndicatorRule from '../rules/sighting-indicator/SightingIndicatorRule';
-import ReportIdentityRule from '../rules/report-part-of-identity/ReportIdentityRule';
+import ReportRefIdentityPartOfRule from '../rules/report-refs-identity-part-of/ReportRefIdentityPartOfRule';
 import { BUS_TOPICS, DEV_MODE, ENABLED_RULE_ENGINE } from '../config/conf';
 import { getEntitiesFromCache } from '../manager/cacheManager';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -43,7 +43,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   RuleSightingIncident,
   SightingObservableRule,
   SightingIndicatorRule,
-  ReportIdentityRule,
+  ReportRefIdentityPartOfRule,
 ];
 if (DEV_MODE) {
   RULES_DECLARATION.push(RelatedToRelatedRule);
