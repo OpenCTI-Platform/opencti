@@ -92,6 +92,8 @@ class EntitiesAssessmentPlatformsCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
       R.assoc('name', values.name),
+      R.dissoc('created'),
+      R.dissoc('modified'),
     )(values);
     commitMutation({
       mutation: entitiesAssessmentPlatformssCreationMutation,
@@ -102,6 +104,7 @@ class EntitiesAssessmentPlatformsCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
+        this.props.history.push('/data/entities/assessment_platform');
         this.handleClose();
       },
       onError: () => {
