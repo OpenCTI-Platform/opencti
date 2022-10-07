@@ -354,8 +354,11 @@ const responsiblePartyResolvers = {
       // make sure there is input data containing what is to be edited
       if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
 
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
+
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -372,6 +375,12 @@ const responsiblePartyResolvers = {
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -381,7 +390,13 @@ const responsiblePartyResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
 
       // obtain the IRIs for the referenced objects so that if one doesn't 
@@ -405,10 +420,15 @@ const responsiblePartyResolvers = {
               break
             default:
               isId = false;
+              if (response[0].hasOwnProperty(editItem.key)) {
+                if (response[0][editItem.key] === value) editItem.operation = 'skip';
+              } else if (editItem.operation === 'remove') {
+                editItem.operation = 'skip';
+              }
               break;
           }
 
-          if (isId) {
+          if (isId && editItem.operation !== 'skip') {
             let query = selectObjectIriByIdQuery(value, objType);
             let result = await dataSources.Stardog.queryById({
               dbName,
@@ -421,7 +441,7 @@ const responsiblePartyResolvers = {
           }
         }
 
-        if (editItem.key === 'role') {
+        if (editItem.key === 'role' && editItem.operation !== 'skip') {
           let sparqlQuery = selectAllResponsibleParties(['id','role']);
           let response;
           try {
@@ -456,11 +476,18 @@ const responsiblePartyResolvers = {
         responsiblePartyPredicateMap
       );
       if (query !== null) {
-        response = await dataSources.Stardog.edit({
-          dbName,
-          sparqlQuery: query,
-          queryId: "Update OSCAL Responsible Party"
-        });
+        let response;
+        try {
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update OSCAL Responsible Party"
+          });  
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+
         if (response !== undefined && 'status' in response) {
           if (response.ok === false || response.status > 299) {
             // Handle reporting Stardog Error
