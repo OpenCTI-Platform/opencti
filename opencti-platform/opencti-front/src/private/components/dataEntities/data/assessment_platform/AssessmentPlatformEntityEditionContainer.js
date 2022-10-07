@@ -343,10 +343,10 @@ class AssessmentPlatformEntityEditionContainer extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('User Component(s)')}
+                        {t('Uses Component(s)')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('User Component(s)')} >
+                        <Tooltip title={t('Uses Component(s)')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -363,7 +363,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="user_component"
+                          name="uses_component"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}

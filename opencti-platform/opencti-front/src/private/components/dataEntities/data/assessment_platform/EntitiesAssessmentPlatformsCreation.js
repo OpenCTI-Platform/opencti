@@ -161,8 +161,6 @@ class EntitiesAssessmentPlatformsCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               name: '',
-              created: null,
-              modified: null,
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -325,10 +323,10 @@ class EntitiesAssessmentPlatformsCreation extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('User Component(s)')}
+                        {t('Uses Component(s)')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('User Component(s)')} >
+                        <Tooltip title={t('Uses Component(s)')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
