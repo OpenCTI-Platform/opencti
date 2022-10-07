@@ -68,7 +68,7 @@ class ListLinesContent extends Component {
       });
     }
     if (window.pageYOffset < 40 && this.state.newDataList.length > 50
-      && this.props.offset > 0) {
+      && this.props.offset >= 0) {
       window.scrollTo(0, 2500);
       this.props.handleDecrementedOffsetChange();
       this.setState({ newDataList: this.state.newDataList.slice(-this.props.dataList.length) });
