@@ -169,7 +169,8 @@ describe('Report refs identity rule', () => {
       // region 5............................ Remove a part of relation
       await deleteElementById(testContext, SYSTEM_USER, identityDEParOf.internal_id, identityDEParOf.entity_type);
       await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
-      expect(afterDeleteARelations.length).toBe(2);
+      const afterDeleteDERelations = await getInferences(RELATION_OBJECT);
+      expect(afterDeleteDERelations.length).toBe(2);
       // endregion
 
       // Disable the rule
