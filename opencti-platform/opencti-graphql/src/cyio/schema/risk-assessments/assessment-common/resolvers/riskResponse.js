@@ -19,6 +19,7 @@ import {
   selectOscalTaskByIriQuery,
   selectRequiredAssetByIriQuery,
   insertActorQuery,
+  insertActorsQuery,
   selectActorQuery,
   selectActorByIriQuery,
   attachToOriginQuery,
