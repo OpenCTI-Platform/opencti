@@ -2070,39 +2070,39 @@ export const elIndexElements = async (context, user, message, elements) => {
       R.map((e) => {
         const { fromRole, toRole } = e;
         const impacts = [];
-      // We impact target entities of the relation only if not global entities like
-      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
-      cache[e.fromId] = e.from;
-      cache[e.toId] = e.to;
-      const refField = isStixMetaRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
-      const relationshipType = e.entity_type;
+        // We impact target entities of the relation only if not global entities like
+        // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
+        cache[e.fromId] = e.from;
+        cache[e.toId] = e.to;
+        const refField = isStixMetaRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
+        const relationshipType = e.entity_type;
         if (isImpactedRole(fromRole)) {
           impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
-      }
-      if (isImpactedRole(toRole)) {
-        impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
-      }
-      return impacts;
-    }),
-    R.flatten,
-    R.groupBy((i) => i.from)
-  )(elements);
-  const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
-    const entity = cache[entityId];
-    const targets = impactedEntities[entityId];
-    // Build document fields to update ( per relation type )
-    const targetsByRelation = R.groupBy((i) => `${i.relationshipType}|${i.refField}`, targets);
+        }
+        if (isImpactedRole(toRole)) {
+          impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
+        }
+        return impacts;
+      }),
+      R.flatten,
+      R.groupBy((i) => i.from)
+    )(elements);
+    const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
+      const entity = cache[entityId];
+      const targets = impactedEntities[entityId];
+      // Build document fields to update ( per relation type )
+      const targetsByRelation = R.groupBy((i) => `${i.relationshipType}|${i.refField}`, targets);
       const targetsElements = R.map((relTypeAndField) => {
-      const [relType, refField] = relTypeAndField.split('|');
+        const [relType, refField] = relTypeAndField.split('|');
         const data = targetsByRelation[relTypeAndField];
         const resolvedData = R.map((d) => {
           return { id: d.to.internal_id, side: d.side, type: d.type };
         }, data);
         return { relation: relType, field: refField, elements: resolvedData };
-    }, Object.keys(targetsByRelation));
-    // Create params and scripted update
-    const params = { updated_at: now() };
-    const sources = targetsElements.map((t) => {
+      }, Object.keys(targetsByRelation));
+      // Create params and scripted update
+      const params = { updated_at: now() };
+      const sources = targetsElements.map((t) => {
         const field = buildRefRelationKey(t.relation, t.field);
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         script += `ctx._source['${field}'].addAll(params['${field}'])`;
