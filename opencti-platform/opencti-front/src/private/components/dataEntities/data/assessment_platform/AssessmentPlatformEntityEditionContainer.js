@@ -122,6 +122,8 @@ class AssessmentPlatformEntityEditionContainer extends Component {
       values,
     );
     const finalValues = R.pipe(
+      R.dissoc('created'),
+      R.dissoc('modified'),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
@@ -131,13 +133,14 @@ class AssessmentPlatformEntityEditionContainer extends Component {
     commitMutation({
       mutation: assessmentPlatformEntityEditionContainerMutation,
       variables: {
-        id: this.props.cyioCoreRelationshipId,
+        id: this.props.assessmentPlatform.id,
         input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
+        this.props.history.push('/data/entities/assessment_platform');
         this.handleClose();
       },
       onError: (err) => {
