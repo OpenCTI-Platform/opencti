@@ -10107,10 +10107,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:^4.1.4":
-  version: 4.9.0
-  resolution: "jose@npm:4.9.0"
-  checksum: fc1e71f49327206eb58b23a2c5d463c3b1c84cd60ba2b8f8ab74db4a96ec079915fc71bc8b7d57d77b25d1426cd02eb218bf426738e803ab1a52adc1d96d0912
+"jose@npm:4.9.2":
+  version: 4.9.2
+  resolution: "jose@npm:4.9.2"
+  checksum: d3950385a6417d988c50bd8ba5407f5960624060aa8e4662c2109f1ebcc40c418e64b721a87065d8197b4aa0ddd7fb4dad5064618956dba8e74dc630916bf40f
   languageName: node
   linkType: hard
 

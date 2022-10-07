@@ -113,6 +113,7 @@
     "test": "jest --coverage"
   },
   "resolutions": {
+    "d3-color": "3.1.0",
     "scss-tokenizer": "0.4.3",
     "node-sass": "7.0.1",
     "react-virtualized": "patch:react-virtualized@9.22.3#./patch/react-virtualized-9.22.3.patch"
