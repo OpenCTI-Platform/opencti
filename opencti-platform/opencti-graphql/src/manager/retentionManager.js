@@ -27,7 +27,7 @@ const executeProcessing = async (context, retentionRule) => {
   const before = utcDate().subtract(maxDays, 'days');
   const queryOptions = convertFiltersToQueryOptions(jsonFilters, { before });
   const opts = { ...queryOptions, first: RETENTION_BATCH_SIZE };
-  const result = await elPaginate(RETENTION_MANAGER_USER, RETENTION_INDICES, opts);
+  const result = await elPaginate(context, RETENTION_MANAGER_USER, RETENTION_INDICES, opts);
   const remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
   logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
@@ -36,7 +36,7 @@ const executeProcessing = async (context, retentionRule) => {
     const { updated_at: up } = node;
     const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
     try {
-      await deleteElementById(RETENTION_MANAGER_USER, node.internal_id, node.entity_type);
+      await deleteElementById(context, RETENTION_MANAGER_USER, node.internal_id, node.entity_type);
       logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
     } catch (e) {
       logApp.error(`[OPENCTI] Retention manager error deleting ${node.id}`, { error: e });
@@ -58,7 +58,7 @@ const retentionHandler = async () => {
     // Lock the manager
     lock = await lockResource([RETENTION_MANAGER_KEY]);
     const context = executionContext('retention_manager');
-    const retentionRules = await findRetentionRulesToExecute(RETENTION_MANAGER_USER, { connectionFormat: false });
+    const retentionRules = await findRetentionRulesToExecute(context, RETENTION_MANAGER_USER, { connectionFormat: false });
     logApp.debug(`[OPENCTI] Retention manager execution for ${retentionRules.length} rules`);
     // Execution of retention rules
     if (retentionRules.length > 0) {
