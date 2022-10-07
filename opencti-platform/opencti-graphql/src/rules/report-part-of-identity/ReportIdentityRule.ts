@@ -26,6 +26,8 @@ import type { DependenciesDeleteEvent, Event, RuleEvent, UpdateEvent } from '../
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../database/utils';
 import { storeUpdateEvent } from '../../database/redis';
 import type { RelationCreation } from '../../types/inputs';
+import type { AuthContext } from '../../types/user';
+import { executionContext } from '../../utils/access';
 
 const INFERRED_OBJECT_REF_PATH = `/extensions/${STIX_EXT_OCTI}/object_refs_inferred`;
 
@@ -45,13 +47,12 @@ const generateDependencies = (reportId: string, partOfFromId: string, partOfId: 
 };
 
 type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfTargetId: string }>;
-const createObjectRefsInferences = async (reportId: string, refs: ArrayRefs) => {
-  const report = await storeLoadByIdWithRefs(RULE_MANAGER_USER, reportId) as StoreEntity;
+const createObjectRefsInferences = async (context: AuthContext, reportId: string, refs: ArrayRefs) => {
+  const report = await storeLoadByIdWithRefs(context, RULE_MANAGER_USER, reportId) as StoreEntity;
   const reportObjectRefIds = report[INPUT_OBJECTS].map((r) => r.internal_id);
-  const updatedReport = { ...report };
   const opts = { publishStreamEvent: false };
   const targetIds = refs.map((r) => [r.partOfId, r.partOfTargetId]).flat();
-  const targetsMap = await internalFindByIds(RULE_MANAGER_USER, targetIds, { toMap: true }) as any;
+  const targetsMap = await internalFindByIds(context, RULE_MANAGER_USER, targetIds, { toMap: true }) as any;
   const createdTargets: Array<StoreEntity> = [];
   for (let index = 0; index < refs.length; index += 1) {
     const { partOfFromId, partOfId, partOfTargetId } = refs[index];
@@ -61,7 +62,7 @@ const createObjectRefsInferences = async (reportId: string, refs: ArrayRefs) => 
     if (!reportObjectRefIds.includes(partOfId)) {
       const ruleRelationContent = createRuleContent(def.id, dependencies, [reportId, partOfId], {});
       const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
-      const inferredRelation = await createInferredRelation(inputForRelation, ruleRelationContent, opts) as RelationCreation;
+      const inferredRelation = await createInferredRelation(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
       if (inferredRelation.isCreation) {
         const target = targetsMap[partOfId];
         target.i_relation = inferredRelation.element;
@@ -72,7 +73,7 @@ const createObjectRefsInferences = async (reportId: string, refs: ArrayRefs) => 
     if (!reportObjectRefIds.includes(partOfTargetId)) {
       const ruleIdentityContent = createRuleContent(def.id, dependencies, [reportId, partOfTargetId], {});
       const inputForIdentity = { fromId: reportId, toId: partOfTargetId, relationship_type: RELATION_OBJECT };
-      const inferredTarget = await createInferredRelation(inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
+      const inferredTarget = await createInferredRelation(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
       if (inferredTarget.isCreation) {
         const target = targetsMap[partOfTargetId];
         target.i_relation = inferredTarget.element;
@@ -81,16 +82,17 @@ const createObjectRefsInferences = async (reportId: string, refs: ArrayRefs) => 
     }
   }
   if (createdTargets.length > 0) {
+    const updatedReport = { ...report };
     updatedReport[INPUT_OBJECTS] = [...(updatedReport[INPUT_OBJECTS] ?? []), ...createdTargets];
-    await storeUpdateEvent(RULE_MANAGER_USER, report, updatedReport, 'Rule update');
+    await storeUpdateEvent(context, RULE_MANAGER_USER, report, updatedReport, 'Rule update');
   }
 };
 
 const ruleReportIdentityBuilder = (): RuleRuntime => {
-  const handleReportCreation = async (report: StixReport, addedIdentityRefs: Array<string>) => {
+  const handleReportCreation = async (context: AuthContext, report: StixReport, addedIdentityRefs: Array<string>) => {
     const objectRefsToCreate: ArrayRefs = [];
     const { id: reportId } = report.extensions[STIX_EXT_OCTI];
-    const identities = await internalFindByIds(RULE_MANAGER_USER, addedIdentityRefs) as Array<StoreObject>;
+    const identities = await internalFindByIds(context, RULE_MANAGER_USER, addedIdentityRefs) as Array<StoreObject>;
     const fromIds = identities.map((i) => i.internal_id);
     // Find all identities part of current identities
     const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
@@ -100,24 +102,25 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
       }
     };
     const listFromArgs = { fromId: fromIds, toTypes: [ENTITY_TYPE_IDENTITY], callback: listFromCallback };
-    await listAllRelations(RULE_MANAGER_USER, RELATION_PART_OF, listFromArgs);
+    await listAllRelations(context, RULE_MANAGER_USER, RELATION_PART_OF, listFromArgs);
     // update the report
-    await createObjectRefsInferences(reportId, objectRefsToCreate);
+    await createObjectRefsInferences(context, reportId, objectRefsToCreate);
     return [];
   };
-  const handlePartOfRelationCreation = async (partOfRelation: StixRelation) => {
+  const handlePartOfRelationCreation = async (context: AuthContext, partOfRelation: StixRelation) => {
     const { id: partOfId, source_ref: partOfFromId, target_ref: partOfTargetId } = partOfRelation.extensions[STIX_EXT_OCTI];
     const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
       for (let objectRefIndex = 0; objectRefIndex < relationships.length; objectRefIndex += 1) {
         const { fromId: reportId } = relationships[objectRefIndex];
-        await createObjectRefsInferences(reportId, [{ partOfFromId, partOfId, partOfTargetId }]);
+        await createObjectRefsInferences(context, reportId, [{ partOfFromId, partOfId, partOfTargetId }]);
       }
     };
     const listReportArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_REPORT], toId: partOfFromId, callback: listFromCallback };
-    await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, listReportArgs);
+    await listAllRelations(context, RULE_MANAGER_USER, RELATION_OBJECT, listReportArgs);
     return [];
   };
   const applyInsert = async (data: StixObject): Promise<Array<Event>> => {
+    const context = executionContext(def.name);
     const events: Array<Event> = [];
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_CONTAINER_REPORT) {
@@ -126,17 +129,18 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
       // Get all identities from the report refs
       const identityRefs = (reportObjectRefs ?? []).filter(identityRefFilter);
       if (identityRefs.length > 0) {
-        return handleReportCreation(report, identityRefs);
+        return handleReportCreation(context, report, identityRefs);
       }
     }
     const upsertRelation = data as StixRelation;
     const { relationship_type: relationType } = upsertRelation;
     if (relationType === RELATION_PART_OF) {
-      return handlePartOfRelationCreation(upsertRelation);
+      return handlePartOfRelationCreation(context, upsertRelation);
     }
     return events;
   };
   const applyUpdate = async (data: StixObject, event: UpdateEvent): Promise<Array<RuleEvent>> => {
+    const context = executionContext(def.name);
     const events: Array<RuleEvent> = [];
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_CONTAINER_REPORT) {
@@ -193,14 +197,14 @@ const ruleReportIdentityBuilder = (): RuleRuntime => {
       // For added identities
       const addedIdentityRefs = addedRefs.filter(identityRefFilter);
       if (addedIdentityRefs.length > 0) {
-        const createEvents = await handleReportCreation(report, addedIdentityRefs);
+        const createEvents = await handleReportCreation(context, report, addedIdentityRefs);
         events.push(...createEvents);
       }
       // For removed identities
       const removedIdentityRefs = removedRefs.filter(identityRefFilter);
       if (removedIdentityRefs.length > 0) {
         // For meta deletion, generate deletion events
-        const removedRefIdentities = await internalFindByIds(RULE_MANAGER_USER, removedIdentityRefs) as Array<StoreObject>;
+        const removedRefIdentities = await internalFindByIds(context, RULE_MANAGER_USER, removedIdentityRefs) as Array<StoreObject>;
         const removedIds = removedRefIdentities.map((i) => i.internal_id);
         const deleteEvent: DependenciesDeleteEvent = { type: 'delete-dependencies', ids: removedIds.map((ref) => `${ref}_ref`) };
         events.push(deleteEvent);
