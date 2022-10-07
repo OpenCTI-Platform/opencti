@@ -112,7 +112,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('User Component')}
+                  {t('Uses Component')}
                 </Typography>
                 <div className="clearfix" />
                 {assessmentPlatform.uses_components.name && t(assessmentPlatform.uses_components.name)}
