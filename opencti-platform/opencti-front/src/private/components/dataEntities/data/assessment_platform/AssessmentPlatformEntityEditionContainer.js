@@ -133,7 +133,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
     commitMutation({
       mutation: assessmentPlatformEntityEditionContainerMutation,
       variables: {
-        id: this.props.cyioCoreRelationshipId,
+        id: this.props.assessmentPlatform.id,
         input: finalValues,
       },
       setSubmitting,
