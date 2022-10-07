@@ -33,8 +33,9 @@ export const objects = async (context, user, containerId, args) => {
   if (args.all) {
     data = await paginateAllThings(context, user, types, R.assoc('filters', filters, args));
   } else {
-    data = await listThings(user, types, R.assoc('filters', filters, args));
+    data = await listThings(context, user, types, R.assoc('filters', filters, args));
   }
+  // TODO #2341 JRI ADAPT THAT
   if (args.connectionFormat !== false) {
     const edges = [];
     for (let index = 0; index < data.edges.length; index += 1) {
