@@ -76,8 +76,8 @@ export const findAllSync = async (user, opts = {}) => {
   return listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
-export const createSyncHttpUri = (sync, testMode) => {
-  const { uri, stream_id: stream, current_state: state, no_dependencies: dep, listen_deletion: del } = sync;
+export const createSyncHttpUri = (sync, state, testMode) => {
+  const { uri, stream_id: stream, no_dependencies: dep, listen_deletion: del } = sync;
   if (testMode) {
     logApp.debug(`[OPENCTI] Testing sync url with ${httpBase(uri)}stream/${stream}`);
     return `${httpBase(uri)}stream/${stream}`;

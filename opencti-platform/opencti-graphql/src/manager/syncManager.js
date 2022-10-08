@@ -3,6 +3,7 @@ import EventSource from 'eventsource';
 import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
+import https from 'node:https';
 import conf, { logApp } from '../config/conf';
 import { storeLoadById } from '../database/middleware';
 import { SYSTEM_USER } from '../utils/access';
@@ -30,7 +31,6 @@ const syncManagerInstance = (syncId) => {
   let connectionId = null;
   let eventsQueue;
   let eventSource;
-  let syncElement;
   let run = true;
   let lastState;
   let lastStateSaveTime;
@@ -41,13 +41,10 @@ const syncManagerInstance = (syncId) => {
       eventsQueue.enqueue({ id: lastEventId, type, data: stixData, context });
     }
   };
-  const startStreamListening = async () => {
-    eventsQueue = new Queue();
-    syncElement = await storeLoadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
+  const startStreamListening = async (sseUri, syncElement) => {
     const { token, ssl_verify: ssl = false } = syncElement;
-    const eventSourceUri = createSyncHttpUri(syncElement, false);
-    logApp.info(`[OPENCTI] Running sync manager for ${syncId} (${eventSourceUri})`);
-    eventSource = new EventSource(eventSourceUri, {
+    eventsQueue = new Queue();
+    eventSource = new EventSource(sseUri, {
       rejectUnauthorized: ssl,
       headers: { authorization: `Bearer ${token}` },
     });
@@ -60,31 +57,31 @@ const syncManagerInstance = (syncId) => {
     eventSource.on('merge', (d) => handleEvent(d));
     eventSource.on('connected', (d) => {
       connectionId = JSON.parse(d.data).connectionId;
+      logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.uri ?? sseUri} with id ${connectionId}`);
     });
     eventSource.on('error', (error) => {
-      logApp.error(`[OPENCTI] Error in sync manager for ${syncId}: ${error.message}`);
+      logApp.error(`[OPENCTI] Sync ${syncId}: error in sync event`, { error });
     });
     return syncElement;
   };
-  const manageBackPressure = async ({ uri, token }, currentDelay) => {
+  const manageBackPressure = async (httpClient, { uri }, currentDelay) => {
     if (connectionId) {
       const connectionManagement = `${httpBase(uri)}stream/connection/${connectionId}`;
-      const config = { headers: { authorization: `Bearer ${token}` } };
       if (currentDelay === lDelay && eventsQueue.getLength() > MAX_QUEUE_SIZE) {
-        await axios.post(connectionManagement, { delay: hDelay }, config);
-        logApp.info(`[OPENCTI] Sync connection setup to use ${hDelay} delay`);
+        await httpClient.post(connectionManagement, { delay: hDelay });
+        logApp.info(`[OPENCTI] Sync ${syncId}: connection setup to use ${hDelay} delay`);
         return hDelay;
       }
       if (currentDelay === hDelay && eventsQueue.getLength() < MIN_QUEUE_SIZE) {
-        await axios.post(connectionManagement, { delay: lDelay }, config);
-        logApp.info(`[OPENCTI] Sync connection setup to use ${lDelay} delay`);
+        await httpClient.post(connectionManagement, { delay: lDelay });
+        logApp.info(`[OPENCTI] Sync ${syncId}: connection setup to use ${lDelay} delay`);
         return lDelay;
       }
     }
     return currentDelay;
   };
-  const transformDataWithReverseIdAndFilesData = async (data, context) => {
-    const { token, uri } = syncElement;
+  const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
+    const { uri } = sync;
     let processingData = data;
     // Reverse patch the id if modified
     const idOperations = (context?.reverse_patch ?? []).filter((patch) => patch.path === '/id');
@@ -97,20 +94,20 @@ const syncManagerInstance = (syncId) => {
     for (let index = 0; index < entityFiles.length; index += 1) {
       const entityFile = entityFiles[index];
       const { uri: fileUri } = entityFile;
-      const config = { responseType: 'arraybuffer', headers: { authorization: `Bearer ${token}` } };
-      const response = await axios.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`, config);
+      const response = await httpClient.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`);
       entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
     }
     return processingData;
   };
-  const saveCurrentState = async (sync, eventId) => {
+  const saveCurrentState = async (type, sync, eventId) => {
     const currentTime = new Date().getTime();
     const [time] = eventId.split('-');
     const dateTime = parseInt(time, 10);
     const eventDate = utcDate(dateTime).toISOString();
     if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
-      logApp.info(`[OPENCTI] Sync ${sync.name}: saving state to ${eventDate}`);
+      logApp.info(`[OPENCTI] Sync ${syncId}: saving state from ${type} to ${eventId}/${eventDate}`);
       await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
+      eventSource.uri = createSyncHttpUri(sync, eventDate, false);
       lastState = dateTime;
       lastStateSaveTime = currentTime;
     }
@@ -118,33 +115,41 @@ const syncManagerInstance = (syncId) => {
   return {
     id: syncId,
     stop: () => {
-      logApp.info(`[OPENCTI] Sync stopping manager for ${syncId}`);
+      logApp.info(`[OPENCTI] Sync ${syncId}: stopping manager`);
       run = false;
       eventSource.close();
       eventsQueue = null;
     },
     start: async () => {
       run = true;
-      const sync = await startStreamListening();
+      const sync = await storeLoadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
+      const { token, ssl_verify: ssl = false } = sync;
+      const httpClient = axios.create({
+        responseType: 'arraybuffer',
+        headers: { authorization: `Bearer ${token}` },
+        httpsAgent: new https.Agent({ rejectUnauthorized: ssl })
+      });
       lastState = sync.current_state;
+      const sseUri = createSyncHttpUri(sync, lastState, false);
+      await startStreamListening(sseUri, sync);
       let currentDelay = lDelay;
       while (run) {
         const event = eventsQueue.dequeue();
         if (event) {
           try {
-            currentDelay = manageBackPressure(sync, currentDelay);
+            currentDelay = manageBackPressure(httpClient, sync, currentDelay);
             const { id: eventId, type: eventType, data, context } = event;
             if (eventType === 'heartbeat') {
-              await saveCurrentState(sync, eventId);
+              await saveCurrentState(eventType, sync, eventId);
             } else {
-              const syncData = await transformDataWithReverseIdAndFilesData(data, context);
+              const syncData = await transformDataWithReverseIdAndFilesData(sync, httpClient, data, context);
               const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context });
               const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
               await pushToSync({ type: 'event', applicant_id: OPENCTI_SYSTEM_UUID, content });
-              await saveCurrentState(sync, eventId);
+              await saveCurrentState('event', sync, eventId);
             }
           } catch (e) {
-            logApp.error('[OPENCTI] Sync error processing event', { error: e });
+            logApp.error(`[OPENCTI] Sync ${syncId}: error processing event`, { error: e });
           }
         }
         await wait(10);

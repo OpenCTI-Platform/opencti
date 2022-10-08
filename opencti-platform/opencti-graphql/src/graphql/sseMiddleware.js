@@ -677,7 +677,10 @@ const createSeeMiddleware = () => {
         await elList(user, queryIndices, queryOptions);
       }
       // After recovery start the stream listening
-      const streamStartDate = (recoverTo || startFrom) ? utcDate(recoverTo || startFrom) : undefined;
+      let streamStartDate = utcDate(startFrom);
+      if (recoverTo && utcDate(recoverTo).isAfter(streamStartDate)) {
+        streamStartDate = utcDate(recoverTo);
+      }
       logApp.info(`[STREAM] Listening stream ${id} from ${streamStartDate ?? 'live'}`);
       const startEventTime = streamStartDate && streamStartDate.isValid() ? `${streamStartDate.unix() * 1000}-0` : 'live';
       // noinspection ES6MissingAwait
