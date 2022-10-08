@@ -80,6 +80,7 @@ const userResolvers = {
   MeUser: {
     capabilities: (current) => getCapabilities(current.id),
     userSubscriptions: (current, _, { user }) => getUserSubscriptions(user, current.id),
+    allowed_marking: (current, _, { user }) => getMarkings(current.id, user.capabilities),
   },
   UserSession: {
     user: (session, _, { user }) => findById(user, session.user_id),
