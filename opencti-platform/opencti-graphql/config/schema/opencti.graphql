@@ -8659,6 +8659,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection

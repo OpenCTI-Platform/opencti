@@ -103,12 +103,12 @@ describe('Elasticsearch document loader', () => {
 describe('Elasticsearch computation', () => {
   it('should count accurate', async () => {
     // const { endDate = null, type = null, types = null } = options;
-    const malwaresCount = await elCount(ADMIN_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
+    const malwaresCount = await elCount(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
     const mostRecentMalware = await elLoadById(testContext, ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
-    const malwaresCount = await elCount(ADMIN_USER, READ_ENTITIES_INDICES, {
+    const malwaresCount = await elCount(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       types: ['Malware'],
       endDate: mostRecentMalware.created_at,
     });

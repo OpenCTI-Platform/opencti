@@ -236,10 +236,10 @@ const assignRoleToUser = async (context, user, userId, roleName) => {
   return createRelation(context, user, assignInput);
 };
 
-export const assignOrganizationToUser = async (user, userId, organizationId) => {
+export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
   // TODO Check is valid organization
   const assignInput = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
-  await createRelation(user, assignInput);
+  await createRelation(context, user, assignInput);
   return user;
 };
 
@@ -446,12 +446,12 @@ export const userIdDeleteRelation = async (context, user, userId, toId, relation
   return userDeleteRelation(context, user, userData, toId, relationshipType);
 };
 
-export const userDeleteOrganizationRelation = async (user, userId, toId) => {
-  const targetUser = await storeLoadById(user, userId, ENTITY_TYPE_USER);
+export const userDeleteOrganizationRelation = async (context, user, userId, toId) => {
+  const targetUser = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!targetUser) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
   }
-  await deleteRelationsByFromAndTo(user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
+  await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
   const operation = convertRelationToAction(RELATION_PARTICIPATE_TO, false);
   logAudit.info(user, operation, { from: userId, to: toId, type: RELATION_PARTICIPATE_TO });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);

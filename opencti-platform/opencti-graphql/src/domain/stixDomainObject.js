@@ -69,8 +69,8 @@ export const stixDomainObjectsTimeSeriesByAuthor = (context, user, args) => {
 };
 
 export const stixDomainObjectsNumber = (context, user, args) => ({
-  count: elCount(user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_INDEX_STIX_DOMAIN_OBJECTS, args),
-  total: elCount(user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_INDEX_STIX_DOMAIN_OBJECTS, dissoc('endDate', args)),
+  count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_INDEX_STIX_DOMAIN_OBJECTS, args),
+  total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_INDEX_STIX_DOMAIN_OBJECTS, dissoc('endDate', args)),
 });
 
 export const stixDomainObjectsDistributionByEntity = async (context, user, args) => {

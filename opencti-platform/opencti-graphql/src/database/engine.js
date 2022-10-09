@@ -248,7 +248,7 @@ export const elUpdateByQueryForMigration = async (message, index, body) => {
   logApp.info(`${message} done in ${timeSec} seconds`);
 };
 
-const buildDataRestrictions = async (user) => {
+const buildDataRestrictions = async (context, user) => {
   const must = [];
   // eslint-disable-next-line camelcase
   const must_not = [];
@@ -312,7 +312,7 @@ const buildDataRestrictions = async (user) => {
     // If user have organization management role, he can bypass this restriction.
     const isOrganizationManager = R.find((s) => s.name === KNOWLEDGE_ORGANIZATION_RESTRICT, capabilities) !== undefined;
     // If platform is for specific organization, only user from this organization can access empty defined
-    const settings = await getEntityFromCache(ENTITY_TYPE_SETTINGS);
+    const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
     const isUserPartOfPlatformOrganization = settings.platform_organization
       ? (user.organizations ?? []).includes(settings.platform_organization) : false;
     // If user is part of the platform organization, no restriction
@@ -627,7 +627,7 @@ export const RUNTIME_ATTRIBUTES = {
   },
 };
 
-export const elCount = async (user, indexName, options = {}) => {
+export const elCount = async (context, user, indexName, options = {}) => {
   const {
     endDate = null,
     types = null,
@@ -638,7 +638,7 @@ export const elCount = async (user, indexName, options = {}) => {
     isMetaRelationship = false,
   } = options;
   let must = [];
-  const markingRestrictions = await buildDataRestrictions(user);
+  const markingRestrictions = await buildDataRestrictions(context, user);
   must.push(...markingRestrictions.must);
   if (endDate !== null) {
     must = R.append(
@@ -801,7 +801,7 @@ export const elAggregationCount = async (context, user, type, aggregationField, 
     };
   }, filters);
   const must = R.concat(dateFilter, histoFilters);
-  const markingRestrictions = await buildDataRestrictions(user);
+  const markingRestrictions = await buildDataRestrictions(context, user);
   must.push(...markingRestrictions.must);
   const query = {
     index: READ_PLATFORM_INDICES,
@@ -928,7 +928,7 @@ const elDataConverter = (esHit) => {
 
 export const elFindByFromAndTo = async (context, user, fromId, toId, relationshipType) => {
   const mustTerms = [];
-  const markingRestrictions = await buildDataRestrictions(user);
+  const markingRestrictions = await buildDataRestrictions(context, user);
   mustTerms.push(...markingRestrictions.must);
   mustTerms.push({
     nested: {
@@ -1056,7 +1056,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         };
         mustTerms.push(shouldType);
       }
-      const markingRestrictions = await buildDataRestrictions(user);
+      const markingRestrictions = await buildDataRestrictions(context, user);
       mustTerms.push(...markingRestrictions.must);
       const query = {
         index: indices,
@@ -1164,7 +1164,7 @@ export const elAggregationRelationsCount = async (context, user, type, opts) => 
     ],
     filters
   );
-  const markingRestrictions = await buildDataRestrictions(user);
+  const markingRestrictions = await buildDataRestrictions(context, user);
   must.push(...markingRestrictions.must);
   const query = {
     index: READ_RELATIONSHIPS_INDICES,
@@ -1337,7 +1337,7 @@ export const elHistogramCount = async (context, user, type, field, interval, sta
     });
   }
   const must = R.concat(baseFilters, histogramFilters);
-  const markingRestrictions = await buildDataRestrictions(user);
+  const markingRestrictions = await buildDataRestrictions(context, user);
   must.push(...markingRestrictions.must);
   const query = {
     index: onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_PLATFORM_INDICES,
@@ -1501,7 +1501,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   let must = [];
   let mustnot = [];
   let ordering = [];
-  const markingRestrictions = await buildDataRestrictions(user);
+  const markingRestrictions = await buildDataRestrictions(context, user);
   must.push(...markingRestrictions.must);
   mustnot.push(...markingRestrictions.must_not);
   if (ids.length > 0) {
@@ -1812,7 +1812,7 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
 };
 export const elAttributeValues = async (context, user, field, opts = {}) => {
   const { first, orderMode = 'asc', search } = opts;
-  const markingRestrictions = await buildDataRestrictions(user);
+  const markingRestrictions = await buildDataRestrictions(context, user);
   const isDateOrNumber = dateAttributes.includes(field) || numericOrBooleanAttributes.includes(field);
   const must = [];
   if (isNotEmptyField(search) && search.length > 0) {

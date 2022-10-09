@@ -156,8 +156,8 @@ const userResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => {
         return userIdDeleteRelation(context, context.user, id, toId, relationshipType);
       },
-      organizationAdd: ({ organizationId }) => assignOrganizationToUser(user, id, organizationId),
-      organizationDelete: ({ organizationId }) => userDeleteOrganizationRelation(user, id, organizationId),
+      organizationAdd: ({ organizationId }) => assignOrganizationToUser(context, context.user, id, organizationId),
+      organizationDelete: ({ organizationId }) => userDeleteOrganizationRelation(context, context.user, id, organizationId),
     }),
     meEdit: (_, { input, password }, context) => meEditField(context, context.user, context.user.id, input, password),
     meTokenRenew: (_, __, context) => userRenewToken(context, context.user, context.user.id),

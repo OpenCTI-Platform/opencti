@@ -42,8 +42,9 @@ export const notesTimeSeries = (context, user, args) => {
 };
 
 export const notesNumber = (context, user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
+  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]), R.dissoc('endDate'))(args)
@@ -71,6 +72,7 @@ export const notesTimeSeriesByAuthor = async (context, user, args) => {
 
 export const notesNumberByEntity = (context, user, args) => ({
   count: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -81,6 +83,7 @@ export const notesNumberByEntity = (context, user, args) => ({
     )(args)
   ),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(

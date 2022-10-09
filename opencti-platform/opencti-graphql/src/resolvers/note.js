@@ -31,10 +31,10 @@ import { ForbiddenAccess } from '../config/errors';
 import { addIndividual } from '../domain/individual';
 
 // Needs to have edit rights or needs to be creator of the note
-const checkUserAccess = async (user, id) => {
+const checkUserAccess = async (context, user, id) => {
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
-  const note = await findById(user, id);
+  const note = await findById(context, user, id);
   const isCreator = note[RELATION_CREATED_BY] ? note[RELATION_CREATED_BY] === user.individual_id : false;
   const isCollaborationAllowed = userCapabilities.includes(KNOWLEDGE_COLLABORATION) && isCreator;
   const accessGranted = isAuthorized || isCollaborationAllowed;
@@ -79,39 +79,40 @@ const noteResolvers = {
   Mutation: {
     noteEdit: (_, { id }, context) => ({
       delete: async () => {
-        await checkUserAccess(user, id);
+        await checkUserAccess(context, context.user, id);
         return stixDomainObjectDelete(context, context.user, id);
       },
       fieldPatch: async ({ input, commitMessage, references }) => {
-        await checkUserAccess(user, id);
+        await checkUserAccess(context, context.user, id);
         const availableInputs = input.filter((i) => i.key !== 'createdBy');
         return stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
       },
       contextPatch: async ({ input }) => {
-        await checkUserAccess(user, id);
+        await checkUserAccess(context, context.user, id);
         return stixDomainObjectEditContext(context, context.user, id, input);
       },
       contextClean: async () => {
-        await checkUserAccess(user, id);
+        await checkUserAccess(context, context.user, id);
         return stixDomainObjectCleanContext(context, context.user, id);
       },
       relationAdd: async ({ input }) => {
-        await checkUserAccess(user, id);
+        await checkUserAccess(context, context.user, id);
         return stixDomainObjectAddRelation(context, context.user, id, input);
       },
       relationDelete: async ({ toId, relationship_type: relationshipType }) => {
-        await checkUserAccess(user, id);
+        await checkUserAccess(context, context.user, id);
         return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
       },
     }),
-    userNoteAdd: async (_, { input }, { user }) => {
+    userNoteAdd: async (_, { input }, context) => {
+      const { user } = context;
       let individualId = user.individual_id;
       if (individualId === undefined) {
-        const individual = await addIndividual(user, { name: user.name, contact_information: user.user_email });
+        const individual = await addIndividual(context, user, { name: user.name, contact_information: user.user_email });
         individualId = individual.id;
       }
       const inputWithCreator = { ...input, createdBy: individualId };
-      return addNote(user, inputWithCreator);
+      return addNote(context, user, inputWithCreator);
     },
     noteAdd: (_, { input }, context) => {
       return addNote(context, context.user, input);

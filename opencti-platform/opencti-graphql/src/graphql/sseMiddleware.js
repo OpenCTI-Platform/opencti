@@ -60,7 +60,7 @@ const CONFIDENCE_FILTER = 'confidence';
 const REVOKED_FILTER = 'revoked';
 const PATTERN_FILTER = 'pattern_type';
 
-const filterCacheResolver = async (values, filterCache) => {
+const filterCacheResolver = async (context, values, filterCache) => {
   const filterIds = values.map((v) => v.id);
   const filterRefs = [];
   for (let i = 0; i < filterIds.length; i += 1) {
@@ -69,14 +69,15 @@ const filterCacheResolver = async (values, filterCache) => {
     if (fromCache) {
       filterRefs.push(fromCache.standard_id);
     } else {
-      const creator = await internalLoadById(SYSTEM_USER, filterId);
+      const creator = await internalLoadById(context, SYSTEM_USER, filterId);
       filterRefs.push(creator.standard_id);
       filterCache.set(filterId, creator);
     }
   }
   return filterRefs;
 };
-const isInstanceAccessible = async (user, instance, filterCache, filters = {}) => {
+
+const isInstanceAccessible = async (context, user, instance, filterCache, filters = {}) => {
   // First we need to check if the user can access to it (marking and organizations)
   // If bypass just return true
   const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
@@ -94,7 +95,7 @@ const isInstanceAccessible = async (user, instance, filterCache, filters = {}) =
   }
   // Check user have correct organizations
   const dataOrganizations = instance.extensions[STIX_EXT_OCTI].granted_refs ?? [];
-  const platformSettings = await getEntityFromCache(ENTITY_TYPE_SETTINGS);
+  const platformSettings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   if (platformSettings.platform_organization) {
     const isUserPartOfPlatformOrganization = (user.organizations ?? []).includes(platformSettings.platform_organization);
     if (!isUserPartOfPlatformOrganization) {
@@ -430,22 +431,6 @@ const createSeeMiddleware = () => {
       return instance.from && instance.to;
     }
     return true;
-  };
-  const filterCacheResolver = async (context, values, filterCache) => {
-    const filterIds = values.map((v) => v.id);
-    const filterRefs = [];
-    for (let i = 0; i < filterIds.length; i += 1) {
-      const filterId = filterIds[i];
-      const fromCache = filterCache.get(filterId);
-      if (fromCache) {
-        filterRefs.push(fromCache.standard_id);
-      } else {
-        const creator = await internalLoadById(context, SYSTEM_USER, filterId);
-        filterRefs.push(creator.standard_id);
-        filterCache.set(filterId, creator);
-      }
-    }
-    return filterRefs;
   };
   const isInstanceMatchFilters = async (context, instance, filters, filterCache) => {
     // Pre-filter transformation to handle specific frontend format

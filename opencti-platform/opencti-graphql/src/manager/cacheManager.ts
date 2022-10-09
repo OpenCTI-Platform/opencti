@@ -1,4 +1,3 @@
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { pubsub } from '../database/redis';
 import { connectors } from '../database/repository';
@@ -14,27 +13,7 @@ import type { BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../
 import { EntityOptions, listEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
-import type { AuthContext, AuthUser } from '../types/user';
-import { telemetry } from '../config/tracing';
-
-let cache: any = {};
-
-export const getEntitiesFromCache = async<T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, type: string): Promise<Array<T>> => {
-  const getEntitiesFromCacheFn = async () => {
-    const fromCache = cache[type];
-    if (!fromCache) {
-      throw UnsupportedError(`${type} is not supported in cache configuration`);
-    }
-    if (!fromCache.values) {
-      fromCache.values = await fromCache.fn();
-    }
-    return fromCache.values;
-  };
-  return telemetry(context, user, `CACHE ${type}`, {
-    [SemanticAttributes.DB_NAME]: 'cache_engine',
-    [SemanticAttributes.DB_OPERATION]: 'select',
-  }, getEntitiesFromCacheFn);
-};
+import type { AuthContext } from '../types/user';
 
 const workflowStatuses = async (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -84,8 +63,8 @@ const initCacheManager = () => {
       writeCacheForEntity(ENTITY_TYPE_CONNECTOR, await platformConnectors(context));
       writeCacheForEntity(ENTITY_TYPE_RULE, await platformRules(context));
       writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, await platformMarkings(context));
-      writeCacheForEntity(ENTITY_TYPE_SETTINGS, await platformSettings());
-      cache[ENTITY_TYPE_SETTINGS] = await platformSettings(context);
+      writeCacheForEntity(ENTITY_TYPE_SETTINGS, await platformSettings(context));
+      writeCacheForEntity(ENTITY_TYPE_SETTINGS, await platformSettings(context));
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
       subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {

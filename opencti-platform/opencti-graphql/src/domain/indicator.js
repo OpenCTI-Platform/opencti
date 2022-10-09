@@ -225,8 +225,9 @@ export const indicatorsTimeSeries = (context, user, args) => {
 };
 
 export const indicatorsNumber = (context, user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_INDICATOR], args)),
+  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_INDICATOR], args)),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(R.assoc('types', [ENTITY_TYPE_INDICATOR]), R.dissoc('endDate'))(args)
@@ -240,6 +241,7 @@ export const indicatorsTimeSeriesByEntity = (context, user, args) => {
 
 export const indicatorsNumberByEntity = (context, user, args) => ({
   count: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -250,6 +252,7 @@ export const indicatorsNumberByEntity = (context, user, args) => ({
     )(args)
   ),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(

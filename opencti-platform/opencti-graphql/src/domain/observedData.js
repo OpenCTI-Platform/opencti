@@ -59,8 +59,9 @@ export const observedDatasTimeSeries = (context, user, args) => {
 };
 
 export const observedDatasNumber = (context, user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args)),
+  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args)),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]), R.dissoc('endDate')(args))
@@ -88,6 +89,7 @@ export const observedDatasTimeSeriesByAuthor = async (context, user, args) => {
 
 export const observedDatasNumberByEntity = (context, user, args) => ({
   count: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -98,6 +100,7 @@ export const observedDatasNumberByEntity = (context, user, args) => ({
     )(args)
   ),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(

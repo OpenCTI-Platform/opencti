@@ -129,10 +129,10 @@ export const stixCoreObjectAddRelation = async (context, user, stixCoreObjectId,
   return createRelation(context, user, finalInput);
 };
 
-export const addOrganizationRestriction = async (user, stixCoreObjectId, organizationId) => {
-  const stixCoreObject = await findById(user, stixCoreObjectId);
+export const addOrganizationRestriction = async (context, user, stixCoreObjectId, organizationId) => {
+  const stixCoreObject = await findById(context, user, stixCoreObjectId);
   const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_ADD }];
-  const data = await updateAttribute(user, stixCoreObjectId, stixCoreObject.entity_type, updates);
+  const data = await updateAttribute(context, user, stixCoreObjectId, stixCoreObject.entity_type, updates);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, data.element, user);
 };
 
@@ -166,10 +166,10 @@ export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObject
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
 };
 
-export const removeOrganizationRestriction = async (user, stixCoreObjectId, organizationId) => {
-  const stixCoreObject = await findById(user, stixCoreObjectId);
+export const removeOrganizationRestriction = async (context, user, stixCoreObjectId, organizationId) => {
+  const stixCoreObject = await findById(context, user, stixCoreObjectId);
   const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_REMOVE }];
-  const data = await updateAttribute(user, stixCoreObjectId, stixCoreObject.entity_type, updates);
+  const data = await updateAttribute(context, user, stixCoreObjectId, stixCoreObject.entity_type, updates);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, data.element, user);
 };
 

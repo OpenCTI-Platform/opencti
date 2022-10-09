@@ -67,8 +67,9 @@ export const opinionsTimeSeries = (context, user, args) => {
 };
 
 export const opinionsNumber = (context, user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args)),
+  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args)),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]), dissoc('endDate'))(args)
@@ -96,6 +97,7 @@ export const opinionsTimeSeriesByAuthor = async (context, user, args) => {
 
 export const opinionsNumberByEntity = (context, user, args) => ({
   count: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
@@ -106,6 +108,7 @@ export const opinionsNumberByEntity = (context, user, args) => ({
     )(args)
   ),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
