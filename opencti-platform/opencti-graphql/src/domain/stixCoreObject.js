@@ -101,7 +101,7 @@ export const batchKillChainPhases = (context, user, stixCoreObjectIds) => {
 
 export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('elementId', stixCoreObjectId, args);
-  return relationFindAll(user, finalArgs);
+  return relationFindAll(context, user, finalArgs);
 };
 
 export const stixCoreObjectAddRelation = async (context, user, stixCoreObjectId, input) => {
