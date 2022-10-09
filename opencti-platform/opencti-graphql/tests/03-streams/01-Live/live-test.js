@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { shutdownModules, startModules } from '../../../src/modules';
-import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE } from '../../utils/testQuery';
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { elAggregationCount } from '../../../src/database/engine';
@@ -17,7 +17,7 @@ describe('Live streams tests', () => {
   });
   const getElementsCounting = async () => {
     const data = {};
-    const stixCoreAgg = await elAggregationCount(ADMIN_USER, 'Stix-Object', 'entity_type');
+    const stixCoreAgg = await elAggregationCount(testContext, ADMIN_USER, 'Stix-Object', 'entity_type');
     for (let index = 0; index < stixCoreAgg.length; index += 1) {
       const { label, value } = stixCoreAgg[index];
       const key = convertEntityTypeToStixType(label);
@@ -27,9 +27,9 @@ describe('Live streams tests', () => {
         data[key] = value;
       }
     }
-    const stixCoreRelAgg = await elAggregationCount(ADMIN_USER, 'stix-core-relationship', 'entity_type');
+    const stixCoreRelAgg = await elAggregationCount(testContext, ADMIN_USER, 'stix-core-relationship', 'entity_type');
     data.relationship = R.sum(stixCoreRelAgg.map((r) => r.value));
-    const stixSightingRelAgg = await elAggregationCount(ADMIN_USER, 'stix-sighting-relationship', 'entity_type');
+    const stixSightingRelAgg = await elAggregationCount(testContext, ADMIN_USER, 'stix-sighting-relationship', 'entity_type');
     data.sighting = R.sum(stixSightingRelAgg.map((r) => r.value));
     return data;
   };
@@ -50,7 +50,7 @@ describe('Live streams tests', () => {
     'Should consume init live stream',
     async () => {
       // Check the stream rebuild
-      const report = await storeLoadByIdWithRefs(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
+      const report = await storeLoadByIdWithRefs(testContext, ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
       const stixReport = convertStoreToStix(report);
       const now = utcDate().toISOString();
       const events = await fetchStreamEvents(`http://localhost:4000/stream/live?from=0&recover=${now}`);

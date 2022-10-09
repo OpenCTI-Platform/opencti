@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { offsetToCursor, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
 import { elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicStoreCommon,
   StoreProxyConnection,
@@ -36,7 +36,7 @@ interface ListFilter<T extends BasicStoreCommon> {
   callback?: (result: Array<T>) => Promise<boolean | void>
 }
 
-export const elList = async <T extends BasicStoreCommon>(user: AuthUser, indices: Array<string>, options: ListFilter<T> = {}): Promise<Array<T>> => {
+export const elList = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indices: Array<string>, options: ListFilter<T> = {}): Promise<Array<T>> => {
   const { first = MAX_SEARCH_SIZE, infinite = false } = options;
   let hasNextPage = true;
   let continueProcess = true;
@@ -54,7 +54,7 @@ export const elList = async <T extends BasicStoreCommon>(user: AuthUser, indices
   while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
     const opts = { ...options, first, after: searchAfter, connectionFormat: false };
-    const elements = await elPaginate(user, indices, opts);
+    const elements = await elPaginate(context, user, indices, opts);
     if (!infinite && (elements.length === 0 || elements.length < (first ?? MAX_SEARCH_SIZE))) {
       if (elements.length > 0) {
         await publish(elements);
@@ -200,15 +200,17 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
   }
   return R.pipe(R.assoc('types', relationsToGet), R.assoc('filters', finalFilters))(args);
 };
-export const listRelations = async <T extends StoreProxyRelation>(user: AuthUser, type: string | Array<string>, args: RelationOptions<T> = {}): Promise<Array<T>> => {
+export const listRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
+  args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(user, indices, paginateArgs);
+  return elPaginate(context, user, indices, paginateArgs);
 };
-export const listAllRelations = async <T extends StoreProxyRelation>(user: AuthUser, type: string | Array<string>, args: RelationOptions<T> = {}): Promise<Array<T>> => {
+export const listAllRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
+  args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(type, args);
-  return elList(user, indices, paginateArgs);
+  return elList(context, user, indices, paginateArgs);
 };
 
 // entities
@@ -293,22 +295,24 @@ const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> =
   builtFilters.filters = customFilters;
   return builtFilters;
 };
-export const listEntities = async <T extends StoreProxyEntity>(user: AuthUser, entityTypes: Array<string>, args:EntityOptions<T> = {}): Promise<Array<T>> => {
+export const listEntities = async <T extends StoreProxyEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+  args:EntityOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_ENTITIES_INDICES } = args;
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
   //   throw UnsupportedError('List connection require connectionFormat option to false');
   // }
   const paginateArgs = buildEntityFilters({ entityTypes, ...args });
-  return elPaginate(user, indices, paginateArgs);
+  return elPaginate(context, user, indices, paginateArgs);
 };
 
-export const listEntitiesPaginated = async <T extends StoreProxyEntity>(user: AuthUser, entityTypes: Array<string>, args:EntityOptions<T> = {}):
+export const listEntitiesPaginated = async <T extends StoreProxyEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+  args:EntityOptions<T> = {}):
 Promise<StoreProxyConnection<T>> => {
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
   const paginateArgs = buildEntityFilters({ entityTypes, ...args });
-  return elPaginate(user, indices, paginateArgs);
+  return elPaginate(context, user, indices, paginateArgs);
 };

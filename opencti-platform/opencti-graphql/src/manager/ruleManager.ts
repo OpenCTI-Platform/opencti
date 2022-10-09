@@ -24,13 +24,14 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { elList } from '../database/middleware-loader';
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity, StoreObject } from '../types/store';
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { DeleteEvent, Event, MergeEvent, StreamEvent, UpdateEvent } from '../types/event';
 import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
+import { executionContext } from '../utils/access';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -47,8 +48,8 @@ for (let index = 0; index < ruleBehaviors.length; index += 1) {
 }
 // endregion
 
-export const getManagerInfo = async (user: AuthUser): Promise<RuleManager> => {
-  const ruleStatus = await internalLoadById(user, RULE_ENGINE_ID) as unknown as BasicManagerEntity;
+export const getManagerInfo = async (context: AuthContext, user: AuthUser): Promise<RuleManager> => {
+  const ruleStatus = await internalLoadById(context, user, RULE_ENGINE_ID) as unknown as BasicManagerEntity;
   return { activated: ENABLED_RULE_ENGINE, ...ruleStatus };
 };
 
@@ -78,7 +79,7 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
     const shifts = context.shifts ?? [];
     for (let index = 0; index < shifts.length; index += 1) {
       const shift = shifts[index];
-      const shiftedElement = await stixLoadById(RULE_MANAGER_USER, shift) as StixCoreObject;
+      const shiftedElement = await stixLoadById(context, RULE_MANAGER_USER, shift) as StixCoreObject;
       // In past reprocess the shift element can already have been deleted.
       if (shiftedElement) {
         // We need to cleanup the element associated with this relation and then rescan it
@@ -171,19 +172,20 @@ const handleRuleError = async (event: Event, error: unknown) => {
 };
 
 const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
+  const context = executionContext('rule_cleaner');
   const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
   const callback = (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    return rulesCleanHandler(elements, RULES_DECLARATION, deletionIds);
+    return rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);
   };
-  await elList<BasicStoreCommon>(RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
+  await elList<BasicStoreCommon>(context, RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
 };
 
-export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<RuleRuntime> = []) => {
+export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<Event>, forRules: Array<RuleRuntime> = []) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
-  const rules = forRules.length > 0 ? forRules : await getActivatedRules();
+  const rules = forRules.length > 0 ? forRules : await getActivatedRules(context, user);
   // Execute the events
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
@@ -195,7 +197,7 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
         const mergeEvent = event as MergeEvent;
         const derivedEvents = await ruleMergeHandler(mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        await rulesApplyHandler(derivedEvents);
+        await rulesApplyHandler(context, user, derivedEvents);
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
@@ -223,7 +225,7 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
           // Rule match, need to apply
           if (isCurrentMatched) {
             const derivedEvents = await rule.insert(data);
-            await rulesApplyHandler(derivedEvents);
+            await rulesApplyHandler(context, user, derivedEvents);
           }
         }
       }
@@ -234,7 +236,7 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
           const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
             const derivedEvents = await rule.insert(data);
-            await rulesApplyHandler(derivedEvents);
+            await rulesApplyHandler(context, user, derivedEvents);
           }
         }
       }
@@ -244,18 +246,24 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
   }
 };
 
-export const rulesCleanHandler = async (instances: Array<BasicStoreCommon>, rules: Array<RuleRuntime>, deletedDependencies: Array<string> = []) => {
+export const rulesCleanHandler = async (
+  context: AuthContext,
+  user: AuthUser,
+  instances: Array<BasicStoreCommon>,
+  rules: Array<RuleRuntime>,
+  deletedDependencies: Array<string> = []
+) => {
   for (let i = 0; i < instances.length; i += 1) {
     const instance = instances[i];
     for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
       const rule = rules[ruleIndex];
       const isElementCleanable = isNotEmptyField(instance[`${RULE_PREFIX}${rule.id}`]);
       if (isElementCleanable) {
-        const processingElement: StoreObject = await storeLoadByIdWithRefs(RULE_MANAGER_USER, instance.internal_id);
+        const processingElement: StoreObject = await storeLoadByIdWithRefs(context, RULE_MANAGER_USER, instance.internal_id);
         // In case of "inference of inference", element can be recursively cleanup by the deletion system
         if (processingElement) {
           const derivedEvents = await rule.clean(processingElement, deletedDependencies);
-          await rulesApplyHandler(derivedEvents);
+          await rulesApplyHandler(context, user, derivedEvents);
         }
       }
     }
@@ -263,6 +271,7 @@ export const rulesCleanHandler = async (instances: Array<BasicStoreCommon>, rule
 };
 
 const ruleStreamHandler = async (streamEvents: Array<StreamEvent>, lastEventId: string) => {
+  const context = executionContext('rule_manager');
   // Create list of events to process
   // Events must be in a compatible version and not inferences events
   // Inferences directly handle recursively by the manager
@@ -277,16 +286,17 @@ const ruleStreamHandler = async (streamEvents: Array<StreamEvent>, lastEventId: 
   if (compatibleEvents.length > 0) {
     const ruleEvents: Array<Event> = compatibleEvents.map((e) => e.data);
     // Execute the events
-    await rulesApplyHandler(ruleEvents);
+    await rulesApplyHandler(context, RULE_MANAGER_USER, ruleEvents);
   }
   // Save the last processed event
   logApp.debug(`[OPENCTI] Rule manager saving state to ${lastEventId}`);
-  await patchAttribute(RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, { lastEventId });
+  await patchAttribute(context, RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, { lastEventId });
 };
 
 const getInitRuleManager = async (): Promise<BasicStoreEntity> => {
+  const context = executionContext('rule_manager');
   const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
-  const created = await createEntity(RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
+  const created = await createEntity(context, RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
   return created as BasicStoreEntity;
 };
 
@@ -305,7 +315,7 @@ const initRuleManager = () => {
     try {
       // Lock the manager
       lock = await lockResource([RULE_ENGINE_KEY]);
-      logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId}`);
+      logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
       // Start the stream listening
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
       await streamProcessor.start(lastEventId);
@@ -341,10 +351,10 @@ const initRuleManager = () => {
 };
 const ruleEngine = initRuleManager();
 
-export const cleanRuleManager = async (user: AuthUser, eventId: string) => {
+export const cleanRuleManager = async (context: AuthContext, user: AuthUser, eventId: string) => {
   // Clear the elastic status
   const patch = { lastEventId: eventId, errors: [] };
-  const { element } = await patchAttribute(user, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, patch);
+  const { element } = await patchAttribute(context, user, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, patch);
   // Restart the manager
   await ruleEngine.shutdown();
   await ruleEngine.start();

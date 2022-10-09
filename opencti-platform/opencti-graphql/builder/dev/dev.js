@@ -2,11 +2,12 @@ const esbuild = require('esbuild');
 const {default: importGlobPlugin} = require('esbuild-plugin-import-glob');
 const {default: graphqlLoaderPlugin} = require('@luckycatfactory/esbuild-graphql-loader');
 const outputRunPlugin = require("../plugin/output.run.plugin");
+const nativeNodePlugin = require("../plugin/native.node.plugin");
 
 esbuild.build({
     logLevel: 'info',
     define: {'process.env.NODE_ENV': '\"development\"'},
-    plugins: [importGlobPlugin(), graphqlLoaderPlugin(), outputRunPlugin()],
+    plugins: [importGlobPlugin(), graphqlLoaderPlugin(), outputRunPlugin(), nativeNodePlugin()],
     entryPoints: [
         'src/index.js',
         'script/script-clean-relations.js'

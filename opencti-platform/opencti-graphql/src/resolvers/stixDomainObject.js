@@ -22,7 +22,7 @@ import {
   stixDomainObjectsExportAsk,
   stixDomainObjectsTimeSeriesByAuthor,
 } from '../domain/stixDomainObject';
-import { findById as findStatusById, getTypeStatuses } from '../domain/status';
+import { findById as findStatusById, findByType } from '../domain/status';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/file-storage';
@@ -32,22 +32,22 @@ import { stixCoreObjectImportPush } from '../domain/stixCoreObject';
 
 const stixDomainObjectResolvers = {
   Query: {
-    stixDomainObject: (_, { id }, { user }) => findById(user, id),
-    stixDomainObjects: (_, args, { user }) => findAll(user, args),
-    stixDomainObjectsTimeSeries: (_, args, { user }) => {
+    stixDomainObject: (_, { id }, context) => findById(context, context.user, id),
+    stixDomainObjects: (_, args, context) => findAll(context, context.user, args),
+    stixDomainObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
-        return stixDomainObjectsTimeSeriesByAuthor(user, args);
+        return stixDomainObjectsTimeSeriesByAuthor(context, context.user, args);
       }
-      return stixDomainObjectsTimeSeries(user, args);
+      return stixDomainObjectsTimeSeries(context, context.user, args);
     },
-    stixDomainObjectsNumber: (_, args, { user }) => stixDomainObjectsNumber(user, args),
-    stixDomainObjectsDistribution: (_, args, { user }) => {
+    stixDomainObjectsNumber: (_, args, context) => stixDomainObjectsNumber(context, context.user, args),
+    stixDomainObjectsDistribution: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return stixDomainObjectsDistributionByEntity(user, args);
+        return stixDomainObjectsDistributionByEntity(context, context.user, args);
       }
       return [];
     },
-    stixDomainObjectsExportFiles: (_, { type, first }, { user }) => filesListing(user, first, `export/${type}/`),
+    stixDomainObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
   },
   StixDomainObjectsFilter: stixDomainObjectOptions.StixDomainObjectsFilter,
   StixDomainObject: {
@@ -57,46 +57,46 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    importFiles: (entity, { first }, { user }) => filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
-    exportFiles: (entity, { first }, { user }) => filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
-    status: (entity, _, { user }) => (entity.x_opencti_workflow_id ? findStatusById(user, entity.x_opencti_workflow_id) : null),
-    workflowEnabled: async (entity, _, { user }) => {
-      const statusesEdges = await getTypeStatuses(user, entity.entity_type);
-      return statusesEdges.edges.length > 0;
+    importFiles: (entity, { first }, context) => filesListing(context, context.user, first, `import/${entity.entity_type}/${entity.id}/`),
+    exportFiles: (entity, { first }, context) => filesListing(context, context.user, first, `export/${entity.entity_type}/${entity.id}/`),
+    status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
+    workflowEnabled: async (entity, _, context) => {
+      const statusesType = await findByType(context, context.user, entity.entity_type);
+      return statusesType.length > 0;
     },
   },
   Mutation: {
-    stixDomainObjectEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationsAdd: ({ input }) => stixDomainObjectAddRelations(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
-      importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(user, id, file, noTriggerImport),
-      exportAsk: (args) => stixDomainObjectExportAsk(user, R.assoc('stixDomainObjectId', id, args)),
-      exportPush: ({ file }) => stixDomainObjectExportPush(user, id, file),
+    stixDomainObjectEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationsAdd: ({ input }) => stixDomainObjectAddRelations(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(context, context.user, id, file, noTriggerImport),
+      exportAsk: (args) => stixDomainObjectExportAsk(context, context.user, R.assoc('stixDomainObjectId', id, args)),
+      exportPush: ({ file }) => stixDomainObjectExportPush(context, context.user, id, file),
     }),
-    stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),
-    stixDomainObjectAdd: (_, { input }, { user }) => addStixDomainObject(user, input),
-    stixDomainObjectsExportAsk: (_, args, { user }) => stixDomainObjectsExportAsk(user, args),
-    stixDomainObjectsExportPush: (_, { type, file, listFilters }, { user }) => stixDomainObjectsExportPush(user, type, file, listFilters),
+    stixDomainObjectsDelete: (_, { id }, context) => stixDomainObjectsDelete(context, context.user, id),
+    stixDomainObjectAdd: (_, { input }, context) => addStixDomainObject(context, context.user, input),
+    stixDomainObjectsExportAsk: (_, args, context) => stixDomainObjectsExportAsk(context, context.user, args),
+    stixDomainObjectsExportPush: (_, { type, file, listFilters }, context) => stixDomainObjectsExportPush(context, context.user, type, file, listFilters),
   },
   Subscription: {
     stixDomainObject: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        stixDomainObjectEditContext(user, id);
+      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+        stixDomainObjectEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
-        )(_, { id }, { user });
+        )(_, { id }, context);
         return withCancel(filtering, () => {
-          stixDomainObjectCleanContext(user, id);
+          stixDomainObjectCleanContext(context, context.user, id);
         });
       },
     },

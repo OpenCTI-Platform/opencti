@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { stixLoadById } from '../../../src/database/middleware';
-import { ADMIN_USER } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -19,7 +19,7 @@ describe('Stix opencti converter', () => {
 
   const rawDataCompare = async (rawId, standardId) => {
     let rawData = dataMap.get(rawId);
-    const stixData = await stixLoadById(ADMIN_USER, rawId);
+    const stixData = await stixLoadById(testContext, ADMIN_USER, rawId);
     let remainingData = { ...stixData };
     if (stixData.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
       rawData = R.dissoc('objects', rawData);
@@ -60,7 +60,7 @@ describe('Stix opencti converter', () => {
         const refetchDataAsArray = Array.isArray(refetchData) ? refetchData : [refetchData];
         for (let i = 0; i < refetchDataAsArray.length; i += 1) {
           const refetchElement = refetchDataAsArray[i];
-          const stixRef = await stixLoadById(ADMIN_USER, refetchElement);
+          const stixRef = await stixLoadById(testContext, ADMIN_USER, refetchElement);
           resolvedIds.push(stixRef.id, ...(stixRef.extensions[STIX_EXT_OCTI].stix_ids ?? []));
         }
         const initialDataAsArray = Array.isArray(initialData) ? initialData : [initialData];

@@ -6,11 +6,11 @@ import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
 
-export const findById = async (user, containerId) => {
-  return storeLoadById(user, containerId, ENTITY_TYPE_CONTAINER);
+export const findById = async (context, user, containerId) => {
+  return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
 };
 
-export const findAll = async (user, args) => {
+export const findAll = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = R.filter((type) => isStixDomainObjectContainer(type), args.types);
@@ -18,11 +18,11 @@ export const findAll = async (user, args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_CONTAINER);
   }
-  return listEntities(user, types, args);
+  return listEntities(context, user, types, args);
 };
 
 // Entities tab
-export const objects = async (user, containerId, args) => {
+export const objects = async (context, user, containerId, args) => {
   const key = buildRefRelationKey(RELATION_OBJECT);
   let types = ['Stix-Core-Object', 'stix-core-relationship', 'stix-sighting-relationship', 'stix-cyber-observable-relationship'];
   if (args.types) {
@@ -30,18 +30,18 @@ export const objects = async (user, containerId, args) => {
   }
   const filters = [{ key, values: [containerId] }, ...(args.filters || [])];
   if (args.all) {
-    return paginateAllThings(user, types, R.assoc('filters', filters, args));
+    return paginateAllThings(context, user, types, R.assoc('filters', filters, args));
   }
-  return listThings(user, types, R.assoc('filters', filters, args));
+  return listThings(context, user, types, R.assoc('filters', filters, args));
 };
-export const relatedContainers = async (user, containerId, args) => {
+export const relatedContainers = async (context, user, containerId, args) => {
   const key = buildRefRelationKey(RELATION_OBJECT);
   let types = ['Stix-Core-Object', 'stix-core-relationship'];
   if (args.viaTypes) {
     types = args.viaTypes;
   }
   const filters = [{ key, values: [containerId] }];
-  const elements = await listAllThings(user, types, { filters });
+  const elements = await listAllThings(context, user, types, { filters });
   if (elements.length === 0) {
     return buildPagination(0, null, [], 0);
   }
@@ -50,19 +50,19 @@ export const relatedContainers = async (user, containerId, args) => {
     ...args,
     filters: [...(args.filters || []), { key: buildRefRelationKey(RELATION_OBJECT), values: elementsIds }],
   };
-  return findAll(user, queryArgs);
+  return findAll(context, user, queryArgs);
 };
 // endregion
 
-export const containersObjectsOfObject = async (user, { id, types, filters = [], search = null }) => {
-  const containers = await findAll(user, {
+export const containersObjectsOfObject = async (context, user, { id, types, filters = [], search = null }) => {
+  const containers = await findAll(context, user, {
     first: 1000,
     search,
     filters: [...filters, { key: buildRefRelationKey(RELATION_OBJECT), values: [id] }],
   });
   const containersObjectsRelationshipsEdges = await Promise.all(
     R.map(
-      (n) => listRelations(user, RELATION_OBJECT, {
+      (n) => listRelations(context, user, RELATION_OBJECT, {
         first: 1000,
         fromId: n.node.id,
         toTypes: types,
@@ -72,7 +72,7 @@ export const containersObjectsOfObject = async (user, { id, types, filters = [],
   );
   const containersObjectsRelationships = R.flatten(R.map((n) => n.edges, containersObjectsRelationshipsEdges));
   const containersObjects = await Promise.all(
-    R.map((n) => storeLoadById(user, n.node.toId, n.node.toType), containersObjectsRelationships)
+    R.map((n) => storeLoadById(context, user, n.node.toId, n.node.toType), containersObjectsRelationships)
   );
   const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), [
     ...containers.edges,

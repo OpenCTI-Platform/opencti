@@ -4,9 +4,9 @@ import type Express from 'express';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
-import { BYPASS } from '../utils/access';
+import { BYPASS, executionContext } from '../utils/access';
 import { findById as findFeed } from '../domain/feed';
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import { listThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
@@ -27,8 +27,8 @@ const userHaveAccess = (user: AuthUser) => {
   const capabilities = user.capabilities.map((c) => c.name);
   return capabilities.includes(BYPASS) || capabilities.includes(TAXIIAPI);
 };
-const extractUserFromRequest = async (req: Express.Request, res: Express.Response) => {
-  const user = await authenticateUserFromRequest(req, res);
+const extractUserFromRequest = async (context: AuthContext, req: Express.Request, res: Express.Response) => {
+  const user = await authenticateUserFromRequest(context, req, res);
   if (!user) {
     res.setHeader('WWW-Authenticate', 'Basic, Bearer');
     throw AuthRequired();
@@ -49,14 +49,15 @@ const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
     const { id } = req.params;
     try {
-      const user = await extractUserFromRequest(req, res);
-      const feed = await findFeed(user, id);
+      const context = executionContext('rolling_feeds');
+      const user = await extractUserFromRequest(context, req, res);
+      const feed = await findFeed(context, user, id);
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
       const extraOptions = { defaultTypes: feed.feed_types, field: 'created_at', orderMode: 'desc', after: fromDate };
       const options = convertFiltersToQueryOptions(filters, extraOptions);
       const args = { connectionFormat: false, first: 5000, ...options };
-      const elements = await listThings(user, feed.feed_types, args);
+      const elements = await listThings(context, user, feed.feed_types, args);
       if (feed.include_header) {
         res.write(`${feed.feed_attributes.map((a) => a.attribute).join(',')}\r\n`);
       }

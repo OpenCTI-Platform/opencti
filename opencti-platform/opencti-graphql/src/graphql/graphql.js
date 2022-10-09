@@ -4,19 +4,14 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { dissocPath } from 'ramda';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
-import { basePath, DEV_MODE } from '../config/conf';
-import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
+import { basePath, DEV_MODE, ENABLED_TRACING } from '../config/conf';
+import { authenticateUserFromRequest } from '../domain/user';
 import { ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
+import telemetryPlugin from './telemetryPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
+import { executionContext } from '../utils/access';
 
-const buildContext = (user, req, res) => {
-  const workId = req.headers['opencti-work-id'];
-  if (user) {
-    return { req, res, user: userWithOrigin(req, user), workId };
-  }
-  return { req, res, user, workId };
-};
 const createApolloServer = () => {
   const schema = createSchema();
   // In production mode, we use static from the server
@@ -26,22 +21,24 @@ const createApolloServer = () => {
     faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`
   };
   const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
+  const appolloPlugins = [playgroundPlugin, loggerPlugin, httpResponsePlugin];
+  if (ENABLED_TRACING) {
+    appolloPlugins.push(telemetryPlugin);
+  }
   const apolloServer = new ApolloServer({
     schema,
     introspection: true,
     persistedQueries: false,
     async context({ req, res, connection }) {
-      // For websocket connection.
-      if (connection) {
-        return { req, res, user: connection.context.user };
-      }
-      // Get user session from request
-      const user = await authenticateUserFromRequest(req, res);
-      // Return the context
-      return buildContext(user, req, res);
+      const executeContext = executionContext('api');
+      executeContext.req = req;
+      executeContext.res = res;
+      executeContext.workId = req.headers['opencti-work-id'];
+      executeContext.user = connection ? connection.context.user : await authenticateUserFromRequest(executeContext, req, res);
+      return executeContext;
     },
     tracing: DEV_MODE,
-    plugins: [playgroundPlugin, loggerPlugin, httpResponsePlugin],
+    plugins: appolloPlugins,
     formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof UserInputError) {

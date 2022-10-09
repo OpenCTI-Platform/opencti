@@ -12,8 +12,8 @@ import {
 
 const eventResolvers: Resolvers = {
   Query: {
-    event: (_, { id }, { user }) => findById(user, id),
-    events: (_, args, { user }) => findAll(user, args),
+    event: (_, { id }, context) => findById(context, context.user, id),
+    events: (_, args, context) => findAll(context, context.user, args),
   },
   EventsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -21,26 +21,26 @@ const eventResolvers: Resolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    eventAdd: (_, { input }, { user }) => {
-      return addEvent(user, input);
+    eventAdd: (_, { input }, context) => {
+      return addEvent(context, context.user, input);
     },
-    eventDelete: (_, { id }, { user }) => {
-      return stixDomainObjectDelete(user, id);
+    eventDelete: (_, { id }, context) => {
+      return stixDomainObjectDelete(context, context.user, id);
     },
-    eventFieldPatch: (_, { id, input, commitMessage, references }, { user }) => {
-      return stixDomainObjectEditField(user, id, input, { commitMessage, references });
+    eventFieldPatch: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },
-    eventContextPatch: (_, { id, input }, { user }) => {
-      return stixDomainObjectEditContext(user, id, input);
+    eventContextPatch: (_, { id, input }, context) => {
+      return stixDomainObjectEditContext(context, context.user, id, input);
     },
-    eventContextClean: (_, { id }, { user }) => {
-      return stixDomainObjectCleanContext(user, id);
+    eventContextClean: (_, { id }, context) => {
+      return stixDomainObjectCleanContext(context, context.user, id);
     },
-    eventRelationAdd: (_, { id, input }, { user }) => {
-      return stixDomainObjectAddRelation(user, id, input);
+    eventRelationAdd: (_, { id, input }, context) => {
+      return stixDomainObjectAddRelation(context, context.user, id, input);
     },
-    eventRelationDelete: (_, { id, toId, relationship_type: relationshipType }, { user }) => {
-      return stixDomainObjectDeleteRelation(user, id, toId, relationshipType);
+    eventRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },
 };

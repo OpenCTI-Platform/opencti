@@ -6,15 +6,15 @@ import { READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
 import { storeLoadById } from '../database/middleware';
 import { listRelations } from '../database/middleware-loader';
 
-export const findAll = async (user, args) => {
-  return listRelations(user, propOr(ABSTRACT_STIX_META_RELATIONSHIP, 'relationship_type', args), args);
+export const findAll = async (context, user, args) => {
+  return listRelations(context, user, propOr(ABSTRACT_STIX_META_RELATIONSHIP, 'relationship_type', args), args);
 };
 
-export const findById = (user, stixRelationshipId) => {
-  return storeLoadById(user, stixRelationshipId, ABSTRACT_STIX_META_RELATIONSHIP);
+export const findById = (context, user, stixRelationshipId) => {
+  return storeLoadById(context, user, stixRelationshipId, ABSTRACT_STIX_META_RELATIONSHIP);
 };
 
-export const stixMetaRelationshipsNumber = (user, args) => {
+export const stixMetaRelationshipsNumber = (context, user, args) => {
   const types = [];
   if (args.type) {
     if (isStixMetaRelationship(args.type)) {

@@ -15,6 +15,8 @@ import { listAllRelations, RelationOptions } from '../../database/middleware-loa
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { RuleRuntime } from '../../types/rules';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
+import type { AuthContext } from '../../types/user';
+import { executionContext } from '../../utils/access';
 
 /*
 'If **indicator A** is `sighted` in **identity/location B** and '
@@ -24,7 +26,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCAT
 
 const sightingIndicatorRuleBuilder = (): RuleRuntime => {
   // Execution
-  const applyFromStixRelation = async (data: StixRelation): Promise<Array<Event>> => {
+  const applyFromStixRelation = async (context: AuthContext, data: StixRelation): Promise<Array<Event>> => {
     // **indicator A** `based on` **observable C**
     const events: Array<Event> = [];
     const createdId = data.extensions[STIX_EXT_OCTI].id;
@@ -55,7 +57,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
           last_seen: range.end,
           objectMarking: elementMarkings
         });
-        const event = await createInferredRelation(input, ruleContent);
+        const event = await createInferredRelation(context, input, ruleContent);
         // Re inject event if needed
         if (event) {
           events.push(event);
@@ -67,10 +69,10 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
       toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION],
       callback: listFromCallback
     };
-    await listAllRelations(RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
+    await listAllRelations(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
     return events;
   };
-  const applyFromStixSighting = async (data: StixSighting): Promise<Array<Event>> => {
+  const applyFromStixSighting = async (context: AuthContext, data: StixSighting): Promise<Array<Event>> => {
     // **indicator A** is `sighted` in **identity/location B**
     const events: Array<Event> = [];
     const createdId = data.extensions[STIX_EXT_OCTI].id;
@@ -102,7 +104,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
           stop_time: range.end,
           objectMarking: elementMarkings
         });
-        const event = await createInferredRelation(input, ruleContent);
+        const event = await createInferredRelation(context, input, ruleContent);
         // Re inject event if needed
         if (event) {
           events.push(event);
@@ -114,16 +116,17 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
       toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
       callback: listFromCallback
     };
-    await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, listFromArgs);
+    await listAllRelations(context, RULE_MANAGER_USER, RELATION_BASED_ON, listFromArgs);
     return events;
   };
   const applyUpsert = async (data: StixRelation | StixSighting): Promise<Array<Event>> => {
+    const context = executionContext(def.name);
     if (data.extensions[STIX_EXT_OCTI].type === STIX_SIGHTING_RELATIONSHIP) {
       const sighting: StixSighting = data as StixSighting;
-      return applyFromStixSighting(sighting);
+      return applyFromStixSighting(context, sighting);
     }
     const rel: StixRelation = data as StixRelation;
-    return applyFromStixRelation(rel);
+    return applyFromStixRelation(context, rel);
   };
   // Contract
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {

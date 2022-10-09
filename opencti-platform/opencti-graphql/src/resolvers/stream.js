@@ -13,21 +13,21 @@ import {
 
 const streamResolvers = {
   Query: {
-    streamCollection: (_, { id }, { user }) => findById(user, id),
-    streamCollections: (_, args, { user }) => findAll(user, args),
+    streamCollection: (_, { id }, context) => findById(context, context.user, id),
+    streamCollections: (_, args, context) => findAll(context, context.user, args),
   },
   StreamCollection: {
-    groups: (collection, _, { user }) => streamCollectionGroups(user, collection),
+    groups: (collection, _, context) => streamCollectionGroups(context, context.user, collection),
   },
   Mutation: {
-    streamCollectionAdd: (_, { input }, { user }) => createStreamCollection(user, input),
-    streamCollectionEdit: (_, { id }, { user }) => ({
-      delete: () => streamCollectionDelete(user, id),
-      fieldPatch: ({ input }) => streamCollectionEditField(user, id, input),
-      contextPatch: ({ input }) => streamCollectionEditContext(user, id, input),
-      contextClean: () => streamCollectionCleanContext(user, id),
-      addGroup: ({ id: groupId }) => createGroupRelation(user, id, groupId),
-      deleteGroup: ({ id: groupId }) => deleteGroupRelation(user, id, groupId),
+    streamCollectionAdd: (_, { input }, context) => createStreamCollection(context, context.user, input),
+    streamCollectionEdit: (_, { id }, context) => ({
+      delete: () => streamCollectionDelete(context, context.user, id),
+      fieldPatch: ({ input }) => streamCollectionEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => streamCollectionEditContext(context, context.user, id, input),
+      contextClean: () => streamCollectionCleanContext(context, context.user, id),
+      addGroup: ({ id: groupId }) => createGroupRelation(context, context.user, id, groupId),
+      deleteGroup: ({ id: groupId }) => deleteGroupRelation(context, context.user, id, groupId),
     }),
   },
 };

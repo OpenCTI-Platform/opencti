@@ -10,16 +10,16 @@ import {
 
 const taxiiResolvers = {
   Query: {
-    taxiiCollection: (_, { id }, { user }) => findById(user, id),
-    taxiiCollections: (_, args, { user }) => findAll(user, args),
+    taxiiCollection: (_, { id }, context) => findById(context, context.user, id),
+    taxiiCollections: (_, args, context) => findAll(context, context.user, args),
   },
   Mutation: {
-    taxiiCollectionAdd: (_, { input }, { user }) => createTaxiiCollection(user, input),
-    taxiiCollectionEdit: (_, { id }, { user }) => ({
-      delete: () => taxiiCollectionDelete(user, id),
-      fieldPatch: ({ input }) => taxiiCollectionEditField(user, id, input),
-      contextPatch: ({ input }) => taxiiCollectionEditContext(user, id, input),
-      contextClean: () => taxiiCollectionCleanContext(user, id),
+    taxiiCollectionAdd: (_, { input }, context) => createTaxiiCollection(context, context.user, input),
+    taxiiCollectionEdit: (_, { id }, context) => ({
+      delete: () => taxiiCollectionDelete(context, context.user, id),
+      fieldPatch: ({ input }) => taxiiCollectionEditField(context, context.user, id, input),
+      contextPatch: ({ input }) => taxiiCollectionEditContext(context, context.user, id, input),
+      contextClean: () => taxiiCollectionCleanContext(context, context.user, id),
     }),
   },
 };

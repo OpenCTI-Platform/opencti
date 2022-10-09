@@ -6,11 +6,11 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/gen
 import { ENTITY_TYPE_IDENTITY_SECTOR, isStixDomainObjectIdentity } from '../schema/stixDomainObject';
 import { listEntities } from '../database/middleware-loader';
 
-export const findById = async (user, identityId) => {
-  return storeLoadById(user, identityId, ENTITY_TYPE_IDENTITY);
+export const findById = async (context, user, identityId) => {
+  return storeLoadById(context, user, identityId, ENTITY_TYPE_IDENTITY);
 };
 
-export const findAll = async (user, args) => {
+export const findAll = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = filter((type) => isStixDomainObjectIdentity(type), args.types);
@@ -18,12 +18,12 @@ export const findAll = async (user, args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_IDENTITY);
   }
-  return listEntities(user, types, args);
+  return listEntities(context, user, types, args);
 };
 
-export const addIdentity = async (user, identity) => {
+export const addIdentity = async (context, user, identity) => {
   const identityClass = identity.type === ENTITY_TYPE_IDENTITY_SECTOR ? 'class' : identity.type.toLowerCase();
   const identityToCreate = pipe(assoc('identity_class', identityClass), dissoc('type'))(identity);
-  const created = await createEntity(user, identityToCreate, identity.type);
+  const created = await createEntity(context, user, identityToCreate, identity.type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

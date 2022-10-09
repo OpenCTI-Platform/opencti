@@ -25,9 +25,15 @@
       "logs_directory": "./logs"
     },
     "telemetry": {
-      "prometheus": {
+      "tracing": {
         "enabled": false,
-        "metrics_path": "/prometheus/metrics"
+        "exporter_otlp": "",
+        "exporter_zipkin": ""
+      },
+      "metrics": {
+        "enabled": false,
+        "exporter_otlp": "",
+        "exporter_prometheus": 14269
       }
     },
     "request_timeout": 1200000,

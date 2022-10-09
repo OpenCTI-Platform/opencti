@@ -6,3 +6,4 @@ opencti:
 
 worker:
   log_level: 'info'
+  telemetry_enabled: false

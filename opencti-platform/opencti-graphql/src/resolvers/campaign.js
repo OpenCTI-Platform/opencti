@@ -12,13 +12,13 @@ import { buildRefRelationKey } from '../schema/general';
 
 const campaignResolvers = {
   Query: {
-    campaign: (_, { id }, { user }) => findById(user, id),
-    campaigns: (_, args, { user }) => findAll(user, args),
-    campaignsTimeSeries: (_, args, { user }) => {
+    campaign: (_, { id }, context) => findById(context, context.user, id),
+    campaigns: (_, args, context) => findAll(context, context.user, args),
+    campaignsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return campaignsTimeSeriesByEntity(user, args);
+        return campaignsTimeSeriesByEntity(context, context.user, args);
       }
-      return campaignsTimeSeries(user, args);
+      return campaignsTimeSeries(context, context.user, args);
     },
   },
   CampaignsFilter: {
@@ -27,15 +27,15 @@ const campaignResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    campaignEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    campaignEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    campaignAdd: (_, { input }, { user }) => addCampaign(user, input),
+    campaignAdd: (_, { input }, context) => addCampaign(context, context.user, input),
   },
 };
 

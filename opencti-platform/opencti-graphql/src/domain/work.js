@@ -36,28 +36,28 @@ export const workToExportFile = (work) => {
   };
 };
 
-const loadWorkById = async (user, workId) => {
-  const action = await elLoadById(user, workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
+const loadWorkById = async (context, user, workId) => {
+  const action = await elLoadById(context, user, workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   return action ? R.assoc('id', workId, action) : action;
 };
 
-export const findById = (user, workId) => {
-  return loadWorkById(user, workId);
+export const findById = (context, user, workId) => {
+  return loadWorkById(context, user, workId);
 };
 
-export const findAll = (user, args = {}) => {
+export const findAll = (context, user, args = {}) => {
   const finalArgs = R.pipe(
     R.assoc('type', ENTITY_TYPE_WORK),
     R.assoc('orderBy', args.orderBy || 'timestamp'),
     R.assoc('orderMode', args.orderMode || 'desc')
   )(args);
-  return elPaginate(user, READ_INDEX_HISTORY, finalArgs);
+  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
-export const worksForConnector = async (user, connectorId, args = {}) => {
+export const worksForConnector = async (context, user, connectorId, args = {}) => {
   const { first = 10, filters = [] } = args;
   filters.push({ key: 'connector_id', values: [connectorId] });
-  return elPaginate(user, READ_INDEX_HISTORY, {
+  return elPaginate(context, user, READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
@@ -67,11 +67,11 @@ export const worksForConnector = async (user, connectorId, args = {}) => {
   });
 };
 
-export const worksForSource = async (user, sourceId, args = {}) => {
+export const worksForSource = async (context, user, sourceId, args = {}) => {
   const { first = 10, filters = [], type } = args;
   const basicFilters = [{ key: 'event_source_id', values: [sourceId] }];
   if (type) basicFilters.push({ key: 'event_type', values: [type] });
-  return elPaginate(user, READ_INDEX_HISTORY, {
+  return elPaginate(context, user, READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
@@ -81,8 +81,8 @@ export const worksForSource = async (user, sourceId, args = {}) => {
   });
 };
 
-export const loadExportWorksAsProgressFiles = async (user, sourceId) => {
-  const works = await worksForSource(user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
+export const loadExportWorksAsProgressFiles = async (context, user, sourceId) => {
+  const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
   const filterSuccessCompleted = R.filter((w) => w.status !== 'complete' || w.errors.length > 0, works);
   return R.map((item) => workToExportFile(item), filterSuccessCompleted);
 };
@@ -94,15 +94,15 @@ export const deleteWorksRaw = async (works) => {
   return workIds;
 };
 
-export const deleteWork = async (user, workId) => {
-  const work = await loadWorkById(user, workId);
+export const deleteWork = async (context, user, workId) => {
+  const work = await loadWorkById(context, user, workId);
   if (work) {
     await deleteWorksRaw([work]);
   }
   return workId;
 };
 
-export const pingWork = async (user, workId) => {
+export const pingWork = async (context, user, workId) => {
   const params = { updated_at: now() };
   const source = 'ctx._source["updated_at"] = params.updated_at;';
   await elUpdate(INDEX_HISTORY, workId, {
@@ -111,24 +111,24 @@ export const pingWork = async (user, workId) => {
   return workId;
 };
 
-export const deleteWorkForConnector = async (user, connectorId) => {
-  let works = await worksForConnector(user, connectorId, { first: 500 });
+export const deleteWorkForConnector = async (context, user, connectorId) => {
+  let works = await worksForConnector(context, user, connectorId, { first: 500 });
   while (works.length > 0) {
     await deleteWorksRaw(works);
-    works = await worksForConnector(user, connectorId, { first: 500 });
+    works = await worksForConnector(context, user, connectorId, { first: 500 });
   }
   return true;
 };
 
-export const deleteWorkForFile = async (user, fileId) => {
-  const works = await worksForSource(user, fileId);
+export const deleteWorkForFile = async (context, user, fileId) => {
+  const works = await worksForSource(context, user, fileId);
   if (works.length > 0) {
     await deleteWorksRaw(works);
   }
   return true;
 };
 
-export const createWork = async (user, connector, friendlyName, sourceId, args = {}) => {
+export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work
   const { receivedTime = null } = args;
   // Create the work and an initial job
@@ -156,7 +156,7 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
     errors: [],
   };
   await elIndex(INDEX_HISTORY, work);
-  return loadWorkById(user, workId);
+  return loadWorkById(context, user, workId);
 };
 
 const isWorkCompleted = async (workId) => {
@@ -164,7 +164,7 @@ const isWorkCompleted = async (workId) => {
   return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn };
 };
 
-export const reportExpectation = async (user, workId, errorData) => {
+export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   const { isComplete, total } = await redisUpdateWorkFigures(workId);
   if (isComplete || errorData) {
@@ -193,7 +193,7 @@ export const reportExpectation = async (user, workId, errorData) => {
   return workId;
 };
 
-export const updateExpectationsNumber = async (user, workId, expectations) => {
+export const updateExpectationsNumber = async (context, user, workId, expectations) => {
   const params = { updated_at: now(), import_expected_number: expectations };
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
@@ -201,7 +201,7 @@ export const updateExpectationsNumber = async (user, workId, expectations) => {
   return redisUpdateActionExpectation(user, workId, expectations);
 };
 
-export const updateReceivedTime = async (user, workId, message) => {
+export const updateReceivedTime = async (context, user, workId, message) => {
   const params = { received_time: now(), message };
   let source = 'ctx._source.status = "progress";';
   source += 'ctx._source["received_time"] = params.received_time;';
@@ -213,10 +213,10 @@ export const updateReceivedTime = async (user, workId, message) => {
   return workId;
 };
 
-export const updateProcessedTime = async (user, workId, message, inError = false) => {
+export const updateProcessedTime = async (context, user, workId, message, inError = false) => {
   const params = { processed_time: now(), message };
   let source = 'ctx._source["processed_time"] = params.processed_time;';
-  const currentWork = await loadWorkById(user, workId);
+  const currentWork = await loadWorkById(context, user, workId);
   const { isComplete, total } = await isWorkCompleted(workId);
   if (currentWork.import_expected_number === 0 || isComplete) {
     params.completed_number = total ?? 0;

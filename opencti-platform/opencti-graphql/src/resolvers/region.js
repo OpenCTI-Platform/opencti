@@ -26,14 +26,14 @@ const isSubRegionLoader = batchLoader(batchIsSubRegion);
 
 const regionResolvers = {
   Query: {
-    region: (_, { id }, { user }) => findById(user, id),
-    regions: (_, args, { user }) => findAll(user, args),
+    region: (_, { id }, context) => findById(context, context.user, id),
+    regions: (_, args, context) => findAll(context, context.user, args),
   },
   Region: {
-    parentRegions: (region, _, { user }) => parentRegionsLoader.load(region.id, user),
-    subRegions: (region, _, { user }) => subRegionsLoader.load(region.id, user),
-    isSubRegion: (region, _, { user }) => isSubRegionLoader.load(region.id, user),
-    countries: (region, _, { user }) => countriesLoader.load(region.id, user),
+    parentRegions: (region, _, context) => parentRegionsLoader.load(region.id, context, context.user),
+    subRegions: (region, _, context) => subRegionsLoader.load(region.id, context, context.user),
+    isSubRegion: (region, _, context) => isSubRegionLoader.load(region.id, context, context.user),
+    countries: (region, _, context) => countriesLoader.load(region.id, context, context.user),
   },
   RegionsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -41,15 +41,15 @@ const regionResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    regionEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    regionEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    regionAdd: (_, { input }, { user }) => addRegion(user, input),
+    regionAdd: (_, { input }, context) => addRegion(context, context.user, input),
   },
 };
 

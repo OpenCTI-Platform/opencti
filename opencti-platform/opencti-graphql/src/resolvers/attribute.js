@@ -2,11 +2,11 @@ import { getRuntimeAttributeValues, attributeEditField, getSchemaAttributeValues
 
 const attributeResolvers = {
   Query: {
-    runtimeAttributes: (_, args, { user }) => getRuntimeAttributeValues(user, args),
+    runtimeAttributes: (_, args, context) => getRuntimeAttributeValues(context, context.user, args),
     schemaAttributes: (_, { elementType }) => getSchemaAttributeValues(elementType),
   },
   Mutation: {
-    runtimeAttributeEdit: (_, input) => attributeEditField(input),
+    runtimeAttributeEdit: (_, input, context) => attributeEditField(context, input),
   },
 };
 

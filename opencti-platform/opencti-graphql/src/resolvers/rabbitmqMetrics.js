@@ -2,7 +2,7 @@ import { getMetrics } from '../domain/rabbitmqMetrics';
 
 const rabbitmqMetricsResolvers = {
   Query: {
-    rabbitMQMetrics: (_, args) => getMetrics(args),
+    rabbitMQMetrics: (_, args, context) => getMetrics(context, context.user, args),
   },
 };
 

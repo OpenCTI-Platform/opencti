@@ -14,10 +14,10 @@ import {
   SYNC_LIVE_START_REMOTE_URI,
   SYNC_RAW_START_REMOTE_URI,
   SYNC_RESTORE_START_REMOTE_URI,
-  SYNC_TEST_REMOTE_URI,
+  SYNC_TEST_REMOTE_URI, testContext,
 } from '../utils/testQuery';
 import { elAggregationCount } from '../../src/database/engine';
-import { execPython3, executePython } from '../../src/python/pythonBridge';
+import { execTestingPython } from '../../src/python/pythonBridge';
 import { checkInstanceDiff } from '../utils/testStream';
 import { shutdownModules, startModules } from '../../src/modules';
 import { FROM_START, now } from '../../src/utils/format';
@@ -83,19 +83,19 @@ const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
 
 describe('Database sync testing', () => {
   const checkPreSyncContent = async () => {
-    const initObjectAggregation = await elAggregationCount(ADMIN_USER, 'Stix-Object', 'entity_type');
+    const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, 'Stix-Object', 'entity_type');
     const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
     expect(objectMap.get('Indicator')).toEqual(28);
     expect(objectMap.get('Malware')).toEqual(27);
     expect(objectMap.get('Label')).toEqual(13);
     // Relations
-    const initRelationAggregation = await elAggregationCount(ADMIN_USER, 'stix-relationship', 'entity_type');
+    const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, 'stix-relationship', 'entity_type');
     const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
     expect(relMap.get('Object')).toEqual(191);
     expect(relMap.get('Indicates')).toEqual(59);
     expect(relMap.get('Uses')).toEqual(28);
     // Report content
-    const initReport = await storeLoadByIdWithRefs(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
+    const initReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
     const initStixReport = convertStoreToStix(initReport);
     return { objectMap, relMap, initStixReport };
   };
@@ -116,7 +116,7 @@ describe('Database sync testing', () => {
       id: 'report--f2b63e80-b523-4747-a069-35c002c690db',
     });
     const stixReport = JSON.parse(reportData.report.toStix);
-    const idLoader = async (user, id) => {
+    const idLoader = async (context, user, id) => {
       const dataId = await executeExternalQuery(remoteUri, STANDARD_LOADER_QUERY, { id });
       return dataId.stixObjectOrStixRelationship;
     };
@@ -135,7 +135,7 @@ describe('Database sync testing', () => {
       // Sync
       await startModules();
       const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, RAW_EVENTS_SIZE, '0', 'None'];
-      const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
+      const execution = await execTestingPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();
@@ -162,7 +162,7 @@ describe('Database sync testing', () => {
         'live',
       ];
       await startModules();
-      const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
+      const execution = await execTestingPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();
@@ -184,7 +184,7 @@ describe('Database sync testing', () => {
         filename: 'DATA-TEST-STIX2_v2.json',
         mimetype: 'application/json',
       };
-      await stixCoreObjectImportPush(SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
+      await stixCoreObjectImportPush(testContext, SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
       // Need to create the synchronizer on the remote host
       const SYNC_CREATE = {
         input: {
@@ -241,7 +241,9 @@ describe('Database sync testing', () => {
       },
     };
     const backupConf = JSON.stringify(BACKUP_CONFIG);
-    await executePython(
+    await execTestingPython(
+      testContext,
+      ADMIN_USER,
       path.resolve('../../opencti-connectors/stream/backup-files/src'),
       'backup-files.py',
       [backupConf],
@@ -273,7 +275,9 @@ describe('Database sync testing', () => {
       },
     };
     const restoreConf = JSON.stringify(RESTORE_CONFIG);
-    await executePython(
+    await execTestingPython(
+      testContext,
+      ADMIN_USER,
       path.resolve('../../opencti-connectors/external-import/restore-files/src'),
       'restore-files.py',
       [restoreConf],

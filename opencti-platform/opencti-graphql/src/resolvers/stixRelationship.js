@@ -9,8 +9,8 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const stixRelationshipResolvers = {
   Query: {
-    stixRelationship: (_, { id }, { user }) => findById(user, id),
-    stixRelationships: (_, args, { user }) => findAll(user, args),
+    stixRelationship: (_, { id }, context) => findById(context, context.user, id),
+    stixRelationships: (_, args, context) => findAll(context, context.user, args),
   },
   StixRelationship: {
     // eslint-disable-next-line
@@ -32,8 +32,8 @@ const stixRelationshipResolvers = {
     },
   },
   Mutation: {
-    stixRelationshipEdit: (_, { id }, { user }) => ({
-      delete: () => stixRelationshipDelete(user, id),
+    stixRelationshipEdit: (_, { id }, context) => ({
+      delete: () => stixRelationshipDelete(context, context.user, id),
     }),
   },
 };

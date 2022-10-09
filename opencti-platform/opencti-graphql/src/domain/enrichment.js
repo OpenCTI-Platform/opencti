@@ -6,14 +6,14 @@ import { connectorsEnrichment } from '../database/repository';
 import { getEntitiesFromCache } from '../manager/cacheManager';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
-export const createEntityAutoEnrichment = async (user, stixCoreObjectId, scope) => {
+export const createEntityAutoEnrichment = async (context, user, stixCoreObjectId, scope) => {
   // Get the list of compatible connectors
-  const connectors = await getEntitiesFromCache(ENTITY_TYPE_CONNECTOR);
+  const connectors = await getEntitiesFromCache(context, user, ENTITY_TYPE_CONNECTOR);
   const targetConnectors = connectorsEnrichment(connectors, scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(user, connector, `Enrichment (${stixCoreObjectId})`, stixCoreObjectId).then((work) => {
+      return createWork(context, user, connector, `Enrichment (${stixCoreObjectId})`, stixCoreObjectId).then((work) => {
         return { connector, work };
       });
     }, targetConnectors)
@@ -31,7 +31,7 @@ export const createEntityAutoEnrichment = async (user, stixCoreObjectId, scope) 
           entity_id: stixCoreObjectId,
         },
       };
-      return pushToConnector(connector, message);
+      return pushToConnector(context, connector, message);
     }, workList)
   );
   return workList;

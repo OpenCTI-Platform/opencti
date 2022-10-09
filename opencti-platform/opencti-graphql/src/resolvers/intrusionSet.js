@@ -15,11 +15,11 @@ const locationsLoader = batchLoader(batchLocations);
 
 const intrusionSetResolvers = {
   Query: {
-    intrusionSet: (_, { id }, { user }) => findById(user, id),
-    intrusionSets: (_, args, { user }) => findAll(user, args),
+    intrusionSet: (_, { id }, context) => findById(context, context.user, id),
+    intrusionSets: (_, args, context) => findAll(context, context.user, args),
   },
   IntrusionSet: {
-    locations: (intrusionSet, _, { user }) => locationsLoader.load(intrusionSet.id, user),
+    locations: (intrusionSet, _, context) => locationsLoader.load(intrusionSet.id, context, context.user),
   },
   IntrusionSetsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -27,15 +27,15 @@ const intrusionSetResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
-    intrusionSetEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    intrusionSetEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    intrusionSetAdd: (_, { input }, { user }) => addIntrusionSet(user, input),
+    intrusionSetAdd: (_, { input }, context) => addIntrusionSet(context, context.user, input),
   },
 };
 

@@ -30,25 +30,25 @@ const batchObservablesLoader = batchLoader(batchObservables);
 
 const indicatorResolvers = {
   Query: {
-    indicator: (_, { id }, { user }) => findById(user, id),
-    indicators: (_, args, { user }) => findAll(user, args),
-    indicatorsTimeSeries: (_, args, { user }) => {
+    indicator: (_, { id }, context) => findById(context, context.user, id),
+    indicators: (_, args, context) => findAll(context, context.user, args),
+    indicatorsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return indicatorsTimeSeriesByEntity(user, args);
+        return indicatorsTimeSeriesByEntity(context, context.user, args);
       }
-      return indicatorsTimeSeries(user, args);
+      return indicatorsTimeSeries(context, context.user, args);
     },
-    indicatorsNumber: (_, args, { user }) => {
+    indicatorsNumber: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return indicatorsNumberByEntity(user, args);
+        return indicatorsNumberByEntity(context, context.user, args);
       }
-      return indicatorsNumber(user, args);
+      return indicatorsNumber(context, context.user, args);
     },
-    indicatorsDistribution: (_, args, { user }) => {
+    indicatorsDistribution: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
-        return indicatorsDistributionByEntity(user, args);
+        return indicatorsDistributionByEntity(context, context.user, args);
       }
-      return distributionEntities(user, ENTITY_TYPE_INDICATOR, [], args);
+      return distributionEntities(context, context.user, ENTITY_TYPE_INDICATOR, [], args);
     },
   },
   IndicatorsFilter: {
@@ -60,20 +60,20 @@ const indicatorResolvers = {
     sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
   },
   Indicator: {
-    killChainPhases: (indicator, _, { user }) => killChainPhasesLoader.load(indicator.id, user),
-    observables: (indicator, _, { user }) => batchObservablesLoader.load(indicator.id, user),
+    killChainPhases: (indicator, _, context) => killChainPhasesLoader.load(indicator.id, context, context.user),
+    observables: (indicator, _, context) => batchObservablesLoader.load(indicator.id, context, context.user),
     indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {
-    indicatorEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+    indicatorEdit: (_, { id }, context) => ({
+      delete: () => stixDomainObjectDelete(context, context.user, id),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    indicatorAdd: (_, { input }, { user }) => addIndicator(user, input),
+    indicatorAdd: (_, { input }, context) => addIndicator(context, context.user, input),
   },
 };
 

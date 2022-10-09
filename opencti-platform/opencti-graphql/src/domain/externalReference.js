@@ -21,15 +21,15 @@ import { isStixMetaRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/s
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 
-export const findById = (user, externalReferenceId) => {
-  return storeLoadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+export const findById = (context, user, externalReferenceId) => {
+  return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
-export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
 };
 
-export const references = async (user, externalReferenceId, args) => {
+export const references = async (context, user, externalReferenceId, args) => {
   const key = buildRefRelationKey(RELATION_EXTERNAL_REFERENCE);
   let types = ['Stix-Core-Object', 'stix-core-relationship'];
   if (args.types) {
@@ -37,12 +37,12 @@ export const references = async (user, externalReferenceId, args) => {
   }
   const filters = [{ key, values: [externalReferenceId] }, ...(args.filters || [])];
   if (args.all) {
-    return paginateAllThings(user, types, R.assoc('filters', filters, args));
+    return paginateAllThings(context, user, types, R.assoc('filters', filters, args));
   }
-  return listThings(user, types, R.assoc('filters', filters, args));
+  return listThings(context, user, types, R.assoc('filters', filters, args));
 };
 
-export const addExternalReference = async (user, externalReference) => {
+export const addExternalReference = async (context, user, externalReference) => {
   const referenceAttachment = conf.get('app:reference_attachment');
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   const isAllowedToByPass = userCapabilities.includes(BYPASS) || userCapabilities.includes(BYPASS_REFERENCE);
@@ -51,16 +51,16 @@ export const addExternalReference = async (user, externalReference) => {
       message: 'You must provide an attachment to create a new external reference',
     });
   }
-  const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  const created = await createEntity(context, user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].ADDED_TOPIC, created, user);
 };
 
-export const externalReferenceDelete = async (user, externalReferenceId) => {
-  return deleteElementById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+export const externalReferenceDelete = async (context, user, externalReferenceId) => {
+  return deleteElementById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
-export const externalReferenceAddRelation = async (user, externalReferenceId, input) => {
-  const data = await internalLoadById(user, externalReferenceId);
+export const externalReferenceAddRelation = async (context, user, externalReferenceId, input) => {
+  const data = await internalLoadById(context, user, externalReferenceId);
   if (!data) {
     throw FunctionalError('Cannot add the relation, External Reference cannot be found.');
   }
@@ -71,14 +71,14 @@ export const externalReferenceAddRelation = async (user, externalReferenceId, in
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('toId', externalReferenceId, input);
-  return createRelation(user, finalInput).then((relationData) => {
+  return createRelation(context, user, finalInput).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 
-export const externalReferenceDeleteRelation = async (user, externalReferenceId, fromId, relationshipType) => {
-  const externalReference = await storeLoadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+export const externalReferenceDeleteRelation = async (context, user, externalReferenceId, fromId, relationshipType) => {
+  const externalReference = await storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
   if (!externalReference) {
     throw FunctionalError('Cannot delete the relation, External-Reference cannot be found.');
   }
@@ -86,6 +86,7 @@ export const externalReferenceDeleteRelation = async (user, externalReferenceId,
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(
+    context,
     user,
     fromId,
     externalReferenceId,
@@ -95,21 +96,21 @@ export const externalReferenceDeleteRelation = async (user, externalReferenceId,
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };
 
-export const externalReferenceEditField = async (user, externalReferenceId, input, opts = {}) => {
-  const { element } = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, opts);
+export const externalReferenceEditField = async (context, user, externalReferenceId, input, opts = {}) => {
+  const { element } = await updateAttribute(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, element, user);
 };
 
-export const externalReferenceCleanContext = async (user, externalReferenceId) => {
+export const externalReferenceCleanContext = async (context, user, externalReferenceId) => {
   await delEditContext(user, externalReferenceId);
-  return storeLoadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
+  return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
   });
 };
 
-export const externalReferenceEditContext = async (user, externalReferenceId, input) => {
+export const externalReferenceEditContext = async (context, user, externalReferenceId, input) => {
   await setEditContext(user, externalReferenceId, input);
-  return storeLoadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
+  return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
   });
 };
