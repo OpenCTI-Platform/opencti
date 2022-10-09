@@ -134,8 +134,8 @@ export const batchUsers = async (context, user, userIds) => {
   return userIds.map((id) => INTERNAL_USERS[id] || users[id] || SYSTEM_USER);
 };
 
-export const batchOrganizations = async (user, userId, opts = {}) => {
-  return batchListThroughGetTo(user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
+export const batchOrganizations = async (context, user, userId, opts = {}) => {
+  return batchListThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
 };
 
 export const batchRoles = async (context, user, userId) => {
@@ -604,10 +604,10 @@ const buildSessionUser = (origin, impersonate, provider) => {
 const buildCompleteUser = async (context, client) => {
   if (!client) return undefined;
   const capabilities = await getCapabilities(context, client.id);
-  const organizations = await batchOrganizations(SYSTEM_USER, client.id, { batched: false, paginate: false });
+  const organizations = await batchOrganizations(context, SYSTEM_USER, client.id, { batched: false, paginate: false });
   const marking = await getUserAndGlobalMarkings(context, client.id, capabilities);
   const args = { filters: [{ key: 'contact_information', values: [client.user_email] }], connectionFormat: false };
-  const individuals = await listEntities(SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+  const individuals = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
   const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
   return {
     ...client,

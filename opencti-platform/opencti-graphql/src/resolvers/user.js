@@ -36,7 +36,9 @@ import {
   userIdDeleteRelation,
   userRenewToken,
   userWithOrigin,
-  batchOrganizations, assignOrganizationToUser, userDeleteOrganizationRelation,
+  batchOrganizations,
+  assignOrganizationToUser,
+  userDeleteOrganizationRelation,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';

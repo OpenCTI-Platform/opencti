@@ -577,7 +577,7 @@ export const fetchStreamInfo = async () => {
   return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: info.length };
 };
 
-const processStreamResult = async (user: AuthUser, results: Array<any>, callback: any, withInternal: boolean) => {
+const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
   const filteredEvents = streamData.filter((s) => {
     return withInternal ? true : (s.data.scope ?? 'external') === 'external';
@@ -623,10 +623,10 @@ export const createStreamProcessor = (user: AuthUser, provider: string, withInte
       // Process the event results
       if (streamResult && streamResult.length > 0) {
         const [, results] = streamResult[0];
-        const lastElementId = await processStreamResult(user, results, callback, withInternal);
+        const lastElementId = await processStreamResult(results, callback, withInternal);
         startEventId = lastElementId || startEventId;
       } else {
-        await processStreamResult(user, [], callback, withInternal);
+        await processStreamResult([], callback, withInternal);
       }
     } catch (err) {
       logApp.error(`Error in redis streams read for ${provider}`, { error: err });
