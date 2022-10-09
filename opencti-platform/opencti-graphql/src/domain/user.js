@@ -116,7 +116,7 @@ const extractTokenFromBasicAuth = async (authorization) => {
 export const findById = async (context, user, userId) => {
   const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   const withoutPassword = data ? R.dissoc('password', data) : data;
-  return buildCompleteUser(withoutPassword);
+  return buildCompleteUser(context, withoutPassword);
 };
 
 export const findAll = (context, user, args) => {
