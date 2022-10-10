@@ -90,12 +90,15 @@ class InstalledAsset extends Component {
             .then((data) => {
               const installedSoftwareEntities = R.pipe(
                 R.pathOr([], ['softwareAssetList', 'edges']),
-                R.map((n) => ({
-                  id: n.node.id,
-                  name: n.node.name,
-                  type: n.node.vendor_name,
-                  version: n.node.version,
-                })),
+                R.map((n) => {
+              
+                  return {
+                    id: n.node.id,
+                    name: n.node.name,
+                    type: n.node.vendor_name,
+                    version: n.node.version,
+                  }
+                }),
               )(data);
               this.setState({
                 softwareList: {
@@ -188,8 +191,7 @@ class InstalledAsset extends Component {
 
     const sort = R.sortWith(
       [
-        R.ascend(R.prop('name')),
-        R.ascend(R.prop('version'))
+        R.ascend(R.props(['name', 'version'])),
       ]
     );
 
@@ -209,11 +211,11 @@ class InstalledAsset extends Component {
         helperText={helperText}
       >
         {sortedSoftwareList.map((software) => 
-          {
+          {            
             const softwareName = R.concat(software.name, " ");
-            const softwareNameWithVersion = R.concat(softwareName, software.version !== null ? software.version : "");
+            const softwareNameWithVersion = R.concat(softwareName, software.version !== null ? software.version.toString() : "");
             return(
-              software.name
+              softwareNameWithVersion
                 && <MenuItem key={software.id} value={software.id}>
                   {t(softwareNameWithVersion)}
                 </MenuItem>
