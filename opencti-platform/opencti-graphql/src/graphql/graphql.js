@@ -34,7 +34,11 @@ const createApolloServer = () => {
       executeContext.req = req;
       executeContext.res = res;
       executeContext.workId = req.headers['opencti-work-id'];
-      executeContext.user = connection ? connection.context.user : await authenticateUserFromRequest(executeContext, req, res);
+      if (connection) {
+        executeContext.user = connection.context.user;
+      } else {
+        executeContext.user = await authenticateUserFromRequest(executeContext, req, res);
+      }
       return executeContext;
     },
     tracing: DEV_MODE,

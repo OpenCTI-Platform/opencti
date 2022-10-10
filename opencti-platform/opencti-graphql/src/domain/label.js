@@ -4,9 +4,17 @@ import { createEntity, deleteElementById, storeLoadById, updateAttribute } from 
 import { listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
-import { normalizeName } from '../schema/identifier';
+import { generateStandardId, normalizeName } from '../schema/identifier';
+import { isAnId } from '../schema/schemaUtils';
 
-export const findById = (context, user, labelId) => {
+export const findById = (context, user, labelIdOrName) => {
+  // Could be internal_id (uuidV4)
+  if (isAnId(labelIdOrName)) {
+    return storeLoadById(context, user, labelIdOrName, ENTITY_TYPE_LABEL);
+  }
+  // Could be directly the label name
+  const labelName = normalizeName(labelIdOrName).toLowerCase();
+  const labelId = generateStandardId(ENTITY_TYPE_LABEL, { value: labelName });
   return storeLoadById(context, user, labelId, ENTITY_TYPE_LABEL);
 };
 

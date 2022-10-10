@@ -42,7 +42,7 @@ import {
   USER_DELETION,
 } from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const BEARER = 'Bearer ';
@@ -566,7 +566,8 @@ export const logout = async (context, user, req, res) => {
   });
 };
 
-const buildSessionUser = (user, provider) => {
+const buildSessionUser = (origin, impersonate, provider) => {
+  const user = impersonate ?? origin;
   return {
     id: user.id,
     session_creation: now(),
@@ -581,6 +582,7 @@ const buildSessionUser = (user, provider) => {
     name: user.name,
     external: user.external,
     login_provider: provider,
+    impersonate: impersonate !== undefined,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
@@ -627,7 +629,17 @@ export const authenticateUser = async (context, req, user, provider, token = '')
   // Build the user session with only required fields
   const completeUser = await buildCompleteUser(context, user);
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
-  const sessionUser = buildSessionUser(completeUser, provider);
+  let impersonate;
+  const applicantId = req.headers['opencti-applicant-id'];
+  if (!isBypassUser(completeUser) && applicantId) {
+    throw ForbiddenAccess();
+  }
+  if (isBypassUser(completeUser) && applicantId) {
+    logApp.info(`[AUTH] User ${applicantId} will be impersonate`);
+    const applicantUser = await resolveUserById(context, applicantId);
+    impersonate = await buildCompleteUser(context, applicantUser);
+  }
+  const sessionUser = buildSessionUser(completeUser, impersonate, provider);
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
   return sessionUser;
@@ -664,6 +676,15 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       }
     }
     // Other providers doesn't need specific validation, session management is enough
+    // For impersonate auth, the applicant id must match the session
+    const applicantId = req.headers['opencti-applicant-id'];
+    const isImpersonateChange = auth.impersonate && auth.id !== applicantId;
+    const isNowImpersonate = !auth.impersonate && isBypassUser(auth) && applicantId;
+    if (isImpersonateChange || isNowImpersonate) {
+      // Impersonate doesn't match, kill the current session and try to re auth
+      await logout(context, auth, req, res);
+      return authenticateUserFromRequest(context, req, res);
+    }
     // If everything ok, return the authenticated user.
     return auth;
   }
