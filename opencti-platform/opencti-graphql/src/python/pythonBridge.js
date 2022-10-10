@@ -21,7 +21,7 @@ export const execTestingPython = async (context, user, scriptPath, scriptName, a
       const messages = [];
       const options = {
         mode: 'text',
-        pythonPath: 'python3',
+        pythonPath: DEV_MODE ? 'python' : 'python3',
         scriptPath,
         args,
       };
