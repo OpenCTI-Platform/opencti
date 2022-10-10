@@ -144,7 +144,7 @@ const createApp = async (app) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const stream = await downloadFile(file);
+      const stream = await downloadFile(executeContext, file);
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e?.message);
