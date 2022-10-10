@@ -91,12 +91,14 @@ class InstalledAsset extends Component {
               const installedSoftwareEntities = R.pipe(
                 R.pathOr([], ['softwareAssetList', 'edges']),
                 R.map((n) => {
-              
+                  const softwareName = R.concat(n.node.name, " ");
+                  const softwareNameWithVersion = R.concat(softwareName, n.node.version ? n.node.version : "");
                   return {
                     id: n.node.id,
                     name: n.node.name,
                     type: n.node.vendor_name,
                     version: n.node.version,
+                    softwareNameWithVersion
                   }
                 }),
               )(data);
@@ -189,13 +191,12 @@ class InstalledAsset extends Component {
       this.state.softwareList,
     );
 
-    const sort = R.sortWith(
-      [
-        R.ascend(R.props(['name', 'version'])),
-      ]
-    );
-
-    const sortedSoftwareList = sort(softwareList);
+    const sortedSoftwareList = softwareList.sort(function(a, b) {
+      return a.softwareNameWithVersion.localeCompare(b.softwareNameWithVersion, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    });
     return (
       <Field
         component={SelectField}
@@ -212,12 +213,10 @@ class InstalledAsset extends Component {
       >
         {sortedSoftwareList.map((software) => 
           {            
-            const softwareName = R.concat(software.name, " ");
-            const softwareNameWithVersion = R.concat(softwareName, software.version !== null ? software.version.toString() : "");
             return(
-              softwareNameWithVersion
+              software.softwareNameWithVersion
                 && <MenuItem key={software.id} value={software.id}>
-                  {t(softwareNameWithVersion)}
+                  {t(software.softwareNameWithVersion)}
                 </MenuItem>
             )
           }
