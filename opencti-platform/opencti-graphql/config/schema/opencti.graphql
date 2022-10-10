@@ -1134,6 +1134,7 @@ type MeUser implements BasicObject & InternalObject {
   theme: String
   language: String
   external: Boolean
+  individual_id: String
   api_token: String!
   capabilities: [Capability!]!
   allowed_marking: [MarkingDefinition!]
