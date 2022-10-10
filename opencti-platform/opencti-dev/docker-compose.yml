@@ -64,3 +64,11 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+  opencti-dev-jaegertracing:
+    container_name: opencti-dev-jaegertracing
+    image: jaegertracing/all-in-one:latest
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    ports:
+      - 16686:16686
+      - 4318:4318
