@@ -106,7 +106,7 @@ class RoleEntityEditionContainer extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleDisplayEdit();
   }
 
   handleCancelCloseClick() {
@@ -440,6 +440,7 @@ class RoleEntityEditionContainer extends Component {
 
 RoleEntityEditionContainer.propTypes = {
   handleDisplayEdit: PropTypes.func,
+  refreshQuery: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
   disabled: PropTypes.bool,
