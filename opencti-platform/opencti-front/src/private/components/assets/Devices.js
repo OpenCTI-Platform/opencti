@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
@@ -22,7 +20,7 @@ import DevicesLines, {
 import DeviceCreation from './devices/DeviceCreation';
 import { isUniqFilter } from '../common/lists/Filters';
 import DeviceDeletion from './devices/DeviceDeletion';
-import { toastGenericError } from "../../../utils/bakedToast";
+import { toastGenericError } from '../../../utils/bakedToast';
 
 class Devices extends Component {
   constructor(props) {
@@ -54,6 +52,32 @@ class Devices extends Component {
       'view-devices',
       this.state,
     );
+  }
+
+  componentWillUnmount() {
+    const {
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openDeviceCreation,
+    } = this.state;
+    if (this.props.history.location.pathname !== '/defender HQ/assets/devices'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-devices',
+        {
+          view,
+          sortBy,
+          searchTerm,
+          orderAsc,
+          filters: [],
+          openDeviceCreation,
+        },
+      );
+    }
   }
 
   handleChangeView(mode) {
@@ -137,12 +161,14 @@ class Devices extends Component {
               ]),
             this.state.filters,
           ),
-        });
+        }, () => this.saveView(),
+      );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        });
+        }, () => this.saveView(),
+      );
     }
   }
 
@@ -256,9 +282,6 @@ class Devices extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       name: {
         label: 'Name',

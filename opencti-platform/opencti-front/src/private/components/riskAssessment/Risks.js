@@ -54,6 +54,32 @@ class Risks extends Component {
     );
   }
 
+  componentWillUnmount() {
+    const {
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openRiskCreation,
+    } = this.state;
+    if (this.props.history.location.pathname !== '/activities/risk assessment/risks'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-risks',
+        {
+          view,
+          sortBy,
+          searchTerm,
+          orderAsc,
+          filters: [],
+          openRiskCreation,
+        },
+      );
+    }
+  }
+
   handleChangeView(mode) {
     this.setState({ view: mode }, () => this.saveView());
   }
@@ -135,13 +161,13 @@ class Risks extends Component {
               ]),
             this.state.filters,
           ),
-        },
+        }, () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
+        }, () => this.saveView(),
       );
     }
   }

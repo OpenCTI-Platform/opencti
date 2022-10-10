@@ -84,7 +84,7 @@ class CyioListCardsContent extends Component {
       && (this.state.loadingCardCount !== 0 || this.props.offset === 0)) {
       if (this.props.dataList.length === 0) {
         this.setState({ newDataList: [] });
-        this.listRef.forceUpdateGrid();
+        this.gridRef.forceUpdate();
       }
       if (!checker(this.state.newDataList, this.props.dataList)) {
         this.setState({

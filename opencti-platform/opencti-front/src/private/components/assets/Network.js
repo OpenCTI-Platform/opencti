@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
@@ -22,7 +20,7 @@ import NetworkLines, {
 import NetworkCreation from './network/NetworkCreation';
 import NetworkDeletion from './network/NetworkDeletion';
 import { isUniqFilter } from '../common/lists/Filters';
-import { toastGenericError } from "../../../utils/bakedToast";
+import { toastGenericError } from '../../../utils/bakedToast';
 
 class Network extends Component {
   constructor(props) {
@@ -54,6 +52,32 @@ class Network extends Component {
       'view-network',
       this.state,
     );
+  }
+
+  componentWillUnmount() {
+    const {
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openNetworkCreation,
+    } = this.state;
+    if (this.props.history.location.pathname !== '/defender HQ/assets/network'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-network',
+        {
+          view,
+          sortBy,
+          searchTerm,
+          orderAsc,
+          filters: [],
+          openNetworkCreation,
+        },
+      );
+    }
   }
 
   handleChangeView(mode) {
@@ -137,13 +161,13 @@ class Network extends Component {
               ]),
             this.state.filters,
           ),
-        }
+        }, () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        }
+        }, () => this.saveView(),
       );
     }
   }
