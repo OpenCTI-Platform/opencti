@@ -179,6 +179,10 @@ const oscalRoleResolvers = {
         if (value === null || value.length === 0) {
           delete input[key];
         }
+        if (key === 'role_identifier') {
+          if (value.includes(' ')) throw new UserInputError(`Invalid role identifier value; must not contains spaces`);
+        }
+
       }
       // END WORKAROUND
 
@@ -285,6 +289,9 @@ const oscalRoleResolvers = {
       // check that the object to be edited exists with the predicates - only get the minimum of data
       let editSelect = ['id','created','modified'];
       for (let editItem of input) {
+        if (editItem.key === 'role_identifier') {
+          if (editItem.value[0].includes(' ')) throw new UserInputError(`Invalid role identifier value; must not contains spaces`);
+        }
         editSelect.push(editItem.key);
       }
 
