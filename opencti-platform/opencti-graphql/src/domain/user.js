@@ -646,7 +646,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       const currentToken = extractTokenFromBearer(req.headers.authorization);
       if (currentToken !== token) {
         // Session doesn't match, kill the current session and try to re auth
-        await logout(auth, req, res);
+        await logout(context, auth, req, res);
         return authenticateUserFromRequest(context, req, res);
       }
     }
@@ -659,7 +659,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
       if (!sameUsername || !samePassword) {
         // Session doesn't match, kill the current session and try to re auth
-        await logout(auth, req, res);
+        await logout(context, auth, req, res);
         return authenticateUserFromRequest(context, req, res);
       }
     }
