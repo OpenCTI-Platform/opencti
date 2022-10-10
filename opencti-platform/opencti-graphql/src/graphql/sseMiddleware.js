@@ -372,6 +372,7 @@ const createSeeMiddleware = () => {
   const genericStreamHandler = async (req, res) => {
     try {
       const sessionUser = req.session.user;
+      const context = executionContext('raw_stream');
       if (!isUserGlobalCapabilityGranted(sessionUser)) {
         res.statusMessage = 'You are not authorized, please check your credentials';
         res.status(401).end();
@@ -383,7 +384,7 @@ const createSeeMiddleware = () => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
-          const instanceAccessible = await isInstanceAccessible(sessionUser, data.data, filterCache);
+          const instanceAccessible = await isInstanceAccessible(context, sessionUser, data.data, filterCache);
           if (instanceAccessible) {
             client.sendEvent(eventId, event, data);
           }
