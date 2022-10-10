@@ -56,26 +56,23 @@ class Network extends Component {
 
   componentWillUnmount() {
     const {
-      view,
       sortBy,
       orderAsc,
-      searchTerm,
       openNetworkCreation,
     } = this.state;
+    const paginationOptions = {
+      sortBy,
+      orderAsc,
+      filters: [],
+      openNetworkCreation,
+    };
     if (this.props.history.location.pathname !== '/defender HQ/assets/network'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
         this.props.location,
         'view-network',
-        {
-          view,
-          sortBy,
-          searchTerm,
-          orderAsc,
-          filters: [],
-          openNetworkCreation,
-        },
+        paginationOptions,
       );
     }
   }

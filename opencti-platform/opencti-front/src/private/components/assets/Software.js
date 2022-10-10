@@ -56,26 +56,23 @@ class Software extends Component {
 
   componentWillUnmount() {
     const {
-      view,
       sortBy,
       orderAsc,
-      searchTerm,
       openSoftwareCreation,
     } = this.state;
+    const paginationOptions = {
+      sortBy,
+      orderAsc,
+      filters: [],
+      openSoftwareCreation,
+    };
     if (this.props.history.location.pathname !== '/defender HQ/assets/software'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
         this.props.location,
         'view-software',
-        {
-          view,
-          sortBy,
-          searchTerm,
-          orderAsc,
-          filters: [],
-          openSoftwareCreation,
-        },
+        paginationOptions,
       );
     }
   }

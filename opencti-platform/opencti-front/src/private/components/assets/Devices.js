@@ -56,26 +56,23 @@ class Devices extends Component {
 
   componentWillUnmount() {
     const {
-      view,
       sortBy,
       orderAsc,
-      searchTerm,
       openDeviceCreation,
     } = this.state;
+    const paginationOptions = {
+      sortBy,
+      orderAsc,
+      filters: [],
+      openDeviceCreation,
+    };
     if (this.props.history.location.pathname !== '/defender HQ/assets/devices'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
         this.props.location,
         'view-devices',
-        {
-          view,
-          sortBy,
-          searchTerm,
-          orderAsc,
-          filters: [],
-          openDeviceCreation,
-        },
+        paginationOptions,
       );
     }
   }

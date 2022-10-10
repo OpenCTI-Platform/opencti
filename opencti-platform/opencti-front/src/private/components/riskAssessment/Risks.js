@@ -56,26 +56,23 @@ class Risks extends Component {
 
   componentWillUnmount() {
     const {
-      view,
       sortBy,
       orderAsc,
-      searchTerm,
       openRiskCreation,
     } = this.state;
+    const paginationOptions = {
+      sortBy,
+      orderAsc,
+      filters: [],
+      openRiskCreation,
+    };
     if (this.props.history.location.pathname !== '/activities/risk assessment/risks'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
         this.props.location,
         'view-risks',
-        {
-          view,
-          sortBy,
-          searchTerm,
-          orderAsc,
-          filters: [],
-          openRiskCreation,
-        },
+        paginationOptions,
       );
     }
   }
