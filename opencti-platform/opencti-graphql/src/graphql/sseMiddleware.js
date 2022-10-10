@@ -541,7 +541,7 @@ const createSeeMiddleware = () => {
           res.status(404).end();
           return;
         }
-        const userGroups = await batchGroups(user, user.id, { batched: false, paginate: false });
+        const userGroups = await batchGroups(context, user, user.id, { batched: false, paginate: false });
         const collectionGroups = await streamCollectionGroups(context, user, collection);
         if (collectionGroups.length > 0) {
           // User must have one of the collection groups
