@@ -129,13 +129,13 @@ class PartyEntityEditionContainer extends Component {
   handleSubmit() {
     this.setState({ onSumbit: true });
   }
-
+  
   handleChangeRadioButton(event) {
     this.setState({ radioButtonValue: event.target.value });
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleDisplayEdit();
   }
 
   handleCancelCloseClick() {
@@ -679,6 +679,7 @@ class PartyEntityEditionContainer extends Component {
 
 PartyEntityEditionContainer.propTypes = {
   handleDisplayEdit: PropTypes.func,
+  refreshQuery: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
   party: PropTypes.object,
