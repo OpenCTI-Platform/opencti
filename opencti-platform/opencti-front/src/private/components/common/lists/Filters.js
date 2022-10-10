@@ -166,7 +166,7 @@ class Filters extends Component {
         let namePath = [];
         if (this.props.filterEntityType === 'Device') {
           nameQuery = itAssetFiltersDeviceFieldsQuery;
-          namePath = ['computingDeviceAssetList', 'edges'];
+          namePath = ['hardwareAssetList', 'edges'];
         }
         if (this.props.filterEntityType === 'Network') {
           nameQuery = itAssetFiltersNetworkFieldsQuery;
