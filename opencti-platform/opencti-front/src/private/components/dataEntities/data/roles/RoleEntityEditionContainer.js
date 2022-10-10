@@ -123,6 +123,8 @@ class RoleEntityEditionContainer extends Component {
     );
     const finalValues = R.pipe(
       R.toPairs,
+      R.dissoc('created'),
+      R.dissoc('modified'),
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),

@@ -232,6 +232,7 @@ export const updateQuery = (iri, type, input, predicateMap) => {
         case UpdateOps.REMOVE:
           if (deletePredicates.includes(predicate)) continue;
           deletePredicates.push(predicate);
+          if (!replaceBindingPredicates.includes(predicate)) replaceBindingPredicates.push(predicate)
           break;
         case UpdateOps.REPLACE:
         default:    // replace is the default behavior when the operation is not supplied.

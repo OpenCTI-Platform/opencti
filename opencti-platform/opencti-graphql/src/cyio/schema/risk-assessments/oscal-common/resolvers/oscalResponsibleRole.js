@@ -179,6 +179,30 @@ const responsibleRoleResolvers = {
         role = input.role;
       }
 
+      // AB#5859 - Verify no other ResponsibleParty exists with the specified role
+      let sparqlQuery = selectAllResponsibleRoles(['id','role']);
+      let results;
+      try {
+        results = await dataSources.Stardog.queryAll({
+          dbName,
+          sparqlQuery,
+          queryId: "Select List of Responsible Roles",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      // check if there is already a Responsible Role defined with the specified Role
+      if (results !== undefined && results.length > 0) {
+        for(let respRole of results) {
+          if (`<${respRole.role[0]}>` === `<http://csrc.nist.gov/ns/oscal/common#Role-${role}>`) {
+            throw new UserInputError("Only one Responsible Role can be assigned the specified Responsibility");
+          }
+        }
+      }
+
       // create the Responsible Party
       const { iri, id, query } = insertResponsibleRoleQuery(input);
       await dataSources.Stardog.create({
@@ -302,8 +326,11 @@ const responsibleRoleResolvers = {
       // make sure there is input data containing what is to be edited
       if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
 
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
+
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -320,6 +347,12 @@ const responsibleRoleResolvers = {
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -329,7 +362,13 @@ const responsibleRoleResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
 
       // obtain the IRIs for the referenced objects so that if one doesn't 
@@ -342,16 +381,26 @@ const responsibleRoleResolvers = {
           switch(editItem.key) {
             case 'role':
               objType = 'oscal-role';
+              // skip if not attempting to be changed
+              if (response[0].role[0] === `http://csrc.nist.gov/ns/oscal/common#Role-${value}`) {
+                editItem.operation = 'skip';
+                break;
+              }
               break;
             case 'parties':
               objType = 'oscal-party';
               break
             default:
               isId = false;
+              if (response[0].hasOwnProperty(editItem.key)) {
+                if (response[0][editItem.key] === value) editItem.operation = 'skip';
+              } else if (editItem.operation === 'remove') {
+                editItem.operation = 'skip';
+              }
               break;
           }
 
-          if (isId) {
+          if (isId && editItem.operation !== 'skip') {
             let query = selectObjectIriByIdQuery(value, objType);
             let result = await dataSources.Stardog.queryById({
               dbName,
@@ -363,6 +412,31 @@ const responsibleRoleResolvers = {
             iris.push(`<${result[0].iri}>`);    
           }
         }
+        if (editItem.key === 'role' && editItem.operation !== 'skip') {
+          let sparqlQuery = selectAllResponsibleRoles(['id','role']);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryAll({
+              dbName,
+              sparqlQuery,
+              queryId: "Select List of Responsible Parties",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+
+          // check if there is already a Responsible Role defined with the specified Role
+          if (response !== undefined && response.length > 0) {
+            for(let respRole of response) {
+              if (`<${respRole.role[0]}>` === iris[0] && respRole.id !== id) {
+                throw new UserInputError("Only one Responsible Role can be assigned the specified Responsibility");
+              }
+            }
+          }
+        }
+
         if (iris.length > 0) editItem.value = iris;
       }
 
@@ -373,11 +447,17 @@ const responsibleRoleResolvers = {
         responsiblePartyPredicateMap
       );
       if (query !== null) {
-        response = await dataSources.Stardog.edit({
-          dbName,
-          sparqlQuery: query,
-          queryId: "Update OSCAL Responsible Role"
-        });
+        let response;
+        try {
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update OSCAL Responsible Role"
+          });  
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
         if (response !== undefined && 'status' in response) {
           if (response.ok === false || response.status > 299) {
             // Handle reporting Stardog Error
