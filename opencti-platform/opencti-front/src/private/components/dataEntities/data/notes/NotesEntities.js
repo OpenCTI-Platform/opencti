@@ -395,7 +395,6 @@ class NotesEntities extends Component {
       filters: finalFilters,
       filterMode: 'and',
     };
-    const { me } = this.props.me;
     return (
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
@@ -404,7 +403,6 @@ class NotesEntities extends Component {
           openDataCreation={openDataCreation}
           handleNoteCreation={this.handleNoteCreation.bind(this)}
           history={this.props.history}
-          me={me}
         />
         {this.state.selectedNoteId && (
           <NoteEntityEdition
@@ -422,7 +420,6 @@ class NotesEntities extends Component {
 NotesEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
-  me: PropTypes.object,
   location: PropTypes.object,
 };
 

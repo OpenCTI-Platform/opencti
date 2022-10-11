@@ -20,8 +20,9 @@ import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
+import { UserContext } from '../../../../../utils/Security';
 import { toastGenericError } from '../../../../../utils/bakedToast';
-import { commitMutation } from '../../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../../relay/environment';
 
 const styles = (theme) => ({
   dialogClosebutton: {
@@ -74,6 +75,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 class EntitiesNotesCreation extends Component {
+  static contextType = UserContext;
   constructor(props) {
     super(props);
     this.state = {
@@ -150,9 +152,9 @@ class EntitiesNotesCreation extends Component {
       classes,
       openDataCreation,
       open,
-      me,
       history,
     } = this.props;
+    const { me } = this.context;
     return (
       <>
         <Dialog
@@ -279,7 +281,6 @@ EntitiesNotesCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  me: PropTypes.object,
 };
 
 export default compose(
