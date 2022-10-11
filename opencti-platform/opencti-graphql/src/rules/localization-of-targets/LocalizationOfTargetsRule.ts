@@ -24,7 +24,7 @@ const ruleLocalizationOfTargetsBuilder = () => {
     const { object_marking_refs: markings } = data;
     const { confidence: createdConfidence, start_time: startTime, stop_time: stopTime } = data;
     const creationRange = buildPeriodFromDates(startTime, stopTime);
-    const internalSource = await internalLoadById(RULE_MANAGER_USER, sourceRef) as unknown as BasicStoreObject;
+    const internalSource = await internalLoadById(context, RULE_MANAGER_USER, sourceRef) as unknown as BasicStoreObject;
     if (internalSource.entity_type === RELATION_TARGETS) {
       const resolvedSource = internalSource as BasicStoreRelation;
       const { internal_id: foundRelationId, fromId: foundFrom, toId: foundTo, [RELATION_OBJECT_MARKING]: object_marking_refs } = resolvedSource;
