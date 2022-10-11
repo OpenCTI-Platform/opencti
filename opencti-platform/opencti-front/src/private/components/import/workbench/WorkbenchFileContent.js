@@ -29,7 +29,6 @@ import {
   dateAttributes,
   markdownAttributes,
   numberAttributes,
-  resolveLink,
   typesContainers,
   workbenchAttributes,
 } from '../../../../utils/Entity';
@@ -48,9 +47,9 @@ import {
 } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import ItemLabels from '../../../../components/ItemLabels';
+import StixItemLabels from '../../../../components/StixItemLabels';
 import { defaultValue } from '../../../../utils/Graph';
-import { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from '../../common/stix_domain_objects/StixDomainObjectContentFiles';
+import StixItemMarkings from '../../../../components/StixItemMarkings';
 
 const styles = (theme) => ({
   container: {
@@ -224,12 +223,15 @@ class WorkbenchFileContentComponent extends Component {
     super(props);
     this.state = {
       currentTab: 0,
+      // Bundle
       stixDomainObjects: [],
       stixCyberObservables: [],
       stixCoreRelationships: [],
       containers: [],
-      openCreate: false,
-      createType: null,
+      // Control
+      openEntity: false,
+      entityType: null,
+      entityId: null,
     };
   }
 
@@ -279,6 +281,14 @@ class WorkbenchFileContentComponent extends Component {
     this.loadFileContent();
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  resolveMarkings(objects, markingIds) {
+    if (markingIds) {
+      return objects.filter((n) => markingIds.includes(n.id));
+    }
+    return [];
+  }
+
   computeState(objects) {
     const { stixDomainObjectTypes, observableTypes } = this.props;
     const sdoTypes = [
@@ -290,28 +300,89 @@ class WorkbenchFileContentComponent extends Component {
     const scoTypes = observableTypes.edges.map((n) => convertToStixType(n.node.id));
     const stixDomainObjects = objects
       .filter((n) => sdoTypes.includes(n.type))
-      .map((n) => R.assocPath(['extras', 'default_value'], defaultValue(n), n));
+      .map((n) => R.assoc(
+        'extras',
+        {
+          default_value: defaultValue(n),
+          markings: this.resolveMarkings(objects, n.object_marking_refs),
+        },
+        n,
+      ));
     const stixCyberObservables = objects
       .filter((n) => scoTypes.includes(n.type))
-      .map((n) => R.assocPath(['extras', 'default_value'], defaultValue(n), n));
+      .map((n) => R.assoc(
+        'extras',
+        {
+          default_value: defaultValue(n),
+          markings: this.resolveMarkings(objects, n.object_marking_refs),
+        },
+        n,
+      ));
     const containers = objects.filter((n) => typesContainers.includes(n.type));
     return { stixDomainObjects, stixCyberObservables, containers };
+  }
+
+  findEntityById(id) {
+    return R.head(this.state.stixDomainObjects.filter((n) => n.id === id));
+  }
+
+  convertCreatedByRef(entity) {
+    if (entity && entity.created_by_ref) {
+      const createdBy = this.findEntityById(entity.created_by_ref);
+      if (createdBy) {
+        return {
+          label: createdBy.name,
+          value: createdBy.id,
+        };
+      }
+    }
+    return '';
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  convertLabels(entity) {
+    if (entity && entity.labels) {
+      return entity.labels.map((n) => ({ label: n, value: n }));
+    }
+    return [];
+  }
+
+  convertMarkings(entity) {
+    if (entity && entity.object_marking_refs) {
+      return entity.object_marking_refs
+        .map((n) => {
+          const marking = this.findEntityById(n);
+          if (marking) {
+            return {
+              label: marking.name,
+              value: marking.id,
+            };
+          }
+          return null;
+        })
+        .filter((n) => n !== null);
+    }
+    return [];
   }
 
   handleChangeTab(_, index) {
     this.setState({ currentTab: index });
   }
 
-  handleOpenCreate() {
-    this.setState({ openCreate: true });
+  handleOpenEntity(entityType, entityId) {
+    this.setState({
+      openEntity: true,
+      entityType: convertFromStixType(entityType),
+      entityId,
+    });
   }
 
-  handleCloseCreate() {
-    this.setState({ openCreate: false, createType: null });
+  handleCloseEntity() {
+    this.setState({ openEntity: false, entityType: null, entityId: null });
   }
 
-  selectCreateType(createType) {
-    this.setState({ createType });
+  selectEntityType(entityType) {
+    this.setState({ entityType });
   }
 
   reverseBy(field) {
@@ -343,7 +414,7 @@ class WorkbenchFileContentComponent extends Component {
     );
   }
 
-  renderEntitiesList() {
+  renderEntityTypesList() {
     const { t, stixDomainObjectTypes } = this.props;
     const subTypesEdges = stixDomainObjectTypes.edges;
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
@@ -361,7 +432,7 @@ class WorkbenchFileContentComponent extends Component {
             divider={true}
             button={true}
             dense={true}
-            onClick={this.selectCreateType.bind(this, subType.label)}
+            onClick={this.selectEntityType.bind(this, subType.label)}
           >
             <ListItemText primary={subType.tlabel} />
           </ListItem>
@@ -370,31 +441,20 @@ class WorkbenchFileContentComponent extends Component {
     );
   }
 
-  onSubmitEntity(values) {
-    const { createType, stixDomainObjects } = this.state;
-    const entity = { type: convertToStixType(createType), ...values };
-    this.setState({ stixDomainObjects: R.append(entity, stixDomainObjects) });
-    this.saveFile();
-    this.handleCloseCreate();
-  }
-
-  onResetEntity() {
-    this.handleCloseCreate();
-  }
-
   renderEntityForm() {
-    const { createType } = this.state;
+    const { entityType, entityId, stixDomainObjects } = this.state;
     const { classes, t } = this.props;
+    const entity = R.head(stixDomainObjects.filter((n) => n.id === entityId)) || {};
     return (
       <QueryRenderer
         query={workbenchFileContentAttributesQuery}
-        variables={{ elementType: createType }}
+        variables={{ elementType: entityType }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
             const initialValues = {
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
+              createdBy: this.convertCreatedByRef(entity),
+              objectMarking: this.convertMarkings(entity),
+              objectLabel: this.convertLabels(entity),
               externalReferences: [],
             };
             const attributes = R.filter(
@@ -406,11 +466,11 @@ class WorkbenchFileContentComponent extends Component {
             );
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
-                initialValues[attribute] = null;
+                initialValues[attribute] = entity[attribute] || null;
               } else if (R.includes(attribute, booleanAttributes)) {
-                initialValues[attribute] = false;
+                initialValues[attribute] = entity[attribute] || false;
               } else {
-                initialValues[attribute] = '';
+                initialValues[attribute] = entity[attribute] || '';
               }
             }
             return (
@@ -551,9 +611,25 @@ class WorkbenchFileContentComponent extends Component {
     );
   }
 
+  onSubmitEntity(values) {
+    const { createType, stixDomainObjects } = this.state;
+    const entity = {
+      type: convertToStixType(createType),
+      extras: { default_value: defaultValue(values) },
+      ...values,
+    };
+    this.setState({ stixDomainObjects: R.append(entity, stixDomainObjects) });
+    this.saveFile();
+    this.handleCloseCreate();
+  }
+
+  onResetEntity() {
+    this.handleCloseEntity();
+  }
+
   renderEntities() {
     const { classes, t } = this.props;
-    const { createType, openCreate, stixDomainObjects } = this.state;
+    const { entityType, openEntity, stixDomainObjects } = this.state;
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
@@ -597,7 +673,16 @@ class WorkbenchFileContentComponent extends Component {
             const type = convertFromStixType(object.type);
             const isInPlatform = true;
             return (
-              <ListItem classes={{ root: classes.item }} divider={true}>
+              <ListItem
+                classes={{ root: classes.item }}
+                divider={true}
+                button={true}
+                onClick={this.handleOpenEntity.bind(
+                  this,
+                  object.type,
+                  object.id,
+                )}
+              >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
                   style={{ minWidth: 40 }}
@@ -614,7 +699,7 @@ class WorkbenchFileContentComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.type}
                       >
-                        {type}
+                        {t(`entity_${type}`)}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -626,13 +711,19 @@ class WorkbenchFileContentComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.labels}
                       >
-                        <ItemLabels labels={object.labels} variant="inList" />
+                        <StixItemLabels
+                          variant="inList"
+                          labels={object.labels}
+                        />
                       </div>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.markings}
                       >
-                        &nbsp;
+                        <StixItemMarkings
+                          variant="inList"
+                          markingDefinitions={object.extras.markings}
+                        />
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -653,7 +744,7 @@ class WorkbenchFileContentComponent extends Component {
           })}
         </List>
         <Fab
-          onClick={this.handleOpenCreate.bind(this)}
+          onClick={this.handleOpenEntity.bind(this, null, null)}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -661,27 +752,29 @@ class WorkbenchFileContentComponent extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={openCreate}
+          open={openEntity}
           anchor="right"
           sx={{ zIndex: 1202 }}
           elevation={1}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseCreate.bind(this)}
+          onClose={this.handleCloseEntity.bind(this)}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleCloseCreate.bind(this)}
+              onClick={this.handleCloseEntity.bind(this)}
               size="large"
               color="primary"
             >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t('Create an entity')}</Typography>
+            <Typography variant="h6">{t('Manage an entity')}</Typography>
           </div>
           <div className={classes.container}>
-            {!createType ? this.renderEntitiesList() : this.renderEntityForm()}
+            {!entityType
+              ? this.renderEntityTypesList()
+              : this.renderEntityForm()}
           </div>
         </Drawer>
       </div>

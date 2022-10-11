@@ -94,11 +94,11 @@ export const resolveLink = (type) => {
 export const typesWithoutName = ['Observed-Data'];
 
 export const typesContainers = [
-  'Report',
-  'Note',
-  'Opinion',
-  'Observed-Data',
-  'Grouping',
+  'report',
+  'note',
+  'opinion',
+  'observed-data',
+  'grouping',
 ];
 
 export const pascalize = (str) => str.replace(

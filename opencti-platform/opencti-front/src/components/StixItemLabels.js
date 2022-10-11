@@ -42,7 +42,7 @@ const styles = () => ({
   },
 });
 
-class ItemLabels extends Component {
+class StixItemLabels extends Component {
   render() {
     const { classes, labels, t, theme, variant } = this.props;
     let style = classes.label;
@@ -62,7 +62,7 @@ class ItemLabels extends Component {
                 <Chip
                   variant="outlined"
                   classes={{ root: style }}
-                  label={truncate(label.value, 25)}
+                  label={truncate(label, 25)}
                   style={{
                     color: stringToColour(label),
                     borderColor: stringToColour(label),
@@ -93,7 +93,7 @@ class ItemLabels extends Component {
   }
 }
 
-ItemLabels.propTypes = {
+StixItemLabels.propTypes = {
   classes: PropTypes.object.isRequired,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -102,4 +102,4 @@ ItemLabels.propTypes = {
   labels: PropTypes.object,
 };
 
-export default R.compose(inject18n, withTheme, withStyles(styles))(ItemLabels);
+export default R.compose(inject18n, withTheme, withStyles(styles))(StixItemLabels);

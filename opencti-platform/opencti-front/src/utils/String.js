@@ -27,6 +27,9 @@ export const adaptFieldValue = (value) => {
 export const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
 
 export const convertFromStixType = (s) => {
+  if (!s) {
+    return s;
+  }
   let type = pascalize(s);
   if (type.includes('Opencti')) {
     type = type.replaceAll('Opencti', 'OpenCTI');
@@ -41,6 +44,9 @@ export const convertFromStixType = (s) => {
 };
 
 export const convertToStixType = (type) => {
+  if (!type) {
+    return type;
+  }
   if (type === 'Stixfile') {
     return 'file';
   }
