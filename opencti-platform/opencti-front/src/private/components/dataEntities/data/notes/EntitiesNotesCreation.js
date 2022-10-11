@@ -21,6 +21,7 @@ import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import { commitMutation } from '../../../../../relay/environment';
 
 const styles = (theme) => ({
   dialogClosebutton: {
@@ -104,15 +105,12 @@ class EntitiesNotesCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data) => {
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.props.history.push('/data/entities/notes');
       },
-      onError: (err) => {
-        console.error(err);
-        toastGenericError('Failed to create new note');
-      },
+      onError: () => toastGenericError('Failed to create new note'),
     });
     // commitMutation({
     //   mutation: entitiesNotesCreationMutation,
@@ -151,7 +149,6 @@ class EntitiesNotesCreation extends Component {
       t,
       classes,
       openDataCreation,
-      handleNoteCreation,
       open,
       me,
       history,

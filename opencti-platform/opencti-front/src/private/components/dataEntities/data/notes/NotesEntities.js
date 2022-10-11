@@ -23,7 +23,7 @@ import EntitiesNotesDeletion from './EntitiesNotesDeletion';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import NoteEntityEdition from './NoteEntityEdition';
 
-class ResponsiblePartiesEntities extends Component {
+class NotesEntities extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -192,6 +192,9 @@ class ResponsiblePartiesEntities extends Component {
       selectedElements,
       selectAll,
     } = this.state;
+    const {
+      history,
+    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -248,12 +251,13 @@ class ResponsiblePartiesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              toastGenericError('Request Failed');
+              return toastGenericError('Request Failed');
             }
             return (
               <EntitiesNotesCards
                 data={props}
                 extra={props}
+                history={history}
                 selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
@@ -280,6 +284,9 @@ class ResponsiblePartiesEntities extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
+    const {
+      history,
+    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -354,6 +361,7 @@ class ResponsiblePartiesEntities extends Component {
             return (
               <EntitiesNotesLines
                 data={props}
+                history={history}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
@@ -411,11 +419,11 @@ class ResponsiblePartiesEntities extends Component {
   }
 }
 
-ResponsiblePartiesEntities.propTypes = {
+NotesEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   me: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(ResponsiblePartiesEntities);
+export default R.compose(inject18n, withRouter)(NotesEntities);
