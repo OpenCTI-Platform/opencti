@@ -30,7 +30,7 @@ export const findAllTemplates = async (context: AuthContext, user: AuthUser, arg
 export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<Status> => {
   const platformStatuses = await getEntitiesFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const basicWorkflowStatus = platformStatuses.find((status) => status.id === statusId);
-  return basicWorkflowStatus ?? await storeLoadById(user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
+  return basicWorkflowStatus ?? await storeLoadById(context, user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
 };
 export const findByType = async (context: AuthContext, user: AuthUser, statusType: string): Promise<Array<Status>> => {
   const platformStatuses = await getEntitiesFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
