@@ -265,7 +265,7 @@ type LogConnection {
 }
 
 input LogsFiltering {
-  key: LogsFilter!
+  key: [LogsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -334,7 +334,7 @@ enum WorkspacesFilter {
 }
 
 input WorkspacesFiltering {
-  key: WorkspacesFilter!
+  key: [WorkspacesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -572,7 +572,7 @@ enum StatusFilter {
 }
 
 input StatusesFiltering {
-  key: StatusFilter!
+  key: [StatusFilter!]!
   values: [String!]
   operator: String
   filterMode: FilterMode
@@ -669,7 +669,7 @@ enum WorksFilter {
 }
 
 input WorksFiltering {
-  key: WorksFilter!
+  key: [WorksFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -791,7 +791,7 @@ enum TasksFilter {
 }
 
 input TasksFiltering {
-  key: TasksFilter!
+  key: [TasksFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1057,7 +1057,7 @@ enum UsersFilter {
 }
 
 input UsersFiltering {
-  key: UsersFilter!
+  key: [UsersFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1357,7 +1357,7 @@ enum MarkingDefinitionsFilter {
 }
 
 input MarkingDefinitionsFiltering {
-  key: MarkingDefinitionsFilter!
+  key: [MarkingDefinitionsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1422,7 +1422,7 @@ enum LabelsFilter {
 }
 
 input LabelsFiltering {
-  key: LabelsFilter!
+  key: [LabelsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1487,7 +1487,7 @@ enum ExternalReferencesFilter {
 }
 
 input ExternalReferencesFiltering {
-  key: ExternalReferencesFilter!
+  key: [ExternalReferencesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1563,7 +1563,7 @@ enum KillChainPhasesFilter {
 }
 
 input KillChainPhasesFiltering {
-  key: KillChainPhasesFilter!
+  key: [KillChainPhasesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1641,7 +1641,7 @@ enum StixCoreObjectsFilter {
 }
 
 input StixCoreObjectsFiltering {
-  key: StixCoreObjectsFilter!
+  key: [StixCoreObjectsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1731,7 +1731,7 @@ enum StixDomainObjectsFilter {
 }
 
 input StixDomainObjectsFiltering {
-  key: StixDomainObjectsFilter!
+  key: [StixDomainObjectsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1834,7 +1834,7 @@ enum AttackPatternsFilter {
 }
 
 input AttackPatternsFiltering {
-  key: AttackPatternsFilter!
+  key: [AttackPatternsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -1951,7 +1951,7 @@ enum CampaignsFilter {
 }
 
 input CampaignsFiltering {
-  key: CampaignsFilter!
+  key: [CampaignsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -2064,7 +2064,7 @@ enum ContainersFilter {
 }
 
 input ContainersFiltering {
-  key: ContainersFilter!
+  key: [ContainersFilter!]!
   values: [String]!
   operator: String
   filterMode: FilterMode
@@ -2139,7 +2139,7 @@ enum NotesFilter {
 }
 
 input NotesFiltering {
-  key: NotesFilter!
+  key: [NotesFilter!]!
   values: [String]!
   operator: String
   filterMode: FilterMode
@@ -2250,7 +2250,7 @@ enum ObservedDatasFilter {
 }
 
 input ObservedDatasFiltering {
-  key: ObservedDatasFilter!
+  key: [ObservedDatasFilter!]!
   values: [String]!
   operator: String
   filterMode: FilterMode
@@ -2358,7 +2358,7 @@ enum OpinionsFilter {
 }
 
 input OpinionsFiltering {
-  key: OpinionsFilter!
+  key: [OpinionsFilter!]!
   values: [String]!
   operator: String
   filterMode: FilterMode
@@ -2467,7 +2467,7 @@ enum ReportsFilter {
 }
 
 input ReportsFiltering {
-  key: ReportsFilter!
+  key: [ReportsFilter!]!
   values: [String]!
   operator: String
   filterMode: FilterMode
@@ -2574,7 +2574,7 @@ enum CoursesOfActionFilter {
 }
 
 input CoursesOfActionFiltering {
-  key: CoursesOfActionFilter!
+  key: [CoursesOfActionFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -2668,7 +2668,7 @@ enum IdentitiesFilter {
   entity_type
   identity_class
   name
-  x_opencti_aliases
+  aliases
   confidence
   created
   modified
@@ -2682,7 +2682,7 @@ enum IdentitiesFilter {
 }
 
 input IdentitiesFiltering {
-  key: IdentitiesFilter!
+  key: [IdentitiesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -2799,7 +2799,7 @@ enum IndividualsFilter {
 }
 
 input IndividualsFiltering {
-  key: IndividualsFilter!
+  key: [IndividualsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -2913,7 +2913,7 @@ enum OrganizationsFilter {
 }
 
 input OrganizationsFiltering {
-  key: OrganizationsFilter!
+  key: [OrganizationsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3022,6 +3022,7 @@ enum SectorsOrdering {
 
 enum SectorsFilter {
   name
+  aliases
   confidence
   created
   modified
@@ -3036,7 +3037,7 @@ enum SectorsFilter {
 }
 
 input SectorsFiltering {
-  key: SectorsFilter!
+  key: [SectorsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3146,7 +3147,7 @@ enum SystemsFilter {
 }
 
 input SystemsFiltering {
-  key: SystemsFilter!
+  key: [SystemsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3276,7 +3277,7 @@ enum IndicatorsFilter {
 }
 
 input IndicatorsFiltering {
-  key: IndicatorsFilter!
+  key: [IndicatorsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3404,7 +3405,7 @@ enum InfrastructuresFilter {
 }
 
 input InfrastructuresFiltering {
-  key: InfrastructuresFilter!
+  key: [InfrastructuresFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3512,7 +3513,7 @@ enum IntrusionSetsFilter {
 }
 
 input IntrusionSetsFiltering {
-  key: IntrusionSetsFilter!
+  key: [IntrusionSetsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3615,7 +3616,7 @@ enum LocationsOrdering {
 enum LocationsFilter {
   entity_type
   name
-  x_opencti_aliases
+  aliases
   confidence
   created
   modified
@@ -3629,7 +3630,7 @@ enum LocationsFilter {
 }
 
 input LocationsFiltering {
-  key: LocationsFilter!
+  key: [LocationsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3730,6 +3731,8 @@ enum PositionsOrdering {
 }
 
 enum PositionsFilter {
+  name
+  aliases
   created
   modified
   created_at
@@ -3742,7 +3745,7 @@ enum PositionsFilter {
 }
 
 input PositionsFiltering {
-  key: PositionsFilter!
+  key: [PositionsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3844,6 +3847,7 @@ enum CitiesOrdering {
 
 enum CitiesFilter {
   name
+  aliases
   created
   modified
   created_at
@@ -3856,7 +3860,7 @@ enum CitiesFilter {
 }
 
 input CitiesFiltering {
-  key: CitiesFilter!
+  key: [CitiesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -3950,6 +3954,8 @@ enum CountriesOrdering {
 }
 
 enum CountriesFilter {
+  name
+  aliases
   created
   modified
   created_at
@@ -3960,7 +3966,7 @@ enum CountriesFilter {
 }
 
 input CountriesFiltering {
-  key: CountriesFilter!
+  key: [CountriesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4054,6 +4060,8 @@ enum RegionsOrdering {
 }
 
 enum RegionsFilter {
+  name
+  aliases
   created
   modified
   created_at
@@ -4064,7 +4072,7 @@ enum RegionsFilter {
 }
 
 input RegionsFiltering {
-  key: RegionsFilter!
+  key: [RegionsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4182,7 +4190,7 @@ enum MalwaresFilter {
 }
 
 input MalwaresFiltering {
-  key: MalwaresFilter!
+  key: [MalwaresFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4297,7 +4305,7 @@ enum ThreatActorsFilter {
 }
 
 input ThreatActorsFiltering {
-  key: ThreatActorsFilter!
+  key: [ThreatActorsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4416,7 +4424,7 @@ enum ToolsFilter {
 }
 
 input ToolsFiltering {
-  key: ToolsFilter!
+  key: [ToolsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4526,7 +4534,7 @@ enum VulnerabilitiesFilter {
 }
 
 input VulnerabilitiesFiltering {
-  key: VulnerabilitiesFilter!
+  key: [VulnerabilitiesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4640,7 +4648,7 @@ enum IncidentsFilter {
 }
 
 input IncidentsFiltering {
-  key: IncidentsFilter!
+  key: [IncidentsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4755,7 +4763,7 @@ enum StixCyberObservablesFilter {
 }
 
 input StixCyberObservablesFiltering {
-  key: StixCyberObservablesFilter!
+  key: [StixCyberObservablesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -6292,7 +6300,7 @@ enum StixObjectOrStixRelationshipsFilter {
 }
 
 input StixObjectOrStixRelationshipsFiltering {
-  key: StixObjectOrStixRelationshipsFilter!
+  key: [StixObjectOrStixRelationshipsFilter!]!
   values: [String]!
   operator: String
   filterMode: FilterMode
@@ -6346,7 +6354,7 @@ enum StixRelationshipsFilter {
 }
 
 input StixRelationshipsFiltering {
-  key: StixRelationshipsFilter!
+  key: [StixRelationshipsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -6420,7 +6428,7 @@ enum StixCoreRelationshipsFilter {
 }
 
 input StixCoreRelationshipsFiltering {
-  key: StixCoreRelationshipsFilter!
+  key: [StixCoreRelationshipsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -6537,7 +6545,7 @@ enum StixSightingRelationshipsFilter {
 }
 
 input StixSightingRelationshipsFiltering {
-  key: StixSightingRelationshipsFilter!
+  key: [StixSightingRelationshipsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -6634,7 +6642,7 @@ enum StixCyberObservableRelationshipsFilter {
 }
 
 input StixCyberObservableRelationshipsFiltering {
-  key: StixCyberObservableRelationshipsFilter!
+  key: [StixCyberObservableRelationshipsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -6704,7 +6712,7 @@ enum StixMetaRelationshipsFilter {
 }
 
 input StixMetaRelationshipsFiltering {
-  key: StixMetaRelationshipsFilter!
+  key: [StixMetaRelationshipsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode

@@ -12,28 +12,30 @@ import {
   elIndex,
   elIndexElements,
   elIndexExists,
-  searchEngineInit,
   elLoadById,
   elPaginate,
   elRebuildRelation,
+  searchEngineInit,
 } from '../../../src/database/engine';
 import {
+  ES_INDEX_PREFIX,
+  READ_ENTITIES_INDICES,
   READ_INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  READ_INDEX_INTERNAL_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_META_OBJECTS,
   READ_INDEX_STIX_META_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  READ_INDEX_INTERNAL_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLES,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
-  READ_ENTITIES_INDICES,
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { BASE_TYPE_RELATION } from '../../../src/schema/general';
+import { BASE_TYPE_RELATION, buildRefRelationKey } from '../../../src/schema/general';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
+import { RELATION_OBJECT_LABEL } from '../../../src/schema/stixMetaRelationship';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -525,7 +527,10 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with date ordering', async () => {
-    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { orderBy: 'created', orderMode: 'asc' });
+    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
+      orderBy: 'created',
+      orderMode: 'asc'
+    });
     expect(data.edges.length).toEqual(57);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
@@ -562,11 +567,11 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES);
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
-    expect(groupByIndices['opencti_internal_relationships-000001'].length).toEqual(14);
-    expect(groupByIndices['opencti_stix_core_relationships-000001'].length).toEqual(21);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length).toEqual(14);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].length).toEqual(21);
     // expect(groupByIndices['opencti_stix_meta_relationships-000001'].length).toEqual(110);
-    expect(groupByIndices['opencti_stix_sighting_relationships-000001'].length).toEqual(3);
-    const metas = groupByIndices['opencti_stix_meta_relationships-000001'].map((m) => m.node);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length).toEqual(3);
+    const metas = groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].map((m) => m.node);
     const metaByEntityType = R.groupBy((m) => m.entity_type, metas);
     expect(metaByEntityType.object.length).toEqual(38);
     expect(metaByEntityType['object-label'].length).toEqual(25);
@@ -585,6 +590,29 @@ describe('Elasticsearch pagination', () => {
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
+  });
+  it('should not break on null', async () => {
+    const data = await elPaginate(testContext, ADMIN_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      filters: [{
+        key: [buildRefRelationKey(RELATION_OBJECT_LABEL)],
+        operator: 'eq',
+        values: [null],
+      }]
+    });
+    expect(data).not.toBeNull();
+  });
+  it('should break on multi values with nested', async () => {
+    const data = elPaginate(testContext, ADMIN_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      filters: [{
+        key: ['name', 'created_at'],
+        value: null,
+        nested: [{
+          key: 'name',
+          values: ['test'],
+        }],
+      }],
+    });
+    await expect(data).rejects.toThrow('Unsupported operation');
   });
 });
 

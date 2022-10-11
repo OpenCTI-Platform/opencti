@@ -1,13 +1,19 @@
-import platformInit from '../../../src/initialization';
-import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI, testContext, ADMIN_USER } from '../../utils/testQuery';
+import { ADMIN_USER, API_TOKEN, API_URI, FIVE_MINUTES, PYTHON_PATH, testContext } from '../../utils/testQuery';
 import { execTestingPython } from '../../../src/python/pythonBridge';
-import { startModules, shutdownModules } from '../../../src/modules';
+import { shutdownModules, startModules } from '../../../src/modules';
+import { elDeleteIndexes } from '../../../src/database/engine';
+import { ELASTIC_CREATION_PATTERN } from '../../../src/config/conf';
+import { WRITE_PLATFORM_INDICES } from '../../../src/database/utils';
+import platformInit from '../../../src/initialization';
+import { deleteStream } from '../../../src/database/redis';
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
   it(
     'should platform init',
-    () => {
+    async () => {
+      await elDeleteIndexes(WRITE_PLATFORM_INDICES.map((id) => `${id}${ELASTIC_CREATION_PATTERN}`));
+      await deleteStream();
       return expect(platformInit()).resolves.toBe(true);
     },
     FIVE_MINUTES
