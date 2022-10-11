@@ -1470,9 +1470,13 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
       const { key, values, nested, operator = 'eq', filterMode: localFilterMode = 'or' } = validFilters[index];
+      const validKeys = Array.isArray(key) ? key : [key];
       // const rulesKeys = getAttributesRulesFor(key);
       // TODO IF KEY is PART OF Rule we need to add extra fields search
       if (nested) {
+        if (validKeys.length > 1) {
+          throw UnsupportedError('Must have only one field', validKeys);
+        }
         const nestedMust = [];
         for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
           const nestedElement = nested[nestIndex];
@@ -1483,12 +1487,12 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
               nestedShould.push({
                 query_string: {
                   query: `${nestedValues[i].toString()}`,
-                  fields: [`${key}.${nestedKey}`],
+                  fields: [`${R.head(validKeys)}.${nestedKey}`],
                 },
               });
             } else {
               nestedShould.push({
-                match_phrase: { [`${key}.${nestedKey}`]: nestedValues[i].toString() },
+                match_phrase: { [`${R.head(validKeys)}.${nestedKey}`]: nestedValues[i].toString() },
               });
             }
           }
@@ -1501,7 +1505,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
           nestedMust.push(should);
         }
         const nestedQuery = {
-          path: key,
+          path: R.head(validKeys),
           query: {
             bool: {
               must: nestedMust,
@@ -1512,27 +1516,41 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       } else {
         for (let i = 0; i < values.length; i += 1) {
           if (values[i] === null) {
-            mustnot = R.append({ exists: { field: key } }, mustnot);
+            if (validKeys.length > 1) {
+              throw UnsupportedError('Must have only one field', validKeys);
+            }
+            mustnot = R.append({ exists: { field: R.head(validKeys) } }, mustnot);
           } else if (values[i] === 'EXISTS') {
-            valuesFiltering.push({ exists: { field: key } });
+            if (validKeys.length > 1) {
+              throw UnsupportedError('Must have only one field', validKeys);
+            }
+            valuesFiltering.push({ exists: { field: R.head(validKeys) } });
           } else if (operator === 'eq') {
-            const isDateOrNumber = dateAttributes.includes(key) || numericOrBooleanAttributes.includes(key);
             valuesFiltering.push({
-              match_phrase: { [`${isDateOrNumber ? key : `${key}.keyword`}`]: values[i].toString() },
+              multi_match: {
+                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttributes.includes(k)) ? k : `${k}.keyword`}`),
+                query: values[i].toString(),
+              },
             });
           } else if (operator === 'match') {
             valuesFiltering.push({
-              match_phrase: { [key]: values[i].toString() },
+              multi_match: {
+                fields: validKeys,
+                query: values[i].toString(),
+              },
             });
           } else if (operator === 'wildcard') {
             valuesFiltering.push({
               query_string: {
                 query: `"${values[i].toString()}"`,
-                fields: [key],
+                fields: validKeys,
               },
             });
           } else {
-            valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
+            if (validKeys.length > 1) {
+              throw UnsupportedError('Must have only one field', validKeys);
+            }
+            valuesFiltering.push({ range: { [R.head(validKeys)]: { [operator]: values[i] } } });
           }
         }
         mustFilters = R.append(

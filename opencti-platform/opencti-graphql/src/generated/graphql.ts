@@ -449,7 +449,7 @@ export enum AttackPatternsFilter {
 
 export type AttackPatternsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: AttackPatternsFilter;
+  key: Array<AttackPatternsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -1019,7 +1019,7 @@ export enum CampaignsFilter {
 
 export type CampaignsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: CampaignsFilter;
+  key: Array<CampaignsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -1268,6 +1268,7 @@ export enum ChannelsOrdering {
 }
 
 export enum CitiesFilter {
+  Aliases = 'aliases',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -1282,7 +1283,7 @@ export enum CitiesFilter {
 
 export type CitiesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: CitiesFilter;
+  key: Array<CitiesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -1703,7 +1704,7 @@ export enum ContainersFilter {
 
 export type ContainersFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: ContainersFilter;
+  key: Array<ContainersFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values: Array<InputMaybe<Scalars['String']>>;
 };
@@ -1732,18 +1733,20 @@ export type ContextData = {
 };
 
 export enum CountriesFilter {
+  Aliases = 'aliases',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
+  Name = 'name',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type CountriesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: CountriesFilter;
+  key: Array<CountriesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -2148,7 +2151,7 @@ export enum CoursesOfActionFilter {
 
 export type CoursesOfActionFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: CoursesOfActionFilter;
+  key: Array<CoursesOfActionFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -3586,7 +3589,7 @@ export enum ExternalReferencesFilter {
 
 export type ExternalReferencesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: ExternalReferencesFilter;
+  key: Array<ExternalReferencesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -4378,6 +4381,7 @@ export type IPv6AddrAddInput = {
 };
 
 export enum IdentitiesFilter {
+  Aliases = 'aliases',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -4390,13 +4394,12 @@ export enum IdentitiesFilter {
   Name = 'name',
   Revoked = 'revoked',
   UpdatedAt = 'updated_at',
-  XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type IdentitiesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: IdentitiesFilter;
+  key: Array<IdentitiesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -4803,7 +4806,7 @@ export enum IncidentsFilter {
 
 export type IncidentsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: IncidentsFilter;
+  key: Array<IncidentsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -5060,7 +5063,7 @@ export enum IndicatorsFilter {
 
 export type IndicatorsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: IndicatorsFilter;
+  key: Array<IndicatorsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -5294,7 +5297,7 @@ export enum IndividualsFilter {
 
 export type IndividualsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: IndividualsFilter;
+  key: Array<IndividualsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -5531,7 +5534,7 @@ export enum InfrastructuresFilter {
 
 export type InfrastructuresFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: InfrastructuresFilter;
+  key: Array<InfrastructuresFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -5783,7 +5786,7 @@ export enum IntrusionSetsFilter {
 
 export type IntrusionSetsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: IntrusionSetsFilter;
+  key: Array<IntrusionSetsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -5879,7 +5882,7 @@ export enum KillChainPhasesFilter {
 
 export type KillChainPhasesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: KillChainPhasesFilter;
+  key: Array<KillChainPhasesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -5962,7 +5965,7 @@ export enum LabelsFilter {
 
 export type LabelsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: LabelsFilter;
+  key: Array<LabelsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -6368,6 +6371,7 @@ export enum LocationType {
 }
 
 export enum LocationsFilter {
+  Aliases = 'aliases',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -6379,13 +6383,12 @@ export enum LocationsFilter {
   Name = 'name',
   Revoked = 'revoked',
   UpdatedAt = 'updated_at',
-  XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type LocationsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: LocationsFilter;
+  key: Array<LocationsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -6433,7 +6436,7 @@ export enum LogsFilter {
 
 export type LogsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: LogsFilter;
+  key: Array<LogsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -6816,7 +6819,7 @@ export enum MalwaresFilter {
 
 export type MalwaresFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: MalwaresFilter;
+  key: Array<MalwaresFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -6908,7 +6911,7 @@ export enum MarkingDefinitionsFilter {
 
 export type MarkingDefinitionsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: MarkingDefinitionsFilter;
+  key: Array<MarkingDefinitionsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -8940,7 +8943,7 @@ export enum NotesFilter {
 
 export type NotesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: NotesFilter;
+  key: Array<NotesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values: Array<InputMaybe<Scalars['String']>>;
 };
@@ -9198,7 +9201,7 @@ export enum ObservedDatasFilter {
 
 export type ObservedDatasFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: ObservedDatasFilter;
+  key: Array<ObservedDatasFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values: Array<InputMaybe<Scalars['String']>>;
 };
@@ -9444,7 +9447,7 @@ export enum OpinionsFilter {
 
 export type OpinionsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: OpinionsFilter;
+  key: Array<OpinionsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values: Array<InputMaybe<Scalars['String']>>;
 };
@@ -9687,7 +9690,7 @@ export enum OrganizationsFilter {
 
 export type OrganizationsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: OrganizationsFilter;
+  key: Array<OrganizationsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -10215,12 +10218,14 @@ export type PositionEditMutationsRelationDeleteArgs = {
 };
 
 export enum PositionsFilter {
+  Aliases = 'aliases',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
+  Name = 'name',
   Revoked = 'revoked',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -10228,7 +10233,7 @@ export enum PositionsFilter {
 
 export type PositionsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: PositionsFilter;
+  key: Array<PositionsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -12353,18 +12358,20 @@ export type RegionEditMutationsRelationDeleteArgs = {
 };
 
 export enum RegionsFilter {
+  Aliases = 'aliases',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
+  Name = 'name',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type RegionsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: RegionsFilter;
+  key: Array<RegionsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -12619,7 +12626,7 @@ export enum ReportsFilter {
 
 export type ReportsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: ReportsFilter;
+  key: Array<ReportsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values: Array<InputMaybe<Scalars['String']>>;
 };
@@ -12984,6 +12991,7 @@ export type SectorEditMutationsRelationDeleteArgs = {
 };
 
 export enum SectorsFilter {
+  Aliases = 'aliases',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -13000,7 +13008,7 @@ export enum SectorsFilter {
 
 export type SectorsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: SectorsFilter;
+  key: Array<SectorsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -13313,7 +13321,7 @@ export enum StatusTemplateOrdering {
 
 export type StatusesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StatusFilter;
+  key: Array<StatusFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<Scalars['String']>>;
 };
@@ -13512,7 +13520,7 @@ export enum StixCoreObjectsFilter {
 
 export type StixCoreObjectsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixCoreObjectsFilter;
+  key: Array<StixCoreObjectsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -13707,7 +13715,7 @@ export enum StixCoreRelationshipsFilter {
 
 export type StixCoreRelationshipsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixCoreRelationshipsFilter;
+  key: Array<StixCoreRelationshipsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -14042,7 +14050,7 @@ export enum StixCyberObservableRelationshipsFilter {
 
 export type StixCyberObservableRelationshipsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixCyberObservableRelationshipsFilter;
+  key: Array<StixCyberObservableRelationshipsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -14090,7 +14098,7 @@ export enum StixCyberObservablesFilter {
 
 export type StixCyberObservablesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixCyberObservablesFilter;
+  key: Array<StixCyberObservablesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -14344,7 +14352,7 @@ export enum StixDomainObjectsFilter {
 
 export type StixDomainObjectsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixDomainObjectsFilter;
+  key: Array<StixDomainObjectsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -14597,7 +14605,7 @@ export enum StixMetaRelationshipsFilter {
 
 export type StixMetaRelationshipsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixMetaRelationshipsFilter;
+  key: Array<StixMetaRelationshipsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -14660,7 +14668,7 @@ export enum StixObjectOrStixRelationshipsFilter {
 
 export type StixObjectOrStixRelationshipsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixObjectOrStixRelationshipsFilter;
+  key: Array<StixObjectOrStixRelationshipsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values: Array<InputMaybe<Scalars['String']>>;
 };
@@ -14723,7 +14731,7 @@ export enum StixRelationshipsFilter {
 
 export type StixRelationshipsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixRelationshipsFilter;
+  key: Array<StixRelationshipsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -14891,7 +14899,7 @@ export enum StixSightingRelationshipsFilter {
 
 export type StixSightingRelationshipsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: StixSightingRelationshipsFilter;
+  key: Array<StixSightingRelationshipsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -15374,7 +15382,7 @@ export enum SystemsFilter {
 
 export type SystemsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: SystemsFilter;
+  key: Array<SystemsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -15476,7 +15484,7 @@ export enum TasksFilter {
 
 export type TasksFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: TasksFilter;
+  key: Array<TasksFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -15894,7 +15902,7 @@ export enum ThreatActorsFilter {
 
 export type ThreatActorsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: ThreatActorsFilter;
+  key: Array<ThreatActorsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -16115,7 +16123,7 @@ export enum ToolsFilter {
 
 export type ToolsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: ToolsFilter;
+  key: Array<ToolsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -16761,7 +16769,7 @@ export enum UsersFilter {
 
 export type UsersFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: UsersFilter;
+  key: Array<UsersFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -16794,7 +16802,7 @@ export enum VulnerabilitiesFilter {
 
 export type VulnerabilitiesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: VulnerabilitiesFilter;
+  key: Array<VulnerabilitiesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -17395,7 +17403,7 @@ export enum WorksFilter {
 
 export type WorksFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: WorksFilter;
+  key: Array<WorksFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -17506,7 +17514,7 @@ export enum WorkspacesFilter {
 
 export type WorkspacesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: WorkspacesFilter;
+  key: Array<WorkspacesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
