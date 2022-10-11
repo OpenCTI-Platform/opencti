@@ -4,7 +4,7 @@ import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
-import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
+import { AuthenticationFailure, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
 import {
   batchListThroughGetTo,
@@ -35,6 +35,7 @@ import { now } from '../utils/format';
 import { applicationSession } from '../database/session';
 import {
   convertRelationToAction,
+  IMPERSONATE_ACTION,
   LOGIN_ACTION,
   LOGOUT_ACTION,
   ROLE_DELETION,
@@ -631,12 +632,15 @@ export const authenticateUser = async (context, req, user, provider, token = '')
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
   let impersonate;
   const applicantId = req.headers['opencti-applicant-id'];
-  if (!isBypassUser(completeUser) && applicantId) {
-    throw ForbiddenAccess();
+  if (applicantId && !isBypassUser(completeUser)) {
+    throw ForbiddenAccess({ action: IMPERSONATE_ACTION, from: user.id, to: applicantId });
   }
   if (isBypassUser(completeUser) && applicantId) {
-    logApp.info(`[AUTH] User ${applicantId} will be impersonate`);
     const applicantUser = await resolveUserById(context, applicantId);
+    if (!applicantUser) {
+      throw UnsupportedError(`User ${applicantId}cant be impersonate (not exists)`);
+    }
+    logAudit.info(applicantUser, IMPERSONATE_ACTION, { from: user.id });
     impersonate = await buildCompleteUser(context, applicantUser);
   }
   const sessionUser = buildSessionUser(completeUser, impersonate, provider);
