@@ -14,7 +14,14 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Fab from '@mui/material/Fab';
-import { Add, ArrowDropDown, ArrowDropUp, Close } from '@mui/icons-material';
+import {
+  Add,
+  ArrowDropDown,
+  ArrowDropUp,
+  Close,
+  DoubleArrow,
+  DeleteOutlined,
+} from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import { Field, Form, Formik } from 'formik';
@@ -23,12 +30,20 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Checkbox from '@mui/material/Checkbox';
 import { v4 as uuid } from 'uuid';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
 import {
   booleanAttributes,
   dateAttributes,
   markdownAttributes,
   numberAttributes,
+  resolveIdentityClass,
+  resolveIdentityType,
+  resolveLocationType,
   typesContainers,
   workbenchAttributes,
 } from '../../../../utils/Entity';
@@ -44,12 +59,20 @@ import MarkDownField from '../../../../components/MarkDownField';
 import {
   convertFromStixType,
   convertToStixType,
+  truncate,
 } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import StixItemLabels from '../../../../components/StixItemLabels';
 import { defaultValue } from '../../../../utils/Graph';
 import StixItemMarkings from '../../../../components/StixItemMarkings';
+import { buildDate } from '../../../../utils/Time';
+import DynamicResolutionField from '../../common/form/DynamicResolutionField';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   container: {
@@ -114,16 +137,15 @@ const styles = (theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
-});
-
-const inlineStylesHeaders = {
-  iconSort: {
+  sortIcon: {
     position: 'absolute',
     margin: '0 0 0 5px',
     padding: 0,
-    top: '0px',
   },
-  type: {
+});
+
+const inlineStylesHeaders = {
+  ttype: {
     float: 'left',
     width: '15%',
     fontSize: 12,
@@ -156,7 +178,7 @@ const inlineStylesHeaders = {
 };
 
 const inlineStyles = {
-  type: {
+  ttype: {
     float: 'left',
     width: '15%',
     height: 20,
@@ -229,9 +251,12 @@ class WorkbenchFileContentComponent extends Component {
       stixCoreRelationships: [],
       containers: [],
       // Control
-      openEntity: false,
+      sortBy: 'default_value',
+      orderAsc: true,
+      entityStep: null,
       entityType: null,
       entityId: null,
+      deleteEntity: null,
     };
   }
 
@@ -260,10 +285,10 @@ class WorkbenchFileContentComponent extends Component {
       id: `bundle--${uuid()}`,
       type: 'bundle',
       objects: [
-        ...stixDomainObjects.map((n) => R.dissoc('extras', n)),
-        ...stixCyberObservables.map((n) => R.dissoc('extras', n)),
-        ...stixCoreRelationships.map((n) => R.dissoc('extras', n)),
-        ...containers.map((n) => R.dissoc('extras', n)),
+        ...stixDomainObjects,
+        ...stixCyberObservables,
+        ...stixCoreRelationships,
+        ...containers,
       ],
     };
     const json = JSON.stringify(data);
@@ -290,7 +315,7 @@ class WorkbenchFileContentComponent extends Component {
   }
 
   computeState(objects) {
-    const { stixDomainObjectTypes, observableTypes } = this.props;
+    const { stixDomainObjectTypes, observableTypes, t } = this.props;
     const sdoTypes = [
       ...stixDomainObjectTypes.edges.map((n) => convertToStixType(n.node.id)),
       'marking-definition',
@@ -298,32 +323,94 @@ class WorkbenchFileContentComponent extends Component {
       'location',
     ].filter((n) => !typesContainers.includes(n));
     const scoTypes = observableTypes.edges.map((n) => convertToStixType(n.node.id));
-    const stixDomainObjects = objects
-      .filter((n) => sdoTypes.includes(n.type))
-      .map((n) => R.assoc(
-        'extras',
-        {
-          default_value: defaultValue(n),
-          markings: this.resolveMarkings(objects, n.object_marking_refs),
-        },
-        n,
-      ));
-    const stixCyberObservables = objects
-      .filter((n) => scoTypes.includes(n.type))
-      .map((n) => R.assoc(
-        'extras',
-        {
-          default_value: defaultValue(n),
-          markings: this.resolveMarkings(objects, n.object_marking_refs),
-        },
-        n,
-      ));
+    const stixDomainObjects = objects.filter((n) => sdoTypes.includes(n.type));
+    const stixCyberObservables = objects.filter((n) => scoTypes.includes(n.type));
     const containers = objects.filter((n) => typesContainers.includes(n.type));
     return { stixDomainObjects, stixCyberObservables, containers };
   }
 
   findEntityById(id) {
     return R.head(this.state.stixDomainObjects.filter((n) => n.id === id));
+  }
+
+  submitDeleteEntity() {
+    const {
+      deleteEntity,
+      stixDomainObjects,
+      stixCyberObservables,
+      stixCoreRelationships,
+      containers,
+    } = this.state;
+    let finalStixDomainObjects = stixDomainObjects.filter(
+      (n) => n.id !== deleteEntity.id,
+    );
+    let finalStixCyberObservables = stixCyberObservables.filter(
+      (n) => n.id !== deleteEntity.id,
+    );
+    let finalStixCoreRelationships = stixCoreRelationships.filter(
+      (n) => n.id !== deleteEntity.id,
+    );
+    let finalContainers = containers.filter((n) => n.id !== deleteEntity.id);
+    if (deleteEntity.type === 'identity') {
+      finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === deleteEntity.id ? R.dissoc('created_by_ref', n) : n));
+      finalStixCyberObservables = finalStixCyberObservables.map((n) => (n.created_by_ref === deleteEntity.id ? R.dissoc('created_by_ref', n) : n));
+      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === deleteEntity.id ? R.dissoc('created_by_ref', n) : n));
+      finalContainers = finalContainers.map((n) => (n.created_by_ref === deleteEntity.id ? R.dissoc('created_by_ref', n) : n));
+    } else if (deleteEntity.type === 'marking-definition') {
+      finalStixDomainObjects = finalStixDomainObjects.map((n) => R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => o !== deleteEntity.id),
+        n,
+      ));
+      finalStixCyberObservables = finalStixCyberObservables.map((n) => R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => o !== deleteEntity.id),
+        n,
+      ));
+      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => o !== deleteEntity.id),
+        n,
+      ));
+      finalContainers = finalContainers.map((n) => R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => o !== deleteEntity.id),
+        n,
+      ));
+    }
+    // Impact
+    const stixCoreRelationshipsToRemove = finalStixCoreRelationships
+      .filter(
+        (n) => n.source_ref === deleteEntity.id || n.target_ref === deleteEntity.id,
+      )
+      .map((n) => n.id);
+    finalContainers = finalContainers.map((n) => R.assoc(
+      'object_refs',
+      n.object_refs.filter(
+        (o) => o !== deleteEntity.id && !stixCoreRelationshipsToRemove.includes(o),
+      ),
+      n,
+    ));
+    finalStixCoreRelationships = finalContainers.map((n) => R.assoc(
+      'object_refs',
+      n.object_refs.filter((o) => !stixCoreRelationshipsToRemove.includes(o)),
+      n,
+    ));
+    this.setState({
+      stixDomainObjects: finalStixDomainObjects,
+      stixCyberObservables: finalStixCyberObservables,
+      stixCoreRelationships: finalStixCoreRelationships,
+      containers: finalContainers,
+      deleteEntity: null,
+    });
+  }
+
+  handleDeleteEntity(entity) {
+    this.setState({ deleteEntity: entity });
+  }
+
+  handleCloseDeleteEntity() {
+    this.setState({ deleteEntity: null });
   }
 
   convertCreatedByRef(entity) {
@@ -333,6 +420,7 @@ class WorkbenchFileContentComponent extends Component {
         return {
           label: createdBy.name,
           value: createdBy.id,
+          entity: createdBy,
         };
       }
     }
@@ -347,6 +435,21 @@ class WorkbenchFileContentComponent extends Component {
     return [];
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  convertExternalReferences(entity) {
+    if (entity && entity.external_references) {
+      return entity.external_references.map((n) => ({
+        label: `[${n.source_name}] ${truncate(
+          n.description || n.url || n.external_id,
+          150,
+        )}`,
+        value: n.id,
+        entity: n,
+      }));
+    }
+    return [];
+  }
+
   convertMarkings(entity) {
     if (entity && entity.object_marking_refs) {
       return entity.object_marking_refs
@@ -354,8 +457,9 @@ class WorkbenchFileContentComponent extends Component {
           const marking = this.findEntityById(n);
           if (marking) {
             return {
-              label: marking.name,
+              label: marking.name || marking.definition,
               value: marking.id,
+              entity: marking,
             };
           }
           return null;
@@ -371,14 +475,18 @@ class WorkbenchFileContentComponent extends Component {
 
   handleOpenEntity(entityType, entityId) {
     this.setState({
-      openEntity: true,
+      entityStep: 0,
       entityType: convertFromStixType(entityType),
       entityId,
     });
   }
 
   handleCloseEntity() {
-    this.setState({ openEntity: false, entityType: null, entityId: null });
+    this.setState({
+      entityStep: null,
+      entityType: null,
+      entityId: null,
+    });
   }
 
   selectEntityType(entityType) {
@@ -390,11 +498,11 @@ class WorkbenchFileContentComponent extends Component {
   }
 
   SortHeader(field, label, isSortable) {
-    const { t } = this.props;
+    const { t, classes } = this.props;
     const sortComponent = this.state.orderAsc ? (
-      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
+      <ArrowDropDown classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
     ) : (
-      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
+      <ArrowDropUp classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
     );
     if (isSortable) {
       return (
@@ -445,17 +553,23 @@ class WorkbenchFileContentComponent extends Component {
     const { entityType, entityId, stixDomainObjects } = this.state;
     const { classes, t } = this.props;
     const entity = R.head(stixDomainObjects.filter((n) => n.id === entityId)) || {};
+    let type = entityType;
+    if (type === 'Identity' && entity) {
+      type = resolveIdentityType(entity.identity_class);
+    } else if (type === 'Location' && entity) {
+      type = resolveLocationType(entity);
+    }
     return (
       <QueryRenderer
         query={workbenchFileContentAttributesQuery}
-        variables={{ elementType: entityType }}
+        variables={{ elementType: type }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
             const initialValues = {
               createdBy: this.convertCreatedByRef(entity),
               objectMarking: this.convertMarkings(entity),
               objectLabel: this.convertLabels(entity),
-              externalReferences: [],
+              externalReferences: this.convertExternalReferences(entity),
             };
             const attributes = R.filter(
               (n) => R.includes(
@@ -466,7 +580,9 @@ class WorkbenchFileContentComponent extends Component {
             );
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
-                initialValues[attribute] = entity[attribute] || null;
+                initialValues[attribute] = entity[attribute]
+                  ? buildDate(entity[attribute])
+                  : null;
               } else if (R.includes(attribute, booleanAttributes)) {
                 initialValues[attribute] = entity[attribute] || false;
               } else {
@@ -583,7 +699,7 @@ class WorkbenchFileContentComponent extends Component {
                     />
                     <div className={classes.buttons}>
                       <Button
-                        variant={'contained'}
+                        variant="contained"
                         onClick={handleReset}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -591,13 +707,14 @@ class WorkbenchFileContentComponent extends Component {
                         {t('Cancel')}
                       </Button>
                       <Button
-                        variant={'contained'}
+                        startIcon={<DoubleArrow />}
+                        variant="contained"
                         color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Create')}
+                        {t('Context')}
                       </Button>
                     </div>
                   </Form>
@@ -611,16 +728,150 @@ class WorkbenchFileContentComponent extends Component {
     );
   }
 
+  renderEntityContext() {
+    const { entityType, entityId, stixDomainObjects } = this.state;
+    const { classes, t } = this.props;
+    const entity = R.head(stixDomainObjects.filter((n) => n.id === entityId)) || {};
+    let type = entityType;
+    if (type === 'Identity' && entity) {
+      type = resolveIdentityType(entity.identity_class);
+    } else if (type === 'Location' && entity) {
+      type = resolveLocationType(entity);
+    }
+    const targetsVictimology = [
+      'Threat-Actor',
+      'Intrusion-Set',
+      'Campaign',
+      'Incident',
+      'Malware',
+      'Tool',
+    ];
+    const usesAttackPatterns = [
+      'Threat-Actor',
+      'Intrusion-Set',
+      'Campaign',
+      'Incident',
+      'Malware',
+      'Tool',
+    ];
+    const targetsVulnerabilities = [
+      'Threat-Actor',
+      'Intrusion-Set',
+      'Campaign',
+      'Incident',
+      'Malware',
+      'Tool',
+    ];
+    const attributedToThreats = [
+      'Threat-Actor',
+      'Intrusion-Set',
+      'Campaign',
+      'Incident',
+      'Malware',
+      'Tool',
+    ];
+    const isTargetedByThreats = ['Identity', 'Location', 'Event'];
+    const hasVulnerabilities = ['System'];
+    const initialValues = {};
+    if (targetsVictimology.includes(type)) {
+      initialValues.targets = '';
+    }
+    return (
+      <Formik
+        initialValues={initialValues}
+        onSubmit={this.onSubmitEntity.bind(this)}
+        onReset={this.onResetEntity.bind(this)}
+      >
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+          <Form style={{ margin: '15px 0 20px 0', padding: '0 15px 0 15px' }}>
+            {targetsVictimology.includes(type) && (
+              <Field
+                component={DynamicResolutionField}
+                variant="standard"
+                name="targets"
+                title={t(
+                  'Victimology (target relationships to identities and locations)',
+                )}
+                label={t('Victimology')}
+                fullWidth={true}
+              />
+            )}
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => submitForm(false)}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Submit')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    );
+  }
+
   onSubmitEntity(values) {
-    const { createType, stixDomainObjects } = this.state;
-    const entity = {
-      type: convertToStixType(createType),
-      extras: { default_value: defaultValue(values) },
+    const { entityType, entityId, stixDomainObjects } = this.state;
+    const entity = R.head(stixDomainObjects.filter((n) => n.id === entityId)) || {};
+    const markingDefinitions = R.pluck('entity', values.objectMarking).map(
+      (n) => ({
+        ...n,
+        id: n.standard_id || n.id,
+        type: 'marking-definition',
+      }),
+    );
+    const identity = values.createdBy?.entity
+      ? {
+        ...values.createdBy.entity,
+        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+        type: 'identity',
+      }
+      : null;
+    const finalValues = {
       ...values,
+      labels: R.pluck('label', values.objectLabel),
+      object_marking_refs: R.pluck('entity', values.objectMarking).map(
+        (n) => n.standard_id || n.id,
+      ),
+      created_by_ref:
+        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      external_references: R.pluck('entity', values.externalReferences),
     };
-    this.setState({ stixDomainObjects: R.append(entity, stixDomainObjects) });
-    this.saveFile();
-    this.handleCloseCreate();
+    const stixType = convertToStixType(entityType);
+    const updatedEntity = {
+      ...entity,
+      ...finalValues,
+      id: entity.id ? entity.id : `${stixType}-${uuid()}`,
+      type: stixType,
+    };
+    if (updatedEntity.type === 'identity' && !updatedEntity.identity_class) {
+      updatedEntity.identity_class = resolveIdentityClass(entityType);
+    } else if (
+      updatedEntity.type === 'location'
+      && !updatedEntity.x_opencti_location_type
+    ) {
+      updatedEntity.x_opencti_location_type = entityType;
+    }
+    this.setState({
+      stixDomainObjects: R.uniqBy(R.prop('id'), [
+        ...stixDomainObjects.filter((n) => n.id !== updatedEntity.id),
+        ...markingDefinitions,
+        ...(identity ? [identity] : []),
+        updatedEntity,
+      ]),
+      entityStep: 1,
+    });
   }
 
   onResetEntity() {
@@ -629,7 +880,17 @@ class WorkbenchFileContentComponent extends Component {
 
   renderEntities() {
     const { classes, t } = this.props;
-    const { entityType, openEntity, stixDomainObjects } = this.state;
+    const { entityType, entityStep, stixDomainObjects, sortBy, orderAsc } = this.state;
+    const resolvedStixDomainObjects = stixDomainObjects.map((n) => ({
+      ...n,
+      ttype: t(`entity_${convertFromStixType(n.type)}`),
+      default_value: defaultValue(n),
+      markings: this.resolveMarkings(stixDomainObjects, n.object_marking_refs),
+    }));
+    const sort = R.sortWith(
+      orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
+    );
+    const sortedStixDomainObjects = sort(resolvedStixDomainObjects);
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
@@ -659,7 +920,7 @@ class WorkbenchFileContentComponent extends Component {
             <ListItemText
               primary={
                 <div>
-                  {this.SortHeader('type', 'Type', true)}
+                  {this.SortHeader('ttype', 'Type', true)}
                   {this.SortHeader('default_value', 'Default value', true)}
                   {this.SortHeader('labels', 'Labels', true)}
                   {this.SortHeader('markings', 'Markings', true)}
@@ -669,8 +930,19 @@ class WorkbenchFileContentComponent extends Component {
             />
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
-          {stixDomainObjects.map((object) => {
+          {sortedStixDomainObjects.map((object) => {
             const type = convertFromStixType(object.type);
+            let secondaryType = '';
+            if (type === 'Identity') {
+              secondaryType = ` (${t(
+                `entity_${resolveIdentityType(object.identity_class)}`,
+              )})`;
+            }
+            if (type === 'Location') {
+              secondaryType = ` (${t(
+                `entity_${resolveLocationType(object)}`,
+              )})`;
+            }
             const isInPlatform = true;
             return (
               <ListItem
@@ -697,15 +969,16 @@ class WorkbenchFileContentComponent extends Component {
                     <div>
                       <div
                         className={classes.bodyItem}
-                        style={inlineStyles.type}
+                        style={inlineStyles.ttype}
                       >
-                        {t(`entity_${type}`)}
+                        {object.ttype}
+                        {secondaryType}
                       </div>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.default_value}
                       >
-                        {object.extras.default_value}
+                        {object.default_value || t('Unknown')}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -713,7 +986,7 @@ class WorkbenchFileContentComponent extends Component {
                       >
                         <StixItemLabels
                           variant="inList"
-                          labels={object.labels}
+                          labels={object.labels || []}
                         />
                       </div>
                       <div
@@ -722,7 +995,8 @@ class WorkbenchFileContentComponent extends Component {
                       >
                         <StixItemMarkings
                           variant="inList"
-                          markingDefinitions={object.extras.markings}
+                          markingDefinitions={object.markings || []}
+                          limit={2}
                         />
                       </div>
                       <div
@@ -738,7 +1012,14 @@ class WorkbenchFileContentComponent extends Component {
                     </div>
                   }
                 />
-                <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
+                <ListItemSecondaryAction>
+                  <IconButton
+                    onClick={this.handleDeleteEntity.bind(this, object)}
+                    aria-haspopup="true"
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
+                </ListItemSecondaryAction>
               </ListItem>
             );
           })}
@@ -752,7 +1033,7 @@ class WorkbenchFileContentComponent extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={openEntity}
+          open={entityStep !== null}
           anchor="right"
           sx={{ zIndex: 1202 }}
           elevation={1}
@@ -772,9 +1053,9 @@ class WorkbenchFileContentComponent extends Component {
             <Typography variant="h6">{t('Manage an entity')}</Typography>
           </div>
           <div className={classes.container}>
-            {!entityType
-              ? this.renderEntityTypesList()
-              : this.renderEntityForm()}
+            {!entityType && this.renderEntityTypesList()}
+            {entityType && entityStep === 0 && this.renderEntityForm()}
+            {entityType && entityStep === 1 && this.renderEntityContext()}
           </div>
         </Drawer>
       </div>
@@ -783,7 +1064,7 @@ class WorkbenchFileContentComponent extends Component {
 
   render() {
     const { classes, file, t } = this.props;
-    const { currentTab } = this.state;
+    const { currentTab, deleteEntity } = this.state;
     return (
       <div className={classes.container}>
         <Typography
@@ -798,10 +1079,35 @@ class WorkbenchFileContentComponent extends Component {
           <Tabs value={currentTab} onChange={this.handleChangeTab.bind(this)}>
             <Tab label={t('Entities')} />
             <Tab label={t('Observables')} />
+            <Tab label={t('Relationships')} />
             <Tab label={t('Containers')} />
           </Tabs>
         </Box>
         {currentTab === 0 && this.renderEntities()}
+        <Dialog
+          open={deleteEntity !== null}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseDeleteEntity.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to remove this entity?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleCloseDeleteEntity.bind(this)}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={this.submitDeleteEntity.bind(this)}
+            >
+              {t('Remove')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -809,8 +1115,8 @@ class WorkbenchFileContentComponent extends Component {
 
 WorkbenchFileContentComponent.propTypes = {
   file: PropTypes.object,
-  stixDomainObjectTypes: PropTypes.array,
-  observableTypes: PropTypes.array,
+  stixDomainObjectTypes: PropTypes.object,
+  observableTypes: PropTypes.object,
   connectorsImport: PropTypes.array,
   children: PropTypes.node,
   match: PropTypes.object,

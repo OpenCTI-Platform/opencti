@@ -83,6 +83,7 @@ class ExternalReferencesField extends Component {
               150,
             )}`,
             value: n.node.id,
+            entity: n.node,
           })),
         )(data);
         this.setState({
@@ -179,6 +180,7 @@ class ExternalReferencesField extends Component {
                       150,
                     )}`,
                     value: newExternalReference.id,
+                    entity: newExternalReference,
                   },
                   this.state.externalReferences,
                 ),
@@ -194,6 +196,7 @@ class ExternalReferencesField extends Component {
                       150,
                     )}`,
                     value: newExternalReference.id,
+                    entity: newExternalReference,
                   },
                   values || [],
                 ),

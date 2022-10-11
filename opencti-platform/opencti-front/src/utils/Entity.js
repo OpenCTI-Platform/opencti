@@ -140,6 +140,46 @@ export const getObservablePatternMapping = (type) => {
   return `${type}.value`;
 };
 
+export const resolveIdentityClass = (identityType) => {
+  if (identityType === 'Individual') {
+    return 'individual';
+  }
+  if (identityType === 'Sector') {
+    return 'class';
+  }
+  if (identityType === 'System') {
+    return 'system';
+  }
+  return 'organization';
+};
+
+export const resolveIdentityType = (identityClass) => {
+  if (identityClass === 'individual') {
+    return 'Individual';
+  }
+  if (identityClass === 'class') {
+    return 'Sector';
+  }
+  if (identityClass === 'system') {
+    return 'System';
+  }
+  return 'Organization';
+};
+
+export const resolveLocationType = (entity) => {
+  if (entity.x_opencti_location_type) {
+    return entity.x_opencti_location_type;
+  }
+  if (entity.city) {
+    return 'City';
+  } if (entity.country) {
+    return 'Country';
+  } if (entity.region) {
+    return 'Region';
+  }
+  return 'Position';
+};
+
 export const openVocabularies = {
   'malware-type-ov': [
     {
@@ -883,6 +923,7 @@ export const ignoredAttributes = [
 export const workbenchAttributes = [
   'name',
   'description',
+  'pattern',
   'x_opencti_description',
   'first_seen',
   'last_seen',

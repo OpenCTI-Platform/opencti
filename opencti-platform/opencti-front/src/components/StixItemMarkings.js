@@ -82,7 +82,7 @@ const StixItemMarkings = (props) => {
   return (
     <div>
       {markings.map((markingDefinition) => {
-        const label = truncate(markingDefinition.name, 20);
+        const label = truncate(markingDefinition.name || markingDefinition.definition, 20);
         if (markingDefinition.x_opencti_color) {
           let backgroundColor = markingDefinition.x_opencti_color;
           let textColor = theme.palette.text.primary;
@@ -100,7 +100,7 @@ const StixItemMarkings = (props) => {
           }
           return (
             <Chip
-              key={markingDefinition.name}
+              key={markingDefinition.name || markingDefinition.definition}
               className={className}
               style={{
                 backgroundColor,
@@ -115,7 +115,7 @@ const StixItemMarkings = (props) => {
         if (theme.palette.mode === 'light') {
           inlineStyles = inlineStylesLight;
         }
-        switch (markingDefinition.name) {
+        switch (markingDefinition.name || markingDefinition.definition) {
           case 'CD':
           case 'CD-SF':
           case 'DR':
@@ -123,7 +123,7 @@ const StixItemMarkings = (props) => {
           case 'TLP:RED':
             return (
               <Chip
-                key={markingDefinition.name}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.red}
                 label={label}
@@ -132,7 +132,7 @@ const StixItemMarkings = (props) => {
           case 'TLP:AMBER':
             return (
               <Chip
-                key={markingDefinition.name}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.orange}
                 label={label}
@@ -142,7 +142,7 @@ const StixItemMarkings = (props) => {
           case 'TLP:GREEN':
             return (
               <Chip
-                key={markingDefinition.name}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.green}
                 label={label}
@@ -160,7 +160,7 @@ const StixItemMarkings = (props) => {
           default:
             return (
               <Chip
-                key={markingDefinition.name}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.white}
                 label={label}

@@ -99,7 +99,7 @@ StixItemLabels.propTypes = {
   t: PropTypes.func,
   variant: PropTypes.string,
   onClick: PropTypes.func,
-  labels: PropTypes.object,
+  labels: PropTypes.array,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(StixItemLabels);

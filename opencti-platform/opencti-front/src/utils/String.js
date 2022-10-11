@@ -50,6 +50,12 @@ export const convertToStixType = (type) => {
   if (type === 'Stixfile') {
     return 'file';
   }
+  if (['Sector', 'Organization', 'Individual', 'System'].includes(type)) {
+    return 'identity';
+  }
+  if (['Region', 'Country', 'City', 'Position'].includes(type)) {
+    return 'location';
+  }
   return type.toLowerCase();
 };
 
