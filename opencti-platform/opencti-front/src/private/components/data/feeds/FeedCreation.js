@@ -25,9 +25,9 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
-import { ignoredAttributesInFeeds } from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import Filters, { isUniqFilter } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
+import { ignoredAttributesInFeeds } from '../../../../utils/Entity';
 
 export const feedCreationAllTypesQuery = graphql`
   query FeedCreationAllTypesQuery {

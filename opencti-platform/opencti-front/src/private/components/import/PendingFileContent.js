@@ -45,7 +45,7 @@ import {
 } from '../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../common/files/FileManager';
 import SelectField from '../../../components/SelectField';
-import { convertStixType } from '../../../utils/String';
+import { convertFromStixType } from '../../../utils/String';
 import { itemColor } from '../../../utils/Colors';
 import ItemBoolean from '../../../components/ItemBoolean';
 
@@ -1147,7 +1147,7 @@ class PendingFileContentComponent extends Component {
             {sortedObjectsWithDependencies.map((object) => {
               const type = object.type === 'x-opencti-simple-observable'
                 ? observableKeyToType(object.key)
-                : convertStixType(object.type);
+                : convertFromStixType(object.type);
               const isDisabled = entityId === object.id
                 || (!checkedObjects.includes(object.id)
                   && !uncheckedObjects.includes(object.id));
@@ -1266,7 +1266,7 @@ class PendingFileContentComponent extends Component {
                           const subObjectTypeRaw = objectRef.split('--')[0];
                           const subObjectType = subObjectTypeRaw === 'x-opencti-simple-observable'
                             ? observableKeyToType(subObjectTypeRaw)
-                            : convertStixType(subObjectTypeRaw);
+                            : convertFromStixType(subObjectTypeRaw);
                           const isSubObjectDisabled = uncheckedObjects.includes(objectRef)
                             || (!(containersChecked[object.id] || []).includes(
                               objectRef,
@@ -1353,7 +1353,7 @@ class PendingFileContentComponent extends Component {
                         }
                         const subObjectType = subObject.type === 'x-opencti-simple-observable'
                           ? observableKeyToType(subObject.key)
-                          : convertStixType(subObject.type);
+                          : convertFromStixType(subObject.type);
                         const isSubObjectDisabled = uncheckedObjects.includes(subObject.id)
                           || (!(containersChecked[object.id] || []).includes(
                             subObject.id,

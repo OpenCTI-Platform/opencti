@@ -93,6 +93,14 @@ export const resolveLink = (type) => {
 
 export const typesWithoutName = ['Observed-Data'];
 
+export const typesContainers = [
+  'Report',
+  'Note',
+  'Opinion',
+  'Observed-Data',
+  'Grouping',
+];
+
 export const pascalize = (str) => str.replace(
   /(\w)(\w*)/g,
   (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase(),
@@ -853,3 +861,90 @@ export const openVocabularies = {
     },
   ],
 };
+
+export const ignoredAttributes = [
+  'internal_id',
+  'standard_id',
+  'x_opencti_description',
+  'x_opencti_stix_ids',
+  'entity_type',
+  'spec_version',
+  'extensions',
+  'created',
+  'modified',
+  'created_at',
+  'x_opencti_score',
+  'updated_at',
+  'observable_value',
+  'indicators',
+  'importFiles',
+];
+
+export const workbenchAttributes = [
+  'name',
+  'description',
+  'x_opencti_description',
+  'first_seen',
+  'last_seen',
+];
+
+export const ignoredAttributesInFeeds = [
+  'x_opencti_stix_ids',
+  'spec_version',
+  'extensions',
+  'importFiles',
+];
+
+export const dateAttributes = [
+  'ctime',
+  'mtime',
+  'atime',
+  'attribute_date',
+  'validity_not_before',
+  'validity_not_after',
+  'private_key_usage_period_not_before',
+  'private_key_usage_period_not_after',
+  'start',
+  'end',
+  'created_time',
+  'modified_time',
+  'account_created',
+  'account_expires',
+  'credential_last_changed',
+  'account_first_login',
+  'account_last_login',
+  'expiration_date',
+  'publication_date',
+  'first_seen',
+  'last_seen',
+];
+
+export const numberAttributes = [
+  'number',
+  'src_port',
+  'dst_port',
+  'src_byte_count',
+  'dst_byte_count',
+  'src_packets',
+  'dst_packets',
+  'pid',
+  'size',
+  'number_of_subkeys',
+  'subject_public_key_exponent',
+  'cvv',
+];
+
+export const booleanAttributes = [
+  'is_self_signed',
+  'is_multipart',
+  'is_hidden',
+  'is_active',
+  'is_disabled',
+  'is_privileged',
+  'is_service_account',
+  'can_escalate_privs',
+];
+
+export const multipleAttributes = ['x_opencti_additional_names', 'protocols'];
+
+export const markdownAttributes = ['description', 'x_opencti_description'];

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -9,20 +9,20 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import {
+  assoc,
   compose,
+  dissoc,
+  filter,
+  fromPairs,
+  includes,
+  map,
+  pipe,
   pluck,
+  prop,
+  propOr,
   sortBy,
   toLower,
-  prop,
-  pipe,
-  map,
-  assoc,
-  filter,
-  includes,
-  dissoc,
   toPairs,
-  fromPairs,
-  propOr,
 } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -52,81 +52,13 @@ import { parse } from '../../../../utils/Time';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-
-export const ignoredAttributes = [
-  'internal_id',
-  'standard_id',
-  'x_opencti_description',
-  'x_opencti_stix_ids',
-  'entity_type',
-  'spec_version',
-  'extensions',
-  'created',
-  'modified',
-  'created_at',
-  'x_opencti_score',
-  'updated_at',
-  'observable_value',
-  'indicators',
-  'importFiles',
-];
-
-export const ignoredAttributesInFeeds = [
-  'x_opencti_stix_ids',
-  'spec_version',
-  'extensions',
-  'importFiles',
-];
-
-export const dateAttributes = [
-  'ctime',
-  'mtime',
-  'atime',
-  'attribute_date',
-  'validity_not_before',
-  'validity_not_after',
-  'private_key_usage_period_not_before',
-  'private_key_usage_period_not_after',
-  'start',
-  'end',
-  'created_time',
-  'modified_time',
-  'account_created',
-  'account_expires',
-  'credential_last_changed',
-  'account_first_login',
-  'account_last_login',
-  'expiration_date',
-  'publication_date',
-];
-
-export const numberAttributes = [
-  'number',
-  'src_port',
-  'dst_port',
-  'src_byte_count',
-  'dst_byte_count',
-  'src_packets',
-  'dst_packets',
-  'pid',
-  'size',
-  'number_of_subkeys',
-  'subject_public_key_exponent',
-  'cvv',
-];
-
-export const booleanAttributes = [
-  'is_self_signed',
-  'is_multipart',
-  'is_hidden',
-  'is_active',
-  'is_disabled',
-  'is_privileged',
-  'is_service_account',
-  'can_escalate_privs',
-];
-
-export const multipleAttributes = ['x_opencti_additional_names', 'protocols'];
+import {
+  booleanAttributes,
+  dateAttributes,
+  ignoredAttributes,
+  numberAttributes,
+  multipleAttributes,
+} from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   drawerPaper: {
