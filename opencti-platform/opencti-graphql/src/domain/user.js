@@ -53,7 +53,7 @@ export const ROLE_DEFAULT = 'Default';
 
 export const userWithOrigin = (req, user) => {
   // /!\ This metadata information is used in different ways
-  // - In audit logs to identified the user
+  // - In audit logs to identify the user
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
   const origin = {
