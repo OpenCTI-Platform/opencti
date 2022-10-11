@@ -97,7 +97,7 @@ const FileUploader = (props) => {
           title={`Uploading ${upload}`}
           aria-label={`Uploading ${upload}`}
         >
-          <IconButton disabled={true} size="large">
+          <IconButton disabled={true} size={size || 'large'}>
             <CircularProgress
               size={24}
               thickness={2}

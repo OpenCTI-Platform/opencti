@@ -64,7 +64,7 @@ const DynamicResolutionField = (props) => {
           />
         </Grid>
         <Grid item={true} xs={6}>
-          <List style={{ marginTop: 10 }}>
+          <List style={{ marginTop: 11 }}>
             {field.value
               .split('\n')
               .filter((n) => n.length > 1)

@@ -102,12 +102,12 @@ export const importContentQuery = graphql`
 `;
 
 const importContentMutation = graphql`
-    mutation ImportContentMutation($file: Upload!) {
-        uploadPending(file: $file) {
-            id
-            ...FileLine_file
-        }
+  mutation ImportContentMutation($file: Upload!) {
+    uploadPending(file: $file) {
+      id
+      ...FileLine_file
     }
+  }
 `;
 
 const importValidation = (t) => Yup.object().shape({
@@ -121,7 +121,11 @@ const fileValidation = (t) => Yup.object().shape({
 class ImportContentComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { fileToImport: null, fileToValidate: null, displayCreate: false };
+    this.state = {
+      fileToImport: null,
+      fileToValidate: null,
+      displayCreate: false,
+    };
   }
 
   componentDidMount() {
@@ -259,9 +263,15 @@ class ImportContentComponent extends Component {
               >
                 {t('Uploaded files')}
               </Typography>
-              <div style={{ float: 'left', marginTop: -17 }}>
-                <FileUploader onUploadSuccess={() => relay.refetch()} />
-                <FreeTextUploader onUploadSuccess={() => relay.refetch()} />
+              <div style={{ float: 'left', marginTop: -15 }}>
+                <FileUploader
+                  onUploadSuccess={() => relay.refetch()}
+                  size="medium"
+                />
+                <FreeTextUploader
+                  onUploadSuccess={() => relay.refetch()}
+                  size="medium"
+                />
               </div>
               <div className="clearfix" />
               <Paper classes={{ root: classes.paper }} variant="outlined">
@@ -357,7 +367,7 @@ class ImportContentComponent extends Component {
               )}
             </Paper>
           </Grid>
-          <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+          <Grid item={true} xs={12} style={{ marginTop: 40 }}>
             <div style={{ height: '100%' }} className="break">
               <Typography
                 variant="h4"
@@ -375,11 +385,7 @@ class ImportContentComponent extends Component {
                 </IconButton>
               </div>
               <div className="clearfix" />
-              <Paper
-                classes={{ root: classes.paper }}
-                variant="outlined"
-                style={{ marginTop: 10 }}
-              >
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 {pendingFilesEdges.length ? (
                   <List>
                     {pendingFilesEdges.map((file) => (
