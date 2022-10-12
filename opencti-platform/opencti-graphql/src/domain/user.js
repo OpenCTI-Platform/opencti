@@ -636,12 +636,13 @@ export const authenticateUser = async (context, req, user, provider, token = '')
     if (isBypassUser(logged)) {
       const applicantUser = await resolveUserById(context, applicantId);
       if (isEmptyField(applicantUser)) {
-        throw UnsupportedError(`User ${applicantId} cant be impersonate (not exists)`);
+        logApp.warn(`User ${applicantId} cant be impersonate (not exists)`);
+      } else {
+        logAudit.info(applicantUser, IMPERSONATE_ACTION, { from: user.id, to: applicantUser.id });
+        impersonate = applicantUser;
       }
-      logAudit.info(applicantUser, IMPERSONATE_ACTION, { from: user.id, to: applicantUser.id });
-      impersonate = applicantUser;
     } else {
-      throw ForbiddenAccess({ action: IMPERSONATE_ACTION, from: user.id, to: applicantId });
+      logAudit.error(user, IMPERSONATE_ACTION, { to: applicantId });
     }
   }
   const sessionUser = buildSessionUser(logged, impersonate, provider);
