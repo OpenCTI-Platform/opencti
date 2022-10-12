@@ -310,8 +310,11 @@ class OpenCTIStix2:
                 if "label_" + label in self.mapping_cache:
                     label_data = self.mapping_cache["label_" + label]
                 else:
-                    label_data = self.opencti.label.create(value=label)
-                if label_data is not None and "id" in label_data:
+                    # Fail in label creation is allowed
+                    label_data = self.opencti.label.read_or_create_unchecked(
+                        value=label
+                    )
+                if label_data is not None:
                     self.mapping_cache["label_" + label] = label_data
                     object_label_ids.append(label_data["id"])
         elif "x_opencti_labels" in stix_object:
@@ -319,8 +322,11 @@ class OpenCTIStix2:
                 if "label_" + label in self.mapping_cache:
                     label_data = self.mapping_cache["label_" + label]
                 else:
-                    label_data = self.opencti.label.create(value=label)
-                if label_data is not None and "id" in label_data:
+                    # Fail in label creation is allowed
+                    label_data = self.opencti.label.read_or_create_unchecked(
+                        value=label
+                    )
+                if label_data is not None:
                     self.mapping_cache["label_" + label] = label_data
                     object_label_ids.append(label_data["id"])
         elif "x_opencti_tags" in stix_object:
@@ -330,8 +336,11 @@ class OpenCTIStix2:
                 if "label_" + label in self.mapping_cache:
                     label_data = self.mapping_cache["label_" + label]
                 else:
-                    label_data = self.opencti.label.create(value=label, color=color)
-                if label_data is not None and "id" in label_data:
+                    # Fail in label creation is allowed
+                    label_data = self.opencti.label.read_or_create_unchecked(
+                        value=label, color=color
+                    )
+                if label_data is not None:
                     self.mapping_cache["label_" + label] = label_data
                     object_label_ids.append(label_data["id"])
         # Kill Chain Phases
