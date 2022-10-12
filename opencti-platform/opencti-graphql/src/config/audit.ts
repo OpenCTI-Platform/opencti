@@ -3,6 +3,7 @@ export const ACCESS_CONTROL = 'ACCESS_CONTROL';
 // endregion
 
 // region login
+export const IMPERSONATE_ACTION = 'IMPERSONATE';
 export const LOGIN_ACTION = 'LOGIN';
 export const LOGOUT_ACTION = 'LOGOUT';
 // endregion
