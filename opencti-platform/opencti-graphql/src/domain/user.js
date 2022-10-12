@@ -628,22 +628,23 @@ export const userRenewToken = async (context, user, userId) => {
 
 export const authenticateUser = async (context, req, user, provider, token = '') => {
   // Build the user session with only required fields
-  const completeUser = await buildCompleteUser(context, user);
+  const logged = await buildCompleteUser(context, user);
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
   let impersonate;
   const applicantId = req.headers['opencti-applicant-id'];
-  if (applicantId && !isBypassUser(completeUser)) {
-    throw ForbiddenAccess({ action: IMPERSONATE_ACTION, from: user.id, to: applicantId });
-  }
-  if (isBypassUser(completeUser) && applicantId) {
-    const applicantUser = await resolveUserById(context, applicantId);
-    if (!applicantUser) {
-      throw UnsupportedError(`User ${applicantId}cant be impersonate (not exists)`);
+  if (isNotEmptyField(applicantId) && logged.id !== applicantId) {
+    if (isBypassUser(logged)) {
+      const applicantUser = await resolveUserById(context, applicantId);
+      if (isEmptyField(applicantUser)) {
+        throw UnsupportedError(`User ${applicantId} cant be impersonate (not exists)`);
+      }
+      logAudit.info(applicantUser, IMPERSONATE_ACTION, { from: user.id, to: applicantUser.id });
+      impersonate = applicantUser;
+    } else {
+      throw ForbiddenAccess({ action: IMPERSONATE_ACTION, from: user.id, to: applicantId });
     }
-    logAudit.info(applicantUser, IMPERSONATE_ACTION, { from: user.id });
-    impersonate = await buildCompleteUser(context, applicantUser);
   }
-  const sessionUser = buildSessionUser(completeUser, impersonate, provider);
+  const sessionUser = buildSessionUser(logged, impersonate, provider);
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
   return sessionUser;
