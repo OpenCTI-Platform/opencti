@@ -2,9 +2,8 @@ import { GraphQLDateTime } from 'graphql-scalars';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
-import { GraphQLScalarType, printSchema, Kind } from 'graphql';
+import { GraphQLScalarType, Kind } from 'graphql';
 import { validate as uuidValidate } from 'uuid';
-import fs from 'fs';
 import { UserInputError } from 'apollo-server-express';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
@@ -70,7 +69,6 @@ import userSubscriptionResolvers from '../resolvers/userSubscription';
 import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
-import { DEV_MODE } from '../config/conf';
 import { isSupportedStixType } from '../schema/identifier';
 
 const schemaTypeDefs = [globalTypeDefs];
@@ -237,10 +235,6 @@ const createSchema = () => {
   });
   schema = constraintDirective()(schema);
   schema = authDirectiveTransformer(schema);
-  if (DEV_MODE) {
-    const globalSchema = printSchema(schema);
-    fs.writeFileSync('../opencti-front/relay.schema.graphql', globalSchema);
-  }
   return schema;
 };
 
