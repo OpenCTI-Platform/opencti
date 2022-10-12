@@ -12,6 +12,7 @@ import {
   EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
 } from '../../../src/database/rabbitmq';
+import { PORT } from '../../../src/config/conf';
 
 describe('Raw streams tests', () => {
   beforeAll(async () => {
@@ -26,7 +27,7 @@ describe('Raw streams tests', () => {
     'Should stream correctly formatted',
     async () => {
       // Read all events from the beginning.
-      const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
+      const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
       // Check the number of events
       expect(events.length).toBe(RAW_EVENTS_SIZE);
       // 01 - CHECK CREATE EVENTS
@@ -97,7 +98,7 @@ describe('Raw streams tests', () => {
   it(
     'Should events dependencies available',
     async () => {
-      const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
+      const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
       const contextWithDeletionEvents = events.filter(
         (e) => {
           const { context } = e.data;
