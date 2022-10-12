@@ -107,8 +107,6 @@ class EntitiesLocationsCreation extends Component {
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
-      values.location_class === '' && R.dissoc('location_class'),
-      values.location_type === '' && R.dissoc('location_type'),
     )(adaptedValues);
     commitMutation({
       mutation: entitiesLocationsCreationMutation,
@@ -180,8 +178,8 @@ class EntitiesLocationsCreation extends Component {
               modified: null,
               description: '',
               address: [],
-              location_type: '',
-              location_class: '',
+              location_type: null,
+              location_class: null,
               email_addresses: [],
               telephone_numbers: [],
             }}
