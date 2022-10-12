@@ -305,6 +305,9 @@ export const configureCA = (certificates) => {
   return { ca: [] };
 };
 
+// App
+export const PORT = nconf.get('app:port');
+
 // Default activated managers
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);

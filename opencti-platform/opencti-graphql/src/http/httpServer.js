@@ -6,7 +6,7 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import nconf from 'nconf';
 import express from 'express';
-import conf, { basePath, booleanConf, logApp } from '../config/conf';
+import conf, { basePath, booleanConf, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
@@ -16,7 +16,6 @@ import { getSettings } from '../domain/settings';
 import { executionContext } from '../utils/access';
 
 const MIN_20 = 20 * 60 * 1000;
-const PORT = conf.get('app:port');
 const REQ_TIMEOUT = conf.get('app:request_timeout');
 const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');

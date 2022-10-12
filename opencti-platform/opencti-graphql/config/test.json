@@ -1,0 +1,73 @@
+{
+  "app": {
+    "port": 4010,
+    "logs_level": "info",
+    "performance_logger": false,
+    "sync_raw_start_remote_uri": "http://localhost:4200/graphql",
+    "sync_live_start_remote_uri": "http://localhost:4200/graphql",
+    "sync_direct_start_remote_uri": "http://localhost:4200/graphql",
+    "sync_restore_start_remote_uri": "http://localhost:4200/graphql",
+    "telemetry": {
+      "tracing": {
+        "enabled": false,
+        "exporter_otlp": "http://localhost:4318/v1/traces"
+      },
+      "metrics": {
+        "enabled": false,
+        "exporter_otlp": "",
+        "exporter_prometheus": 14269
+      }
+    },
+    "admin": {
+      "email": "admin@opencti.io",
+      "password": "admin",
+      "token": "d434ce02-e58e-4cac-8b4c-42bf16748e84"
+    }
+  },
+  "redis": {
+    "namespace": "test",
+    "hostname": "localhost",
+    "include_inferences": true
+  },
+  "elasticsearch": {
+    "index_prefix": "test",
+    "url": "http://localhost:9200"
+  },
+  "subscription_scheduler": {
+    "enabled": false
+  },
+  "rule_engine": {
+    "enabled": true
+  },
+  "history_manager": {
+    "enabled": true
+  },
+  "connector_manager": {
+    "enabled": true
+  },
+  "task_scheduler": {
+    "enabled": true
+  },
+  "expiration_scheduler": {
+    "enabled": true
+  },
+  "sync_manager": {
+    "enabled": true
+  },
+  "retention_manager": {
+    "enabled": true
+  },
+  "minio": {
+    "bucket_name": "test",
+    "endpoint": "localhost",
+    "port": 9000
+  },
+  "rabbitmq": {
+    "hostname": "localhost"
+  },
+  "providers": {
+    "local": {
+      "strategy": "LocalStrategy"
+    }
+  }
+}
