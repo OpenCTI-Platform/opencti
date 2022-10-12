@@ -169,6 +169,22 @@ class Label:
             )
 
     """
+        Read or create a Label
+        If the user has no rights to create the label, return None
+        :return The available or created Label object
+    """
+
+    def read_or_create_unchecked(self, **kwargs):
+        value = kwargs.get("value", None)
+        label = self.read(filters=[{"key": "value", "values": [value]}])
+        if label is None:
+            try:
+                return self.create(**kwargs)
+            except ValueError:
+                return None
+        return label
+
+    """
         Update a Label object field
 
         :param id: the Label id
