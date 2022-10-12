@@ -4,7 +4,7 @@ import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
-import { AuthenticationFailure, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
 import {
   batchListThroughGetTo,
