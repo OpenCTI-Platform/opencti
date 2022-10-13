@@ -1,5 +1,12 @@
 import { UserInputError } from "apollo-server-express";
-import {byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, OASIS_SCO_NS} from "../../utils.js";
+import {
+  byIdClause, 
+  optionalizePredicate, 
+  parameterizePredicate, 
+  buildSelectVariables, 
+  generateId, 
+  OASIS_SCO_NS, 
+  CyioError} from "../../utils.js";
 
 const predicateBody = `
     ?iri <http://darklight.ai/ns/common#id> ?id .
@@ -43,7 +50,7 @@ export function getReducer( type ) {
     case 'OS-IRI': 
       return softwareAssetReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`)
+      throw new CyioError(`Unsupported reducer type ' ${type}'`)
   }
 }
 
@@ -233,7 +240,7 @@ export const insertSoftwareQuery = (propValues) => {
       objectType = 'application-software';
       break;
     default:
-      throw new UserInputError(`Unsupported software type ' ${propValues.asset_type}'`);
+      throw new CyioError(`Unsupported software type ' ${propValues.asset_type}'`);
   }
   const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`
   const selectPredicates = Object.entries(propValues)

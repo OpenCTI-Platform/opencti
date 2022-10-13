@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {compareValues, updateQuery, filterValues, generateId} from '../../../utils.js';
+import {compareValues, updateQuery, filterValues, generateId, CyioError} from '../../../utils.js';
 import {convertToProperties} from '../../riskUtils.js'
 import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 import {UserInputError} from "apollo-server-express";
@@ -186,7 +186,7 @@ const oscalTaskResolvers = {
         if (('within_date_range' in input.timing && 'on_date' in input.timing) ||
             ('within_date_range' in input.timing && 'at_frequency' in input.timing) ||
             ('on_date in input.timing' && 'at_frequency' in input.timing)) {
-              throw new UserInputError(`Only one timing field can be specified.`);
+              throw new CyioError(`Only one timing field can be specified.`);
         }
         let timing = input.timing;
         delete input.timing;
@@ -211,7 +211,7 @@ const oscalTaskResolvers = {
             queryId: "Obtaining IRI for Dependent Task object with id",
             singularizeSchema
           });
-          if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${taskId}`);
+          if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${taskId}`);
           dependentTasks.push(`<${result[0].iri}>`);
         }
         delete input.task_dependencies;
@@ -225,7 +225,7 @@ const oscalTaskResolvers = {
             queryId: "Obtaining IRI for Related Task object with id",
             singularizeSchema
           });
-          if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${taskId}`);
+          if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${taskId}`);
           relatedTasks.push(`<${result[0].iri}>`);
         }
         delete input.related_tasks;
@@ -239,7 +239,7 @@ const oscalTaskResolvers = {
             queryId: "Obtaining IRI for Responsible Party object with id",
             singularizeSchema
           });
-          if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${roleId}`);
+          if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${roleId}`);
           responsibleRoles.push(`<${result[0].iri}>`);
         }
         delete input.responsible_roles;
@@ -261,7 +261,7 @@ const oscalTaskResolvers = {
             queryId: "Obtaining IRI for Link object with id",
             singularizeSchema
           });
-          if (result === undefined || result.length === 0) throw new UserInputError(`Link object does not exist with ID ${taskId}`);
+          if (result === undefined || result.length === 0) throw new CyioError(`Link object does not exist with ID ${taskId}`);
           links.push(`<${result[0].iri}>`);
         }
         delete input.links;
@@ -275,7 +275,7 @@ const oscalTaskResolvers = {
             queryId: "Obtaining IRI for Remark object with id",
             singularizeSchema
           });
-          if (result === undefined || result.length === 0) throw new UserInputError(`Remark object does not exist with ID ${taskId}`);
+          if (result === undefined || result.length === 0) throw new CyioError(`Remark object does not exist with ID ${taskId}`);
           remarks.push(`<${result[0].iri}>`);
         }
         delete input.remarks;
@@ -380,7 +380,7 @@ const oscalTaskResolvers = {
         throw e
       }
 
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       let reducer = getReducer("TASK");
       const task = (reducer(response[0]));
 
@@ -449,10 +449,13 @@ const oscalTaskResolvers = {
     },
     editOscalTask: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -463,12 +466,18 @@ const oscalTaskResolvers = {
         sparqlQuery,
         queryId: "Select OSCAL Task",
         singularizeSchema
-      })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      });
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -478,7 +487,13 @@ const oscalTaskResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
 
       const query = updateQuery(
@@ -486,12 +501,31 @@ const oscalTaskResolvers = {
         "http://csrc.nist.gov/ns/oscal/assessment/common#Task",
         input,
         oscalTaskPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update OSCAL Task"
-      });
+      );
+      if (query !== null) {
+        let response;
+        try {
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update OSCAL Task"
+          });  
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+
+        if (response !== undefined && 'status' in response) {
+          if (response.ok === false || response.status > 299) {
+            // Handle reporting Stardog Error
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
+        }
+      }
+
       const select = selectOscalTaskQuery(id, selectMap.getNode("editOscalTask"));
       const result = await dataSources.Stardog.queryById({
         dbName,
