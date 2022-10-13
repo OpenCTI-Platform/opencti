@@ -76,7 +76,6 @@ class EntityNoteDetailsComponent extends Component {
       fldt,
       history,
     } = this.props;
-    console.log(note);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
