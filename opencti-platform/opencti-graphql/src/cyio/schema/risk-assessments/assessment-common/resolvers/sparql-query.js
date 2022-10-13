@@ -4,7 +4,8 @@ import {
   parameterizePredicate, 
   buildSelectVariables, 
   generateId, 
-  OSCAL_NS
+  OSCAL_NS,
+  CyioError
 } from "../../../utils.js";
 import {
   oscalPartyReducer,
@@ -2137,7 +2138,7 @@ export const insertLogEntryAuthorQuery = (propValues) => {
 export const insertLogEntryAuthorsQuery = (authors) => {
   const graphs = [], authorIris = [];
   authors.forEach((author) => {
-    if (author.party === undefined) throw new UserInputError(`Party ID not specified for LogEntryAuthor`); 
+    if (author.party === undefined) throw new CyioError(`Party ID not specified for LogEntryAuthor`); 
     const id = generateId( );
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor-${id}>`;

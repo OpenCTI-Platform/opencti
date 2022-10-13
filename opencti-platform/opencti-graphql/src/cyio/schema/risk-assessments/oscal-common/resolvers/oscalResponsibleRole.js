@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import { compareValues, updateQuery, filterValues } from '../../../utils.js';
+import { compareValues, updateQuery, filterValues, CyioError } from '../../../utils.js';
 import { UserInputError } from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -198,7 +198,7 @@ const responsibleRoleResolvers = {
       if (results !== undefined && results.length > 0) {
         for(let respRole of results) {
           if (`<${respRole.role[0]}>` === `<http://csrc.nist.gov/ns/oscal/common#Role-${role}>`) {
-            throw new UserInputError("Only one Responsible Role can be assigned the specified Responsibility");
+            throw new CyioError("Only one Responsible Role can be assigned the specified Responsibility");
           }
         }
       }
@@ -286,7 +286,7 @@ const responsibleRoleResolvers = {
         console.log(e)
         throw e
       }
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer("RESPONSIBLE-ROLE");
       const responsibleRole = (reducer(response[0]));
 
@@ -324,7 +324,7 @@ const responsibleRoleResolvers = {
     },
     editOscalResponsibleRole: async (_, { id, input }, { dbName, dataSources, selectMap }) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
 
       // TODO: WORKAROUND to remove immutable fields
       input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
@@ -341,8 +341,8 @@ const responsibleRoleResolvers = {
         sparqlQuery,
         queryId: "Select Responsible Role",
         singularizeSchema
-      })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      });
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
@@ -408,7 +408,7 @@ const responsibleRoleResolvers = {
               queryId: "Obtaining IRI for object by id",
               singularizeSchema
             });
-            if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${value}`);
+            if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${value}`);
             iris.push(`<${result[0].iri}>`);    
           }
         }
@@ -431,7 +431,7 @@ const responsibleRoleResolvers = {
           if (response !== undefined && response.length > 0) {
             for(let respRole of response) {
               if (`<${respRole.role[0]}>` === iris[0] && respRole.id !== id) {
-                throw new UserInputError("Only one Responsible Role can be assigned the specified Responsibility");
+                throw new CyioError("Only one Responsible Role can be assigned the specified Responsibility");
               }
             }
           }

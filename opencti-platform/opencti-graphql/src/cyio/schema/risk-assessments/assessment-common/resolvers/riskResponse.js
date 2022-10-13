@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {compareValues, updateQuery, filterValues, CyioError} from '../../../utils.js';
 import {convertToProperties} from '../../riskUtils.js'
 import {selectObjectIriByIdQuery} from '../../../global/global-utils.js';
 import {UserInputError} from "apollo-server-express";
@@ -217,11 +217,11 @@ const riskResponseResolvers = {
           console.log(e)
           throw e
         }
-        if (response.length === 0) throw new UserInputError(`Risk does not exist with ID ${id}`);
+        if (response.length === 0) throw new CyioError(`Risk does not exist with ID ${id}`);
         riskId = input.risk_id;
       }
       if (input.origins !== undefined) {
-        if (input.origins.length === 0) throw new UserInputError(`No origin of the Risk Response provided.`)
+        if (input.origins.length === 0) throw new CyioError(`No origin of the Risk Response provided.`)
         origins = input.origins;
       }
       if (input.required_assets !== undefined) {
@@ -240,7 +240,7 @@ const riskResponseResolvers = {
             throw e
           }
   
-          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${assetId}`);
+          if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${assetId}`);
           assetIris.push(`<${result[0].iri}>`);
         }
       }
@@ -260,7 +260,7 @@ const riskResponseResolvers = {
             throw e
           }
   
-          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${taskId}`);
+          if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${taskId}`);
           taskIris.push(`<${result[0].iri}>`);
         }
       }
@@ -319,7 +319,7 @@ const riskResponseResolvers = {
                 console.log(e)
                 throw e
               }
-              if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.actor_ref}`);
+              if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${actor.actor_ref}`);
               actor.actor_ref = result[0].iri;
               // if a role reference was provided
               if (actor.role_ref !== undefined) {
@@ -336,7 +336,7 @@ const riskResponseResolvers = {
                   console.log(e)
                   throw e
                 }
-                if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.role_ref}`);
+                if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${actor.role_ref}`);
                 actor.role_ref = result[0].iri;
               }
             }
@@ -479,7 +479,7 @@ const riskResponseResolvers = {
         throw e
       }
 
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       let reducer = getReducer("RISK-RESPONSE");
       const riskResponse = (reducer(response[0]));
       
@@ -532,13 +532,13 @@ const riskResponseResolvers = {
     },
     editRiskResponse: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
 
       // TODO: WORKAROUND to remove immutable fields
       input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
       
       // check that the object to be edited exists with minimal predicates
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -549,11 +549,12 @@ const riskResponseResolvers = {
         queryId: "Select Risk Response",
         singularizeSchema
       });
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if not specified
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
         // if value if empty then treat as a remove
         if (editItem.value.length === 0 || editItem.value[0].length === 0) {
           editItem.operation = 'remove';
@@ -568,7 +569,13 @@ const riskResponseResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
 
       // obtain the IRIs for the referenced objects so that if one doesn't 
@@ -636,20 +643,6 @@ const riskResponseResolvers = {
                       throw e
                   }
         
-                  // if (results !== undefined && results.length > 0) {
-                  //   let query = deleteOriginByIriQuery(originIri);
-                  //   try {
-                  //     await dataSources.Stardog.delete({
-                  //       dbName,
-                  //       sparqlQuery: query,
-                  //       queryId: "Delete Origin"
-                  //     });
-                  //   } catch (e) {
-                  //     console.log(e)
-                  //     throw e
-                  //   }
-                  //   results = undefined;      
-                  // }
                   if (results === undefined || results.length === 0) {
                     // create the new Origin object
                     await dataSources.Stardog.create({
@@ -677,7 +670,7 @@ const riskResponseResolvers = {
                           console.log(e)
                           throw e
                       }
-                      if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.actor_ref}`); 
+                      if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${actor.actor_ref}`); 
                       actor.actor_ref = `<${result[0].iri}>`;
 
                       // attempt to find the actor
@@ -749,7 +742,7 @@ const riskResponseResolvers = {
                 queryId: "Obtaining IRI for object by id",
                 singularizeSchema
               });
-              if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${value}`);
+              if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${value}`);
               iris.push(`<${result[0].iri}>`);    
             }
           }

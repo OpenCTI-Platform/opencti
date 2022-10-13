@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import { compareValues, updateQuery, filterValues } from '../../../utils.js';
+import { compareValues, updateQuery, filterValues, CyioError } from '../../../utils.js';
 import { UserInputError } from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -180,7 +180,7 @@ const oscalRoleResolvers = {
           delete input[key];
         }
         if (key === 'role_identifier') {
-          if (value.includes(' ')) throw new UserInputError(`Invalid role identifier value; must not contains spaces`);
+          if (value.includes(' ')) throw new CyioError(`Invalid role identifier value; must not contains spaces`);
         }
 
       }
@@ -243,7 +243,7 @@ const oscalRoleResolvers = {
         throw e
       }
 
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer("ROLE");
       const role = (reducer(response[0]));
 
@@ -281,7 +281,7 @@ const oscalRoleResolvers = {
     },
     editOscalRole: async (_, { id, input }, { dbName, dataSources, selectMap }) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
 
       // TODO: WORKAROUND to remove immutable fields
       input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
@@ -290,7 +290,7 @@ const oscalRoleResolvers = {
       let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         if (editItem.key === 'role_identifier') {
-          if (editItem.value[0].includes(' ')) throw new UserInputError(`Invalid role identifier value; must not contains spaces`);
+          if (editItem.value[0].includes(' ')) throw new CyioError(`Invalid role identifier value; must not contains spaces`);
         }
         editSelect.push(editItem.key);
       }
@@ -302,7 +302,7 @@ const oscalRoleResolvers = {
         queryId: "Select OSCAL Role",
         singularizeSchema
       })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
@@ -336,14 +336,14 @@ const oscalRoleResolvers = {
         "http://csrc.nist.gov/ns/oscal/common#Role",
         input,
         rolePredicateMap
-      )
+      );
       if (query !== null) {
         let response;
         try {
           response = await dataSources.Stardog.edit({
             dbName,
             sparqlQuery: query,
-            queryId: "Update OSCAL Responsible Party"
+            queryId: "Update OSCAL Role"
           });  
         } catch (e) {
           console.log(e)
