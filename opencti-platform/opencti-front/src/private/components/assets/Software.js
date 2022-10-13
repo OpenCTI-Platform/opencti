@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
@@ -22,7 +20,7 @@ import SoftwareLines, {
 import SoftwareCreation from './software/SoftwareCreation';
 import SoftwareDeletion from './software/SoftwareDeletion';
 import { isUniqFilter } from '../common/lists/Filters';
-import {toastGenericError} from "../../../utils/bakedToast";
+import { toastGenericError } from '../../../utils/bakedToast';
 
 class Software extends Component {
   constructor(props) {
@@ -54,6 +52,29 @@ class Software extends Component {
       'view-software',
       this.state,
     );
+  }
+
+  componentWillUnmount() {
+    const {
+      sortBy,
+      orderAsc,
+      openSoftwareCreation,
+    } = this.state;
+    const paginationOptions = {
+      sortBy,
+      orderAsc,
+      filters: [],
+      openSoftwareCreation,
+    };
+    if (this.props.history.location.pathname !== '/defender HQ/assets/software'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-software',
+        paginationOptions,
+      );
+    }
   }
 
   handleChangeView(mode) {
@@ -137,13 +158,13 @@ class Software extends Component {
               ]),
             this.state.filters,
           ),
-        },
+        }, () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
+        }, () => this.saveView(),
       );
     }
   }
@@ -167,10 +188,6 @@ class Software extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       name: {
         label: 'Name',
@@ -254,10 +271,6 @@ class Software extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
     const dataColumns = {
       name: {
         label: 'Name',
@@ -347,7 +360,7 @@ class Software extends Component {
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
-            )
+            );
           }}
         />
       </CyioListLines>

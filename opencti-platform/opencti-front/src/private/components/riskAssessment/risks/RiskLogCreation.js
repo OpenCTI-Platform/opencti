@@ -7,6 +7,8 @@ import * as Yup from 'yup';
 import {
   compose,
   evolve,
+  pipe,
+  assoc,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -152,7 +154,7 @@ class RiskLogCreation extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, displayCancel: false });
   }
 
   onSubmit(values, { setSubmitting }) {
@@ -166,8 +168,8 @@ class RiskLogCreation extends Component {
       values,
     );
 
-    const finalValues = R.pipe(
-      R.assoc('logged_by', this.state.logged_by),
+    const finalValues = pipe(
+      assoc('logged_by', this.state.logged_by),
     )(adaptedValues)
     commitMutation({
       mutation: RiskLogCreationMutation,
@@ -646,7 +648,7 @@ class RiskLogCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${riskId}/tracking`)}
+              onClick={() => this.handleClose()}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}

@@ -129,7 +129,7 @@ const providerKeys = Object.keys(confProviders);
 for (let i = 0; i < providerKeys.length; i += 1) {
   const providerIdent = providerKeys[i];
   const provider = confProviders[providerIdent];
-  const { strategy, config } = provider;
+  const { identifier, strategy, config } = provider;
   let mappedConfig = configRemapping(config);
   if (config === undefined || !config.disabled) {
     const providerName = config?.label || providerIdent;
@@ -149,7 +149,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'local' });
     }
     if (strategy === STRATEGY_LDAP) {
-      // eslint-disable-next-line
+      const providerRef = identifier || 'ldapauth';
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
       mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
       const ldapOptions = { server: mappedConfig };
@@ -199,11 +199,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done({ message: 'Restricted access, ask your administrator' });
         }
       });
-      passport.use('ldapauth', ldapStrategy);
-      providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'ldapauth' });
+      passport.use(providerRef, ldapStrategy);
+      providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: providerRef });
     }
     // SSO Strategies
     if (strategy === STRATEGY_SAML) {
+      const providerRef = identifier || 'saml';
       const samlOptions = { ...mappedConfig };
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['Role'];
@@ -227,10 +228,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done({ message: 'Restricted access, ask your administrator' });
         }
       });
-      passport.use('saml', samlStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'saml' });
+      passport.use(providerRef, samlStrategy);
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
     if (strategy === STRATEGY_OPENID) {
+      const providerRef = identifier || 'oic';
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
@@ -286,12 +288,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done({ message: 'Restricted access, ask your administrator' });
           }
         });
-        passport.use('oic', openIDStrategy);
+        passport.use(providerRef, openIDStrategy);
         configureOidcRefresh(config);
-        providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'oic' });
+        providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
       });
     }
     if (strategy === STRATEGY_FACEBOOK) {
+      const providerRef = identifier || 'facebook';
       const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
       const facebookOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const facebookStrategy = new FacebookStrategy(
@@ -303,10 +306,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           providerLoginHandler({ email, name: data.first_name }, [], [], done);
         }
       );
-      passport.use('facebook', facebookStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'facebook' });
+      passport.use(providerRef, facebookStrategy);
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
     if (strategy === STRATEGY_GOOGLE) {
+      const providerRef = identifier || 'google';
       const domains = mappedConfig.domains || [];
       const specificConfig = { scope: ['email', 'profile'] };
       const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
@@ -325,10 +329,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done({ message: 'Restricted access, ask your administrator' });
         }
       });
-      passport.use('google', googleStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'google' });
+      passport.use(providerRef, googleStrategy);
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
     if (strategy === STRATEGY_GITHUB) {
+      const providerRef = identifier || 'github';
       const organizations = mappedConfig.organizations || [];
       const scope = organizations.length > 0 ? 'user:email,read:org' : 'user:email';
       const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
@@ -354,10 +359,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done({ message: 'Restricted access, ask your administrator' });
         }
       });
-      passport.use('github', githubStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'github' });
+      passport.use(providerRef, githubStrategy);
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
     if (strategy === STRATEGY_AUTH0) {
+      const providerRef = identifier || 'auth0';
       const auth0Options = { passReqToCallback: true, ...mappedConfig };
       const auth0Strategy = new Auth0Strategy(
         auth0Options,
@@ -368,13 +374,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           providerLoginHandler({ email, name }, [], [], done);
         }
       );
-      passport.use('auth0', auth0Strategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'auth0' });
+      passport.use(providerRef, auth0Strategy);
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
     // CERT Strategies
     if (strategy === STRATEGY_CERT) {
+      const providerRef = identifier || 'cert';
       // This strategy is directly handled by express
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'cert' });
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
   }
 }

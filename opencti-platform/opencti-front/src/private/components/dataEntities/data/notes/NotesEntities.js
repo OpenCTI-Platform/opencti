@@ -23,7 +23,7 @@ import EntitiesNotesDeletion from './EntitiesNotesDeletion';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import NoteEntityEdition from './NoteEntityEdition';
 
-class ResponsiblePartiesEntities extends Component {
+class NotesEntities extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -55,6 +55,30 @@ class ResponsiblePartiesEntities extends Component {
       'view-notes',
       this.state,
     );
+  }
+
+  componentWillUnmount() {
+    const {
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+    } = this.state;
+    if (this.props.history.location.pathname !== '/data/entities/notes'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-notes',
+        {
+          view,
+          sortBy,
+          searchTerm,
+          orderAsc,
+          filters: [],
+        },
+      );
+    }
   }
 
   handleChangeView(mode) {
@@ -138,13 +162,13 @@ class ResponsiblePartiesEntities extends Component {
               ]),
             this.state.filters,
           ),
-        },
+        }, () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
+        }, () => this.saveView(),
       );
     }
   }
@@ -168,6 +192,9 @@ class ResponsiblePartiesEntities extends Component {
       selectedElements,
       selectAll,
     } = this.state;
+    const {
+      history,
+    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -224,12 +251,13 @@ class ResponsiblePartiesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              toastGenericError('Request Failed');
+              return toastGenericError('Request Failed');
             }
             return (
               <EntitiesNotesCards
                 data={props}
                 extra={props}
+                history={history}
                 selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
@@ -256,6 +284,9 @@ class ResponsiblePartiesEntities extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
+    const {
+      history,
+    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -330,6 +361,7 @@ class ResponsiblePartiesEntities extends Component {
             return (
               <EntitiesNotesLines
                 data={props}
+                history={history}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
@@ -363,7 +395,6 @@ class ResponsiblePartiesEntities extends Component {
       filters: finalFilters,
       filterMode: 'and',
     };
-    const { me } = this.props.me;
     return (
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
@@ -372,7 +403,6 @@ class ResponsiblePartiesEntities extends Component {
           openDataCreation={openDataCreation}
           handleNoteCreation={this.handleNoteCreation.bind(this)}
           history={this.props.history}
-          me={me}
         />
         {this.state.selectedNoteId && (
           <NoteEntityEdition
@@ -387,11 +417,10 @@ class ResponsiblePartiesEntities extends Component {
   }
 }
 
-ResponsiblePartiesEntities.propTypes = {
+NotesEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
-  me: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(ResponsiblePartiesEntities);
+export default R.compose(inject18n, withRouter)(NotesEntities);

@@ -10,16 +10,19 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { parse } from '../../../../utils/Time';
+import Search from '@material-ui/icons/Search';
 import Dialog from '@material-ui/core/Dialog';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
+import TextField from '@material-ui/core/TextField';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
@@ -34,16 +37,17 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    margin: '-25px -24px 20px -24px',
-    padding: '23px 24px 24px 50px',
+    marginBottom: '20px',
+    padding: '23px 0 24px 12px',
     height: '64px',
     backgroundColor: '#1F2842',
+    display: 'flex',
+    justifyContent: 'space-between',
   },
   gridContainer: {
     marginBottom: 20,
   },
   iconButton: {
-    float: 'left',
     minWidth: '0px',
     marginRight: 15,
     padding: '8px 16px 8px 8px',
@@ -52,16 +56,30 @@ const styles = (theme) => ({
     float: 'left',
   },
   rightContainer: {
-    float: 'right',
-    marginTop: '-5px',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  leftContainer: {
+    display: 'flex',
+    alignItems: 'center',
   },
   editButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
   },
+  autocomplete: {
+    width: '450px',
+    marginLeft: '10px',
+    '&.MuiAutocomplete-endAdornment, &.MuiAutocomplete-popupIndicatorOpen': {
+      transform: 'none !important',
+    },
+  },
   buttonPopover: {
     textTransform: 'capitalize',
+  },
+  popupIndicator: {
+    transform: 'none',
   },
   dialogActions: {
     justifyContent: 'flex-start',
@@ -96,6 +114,36 @@ const softwareCreationMutation = graphql`
   }
 `;
 
+const softwareCreationProductQuery = graphql`
+  query SoftwareCreationProductQuery($search: String, $filters: [ProductFiltering], $orderedBy: ProductOrdering, $orderMode: OrderingMode) {
+    products(search: $search, filters: $filters, orderedBy: $orderedBy, orderMode: $orderMode) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const softwareCreationProductIdQuery = graphql`
+  query SoftwareCreationProductIdQuery( $id: ID!) {
+    product(id: $id) {
+      id
+      created
+      modified
+      name
+      vendor
+      version
+      cpe_identifier
+      ... on SoftwareProduct {
+        software_identifier
+      }
+    }
+  }
+`;
+
 const softwareValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
 });
@@ -110,13 +158,63 @@ class SoftwareCreation extends Component {
     this.state = {
       error: {},
       open: false,
+      openAutocomplete: false,
+      products: [],
+      productName: '',
       onSubmit: false,
+      selectedProduct: {},
       displayCancel: false,
     };
   }
 
   handleOpen() {
     this.setState({ open: true });
+  }
+
+  searchProducts(event, value) {
+    this.setState({ productName: value });
+    if (event.type === 'click' && value) {
+      const selectedProductValue = this.state.products.filter((product) => product.label === value)[0];
+      fetchQuery(softwareCreationProductIdQuery, {
+        id: selectedProductValue.value,
+      }).toPromise()
+        .then((data) => {
+          this.setState({ selectedProduct: data.product });
+        })
+    }
+  }
+
+  handleSearchProducts() {
+    this.setState({ selectedProduct: { name: this.state.productName }, openAutocomplete: true });
+    (this.state.productName.length > 2) && fetchQuery(softwareCreationProductQuery, {
+      search: this.state.productName,
+      orderedBy: 'name',
+      orderMode: 'asc',
+      filters: [
+        { key: 'object_type', values: ['software'] }
+      ],
+    })
+      .toPromise()
+      .then((data) => {
+        const products = R.pipe(
+          R.pathOr([], ['products', 'edges']),
+          R.map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          products: R.union(this.state.products, products),
+        });
+      })
+      .catch((err) => {
+        const ErrorResponse = err.res.errors;
+        this.setState({ error: ErrorResponse });
+      });
+  }
+
+  handleClearError() {
+    this.setState({ error: {} });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -192,22 +290,26 @@ class SoftwareCreation extends Component {
 
   render() {
     const { t, classes } = this.props;
+    const {
+      selectedProduct
+    } = this.state;
     return (
       <div className={classes.container}>
         <Formik
+          enableReinitialize
           initialValues={{
-            name: '',
+            name: selectedProduct?.name || '',
             asset_id: '',
-            version: '',
+            version: selectedProduct?.version || '',
             serial_number: '',
             asset_tag: '',
-            vendor_name: '',
+            vendor_name: selectedProduct.vendor || '',
             release_date: null,
-            software_identifier: '',
+            software_identifier: selectedProduct?.software_identifier || '',
             license_key: '',
             installation_id: '',
             patch_level: '',
-            cpe_identifier: '',
+            cpe_identifier: selectedProduct?.cpe_identifier || '',
             description: '',
             operational_status: 'other',
             implementation_point: 'external',
@@ -228,13 +330,49 @@ class SoftwareCreation extends Component {
           }) => (
             <>
               <div className={classes.header}>
-                <Typography
-                  variant="h1"
-                  gutterBottom={true}
-                  classes={{ root: classes.title }}
-                >
-                  {t('New Asset')}
-                </Typography>
+                <div className={classes.leftContainer}>
+                  <Typography
+                    variant="h4"
+                    gutterBottom={true}
+                    classes={{ root: classes.title }}
+                  >
+                    {t('EDIT: ')}
+                  </Typography>
+                  <Autocomplete
+                    open={this.state.openAutocomplete}
+                    onClose={() => this.setState({ openAutocomplete: false })}
+                    size="small"
+                    loading={selectedProduct.name || false}
+                    loadingText='Searching...'
+                    className={classes.autocomplete}
+                    classes={{
+                      popupIndicatorOpen: classes.popupIndicator,
+                    }}
+                    noOptionsText={t('No available options')}
+                    popupIcon={<Search onClick={this.handleSearchProducts.bind(this)} />}
+                    options={this.state.products}
+                    getOptionLabel={(option) => option.label ? option.label : option}
+                    onInputChange={this.searchProducts.bind(this)}
+                    selectOnFocus={true}
+                    autoHighlight={true}
+                    renderInput={(params) => (
+                      <TextField
+                        variant='outlined'
+                        {...params}
+                        inputProps={{
+                          ...params.inputProps,
+                          onKeyDown: (e) => {
+                            if (e.key === 'Enter') {
+                              e.stopPropagation();
+                              this.handleSearchProducts()
+                            }
+                          },
+                        }}
+                        label='Products'
+                      />
+                    )}
+                  />
+                </div>
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
                     <Button
@@ -346,6 +484,7 @@ class SoftwareCreation extends Component {
         <ErrorBox
           error={this.state.error}
           pathname='/defender HQ/assets/software'
+          handleClearError={this.handleClearError.bind(this)}
         />
       </div>
     );

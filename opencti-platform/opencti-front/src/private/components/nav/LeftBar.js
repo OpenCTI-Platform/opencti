@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
 import { withStyles, withTheme } from '@material-ui/core/styles';
+import graphql from 'babel-plugin-relay/macro';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -15,6 +16,7 @@ import {
   Language,
 } from '@material-ui/icons';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import UpdateIcon from '@material-ui/icons/Update';
 import PersonIcon from '@material-ui/icons/Person';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import {
@@ -40,6 +42,7 @@ import UserPreferencesModal from './UserPreferencesModal';
 import FeatureFlag from '../../../components/feature/FeatureFlag';
 import { toastGenericError } from '../../../utils/bakedToast';
 import logo from '../../../resources/images/logo-mark.png';
+import { QueryRenderer } from '../../../relay/environment';
 
 const styles = (theme) => ({
   drawerOpen: {
@@ -153,6 +156,14 @@ const styles = (theme) => ({
     },
   },
 });
+
+const leftBarVersionQuery = graphql`
+  query LeftBarVersionQuery {
+    about {
+      version
+    }
+  }
+`;
 
 const LeftBar = ({
   t, location, classes, clientId, history, setClientId, theme, drawerValue,
@@ -375,6 +386,31 @@ const LeftBar = ({
             </MenuList>
           <div className={classes.bottomNavigation}>
             <MenuList component="nav" classes={{ root: classes.menuList }}>
+              <QueryRenderer
+                query={leftBarVersionQuery}
+                render={({ props: about }) => {
+                  if (about) {
+                    const { version } = about.about;
+                    if (version.includes('-')) {
+                      return (
+                        <MenuItem
+                          disabled="true"
+                          dense={false}
+                          classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
+                        >
+                          <ListItemIcon style={{ minWidth: 35 }}>
+                            <UpdateIcon />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={version}
+                            className={!openDrawer && classes.hideText} />
+                        </MenuItem>
+                      );
+                    }
+                  }
+                  return '';
+                }}
+              />
               <MenuItem
                 // component={Link}
                 // to="/dashboard/profile"

@@ -94,7 +94,7 @@ class Notes extends Component {
           render={({ error, props, retry }) => {
             if (error) {
               console.error(error);
-              toastGenericError('Failed to get Note data');
+              return toastGenericError('Failed to get Note data');
             }
             if (props) {
               if (props.cyioNote) {
