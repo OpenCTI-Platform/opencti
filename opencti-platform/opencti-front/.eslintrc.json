@@ -20,6 +20,15 @@
     "react/prop-types": 0,
     "max-classes-per-file": ["error", 2],
     "no-unused-vars": ["warn"],
-    "object-curly-newline": "off"
+    "object-curly-newline": "off",
+    "max-len": [
+      "error", 180, 2, {
+        "ignoreUrls": true,
+        "ignoreComments": false,
+        "ignoreRegExpLiterals": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true
+      }
+    ]
   }
 }

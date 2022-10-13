@@ -38,32 +38,32 @@ import { statusFieldStatusesSearchQuery } from '../form/StatusField';
 import { defaultValue } from '../../../../utils/Graph';
 
 export const filtersAllTypesQuery = graphql`
-  query FiltersAllTypesQuery {
-    scoTypes: subTypes(type: "Stix-Cyber-Observable") {
-      edges {
-        node {
-          id
-          label
+    query FiltersAllTypesQuery {
+        scoTypes: subTypes(type: "Stix-Cyber-Observable") {
+            edges {
+                node {
+                    id
+                    label
+                }
+            }
         }
-      }
-    }
-    sdoTypes: subTypes(type: "Stix-Domain-Object") {
-      edges {
-        node {
-          id
-          label
+        sdoTypes: subTypes(type: "Stix-Domain-Object") {
+            edges {
+                node {
+                    id
+                    label
+                }
+            }
         }
-      }
-    }
-    sroTypes: subTypes(type: "stix-core-relationship") {
-      edges {
-        node {
-          id
-          label
+        sroTypes: subTypes(type: "stix-core-relationship") {
+            edges {
+                node {
+                    id
+                    label
+                }
+            }
         }
-      }
     }
-  }
 `;
 
 const styles = (theme) => ({
@@ -113,6 +113,7 @@ const directFilters = [
   'sightedBy',
   'container_type',
   'toSightingId',
+  'x_opencti_negative',
   'fromId',
   'toId',
 ];
@@ -171,149 +172,149 @@ export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('end_date');
 
 export const filtersStixCoreObjectsSearchQuery = graphql`
-  query FiltersStixCoreObjectsSearchQuery(
-    $search: String
-    $types: [String]
-    $count: Int
-    $filters: [StixCoreObjectsFiltering]
-  ) {
-    stixCoreObjects(
-      search: $search
-      types: $types
-      first: $count
-      filters: $filters
+    query FiltersStixCoreObjectsSearchQuery(
+        $search: String
+        $types: [String]
+        $count: Int
+        $filters: [StixCoreObjectsFiltering]
     ) {
-      edges {
-        node {
-          id
-          entity_type
-          ... on AttackPattern {
-            name
-            description
-            x_mitre_id
-          }
-          ... on Note {
-            attribute_abstract
-            content
-          }
-          ... on ObservedData {
-            first_observed
-            last_observed
-          }
-          ... on Opinion {
-            opinion
-          }
-          ... on Report {
-            name
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on Event {
-            name
-            description
-          }
-          ... on Channel {
-            name
-            description
-          }
-          ... on Narrative {
-            name
-            description
-          }
-          ... on Language {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          createdBy {
-            ... on Identity {
-              id
-              name
-              entity_type
-            }
-          }
-          objectMarking {
+        stixCoreObjects(
+            search: $search
+            types: $types
+            first: $count
+            filters: $filters
+        ) {
             edges {
-              node {
-                definition
-              }
+                node {
+                    id
+                    entity_type
+                    ... on AttackPattern {
+                        name
+                        description
+                        x_mitre_id
+                    }
+                    ... on Note {
+                        attribute_abstract
+                        content
+                    }
+                    ... on ObservedData {
+                        first_observed
+                        last_observed
+                    }
+                    ... on Opinion {
+                        opinion
+                    }
+                    ... on Report {
+                        name
+                    }
+                    ... on Campaign {
+                        name
+                        description
+                    }
+                    ... on CourseOfAction {
+                        name
+                        description
+                    }
+                    ... on Individual {
+                        name
+                        description
+                    }
+                    ... on Organization {
+                        name
+                        description
+                    }
+                    ... on Sector {
+                        name
+                        description
+                    }
+                    ... on System {
+                        name
+                        description
+                    }
+                    ... on Indicator {
+                        name
+                        description
+                    }
+                    ... on Infrastructure {
+                        name
+                        description
+                    }
+                    ... on IntrusionSet {
+                        name
+                        description
+                    }
+                    ... on Position {
+                        name
+                        description
+                    }
+                    ... on City {
+                        name
+                        description
+                    }
+                    ... on Country {
+                        name
+                        description
+                    }
+                    ... on Region {
+                        name
+                        description
+                    }
+                    ... on Malware {
+                        name
+                        description
+                    }
+                    ... on ThreatActor {
+                        name
+                        description
+                    }
+                    ... on Tool {
+                        name
+                        description
+                    }
+                    ... on Vulnerability {
+                        name
+                        description
+                    }
+                    ... on Incident {
+                        name
+                        description
+                    }
+                    ... on Event {
+                        name
+                        description
+                    }
+                    ... on Channel {
+                        name
+                        description
+                    }
+                    ... on Narrative {
+                        name
+                        description
+                    }
+                    ... on Language {
+                        name
+                    }
+                    ... on StixCyberObservable {
+                        observable_value
+                    }
+                    createdBy {
+                        ... on Identity {
+                            id
+                            name
+                            entity_type
+                        }
+                    }
+                    objectMarking {
+                        edges {
+                            node {
+                                definition
+                            }
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 `;
 
 class Filters extends Component {
@@ -1247,6 +1248,23 @@ class Filters extends Component {
           },
         });
         break;
+      case 'x_opencti_negative':
+        // eslint-disable-next-line no-case-declarations
+        const negativeValue = [true, false].map((n) => ({
+          label: t(n ? 'False positive' : 'Malicious'),
+          value: n.toString(),
+          type: 'attribute',
+        }));
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            x_opencti_negative: R.union(
+              negativeValue,
+              this.state.entities.x_opencti_negative,
+            ),
+          },
+        });
+        break;
       default:
         this.setState({ entities: R.union(this.state.entities, []) });
     }
@@ -1399,7 +1417,7 @@ class Filters extends Component {
                       className={classes.icon}
                       style={{ color: option.color }}
                     >
-                      <ItemIcon type={option.type} />
+                      <ItemIcon type={option.type}/>
                     </div>
                     <div className={classes.text}>{option.label}</div>
                   </li>
@@ -1422,7 +1440,7 @@ class Filters extends Component {
             variant="contained"
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
-            startIcon={<FilterListOutlined />}
+            startIcon={<FilterListOutlined/>}
             size="small"
             style={{ float: 'left', margin: '0 15px 0 7px' }}
           >
@@ -1435,7 +1453,7 @@ class Filters extends Component {
             style={{ float: 'left', marginTop: -2 }}
             size={size || 'large'}
           >
-            <FilterListOutlined fontSize={fontSize || 'medium'} />
+            <FilterListOutlined fontSize={fontSize || 'medium'}/>
           </IconButton>
         )}
         <Popover
@@ -1514,7 +1532,7 @@ class Filters extends Component {
                       className={classes.icon}
                       style={{ color: option.color }}
                     >
-                      <ItemIcon type={option.type} />
+                      <ItemIcon type={option.type}/>
                     </div>
                     <div className={classes.text}>{option.label}</div>
                   </li>
@@ -1522,7 +1540,7 @@ class Filters extends Component {
               />
             );
           })}
-        <div className="clearfix" />
+        <div className="clearfix"/>
       </div>
     );
   }
@@ -1665,7 +1683,7 @@ class Filters extends Component {
                       entityType.value,
                     )}
                   />
-                  <ListItemText primary={entityType.label} />
+                  <ListItemText primary={entityType.label}/>
                 </MenuItem>
               ))}
             </MenuList>
@@ -1686,7 +1704,7 @@ class Filters extends Component {
             disabled={disabled}
             size={size || 'medium'}
           >
-            <ToyBrickSearchOutline fontSize={fontSize || 'medium'} />
+            <ToyBrickSearchOutline fontSize={fontSize || 'medium'}/>
           </IconButton>
         </Tooltip>
         <Dialog
