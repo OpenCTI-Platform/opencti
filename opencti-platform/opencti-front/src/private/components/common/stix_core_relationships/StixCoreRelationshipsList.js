@@ -3693,6 +3693,7 @@ class StixCoreRelationshipsList extends Component {
               );
               return (
                 <Tooltip
+                  key={label}
                   title={
                     <div>
                       <strong>{label}</strong>: {values}

@@ -560,13 +560,11 @@ class Filters extends Component {
         break;
       case 'x_opencti_base_score_gt':
         // eslint-disable-next-line no-case-declarations
-        const baseScoreEntities = R.pipe(
-          R.map((n) => ({
-            label: n,
-            value: n,
-            type: 'attribute',
-          })),
-        )(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+        const baseScoreEntities = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => ({
+          label: n,
+          value: n,
+          type: 'attribute',
+        }));
         this.setState({
           entities: {
             ...this.state.entities,
@@ -596,20 +594,48 @@ class Filters extends Component {
           },
         });
         break;
+      case 'x_opencti_score':
+        // eslint-disable-next-line no-case-declarations
+        const scoreEntities = ['lte', 'gt'].flatMap((group) => [
+          '0',
+          '10',
+          '20',
+          '30',
+          '40',
+          '50',
+          '60',
+          '70',
+          '80',
+          '90',
+          '100',
+        ].map((n) => ({
+          label: n,
+          value: n,
+          type: 'attribute',
+          group,
+        })));
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            x_opencti_score: R.union(
+              scoreEntities,
+              this.state.entities.x_opencti_score,
+            ),
+          },
+        });
+        break;
       case 'x_opencti_score_gt':
         // eslint-disable-next-line no-case-declarations
-        const scoreEntities = R.pipe(
-          R.map((n) => ({
-            label: n,
-            value: n,
-            type: 'attribute',
-          })),
-        )(['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100']);
+        const scoreGtEntities = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'].map((n) => ({
+          label: n,
+          value: n,
+          type: 'attribute',
+        }));
         this.setState({
           entities: {
             ...this.state.entities,
             x_opencti_score_gt: R.union(
-              scoreEntities,
+              scoreGtEntities,
               this.state.entities.x_opencti_score_gt,
             ),
           },
@@ -617,13 +643,11 @@ class Filters extends Component {
         break;
       case 'x_opencti_score_lte':
         // eslint-disable-next-line no-case-declarations
-        const scoreLteEntities = R.pipe(
-          R.map((n) => ({
-            label: n,
-            value: n,
-            type: 'attribute',
-          })),
-        )(['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100']);
+        const scoreLteEntities = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'].map((n) => ({
+          label: n,
+          value: n,
+          type: 'attribute',
+        }));
         this.setState({
           entities: {
             ...this.state.entities,
@@ -1275,9 +1299,9 @@ class Filters extends Component {
   handleChange(filterKey, event, value) {
     if (value) {
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(filterKey, value.value, value.label, event);
+        this.handleAddFilter(`${filterKey}${value.group ? `_${value.group}` : ''}`, value.value, value.label, event);
       } else {
-        this.props.handleAddFilter(filterKey, value.value, value.label, event);
+        this.props.handleAddFilter(`${filterKey}${value.group ? `_${value.group}` : ''}`, value.value, value.label, event);
       }
     }
   }
@@ -1393,10 +1417,9 @@ class Filters extends Component {
                 groupBy={
                   ['fromId', 'toId'].includes(filterKey)
                     ? (option) => option.type
-                    : null
+                    : (option) => t(`filter_${filterKey}_${option.group}`)
                 }
-                isOptionEqualToValue={(option, value) => option.value === value.value
-                }
+                isOptionEqualToValue={(option, value) => option.value === value.value}
                 renderInput={(params) => (
                   <TextField
                     {...R.dissoc('InputProps', params)}
