@@ -8,13 +8,14 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { Grid, Switch, Tooltip } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
+
 const styles = (theme) => ({
   paper: {
     height: '100%',
@@ -63,7 +64,7 @@ const styles = (theme) => ({
     width: '100px',
     textAlign: 'center',
     padding: '3px 0',
-  }
+  },
 });
 
 class EntityLocationDetailsComponent extends Component {
@@ -83,7 +84,7 @@ class EntityLocationDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={3}>
+            <Grid item={true} xs={3}  style={{ marginBottom: '15%' }}>
               <div>
                 <Typography
                   variant="h3"
@@ -113,10 +114,10 @@ class EntityLocationDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Short Name')}
+                  {t('Street Name')}
                 </Typography>
                 <div className="clearfix" />
-                {location?.short_name && t(location?.short_name)}
+                {location?.address?.street_address && t(location?.address?.street_address)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -124,13 +125,39 @@ class EntityLocationDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Role Identifier')}
+                  {t('Country')}
                 </Typography>
                 <div className="clearfix" />
-                {location?.role_identifier && t(location?.role_identifier)}
+                {location?.address?.country_code && t(location?.address?.country_code)}
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Telephone Number')}
+                </Typography>
+                <div className="clearfix" />
+                {location?.telephone_numbers && location?.telephone_numbers.length > 0 && 
+                  location?.telephone_numbers.map(
+                    (number) => <div>{t(number?.phone_number)}</div>
+                  )
+                }
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Location Type')}
+                </Typography>
+                <div className="clearfix" />
+                {location?.location_type && t(location?.location_type)}
               </div>
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item={true} xs={4} style={{ marginBottom: '15%' }}>
               <div>
                 <Typography
                   variant="h3"
@@ -152,6 +179,54 @@ class EntityLocationDetailsComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 {location.modified && fldt(location.modified)}
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Administrative Area')}
+                </Typography>
+                <div className="clearfix" />
+                {location?.address?.administrative_area && t(location?.address?.administrative_area)}
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Postal Code')}
+                </Typography>
+                <div className="clearfix" />
+                {location?.address?.postal_code && t(location?.address?.postal_code)}
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Email Address(es)')}
+                </Typography>
+                <div className="clearfix" />
+                {location?.email_addresses && location?.email_addresses.length > 0 && 
+                  location?.email_addresses.map(
+                    (email) => <div>{t(email)}</div>
+                  )
+                }
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Location Class')}
+                </Typography>
+                <div className="clearfix" />
+                {location?.location_class && t(location?.location_class)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
