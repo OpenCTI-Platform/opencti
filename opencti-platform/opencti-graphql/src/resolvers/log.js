@@ -1,7 +1,7 @@
 import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
 import { findById } from '../domain/user';
 import { RETENTION_MANAGER_USER, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { storeLoadById } from '../database/middleware';
+import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 
 const logResolvers = {
@@ -22,7 +22,7 @@ const logResolvers = {
   },
   ContextData: {
     references: (data, _, context) => Promise.all((data.references || [])
-      .map((n) => storeLoadById(context, context.user, n, ENTITY_TYPE_EXTERNAL_REFERENCE))),
+      .map((n) => storeLoadById(context, context.user, n.id, ENTITY_TYPE_EXTERNAL_REFERENCE))),
   },
   LogsFilter: {
     entity_id: 'context_data.id',

@@ -5,6 +5,7 @@
   "extends": [
     "airbnb-base",
     "airbnb-typescript/base",
+    "plugin:import/recommended",
     "plugin:import/typescript",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
@@ -17,6 +18,7 @@
   "env": {
     "jest": true
   },
+  "ignorePatterns": ["**/node_module/**", "**/builder/**", "**/static/**", "jest.setup.js"],
   "rules": {
     "import/extensions": [
       "error",

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
-import type { Request } from 'express';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
+import type { Request } from 'express';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { basePath, baseUrl } from '../config/conf';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
@@ -34,6 +34,7 @@ export const SYSTEM_USER: AuthUser = {
   allowed_organizations: [],
   allowed_marking: [],
   all_marking: [],
+  api_token: '',
 };
 
 export const RETENTION_MANAGER_USER: AuthUser = {
@@ -50,6 +51,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   allowed_organizations: [],
   allowed_marking: [],
   all_marking: [],
+  api_token: '',
 };
 
 export const RULE_MANAGER_USER: AuthUser = {
@@ -66,6 +68,7 @@ export const RULE_MANAGER_USER: AuthUser = {
   allowed_organizations: [],
   allowed_marking: [],
   all_marking: [],
+  api_token: '',
 };
 
 class TracingContext {

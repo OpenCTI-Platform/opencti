@@ -12,14 +12,12 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  internalLoadById,
   listThroughGetFrom,
-  storeLoadById,
   storeLoadByIdWithRefs,
   timeSeriesEntities,
   updateAttribute
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/engine';
 import { isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';

@@ -7,7 +7,7 @@ import {
   userSubscriptionEditContext,
   userSubscriptionCleanContext,
 } from '../domain/userSubscription';
-import { internalLoadById } from '../database/middleware';
+import { internalLoadById } from '../database/middleware-loader';
 
 const userSubscriptionResolvers = {
   Query: {

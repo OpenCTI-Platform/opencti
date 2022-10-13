@@ -1,5 +1,5 @@
-import { deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { deleteElementById, updateAttribute } from '../database/middleware';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { elIndex, elPaginate } from '../database/engine';

@@ -63,7 +63,8 @@ export const ADMIN_USER: AuthUser = {
   allowed_organizations: [],
   inside_platform_organization: true,
   allowed_marking: [],
-  origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' }
+  origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
+  api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
 };
 
 export const serverFromUser = (user = ADMIN_USER) => {

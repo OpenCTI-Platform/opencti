@@ -1,5 +1,5 @@
 import { getHeapStatistics } from 'v8';
-import { createEntity, storeLoadById, updateAttribute, loadEntity } from '../database/middleware';
+import { createEntity, updateAttribute, loadEntity } from '../database/middleware';
 import conf, {
   BUS_TOPICS,
   ENABLED_EXPIRED_MANAGER,
@@ -16,6 +16,7 @@ import { searchEngineVersion, isRuntimeSortEnable } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { storeLoadById } from '../database/middleware-loader';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };

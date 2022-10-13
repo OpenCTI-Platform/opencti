@@ -1,10 +1,10 @@
 import type { AuthUser, AuthContext } from '../../types/user';
-import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, storeLoadById } from '../../database/middleware';
+import { batchListThroughGetFrom, batchListThroughGetTo, createEntity } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { NarrativeAddInput, QueryNarrativesArgs } from '../../generated/graphql';
-import { listEntitiesPaginated } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BasicStoreEntityNarrative, ENTITY_TYPE_NARRATIVE } from './narrative-types';
 import { RELATION_SUBNARRATIVE_OF, RELATION_SUBTECHNIQUE_OF } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';

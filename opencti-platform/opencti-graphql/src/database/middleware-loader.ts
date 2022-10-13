@@ -1,10 +1,16 @@
 import * as R from 'ramda';
 import { offsetToCursor, READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
-import { elPaginate, elQueryCount } from './engine';
+import { elFindByIds, elLoadById, elPaginate, elQueryCount } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreCommon, BasicStoreEntity, StoreEntityConnection, StoreProxyRelation } from '../types/store';
-import { UnsupportedError } from '../config/errors';
+import type {
+  BasicStoreCommon,
+  BasicStoreEntity,
+  BasicStoreObject,
+  StoreEntityConnection,
+  StoreProxyRelation
+} from '../types/store';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 
 const MAX_SEARCH_SIZE = 5000;
 
@@ -20,7 +26,7 @@ interface Filter {
   }>;
 }
 
-interface ListFilter<T extends BasicStoreCommon> {
+export interface ListFilter<T extends BasicStoreCommon> {
   indices?: Array<string>;
   first?: number | null;
   infinite?: boolean;
@@ -30,6 +36,29 @@ interface ListFilter<T extends BasicStoreCommon> {
   filters?: Array<Filter> | null;
   filterMode?: 'and' | 'or' | undefined | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
+}
+
+type InternalListEntities = <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>) => Promise<Array<T>>;
+type InternalFindByIds = (context: AuthContext, user: AuthUser, ids: string[], args?: { type?: string } & Record<string, string | boolean>) => Promise<BasicStoreObject[]>;
+
+// entities
+interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
+  connectionFormat?: boolean;
+  elementId?: string | Array<string>;
+  fromId?: string | Array<string>;
+  fromRole?: string;
+  toId?: string | Array<string>;
+  toRole?: string;
+  fromTypes?: Array<string>;
+  toTypes?: Array<string>;
+  types?: Array<string>;
+  entityTypes?: Array<string>;
+  relationshipTypes?: Array<string>;
+  elementWithTargetTypes?: Array<string>;
+}
+
+export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
+  indices?: Array<string>;
 }
 
 export const elList = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indices: Array<string>, options: ListFilter<T> = {}): Promise<Array<T>> => {
@@ -227,10 +256,6 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   elementWithTargetTypes?: Array<string>;
 }
 
-export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
-  indices?: Array<string>;
-}
-
 const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {
   const builtFilters = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
@@ -295,8 +320,8 @@ const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> =
   builtFilters.filters = customFilters;
   return builtFilters;
 };
-export const listEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}): Promise<Array<T>> => {
+
+export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}) => {
   const { indices = READ_ENTITIES_INDICES } = args;
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
@@ -325,4 +350,26 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
 export const countAllThings = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, args: ListFilter<T> = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   return elQueryCount(context, user, indices, args);
+};
+
+export const internalFindByIds: InternalFindByIds = async (context, user, ids, args = {}) => {
+  return await elFindByIds(context, user, ids, args) as unknown as BasicStoreObject[];
+};
+
+export const internalLoadById = async <T extends BasicStoreObject>(
+  context: AuthContext,
+  user: AuthUser,
+  id: string | undefined,
+  args: { type?: string } & Record<string, string> = {}
+): Promise<T> => {
+  const { type } = args;
+  // TODO Remove when all Typescript
+  return await elLoadById(context, user, id, type as unknown as null) as unknown as T;
+};
+export const storeLoadById = async <T extends BasicStoreObject>(context: AuthContext, user: AuthUser, id: string, type: string, args: Record<string, string> = {}): Promise<T> => {
+  if (R.isNil(type) || R.isEmpty(type)) {
+    throw FunctionalError('You need to specify a type when loading a element');
+  }
+  const loadArgs = R.assoc<string, Record<string, string>, string>('type', type, args);
+  return internalLoadById<T>(context, user, id, loadArgs);
 };

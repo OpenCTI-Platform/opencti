@@ -3,7 +3,6 @@ import { assoc, invertObj, map, pipe, propOr } from 'ramda';
 import {
   batchListThroughGetTo,
   deleteElementById,
-  internalLoadById,
   mergeEntities,
   updateAttribute
 } from '../database/middleware';
@@ -35,6 +34,7 @@ import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './task';
 import { getParentTypes } from '../schema/schemaUtils';
+import { internalLoadById } from '../database/middleware-loader';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);

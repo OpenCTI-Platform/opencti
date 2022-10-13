@@ -26,8 +26,6 @@ import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  internalFindByIds,
-  internalLoadById,
   listAllThings,
   mergeEntities,
   patchAttribute,
@@ -57,7 +55,7 @@ import {
 import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
 import { buildFilters } from '../database/repository';
-import { listAllRelations } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixObject } from '../schema/stixCoreObject';

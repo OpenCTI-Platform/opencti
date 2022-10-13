@@ -1,10 +1,10 @@
 import type { AuthUser, AuthContext } from '../../types/user';
-import { createEntity, storeLoadById } from '../../database/middleware';
+import { createEntity } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { LanguageAddInput, QueryLanguagesArgs } from '../../generated/graphql';
-import { listEntitiesPaginated } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BasicStoreEntityLanguage, ENTITY_TYPE_LANGUAGE } from './language-types';
 
 export const findById = (context: AuthContext, user: AuthUser, languageId: string): BasicStoreEntityLanguage => {

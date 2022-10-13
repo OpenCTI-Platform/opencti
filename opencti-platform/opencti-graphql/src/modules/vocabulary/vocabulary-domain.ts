@@ -1,17 +1,18 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { createEntity, deleteElementById, storeLoadById, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, } from '../../generated/graphql';
 import { VocabularyFilter } from '../../generated/graphql';
-import { listEntitiesPaginated } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawSearch, elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { getVocabulariesCategories, updateElasticVocabularyValue } from './vocabulary-utils';
+import type { DomainFindById } from '../../domain/domainTypes';
 
-export const findById = (context: AuthContext, user: AuthUser, id: string): BasicStoreEntityVocabulary => {
-  return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY) as unknown as BasicStoreEntityVocabulary;
+export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: AuthContext, user: AuthUser, id: string) => {
+  return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabulariesArgs) => {

@@ -6,7 +6,6 @@ import {
   deleteRelationsByFromAndTo,
   batchListThroughGetFrom,
   batchListThroughGetTo,
-  storeLoadById,
   updateAttribute,
   batchLoadThroughGetTo,
 } from '../database/middleware';
@@ -34,7 +33,7 @@ import {
 } from '../schema/stixMetaObject';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
-import { listRelations } from '../database/middleware-loader';
+import { listRelations, storeLoadById } from '../database/middleware-loader';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, STIX_SIGHTING_RELATIONSHIP, args);

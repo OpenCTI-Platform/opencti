@@ -7,12 +7,12 @@ import * as R from 'ramda';
 import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
 import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences } from '../utils/rule-utils';
-import { internalLoadById, patchAttribute } from '../../src/database/middleware';
+import { patchAttribute } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../src/schema/stixDomainObject';
 import RuleSightingIncident from '../../src/rules/sighting-incident/SightingIncidentRule';
 import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../src/schema/stixCoreRelationship';
-import { listRelations } from '../../src/database/middleware-loader';
+import { internalLoadById, listRelations } from '../../src/database/middleware-loader';
 import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
 import { wait } from '../../src/database/utils';
 

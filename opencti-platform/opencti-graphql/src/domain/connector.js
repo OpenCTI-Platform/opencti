@@ -4,7 +4,6 @@ import {
   deleteElementById,
   internalDeleteElementById,
   patchAttribute,
-  storeLoadById,
   updateAttribute
 } from '../database/middleware';
 import { completeConnector, connectors, connectorsFor } from '../database/repository';
@@ -19,7 +18,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 
 // region connectors
 export const loadConnectorById = (context, user, id) => {

@@ -1,11 +1,11 @@
 import { assoc, pipe, isNil } from 'ramda';
-import { createEntity, storeLoadById, timeSeriesEntities } from '../database/middleware';
+import { createEntity, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { FROM_START, UNTIL_END } from '../utils/format';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 
 export const findById = (context, user, campaignId) => {
   return storeLoadById(context, user, campaignId, ENTITY_TYPE_CAMPAIGN);

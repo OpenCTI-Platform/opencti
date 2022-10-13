@@ -2,13 +2,7 @@
 import type { AddOperation, Operation, ReplaceOperation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
-import {
-  createInferredRelation,
-  deleteInferredRuleElement,
-  internalFindByIds,
-  internalLoadById,
-} from '../database/middleware';
-
+import { createInferredRelation, deleteInferredRuleElement, } from '../database/middleware';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { createRuleContent } from './rules';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
@@ -18,7 +12,7 @@ import type { StixReport } from '../types/stix-sdo';
 import type { StixRelation } from '../types/stix-sro';
 import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { listAllRelations } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import type { DependenciesDeleteEvent, Event, RelationCreation, RuleEvent, UpdateEvent } from '../types/event';
 import {
   EVENT_TYPE_DELETE_DEPENDENCIES,

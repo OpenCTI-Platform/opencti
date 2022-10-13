@@ -1,12 +1,12 @@
 import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
-import { deleteElementById, patchAttribute, storeLoadById } from '../database/middleware';
+import { deleteElementById, patchAttribute } from '../database/middleware';
 import { buildFilters } from '../database/repository';
 import { convertFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { SYSTEM_USER } from '../utils/access';
 import { RULE_PREFIX } from '../schema/general';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { checkActionValidity, createDefaultTask } from './task-common';
 
 export const MAX_TASK_ELEMENTS = 500;

@@ -7,10 +7,9 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   listThroughGetFrom,
-  storeLoadById,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';

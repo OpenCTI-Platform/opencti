@@ -1,11 +1,11 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { createEntity, storeLoadById } from '../../database/middleware';
+import { createEntity } from '../../database/middleware';
 import {
   BasicStoreEntityCase,
   ENTITY_TYPE_CONTAINER_CASE,
 } from './case-types';
 import type { EntityOptions } from '../../database/middleware-loader';
-import { listEntitiesPaginated } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { notify } from '../../database/redis';

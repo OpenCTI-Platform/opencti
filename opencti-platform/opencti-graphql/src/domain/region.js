@@ -3,10 +3,9 @@ import {
   createEntity,
   batchListThroughGetFrom,
   batchListThroughGetTo,
-  storeLoadById,
   batchLoadThroughGetTo,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';

@@ -362,7 +362,7 @@ type ContextData {
   to_id: String
   message: String!
   commit: String
-  references: [ExternalReference]
+  references: [ExternalReference!]
 }
 
 type Log {
@@ -7362,8 +7362,8 @@ type Query {
   logsWorkerConfig: LogsWorkerConfig
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics
-  logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering], filterMode: FilterMode, search: String): LogConnection
-  logsTimeSeries(userId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: [LogsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
+  logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering!], filterMode: FilterMode, search: String): LogConnection
+  logsTimeSeries(userId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: [LogsFiltering!], filterMode: FilterMode, search: String): [TimeSeries]
   subType(id: String!): SubType
   subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection!
   file(id: String!): File

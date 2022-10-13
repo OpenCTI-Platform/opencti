@@ -1,4 +1,4 @@
-import { storeLoadById } from '../database/middleware';
+import { storeLoadById } from '../database/middleware-loader';
 
 const internalRelationshipResolvers = {
   InternalRelationship: {

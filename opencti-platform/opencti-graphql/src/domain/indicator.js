@@ -5,11 +5,10 @@ import {
   createEntity,
   createRelation,
   distributionEntities,
-  storeLoadById,
   storeLoadByIdWithRefs,
   timeSeriesEntities,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { notify } from '../database/redis';
 import { checkIndicatorSyntax } from '../python/pythonBridge';

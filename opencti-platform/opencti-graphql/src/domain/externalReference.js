@@ -1,18 +1,16 @@
-import { assoc } from 'ramda';
 import * as R from 'ramda';
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  internalLoadById,
   listThings,
-  storeLoadById,
   paginateAllThings,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';

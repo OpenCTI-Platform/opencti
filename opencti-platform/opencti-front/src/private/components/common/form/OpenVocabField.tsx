@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
-import { graphql, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';

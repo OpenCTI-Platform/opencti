@@ -1,5 +1,5 @@
-import { createEntity, batchListThroughGetFrom, storeLoadById } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { createEntity, batchListThroughGetFrom } from '../database/middleware';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_THREAT_ACTOR } from '../schema/stixDomainObject';
