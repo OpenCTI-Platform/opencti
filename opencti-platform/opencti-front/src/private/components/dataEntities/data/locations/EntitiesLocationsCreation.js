@@ -188,6 +188,7 @@ class EntitiesLocationsCreation extends Component {
             onReset={this.onReset.bind(this)}
           >
             {({
+              handleReset,
               submitForm,
               isSubmitting,
               setFieldValue,
@@ -445,7 +446,7 @@ class EntitiesLocationsCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    onClick={() => handleLocationCreation()}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
