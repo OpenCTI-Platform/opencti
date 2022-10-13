@@ -91,7 +91,7 @@ enum LanguagesFilter {
     x_opencti_workflow_id
 }
 input LanguagesFiltering {
-    key: LanguagesFilter!
+    key: [LanguagesFilter!]!
     values: [String]
     operator: String
     filterMode: FilterMode

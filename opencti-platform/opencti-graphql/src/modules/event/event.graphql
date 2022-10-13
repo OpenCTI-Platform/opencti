@@ -98,7 +98,7 @@ enum EventsFilter {
     x_opencti_workflow_id
 }
 input EventsFiltering {
-    key: EventsFilter!
+    key: [EventsFilter!]!
     values: [String]
     operator: String
     filterMode: FilterMode
