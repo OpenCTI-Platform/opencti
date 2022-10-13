@@ -1,20 +1,16 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import inject18n from '../../components/i18n';
-import { QueryRenderer } from '../../relay/environment';
+import React, { Suspense } from 'react';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
 import ProfileOverview from './profile/ProfileOverview';
 import Loader from '../../components/Loader';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
   },
-});
+}));
 
-const profileQuery = graphql`
+export const profileQuery = graphql`
   query ProfileQuery {
     me {
       ...ProfileOverview_me
@@ -31,40 +27,19 @@ const profileQuery = graphql`
   }
 `;
 
-class Profile extends Component {
-  render() {
-    const { classes } = this.props;
-    return (
+const Profile = () => {
+  const classes = useStyles();
+  const data = useLazyLoadQuery(profileQuery, {});
+  const { me, about, settings } = data;
+  const modules = settings?.platform_modules ?? [];
+  const subscriptionStatus = modules.find((m) => m.id === 'SUBSCRIPTION_MANAGER')?.enable;
+  return (
       <div className={classes.container}>
-        <QueryRenderer
-          query={profileQuery}
-          render={({ props }) => {
-            if (props) {
-              const subscriptionStatus = R.head(
-                R.filter(
-                  (n) => n.id === 'SUBSCRIPTION_MANAGER',
-                  R.pathOr([], ['settings', 'platform_modules'], props),
-                ),
-              )?.enable;
-              return (
-                <ProfileOverview
-                  me={props.me}
-                  about={props.about}
-                  subscriptionStatus={subscriptionStatus}
-                />
-              );
-            }
-            return <Loader />;
-          }}
-        />
+        <Suspense fallback={<Loader />}>
+            <ProfileOverview me={me} about={about} subscriptionStatus={subscriptionStatus} />
+        </Suspense>
       </div>
-    );
-  }
-}
-
-Profile.propTypes = {
-  classes: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-export default R.compose(inject18n, withStyles(styles))(Profile);
+export default Profile;

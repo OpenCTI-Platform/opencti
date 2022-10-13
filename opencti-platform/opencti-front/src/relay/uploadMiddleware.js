@@ -1,12 +1,13 @@
 /* eslint-disable */
-import { extractFiles } from "extract-files";
+import extractFiles from "extract-files/extractFiles.mjs";
+import isExtractableFile from "extract-files/isExtractableFile.mjs";
 
 const uploadMiddleware = () => (next) => async (req) => {
   const operations = {
     query: req.operation.text,
     variables: req.variables,
   };
-  const { clone: extractedOperations, files } = extractFiles(operations);
+  const { clone: extractedOperations, files } = extractFiles(operations, isExtractableFile);
   if (files.size) {
     const formData = new FormData();
     formData.append("operations", JSON.stringify(extractedOperations));
