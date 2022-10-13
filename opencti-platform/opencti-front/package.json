@@ -104,7 +104,7 @@
   },
   "scripts": {
     "esbuild": "node builder/prod/prod.js",
-    "relay": "relay-compiler",
+    "relay": "relay-compiler relay.config.json",
     "build": "yarn relay && yarn esbuild",
     "build:standalone": "yarn relay && yarn esbuild --keep",
     "start": "yarn relay && node builder/dev/dev.js",
