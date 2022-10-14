@@ -144,7 +144,7 @@ class GenerateReport extends Component {
 			client: this.props.client,
 			open: false,
 			analysisToTrend: [],
-			checkedAnalysesToTrend: [],
+			checkedAnalysesToTrend: [this.props.id],
 			success: this.props.success
 		};
 	}
@@ -205,10 +205,11 @@ class GenerateReport extends Component {
 		}
 
 		const handleAnalysesToTrend = (event) => {
-			if (event.target.checked) {
+			if (event.target.checked && event.target.value !== this.props.id) {
 				this.state.checkedAnalysesToTrend.push(event.target.value)
 				this.setState({ checkedAnalysesToTrend: checkedAnalysesToTrend })
-			} else {
+			}
+			if (!event.target.checked && event.target.value !== this.props.id) {
 				this.setState({ checkedAnalysesToTrend: checkedAnalysesToTrend.filter((trend) => trend !== event.target.value) });
 			}
 		};
