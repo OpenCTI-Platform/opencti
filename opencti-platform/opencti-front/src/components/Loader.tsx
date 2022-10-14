@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import makeStyles from '@mui/styles/makeStyles';
 
@@ -36,25 +36,39 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const Loader = ({ variant, withRightPadding }) => {
+export enum LoaderVariant {
+  container = 'container',
+  inside = 'inside',
+  inElement = 'inElement',
+}
+
+interface LoaderProps {
+  variant?: LoaderVariant,
+  withRightPadding?: boolean
+}
+
+const Loader: FunctionComponent<LoaderProps> = ({
+  variant = LoaderVariant.container,
+  withRightPadding = false,
+}) => {
   const classes = useStyles();
   return (
     <div className={
-        variant === 'inElement' ? classes.containerInElement : classes.container
-      }
-      style={
-        variant === 'inElement'
-          ? { paddingRight: withRightPadding ? 200 : 0 }
-          : {}
-      }>
+      variant === 'inElement' ? classes.containerInElement : classes.container
+    }
+         style={
+           variant === 'inElement'
+             ? { paddingRight: withRightPadding ? 200 : 0 }
+             : {}
+         }>
       <div className={
-          variant === 'inElement' ? classes.loaderInElement : classes.loader
-        }
-        style={
-          variant !== 'inElement'
-            ? { paddingRight: withRightPadding ? 100 : 0 }
-            : {}
-        }>
+        variant === 'inElement' ? classes.loaderInElement : classes.loader
+      }
+           style={
+             variant !== 'inElement'
+               ? { paddingRight: withRightPadding ? 100 : 0 }
+               : {}
+           }>
         <CircularProgress size={variant === 'inElement' ? 40 : 80} thickness={1} className={classes.loaderCircle}/>
       </div>
     </div>

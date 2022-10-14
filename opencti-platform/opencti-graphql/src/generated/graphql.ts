@@ -13048,7 +13048,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_login_message?: Maybe<Scalars['String']>;
   platform_map_tile_server_dark?: Maybe<Scalars['String']>;
   platform_map_tile_server_light?: Maybe<Scalars['String']>;
-  platform_modules?: Maybe<Array<Maybe<Module>>>;
+  platform_modules?: Maybe<Array<Module>>;
   platform_providers?: Maybe<Array<Maybe<Provider>>>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']>;
   platform_theme?: Maybe<Scalars['String']>;
@@ -22679,7 +22679,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  platform_modules?: Resolver<Maybe<Array<Maybe<ResolversTypes['Module']>>>, ParentType, ContextType>;
+  platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_providers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Provider']>>>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

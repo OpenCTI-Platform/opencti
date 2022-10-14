@@ -5,7 +5,7 @@ module.exports = {
   testRegex: ['src/.*\\.test\\.(js|ts)$', 'tests/.*-test\\.(js|ts)$'],
   transform: {
     '\\.(js|ts)$': ['esbuild-jest', { sourcemap: true }],
-    '\\.graphql$': 'jest-transform-graphql',
+    '\\.(gql|graphql)$': '@graphql-tools/jest-transform'
   },
   transformIgnorePatterns: ['node_modules/(?!set-interval-async|antlr4)'],
   reporters: ['default', ['jest-junit', { outputDirectory: './test-results/jest/', outputName: 'results.xml' }]],
