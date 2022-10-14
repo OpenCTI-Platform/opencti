@@ -1,4 +1,4 @@
-import { UserInputError } from "apollo-server-express";
+import { CyioError } from "../../../utils.js";
 import {v4 as uuid4} from "uuid";
 // import { objectMap } from '../../../global/global-utils.js';
 
@@ -15,7 +15,7 @@ const oscalCommonResolvers = {
         case 'ar':
         case 'ssp':
         default:
-          throw new UserInputError(`Unsupported OSCAL model type '${model}'`);
+          throw new CyioError(`Unsupported OSCAL model type '${model}'`);
       }
 
       // Generate a unique identifier to associated with the tasking
@@ -63,7 +63,7 @@ const oscalCommonResolvers = {
         case 'cra':
         case 'tar':
         default:
-          throw new UserInputError(`Unsupported OSCAL report type '${report}'`);
+          throw new CyioError(`Unsupported OSCAL report type '${report}'`);
       }
 
       // Generate a unique identifier to associated with the tasking
