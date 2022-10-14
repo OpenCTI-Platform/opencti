@@ -4,6 +4,7 @@ import { IntlProvider } from 'react-intl';
 import frLocale from 'date-fns/locale/fr';
 import esLocale from 'date-fns/locale/es';
 import enLocale from 'date-fns/locale/en-US';
+import jaLocale from 'date-fns/locale/ja'
 import cnLocale from 'date-fns/locale/zh-CN';
 import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -18,6 +19,7 @@ const localeMap = {
   'en-us': enLocale,
   'fr-fr': frLocale,
   'es-es': esLocale,
+  'ja-jp': jaLocale,
   'zg-cn': cnLocale,
 };
 
@@ -43,6 +45,8 @@ const AppIntlProvider = (props) => {
     moment.locale('fr-fr');
   } else if (lang === 'es-es') {
     moment.locale('es-es');
+  } else if (lang === 'ja-jp') {
+    moment.locale('ja-jp');
   } else if (lang === 'zh-cn') {
     moment.locale('zh-cn');
   } else {
