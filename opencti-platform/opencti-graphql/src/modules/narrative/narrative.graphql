@@ -99,7 +99,7 @@ enum NarrativesFilter {
     x_opencti_workflow_id
 }
 input NarrativesFiltering {
-    key: NarrativesFilter!
+    key: [NarrativesFilter!]!
     values: [String]
     operator: String
     filterMode: FilterMode
