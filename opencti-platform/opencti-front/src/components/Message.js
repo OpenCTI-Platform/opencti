@@ -43,7 +43,6 @@ class Message extends Component {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={this.state.open}
         onClose={this.handleCloseMessage.bind(this)}
-        autoHideDuration={4000}
       >
         {this.state.error ? (
           <Alert severity="error" onClose={this.handleCloseMessage.bind(this)}>
