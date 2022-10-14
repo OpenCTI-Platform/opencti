@@ -19,7 +19,7 @@ services:
       - discovery.type=single-node
       - xpack.ml.enabled=false
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms8G -Xmx8G"
+      - "ES_JAVA_OPTS=-Xms2G -Xmx2G"
     restart: unless-stopped
     ulimits:
       memlock:
@@ -48,8 +48,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ChangeMe
+      MINIO_ROOT_PASSWORD: ChangeMe
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -59,7 +59,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:3.10.7-management
+    image: rabbitmq:3.11-management
     restart: unless-stopped
     ports:
       - 5672:5672

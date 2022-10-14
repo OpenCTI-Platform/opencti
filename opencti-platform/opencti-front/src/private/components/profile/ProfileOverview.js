@@ -400,6 +400,7 @@ const ProfileOverviewComponent = (props) => {
                     <MenuItem value="en-us">English</MenuItem>
                     <MenuItem value="fr-fr">Français</MenuItem>
                     <MenuItem value="es-es">Español</MenuItem>
+                    <MenuItem value="ja-jp">日本語</MenuItem>
                     <MenuItem value="zh-cn">简化字</MenuItem>
                   </Field>
                   <Field

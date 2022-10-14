@@ -160,13 +160,13 @@ const contextFetchMatch = async (match: string): Promise<Array<string>> => {
   return new Promise((resolve, reject) => {
     const elementsPromise: Array<Promise<any>> = [];
     const stream = clientContext.scanStream({
-      match,
+      match: `${REDIS_PREFIX}${match}`,
       count: 100,
     });
     stream.on('data', (resultKeys) => {
       for (let i = 0; i < resultKeys.length; i += 1) {
         const resultKey = resultKeys[i];
-        elementsPromise.push(clientContext.get(resultKey).then((d) => ({ key: resultKey, value: d })));
+        elementsPromise.push(clientContext.call('GET', resultKey).then((d) => ({ key: resultKey, value: d })));
       }
     });
     stream.on('error', (error) => {
@@ -198,7 +198,7 @@ export const delEditContext = async (user: AuthUser, instanceId: string) => {
 };
 export const delUserContext = async (user: AuthUser) => {
   return new Promise((resolve, reject) => {
-    const stream = clientContext.scanStream({ match: `*:*:${user.id}`, count: 100 });
+    const stream = clientContext.scanStream({ match: `${REDIS_PREFIX}*:*:${user.id}`, count: 100 });
     const keys: Array<any> = [];
     stream.on('data', (resultKeys) => {
       for (let index = 0; index < resultKeys.length; index += 1) {
@@ -211,7 +211,7 @@ export const delUserContext = async (user: AuthUser) => {
     });
     stream.on('end', () => {
       if (!R.isEmpty(keys)) {
-        clientContext.del(keys);
+        clientContext.call('DEL', keys);
       }
       resolve(true);
     });
@@ -543,6 +543,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
     throw DatabaseError('Error in store delete event', { error: e });
   }
 };
+export const deleteStream = () => clientBase.call('DEL', REDIS_STREAM_NAME);
 
 const mapStreamToJS = ([id, data]: any): StreamEvent => {
   const count = data.length / 2;
@@ -605,7 +606,7 @@ export const createStreamProcessor = (user: AuthUser, provider: string, callback
     }
     try {
       // Consume the data stream
-      const streamResult = await client.xread('COUNT', maxRange, 'BLOCK', STREAM_BATCH_TIME, 'STREAMS', REDIS_STREAM_NAME, startEventId);
+      const streamResult = await client.call('XREAD', 'COUNT', maxRange, 'BLOCK', STREAM_BATCH_TIME, 'STREAMS', REDIS_STREAM_NAME, startEventId) as any[];
       // Process the event results
       if (streamResult && streamResult.length > 0) {
         const [, results] = streamResult[0];

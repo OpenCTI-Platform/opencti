@@ -39,6 +39,7 @@ import {
 } from '../../../utils/Entity';
 import PendingFileToolBar from './PendingFileToolBar';
 import {
+  APP_BASE_PATH,
   commitMutation,
   fetchQuery,
   MESSAGING$,
@@ -488,7 +489,7 @@ class PendingFileContentComponent extends Component {
 
   loadFileContent() {
     const { file } = this.props;
-    const url = `/storage/view/${encodeURIComponent(file.id)}`;
+    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(file.id)}`;
     Axios.get(url).then(async (res) => {
       const state = await this.computeState(res.data.objects);
       this.setState(state);

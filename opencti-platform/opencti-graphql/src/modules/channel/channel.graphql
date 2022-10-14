@@ -96,7 +96,7 @@ enum ChannelsFilter {
     x_opencti_workflow_id
 }
 input ChannelsFiltering {
-    key: ChannelsFilter!
+    key: [ChannelsFilter!]!
     values: [String]
     operator: String
     filterMode: FilterMode

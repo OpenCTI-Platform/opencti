@@ -35,6 +35,7 @@ import { now } from '../utils/format';
 import { applicationSession } from '../database/session';
 import {
   convertRelationToAction,
+  IMPERSONATE_ACTION,
   LOGIN_ACTION,
   LOGOUT_ACTION,
   ROLE_DELETION,
@@ -42,7 +43,7 @@ import {
   USER_DELETION,
 } from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const BEARER = 'Bearer ';
@@ -53,7 +54,7 @@ export const ROLE_DEFAULT = 'Default';
 
 export const userWithOrigin = (req, user) => {
   // /!\ This metadata information is used in different ways
-  // - In audit logs to identified the user
+  // - In audit logs to identify the user
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
   const origin = {
@@ -566,7 +567,8 @@ export const logout = async (context, user, req, res) => {
   });
 };
 
-const buildSessionUser = (user, provider) => {
+const buildSessionUser = (origin, impersonate, provider) => {
+  const user = impersonate ?? origin;
   return {
     id: user.id,
     session_creation: now(),
@@ -581,6 +583,7 @@ const buildSessionUser = (user, provider) => {
     name: user.name,
     external: user.external,
     login_provider: provider,
+    impersonate: impersonate !== undefined,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
@@ -625,9 +628,24 @@ export const userRenewToken = async (context, user, userId) => {
 
 export const authenticateUser = async (context, req, user, provider, token = '') => {
   // Build the user session with only required fields
-  const completeUser = await buildCompleteUser(context, user);
+  const logged = await buildCompleteUser(context, user);
   logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
-  const sessionUser = buildSessionUser(completeUser, provider);
+  let impersonate;
+  const applicantId = req.headers['opencti-applicant-id'];
+  if (isNotEmptyField(applicantId) && logged.id !== applicantId) {
+    if (isBypassUser(logged)) {
+      const applicantUser = await resolveUserById(context, applicantId);
+      if (isEmptyField(applicantUser)) {
+        logApp.warn(`User ${applicantId} cant be impersonate (not exists)`);
+      } else {
+        logAudit.info(applicantUser, IMPERSONATE_ACTION, { from: user.id, to: applicantUser.id });
+        impersonate = applicantUser;
+      }
+    } else {
+      logAudit.error(user, IMPERSONATE_ACTION, { to: applicantId });
+    }
+  }
+  const sessionUser = buildSessionUser(logged, impersonate, provider);
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
   return sessionUser;
@@ -664,6 +682,15 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       }
     }
     // Other providers doesn't need specific validation, session management is enough
+    // For impersonate auth, the applicant id must match the session
+    const applicantId = req.headers['opencti-applicant-id'];
+    const isImpersonateChange = auth.impersonate && auth.id !== applicantId;
+    const isNowImpersonate = !auth.impersonate && isBypassUser(auth) && applicantId;
+    if (isImpersonateChange || isNowImpersonate) {
+      // Impersonate doesn't match, kill the current session and try to re auth
+      await logout(context, auth, req, res);
+      return authenticateUserFromRequest(context, req, res);
+    }
     // If everything ok, return the authenticated user.
     return auth;
   }

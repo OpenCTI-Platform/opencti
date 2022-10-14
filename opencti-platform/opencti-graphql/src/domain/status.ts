@@ -43,7 +43,7 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
   const args = {
     orderBy: StatusOrdering.Order,
     orderMode: OrderingMode.Asc,
-    filters: [{ key: StatusFilter.Type, values: [type] }],
+    filters: [{ key: [StatusFilter.Type], values: [type] }],
   };
   return findAll(context, user, args);
 };

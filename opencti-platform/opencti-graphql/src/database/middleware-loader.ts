@@ -14,7 +14,7 @@ import { UnsupportedError } from '../config/errors';
 const MAX_SEARCH_SIZE = 5000;
 
 interface Filter {
-  key: string;
+  key: string | string[];
   operator?: string | null;
   filterMode?: 'and' | 'or' | null;
   values?: Array<unknown> | null;

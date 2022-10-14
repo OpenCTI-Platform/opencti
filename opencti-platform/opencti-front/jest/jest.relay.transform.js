@@ -1,4 +1,5 @@
-const fs = require("fs");
+'use strict';
+
 const {print, parse} = require("graphql");
 const crypto = require("crypto");
 const transformer = require("esbuild-jest");
@@ -16,9 +17,10 @@ const t = transformer.createTransformer({
 })
 
 module.exports = {
-  process(src, filename, ...rest) {
-    let contents = fs.readFileSync(filename, { encoding: "UTF-8" })
-    if (!filename.includes('node_modules') && !filename.includes('__generated__')) {
+  process(sourceText, sourcePath, options) {
+    let contents = sourceText;
+    if (!sourcePath.includes('__generated__')) {
+      // console.log(sourcePath);
       if (contents.includes('graphql`')) {
         const imports = [];
         contents = contents.replaceAll(/\sgraphql`([\s\S]*?)`/gm, (match, query) => {
@@ -32,6 +34,6 @@ module.exports = {
         contents = imports.join('\n') + contents;
       }
     }
-    return t.process(contents, filename, ...rest);
+    return t.process(contents, sourcePath, options);
   },
 };

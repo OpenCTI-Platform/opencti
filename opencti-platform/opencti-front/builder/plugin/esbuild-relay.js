@@ -5,9 +5,10 @@ const {print, parse} = require('graphql');
 module.exports.RelayPlugin = {
     name: 'relay',
     setup: (build) => {
-        build.onLoad({filter: /\.(js)$/, namespace: "file"}, async (args) => {
-            let contents = await promises.readFile(args.path, 'utf8');
-            if (!args.path.includes('node_modules') && !args.path.includes('__generated__')) {
+        build.onLoad({filter: /\.(js|tsx)$/, namespace: "file"}, async (args) => {
+            let contents;
+            if (args.path.includes('src') && !args.path.includes('node_modules') && !args.path.includes('__generated__')) {
+                contents = await promises.readFile(args.path, 'utf8');
                 if (contents.includes('graphql`')) {
                     const imports = [];
                     contents = contents.replaceAll(/\sgraphql`([\s\S]*?)`/gm, (match, query) => {
@@ -23,7 +24,7 @@ module.exports.RelayPlugin = {
             }
             return {
                 contents,
-                loader: 'jsx',
+                loader: 'tsx',
             };
         });
     },

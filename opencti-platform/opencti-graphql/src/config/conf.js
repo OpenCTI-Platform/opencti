@@ -262,7 +262,7 @@ export const logApp = {
 const LOG_AUDIT = 'AUDIT';
 export const logAudit = {
   _log: (level, user, operation, meta = {}) => {
-    if (!DEV_MODE && auditLogTransports.length > 0) {
+    if (auditLogTransports.length > 0) {
       const metaUser = { email: user.user_email, ...user.origin };
       const logMeta = isEmpty(meta) ? { auth: metaUser } : { resource: meta, auth: metaUser };
       auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, logMeta));
@@ -305,6 +305,9 @@ export const configureCA = (certificates) => {
   return { ca: [] };
 };
 
+// App
+export const PORT = nconf.get('app:port');
+
 // Default activated managers
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
@@ -319,6 +322,8 @@ export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
 export const ENABLED_SUBSCRIPTION_MANAGER = booleanConf('subscription_scheduler:enabled', false);
 export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);
+
+export const ELASTIC_CREATION_PATTERN = nconf.get('elasticsearch:index_creation_pattern');
 
 const platformState = { stopping: false };
 export const getStoppingState = () => platformState.stopping;

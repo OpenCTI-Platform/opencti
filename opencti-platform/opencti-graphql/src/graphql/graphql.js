@@ -5,7 +5,7 @@ import { dissocPath } from 'ramda';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
 import { basePath, DEV_MODE, ENABLED_TRACING } from '../config/conf';
-import { authenticateUserFromRequest } from '../domain/user';
+import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
@@ -34,7 +34,14 @@ const createApolloServer = () => {
       executeContext.req = req;
       executeContext.res = res;
       executeContext.workId = req.headers['opencti-work-id'];
-      executeContext.user = connection ? connection.context.user : await authenticateUserFromRequest(executeContext, req, res);
+      if (connection && connection.context.user) {
+        executeContext.user = userWithOrigin(req, connection.context.user);
+      } else {
+        const user = await authenticateUserFromRequest(executeContext, req, res);
+        if (user) {
+          executeContext.user = userWithOrigin(req, user);
+        }
+      }
       return executeContext;
     },
     tracing: DEV_MODE,
