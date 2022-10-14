@@ -67,36 +67,36 @@ const Remediations = (props) => {
             // OperationsComponent={<RiskDeletion />}
           />
           <TopMenuRisk risk={remediation.name}/>
-          <Grid item={true} xs={12}>
-            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {/* <Grid item={true} xs={12}> */}
+            {/* <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t('Remediations')}
-            </Typography>
+            </Typography> */}
             {/* <Security
               needs={[KNOWLEDGE_KNUPDATE]}
               placeholder={<div style={{ height: 29 }} />}
             > */}
-            <IconButton
+            {/* <IconButton
               color="default"
               aria-label="Label"
               onClick={handleCreation}
               style={{ float: 'left', margin: '-15px 0 0 -2px' }}
             >
               <Add fontSize="small" />
-            </IconButton>
+            </IconButton> */}
             {/* </Security> */}
             <RemediationEntities
               history={history}
               entityId={remediation.id}
               riskId={riskId.id}
             />
-          </Grid>
-        <RemediationCreation
+          {/* </Grid> */}
+        {/* <RemediationCreation
           remediationId={remediation.id}
           riskId={riskId.id}
           history={history}
           openCreation={openCreation}
           handleOpenCreation={handleOpenCreation}
-        />
+        /> */}
       {/* )} */}
       {/* </Grid> */}
     </div>

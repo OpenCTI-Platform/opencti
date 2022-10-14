@@ -16,6 +16,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import { IconButton } from '@material-ui/core';
+import { Add } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
@@ -107,6 +109,7 @@ class RemediationCreation extends Component {
       close: false,
       onSubmit: false,
       open: false,
+      openCreation: false,
     };
   }
 
@@ -117,7 +120,7 @@ class RemediationCreation extends Component {
 
   handleClose() {
     this.setState({ anchorEl: null });
-    this.props.handleOpenCreation();
+    handleOpenCreation();
   }
 
   handleSubmit() {
@@ -134,7 +137,7 @@ class RemediationCreation extends Component {
 
   handleCancelCloseClick() {
     this.setState({ open: false, displayCancel: false, close: false });
-    this.props.handleOpenCreation();
+    handleOpenCreation();
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -161,9 +164,7 @@ class RemediationCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push(
-          `/activities/risk assessment/risks/${this.props.riskId}/remediation`
-        );
+        this.props.refreshQuery();
       },
       onError: (err) => {
         toastGenericError('Failed to create Remediation');
@@ -172,6 +173,14 @@ class RemediationCreation extends Component {
       },
     });
     this.setState({ onSubmit: true });
+  }
+
+  handleCreation() {
+    this.setState({ openCreation: true });
+  }
+
+  handleOpenCreation() {
+    this.setState({ openCreation: false });
   }
 
   render() {
@@ -183,8 +192,16 @@ class RemediationCreation extends Component {
     } = this.props;
     return (
       <>
+        <IconButton
+          color="default"
+          aria-label="Label"
+          onClick={this.handleCreation.bind(this)}
+          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+        >
+          <Add fontSize="small" />
+        </IconButton>
         <Dialog
-          open={this.props.openCreation}
+          open={this.state.openCreation}
           keepMounted={true}
         >
           <Formik
@@ -500,7 +517,6 @@ RemediationCreation.propTypes = {
   remediation: PropTypes.object,
   remediationId: PropTypes.string,
   openCreation: PropTypes.bool,
-  handleOpenCreation: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(RemediationCreation);

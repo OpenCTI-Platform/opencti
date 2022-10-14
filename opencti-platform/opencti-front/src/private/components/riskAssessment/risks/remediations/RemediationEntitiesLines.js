@@ -7,11 +7,14 @@ import Typography from '@material-ui/core/Typography';
 import { createFragmentContainer } from 'react-relay';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { IconButton } from '@material-ui/core';
+import { Add } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../../components/i18n';
 import {
   RemediationEntityLine,
 } from './RemediationEntityLine';
+import RemediationCreation from './RemediationCreation';
 
 const styles = () => ({
   paper: {
@@ -32,6 +35,12 @@ const styles = () => ({
 });
 
 class RemediationEntitiesLines extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openCreation: false,
+    };
+  }
   // componentDidMount() {
   //   this.subscription = interval$.subscribe(() => {
   //     this.props.relay.refetchConnection(25);
@@ -49,9 +58,26 @@ class RemediationEntitiesLines extends Component {
       t,
       risk,
       riskId,
+      refreshQuery,
+      entityId,
     } = this.props;
     const RemediationEntitiesLogEdges = R.pathOr([], ['remediations'], risk);
+
     return (
+      <div>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Remediations new')}
+        </Typography>
+        {/* <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 29 }} />}
+        > */}
+        <RemediationCreation
+        remediationId={entityId}
+        riskId={riskId}
+        history={history}
+        refreshQuery={refreshQuery}
+      />
       <Paper className={classes.paper}>
         <ListItem style={{ borderBottom: '2px solid white' }}>
           <ListItemText
@@ -100,6 +126,7 @@ class RemediationEntitiesLines extends Component {
         )) : <div style={{ textAlign: 'center', padding: '20px 0' }}>
           No Record Found </div>)}
       </Paper>
+      </div>
     );
   }
 }

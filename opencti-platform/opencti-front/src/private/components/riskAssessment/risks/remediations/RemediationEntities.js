@@ -79,6 +79,7 @@ class RemediationEntities extends Component {
       classes,
       history,
       riskId,
+      t,
     } = this.props;
     const dataColumns = {
       relationship_type: {
@@ -122,10 +123,10 @@ class RemediationEntities extends Component {
         <QueryRenderer
           query={remediationEntitiesQuery}
           variables={{ id: entityId }}
-          render={({ props }) => {
+          render={({ props, retry }) => {
             if (props) {
               return (
-                <RemediationEntitiesLines
+                  <RemediationEntitiesLines
                   risk={props.risk}
                   paginationOptions={paginationOptions}
                   history={history}
@@ -134,6 +135,7 @@ class RemediationEntities extends Component {
                   displayRelation={true}
                   riskId={riskId}
                   entityId={entityId}
+                  refreshQuery={retry}
                 />
               );
             }
