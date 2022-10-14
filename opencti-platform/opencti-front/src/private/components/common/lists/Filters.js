@@ -110,9 +110,11 @@ const styles = (theme) => ({
 const directFilters = [
   'report_types',
   'channel_types',
+  'x_opencti_detection',
   'sightedBy',
   'container_type',
   'toSightingId',
+  'x_opencti_negative',
   'fromId',
   'toId',
 ];
@@ -121,6 +123,7 @@ const uniqFilters = [
   'x_opencti_detection',
   'x_opencti_base_score_gt',
   'confidence_gt',
+  'x_opencti_negative',
   'x_opencti_score_gt',
   'x_opencti_score_lte',
   'toSightingId',
@@ -1247,6 +1250,23 @@ class Filters extends Component {
           },
         });
         break;
+      case 'x_opencti_negative':
+        // eslint-disable-next-line no-case-declarations
+        const negativeValue = [true, false].map((n) => ({
+          label: t(n ? 'False positive' : 'Malicious'),
+          value: n.toString(),
+          type: 'attribute',
+        }));
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            x_opencti_negative: R.union(
+              negativeValue,
+              this.state.entities.x_opencti_negative,
+            ),
+          },
+        });
+        break;
       default:
         this.setState({ entities: R.union(this.state.entities, []) });
     }
@@ -1399,7 +1419,7 @@ class Filters extends Component {
                       className={classes.icon}
                       style={{ color: option.color }}
                     >
-                      <ItemIcon type={option.type} />
+                      <ItemIcon type={option.type}/>
                     </div>
                     <div className={classes.text}>{option.label}</div>
                   </li>
@@ -1422,7 +1442,7 @@ class Filters extends Component {
             variant="contained"
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
-            startIcon={<FilterListOutlined />}
+            startIcon={<FilterListOutlined/>}
             size="small"
             style={{ float: 'left', margin: '0 15px 0 7px' }}
           >
@@ -1435,7 +1455,7 @@ class Filters extends Component {
             style={{ float: 'left', marginTop: -2 }}
             size={size || 'large'}
           >
-            <FilterListOutlined fontSize={fontSize || 'medium'} />
+            <FilterListOutlined fontSize={fontSize || 'medium'}/>
           </IconButton>
         )}
         <Popover
@@ -1514,7 +1534,7 @@ class Filters extends Component {
                       className={classes.icon}
                       style={{ color: option.color }}
                     >
-                      <ItemIcon type={option.type} />
+                      <ItemIcon type={option.type}/>
                     </div>
                     <div className={classes.text}>{option.label}</div>
                   </li>
@@ -1522,7 +1542,7 @@ class Filters extends Component {
               />
             );
           })}
-        <div className="clearfix" />
+        <div className="clearfix"/>
       </div>
     );
   }
@@ -1665,7 +1685,7 @@ class Filters extends Component {
                       entityType.value,
                     )}
                   />
-                  <ListItemText primary={entityType.label} />
+                  <ListItemText primary={entityType.label}/>
                 </MenuItem>
               ))}
             </MenuList>
@@ -1686,7 +1706,7 @@ class Filters extends Component {
             disabled={disabled}
             size={size || 'medium'}
           >
-            <ToyBrickSearchOutline fontSize={fontSize || 'medium'} />
+            <ToyBrickSearchOutline fontSize={fontSize || 'medium'}/>
           </IconButton>
         </Tooltip>
         <Dialog

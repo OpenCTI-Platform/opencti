@@ -74,6 +74,7 @@
     "@testing-library/react": "^13.4.0",
     "@types/jest": "29.1.2",
     "@types/node": "18.8.5",
+    "@types/ramda": "0.28.15",
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.6",
     "@types/react-relay": "14.1.2",
@@ -117,7 +118,8 @@
     "start": "yarn relay && node builder/dev/dev.js",
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
     "control": "yarn audit --groups dependencies --summary",
-    "test": "jest"
+    "test": "jest",
+    "check-ts": "tsc --noEmit"
   },
   "resolutions": {
     "d3-color": "3.1.0",

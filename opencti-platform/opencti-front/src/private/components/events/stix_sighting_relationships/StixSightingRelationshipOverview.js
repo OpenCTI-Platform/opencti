@@ -390,7 +390,7 @@ class StixSightingRelationshipContainer extends Component {
                           : 0,
                     }}
                   >
-                    {t('Status')}
+                    {t('filter_x_opencti_negative')}
                   </Typography>
                   <Chip
                     classes={{

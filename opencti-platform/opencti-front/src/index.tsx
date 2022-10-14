@@ -12,7 +12,7 @@ import 'react-mde/lib/styles/css/react-mde-all.css';
 import * as serviceWorker from './config/serviceWorker';
 import App from './app';
 import { environment } from './relay/environment';
-import Loader from './components/Loader';
+import Loader, { LoaderVariant } from './components/Loader';
 import ThemeDark from './components/ThemeDark';
 
 const { Suspense } = React;
@@ -24,7 +24,7 @@ const Loading = () => (
       height: '100%',
       backgroundColor: ThemeDark().palette.background.default,
     }}>
-    <Loader variant={'container'} withRightPadding={false} />
+    <Loader variant={LoaderVariant.container} withRightPadding={false} />
   </div>
 );
 
