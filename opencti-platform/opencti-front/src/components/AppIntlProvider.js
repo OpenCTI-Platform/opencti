@@ -4,7 +4,7 @@ import { IntlProvider } from 'react-intl';
 import frLocale from 'date-fns/locale/fr';
 import esLocale from 'date-fns/locale/es';
 import enLocale from 'date-fns/locale/en-US';
-import jaLocale from 'date-fns/locale/ja'
+import jaLocale from 'date-fns/locale/ja';
 import cnLocale from 'date-fns/locale/zh-CN';
 import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
