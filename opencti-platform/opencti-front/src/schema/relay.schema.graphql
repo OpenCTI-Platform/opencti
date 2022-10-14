@@ -1189,6 +1189,7 @@ type MeUser implements BasicObject & InternalObject {
   theme: String
   language: String
   external: Boolean
+  individual_id: String
   api_token: String!
   capabilities: [Capability!]!
   allowed_marking: [MarkingDefinition!]
@@ -6532,6 +6533,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
+  objectOrganization: OrganizationConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
