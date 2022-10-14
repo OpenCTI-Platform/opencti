@@ -611,7 +611,8 @@ export const createStreamProcessor = (user: AuthUser, provider: string, withInte
     }
     try {
       // Consume the data stream
-      const streamResult = await client.call('XREAD',
+      const streamResult = await client.call(
+        'XREAD',
         'COUNT',
         MAX_RANGE_MESSAGES,
         'BLOCK',
@@ -619,7 +620,7 @@ export const createStreamProcessor = (user: AuthUser, provider: string, withInte
         'STREAMS',
         REDIS_STREAM_NAME,
         startEventId
-      )as any[];
+      ) as any[];
       // Process the event results
       if (streamResult && streamResult.length > 0) {
         const [, results] = streamResult[0];
