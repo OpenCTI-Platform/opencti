@@ -38,32 +38,32 @@ import { statusFieldStatusesSearchQuery } from '../form/StatusField';
 import { defaultValue } from '../../../../utils/Graph';
 
 export const filtersAllTypesQuery = graphql`
-    query FiltersAllTypesQuery {
-        scoTypes: subTypes(type: "Stix-Cyber-Observable") {
-            edges {
-                node {
-                    id
-                    label
-                }
-            }
+  query FiltersAllTypesQuery {
+    scoTypes: subTypes(type: "Stix-Cyber-Observable") {
+      edges {
+        node {
+          id
+          label
         }
-        sdoTypes: subTypes(type: "Stix-Domain-Object") {
-            edges {
-                node {
-                    id
-                    label
-                }
-            }
-        }
-        sroTypes: subTypes(type: "stix-core-relationship") {
-            edges {
-                node {
-                    id
-                    label
-                }
-            }
-        }
+      }
     }
+    sdoTypes: subTypes(type: "Stix-Domain-Object") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+    sroTypes: subTypes(type: "stix-core-relationship") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+  }
 `;
 
 const styles = (theme) => ({
@@ -110,6 +110,7 @@ const styles = (theme) => ({
 const directFilters = [
   'report_types',
   'channel_types',
+  'x_opencti_detection',
   'sightedBy',
   'container_type',
   'toSightingId',
@@ -122,6 +123,7 @@ const uniqFilters = [
   'x_opencti_detection',
   'x_opencti_base_score_gt',
   'confidence_gt',
+  'x_opencti_negative',
   'x_opencti_score_gt',
   'x_opencti_score_lte',
   'toSightingId',
@@ -172,149 +174,149 @@ export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('end_date');
 
 export const filtersStixCoreObjectsSearchQuery = graphql`
-    query FiltersStixCoreObjectsSearchQuery(
-        $search: String
-        $types: [String]
-        $count: Int
-        $filters: [StixCoreObjectsFiltering]
+  query FiltersStixCoreObjectsSearchQuery(
+    $search: String
+    $types: [String]
+    $count: Int
+    $filters: [StixCoreObjectsFiltering]
+  ) {
+    stixCoreObjects(
+      search: $search
+      types: $types
+      first: $count
+      filters: $filters
     ) {
-        stixCoreObjects(
-            search: $search
-            types: $types
-            first: $count
-            filters: $filters
-        ) {
-            edges {
-                node {
-                    id
-                    entity_type
-                    ... on AttackPattern {
-                        name
-                        description
-                        x_mitre_id
-                    }
-                    ... on Note {
-                        attribute_abstract
-                        content
-                    }
-                    ... on ObservedData {
-                        first_observed
-                        last_observed
-                    }
-                    ... on Opinion {
-                        opinion
-                    }
-                    ... on Report {
-                        name
-                    }
-                    ... on Campaign {
-                        name
-                        description
-                    }
-                    ... on CourseOfAction {
-                        name
-                        description
-                    }
-                    ... on Individual {
-                        name
-                        description
-                    }
-                    ... on Organization {
-                        name
-                        description
-                    }
-                    ... on Sector {
-                        name
-                        description
-                    }
-                    ... on System {
-                        name
-                        description
-                    }
-                    ... on Indicator {
-                        name
-                        description
-                    }
-                    ... on Infrastructure {
-                        name
-                        description
-                    }
-                    ... on IntrusionSet {
-                        name
-                        description
-                    }
-                    ... on Position {
-                        name
-                        description
-                    }
-                    ... on City {
-                        name
-                        description
-                    }
-                    ... on Country {
-                        name
-                        description
-                    }
-                    ... on Region {
-                        name
-                        description
-                    }
-                    ... on Malware {
-                        name
-                        description
-                    }
-                    ... on ThreatActor {
-                        name
-                        description
-                    }
-                    ... on Tool {
-                        name
-                        description
-                    }
-                    ... on Vulnerability {
-                        name
-                        description
-                    }
-                    ... on Incident {
-                        name
-                        description
-                    }
-                    ... on Event {
-                        name
-                        description
-                    }
-                    ... on Channel {
-                        name
-                        description
-                    }
-                    ... on Narrative {
-                        name
-                        description
-                    }
-                    ... on Language {
-                        name
-                    }
-                    ... on StixCyberObservable {
-                        observable_value
-                    }
-                    createdBy {
-                        ... on Identity {
-                            id
-                            name
-                            entity_type
-                        }
-                    }
-                    objectMarking {
-                        edges {
-                            node {
-                                definition
-                            }
-                        }
-                    }
-                }
+      edges {
+        node {
+          id
+          entity_type
+          ... on AttackPattern {
+            name
+            description
+            x_mitre_id
+          }
+          ... on Note {
+            attribute_abstract
+            content
+          }
+          ... on ObservedData {
+            first_observed
+            last_observed
+          }
+          ... on Opinion {
+            opinion
+          }
+          ... on Report {
+            name
+          }
+          ... on Campaign {
+            name
+            description
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on System {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+            description
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+          }
+          ... on ThreatActor {
+            name
+            description
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on Incident {
+            name
+            description
+          }
+          ... on Event {
+            name
+            description
+          }
+          ... on Channel {
+            name
+            description
+          }
+          ... on Narrative {
+            name
+            description
+          }
+          ... on Language {
+            name
+          }
+          ... on StixCyberObservable {
+            observable_value
+          }
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
             }
+          }
+          objectMarking {
+            edges {
+              node {
+                definition
+              }
+            }
+          }
         }
+      }
     }
+  }
 `;
 
 class Filters extends Component {

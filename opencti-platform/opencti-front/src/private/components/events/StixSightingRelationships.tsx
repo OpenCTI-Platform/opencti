@@ -7,6 +7,7 @@ import StixSightingRelationshipsLines, {
 } from './stix_sighting_relationships/StixSightingRelationshipsLines';
 import { convertFilters } from '../../../utils/ListParameters';
 import useLocalStorage from '../../../utils/hooks/useLocalStorage';
+import { isUniqFilter } from '../common/lists/Filters';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -105,13 +106,15 @@ const StixSightingRelationships = () => {
         ...c,
         filters: {
           ...c.filters,
-          [key]: [
-            ...(c.filters[key].filter((f) => f.id !== id) ?? []),
-            {
-              id,
-              value,
-            },
-          ],
+          [key]: isUniqFilter(key)
+            ? [{ id, value }]
+            : [
+              ...(c.filters[key].filter((f) => f.id !== id) ?? []),
+              {
+                id,
+                value,
+              },
+            ],
         },
       }));
     } else {
