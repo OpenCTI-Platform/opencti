@@ -1250,7 +1250,7 @@ export enum ChannelsFilter {
 
 export type ChannelsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: ChannelsFilter;
+  key: Array<ChannelsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -3434,7 +3434,7 @@ export enum EventsFilter {
 
 export type EventsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: EventsFilter;
+  key: Array<EventsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -6141,7 +6141,7 @@ export enum LanguagesFilter {
 
 export type LanguagesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: LanguagesFilter;
+  key: Array<LanguagesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -8533,7 +8533,7 @@ export enum NarrativesFilter {
 
 export type NarrativesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: NarrativesFilter;
+  key: Array<NarrativesFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };

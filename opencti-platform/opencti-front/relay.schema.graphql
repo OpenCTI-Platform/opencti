@@ -7630,7 +7630,7 @@ enum ChannelsFilter {
 }
 
 input ChannelsFiltering {
-  key: ChannelsFilter!
+  key: [ChannelsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -7731,7 +7731,7 @@ enum LanguagesFilter {
 }
 
 input LanguagesFiltering {
-  key: LanguagesFilter!
+  key: [LanguagesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -7837,7 +7837,7 @@ enum EventsFilter {
 }
 
 input EventsFiltering {
-  key: EventsFilter!
+  key: [EventsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -7947,7 +7947,7 @@ enum NarrativesFilter {
 }
 
 input NarrativesFiltering {
-  key: NarrativesFilter!
+  key: [NarrativesFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
