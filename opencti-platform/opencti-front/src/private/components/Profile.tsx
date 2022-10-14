@@ -3,6 +3,7 @@ import { graphql, useLazyLoadQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import ProfileOverview from './profile/ProfileOverview';
 import Loader from '../../components/Loader';
+import type { ProfileQuery } from './__generated__/ProfileQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -29,7 +30,7 @@ export const profileQuery = graphql`
 
 const Profile = () => {
   const classes = useStyles();
-  const data = useLazyLoadQuery(profileQuery, {});
+  const data = useLazyLoadQuery<ProfileQuery>(profileQuery, {});
   const { me, about, settings } = data;
   const modules = settings?.platform_modules ?? [];
   const subscriptionStatus = modules.find((m) => m.id === 'SUBSCRIPTION_MANAGER')?.enable;
