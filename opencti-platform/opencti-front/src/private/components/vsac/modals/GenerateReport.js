@@ -149,6 +149,16 @@ class GenerateReport extends Component {
 		};
 	}
 
+	componentDidMount() {
+		fetchTrendableAnalyses(this.state.analysis_id, this.state.client)
+			.then((response) => {
+				this.setState({ analysisToTrend: response.data });
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
 	componentWillReceiveProps(nextProps) {
 		this.setState({ success: nextProps.success });
 		this.forceUpdate();
@@ -184,7 +194,6 @@ class GenerateReport extends Component {
 
 		const handleDialogOpen = () => {
 			this.setState({ open: true });
-			getTrendableAnalysis(analysis_id, client)
 		};
 
 		const handleClose = () => {
@@ -194,16 +203,6 @@ class GenerateReport extends Component {
 		const handleGenerateReportClose = () => {
 			this.props.onClose();
 		}
-
-		const getTrendableAnalysis = (id, client) => {
-			fetchTrendableAnalyses(id, client)
-				.then((response) => {
-					this.setState({ analysisToTrend: response.data });
-				})
-				.catch((error) => {
-					console.log(error);
-				});
-		};
 
 		const handleAnalysesToTrend = (event) => {
 			if (event.target.checked) {
@@ -368,6 +367,7 @@ class GenerateReport extends Component {
 										<ListItemSecondaryAction>
 											<Button
 												color="primary"
+												disabled={analysisToTrend.length === 1}
 												onClick={handleDialogOpen}>
 												Choose Analysis for Trending
 											</Button>
@@ -390,7 +390,7 @@ class GenerateReport extends Component {
 													<ListItem dense button>
 														<ListItemIcon>
 															<Checkbox
-																checked={checked}
+																checked={scan.analysis_id === analysis_id || checked}
 																edge="start"
 																tabIndex={-1}
 																disableRipple
