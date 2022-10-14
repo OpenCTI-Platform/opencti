@@ -22,7 +22,7 @@ import EntitiesLocationsCreation from './EntitiesLocationsCreation';
 
 const styles = () => ({
   container: {
-    margin: 0,
+    margin: '0 0 40px 0',
   },
   gridContainer: {
     marginBottom: 20,
