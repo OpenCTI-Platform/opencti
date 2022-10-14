@@ -31,24 +31,14 @@ test('renders without crashing', async () => {
     return MockPayloadGenerator.generate(operation, {
       MeUser() {
         return {
-          id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           name: 'admin',
           user_email: 'admin@opencti.io',
-          external: true,
           firstname: 'Admin',
           lastname: 'OpenCTI',
           language: 'auto',
           theme: 'default',
-          api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
-          otp_activated: null,
-          otp_qr: null,
-          description: 'Principal admin account',
           userSubscriptions: {
             edges: [],
-            pageInfo: {
-              endCursor: '',
-              hasNextPage: false,
-            },
           },
         };
       },
@@ -57,37 +47,7 @@ test('renders without crashing', async () => {
       },
       Settings() {
         return {
-          platform_modules: [
-            {
-              id: 'EXPIRATION_SCHEDULER',
-              enable: true,
-            },
-            {
-              id: 'TASK_MANAGER',
-              enable: true,
-            },
-            {
-              id: 'RULE_ENGINE',
-              enable: true,
-            },
-            {
-              id: 'SUBSCRIPTION_MANAGER',
-              enable: true,
-            },
-            {
-              id: 'SYNC_MANAGER',
-              enable: true,
-            },
-            {
-              id: 'RETENTION_MANAGER',
-              enable: true,
-            },
-            {
-              id: 'HISTORY_MANAGER',
-              enable: true,
-            },
-          ],
-          id: 'ed26637e-1604-4cd2-be39-93d81a5f0a29',
+          platform_modules: [],
         };
       },
     });
