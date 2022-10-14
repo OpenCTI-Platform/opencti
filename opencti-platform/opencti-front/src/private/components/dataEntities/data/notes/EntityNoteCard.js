@@ -243,6 +243,7 @@ EntityNoteCardComponent.propTypes = {
   fsd: PropTypes.func,
   onLabelClick: PropTypes.func,
   onBookmarkClick: PropTypes.func,
+  history: PropTypes.object,
 };
 
 const EntityNoteCardFragment = createFragmentContainer(

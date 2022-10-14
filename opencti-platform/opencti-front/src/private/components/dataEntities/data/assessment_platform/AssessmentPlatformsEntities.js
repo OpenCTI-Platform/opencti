@@ -57,6 +57,30 @@ class AssessmentPlatformsEntities extends Component {
     );
   }
 
+  componentWillUnmount() {
+    const {
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+    } = this.state;
+    if (this.props.history.location.pathname !== '/data/entities/assessment_platform'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-assessmentPlatforms',
+        {
+          view,
+          sortBy,
+          searchTerm,
+          orderAsc,
+          filters: [],
+        },
+      );
+    }
+  }
+
   handleChangeView(mode) {
     this.setState({ view: mode }, () => this.saveView());
   }
@@ -141,13 +165,13 @@ class AssessmentPlatformsEntities extends Component {
               ]),
             this.state.filters,
           ),
-        },
+        }, () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
+        }, () => this.saveView(),
       );
     }
   }
