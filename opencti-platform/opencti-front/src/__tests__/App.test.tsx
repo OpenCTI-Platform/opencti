@@ -40,17 +40,17 @@ it('renders without crashing', async () => {
   });
   environment.mock.queueOperationResolver((operation) => profileMockOperation(operation));
   const { getByDisplayValue } = render(
-      <RelayEnvironmentProvider environment={environment}>
-        <BrowserRouter basename={APP_BASE_PATH}>
-          <CompatRouter>
-            <AppIntlProvider settings={{ platform_language: 'auto' }}>
-              <ThemeProvider theme={createTheme()}>
-                <Profile/>
-              </ThemeProvider>
-            </AppIntlProvider>
-          </CompatRouter>
-        </BrowserRouter>
-      </RelayEnvironmentProvider>,
+    <RelayEnvironmentProvider environment={environment}>
+      <BrowserRouter basename={APP_BASE_PATH}>
+        <CompatRouter>
+          <AppIntlProvider settings={{ platform_language: 'auto' }}>
+            <ThemeProvider theme={createTheme()}>
+              <Profile/>
+            </ThemeProvider>
+          </AppIntlProvider>
+        </CompatRouter>
+      </BrowserRouter>
+    </RelayEnvironmentProvider>,
   );
   act(() => {
     const firstname = getByDisplayValue('Admin');

@@ -12,20 +12,20 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const profileQuery = graphql`
-  query ProfileQuery {
-    me {
-      ...ProfileOverview_me
+    query ProfileQuery {
+        me {
+            ...ProfileOverview_me
+        }
+        about {
+            ...ProfileOverview_about
+        }
+        settings {
+            platform_modules {
+                id
+                enable
+            }
+        }
     }
-    about {
-      ...ProfileOverview_about
-    }
-    settings {
-      platform_modules {
-        id
-        enable
-      }
-    }
-  }
 `;
 
 const Profile = () => {
@@ -35,11 +35,11 @@ const Profile = () => {
   const modules = settings?.platform_modules ?? [];
   const subscriptionStatus = modules.find((m) => m.id === 'SUBSCRIPTION_MANAGER')?.enable;
   return (
-      <div className={classes.container}>
-        <Suspense fallback={<Loader />}>
-            <ProfileOverview me={me} about={about} subscriptionStatus={subscriptionStatus} />
-        </Suspense>
-      </div>
+    <div className={classes.container}>
+      <Suspense fallback={<Loader/>}>
+        <ProfileOverview me={me} about={about} subscriptionStatus={subscriptionStatus}/>
+      </Suspense>
+    </div>
   );
 };
 
