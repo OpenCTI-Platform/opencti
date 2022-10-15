@@ -122,7 +122,10 @@ const uniqFilters = [
   'revoked',
   'x_opencti_detection',
   'x_opencti_base_score_gt',
+  'x_opencti_base_score_lte',
+  'x_opencti_base_score_lte',
   'confidence_gt',
+  'confidence_lte',
   'x_opencti_negative',
   'x_opencti_score_gt',
   'x_opencti_score_lte',
@@ -167,7 +170,6 @@ export const relationTypes = [
   'uses',
   'located-at',
 ];
-export const allEntityTypes = [...entityTypes, ...relationTypes];
 
 export const isUniqFilter = (key) => uniqFilters.includes(key)
   || key.endsWith('start_date')
@@ -345,6 +347,9 @@ class Filters extends Component {
 
   searchEntities(filterKey, event) {
     const { searchScope } = this.state;
+    const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const scores = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'];
+    const confidences = ['0', '15', '50', '75', '85'];
     const { t, theme, availableEntityTypes, availableRelationshipTypes } = this.props;
     if (!event) {
       return;
@@ -558,9 +563,65 @@ class Filters extends Component {
             });
           });
         break;
-      case 'x_opencti_base_score_gt':
+      case 'x_opencti_base_score':
         // eslint-disable-next-line no-case-declarations
-        const baseScoreEntities = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => ({
+        const baseScoreEntities = ['lte', 'gt'].flatMap((group) => baseScores.map((n) => ({
+          label: n,
+          value: n,
+          type: 'attribute',
+          group,
+        })));
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            x_opencti_base_score: R.union(
+              baseScoreEntities,
+              this.state.entities.x_opencti_base_score,
+            ),
+          },
+        });
+        break;
+      // region confidence
+      case 'confidence':
+        // eslint-disable-next-line no-case-declarations
+        const confidenceEntities = ['lte', 'gt'].flatMap((group) => confidences.map((n) => ({
+          label: n,
+          value: n,
+          type: 'attribute',
+          group,
+        })));
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            confidence: R.union(
+              confidenceEntities,
+              this.state.entities.confidence,
+            ),
+          },
+        });
+        break;
+      case 'confidence_gt':
+        // eslint-disable-next-line no-case-declarations
+        const confidenceEntitiesGt = R.pipe(
+          R.map((n) => ({
+            label: t(`confidence_${n.toString()}`),
+            value: n,
+            type: 'attribute',
+          })),
+        )(confidences);
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            confidence_gt: R.union(
+              confidenceEntitiesGt,
+              this.state.entities.confidence_gt,
+            ),
+          },
+        });
+        break;
+      case 'confidence_lte':
+        // eslint-disable-next-line no-case-declarations
+        const confidenceLteEntities = confidences.map((n) => ({
           label: n,
           value: n,
           type: 'attribute',
@@ -568,47 +629,18 @@ class Filters extends Component {
         this.setState({
           entities: {
             ...this.state.entities,
-            x_opencti_base_score_gt: R.union(
-              baseScoreEntities,
-              this.state.entities.x_opencti_base_score_gt,
+            confidence_lte: R.union(
+              confidenceLteEntities,
+              this.state.entities.confidence_lte,
             ),
           },
         });
         break;
-      case 'confidence_gt':
-        // eslint-disable-next-line no-case-declarations
-        const confidenceEntities = R.pipe(
-          R.map((n) => ({
-            label: t(`confidence_${n.toString()}`),
-            value: n,
-            type: 'attribute',
-          })),
-        )(['0', '15', '50', '75', '85']);
-        this.setState({
-          entities: {
-            ...this.state.entities,
-            confidence_gt: R.union(
-              confidenceEntities,
-              this.state.entities.confidence_gt,
-            ),
-          },
-        });
-        break;
+      // endregion
+      // region x_opencti_score
       case 'x_opencti_score':
         // eslint-disable-next-line no-case-declarations
-        const scoreEntities = ['lte', 'gt'].flatMap((group) => [
-          '0',
-          '10',
-          '20',
-          '30',
-          '40',
-          '50',
-          '60',
-          '70',
-          '80',
-          '90',
-          '100',
-        ].map((n) => ({
+        const scoreEntities = ['lte', 'gt'].flatMap((group) => scores.map((n) => ({
           label: n,
           value: n,
           type: 'attribute',
@@ -626,7 +658,7 @@ class Filters extends Component {
         break;
       case 'x_opencti_score_gt':
         // eslint-disable-next-line no-case-declarations
-        const scoreGtEntities = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'].map((n) => ({
+        const scoreGtEntities = scores.map((n) => ({
           label: n,
           value: n,
           type: 'attribute',
@@ -643,7 +675,7 @@ class Filters extends Component {
         break;
       case 'x_opencti_score_lte':
         // eslint-disable-next-line no-case-declarations
-        const scoreLteEntities = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'].map((n) => ({
+        const scoreLteEntities = scores.map((n) => ({
           label: n,
           value: n,
           type: 'attribute',
@@ -658,6 +690,7 @@ class Filters extends Component {
           },
         });
         break;
+      // endregion
       case 'x_opencti_detection':
         // eslint-disable-next-line no-case-declarations
         const detectionEntities = R.pipe(
@@ -1417,7 +1450,7 @@ class Filters extends Component {
                 groupBy={
                   ['fromId', 'toId'].includes(filterKey)
                     ? (option) => option.type
-                    : (option) => t(`filter_${filterKey}_${option.group}`)
+                    : (option) => t(option.group ? option.group : `filter_${filterKey}`)
                 }
                 isOptionEqualToValue={(option, value) => option.value === value.value}
                 renderInput={(params) => (
@@ -1772,10 +1805,7 @@ class Filters extends Component {
                             <strong>{label}</strong>: {values}
                           </div>
                         }
-                        onDelete={this.handleRemoveFilter.bind(
-                          this,
-                          currentFilter[0],
-                        )}
+                        onDelete={this.handleRemoveFilter.bind(this, currentFilter[0])}
                       />
                       {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
                         <Chip

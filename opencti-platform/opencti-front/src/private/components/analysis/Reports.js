@@ -244,13 +244,13 @@ class Reports extends Component {
           iconExtension={true}
           availableFilterKeys={[
             'report_types',
-            'confidence_gt',
             'x_opencti_workflow_id',
             'labelledBy',
             'createdBy',
             'markedBy',
             'published_start_date',
             'published_end_date',
+            'confidence',
           ]}
         >
           <QueryRenderer

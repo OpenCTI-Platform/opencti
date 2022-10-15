@@ -572,7 +572,7 @@ class UserSubscriptionCreation extends Component {
                         'markedBy',
                         'labelledBy',
                         'createdBy',
-                        'confidence_gt',
+                        'confidence',
                       ]}
                       handleAddFilter={this.handleAddFilter.bind(this)}
                       noDirectFilters={true}
