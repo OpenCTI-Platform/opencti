@@ -456,7 +456,7 @@ class StixDomainObjectsList extends Component {
                     'markedBy',
                     'createdBy',
                     'labelledBy',
-                    'confidence_gt',
+                    'confidence',
                   ]}
                   handleAddFilter={this.handleAddFilter.bind(this)}
                   handleRemoveFilter={this.handleRemoveFilter.bind(this)}

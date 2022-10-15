@@ -375,7 +375,7 @@ const UserSubscriptionEditionContainer = (props) => {
                     'markedBy',
                     'labelledBy',
                     'createdBy',
-                    'confidence_gt',
+                    'confidence',
                   ]}
                   currentFilters={[]}
                   handleAddFilter={handleAddFilter}

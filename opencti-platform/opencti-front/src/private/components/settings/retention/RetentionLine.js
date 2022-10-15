@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert, LayersClearOutlined } from '@mui/icons-material';
-import { compose, last, map, toPairs } from 'ramda';
+import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
+import * as R from 'ramda';
 import Chip from '@mui/material/Chip';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
@@ -68,7 +68,7 @@ class RetentionLineComponent extends Component {
   render() {
     const { t, classes, node, dataColumns, paginationOptions, nsdt, n } = this.props;
     const filters = JSON.parse(node.filters);
-    const filterPairs = toPairs(filters);
+    const filterPairs = R.toPairs(filters);
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -83,25 +83,22 @@ class RetentionLineComponent extends Component {
               >
                 {node.name}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                 {filterPairs.length > 0 ? (
-                  map((currentFilter) => {
+                  R.map((currentFilter) => {
                     const label = `${truncate(
                       t(`filter_${currentFilter[0]}`),
                       20,
                     )}`;
                     const values = (
                       <span>
-                        {map(
+                        {R.map(
                           (val) => (
                             <span key={val.value}>
                               {val.value && val.value.length > 0
                                 ? truncate(val.value, 15)
                                 : t('No label')}{' '}
-                              {last(currentFilter[1]).value !== val.value && (
+                              {R.last(currentFilter[1]).value !== val.value && (
                                 <code>OR</code>
                               )}{' '}
                             </span>
@@ -121,7 +118,7 @@ class RetentionLineComponent extends Component {
                             </div>
                           }
                         />
-                        {last(toPairs(filters))[0] !== currentFilter[0] && (
+                        {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
                           <Chip
                             classes={{ root: classes.operator }}
                             label={t('AND')}
@@ -197,7 +194,7 @@ const RetentionLineFragment = createFragmentContainer(RetentionLineComponent, {
   `,
 });
 
-export const RetentionLine = compose(
+export const RetentionLine = R.compose(
   inject18n,
   withStyles(styles),
 )(RetentionLineFragment);
@@ -289,7 +286,7 @@ RetentionDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const RetentionLineDummy = compose(
+export const RetentionLineDummy = R.compose(
   inject18n,
   withStyles(styles),
 )(RetentionDummyComponent);

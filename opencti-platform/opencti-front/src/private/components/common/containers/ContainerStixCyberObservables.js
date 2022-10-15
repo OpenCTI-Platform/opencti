@@ -288,8 +288,7 @@ class ContainerStixCyberObservablesComponent extends Component {
                 'markedBy',
                 'created_at_start_date',
                 'created_at_end_date',
-                'x_opencti_score_gt',
-                'x_opencti_score_lte',
+                'x_opencti_score',
                 'createdBy',
                 'sightedBy',
               ]}
