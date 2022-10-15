@@ -1,9 +1,10 @@
 const esbuild = require('esbuild');
 const {default: graphqlLoaderPlugin} = require('@luckycatfactory/esbuild-graphql-loader');
+const nativeNodePlugin = require("../plugin/native.node.plugin");
 
 esbuild.build({
     logLevel: 'info',
-    plugins: [graphqlLoaderPlugin()],
+    plugins: [graphqlLoaderPlugin(), nativeNodePlugin()],
     entryPoints: ['script/script-generate-schema.js'],
     entryNames: "[name]",
     bundle: true,
