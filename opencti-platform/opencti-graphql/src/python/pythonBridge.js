@@ -1,11 +1,10 @@
 import { PythonShell } from 'python-shell';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-// import * as nodecallspython from 'node-calls-python';
+import * as nodecallspython from 'node-calls-python';
 import { DEV_MODE, logApp } from '../config/conf';
 import { UnknownError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 
-/*
 // Importing python runtime scripts
 const py = nodecallspython.interpreter;
 const pyCheckIndicator = py.importSync('./src/python/runtime/check_indicator.py');
@@ -13,7 +12,6 @@ const CHECK_INDICATOR_SCRIPT = { fn: 'check_indicator', py: pyCheckIndicator };
 
 const pyCreatePattern = py.importSync('./src/python/runtime/stix2_create_pattern.py');
 const CREATE_PATTERN_SCRIPT = { fn: 'stix2_create_pattern', py: pyCreatePattern };
-*/
 
 export const execTestingPython = async (context, user, scriptPath, scriptName, args, stopCondition) => {
   const execPythonTestingProcessFn = () => {
@@ -68,7 +66,7 @@ export const execTestingPython = async (context, user, scriptPath, scriptName, a
     [SemanticAttributes.DB_NAME]: 'python_testing_engine',
   }, execPythonTestingProcessFn);
 };
-/*
+
 export const execNativePython = async (context, user, script, ...args) => {
   const execNativePythonFn = async () => {
     try {
@@ -100,39 +98,4 @@ export const checkIndicatorSyntax = async (context, user, patternType, indicator
 };
 export const checkPythonAvailability = async (context, user) => {
   return execNativePython(context, user, CREATE_PATTERN_SCRIPT, 'check', 'health');
-};
-*/
-
-export const createStixPattern = async (context, user, observableType, observableValue) => {
-  try {
-    const result = await execTestingPython(
-      context,
-      user,
-      './src/python/runtime',
-      'stix2_create_pattern.py',
-      [observableType, observableValue]
-    );
-    return result.data;
-  } catch (err) {
-    logApp.warn(`[BRIDGE] createStixPattern error > ${err.message}`);
-    return null;
-  }
-};
-export const checkIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
-  try {
-    const result = await execTestingPython(
-      context,
-      user,
-      './src/python/runtime',
-      'check_indicator.py',
-      [patternType, indicatorValue]
-    );
-    return result.data;
-  } catch (err) {
-    logApp.warn(`[BRIDGE] extractObservables error > ${err.message}`);
-    return null;
-  }
-};
-export const checkPythonAvailability = (context, user) => {
-  return execTestingPython(context, user, './src/python/runtime', 'stix2_create_pattern.py', ['check', 'health']);
 };
