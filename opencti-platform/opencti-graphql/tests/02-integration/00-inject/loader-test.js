@@ -1,5 +1,5 @@
 import { ADMIN_USER, API_TOKEN, API_URI, FIVE_MINUTES, PYTHON_PATH, testContext } from '../../utils/testQuery';
-import { execTestingPython } from '../../../src/python/pythonBridge';
+import { execChildPython } from '../../../src/python/pythonBridge';
 import { shutdownModules, startModules } from '../../../src/modules';
 import { elDeleteIndexes } from '../../../src/database/engine';
 import { ELASTIC_CREATION_PATTERN } from '../../../src/config/conf';
@@ -22,7 +22,7 @@ describe('Database provision', () => {
     'Should import creation succeed',
     async () => {
       await startModules();
-      const execution = await execTestingPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
+      const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();
@@ -34,7 +34,7 @@ describe('Database provision', () => {
     'Should import update succeed',
     async () => {
       await startModules();
-      const execution = await execTestingPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
+      const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       await shutdownModules();

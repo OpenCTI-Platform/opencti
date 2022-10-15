@@ -85,8 +85,5 @@ if __name__ == "__main__":
     if len(sys.argv) <= 2:
         return_data({'status': 'error', 'message': 'Missing argument to the Python script'})
 
-    if sys.argv[1] == 'check':
-        return_data({'status': 'success'})
-
     data = stix2_create_pattern(sys.argv[1], sys.argv[2])
     return_data(data)
