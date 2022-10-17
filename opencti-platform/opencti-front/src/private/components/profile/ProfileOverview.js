@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import qrcode from 'qrcode';
 import withStyles from '@mui/styles/withStyles';
 import { compose, pick } from 'ramda';
@@ -28,11 +28,7 @@ import { makeStyles, useTheme } from '@mui/styles';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import {
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer, } from '../../../relay/environment';
 import { OPENCTI_ADMIN_UUID } from '../../../utils/Security';
 import UserSubscriptionCreation from './UserSubscriptionCreation';
 import UserSubscriptionPopover from './UserSubscriptionPopover';
@@ -58,47 +54,47 @@ const useStyles = makeStyles(() => ({
 }));
 
 const profileOverviewFieldPatch = graphql`
-  mutation ProfileOverviewFieldPatchMutation(
-    $input: [EditInput]!
-    $password: String
-  ) {
-    meEdit(input: $input, password: $password) {
-      ...ProfileOverview_me
+    mutation ProfileOverviewFieldPatchMutation(
+        $input: [EditInput]!
+        $password: String
+    ) {
+        meEdit(input: $input, password: $password) {
+            ...ProfileOverview_me
+        }
     }
-  }
 `;
 
 const renewTokenPatch = graphql`
-  mutation ProfileOverviewTokenRenewMutation {
-    meTokenRenew {
-      ...ProfileOverview_me
+    mutation ProfileOverviewTokenRenewMutation {
+        meTokenRenew {
+            ...ProfileOverview_me
+        }
     }
-  }
 `;
 
 const generateOTP = graphql`
-  query ProfileOverviewOTPQuery {
-    otpGeneration {
-      secret
-      uri
+    query ProfileOverviewOTPQuery {
+        otpGeneration {
+            secret
+            uri
+        }
     }
-  }
 `;
 
 const validateOtpPatch = graphql`
-  mutation ProfileOverviewOtpMutation($input: UserOTPActivationInput) {
-    otpActivation(input: $input) {
-      ...ProfileOverview_me
+    mutation ProfileOverviewOtpMutation($input: UserOTPActivationInput) {
+        otpActivation(input: $input) {
+            ...ProfileOverview_me
+        }
     }
-  }
 `;
 
 const disableOtpPatch = graphql`
-  mutation ProfileOverviewOtpDisableMutation {
-    otpDeactivation {
-      ...ProfileOverview_me
+    mutation ProfileOverviewOtpDisableMutation {
+        otpDeactivation {
+            ...ProfileOverview_me
+        }
     }
-  }
 `;
 
 const userValidation = (t) => Yup.object().shape({
@@ -164,7 +160,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
   }, [uri, theme]);
   return (
     <div style={{ textAlign: 'center' }}>
-      <img src={otpQrImage} style={{ width: 265 }} alt="" />
+      <img src={otpQrImage} style={{ width: 265 }} alt=""/>
       {error ? (
         <Alert
           severity="error"
@@ -234,7 +230,7 @@ const OtpComponent = ({ closeFunction }) => (
           />
         );
       }
-      return <Loader />;
+      return <Loader/>;
     }}
   />
 );
@@ -243,6 +239,7 @@ const ProfileOverviewComponent = (props) => {
   const { t, me, classes, fldt, subscriptionStatus, about } = props;
   const { external, otp_activated: useOtp } = me;
   const [display2FA, setDisplay2FA] = useState(false);
+  const subscriptionEdges = me.userSubscriptions?.edges ?? [];
 
   const initialValues = pick(
     [
@@ -301,17 +298,13 @@ const ProfileOverviewComponent = (props) => {
 
   return (
     <div>
-      <Dialog
-        open={display2FA}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={false}
-        onClose={() => setDisplay2FA(false)}
-      >
+      <Dialog open={display2FA} PaperProps={{ elevation: 1 }}
+              keepMounted={false} onClose={() => setDisplay2FA(false)}>
         <DialogTitle style={{ textAlign: 'center' }}>
           {t('Enable two-factor authentication')}
         </DialogTitle>
         <DialogContent>
-          <OtpComponent closeFunction={() => setDisplay2FA(false)} />
+          <OtpComponent closeFunction={() => setDisplay2FA(false)}/>
         </DialogContent>
       </Dialog>
       <Grid container={true} spacing={3}>
@@ -320,11 +313,9 @@ const ProfileOverviewComponent = (props) => {
             <Typography variant="h1" gutterBottom={true}>
               {t('Profile')} {external && `(${t('external')})`}
             </Typography>
-            <Formik
-              enableReinitialize={true}
-              initialValues={initialValues}
-              validationSchema={userValidation(t)}
-            >
+            <Formik enableReinitialize={true}
+                    initialValues={initialValues}
+                    validationSchema={userValidation(t)}>
               {() => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
@@ -435,10 +426,10 @@ const ProfileOverviewComponent = (props) => {
                 )}
               </Alert>
             )}
-            {me.userSubscriptions.edges.length > 0 ? (
+            {subscriptionEdges.length > 0 ? (
               <div style={{ marginTop: 10 }}>
                 <List>
-                  {me.userSubscriptions.edges.map((userSubscriptionEdge) => {
+                  {subscriptionEdges.map((userSubscriptionEdge) => {
                     const userSubscription = userSubscriptionEdge.node;
                     return (
                       <ListItem
@@ -448,7 +439,7 @@ const ProfileOverviewComponent = (props) => {
                         disabled={!subscriptionStatus}
                       >
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <SendClockOutline />
+                          <SendClockOutline/>
                         </ListItemIcon>
                         <ListItemText
                           primary={userSubscription.name}
@@ -502,7 +493,7 @@ const ProfileOverviewComponent = (props) => {
                 <Button
                   type="button"
                   color="primary"
-                  startIcon={<NoEncryptionOutlined />}
+                  startIcon={<NoEncryptionOutlined/>}
                   onClick={disableOtp}
                   classes={{ root: classes.button }}
                 >
@@ -513,7 +504,7 @@ const ProfileOverviewComponent = (props) => {
                 <Button
                   type="button"
                   color="secondary"
-                  startIcon={<LockOutlined />}
+                  startIcon={<LockOutlined/>}
                   onClick={() => setDisplay2FA(true)}
                   classes={{ root: classes.button }}
                 >
@@ -521,7 +512,7 @@ const ProfileOverviewComponent = (props) => {
                 </Button>
               )}
             </div>
-            <div className="clearfix" />
+            <div className="clearfix"/>
             <Formik
               enableReinitialize={true}
               initialValues={{
@@ -616,7 +607,7 @@ const ProfileOverviewComponent = (props) => {
               </Typography>
               <pre>
                 Content-Type: application/json
-                <br />
+                <br/>
                 Authorization: Bearer {me.api_token}
               </pre>
               <Button
@@ -646,146 +637,146 @@ ProfileOverviewComponent.propTypes = {
 
 const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   me: graphql`
-    fragment ProfileOverview_me on MeUser {
-      id
-      name
-      user_email
-      external
-      firstname
-      lastname
-      language
-      theme
-      api_token
-      otp_activated
-      otp_qr
-      description
-      userSubscriptions(first: 200) @connection(key: "Pagination_userSubscriptions") {
-        edges {
-          node {
-            id
-            name
-            options
-            cron
-            filters
-            last_run
-            entities {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreObject {
-                created_at
-                createdBy {
-                  ... on Identity {
-                    id
-                    name
-                    entity_type
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
+      fragment ProfileOverview_me on MeUser {
+          id
+          name
+          user_email
+          external
+          firstname
+          lastname
+          language
+          theme
+          api_token
+          otp_activated
+          otp_qr
+          description
+          userSubscriptions(first: 200) @connection(key: "Pagination_userSubscriptions") {
+              edges {
+                  node {
                       id
-                      definition
-                    }
+                      name
+                      options
+                      cron
+                      filters
+                      last_run
+                      entities {
+                          ... on BasicObject {
+                              id
+                              entity_type
+                              parent_types
+                          }
+                          ... on StixCoreObject {
+                              created_at
+                              createdBy {
+                                  ... on Identity {
+                                      id
+                                      name
+                                      entity_type
+                                  }
+                              }
+                              objectMarking {
+                                  edges {
+                                      node {
+                                          id
+                                          definition
+                                      }
+                                  }
+                              }
+                          }
+                          ... on StixDomainObject {
+                              created
+                          }
+                          ... on AttackPattern {
+                              name
+                              x_mitre_id
+                          }
+                          ... on Campaign {
+                              name
+                              first_seen
+                          }
+                          ... on CourseOfAction {
+                              name
+                          }
+                          ... on Note {
+                              attribute_abstract
+                              content
+                          }
+                          ... on ObservedData {
+                              first_observed
+                              last_observed
+                          }
+                          ... on Opinion {
+                              opinion
+                          }
+                          ... on Report {
+                              name
+                              published
+                          }
+                          ... on Individual {
+                              name
+                          }
+                          ... on Organization {
+                              name
+                          }
+                          ... on Sector {
+                              name
+                          }
+                          ... on System {
+                              name
+                          }
+                          ... on Indicator {
+                              name
+                              valid_from
+                          }
+                          ... on Infrastructure {
+                              name
+                          }
+                          ... on IntrusionSet {
+                              name
+                          }
+                          ... on Position {
+                              name
+                          }
+                          ... on City {
+                              name
+                          }
+                          ... on Country {
+                              name
+                          }
+                          ... on Region {
+                              name
+                          }
+                          ... on Malware {
+                              name
+                              first_seen
+                              last_seen
+                          }
+                          ... on ThreatActor {
+                              name
+                              first_seen
+                              last_seen
+                          }
+                          ... on Tool {
+                              name
+                          }
+                          ... on Vulnerability {
+                              name
+                          }
+                          ... on Incident {
+                              name
+                              first_seen
+                              last_seen
+                          }
+                      }
                   }
-                }
               }
-              ... on StixDomainObject {
-                created
-              }
-              ... on AttackPattern {
-                name
-                x_mitre_id
-              }
-              ... on Campaign {
-                name
-                first_seen
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Note {
-                attribute_abstract
-                content
-              }
-              ... on ObservedData {
-                first_observed
-                last_observed
-              }
-              ... on Opinion {
-                opinion
-              }
-              ... on Report {
-                name
-                published
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on System {
-                name
-              }
-              ... on Indicator {
-                name
-                valid_from
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-                first_seen
-                last_seen
-              }
-              ... on ThreatActor {
-                name
-                first_seen
-                last_seen
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on Incident {
-                name
-                first_seen
-                last_seen
-              }
-            }
           }
-        }
       }
-    }
   `,
   about: graphql`
-    fragment ProfileOverview_about on AppInfo {
-      version
-    }
+      fragment ProfileOverview_about on AppInfo {
+          version
+      }
   `,
 });
 

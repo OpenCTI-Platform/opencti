@@ -19,7 +19,9 @@ import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { LOGIN_ACTION } from '../config/audit';
 import initHttpRollingFeeds from './httpRollingFeed';
-import { executionContext } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
+import { getEntitiesFromCache } from '../manager/cacheManager';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -90,7 +92,7 @@ const createApp = async (app) => {
   // -- Serv playground resources
   app.use(`${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static`, express.static('static/playground'));
 
-  // -- Serv static resources
+  // -- Serv frontend static resources
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
@@ -253,9 +255,24 @@ const createApp = async (app) => {
   });
 
   // Other routes - Render index.html
-  app.get('*', (req, res) => {
+  app.get('*', async (req, res) => {
+    const context = executionContext('app_loading');
+    const settings = await getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const getSetting = async (field) => {
+      const isSettings = settings && settings.length > 0;
+      return isSettings ? settings[0][field] : undefined;
+    };
     const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
-    const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
+    const title = await getSetting('platform_title') ?? 'Cyber threat intelligence platform';
+    const description = 'OpenCTI is an open source platform allowing organizations'
+      + ' to manage their cyber threat intelligence knowledge and observables.';
+    const settingFavicon = await getSetting('platform_favicon');
+    const withOptionValued = data
+      .replace(/%BASE_PATH%/g, basePath)
+      .replace(/%APP_TITLE%/g, title)
+      .replace(/%APP_DESCRIPTION%/g, description)
+      .replace(/%APP_FAVICON%/g, settingFavicon ?? `${basePath}/static/ext/favicon.png`)
+      .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
     res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.set('Expires', '-1');
     res.set('Pragma', 'no-cache');

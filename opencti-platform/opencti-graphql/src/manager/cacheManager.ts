@@ -5,6 +5,7 @@ import { connectors } from '../database/repository';
 import {
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_RULE,
+  ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_STATUS_TEMPLATE
 } from '../schema/internalObject';
@@ -65,6 +66,12 @@ const platformMarkings = async (context: AuthContext) => {
   };
   return { values: await reloadMarkings(), fn: reloadMarkings };
 };
+const platformSettings = async (context: AuthContext) => {
+  const reloadSettings = async () => {
+    return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS], { connectionFormat: false });
+  };
+  return { values: await reloadSettings(), fn: reloadSettings };
+};
 
 const initCacheManager = () => {
   let subscribeIdentifier: number;
@@ -77,6 +84,7 @@ const initCacheManager = () => {
       cache[ENTITY_TYPE_CONNECTOR] = await platformConnectors(context);
       cache[ENTITY_TYPE_RULE] = await platformRules(context);
       cache[ENTITY_TYPE_MARKING_DEFINITION] = await platformMarkings(context);
+      cache[ENTITY_TYPE_SETTINGS] = await platformSettings(context);
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
       subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {
