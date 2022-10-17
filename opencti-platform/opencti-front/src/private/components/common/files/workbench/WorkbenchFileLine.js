@@ -8,7 +8,6 @@ import IconButton from '@mui/material/IconButton';
 import { FileOutline } from 'mdi-material-ui';
 import {
   DeleteOutlined,
-  CancelOutlined,
   GetAppOutlined,
   WarningOutlined,
 } from '@mui/icons-material';
@@ -25,14 +24,14 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
-import FileWork from './FileWork';
-import inject18n from '../../../../components/i18n';
+import FileWork from '../FileWork';
+import inject18n from '../../../../../components/i18n';
 import {
   APP_BASE_PATH,
   commitMutation,
   MESSAGING$,
-} from '../../../../relay/environment';
-import { toB64 } from '../../../../utils/String';
+} from '../../../../../relay/environment';
+import { toB64 } from '../../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -56,21 +55,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const PendingFileLineDeleteMutation = graphql`
-  mutation PendingFileLineDeleteMutation($fileName: String) {
+const WorkbenchFileLineDeleteMutation = graphql`
+  mutation WorkbenchFileLineDeleteMutation($fileName: String) {
     deleteImport(fileName: $fileName)
   }
 `;
 
-const PendingFileLineAskDeleteMutation = graphql`
-  mutation PendingFileLineAskDeleteMutation($workId: ID!) {
+const WorkbenchFileLineAskDeleteMutation = graphql`
+  mutation WorkbenchFileLineAskDeleteMutation($workId: ID!) {
     workEdit(id: $workId) {
       delete
     }
   }
 `;
 
-class PendingFileLineComponent extends Component {
+class WorkbenchFileLineComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { displayDelete: false };
@@ -106,12 +105,12 @@ class PendingFileLineComponent extends Component {
   }
 
   handleRemoveFile(name) {
-    this.executeRemove(PendingFileLineDeleteMutation, { fileName: name });
+    this.executeRemove(WorkbenchFileLineDeleteMutation, { fileName: name });
     this.setState({ displayDelete: false });
   }
 
   handleRemoveJob(id) {
-    this.executeRemove(PendingFileLineAskDeleteMutation, { workId: id });
+    this.executeRemove(WorkbenchFileLineAskDeleteMutation, { workId: id });
   }
 
   render() {
@@ -122,7 +121,6 @@ class PendingFileLineComponent extends Component {
     const isFail = errors.length > 0;
     const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
     const isOutdated = uploadStatus === 'timeout';
-    const isDeleteActive = file.works.length > 0;
     return (
       <div>
         <ListItem
@@ -174,33 +172,18 @@ class PendingFileLineComponent extends Component {
                 </span>
               </Tooltip>
             )}
-            {isDeleteActive ? (
-              <Tooltip title={t('Delete this pending bundle')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress}
-                    color={nested ? 'inherit' : 'primary'}
-                    onClick={this.handleOpenDelete.bind(this)}
-                    size="large"
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            ) : (
-              <Tooltip title={t('Drop this pending bundle')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress}
-                    color={nested ? 'inherit' : 'primary'}
-                    onClick={this.handleOpenDelete.bind(this)}
-                    size="large"
-                  >
-                    <CancelOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            )}
+            <Tooltip title={t('Delete this workbench')}>
+              <span>
+                <IconButton
+                  disabled={isProgress}
+                  color={nested ? 'inherit' : 'primary'}
+                  onClick={this.handleOpenDelete.bind(this)}
+                  size="large"
+                >
+                  <DeleteOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
           </ListItemSecondaryAction>
         </ListItem>
         <FileWork file={file} />
@@ -212,7 +195,7 @@ class PendingFileLineComponent extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to drop this bundle?')}
+              {t('Do you want to delete this workbench?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -232,7 +215,7 @@ class PendingFileLineComponent extends Component {
   }
 }
 
-PendingFileLineComponent.propTypes = {
+WorkbenchFileLineComponent.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
   classes: PropTypes.object,
@@ -245,9 +228,9 @@ PendingFileLineComponent.propTypes = {
   nested: PropTypes.bool,
 };
 
-const PendingFileLine = createFragmentContainer(PendingFileLineComponent, {
+const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
   file: graphql`
-    fragment PendingFileLine_file on File {
+    fragment WorkbenchFileLine_file on File {
       id
       name
       uploadStatus
@@ -338,4 +321,4 @@ const PendingFileLine = createFragmentContainer(PendingFileLineComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(PendingFileLine);
+export default compose(inject18n, withStyles(styles))(WorkbenchFileLine);

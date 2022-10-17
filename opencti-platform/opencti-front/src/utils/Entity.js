@@ -172,9 +172,11 @@ export const resolveLocationType = (entity) => {
   }
   if (entity.city) {
     return 'City';
-  } if (entity.country) {
+  }
+  if (entity.country) {
     return 'Country';
-  } if (entity.region) {
+  }
+  if (entity.region) {
     return 'Region';
   }
   return 'Position';
@@ -989,3 +991,21 @@ export const booleanAttributes = [
 export const multipleAttributes = ['x_opencti_additional_names', 'protocols'];
 
 export const markdownAttributes = ['description', 'x_opencti_description'];
+
+export const typesWithOpenCTIAliases = [
+  'Course-Of-Action',
+  'Identity',
+  'Individual',
+  'Organization',
+  'Sector',
+  'Position',
+  'Location',
+  'City',
+  'Country',
+  'Region',
+  'Event',
+  'Channel',
+  'Narrative',
+];
+
+export const typesWithoutAliases = ['Indicator', 'Vulnerability', 'Language'];

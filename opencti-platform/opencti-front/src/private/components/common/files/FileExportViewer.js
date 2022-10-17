@@ -23,6 +23,7 @@ const styles = () => ({
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
     borderRadius: 6,
+    marginTop: 2,
   },
 });
 
@@ -51,7 +52,7 @@ const FileExportViewerBase = ({
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Exported files')}
         </Typography>
-        <div style={{ float: 'left', marginTop: -17 }}>
+        <div style={{ float: 'left', marginTop: -15 }}>
           <Tooltip
             title={
               isExportPossible
@@ -66,7 +67,7 @@ const FileExportViewerBase = ({
                 disabled={!isExportPossible}
                 aria-haspopup="true"
                 color="primary"
-                size="large"
+                size="medium"
               >
                 <FileExportOutline />
               </IconButton>

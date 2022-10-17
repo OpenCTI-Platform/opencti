@@ -266,6 +266,7 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
         node {
           id
           entity_type
+          standard_id
           ... on AttackPattern {
             name
             description

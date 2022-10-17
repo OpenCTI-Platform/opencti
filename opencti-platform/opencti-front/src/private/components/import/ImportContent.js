@@ -34,7 +34,7 @@ import FileLine from '../common/files/FileLine';
 import inject18n from '../../../components/i18n';
 import FileUploader from '../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
-import PendingFileLine from '../common/files/PendingFileLine';
+import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
 import TextField from '../../../components/TextField';
 
@@ -56,6 +56,7 @@ const styles = (theme) => ({
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
     borderRadius: 6,
+    marginTop: 2,
   },
   item: {
     paddingLeft: 10,
@@ -91,7 +92,7 @@ export const importContentQuery = graphql`
       edges {
         node {
           id
-          ...PendingFileLine_file
+          ...WorkbenchFileLine_file
           metaData {
             mimetype
           }
@@ -313,7 +314,7 @@ class ImportContentComponent extends Component {
             <Paper
               classes={{ root: classes.paper }}
               variant="outlined"
-              style={{ marginTop: 15 }}
+              style={{ marginTop: 12 }}
             >
               {connectors.length ? (
                 <List>
@@ -389,7 +390,7 @@ class ImportContentComponent extends Component {
                 {pendingFilesEdges.length ? (
                   <List>
                     {pendingFilesEdges.map((file) => (
-                      <PendingFileLine
+                      <WorkbenchFileLine
                         key={file.node.id}
                         file={file.node}
                         connectors={

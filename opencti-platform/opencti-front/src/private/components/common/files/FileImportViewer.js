@@ -22,6 +22,7 @@ const styles = () => ({
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
     borderRadius: 6,
+    marginTop: 2,
   },
 });
 
@@ -51,14 +52,16 @@ const FileImportViewerBase = ({
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Uploaded files')}
         </Typography>
-        <div style={{ float: 'left', marginTop: -17 }}>
+        <div style={{ float: 'left', marginTop: -15 }}>
           <FileUploader
             entityId={id}
             onUploadSuccess={() => relay.refetch({ id })}
+            size="medium"
           />
           <FreeTextUploader
             entityId={id}
             onUploadSuccess={() => relay.refetch({ id })}
+            size="medium"
           />
         </div>
         <div className="clearfix" />

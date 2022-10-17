@@ -11,8 +11,7 @@ const i18n = {
         'Ha ocurrido un error desconocido. Inténtalo de nuevo más tarde.',
       'You must be logged in to do this.':
         'Tienes que iniciar sesión para hacer esto.',
-      'You are not allowed to do this.':
-        'No tienes permitido hacer esto.',
+      'You are not allowed to do this.': 'No tienes permitido hacer esto.',
       'You have successfully logged out.': 'Has cerrado sesión con éxito.',
       'You do not have any access to the knowledge of this OpenCTI instance.':
         'No tienes acceso al conocimiento de esta instancia de OpenCTI.',
@@ -42,57 +41,41 @@ const i18n = {
       'Global keyword': 'Palabra clave global',
       'Search for a threat...': 'Investigar una amenaza...',
       'Affected software': 'Aplicaciones afectadas',
-      'Do you want to delete this entity?':
-        '¿Quieres borrar esta entidad?',
-      'Do you want to delete this user?':
-        '¿Quieres borrar este usuario?',
-      'Do you want to delete this file?':
-        '¿Quieres borrar este fichero?',
-      'Do you want to remove this job?':
-        '¿Quieres borrar esta tarea?',
-      'Do you want to delete this group?':
-        '¿Quieres borrar este grupo?',
+      'Do you want to delete this entity?': '¿Quieres borrar esta entidad?',
+      'Do you want to delete this user?': '¿Quieres borrar este usuario?',
+      'Do you want to delete this file?': '¿Quieres borrar este fichero?',
+      'Do you want to remove this job?': '¿Quieres borrar esta tarea?',
+      'Do you want to delete this group?': '¿Quieres borrar este grupo?',
       'Do you want to delete this threat actor?':
         '¿Quieres borrar este actor de amenazas?',
       'Do you want to delete this intrusion set?':
         '¿Quieres borrar este set de intrusión?',
-      'Do you want to delete this campaign?':
-        '¿Quieres borrar esta campaña?',
-      'Do you want to delete this incident?':
-        '¿Quieres borrar este incidente?',
+      'Do you want to delete this campaign?': '¿Quieres borrar esta campaña?',
+      'Do you want to delete this incident?': '¿Quieres borrar este incidente?',
       'Do you want to browse this external link?':
         '¿Quieres visitar este enlace externo?',
       'Browse the link': 'Visitar el enlace',
-      'Do you want to delete this malware?':
-        '¿Quieres borrar este malware?',
+      'Do you want to delete this malware?': '¿Quieres borrar este malware?',
       'Do you want to delete this marking definition?':
         '¿Quieres borrar esta categoría de clasificación?',
       'Do you want to delete this kill chain phase?':
         '¿Quieres borrar esta fase de la «kill chain»?',
-      'Do you want to delete this report?':
-        '¿Quieres borrar este informe?',
-      'Do you want to kill this session?':
-        '¿Quieres cerrar esta sesión?',
+      'Do you want to delete this report?': '¿Quieres borrar este informe?',
+      'Do you want to kill this session?': '¿Quieres cerrar esta sesión?',
       'Do you want to kill all the sessions of this user?':
         '¿Quieres cerrar todas las sesiones de este usuario?',
       'Do you want to delete this external reference?':
         '¿Quieres borrar esta referencia externa?',
-      'Do you want to delete this region?':
-        '¿Quieres borrar esta región?',
-      'Do you want to delete this country?':
-        '¿Quieres borrar este país?',
-      'Do you want to delete this city?':
-        '¿Quieres borrar esta ciudad?',
-      'Do you want to delete this sector?':
-        '¿Quieres borrar este sector?',
-      'Do you want to delete this system?':
-        '¿Quieres borrar este sistema?',
+      'Do you want to delete this region?': '¿Quieres borrar esta región?',
+      'Do you want to delete this country?': '¿Quieres borrar este país?',
+      'Do you want to delete this city?': '¿Quieres borrar esta ciudad?',
+      'Do you want to delete this sector?': '¿Quieres borrar este sector?',
+      'Do you want to delete this system?': '¿Quieres borrar este sistema?',
       'Do you want to delete this organization?':
         '¿Quieres borrar esta organización?',
       'Do you want to delete this individual?':
         '¿Quieres borrar a este individuo?',
-      'Do you want to delete this relation?':
-        '¿Quieres borrar esta relación?',
+      'Do you want to delete this relation?': '¿Quieres borrar esta relación?',
       'Do you want to delete this sighting?':
         '¿Quieres borrar esta observación?',
       'Do you want to delete this workspace?':
@@ -103,8 +86,7 @@ const i18n = {
         '¿Quieres borrar este patrón de ataque?',
       'Do you want to delete this course of action?':
         '¿Quieres borrar esta contramedida?',
-      'Do you want to delete this tool?':
-        '¿Quieres borrar esta herramienta?',
+      'Do you want to delete this tool?': '¿Quieres borrar esta herramienta?',
       'Do you want to delete this vulnerability?':
         '¿Quieres borrar esta vulnerabilidad?',
       'Do you want to delete this indicator?':
@@ -115,19 +97,16 @@ const i18n = {
         '¿Quieres borrar este conjunto de datos observados?',
       'Do you want to remove the entity from this report?':
         '¿Quieres borrar esta entidad de este informe?',
-      'Do you want to delete this attribute?':
-        '¿Quieres borrar este atributo?',
+      'Do you want to delete this attribute?': '¿Quieres borrar este atributo?',
       'Do you want to remove this external reference?':
         '¿Quieres borrar esta referencia externa?',
       'Do you want to remove this note?': '¿Quieres borrar esta nota?',
-      'Do you want to remove this report?':
-        '¿Quieres borrar este informe?',
+      'Do you want to remove this report?': '¿Quieres borrar este informe?',
       'Do you want to remove these elements from this report?':
         '¿Quieres borrar estos elementos de este informe?',
       'Do you want to remove these elements from this investigation?':
         '¿Quieres borrar estos elementos de esta investigación?',
-      'Do you want to remove this opinion?':
-        '¿Quieres borrar esta opinión?',
+      'Do you want to remove this opinion?': '¿Quieres borrar esta opinión?',
       'Do you want to remove the observable from this indicator?':
         '¿Quieres borrar este observable de este indicador?',
       'Do you want to remove the entity from this container?':
@@ -135,15 +114,14 @@ const i18n = {
       'Do you want to remove the indicator from this observable?':
         '¿Quieres borrar este indicador de este observable?',
       'Do you want to delete this role?': '¿Quieres borrar este rol?',
-      'Do you want to delete this label?':
-        '¿Quieres borrar esta etiqueta?',
-      'Do you want to delete this note?':
-        '¿Quieres borrar esta nota?',
+      'Do you want to delete this label?': '¿Quieres borrar esta etiqueta?',
+      'Do you want to delete this note?': '¿Quieres borrar esta nota?',
       'Do you want to delete these entities?':
         '¿Quieres borrar estas entidades?',
       'Do you want to delete this live stream?':
         '¿Quieres borrar esta transmisión en vivo?',
-      'Do you want to delete this feed?': '¿Quieres borrar esta fuente de información?',
+      'Do you want to delete this feed?':
+        '¿Quieres borrar esta fuente de información?',
       'Do you want to delete this synchronizer?':
         '¿Quieres borrar este sincronizador?',
       'Do you want to start this synchronizer?':
@@ -152,12 +130,10 @@ const i18n = {
         '¿Quieres parar este sincronizador?',
       'Do you want to create a STIX Indcator from this observable?':
         '¿Quieres crear un indicador STIX a partir de este observable?',
-      'Do you want to enable this rule?':
-        '¿Quieres activar esta regla?',
-      'Do you want to disable this rule?':
-        '¿Quieres desactivar esta regla?',
-      'Do you want to drop this bundle?':
-        '¿Quieres descartar este paquete de datos?',
+      'Do you want to enable this rule?': '¿Quieres activar esta regla?',
+      'Do you want to disable this rule?': '¿Quieres desactivar esta regla?',
+      'Do you want to delete this workbench?':
+        '¿Quieres eliminar este espacio de trabajo?',
       'Applying this rule on the existing data':
         'Aplicando esta regla a los datos existentes',
       'This rule has been applied on the existing data':
@@ -186,8 +162,7 @@ const i18n = {
       'Last notes': 'Últimas notas',
       'Latest reports written by this entity':
         'Últimos informes escritos por esta entidad',
-      'Latest reports about this entity':
-        'Últimos informes sobre esta entidad',
+      'Latest reports about this entity': 'Últimos informes sobre esta entidad',
       'Last reports about the entity': 'Últimos informes sobre esta entidad',
       'Last observables': 'Últimos observables',
       'observable(s)': 'observable(s)',
@@ -226,7 +201,8 @@ const i18n = {
       'Secondary color': 'Color secundario',
       'Accent color ': 'Color de resalte',
       'Logo URL': 'Dirección URL del logo',
-      'Logo URL for login page': 'Dirección URL del logo en la página de inicio de sesión',
+      'Logo URL for login page':
+        'Dirección URL del logo en la página de inicio de sesión',
       Automatic: 'Automático',
       Manual: 'Manual',
       'Automatic trigger': 'Activación automática',
@@ -279,8 +255,7 @@ const i18n = {
         'La importación del fichero se ha iniciado',
       Add: 'Añadir',
       'Turn to user': 'Transformar en usuario',
-      'This individual is now a user':
-        'Este individuo es ahora un usuario',
+      'This individual is now a user': 'Este individuo es ahora un usuario',
       'This relation is inferred': 'Esta relación se ha inferido',
       'This field is required': 'Este campo es requerido',
       'Remove from the container': 'Borrar del contenedor',
@@ -359,7 +334,8 @@ const i18n = {
       'PDF viewer': 'Visor de PDF',
       'Last run:': 'Última ejecución:',
       'Remote OpenCTI URL': 'Dirección URL de la instancia de OpenCTI remota',
-      'Remote OpenCTI token': 'Token de autenticación de la instancia de OpenCTI remota',
+      'Remote OpenCTI token':
+        'Token de autenticación de la instancia de OpenCTI remota',
       'Remote OpenCTI stream ID': 'ID de la instancia de OpenCTI remota',
       'Optional, you may want to subscribe to specific entities.':
         'Opcional, puedes querer suscribirte a entidades concretas.',
@@ -372,9 +348,11 @@ const i18n = {
       Alias: 'Alias',
       'Entity aliases': 'Aliases de la entidad',
       'Create a marking definition': 'Crear una categoría de clasificación',
-      'Update a marking definition': 'Actualizar una categoría de clasificación',
+      'Update a marking definition':
+        'Actualizar una categoría de clasificación',
       'Marking definitions': 'Categorías de clasificación',
-      'Max marking definition level': 'Máximo nivel de categoría de clasificación',
+      'Max marking definition level':
+        'Máximo nivel de categoría de clasificación',
       'Create a label': 'Crear una etiqueta',
       'Update a label': 'Actualizar una etiqueta',
       'Create a kill chain phase': 'Crear una fase de la «kill-chain»',
@@ -690,8 +668,7 @@ const i18n = {
       'Disable tree vertical mode': 'Desactivar el modo árbol vertical',
       'Enable forces': 'Activar las fuerzas',
       'Disable forces': 'Desactivar las fuerzas',
-      'Display time range selector':
-        'Mostrar el selector de rango temporal',
+      'Display time range selector': 'Mostrar el selector de rango temporal',
       'Display notes': 'Mostrar las notas',
       'Unfix the nodes and re-apply forces':
         'Liberar los nodos y reaplicar las fuerzas',
@@ -789,15 +766,14 @@ const i18n = {
       Expand: 'Expandir',
       'No export connector available to generate an export':
         'Ningún conector de exportación disponible para generar la exportación',
-      'Simple export (just the entity)': 'Exportación simple (solamente la entidad)',
+      'Simple export (just the entity)':
+        'Exportación simple (solamente la entidad)',
       'Full export (entity and first neighbours)':
         'Exportación completa (entidad y primeros vecinos)',
       'Uploaded files': 'Ficheros subidos',
-      'Pending files': 'Ficheros pendientes',
-      'Drop this pending bundle': 'Abandar este paquete pendiente',
-      'Delete this pending bundle': 'Borrar este paquete pendiente',
+      'Delete this workbench': 'Eliminar este espacio de trabajo',
       'Validate and send for import': 'Validar y enviar para importación',
-      'Validate this pending bundle': 'Validar este paquete pendiente',
+      'Validate this workbench': 'Validar este espacio de trabajo',
       'File successfully removed': 'Fichero borrado con éxito',
       'File successfully uploaded': 'Fichero subido con éxito',
       'Launch an import of this file': 'Lanzar importación de este fichero',
@@ -816,8 +792,7 @@ const i18n = {
       'Targeted entities': 'Entidades',
       'Background tasks': 'Tareas en segundo plano',
       Verify: 'Verificadorr',
-      'Connection successfully verified':
-        'Conexión verificada con éxito',
+      'Connection successfully verified': 'Conexión verificada con éxito',
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         '¡Estás seleccionando más de 1000 entidades en esta tarea en segundo plano así que estáte seguro de que sabes lo que haces!',
       Filters: 'Filtros',
@@ -841,7 +816,8 @@ const i18n = {
       'Feeds (CSV)': '«Feeds» (CSV)',
       'Rolling time': 'Intervalo de consulta',
       'Rolling time (in minutes)': 'Intervalo de consulta (en minutos)',
-      'Include headers in the feed': 'Incluir cabeceras en la fuente de información',
+      'Include headers in the feed':
+        'Incluir cabeceras en la fuente de información',
       Separator: 'Separador',
       Column: 'Columna',
       Columns: 'Columnas',
@@ -986,7 +962,8 @@ const i18n = {
         'Top 10 de amenazas atacando a esta entidad',
       'Top 10 active entities (3 last months)':
         'Top 10 de entidades activos (tres últimos meses)',
-      'Targeted countries (3 last months)': 'Países atacados (tres últimos meses)',
+      'Targeted countries (3 last months)':
+        'Países atacados (tres últimos meses)',
       Publication: 'Publicación',
       'Entity type': 'Tipo de entidad',
       'Report type': 'Tipo de informe',
@@ -1092,7 +1069,8 @@ const i18n = {
       'Linked threat(s)': 'Amenaza(s) relacionada(s)',
       'Linked threat': 'Amenaza relacionada',
       // Statistics
-      'No widget in this workspace': 'Sin elementos gráficos en este espacio de trabajo',
+      'No widget in this workspace':
+        'Sin elementos gráficos en este espacio de trabajo',
       'Averages of context relations': 'Promedio de relaciones de contexto',
       'Synthesis of knowledge': 'Síntesis de conocimiento',
       Statistics: 'Estadísticas',
@@ -1109,7 +1087,8 @@ const i18n = {
       'Read operations': 'Operaciones de lectura',
       'Write operations': 'Operaciones de escritura',
       'Platform login message': 'Mensaje de inicio de sesión de la plataforma',
-      'Global streams are available for granted users. Live at /stream/live and raw at /stream': 'Las publicaciones en vivo están permitidas para usuarios autorizados. En tiempo real en /stream/live y en bruto en /stream',
+      'Global streams are available for granted users. Live at /stream/live and raw at /stream':
+        'Las publicaciones en vivo están permitidas para usuarios autorizados. En tiempo real en /stream/live y en bruto en /stream',
       Write: 'Redacción',
       Preview: 'Vista previa',
       'Graph type': 'Tipo de gráfico',
@@ -1159,8 +1138,7 @@ const i18n = {
       '30 days': '30 días',
       'No entities were found for this search.':
         'Ninguna entidad fue encontrada en esta búsqueda.',
-      'No reports about this entity.':
-        'Ningún informe sobre esta entidad.',
+      'No reports about this entity.': 'Ningún informe sobre esta entidad.',
       'API access': 'Acceso a la API',
       Example: 'Ejemplo',
       'API key': 'Clave de API',
@@ -1187,8 +1165,7 @@ const i18n = {
         'No se ha encontrado ninguna nota sobre esta entidad todavía',
       'Notes about this entity': 'Notas sobre esta entidad',
       'Notes about this relationship': 'Notas sobre esta relación',
-      'No history about this entity.':
-        'No hay historial sobre esta entidad.',
+      'No history about this entity.': 'No hay historial sobre esta entidad.',
       'No relations history about this entity.':
         'No hay historial de relaciones sobre esta entidad',
       'Already in plat.': 'Ya está en la plataforma.',
@@ -1220,7 +1197,8 @@ const i18n = {
       Platform: 'Plataforma',
       'Commit message': 'Mensaje de confirmación',
       'Commit messages': 'Mensajes de confirmación',
-      'Reference knowledge update': 'Actualización de referencia de conocimiento',
+      'Reference knowledge update':
+        'Actualización de referencia de conocimiento',
       'Reference modification': 'Modificación de referencia',
       'Required permissions': 'Permisos requeridos',
       'Enable commit messages': 'Habilitar los mensajes de confirmación',
@@ -1245,6 +1223,14 @@ const i18n = {
       'Indicators/observables generation':
         'Generación de indicadore y /observables',
       Generate: 'Generar',
+      'Analyst workbenches': 'Espacios de trabajo del analista',
+      'Create a workbench': 'Crear un espacio de trabajo',
+      'Default value': 'Valor por defecto',
+      'Add and complete': 'Agregar y completar',
+      'Update and complete': 'Actualizar y completar',
+      'Manage an entity': 'Administrar una entidad',
+      'Do you want to remove this entity?': '¿Desea eliminar esta entidad?',
+      'Add context': 'Agregar contexto',
       // Time
       '24h': '24 h',
       // Types
@@ -1313,7 +1299,8 @@ const i18n = {
       entity_Url: 'Dirección URL',
       'entity_User-Account': 'Cuenta de usuario',
       'entity_Windows-Registry-Key': 'Clave de registro de Windows',
-      'entity_Windows-Registry-Value-Type': 'Clave de registro de Windows - Valor',
+      'entity_Windows-Registry-Value-Type':
+        'Clave de registro de Windows - Valor',
       'entity_Cryptographic-Key': 'Clave criptográfica',
       'entity_Cryptocurrency-Wallet': 'Monedero de criptomonedas',
       entity_Hostname: 'Nombre de host',
@@ -1545,19 +1532,19 @@ const i18n = {
     'fr-fr': {
       // Titles
       'OpenCTI - Cyber threat intelligence platform':
-        'OpenCTI - Plateforme d\'analyse de la cybermenace',
+        "OpenCTI - Plateforme d'analyse de la cybermenace",
       // Errors
       Error: 'Erreur',
-      'Wrong name or password': 'Nom d\'utilisateur ou mot de passe incorrect',
+      'Wrong name or password': "Nom d'utilisateur ou mot de passe incorrect",
       'An unknown error has occurred!  Please try again later.':
         'Une erreur est survenue ! Merci de rééssayer plus tard.',
       'You must be logged in to do this.':
         'Vous devez être authentifié pour faire cette action.',
       'You are not allowed to do this.':
-        'Vous n\'ête pas autorisés à faire cette action.',
+        "Vous n'ête pas autorisés à faire cette action.",
       'You have successfully logged out.': 'Vous avez bien été déconnecté.',
       'You do not have any access to the knowledge of this OpenCTI instance.':
-        'Vous n\'avez aucun accès à la connaissance de cette instance OpenCTI.',
+        "Vous n'avez aucun accès à la connaissance de cette instance OpenCTI.",
       'Write something awesome...': 'Ecrivez quelque chose de génial...',
       // Dependencies
       Grakn: 'Grakn',
@@ -1568,15 +1555,15 @@ const i18n = {
       'Standard STIX ID': 'STIX ID standard',
       'Other STIX IDs': 'Autres IDs STIX',
       // Interface
-      Login: 'Nom d\'utilisateur',
+      Login: "Nom d'utilisateur",
       'Two-factor authentication': 'Authentification double facteur',
       '2FA': 'ADF',
-      'Use 2FA authentication': 'Utiliser l\'authentification à double facteur',
+      'Use 2FA authentication': "Utiliser l'authentification à double facteur",
       Search: 'Rechercher',
       Active: 'Actif',
       'Last update': 'Dernière mise à jour',
       'Create a file': 'Créer un fichier',
-      'Infrastructure types': 'Types d\'infrastructure',
+      'Infrastructure types': "Types d'infrastructure",
       Progress: 'Progression',
       errors: 'erreurs',
       State: 'Etat',
@@ -1642,7 +1629,7 @@ const i18n = {
       'Do you want to delete this widget?':
         'Souhaitez-vous supprimer ce widget ?',
       'Do you want to delete this attack pattern?':
-        'Souhaitez-vous supprimer ce motif d\'attaque ?',
+        "Souhaitez-vous supprimer ce motif d'attaque ?",
       'Do you want to delete this course of action?':
         'Souhaitez-vous supprimer cette conduite à suivre ?',
       'Do you want to delete this tool?':
@@ -1698,10 +1685,10 @@ const i18n = {
         'Souhaitez-vous activer cette règle ?',
       'Do you want to disable this rule?':
         'Souhaitez-vous désactiver cette règle ?',
-      'Do you want to drop this bundle?':
-        'Souhaitez-vous abandonner ce bundle ?',
+      'Do you want to delete this workbench?':
+        'Souhaitez-vous supprimer cet espace de travail ?',
       'Applying this rule on the existing data':
-        'En cours d\'application de cette règle sur les données de la plateforme',
+        "En cours d'application de cette règle sur les données de la plateforme",
       'This rule has been applied on the existing data':
         'Cette règle a été appliquée sur les données de la plateforme',
       'Cleaning up this rule on the existing data':
@@ -1724,29 +1711,29 @@ const i18n = {
       Disable: 'Désactiver',
       Rescan: 'Rescanner',
       'You have no subscription for the moment.':
-        'Vous n\'avez aucune souscription pour le moment.',
+        "Vous n'avez aucune souscription pour le moment.",
       'Last notes': 'Dernières notes',
       'Latest reports written by this entity':
         'Derniers rapports écrits par cette entité',
       'Latest reports about this entity':
-        'Derniers rapports à propos de l\'élément',
-      'Last reports about the entity': 'Derniers rapports à propos de l\'entité',
+        "Derniers rapports à propos de l'élément",
+      'Last reports about the entity': "Derniers rapports à propos de l'entité",
       'Last observables': 'Derniers observables',
       'observable(s)': 'observable(s)',
       'Last modified entities': 'Dernières entités modifiées',
       'Global parameters': 'Paramètres généraux',
       'External authentication': 'Authentification externe',
-      'Authentication strategies': 'Stratégies d\'authentification',
+      'Authentication strategies': "Stratégies d'authentification",
       'Granted by default': 'Alloué par défaut',
       'Granted by default at user creation':
-        'Alloué par défaut à la création d\'un utilisateur',
+        "Alloué par défaut à la création d'un utilisateur",
       'Automatically authorize this group to new marking definition':
         'Autoriser automatiquement ce groupe sur les nouveaux marquages',
       'Unauthorized action, please refresh your browser':
         'Action non autorisée, merci de rafraichir votre navigateur',
       Capabilities: 'Capacités',
       Title: 'Titre',
-      'Sender email address': 'Adresse mail d\'expédition',
+      'Sender email address': "Adresse mail d'expédition",
       'Base URL': 'URL de base',
       'No value': 'Aucune valeur',
       Theme: 'Thème',
@@ -1758,7 +1745,7 @@ const i18n = {
       'Dark (with background)': 'Sombre (avec arrière-plan)',
       'Dark (without background)': 'Sombre (sans arrière-plan)',
       Language: 'Langue',
-      'Hidden entity types': 'Types d\'entité cachés',
+      'Hidden entity types': "Types d'entité cachés",
       Automatic: 'Automatique',
       Manual: 'Manuel',
       'Automatic trigger': 'Déclenchement automatique',
@@ -1766,8 +1753,8 @@ const i18n = {
       'Not aplicable': 'Non applicable',
       Roles: 'Rôles',
       Subsectors: 'Sous-secteurs',
-      'Sub attack patterns': 'Sous motifs d\'attaque',
-      'Parent attack patterns': 'Motifs d\'attaque parents',
+      'Sub attack patterns': "Sous motifs d'attaque",
+      'Parent attack patterns': "Motifs d'attaque parents",
       'Parent sectors': 'Secteurs parents',
       Subregions: 'Sous-régions',
       'Parent regions': 'Régions parentes',
@@ -1799,8 +1786,8 @@ const i18n = {
       'sighted in/at': 'détecté dans/en',
       'auto:': 'auto:',
       'Import data': 'Importer des données',
-      'Import successfully asked': 'L\'import a été demandé',
-      'Import type': 'Type d\'import',
+      'Import successfully asked': "L'import a été demandé",
+      'Import type': "Type d'import",
       'STIX2 bundle': 'Bundle STIX2',
       'File to import': 'Fichier à importer',
       'Associated file': 'Fichier associé',
@@ -1808,7 +1795,7 @@ const i18n = {
       selected: 'sélectionné(s)',
       'selected element(s)': 'élément(s) sélectionné(s)',
       'The importation of the file has been started':
-        'L\'importation du fichier a été lancée',
+        "L'importation du fichier a été lancée",
       Add: 'Ajouter',
       'Turn to user': 'Transformer en utilisateur',
       'This individual is now a user':
@@ -1885,7 +1872,7 @@ const i18n = {
       Containers: 'Conteneurs',
       'Technical elements (indicators & observables)':
         'Eléments techniques (indicateurs & observables)',
-      'As it happens': 'Au fil de l\'eau',
+      'As it happens': "Au fil de l'eau",
       'Rich editor': 'Editeur enrichi',
       'Markdown source': 'Source markdown',
       'PDF viewer': 'Visualiseur PDF',
@@ -1902,7 +1889,7 @@ const i18n = {
       'New alias': 'Nouvel alias',
       'Aliases separated by commas': 'Alias séparés par des virgules',
       Alias: 'Alias',
-      'Entity aliases': 'Alias de l\'entité',
+      'Entity aliases': "Alias de l'entité",
       'Create a marking definition': 'Créer un marquage',
       'Update a marking definition': 'Modifier un marquage',
       'Marking definitions': 'Marquages',
@@ -1929,8 +1916,8 @@ const i18n = {
       'Update a individual': 'Modifier un individu',
       'Create an external reference': 'Créer une référence externe',
       'Update an external reference': 'Modifier une référence externe',
-      'Create an attack pattern': 'Créer un motif d\'attaque',
-      'Update an attack pattern': 'Modifier un motif d\'attaque',
+      'Create an attack pattern': "Créer un motif d'attaque",
+      'Update an attack pattern': "Modifier un motif d'attaque",
       'Create a course of action': 'Créer une conduite à suivre',
       'Update a course of action': 'Modifier une conduite à suivre',
       'Create a tool': 'Créer un outil',
@@ -1968,15 +1955,15 @@ const i18n = {
       'Add notes': 'Ajouter des notes',
       'Add courses of action': 'Ajouter des conduites à suivre',
       'Add subsectors': 'Ajouter des sous-secteurs',
-      'Add sub attack patterns': 'Ajouter des sous motifs d\'attaque',
-      'Add attack patterns': 'Ajouter des motifs d\'attaque',
+      'Add sub attack patterns': "Ajouter des sous motifs d'attaque",
+      'Add attack patterns': "Ajouter des motifs d'attaque",
       'Add entities': 'Ajouter des entités',
       'Add observables': 'Ajouter des observables',
       'Add observable': 'Ajouter un observable',
       'The password has been updated': 'Le mot de passe a été modifié',
-      'The alias has been added': 'L\'alias a bien été ajouté',
+      'The alias has been added': "L'alias a bien été ajouté",
       'Settings have been updated': 'Les paramètres ont été mis à jour',
-      'Export the entity': 'Exporter l\'entité',
+      'Export the entity': "Exporter l'entité",
       'Cards view': 'Vue cartes',
       'Lines view': 'Vue lignes',
       'Graph view': 'Vue graphe',
@@ -1986,7 +1973,7 @@ const i18n = {
       'Courses of action view': 'Vue conduites à suivre',
       'Correlation view': 'Vue des corrélations',
       'Matrix view': 'Vue matricielle',
-      'Open export panel': 'Ouvrir le volet d\'export',
+      'Open export panel': "Ouvrir le volet d'export",
       'Exports panel': 'Volet exports',
       'Exports list': 'Liste des exports',
       'Export as image': 'Exporter comme image',
@@ -1996,29 +1983,29 @@ const i18n = {
       'Merged entity': 'Entité fusionnée',
       'Demo credentials': 'Identifiants de démo',
       'User will be created with default roles.':
-        'L\'utilisateur sera créé avec les rôles par défaut.',
+        "L'utilisateur sera créé avec les rôles par défaut.",
       'No connectors are enabled on this platform.':
-        'Aucun connecteur n\'est actif sur cette plateforme',
-      'Enabled import connectors': 'Connecteurs d\'import activés',
+        "Aucun connecteur n'est actif sur cette plateforme",
+      'Enabled import connectors': "Connecteurs d'import activés",
       'No enrichment connectors on this platform':
-        'Aucun connecteur d\'enrichissement sur cette plateforme',
-      'Enrichment connectors': 'Connecteurs d\'enrichissement',
+        "Aucun connecteur d'enrichissement sur cette plateforme",
+      'Enrichment connectors': "Connecteurs d'enrichissement",
       'Registered connectors': 'Connecteurs enregistrés',
       'The relations attached to selected entities will be copied to the merged entity.':
-        'Les relations attachées aux entités sélectionnées seront copiées sur l\'entité fusionnée.',
+        "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",
       'Subscriptions & digests': 'Souscriptions & résumés',
       Scope: 'Périmètre',
       Modified: 'Modifié',
       'No import connectors on this platform':
-        'Aucun connecteur d\'import sur cette plateforme',
+        "Aucun connecteur d'import sur cette plateforme",
       'No connectors for this type of entity':
-        'Aucun connecteur pour ce type d\'entité',
+        "Aucun connecteur pour ce type d'entité",
       'This connector is active': 'Ce connecteur est actif',
       'This connector is disconnected': 'Ce connecteur est déconnecté',
-      'Reset the connector state': 'Réinitialiser l\'état du connecteur',
+      'Reset the connector state': "Réinitialiser l'état du connecteur",
       'Clear this connector': 'Supprimer ce connecteur',
       'The connector state has been reset':
-        'L\'état du connecteur a été réinitialisé',
+        "L'état du connecteur a été réinitialisé",
       'The connector has been cleared': 'Le connecteur a été supprimé',
       'Refresh the knowledge using this connector':
         'Actualiser la connaissance en utilisant ce connecteur',
@@ -2028,15 +2015,15 @@ const i18n = {
       'Direct targeting of this region': 'Ciblage direct de cette région',
       'Direct targeting of this country': 'Ciblage direct de ce pays',
       'Groups permissions on data marking is not fully implemented yet.':
-        'Les permissions des groupes sur le marquage des données n\'est pas encore implémenté.',
+        "Les permissions des groupes sur le marquage des données n'est pas encore implémenté.",
       'No potential duplicate entities has been found.':
-        'Aucun potentiel duplicat d\'entité n\'a été trouvé.',
-      'potential duplicate entity': 'duplicat potentiel d\'entité',
+        "Aucun potentiel duplicat d'entité n'a été trouvé.",
+      'potential duplicate entity': "duplicat potentiel d'entité",
       'has been found.': 'a été trouvé.',
-      'potential duplicate entities': 'duplicats potentiels d\'entité',
+      'potential duplicate entities': "duplicats potentiels d'entité",
       'have been found.': 'ont été trouvés.',
-      'Potential duplicate entities': 'Duplicats potentiels d\'entités',
-      'Update opinion': 'Modifier l\'opinion',
+      'Potential duplicate entities': "Duplicats potentiels d'entités",
+      'Update opinion': "Modifier l'opinion",
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',
@@ -2055,7 +2042,7 @@ const i18n = {
       About: 'A propos',
       General: 'Général',
       Versions: 'Versions',
-      'Event types': 'Types d\'événement',
+      'Event types': "Types d'événement",
       'Platform title': 'Titre de la plateforme',
       'Platform favicon URL': 'URL de la favicon de la plateforme',
       'Labels & Attributes': 'Labels & Attributs',
@@ -2065,9 +2052,9 @@ const i18n = {
       Accesses: 'Accès',
       'Data curation': 'Curation des données',
       'Tools versions': 'Versions des outils',
-      'Tool version': 'Version de l\'outil',
+      'Tool version': "Version de l'outil",
       'OpenCTI version': 'OpenCTI version',
-      'Tool types': 'Types d\'outil',
+      'Tool types': "Types d'outil",
       'No label': 'Aucun label',
       'Add new labels': 'Ajouter des labels',
       'Data import': 'Importation de données',
@@ -2108,7 +2095,7 @@ const i18n = {
       Synchronization: 'Synchronisation',
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
-      'Entity enrichment': 'Enrichissement de l\'entité',
+      'Entity enrichment': "Enrichissement de l'entité",
       'Selected connectors': 'Connecteurs sélectionnés',
       'No connector available for the selected entities.':
         'Aucun connecteur disponible pour les entités sélectionnées.',
@@ -2120,7 +2107,7 @@ const i18n = {
       'Indicators composed with this observable':
         'Indicateurs composés avec cet observable',
       'You must provide at least one external reference for this type of entity':
-        'Vous devez fournir au moins une référence externe pour ce type d\'entité',
+        "Vous devez fournir au moins une référence externe pour ce type d'entité",
       Overview: 'Aperçu',
       View: 'Aperçu',
       Relationships: 'Relations',
@@ -2138,9 +2125,9 @@ const i18n = {
       Partner: 'Partenaire',
       Vendor: 'Editeur',
       Other: 'Autre',
-      'Organization type': 'Type d\'organisation',
-      'Entity types': 'Types d\'entité',
-      'Attack pattern usage': 'Usage de ce motif d\'attaque',
+      'Organization type': "Type d'organisation",
+      'Entity types': "Types d'entité",
+      'Attack pattern usage': "Usage de ce motif d'attaque",
       'Vulnerability usage': 'Usage de cette vulnérabilité',
       'Entity usage': 'Usage de cette entité',
       'Distribution:': 'Répartition:',
@@ -2153,10 +2140,10 @@ const i18n = {
         'Taper le code généré dans votre application',
       Evolution: 'Evolution',
       'Enable two-factor authentication':
-        'Activer l\'authentification double facteur',
+        "Activer l'authentification double facteur",
       'Disable two-factor authentication':
-        'Désactiver l\'authentification double facteur',
-      '2FA state': 'Etat de l\'ADF',
+        "Désactiver l'authentification double facteur",
+      '2FA state': "Etat de l'ADF",
       'Targeting through time': 'Ciblage à travers le temps',
       'TTPs through time': 'TTPs à travers le temps',
       Graph: 'Graph',
@@ -2192,9 +2179,9 @@ const i18n = {
       'Victimology (sectors)': 'Victimologie (secteurs)',
       'Used tools': 'Outils utilisés',
       'Processing status': 'Etat du traitement',
-      'Attack patterns': 'Motifs d\'attaque',
+      'Attack patterns': "Motifs d'attaque",
       TTPs: 'TTPs',
-      'Mitigated attack patterns': 'Motifs d\'attaque atténués',
+      'Mitigated attack patterns': "Motifs d'attaque atténués",
       Techniques: 'Techniques',
       'All reports': 'Tous les rapports',
       Tactics: 'Tactiques',
@@ -2217,18 +2204,18 @@ const i18n = {
       'Enable forces': 'Activer les forces',
       'Disable forces': 'Désactiver les forces',
       'Display time range selector':
-        'Afficher le sélecteur d\'intervalle de temps',
+        "Afficher le sélecteur d'intervalle de temps",
       'Display notes': 'Afficher les notes',
       'Unfix the nodes and re-apply forces':
         'Libérer les noeuds et ré-appliquer les forces',
-      'Fit graph to canvas': 'Dimensionner le graphe à l\'espace',
-      'Filter entity types': 'Filtrer les types d\'entité',
+      'Fit graph to canvas': "Dimensionner le graphe à l'espace",
+      'Filter entity types': "Filtrer les types d'entité",
       'Filter authors (created by)': 'Filtrer les auteurs (créé par)',
       'Filter marking definitions': 'Filtrer les marquages',
       'Select all nodes': 'Sélectionner tous les noeuds',
       'Select by entity type': 'Sélectionner par type',
       'Add an entity to this container': 'Ajouter une entité à ce conteneur',
-      'Edit the selected item': 'Editer l\'élément sélectionné',
+      'Edit the selected item': "Editer l'élément sélectionné",
       'Remove selected items': 'Supprimer les éléments sélectionnés',
       'Remove from this entity': 'Retirer de cette entité',
       'Remove from this object': 'Retirer de cet objet',
@@ -2242,7 +2229,7 @@ const i18n = {
       'Email addresses': 'Adresses email',
       'File hashes': 'Condensats de fichiers',
       'PDB Path': 'Chemin PDB',
-      'Attack pattern': 'Motif d\'attaque',
+      'Attack pattern': "Motif d'attaque",
       'Attributed to this actor': 'Attribué à cet acteur',
       'Targeted by this actor': 'Ciblé par cet acteur',
       'Used by this actor': 'Utilisé par cet acteur',
@@ -2293,11 +2280,11 @@ const i18n = {
       Reliability: 'Fiabilité',
       'Contact information': 'Informations de contact',
       Inferences: 'Inférences',
-      'Action type': 'Type d\'action',
-      'Inference rules': 'Règles d\'inférence',
+      'Action type': "Type d'action",
+      'Inference rules': "Règles d'inférence",
       'Inferred knowledge based on the rule ':
         'Connaissance inférée basée sur la règle ',
-      'View the item': 'Voir l\'object',
+      'View the item': "Voir l'object",
       'CSV file': 'Fichier CSV',
       'Export data in CSV': 'Exporter les données en CSV',
       'The CSV file has been generated with the parameters of the view and is ready for download.':
@@ -2305,25 +2292,23 @@ const i18n = {
       'Generated the': 'Généré le',
       'Never generated': 'Jamais généré',
       'Generation in progress...': 'Génération en cours...',
-      'Export format': 'Format d\'export',
-      'Export successfully started': 'L\'export a démarré avec succès',
-      'Export type': 'Type d\'export',
+      'Export format': "Format d'export",
+      'Export successfully started': "L'export a démarré avec succès",
+      'Export type': "Type d'export",
       'Export to image (png)': 'Exporter en image (png)',
       'Export to document (pdf)': 'Exporter en document (pdf)',
       'Generate an export': 'Générer un export',
       'Expand elements': 'Etendre les éléments',
       Expand: 'Etendre',
       'No export connector available to generate an export':
-        'Aucun connecteur d\'export disponible pour générer un export',
-      'Simple export (just the entity)': 'Export simple (seulement l\'entité)',
+        "Aucun connecteur d'export disponible pour générer un export",
+      'Simple export (just the entity)': "Export simple (seulement l'entité)",
       'Full export (entity and first neighbours)':
         'Export complet (entité et ses voisins)',
       'Uploaded files': 'Fichiers uploadés',
-      'Pending files': 'Fichiers en attente',
-      'Drop this pending bundle': 'Abandonner ce bundle en attente',
-      'Delete this pending bundle': 'Supprimer ce bundle en attente',
+      'Delete this workbench': 'Supprimer cet espace de travail',
       'Validate and send for import': 'Valider et envoyer pour import',
-      'Validate this pending bundle': 'Valider ce bundle en attente',
+      'Validate this workbench': 'Valider cet espace de travail',
       'File successfully removed': 'Fichier supprimé avec succès',
       'File successfully uploaded': 'Fichier uploadé avec succès',
       'Launch an import of this file': 'Lancer un import de ce fichier',
@@ -2334,7 +2319,7 @@ const i18n = {
       'Rule entity rescan': 'Rafraichissement des règles pour les entités',
       'Selected rules': 'Règles sélectionnées',
       'Element will be rescan with all compatible activated rules':
-        'L\'élément sera rafraichi avec toutes les règles activées et compatibles',
+        "L'élément sera rafraichi avec toutes les règles activées et compatibles",
       'Launch a background task': 'Lancer une tâche de fond',
       'Take deletions into account': 'Prendre en compte les suppressions',
       'Avoid dependencies resolution': 'Aucune résolution des dépendances',
@@ -2347,7 +2332,7 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         'Vous ciblez plus de 1000 entités avec cette tâche de fond, soyez sûrs de ce que vous faites !',
       Filters: 'Filtres',
-      'Number of elements': 'Nombre d\'éléments',
+      'Number of elements': "Nombre d'éléments",
       'Download this file': 'Télécharger ce fichier',
       'Delete this file': 'Supprimer ce fichier',
       'No file for the moment': 'Aucun fichier pour le moment',
@@ -2361,7 +2346,7 @@ const i18n = {
       'JSON content': 'Contenu JSON',
       'Last modified': 'Dernière modification',
       'Linked entity': 'Entité liée',
-      'Number of entities': 'Nombre d\'entités',
+      'Number of entities': "Nombre d'entités",
       'Number of relationships': 'Nombre de relations',
       'Live streams': 'Streams live',
       'Feeds (CSV)': 'Flux (CSV)',
@@ -2375,18 +2360,18 @@ const i18n = {
       'TAXII collections': 'Collections TAXII',
       Download: 'Télécharger',
       'Exported files': 'Fichiers exportés',
-      'Inference explanation': 'Explication de l\'inférence',
+      'Inference explanation': "Explication de l'inférence",
       Explanation: 'Explication',
       More: 'Plus',
-      'Too many objects': 'Nombre trop important d\'objets',
-      'List of entities': 'Liste d\'entités',
+      'Too many objects': "Nombre trop important d'objets",
+      'List of entities': "Liste d'entités",
       'This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.':
-        'Ce rapport contient trop d\'objets pour être affiché comme un graphe. Nous travaillons sur une nouvelle visualisation qui permettra d\'afficher de grands graphes à l\'avenir.',
+        "Ce rapport contient trop d'objets pour être affiché comme un graphe. Nous travaillons sur une nouvelle visualisation qui permettra d'afficher de grands graphes à l'avenir.",
       Step: 'Etape',
       Field: 'Attribut',
       Continue: 'Continuer',
-      'Field type': 'Type d\'attribut',
-      'Number of errors': 'Nombre d\'erreurs',
+      'Field type': "Type d'attribut",
+      'Number of errors': "Nombre d'erreurs",
       'Last run': 'Dernière exécution',
       Values: 'Valeurs',
       entity: 'entité',
@@ -2396,7 +2381,7 @@ const i18n = {
       'Multiple entities selected': 'Plusieurs entités sélectionnées',
       'Data type': 'Type de données',
       // User
-      'Sign in': 'S\'identifier',
+      'Sign in': "S'identifier",
       Email: 'Email',
       Password: 'Mot de passe',
       'Current password': 'Mot de passe actuel',
@@ -2425,12 +2410,12 @@ const i18n = {
       'in progress': 'en cours',
       'Received time': 'Délenchement',
       'Processed time': 'Envoi des données',
-      'Work start time': 'Début de l\'exécution',
+      'Work start time': "Début de l'exécution",
       'Task start time': 'Début de la tâche',
-      'Work end time': 'Fin de l\'éxécution',
+      'Work end time': "Fin de l'éxécution",
       'Task end time': 'Fin de la tâche',
       'Operations completed': 'Opérations terminées',
-      'Total number of operations': 'Nombre total d\'opérations',
+      'Total number of operations': "Nombre total d'opérations",
       // Properties
       Entity: 'Entité',
       Widget: 'Widget',
@@ -2441,10 +2426,10 @@ const i18n = {
       Description: 'Description',
       'Is family': 'Est une famille',
       'Is family?': 'Est une famille ?',
-      'Architecture execution env.': 'Env. d\'éxécution,',
-      'Implementation languages': 'Langages d\'implémentation',
+      'Architecture execution env.': "Env. d'éxécution,",
+      'Implementation languages': "Langages d'implémentation",
       'This sector does not have any description.':
-        'Ce secteur n\'a aucune description.',
+        "Ce secteur n'a aucune description.",
       'Relationship type': 'Type de relation',
       'From type': 'Type source',
       'From name': 'Nom source',
@@ -2475,7 +2460,7 @@ const i18n = {
       Type: 'Type',
       'Email address': 'Adresse email',
       name: 'Nom',
-      'Threat actor types': 'Type d\'acteur',
+      'Threat actor types': "Type d'acteur",
       'Malware types': 'Type de code malveillant',
       Revoked: 'Révoqué',
       'STIX Version': 'Version STIX',
@@ -2490,18 +2475,18 @@ const i18n = {
       'Number observed': 'Nombre de fois',
       'First obs.': 'Première obs.',
       'Last obs.': 'Dernière obs.',
-      'Start time': 'Début d\'obs.',
-      'Stop time': 'Fin d\'obs.',
+      'Start time': "Début d'obs.",
+      'Stop time': "Fin d'obs.",
       Start: 'Démarrer',
       Stop: 'Arrêter',
       'Verify SSL certificate': 'Vérifier le certificat SSL',
       Confirmation: 'Confirmation',
       'Kill chain': 'Kill chain',
       'This feature is not available yet.':
-        'Cette fonctionnalité n\'est pas encore disponible.',
+        "Cette fonctionnalité n'est pas encore disponible.",
       'This page is not found on this OpenCTI application.':
         'Cette page est introuvable sur cette application OpenCTI.',
-      'Phase name': 'Nom de l\'étape',
+      'Phase name': "Nom de l'étape",
       'Kill chain name': 'Nom de la kill chain',
       Order: 'Ordre',
       Options: 'Options',
@@ -2514,7 +2499,7 @@ const i18n = {
         'Top 10 des entités actives (3 derniers mois)',
       'Targeted countries (3 last months)': 'Pays ciblés (3 derniers mois)',
       Publication: 'Publication',
-      'Entity type': 'Type d\'entité',
+      'Entity type': "Type d'entité",
       'Report type': 'Type de rapport',
       'Report types': 'Types de rapport',
       'Channel type': 'Type de canal',
@@ -2544,9 +2529,9 @@ const i18n = {
       Evidences: '',
       Pattern: 'Motif',
       'Pattern type': 'Type de motif',
-      'Indicator pattern': 'Motif de l\'indicateur',
+      'Indicator pattern': "Motif de l'indicateur",
       'Valid from': 'Valide depuis',
-      'Valid until': 'Valide jusqu\'à',
+      'Valid until': "Valide jusqu'à",
       Score: 'Score',
       'Search for an entity': 'Rechercher une entité',
       'Linked knowledge': 'Connaissance liée',
@@ -2580,12 +2565,12 @@ const i18n = {
       Goals: 'Objectifs',
       'Goals (1 / line)': 'Objectifs (1 / ligne)',
       'Log sources (1 / line)': 'Sources de log (1 / ligne)',
-      'Observable value': 'Valeur de l\'observable',
-      'Observable type': 'Type d\'observable',
-      'Observable types': 'Types d\'observable',
-      'Indicator type': 'Type d\'indicateur',
-      'Indicator types': 'Types d\'indicateur',
-      'Main observable type': 'Type d\'observable principal',
+      'Observable value': "Valeur de l'observable",
+      'Observable type': "Type d'observable",
+      'Observable types': "Types d'observable",
+      'Indicator type': "Type d'indicateur",
+      'Indicator types': "Types d'indicateur",
+      'Main observable type': "Type d'observable principal",
       'Played role': 'Rôle joué',
       'Observables roles': 'Rôles des observables',
       Proxy: 'Proxy',
@@ -2633,7 +2618,7 @@ const i18n = {
       'Last processed message': 'Dernier message traité',
       'Total processed messages': 'Total de messages traités',
       'Read operations': 'Opérations de lecture',
-      'Write operations': 'Opérations d\'écriture',
+      'Write operations': "Opérations d'écriture",
       Write: 'Ecrire',
       Preview: 'Aperçu',
       'Graph type': 'Type de graphique',
@@ -2647,21 +2632,21 @@ const i18n = {
       Timeline: 'Chronologie',
       Renew: 'Renouveler',
       Authentication: 'Authentification',
-      'Total pending inserts': 'Nombre d\'insertions en attente',
+      'Total pending inserts': "Nombre d'insertions en attente",
       'Relations to threats': 'Relations vers des menaces',
-      'Relations to other entities': 'Relations vers d\'autres entités',
+      'Relations to other entities': "Relations vers d'autres entités",
       'Context relations': 'Relations de contexte',
       'Direct relations creations': 'Créations de relations directes',
       'Number of target relations': 'Nombre de relations de ciblage',
-      'Total entities': 'Nombre d\'entités',
+      'Total entities': "Nombre d'entités",
       'Total relationships': 'Nombre de relations',
       Relationship: 'Relation',
-      'Total observables': 'Nombre d\'observables',
+      'Total observables': "Nombre d'observables",
       'Total reports': 'Nombre de rapports',
-      'Total workspaces': 'Nombre d\'espaces de travail',
+      'Total workspaces': "Nombre d'espaces de travail",
       'Total notes': 'Nombre de notes',
       'Total relations': 'Nombre de relations',
-      'Total indicators': 'Nombre d\'indicateurs',
+      'Total indicators': "Nombre d'indicateurs",
       'Total direct relations': 'Nombre de relations directes',
       'Top Labels (3 last months)': 'Top Labels (3 derniers mois)',
       'Last ingested reports (creation date in the platform)':
@@ -2682,23 +2667,23 @@ const i18n = {
       '24 hours': '24 heures',
       '30 days': '30 jours',
       'No entities were found for this search.':
-        'Aucune entité n\'a été trouvée pour cette recherche.',
+        "Aucune entité n'a été trouvée pour cette recherche.",
       'No reports about this entity.':
         'Aucun rapport à propos de cette entité.',
-      'API access': 'Accès à l\'API',
+      'API access': "Accès à l'API",
       Example: 'Exemple',
-      'API key': 'Clé d\'API',
+      'API key': "Clé d'API",
       Playground: 'Playground',
       'Basic information': 'Informations de base',
       Details: 'Détails',
-      'Entity details': 'Détails de l\'entité',
+      'Entity details': "Détails de l'entité",
       'Most recent history': 'Historique récent',
       All: 'Tout',
       Clear: 'Effacer',
       'Clear filters': 'Enlever les filtres',
       'has updated the field': 'a modifié le champ',
       'with the value': 'avec la valeur',
-      'has created the entity': 'a créé l\'éntité',
+      'has created the entity': "a créé l'éntité",
       'has created a relation': 'a créé une relation',
       History: 'Activité',
       'Files & history': 'Fichiers & activité',
@@ -2706,7 +2691,7 @@ const i18n = {
       to: 'vers',
       'Relations of the entity': 'Relations de cette entité',
       'No entities of this type has been found.':
-        'Aucune entité de ce type n\'a été trouvée.',
+        "Aucune entité de ce type n'a été trouvée.",
       'No notes about this entity yet.':
         'Aucune note concernant cette entité pour le moment',
       'Notes about this entity': 'Notes à propos de cette entité',
@@ -2719,13 +2704,13 @@ const i18n = {
       // Explore
       'Kill chains': 'Kill chains',
       'Explore the victims and the targets of the dataset through space and time.':
-        'Explorer les victimes et les cibles des données à travers l\'espace et le temps',
+        "Explorer les victimes et les cibles des données à travers l'espace et le temps",
       'Explore the attack campaigns of the dataset through time and involved entities.':
-        'Explorer les campagnes d\'attaques des données à travers le temps et les entités impliquées.',
+        "Explorer les campagnes d'attaques des données à travers le temps et les entités impliquées.",
       'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.':
         'Explorer les arsenal, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
       'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.':
-        'Explorer les kill chains des entités à travers le temps et d\'autres informations contextuelles comme les campagnes ou les incidents.',
+        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les incidents.",
       'Explore the vulnerabilities used by entities through time and kill chain phases.':
         'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
       'Explore the observables of the dataset though time to visualize clusters and correlations.':
@@ -2733,15 +2718,15 @@ const i18n = {
       'Origins of the targeting': 'Origines du ciblage',
       'Types of the targeting': 'Types de ciblage',
       'Types of the targets': 'Types de cibles',
-      'Targeted entity types': 'Types d\'entités ciblées',
-      'Targeted entity through time': 'Ciblages d\'entités à travers le temps',
+      'Targeted entity types': "Types d'entités ciblées",
+      'Targeted entity through time': "Ciblages d'entités à travers le temps",
       'Number of targeting': 'Nombre de ciblages',
       'Related entities (generic relation "related-to")':
         'Entités liées (relation générique "lié à")',
       'This panel shows by default the latest created entities, use the search to find more.':
         'Ce panneau montre par défaut les dernières entités créées, utilisez la recherche pour en trouver plus.',
-      Platforms: 'Systèmes d\'exploitation',
-      Platform: 'Système d\'exploitation',
+      Platforms: "Systèmes d'exploitation",
+      Platform: "Système d'exploitation",
       'Commit message': 'Message de justification',
       'Commit messages': 'Messages de justificaiton',
       'Reference knowledge update': 'Références des modifications',
@@ -2749,11 +2734,11 @@ const i18n = {
       'Required permissions': 'Permissions requises',
       'Enable commit messages': 'Activer les messages de justification',
       'Commit message when updating data from the UI.':
-        'Message lors de la modification des données dans l\'interface.',
+        "Message lors de la modification des données dans l'interface.",
       'To use this feature, your platform administrator must enable the subscription manager in the config.':
-        'Pour utiliser cette fonctionnalité, l\'administrateur de votre plateforme doit activer le manager de souscriptions.',
+        "Pour utiliser cette fonctionnalité, l'administrateur de votre plateforme doit activer le manager de souscriptions.",
       'To use this feature, your platform administrator must enable the rule engine in the config.':
-        'Pour utiliser cette fonctionnalité, l\'administrateur de votre plateforme doit activer le moteur de règles.',
+        "Pour utiliser cette fonctionnalité, l'administrateur de votre plateforme doit activer le moteur de règles.",
       'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.':
         'Dans OpenCTI, un ID STIX prédictif est généré basé sur un ou plusieurs attributs de cette entité.',
       None: 'Aucun',
@@ -2767,8 +2752,17 @@ const i18n = {
       'This action will generate STIX patterns indicators from the selected observables.':
         'Cette action va générer des indicateurs STIX depuis les observables sélectionnés.',
       'Indicators/observables generation':
-        'Génération d\'indicateurs/observables',
+        "Génération d'indicateurs/observables",
       Generate: 'Générer',
+      'Analyst workbenches': 'Espaces de travail analyste',
+      'Create a workbench': 'Créer un espace de travail',
+      'Default value': 'Valeur par défaut',
+      'Add and complete': 'Ajouter et compléter',
+      'Update and complete': 'Modifier et compléter',
+      'Manage an entity': 'Gérer une entité',
+      'Do you want to remove this entity?':
+        'Souhaitez-vous retirer cette entité ?',
+      'Add context': 'Ajouter du contexte',
       // Time
       '24h': '24h',
       // Types
@@ -2787,7 +2781,7 @@ const i18n = {
       'entity_Marking-Definition': 'Marquage',
       'entity_External-Reference': 'Référence externe',
       entity_Label: 'Label',
-      'entity_Attack-Pattern': 'Motif d\'attaque',
+      'entity_Attack-Pattern': "Motif d'attaque",
       entity_Campaign: 'Campagne',
       entity_Note: 'Note',
       'entity_Observed-Data': 'Donnée observée',
@@ -2840,7 +2834,7 @@ const i18n = {
       'entity_Windows-Registry-Value-Type': 'Clé de reg. Windows - Valeur',
       'entity_Cryptographic-Key': 'Clé cryptographique',
       'entity_Cryptocurrency-Wallet': 'Wallet de cryptomonnaie',
-      entity_Hostname: 'Nom d\'hôte',
+      entity_Hostname: "Nom d'hôte",
       entity_Text: 'Texte',
       'entity_User-Agent': 'User agent',
       'entity_Bank-Account': 'Compte bancaire',
@@ -2963,13 +2957,13 @@ const i18n = {
       organization_partner: 'Partenaire',
       organization_vendor: 'Editeur',
       organization_other: 'Autre',
-      filter_container_type: 'Type d\'analyse',
+      filter_container_type: "Type d'analyse",
       filter_basedOn: 'Basé sur un observable',
       filter_sightedBy: 'Détecté par/dans',
-      filter_entity_type: 'Type d\'entité',
+      filter_entity_type: "Type d'entité",
       filter_relationship_type: 'Type de relation',
-      filter_pattern_type: 'Type d\'indicateur',
-      filter_x_opencti_main_observable_type: 'Type d\'observable',
+      filter_pattern_type: "Type d'indicateur",
+      filter_x_opencti_main_observable_type: "Type d'observable",
       filter_labelledBy: 'Label',
       filter_createdBy: 'Auteur',
       filter_markedBy: 'Marquage',
@@ -2987,7 +2981,7 @@ const i18n = {
       filter_modified_start_date: 'Modifié après',
       filter_modified_end_date: 'Modifié avant',
       filter_valid_from_start_date: 'Valid depuis',
-      filter_valid_until_end_date: 'Valide jusqu\'à',
+      filter_valid_until_end_date: "Valide jusqu'à",
       filter_x_opencti_negative: 'Qualification',
       filter_x_opencti_score_gt: 'Score supérieur à',
       filter_x_opencti_score_lte: 'Score less than or equal',
@@ -2997,7 +2991,7 @@ const i18n = {
       filter_x_opencti_attack_vector: 'CVSS3-Attack vector',
       filter_toCreatedAt_start_date: 'Ingéré après',
       filter_toCreatedAt_end_date: 'Ingéré avant',
-      filter_x_opencti_organization_type: 'Type d\'organisation',
+      filter_x_opencti_organization_type: "Type d'organisation",
       filter_indicates: 'Indique',
       filter_revoked: 'Révoqué',
       filter_toSightingId: 'Détect dans/en',
@@ -3019,7 +3013,7 @@ const i18n = {
       'tanium-signal': 'Tanium Signal',
       spl: 'Splunk SPL',
       eql: 'Elastic EQL',
-      'Apply on': 'S\'applique à',
+      'Apply on': "S'applique à",
       'Retention policies': 'Politiques de rétention',
       'Max retention': 'Rétention maximum',
       'Maximum retention days': 'Jours de rétention maximum',
@@ -3031,18 +3025,18 @@ const i18n = {
       true: 'Oui',
       false: 'Non',
       GRAPHQL_API: 'API GraphQL',
-      EXPIRATION_SCHEDULER: 'Planificateur d\'expiration',
+      EXPIRATION_SCHEDULER: "Planificateur d'expiration",
       TASK_MANAGER: 'Manager des tâches',
       RULE_ENGINE: 'Moteur de règles',
       SYNC_MANAGER: 'Manager de synchronisation',
       SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
       RETENTION_MANAGER: 'Manager de rétention',
-      HISTORY_MANAGER: 'Manager d\'historique',
+      HISTORY_MANAGER: "Manager d'historique",
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
       'Clear all works': 'Nettoyer toutes les exécutions',
       'Do you want to reset the state of this connector?':
-        'Souhaitez-vous réinitialiser l\'état de ce connecteur ?',
+        "Souhaitez-vous réinitialiser l'état de ce connecteur ?",
       Reset: 'Réinitialiser',
       'Do you want to clear the works of this connector?':
         'Souhaitez-vous nettoyer toutes les exécutions de ce connecteur ?',
@@ -3063,8 +3057,7 @@ const i18n = {
         '不明なエラーが発生しました。後でもう一度お試しください。',
       'You must be logged in to do this.':
         'この操作を行うにはログインする必要があります。',
-      'You are not allowed to do this.':
-        'この操作を行う権限がありません。',
+      'You are not allowed to do this.': 'この操作を行う権限がありません。',
       'You have successfully logged out.': 'ログアウトが完了しました。',
       'You do not have any access to the knowledge of this OpenCTI instance.':
         'このOpenCTIインスタンスのナレッジデータにアクセスする権限がありません。',
@@ -3094,16 +3087,11 @@ const i18n = {
       'Global keyword': 'グローバルキーワード',
       'Search for a threat...': '脅威の検索...',
       'Affected software': '影響を受けるソフトウェア',
-      'Do you want to delete this entity?':
-        'このエンティティを削除しますか？',
-      'Do you want to delete this user?':
-        'このユーザーを削除しますか？',
-      'Do you want to delete this file?':
-        'このファイルを削除しますか？',
-      'Do you want to remove this job?':
-        'このジョブを削除しますか？',
-      'Do you want to delete this group?':
-        'このグループを削除しますか？',
+      'Do you want to delete this entity?': 'このエンティティを削除しますか？',
+      'Do you want to delete this user?': 'このユーザーを削除しますか？',
+      'Do you want to delete this file?': 'このファイルを削除しますか？',
+      'Do you want to remove this job?': 'このジョブを削除しますか？',
+      'Do you want to delete this group?': 'このグループを削除しますか？',
       'Do you want to delete this threat actor?':
         'この脅威アクターを削除しますか？',
       'Do you want to delete this intrusion set?':
@@ -3115,71 +3103,52 @@ const i18n = {
       'Do you want to browse this external link?':
         'この外部リンクを削除しますか？',
       'Browse the link': 'リンクを閲覧する',
-      'Do you want to delete this malware?':
-        'このマルウェアを削除しますか？',
+      'Do you want to delete this malware?': 'このマルウェアを削除しますか？',
       'Do you want to delete this marking definition?':
         'このデータマーキングを削除しますか？',
       'Do you want to delete this kill chain phase?':
         'このキルチェーンフェーズを削除しますか？',
-      'Do you want to delete this report?':
-        'このレポートを削除しますか？',
-      'Do you want to kill this session?':
-        'このセッションを削除しますか？',
+      'Do you want to delete this report?': 'このレポートを削除しますか？',
+      'Do you want to kill this session?': 'このセッションを削除しますか？',
       'Do you want to kill all the sessions of this user?':
         'このユーザーのセッションをすべて削除しますか？',
       'Do you want to delete this external reference?':
         'この外部参照を削除しますか？',
-      'Do you want to delete this region?':
-        'この地域を削除しますか？',
-      'Do you want to delete this country?':
-        'この国を削除しますか？',
-      'Do you want to delete this city?':
-        'この都市を削除しますか？',
-      'Do you want to delete this sector?':
-        'このセクターを削除しますか？',
-      'Do you want to delete this system?':
-        'このシステムを削除しますか？',
-      'Do you want to delete this organization?':
-        'この組織を削除しますか？',
-      'Do you want to delete this individual?':
-        'この個人を削除しますか？',
-      'Do you want to delete this relation?':
-        'この関連を削除しますか？',
-      'Do you want to delete this sighting?':
-        'この目撃情報を削除しますか？',
+      'Do you want to delete this region?': 'この地域を削除しますか？',
+      'Do you want to delete this country?': 'この国を削除しますか？',
+      'Do you want to delete this city?': 'この都市を削除しますか？',
+      'Do you want to delete this sector?': 'このセクターを削除しますか？',
+      'Do you want to delete this system?': 'このシステムを削除しますか？',
+      'Do you want to delete this organization?': 'この組織を削除しますか？',
+      'Do you want to delete this individual?': 'この個人を削除しますか？',
+      'Do you want to delete this relation?': 'この関連を削除しますか？',
+      'Do you want to delete this sighting?': 'この目撃情報を削除しますか？',
       'Do you want to delete this workspace?':
         'このワークスペースを削除しますか？',
-      'Do you want to delete this widget?':
-        'このウィジェットを削除しますか？',
+      'Do you want to delete this widget?': 'このウィジェットを削除しますか？',
       'Do you want to delete this attack pattern?':
         'この攻撃パターンを削除しますか？',
       'Do you want to delete this course of action?':
         'この行動指針を削除しますか？',
-      'Do you want to delete this tool?':
-        'このツールを削除しますか？',
-      'Do you want to delete this vulnerability?':
-        'この脆弱性を削除しますか？',
+      'Do you want to delete this tool?': 'このツールを削除しますか？',
+      'Do you want to delete this vulnerability?': 'この脆弱性を削除しますか？',
       'Do you want to delete this indicator?':
         'このインジケータを削除しますか？',
-      'Do you want to delete this observable?':
-        'この観測結果を削除しますか？',
+      'Do you want to delete this observable?': 'この観測結果を削除しますか？',
       'Do you want to delete this observed data?':
         'この観測データを削除しますか？',
       'Do you want to remove the entity from this report?':
         'レポートからこのエンティティを削除しますか？',
-      'Do you want to delete this attribute?':
-        'この属性を削除しますか？',
+      'Do you want to delete this attribute?': 'この属性を削除しますか？',
       'Do you want to remove this external reference?':
         'この外部参照を削除しますか？',
       'Do you want to remove this note?': 'このノートを削除しますか？',
-      'Do you want to remove this report?':
-        'このレポートを削除しますか？',
+      'Do you want to remove this report?': 'このレポートを削除しますか？',
       'Do you want to remove these elements from this report?':
         'レポートからこれらの要素を削除しますか？',
       'Do you want to remove these elements from this investigation?':
         '調査内容からこれらの要素を削除しますか？',
-      'Do you want to remove this opinion?':
-        'このオピニオンを削除しますか？',
+      'Do you want to remove this opinion?': 'このオピニオンを削除しますか？',
       'Do you want to remove the observable from this indicator?':
         'このインジケータから観測結果を削除しますか？',
       'Do you want to remove the entity from this container?':
@@ -3187,10 +3156,8 @@ const i18n = {
       'Do you want to remove the indicator from this observable?':
         'この観測結果からインジケータを削除しますか？',
       'Do you want to delete this role?': 'このロールを削除しますか？',
-      'Do you want to delete this label?':
-        'このラベルを削除しますか？',
-      'Do you want to delete this note?':
-        'このノートを削除しますか？',
+      'Do you want to delete this label?': 'このラベルを削除しますか？',
+      'Do you want to delete this note?': 'このノートを削除しますか？',
       'Do you want to delete these entities?':
         'このエンティティを削除しますか？',
       'Do you want to delete this live stream?':
@@ -3198,18 +3165,13 @@ const i18n = {
       'Do you want to delete this feed?': 'このフィードを削除しますか？',
       'Do you want to delete this synchronizer?':
         'この同期処理を削除しますか？',
-      'Do you want to start this synchronizer?':
-        'この同期処理を開始しますか？',
-      'Do you want to stop this synchronizer?':
-        'この同期処理を停止しますか？',
+      'Do you want to start this synchronizer?': 'この同期処理を開始しますか？',
+      'Do you want to stop this synchronizer?': 'この同期処理を停止しますか？',
       'Do you want to create a STIX Indcator from this observable?':
         'この観測結果からインジケータを作成しますか？',
-      'Do you want to enable this rule?':
-        'このルールを有効にしますか？',
-      'Do you want to disable this rule?':
-        'このルールを無効にしますか？',
-      'Do you want to drop this bundle?':
-        'このバンドルを破棄しますか？',
+      'Do you want to enable this rule?': 'このルールを有効にしますか？',
+      'Do you want to disable this rule?': 'このルールを無効にしますか？',
+      'Do you want to delete this workbench?': 'このワークスペースを削除しますか?',
       'Applying this rule on the existing data':
         '既存のデータにルールを適用しています',
       'This rule has been applied on the existing data':
@@ -3240,7 +3202,8 @@ const i18n = {
         'このエンティティによって作成された最新のレポート',
       'Latest reports about this entity':
         'このエンティティに関連する最新のレポート',
-      'Last reports about the entity': 'このエンティティに関連する最新のレポート',
+      'Last reports about the entity':
+        'このエンティティに関連する最新のレポート',
       'Last observables': '最新の観測結果',
       'observable(s)': '観測結果',
       'Last modified entities': '最後に変更されたエンティティ',
@@ -3248,8 +3211,7 @@ const i18n = {
       'External authentication': '外部認証',
       'Authentication strategies': '認証方法',
       'Granted by default': 'デフォルトで付与',
-      'Granted by default at user creation':
-        'ユーザー作成時にデフォルトで付与',
+      'Granted by default at user creation': 'ユーザー作成時にデフォルトで付与',
       'Automatically authorize this group to new marking definition':
         'このグループに新しいデータマーキングを自動的に適用する',
       'Unauthorized action, please refresh your browser':
@@ -3311,7 +3273,8 @@ const i18n = {
       Merge: 'マージ',
       Cancel: 'キャンセル',
       Import: 'インポート',
-      'No files in this category.': 'このカテゴリーに該当するファイルはありません。',
+      'No files in this category.':
+        'このカテゴリーに該当するファイルはありません。',
       'Text files': 'テキストファイル',
       'HTML files': 'HTMLファイル',
       'PDF files': 'PDFファイル',
@@ -3331,8 +3294,7 @@ const i18n = {
         'ファイルのインポートが開始されました',
       Add: '追加',
       'Turn to user': 'ユーザーに向ける',
-      'This individual is now a user':
-        'この個人が現在のユーザーです',
+      'This individual is now a user': 'この個人が現在のユーザーです',
       'This relation is inferred': 'このリレーションが推測されました',
       'This field is required': 'このフィールドは必須です',
       'Remove from the container': 'コンテナから削除する',
@@ -3341,8 +3303,7 @@ const i18n = {
       'The value is too short': '文字数が不足しています',
       'The value is too long': '文字数が上限を超えています',
       'The value must be a number': '数値を入力してください',
-      'The value must be an email address':
-        'メールアドレスを入力してください',
+      'The value must be an email address': 'メールアドレスを入力してください',
       'The value must be an URL': 'URLを入力してください',
       'Starting synchronization (empty = from start)':
         '同期処理を開始します (値が未設定の場合、開始時刻が適用されます)',
@@ -3464,7 +3425,8 @@ const i18n = {
       'Create an indicator from this observable':
         '観測結果からインジケータを作成',
       'Create a relationship': 'リレーションシップを作成',
-      'Create a nested relationship': '階層化されたリレーションシップを作成する',
+      'Create a nested relationship':
+        '階層化されたリレーションシップを作成する',
       'Update a relationship': 'リレーションシップを更新',
       'Select a relationship': 'リレーションシップを選択',
       'Create a sighting': '目撃情報を作成',
@@ -3537,8 +3499,7 @@ const i18n = {
       'This connector is disconnected': 'このコネクタとの接続が切れています',
       'Reset the connector state': 'コネクタの状態を初期化する',
       'Clear this connector': 'コネクタを削除する',
-      'The connector state has been reset':
-        'コネクタの状態を初期化しました',
+      'The connector state has been reset': 'コネクタの状態を初期化しました',
       'The connector has been cleared': 'コネクタを削除しました',
       'Refresh the knowledge using this connector':
         'このコネクタを使用してエンティティを更新する',
@@ -3677,10 +3638,8 @@ const i18n = {
       'Type the code generated in your application':
         'アプリケーションが生成したコードを入力してください',
       Evolution: '発展',
-      'Enable two-factor authentication':
-        '二要素認証を有効にする',
-      'Disable two-factor authentication':
-        '二要素認証を無効にする',
+      'Enable two-factor authentication': '二要素認証を有効にする',
+      'Disable two-factor authentication': '二要素認証を無効にする',
       '2FA state': '二要素認証の状態',
       'Targeting through time': '時間軸でみたターゲティング',
       'TTPs through time': '時間軸でみたTTPs',
@@ -3742,8 +3701,7 @@ const i18n = {
       'Disable tree vertical mode': '垂直ツリー表示をやめる',
       'Enable forces': '強制モードにする',
       'Disable forces': '強制モードをやめる',
-      'Display time range selector':
-        '時間範囲選択ツールを表示',
+      'Display time range selector': '時間範囲選択ツールを表示',
       'Display notes': 'ノートを表示',
       'Unfix the nodes and re-apply forces':
         'ノードの固定を解除し、強制モードを再適用する',
@@ -3821,8 +3779,7 @@ const i18n = {
       Inferences: '参考',
       'Action type': 'アクションタイプ',
       'Inference rules': '推論ルール',
-      'Inferred knowledge based on the rule ':
-        'ルールに基づく推論',
+      'Inferred knowledge based on the rule ': 'ルールに基づく推論',
       'View the item': 'アイテムの表示',
       'CSV file': 'CSVファイル',
       'Export data in CSV': 'CSVでデータを出力する',
@@ -3845,18 +3802,15 @@ const i18n = {
       'Full export (entity and first neighbours)':
         'エンティティとその関連オブジェクトを出力',
       'Uploaded files': 'アップロードされたファイル',
-      'Pending files': '保留中のファイル',
-      'Drop this pending bundle': '保留中のファイルを削除する',
-      'Delete this pending bundle': '保留中のファイルを削除する',
+      'Delete this workbench': 'このワークスペースを削除',
       'Validate and send for import': 'インポート用に検証して送信する',
-      'Validate this pending bundle': 'この保留中のファイルを検証する',
+      'Validate this workbench': 'このワークスペースを検証する',
       'File successfully removed': 'ファイルの削除に成功',
       'File successfully uploaded': 'ファイルのアップロードに成功',
       'Launch an import of this file': 'このファイルのインポートを開始する',
       Launch: '起動',
       'Rule rescan': 'ルールの再スキャン',
-      'Rule rescan (engine is disabled)':
-        'ルールの再スキャン（停止中）',
+      'Rule rescan (engine is disabled)': 'ルールの再スキャン（停止中）',
       'Rule entity rescan': 'ルールエンティティの再スキャン',
       'Selected rules': '選択されたルール',
       'Element will be rescan with all compatible activated rules':
@@ -3868,8 +3822,7 @@ const i18n = {
       'Targeted entities': '対象エンティティ',
       'Background tasks': 'バックグラウンドタスク',
       Verify: '検証',
-      'Connection successfully verified':
-        '接続が正常に検証されました',
+      'Connection successfully verified': '接続が正常に検証されました',
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         'このバックグラウンドタスクで1000以上のエンティティをターゲットにしています。実行内容を確認してください。',
       Filters: 'フィルタ',
@@ -3978,8 +3931,7 @@ const i18n = {
       'To name': 'ターゲット名',
       'Creation date': '作成日',
       'Created the': '作成日時',
-      'Creation date (in this platform)':
-        'プラットフォーム上での作成日',
+      'Creation date (in this platform)': 'プラットフォーム上での作成日',
       'Technical date': '技術的な日時',
       'Functional date': '機能的な日時',
       'Date reference': '参照日時',
@@ -4023,8 +3975,7 @@ const i18n = {
       'Verify SSL certificate': 'SSL証明書を検証する',
       Confirmation: '確認',
       'Kill chain': 'キルチェーン',
-      'This feature is not available yet.':
-        'この機能はまだ利用できません。',
+      'This feature is not available yet.': 'この機能はまだ利用できません。',
       'This page is not found on this OpenCTI application.':
         'このページは、OpenCTIアプリケーション上で見つかりませんでした。',
       'Phase name': 'フェーズ名',
@@ -4144,7 +4095,8 @@ const i18n = {
       'Linked threat(s)': 'リンクされた脅威',
       'Linked threat': 'リンクされた脅威',
       // Statistics
-      'No widget in this workspace': 'このワークスペースにウィジェットはありません',
+      'No widget in this workspace':
+        'このワークスペースにウィジェットはありません',
       'Averages of context relations': 'コンテキストリレーションの平均',
       'Synthesis of knowledge': 'ナレッジの統合',
       Statistics: '統計',
@@ -4193,8 +4145,7 @@ const i18n = {
       'Total indicators': 'インジケータの総数',
       'Total direct relations': '直接的なリレーションの総数',
       'Top Labels (3 last months)': '上位のラベル(過去3ヶ月)',
-      'Last ingested reports (creation date in the platform)':
-        '最新のレポート',
+      'Last ingested reports (creation date in the platform)': '最新のレポート',
       'Distribution of entities': 'エンティティの分布',
       'Entities distribution': 'エンティティの分布',
       'Distribution of opinions': 'オピニオンの分布',
@@ -4204,7 +4155,8 @@ const i18n = {
       'Distribution of relations': 'リレーションの分布',
       'Distribution of sources': 'ソースの分布',
       'Latest created relationships': '最後に作成されたリレーションシップ',
-      'Last targeted organizations in this sector': 'このセクターで最後に標的となった組織',
+      'Last targeted organizations in this sector':
+        'このセクターで最後に標的となった組織',
       'Ingested entities': '取り込まれたエンティティ',
       'Created entities': '作成されたエンティティ',
       '24 hours': '24時間',
@@ -4239,8 +4191,7 @@ const i18n = {
         'このエンティティにはまだノートがありません。',
       'Notes about this entity': 'このエンティティに関するノート',
       'Notes about this relationship': 'このリレーションシップに関するノート',
-      'No history about this entity.':
-        'このエンティティには履歴がありません。',
+      'No history about this entity.': 'このエンティティには履歴がありません。',
       'No relations history about this entity.':
         'このエンティティにはリレーションの履歴がありません。',
       'Already in plat.': 'すでにプラットフォームに存在します',
@@ -4288,15 +4239,21 @@ const i18n = {
       Nonee: 'N/A',
       Status: 'ステータス',
       'No file selected.': 'ファイルが選択されていません。',
-      'Observables and indicators conversion':
-        '観測結果とインジケータの変換',
+      'Observables and indicators conversion': '観測結果とインジケータの変換',
       'This action will generate observables from the selected indicators.':
         'この操作によって選択されたインジケータから観測結果が生成されます。',
       'This action will generate STIX patterns indicators from the selected observables.':
         'この操作によって選択された観測結果からSTIXパターンインジケータを生成します。',
-      'Indicators/observables generation':
-        'インジケータ/観測結果の生成',
+      'Indicators/observables generation': 'インジケータ/観測結果の生成',
       Generate: '生成',
+      'Analyst workbenches': 'アナリストのワークスペース',
+      'Create a workbench': 'ワークスペースを作成する',
+      'Default value': 'デフォルト値',
+      'Add and complete': '追加して完成',
+      'Update and complete': '更新して完了',
+      'Manage an entity': 'エンティティを管理する',
+      'Do you want to remove this entity?': 'このエンティティを削除しますか?',
+      'Add context': 'コンテキストを追加',
       // Time
       '24h': '24時間',
       // Types
@@ -4703,7 +4660,7 @@ const i18n = {
         '是否要从此可观测数据创建一个STIX攻击指标？',
       'Do you want to enable this rule?': '是否要启用该规则？',
       'Do you want to disable this rule?': '是否要禁用该规则？',
-      'Do you want to drop this bundle?': '是否要丢弃此捆绑包?',
+      'Do you want to delete this workbench?': '是否要丢弃此捆绑包?',
       'Applying this rule on the existing data': '对现有数据应用此规则',
       'This rule has been applied on the existing data':
         '该规则已应用于现有数据',
@@ -5283,11 +5240,9 @@ const i18n = {
       'Simple export (just the entity)': '简单导出(仅实体)',
       'Full export (entity and first neighbours)': '完全导出(实体和第一个邻居)',
       'Uploaded files': '已上传的文件',
-      'Pending files': '挂起的文件',
-      'Drop this pending bundle': '丢弃此挂起的捆绑包',
-      'Delete this pending bundle': '删除此挂起的捆绑包',
+      'Delete this workbench': '删除此工作区',
       'Validate and send for import': '验证并发送以进行导入',
-      'Validate this pending bundle': '验证此挂起的捆绑包',
+      'Validate this workbench': '验证此工作区',
       'File successfully removed': '已成功移除文件',
       'File successfully uploaded': '已成功上传文件',
       'Launch an import of this file': '启动此文件的导入',
@@ -5717,6 +5672,14 @@ const i18n = {
       None: '无',
       Nonee: '无',
       Status: '状态',
+      'Analyst workbenches': '分析师工作区',
+      'Create a workbench': '创建工作区',
+      'Default value': '默认值',
+      'Add and complete': '添加并完成',
+      'Update and complete': '更新并完成',
+      'Manage an entity': '管理实体',
+      'Do you want to remove this entity?': '是否要删除此实体？',
+      'Add context': '添加上下文',
       // Time
       '24h': '24小时',
       // Types

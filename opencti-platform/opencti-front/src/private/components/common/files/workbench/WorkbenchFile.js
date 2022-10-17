@@ -3,13 +3,13 @@ import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer } from '../../../relay/environment';
-import PendingFileContent from './PendingFileContent';
-import Loader from '../../../components/Loader';
-import { fromB64 } from '../../../utils/String';
+import { QueryRenderer } from '../../../../../relay/environment';
+import WorkbenchFileContent from './WorkbenchFileContent';
+import Loader from '../../../../../components/Loader';
+import { fromB64 } from '../../../../../utils/String';
 
-const pendingFileQuery = graphql`
-  query PendingFileQuery($id: String!) {
+const workbenchFileQuery = graphql`
+  query WorkbenchFileQuery($id: String!) {
     stixDomainObjectTypes: subTypes(type: "Stix-Domain-Object") {
       edges {
         node {
@@ -27,15 +27,15 @@ const pendingFileQuery = graphql`
       }
     }
     connectorsForImport {
-      ...PendingFileContent_connectorsImport
+      ...WorkbenchFileContent_connectorsImport
     }
     file(id: $id) {
-      ...PendingFileContent_file
+      ...WorkbenchFileContent_file
     }
   }
 `;
 
-class PendingFile extends Component {
+class WorkbenchFile extends Component {
   render() {
     const {
       match: {
@@ -45,12 +45,12 @@ class PendingFile extends Component {
     const decodedFileId = fromB64(fileId);
     return (
       <QueryRenderer
-        query={pendingFileQuery}
+        query={workbenchFileQuery}
         variables={{ id: decodedFileId }}
         render={({ props }) => {
-          if (props) {
+          if (props && props.file) {
             return (
-              <PendingFileContent
+              <WorkbenchFileContent
                 file={props.file}
                 connectorsImport={props.connectorsForImport}
                 stixDomainObjectTypes={props.stixDomainObjectTypes}
@@ -65,8 +65,8 @@ class PendingFile extends Component {
   }
 }
 
-PendingFile.propTypes = {
+WorkbenchFile.propTypes = {
   children: PropTypes.node,
 };
 
-export default R.compose(withRouter)(PendingFile);
+export default R.compose(withRouter)(WorkbenchFile);

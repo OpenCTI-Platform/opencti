@@ -14344,6 +14344,7 @@ export enum StixDomainObjectsFilter {
   ReportTypes = 'report_types',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
+  XMitreId = 'x_mitre_id',
   XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
   XOpenctiOrganizationType = 'x_opencti_organization_type',

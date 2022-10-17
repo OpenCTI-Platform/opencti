@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
+import * as R from 'ramda';
 import {
   assoc,
   compose,
+  dissoc,
+  filter,
+  includes,
+  map,
   pipe,
   pluck,
   split,
-  dissoc,
-  includes,
-  map,
-  filter,
 } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -27,8 +28,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import * as R from 'ramda';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -37,6 +37,10 @@ import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ConfidenceField from '../form/ConfidenceField';
+import {
+  typesWithOpenCTIAliases,
+  typesWithoutAliases,
+} from '../../../../utils/Entity';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -50,24 +54,6 @@ export const stixDomainObjectCreationAllTypesQuery = graphql`
     }
   }
 `;
-
-const typesWithOpenCTIAliases = [
-  'Course-Of-Action',
-  'Identity',
-  'Individual',
-  'Organization',
-  'Sector',
-  'Position',
-  'Location',
-  'City',
-  'Country',
-  'Region',
-  'Event',
-  'Channel',
-  'Narrative',
-];
-
-const typesWithoutAliases = ['Indicator', 'Vulnerability', 'Language'];
 
 const styles = (theme) => ({
   drawerPaper: {

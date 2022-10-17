@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
+import CircularProgress from '@mui/material/CircularProgress';
 import inject18n from './i18n';
 
 const styles = () => ({
@@ -59,6 +60,15 @@ const ItemBoolean = (props) => {
         classes={{ root: style }}
         style={inlineStyles.blue}
         label={t('Not applicable')}
+      />
+    );
+  }
+  if (status === undefined) {
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={inlineStyles.blue}
+        label={<CircularProgress size={10} color="primary" />}
       />
     );
   }

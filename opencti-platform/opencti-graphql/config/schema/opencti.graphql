@@ -1678,6 +1678,7 @@ enum StixDomainObjectsFilter {
   entity_type
   aliases
   x_opencti_aliases
+  x_mitre_id
   created
   modified
   created_at

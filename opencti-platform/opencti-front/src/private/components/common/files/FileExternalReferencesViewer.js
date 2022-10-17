@@ -19,7 +19,7 @@ const styles = () => ({
     height: '100%',
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
-    marginTop: 12,
+    marginTop: 8,
     borderRadius: 6,
   },
 });
@@ -100,7 +100,7 @@ const FileExternalReferencesViewerRefetchQuery = graphql`
   query FileExternalReferencesViewerRefetchQuery($id: String!) {
     stixDomainObject(id: $id) {
       ...FileExternalReferencesViewer_entity
-      ...FilePendingViewer_entity
+      ...WorkbenchFileViewer_entity
     }
   }
 `;
