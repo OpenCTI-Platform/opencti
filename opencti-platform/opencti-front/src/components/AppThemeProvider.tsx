@@ -1,26 +1,31 @@
-import React, { useContext } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent, useContext } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { createTheme, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
-import { UserContext } from '../utils/Security';
+import { ThemeOptions } from '@mui/material/styles/createTheme';
+import { UserContext, UserContextType } from '../utils/Security';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
 import {
   useDocumentFaviconModifier,
-  useDocumentThemeModifier,
   useDocumentModifier,
+  useDocumentThemeModifier,
 } from '../utils/hooks/useDocumentModifier';
-import { isNotEmptyField } from '../utils/utils';
+import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 
-const themeBuilder = (settings, themeColor) => {
+interface AppThemeProviderProps {
+  children: React.ReactNode
+  settings: AppThemeProvider_settings$data
+}
+
+const themeBuilder = (settings: AppThemeProvider_settings$data, themeColor: string) => {
   if (themeColor === 'light') {
-    const platformThemeLightLogo = settings?.platform_theme_light_logo ?? null;
-    const platformThemeLightBackground = settings?.platform_theme_light_background ?? null;
-    const platformThemeLightPaper = settings?.platform_theme_light_paper ?? null;
-    const platformThemeLightNav = settings?.platform_theme_light_nav ?? null;
-    const platformThemeLightPrimary = settings?.platform_theme_light_primary ?? null;
-    const platformThemeLightSecondary = settings?.platform_theme_light_secondary ?? null;
-    const platformThemeLightAccent = settings?.platform_theme_light_accent ?? null;
+    const platformThemeLightLogo = settings?.platform_theme_light_logo;
+    const platformThemeLightBackground = settings?.platform_theme_light_background;
+    const platformThemeLightPaper = settings?.platform_theme_light_paper;
+    const platformThemeLightNav = settings?.platform_theme_light_nav;
+    const platformThemeLightPrimary = settings?.platform_theme_light_primary;
+    const platformThemeLightSecondary = settings?.platform_theme_light_secondary;
+    const platformThemeLightAccent = settings?.platform_theme_light_accent;
     return themeLight(
       platformThemeLightLogo,
       platformThemeLightBackground,
@@ -49,18 +54,18 @@ const themeBuilder = (settings, themeColor) => {
   );
 };
 
-const AppThemeProvider = (props) => {
+const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = (props) => {
   const { children } = props;
-  const { me } = useContext(UserContext);
+  const { me } = useContext<UserContextType>(UserContext);
   const platformTitle = props.settings?.platform_title ?? 'OpenCTI - Cyber Threat Intelligence Platform';
   useDocumentModifier(platformTitle);
   useDocumentFaviconModifier(props.settings?.platform_favicon);
   // region theming
   const defaultTheme = props.settings?.platform_theme ?? null;
   const platformTheme = defaultTheme !== null && defaultTheme !== 'auto' ? defaultTheme : 'dark';
-  const theme = isNotEmptyField(me?.theme) && me.theme !== 'default' ? me.theme : platformTheme;
+  const theme = me?.theme && me.theme !== 'default' ? me.theme : platformTheme;
   const themeComponent = themeBuilder(props.settings, theme);
-  const muiTheme = createTheme(themeComponent);
+  const muiTheme = createTheme(themeComponent as ThemeOptions);
   useDocumentThemeModifier(theme);
   // endregion
   return (
@@ -68,11 +73,6 @@ const AppThemeProvider = (props) => {
       <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>
     </StyledEngineProvider>
   );
-};
-
-AppThemeProvider.propTypes = {
-  children: PropTypes.node,
-  settings: PropTypes.object,
 };
 
 export const ConnectedThemeProvider = createFragmentContainer(

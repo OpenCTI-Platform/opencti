@@ -1,15 +1,16 @@
+import { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text.png';
 
-export default (
-  logo = null,
-  background = null,
-  paper = null,
-  nav = null,
-  primary = null,
-  secondary = null,
-  accent = null,
-) => ({
+const ThemeLight = (
+  logo: string | null,
+  background: string | null,
+  paper: string | null,
+  nav: string | null,
+  primary: string | null,
+  secondary: string | null,
+  accent: string | null,
+): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   palette: {
     mode: 'light',
@@ -202,3 +203,5 @@ export default (
     },
   },
 });
+
+export default ThemeLight;

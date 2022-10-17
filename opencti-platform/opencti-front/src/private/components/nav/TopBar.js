@@ -141,7 +141,7 @@ const TopBar = ({
     commitMutation({
       mutation: logoutMutation,
       variables: {},
-      onCompleted: () => history.push('/'),
+      onCompleted: () => window.location.reload(),
     });
   };
   const handleSearch = (searchKeyword) => {
