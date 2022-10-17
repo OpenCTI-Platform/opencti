@@ -392,7 +392,7 @@ class Export extends Component {
                           {t('Corrected during assessment')}
                         </Typography>
                         <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
-                          <Tooltip title={t('Publicly Accessible')} >
+                          <Tooltip title={t('Corrected during assessment')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
