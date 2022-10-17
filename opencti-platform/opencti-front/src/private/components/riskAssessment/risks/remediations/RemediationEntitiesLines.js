@@ -7,8 +7,6 @@ import Typography from '@material-ui/core/Typography';
 import { createFragmentContainer } from 'react-relay';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import { IconButton } from '@material-ui/core';
-import { Add } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../../components/i18n';
 import {
@@ -78,7 +76,8 @@ class RemediationEntitiesLines extends Component {
         history={history}
         refreshQuery={refreshQuery}
       />
-      <Paper className={classes.paper}>
+      <div className="clearfix" />
+      <Paper className={classes.paper} elevation={2}>
         <ListItem style={{ borderBottom: '2px solid white' }}>
           <ListItemText
             primary={<div className={classes.ListItem} >
@@ -122,6 +121,8 @@ class RemediationEntitiesLines extends Component {
             key={remediationEdge.id}
             history={history}
             riskId={riskId}
+            remediationId={entityId}
+            refreshQuery={refreshQuery}
           />,
         )) : <div style={{ textAlign: 'center', padding: '20px 0' }}>
           No Record Found </div>)}

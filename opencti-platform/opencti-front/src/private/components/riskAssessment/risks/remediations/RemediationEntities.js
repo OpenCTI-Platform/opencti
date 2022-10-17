@@ -253,9 +253,7 @@ class RemediationEntities extends Component {
     return (
       <div style={{ height: '100%' }}>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        </Paper>
       </div>
     );
   }
