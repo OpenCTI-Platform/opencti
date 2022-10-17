@@ -153,7 +153,7 @@ nconf.add('argv', {
 var etcdOptions = {
   ca:   readFileSync(process.env.OPENCTI_ETCD_CA_CRT)
 };
-nconf.use('etcd', { namespace:'test', hosts:[process.env.OPENCTI_ETCD_HOSTS], etcd:etcdOptions});
+nconf.use('etcd', { namespace:'SYSTEM', hosts:[process.env.OPENCTI_ETCD_HOSTS], etcd:etcdOptions});
 nconf.load();
 
 // START TEST CODE
