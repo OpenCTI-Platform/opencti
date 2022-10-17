@@ -61,25 +61,34 @@ class ErrorBox extends Component {
 
   handleRenderComponent(error) {
     if (Object.keys(error).length) {
-      if ((error.every((value) => value.name !== undefined && value.name.includes('CyioError')))) {
+      if ((error.every((value) => value.type !== undefined && value.type.includes('CyioError')))) {
         return this.renderCyioError();
       }
-      else if (error.every((value) => value.extensions.code.includes('BAD_USER_INPUT'))) {
+      else if (error.every((value) => value.type.includes('BAD_USER_INPUT'))) {
         return this.renderBadUserInput();
       }
-      else if (error.every((value) => value.extensions.code.includes('GRAPHQL_PARSE_FAILED') || value.extensions.code.includes('GRAPHQL_VALIDATION_FAILED') || value.extensions.code.includes('INTERNAL_SERVER_ERROR'))) {
+      else if (error.every((value) => value.type.includes('GRAPHQL_PARSE_FAILED') || value.type.includes('GRAPHQL_VALIDATION_FAILED') || value.type.includes('INTERNAL_SERVER_ERROR'))) {
         return this.renderInternalServerError();
       }
-      else if (error.every((value) => value.extensions.code.includes('FORBIDDEN'))) {
+      else if (error.every((value) => value.type.includes('FORBIDDEN'))) {
         return this.renderForbidden();
       }
       return this.renderInternalServerError();
     }
   }
 
+  handleErrorBoxClose() {
+    this.props.handleClearError();
+    if (this.props.pathname) {
+      this.props.history.push(this.props.pathname);
+    } else {
+      this.props.history.goBack();
+    }
+  }
+
   renderBadUserInput() {
     const {
-      t, classes, history, pathname, error,
+      t, classes, error,
     } = this.props;
     return (
       <>
@@ -106,7 +115,7 @@ class ErrorBox extends Component {
         <DialogActions className={classes.dialogAction}>
           <Button
             variant='outlined'
-            onClick={() => history.push(pathname)}
+            onClick={() => this.handleErrorBoxClose()}
           >
             {t('Cancel')}
           </Button>
@@ -153,7 +162,7 @@ class ErrorBox extends Component {
 
   renderInternalServerError() {
     const {
-      t, classes, history, pathname,
+      t, classes,
     } = this.props;
     return (
       <>
@@ -168,7 +177,7 @@ class ErrorBox extends Component {
         <DialogActions className={classes.dialogAction}>
           <Button
             variant='outlined'
-            onClick={() => history.push(pathname)}
+            onClick={() => this.handleErrorBoxClose()}
           >
             {t('Cancel')}
           </Button>
@@ -179,7 +188,7 @@ class ErrorBox extends Component {
 
   renderUnauthenticated() {
     const {
-      t, classes, history, pathname,
+      t, classes,
     } = this.props;
     return (
       <>
@@ -194,7 +203,7 @@ class ErrorBox extends Component {
         <DialogActions className={classes.dialogAction}>
           <Button
             variant='outlined'
-            onClick={() => history.push(pathname)}
+            onClick={() => this.handleErrorBoxClose()}
           >
             {t('Cancel')}
           </Button>
@@ -205,7 +214,7 @@ class ErrorBox extends Component {
 
   renderForbidden() {
     const {
-      t, classes, history, pathname,
+      t, classes,
     } = this.props;
     return (
       <>
@@ -220,7 +229,7 @@ class ErrorBox extends Component {
         <DialogActions className={classes.dialogAction}>
           <Button
             variant='outlined'
-            onClick={() => history.push(pathname)}
+            onClick={() => this.handleErrorBoxClose()}
           >
             {t('Cancel')}
           </Button>

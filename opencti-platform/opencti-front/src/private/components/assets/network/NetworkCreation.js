@@ -27,7 +27,6 @@ import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_obje
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import NetworkCreationDetails from './NetworkCreationDetails';
 import { toastGenericError } from "../../../../utils/bakedToast";
-import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -118,7 +117,6 @@ class NetworkCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       open: false,
       onSubmit: false,
       displayCancel: false,
@@ -171,10 +169,9 @@ class NetworkCreation extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/network');
       },
-      onError: (err) => {
+      pathname:'/defender HQ/assets/network',
+      onError: () => {
         toastGenericError('Failed to Create Network');
-        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors))
-        this.setState({ error: ErrorResponse });
       }
     });
     // commitMutation({
@@ -253,7 +250,7 @@ class NetworkCreation extends Component {
                 <Typography
                   variant="h1"
                   gutterBottom={true}
-                  className={ classes.leftContainer }
+                  className={classes.leftContainer}
                 >
                   {t('New Asset')}
                 </Typography>
@@ -364,10 +361,6 @@ class NetworkCreation extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <ErrorBox
-          error={this.state.error}
-          pathname='/defender HQ/assets/network'
-        />
       </div>
     );
   }
