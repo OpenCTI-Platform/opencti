@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, dissoc, pipe, map, toPairs, filter, includes } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { compose, dissoc, filter, includes, map, pipe, toPairs } from 'ramda';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -31,6 +31,7 @@ class StixCyberObservableDetailsComponent extends Component {
     const observableAttributes = pipe(
       dissoc('id'),
       dissoc('entity_type'),
+      dissoc('obsContent'),
       toPairs,
       map((n) => ({ key: n[0], value: n[1] })),
       filter(
@@ -200,6 +201,9 @@ const StixCyberObservableDetails = createFragmentContainer(
           mtime
           atime
           x_opencti_additional_names
+          obsContent{
+            id
+          }
           hashes {
             algorithm
             hash

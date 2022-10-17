@@ -8,22 +8,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import {
-  assoc,
-  compose,
-  dissoc,
-  filter,
-  fromPairs,
-  includes,
-  map,
-  pipe,
-  pluck,
-  prop,
-  propOr,
-  sortBy,
-  toLower,
-  toPairs,
-} from 'ramda';
+import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
@@ -34,31 +19,19 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import {
-  stixCyberObservablesLinesAttributesQuery,
-  stixCyberObservablesLinesSubTypesQuery,
-} from './StixCyberObservablesLines';
+import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
 import { parse } from '../../../../utils/Time';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import {
-  booleanAttributes,
-  dateAttributes,
-  ignoredAttributes,
-  numberAttributes,
-  multipleAttributes,
-} from '../../../../utils/Entity';
+import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/Entity';
+import ArtifactField from '../../common/form/ArtifactField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -353,7 +326,10 @@ class StixCyberObservableCreation extends Component {
       objectLabel: pluck('value', values.objectLabel),
       externalReferences: pluck('value', values.externalReferences),
       createIndicator: values.createIndicator,
-      [this.state.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: adaptedValues,
+      [this.state.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: {
+        ...adaptedValues,
+        obsContent: values.obsContent?.value,
+      },
     };
     commitMutation({
       mutation: stixCyberObservableMutation,
@@ -576,6 +552,15 @@ class StixCyberObservableCreation extends Component {
                               name={attribute.value}
                               label={attribute.value}
                               containerstyle={{ marginTop: 20 }}
+                            />
+                          );
+                        }
+                        if (attribute.value === 'obsContent') {
+                          return (
+                            <ArtifactField
+                              key={attribute.value}
+                              attributeName={attribute.value}
+                              onChange={setFieldValue}
                             />
                           );
                         }

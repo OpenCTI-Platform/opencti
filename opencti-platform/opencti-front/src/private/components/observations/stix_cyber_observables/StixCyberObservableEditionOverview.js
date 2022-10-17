@@ -1,21 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import {
-  assoc,
-  compose,
-  fromPairs,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-  filter,
-  includes,
-} from 'ramda';
+import { assoc, compose, difference, filter, fromPairs, head, includes, map, pathOr, pick, pipe } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -28,13 +16,9 @@ import { buildDate } from '../../../../utils/Time';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import {
-  booleanAttributes,
-  dateAttributes,
-  ignoredAttributes,
-  numberAttributes,
-  multipleAttributes,
-} from '../../../../utils/Entity';
+import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/Entity';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ArtifactField from '../../common/form/ArtifactField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -171,6 +155,18 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         variables: {
           id: this.props.stixCyberObservable.id,
           input: { key: 'createdBy', value: value.value || '' },
+        },
+      });
+    }
+  }
+
+  handleChangeRef(name, value) {
+    if (!this.props.enableReferences) {
+      commitMutation({
+        mutation: stixCyberObservableMutationFieldPatch,
+        variables: {
+          id: this.props.stixCyberObservable.id,
+          input: { key: name, value: value.value || '' },
         },
       });
     }
@@ -457,6 +453,17 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           />
                         );
                       }
+                      if (attribute.value === 'obsContent') {
+                        const artifact = stixCyberObservable[attribute.value];
+                        return (
+                          <ArtifactField
+                            key={attribute.value}
+                            attributeName={attribute.value}
+                            attributeValue={artifact ? { label: artifact.observable_value ?? artifact.id, value: artifact.id } : undefined}
+                            onChange={this.handleChangeRef.bind(this)}
+                          />
+                        );
+                      }
                       return (
                         <Field
                           component={TextField}
@@ -479,7 +486,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                     })}
                     <CreatedByField
                       name="createdBy"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       helpertext={
                         <SubscriptionFocus
@@ -491,7 +498,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                     />
                     <ObjectMarkingField
                       name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       helpertext={
                         <SubscriptionFocus
                           context={context}
@@ -579,6 +586,13 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           ctime
           mtime
           atime
+          obsContent{
+            id
+            ... on Artifact {
+              observable_value
+              url
+            }
+          }
           hashes {
             algorithm
             hash

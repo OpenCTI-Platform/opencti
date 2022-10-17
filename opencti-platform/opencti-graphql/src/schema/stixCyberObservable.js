@@ -411,6 +411,7 @@ const stixCyberObservablesAttributes = {
     'mtime',
     'atime',
     'x_opencti_additional_names',
+    'obsContent',
   ],
   [ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [
     'internal_id',

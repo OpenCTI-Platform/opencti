@@ -6390,6 +6390,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   mtime: DateTime
   atime: DateTime
   x_opencti_additional_names: [String]
+  obsContent: Artifact
   # Technical
   creator: User
   toStix: String
@@ -6411,6 +6412,7 @@ input StixFileAddInput {
   mtime: DateTime
   atime: DateTime
   x_opencti_additional_names: [String]
+  obsContent: ID
 }
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id

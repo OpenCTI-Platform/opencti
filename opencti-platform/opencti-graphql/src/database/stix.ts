@@ -996,7 +996,8 @@ const stixCyberObservableRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_BODY_RAW, type: REL_BUILT_IN }
   ],
   [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [
-    { name: RELATION_CONTAINS, type: REL_BUILT_IN }
+    { name: RELATION_CONTAINS, type: REL_BUILT_IN },
+    { name: OBS_RELATION_CONTENT, type: REL_BUILT_IN }
   ],
   [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_PROCESS}`]: [
     { name: RELATION_IMAGE, type: REL_BUILT_IN }
@@ -1162,7 +1163,7 @@ export const stixCyberObservableFieldsForType = (type: string) => {
 };
 
 export const checkStixCyberObservableRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
-  if (relationshipType === RELATION_LINKED || relationshipType === RELATION_LINKED) {
+  if (relationshipType === RELATION_LINKED) {
     return true;
   }
   const data = stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || [];

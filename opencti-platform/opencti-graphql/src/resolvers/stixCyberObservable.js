@@ -3,27 +3,28 @@ import { assoc } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCyberObservable,
+  artifactImport,
+  batchArtifacts,
+  batchIndicators,
+  batchVulnerabilities,
   findAll,
   findById,
-  batchIndicators,
+  promoteObservableToIndicator,
   stixCyberObservableAddRelation,
   stixCyberObservableAddRelations,
   stixCyberObservableCleanContext,
   stixCyberObservableDelete,
   stixCyberObservableDeleteRelation,
-  stixCyberObservableEditContext,
-  stixCyberObservableEditField,
-  stixCyberObservablesNumber,
-  stixCyberObservablesTimeSeries,
-  stixCyberObservableExportAsk,
-  stixCyberObservableExportPush,
   stixCyberObservableDistribution,
   stixCyberObservableDistributionByEntity,
-  stixCyberObservablesExportPush,
+  stixCyberObservableEditContext,
+  stixCyberObservableEditField,
+  stixCyberObservableExportAsk,
+  stixCyberObservableExportPush,
   stixCyberObservablesExportAsk,
-  promoteObservableToIndicator,
-  artifactImport,
-  batchVulnerabilities
+  stixCyberObservablesExportPush,
+  stixCyberObservablesNumber,
+  stixCyberObservablesTimeSeries
 } from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -37,6 +38,7 @@ import { observableValue } from '../utils/format';
 
 const indicatorsLoader = batchLoader(batchIndicators);
 const vulnerabilitiesLoader = batchLoader(batchVulnerabilities);
+const artifactsLoader = batchLoader(batchArtifacts);
 
 const stixCyberObservableResolvers = {
   Query: {
@@ -70,18 +72,28 @@ const stixCyberObservableResolvers = {
     importFiles: (stixCyberObservable, { first }, context) => filesListing(context, context.user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
     exportFiles: (stixCyberObservable, { first }, context) => filesListing(context, context.user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
   },
+  StixFile: {
+    obsContent: (stixFile, _, context) => artifactsLoader.load(stixFile.id, context, context.user),
+  },
   Software: {
     vulnerabilities: (software, _, context) => vulnerabilitiesLoader.load(software.id, context, context.user),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, context) => ({
       delete: () => stixCyberObservableDelete(context, context.user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixCyberObservableEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({
+        input,
+        commitMessage,
+        references
+      }) => stixCyberObservableEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixCyberObservableEditContext(context, context.user, id, input),
       contextClean: () => stixCyberObservableCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixCyberObservableAddRelation(context, context.user, id, input),
       relationsAdd: ({ input }) => stixCyberObservableAddRelations(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCyberObservableDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({
+        toId,
+        relationship_type: relationshipType
+      }) => stixCyberObservableDeleteRelation(context, context.user, id, toId, relationshipType),
       exportAsk: (args) => stixCyberObservableExportAsk(context, context.user, assoc('stixCyberObservableId', id, args)),
       exportPush: ({ file }) => stixCyberObservableExportPush(context, context.user, id, file),
       importPush: ({ file }) => stixCoreObjectImportPush(context, context.user, id, file),
@@ -89,7 +101,10 @@ const stixCyberObservableResolvers = {
     }),
     stixCyberObservableAdd: (_, args, context) => addStixCyberObservable(context, context.user, args),
     stixCyberObservablesExportAsk: (_, args, context) => stixCyberObservablesExportAsk(context, context.user, args),
-    stixCyberObservablesExportPush: (_, { file, listFilters }, context) => stixCyberObservablesExportPush(context, context.user, file, listFilters),
+    stixCyberObservablesExportPush: (_, {
+      file,
+      listFilters
+    }, context) => stixCyberObservablesExportPush(context, context.user, file, listFilters),
     artifactImport: (_, args, context) => artifactImport(context, context.user, args),
   },
   Subscription: {
