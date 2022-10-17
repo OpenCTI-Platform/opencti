@@ -26,7 +26,7 @@ class Message extends Component {
         if (headMessage.type === 'message') {
           this.setState({ openMessage: true, message: headMessage.text });
         } else {
-          this.setState({ open: false, error: messages, pathname: headMessage.pathanme });
+          this.setState({ open: true, error: messages, pathname: headMessage.pathanme });
         }
       },
     });
