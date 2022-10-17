@@ -79,7 +79,6 @@ class RemediationEntities extends Component {
       classes,
       history,
       riskId,
-      t,
     } = this.props;
     const dataColumns = {
       relationship_type: {
@@ -140,7 +139,7 @@ class RemediationEntities extends Component {
               );
             }
             return (
-              <div style={{ height: '100%' }}>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem
@@ -228,7 +227,7 @@ class RemediationEntities extends Component {
                     </ListItem>
                   ))}
                 </List>
-              </div>
+              </Paper>
             );
           }}
         />
@@ -243,7 +242,7 @@ class RemediationEntities extends Component {
       orderAsc,
       searchTerm,
     } = this.state;
-    const { classes, entityId } = this.props;
+    const { entityId } = this.props;
     const paginationOptions = {
       elementId: entityId,
       search: searchTerm,

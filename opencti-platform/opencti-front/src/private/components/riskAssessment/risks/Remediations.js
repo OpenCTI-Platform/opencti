@@ -22,7 +22,6 @@ const styles = () => ({
 
 const Remediations = (props) => {
   const {
-    t,
     remediation,
     classes,
     riskId,
@@ -61,6 +60,7 @@ const Remediations = (props) => {
             history={history}
             entityId={remediation.id}
             riskId={riskId.id}
+            openCreation={openCreation}
           />
     </div>
   );
