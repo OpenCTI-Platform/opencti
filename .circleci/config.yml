@@ -6,7 +6,7 @@ jobs:
   build_frontend:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs16
+      - image: nikolaik/python-nodejs:python3.10-nodejs18
     resource_class: large
     steps:
       - run:
@@ -38,11 +38,13 @@ jobs:
   build_platform:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs16
+      - image: nikolaik/python-nodejs:python3.10-nodejs18
     resource_class: medium+
     steps:
       - run:
-          command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl
+          command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev
+      - run:
+          command: npm install -g node-gyp
       - attach_workspace:
           at: ~/
       - run:
@@ -65,11 +67,13 @@ jobs:
   build_platform_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
+      - image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
     resource_class: medium+
     steps:
       - run:
-          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic libffi-dev curl
+          command: apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
+      - run:
+          command: npm install -g node-gyp          
       - attach_workspace:
           at: ~/
       - run:
