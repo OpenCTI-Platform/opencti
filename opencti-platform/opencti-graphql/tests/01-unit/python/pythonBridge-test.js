@@ -2,16 +2,16 @@ import {
   checkIndicatorSyntax,
   checkPythonAvailability,
   createStixPattern,
-  execTestingPython
+  execChildPython
 } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 test('Check if python is well configured', async () => {
   const check = await checkPythonAvailability(testContext, ADMIN_USER);
   expect(check).not.toBeNull();
-  expect(check.status).toEqual('success');
+  expect(check).toEqual('check');
   // noinspection ES6MissingAwait
-  expect(execTestingPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('An unknown error has occurred');
+  expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('An unknown error has occurred');
   // noinspection ES6MissingAwait
   expect(createStixPattern(testContext, ADMIN_USER, 'fail')).resolves.toEqual(null);
 });

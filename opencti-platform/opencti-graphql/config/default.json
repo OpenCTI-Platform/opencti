@@ -59,6 +59,7 @@
     "map_tile_server_light": "https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png",
     "enforce_references": [],
     "reference_attachment": false,
+    "python_execution": "native",
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",
