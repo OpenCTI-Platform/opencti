@@ -161,7 +161,6 @@ class EntitiesLocationsCreation extends Component {
       t,
       classes,
       openDataCreation,
-      handleLocationCreation,
     } = this.props;
     return (
       <>
