@@ -186,7 +186,7 @@ class Export extends Component {
     const sections = [
       values.tracking && 'tracking',
       values.mitigating_factor && 'mitigating_factor',
-      values.collected_during_testing && 'collected_during_testing',
+      values.corrected_during_testing && 'corrected_during_testing',
     ];
     const appendices = [
       values.db_scan && 'db_scan',
@@ -204,7 +204,7 @@ class Export extends Component {
       dissoc('manual_test'),
       dissoc('scanned_inventory'),
       dissoc('mitigating_factor'),
-      dissoc('collected_during_testing'),
+      dissoc('corrected_during_testing'),
       assoc('sections', sections.filter((value) => value !== false)),
       assoc('appendices', appendices.filter((value) => value !== false)),
       toPairs,
@@ -303,7 +303,7 @@ class Export extends Component {
               manual_test: false,
               scanned_inventory: false,
               mitigating_factor: false,
-              collected_during_testing: false,
+              corrected_during_testing: false,
               tracking: false,
             }}
             validationSchema={ExportValidation(t)}
@@ -384,12 +384,12 @@ class Export extends Component {
                         <Field
                           component={SwitchField}
                           type="checkbox"
-                          name="collected_during_testing"
+                          name="corrected_during_testing"
                           containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
                           inputProps={{ 'aria-label': 'ant design' }}
                         />
                         <Typography>
-                          {t('Collected during assessment')}
+                          {t('Corrected during assessment')}
                         </Typography>
                         <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
                           <Tooltip title={t('Publicly Accessible')} >
