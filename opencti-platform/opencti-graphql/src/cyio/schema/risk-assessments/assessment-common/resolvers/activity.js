@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import { compareValues, updateQuery, filterValues } from '../../../utils.js';
+import { compareValues, updateQuery, filterValues, CyioError } from '../../../utils.js';
 import { UserInputError } from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -364,7 +364,7 @@ const activityResolvers = {
         throw e
       }
 
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer("ACTIVITY");
       const activity = (reducer(response[0]));
 
@@ -390,13 +390,17 @@ const activityResolvers = {
     },
     editActivity: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
+
       const sparqlQuery = selectActivityQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
@@ -404,11 +408,17 @@ const activityResolvers = {
         queryId: "Select Activity",
         singularizeSchema
       })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -418,7 +428,13 @@ const activityResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
 
       const query = updateQuery(
@@ -426,12 +442,31 @@ const activityResolvers = {
         "http://csrc.nist.gov/ns/oscal/assessment/common#Activity",
         input,
         activityPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Activity"
-      });
+      );
+      if (query !== null) {
+        let response;
+        try {
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update OSCAL Activity"
+          });  
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+
+        if (response !== undefined && 'status' in response) {
+          if (response.ok === false || response.status > 299) {
+            // Handle reporting Stardog Error
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
+        }
+      }
+
       const select = selectActivityQuery(id, selectMap.getNode("editActivity"));
       let result;
       try {
@@ -551,7 +586,7 @@ const activityResolvers = {
         console.log(e)
         throw e
       }
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer("ASSOCIATED-ACTIVITY");
       const activity = reducer(response[0]);
 
@@ -579,10 +614,13 @@ const activityResolvers = {
     },
     editAssociatedActivity: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -594,11 +632,17 @@ const activityResolvers = {
         queryId: "Select Associated Activity",
         singularizeSchema
       })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -608,7 +652,13 @@ const activityResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
 
       const query = updateQuery(
@@ -616,13 +666,32 @@ const activityResolvers = {
         "http://csrc.nist.gov/ns/oscal/assessment/common#AssociatedActivity",
         input,
         associatedActivityPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Associated Activity"
-      });
-      const select = selectActivityQuery(id, selectMap.getNode("editAssociatedActivity"));
+      );
+      if (query !== null) {
+        let response;
+        try {
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update OSCAL Associated Activity"
+          });  
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+
+        if (response !== undefined && 'status' in response) {
+          if (response.ok === false || response.status > 299) {
+            // Handle reporting Stardog Error
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
+        }
+      }
+
+      const select = selectAssociatedActivityQuery(id, selectMap.getNode("editAssociatedActivity"));
       let result;
       try {
         result = await dataSources.Stardog.queryById({
