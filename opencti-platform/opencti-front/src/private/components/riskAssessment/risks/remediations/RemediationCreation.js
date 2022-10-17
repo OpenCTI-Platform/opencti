@@ -109,7 +109,6 @@ class RemediationCreation extends Component {
       close: false,
       onSubmit: false,
       open: false,
-      openCreation: false,
     };
   }
 
@@ -135,7 +134,8 @@ class RemediationCreation extends Component {
   }
 
   handleCancelCloseClick() {
-    this.setState({ openCreation: false, close: false });
+    this.setState({ close: false });
+    this.props.handleOpenCreation();
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -161,8 +161,9 @@ class RemediationCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        this.handleCancelCloseClick();
         this.props.refreshQuery();
+        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
       },
       onError: (err) => {
         toastGenericError('Failed to create Remediation');
@@ -194,13 +195,13 @@ class RemediationCreation extends Component {
           color="default"
           aria-label="Label"
           edge="end"
-          onClick={this.handleCreation.bind(this)}
+          onClick={this.props.handleCreation.bind(this)}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
         >
           <Add fontSize="small" />
         </IconButton>
         <Dialog
-          open={this.state.openCreation}
+          open={this.props.openCreation}
           keepMounted={true}
         >
           <Formik

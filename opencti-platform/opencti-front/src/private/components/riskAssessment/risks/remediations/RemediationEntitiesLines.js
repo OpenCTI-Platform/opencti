@@ -19,6 +19,7 @@ const styles = () => ({
     listStyle: 'none',
     height: '100%',
     boxShadow: 'none',
+    padding: '0 10px',
   },
   ListItem: {
     width: '97%',
@@ -49,6 +50,18 @@ class RemediationEntitiesLines extends Component {
   //   this.subscription.unsubscribe();
   // }
 
+  handleOpen() {
+    this.setState({ openCreation: true });
+  }
+
+  handleClose() {
+    this.setState({ openCreation: false });
+  }
+
+  handleOpenCreation() {
+    this.setState({ openCreation: false });
+  }
+
   render() {
     const {
       classes,
@@ -64,7 +77,7 @@ class RemediationEntitiesLines extends Component {
     return (
       <div>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Remediations new')}
+          {t('Remediations')}
         </Typography>
         {/* <Security
           needs={[KNOWLEDGE_KNUPDATE]}
@@ -75,6 +88,9 @@ class RemediationEntitiesLines extends Component {
         riskId={riskId}
         history={history}
         refreshQuery={refreshQuery}
+        openCreation={this.state.openCreation}
+        handleCreation={this.handleOpen.bind(this)}
+        handleOpenCreation={this.handleOpenCreation.bind(this)}
       />
       <div className="clearfix" />
       <Paper className={classes.paper} elevation={2}>
