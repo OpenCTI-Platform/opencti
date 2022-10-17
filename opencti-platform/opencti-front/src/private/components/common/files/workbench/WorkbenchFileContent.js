@@ -278,7 +278,7 @@ class WorkbenchFileContentComponent extends Component {
       entityStep: null,
       entityType: null,
       entityId: null,
-      deleteEntity: null,
+      deleteObject: null,
       // Global
       displayValidate: false,
     };
@@ -373,61 +373,58 @@ class WorkbenchFileContentComponent extends Component {
     return R.head(this.state.stixDomainObjects.filter((n) => n.id === id));
   }
 
-  submitDeleteEntity() {
+  deleteObject(object) {
     const {
-      deleteEntity,
       stixDomainObjects,
       stixCyberObservables,
       stixCoreRelationships,
       containers,
     } = this.state;
     let finalStixDomainObjects = stixDomainObjects.filter(
-      (n) => n.id !== deleteEntity.id,
+      (n) => n.id !== object.id,
     );
     let finalStixCyberObservables = stixCyberObservables.filter(
-      (n) => n.id !== deleteEntity.id,
+      (n) => n.id !== object.id,
     );
     let finalStixCoreRelationships = stixCoreRelationships.filter(
-      (n) => n.id !== deleteEntity.id,
+      (n) => n.id !== object.id,
     );
-    let finalContainers = containers.filter((n) => n.id !== deleteEntity.id);
-    if (deleteEntity.type === 'identity') {
-      finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === deleteEntity.id ? R.dissoc('created_by_ref', n) : n));
-      finalStixCyberObservables = finalStixCyberObservables.map((n) => (n.created_by_ref === deleteEntity.id ? R.dissoc('created_by_ref', n) : n));
-      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === deleteEntity.id ? R.dissoc('created_by_ref', n) : n));
-      finalContainers = finalContainers.map((n) => (n.created_by_ref === deleteEntity.id ? R.dissoc('created_by_ref', n) : n));
-    } else if (deleteEntity.type === 'marking-definition') {
+    let finalContainers = containers.filter((n) => n.id !== object.id);
+    if (object.type === 'identity') {
+      finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === object.id ? R.dissoc('created_by_ref', n) : n));
+      finalStixCyberObservables = finalStixCyberObservables.map((n) => (n.created_by_ref === object.id ? R.dissoc('created_by_ref', n) : n));
+      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === object.id ? R.dissoc('created_by_ref', n) : n));
+      finalContainers = finalContainers.map((n) => (n.created_by_ref === object.id ? R.dissoc('created_by_ref', n) : n));
+    } else if (object.type === 'marking-definition') {
       finalStixDomainObjects = finalStixDomainObjects.map((n) => R.assoc(
         'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== deleteEntity.id),
+        n.object_marking_refs?.filter((o) => o !== object.id),
         n,
       ));
       finalStixCyberObservables = finalStixCyberObservables.map((n) => R.assoc(
         'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== deleteEntity.id),
+        n.object_marking_refs?.filter((o) => o !== object.id),
         n,
       ));
       finalStixCoreRelationships = finalStixCoreRelationships.map((n) => R.assoc(
         'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== deleteEntity.id),
+        n.object_marking_refs?.filter((o) => o !== object.id),
         n,
       ));
       finalContainers = finalContainers.map((n) => R.assoc(
         'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== deleteEntity.id),
+        n.object_marking_refs?.filter((o) => o !== object.id),
         n,
       ));
     }
     // Impact
     const stixCoreRelationshipsToRemove = finalStixCoreRelationships
-      .filter(
-        (n) => n.source_ref === deleteEntity.id || n.target_ref === deleteEntity.id,
-      )
+      .filter((n) => n.source_ref === object.id || n.target_ref === object.id)
       .map((n) => n.id);
     finalContainers = finalContainers.map((n) => R.assoc(
       'object_refs',
       n.object_refs.filter(
-        (o) => o !== deleteEntity.id && !stixCoreRelationshipsToRemove.includes(o),
+        (o) => o !== object.id && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -439,21 +436,21 @@ class WorkbenchFileContentComponent extends Component {
       stixCyberObservables: finalStixCyberObservables,
       stixCoreRelationships: finalStixCoreRelationships,
       containers: finalContainers,
-      deleteEntity: null,
+      deleteObject: null,
     });
     this.saveFile();
   }
 
-  handleDeleteEntity(entity) {
-    this.setState({ deleteEntity: entity });
+  submitDeleteObject() {
+    this.deleteObject(this.state.deleteObject);
   }
 
-  handleCloseDeleteEntity() {
-    this.setState({ deleteEntity: null });
+  handleDeleteObject(object) {
+    this.setState({ deleteObject: object });
   }
 
-  handleDeleteRelation(relation) {
-    this.setState({ deleteRelation: relation });
+  handleCloseDeleteObject() {
+    this.setState({ deleteObject: null });
   }
 
   onSubmitValidate(values, { setSubmitting, resetForm }) {
@@ -1033,7 +1030,16 @@ class WorkbenchFileContentComponent extends Component {
   }
 
   onSubmitEntityContext(values) {
-    const { entityId, stixDomainObjects, stixCoreRelationships } = this.state;
+    const {
+      entityId,
+      stixDomainObjects,
+      stixCyberObservables,
+      stixCoreRelationships,
+    } = this.state;
+    const indexedStixObjects = {
+      ...R.indexBy(R.prop('id'), stixDomainObjects),
+      ...R.indexBy(R.prop('id'), stixCyberObservables),
+    };
     const newEntities = Object.keys(values)
       .map((key) => values[key].map((n) => {
         const entityType = n.type;
@@ -1065,14 +1071,82 @@ class WorkbenchFileContentComponent extends Component {
         }));
       })
       .flat();
+
+    const fromRelationshipsTypes = Object.keys(values)
+      .filter((n) => n.includes('-from'))
+      .map((n) => n.split('-')[0]);
+    const toRelationshipsTypes = Object.keys(values)
+      .filter((n) => n.includes('-to'))
+      .map((n) => n.split('-')[0]);
+
+    // Compute relationships to delete
+    const stixCoreRelationshipsToDelete = [
+      ...stixCoreRelationships.filter(
+        (n) => fromRelationshipsTypes.includes(n.relationship_type)
+          && n.source_ref === entityId,
+      ),
+      ...stixCoreRelationships.filter(
+        (n) => toRelationshipsTypes.includes(n.relationship_type)
+          && n.target_ref === entityId,
+      ),
+    ];
+    // Delete objects, no matter that is parallel it will always success
+    stixCoreRelationshipsToDelete.forEach((n) => this.deleteObject(n));
+    const stixCoreRelationshipsToDeleteIds = stixCoreRelationshipsToDelete.map(
+      (n) => n.id,
+    );
+    // Compute the objects to be check for purge in this specific context
+    const stixDomainObjectsToCheckForPurging = [
+      ...stixCoreRelationships
+        .filter(
+          (n) => fromRelationshipsTypes.includes(n.relationship_type)
+            && n.source_ref === entityId,
+        )
+        .map((n) => indexedStixObjects[n.target_ref] || null)
+        .filter((n) => n !== null),
+      ...stixCoreRelationships
+        .filter(
+          (n) => toRelationshipsTypes.includes(n.relationship_type)
+            && n.target_ref === entityId,
+        )
+        .map((n) => indexedStixObjects[n.source_ref] || null)
+        .filter((n) => n !== null),
+    ];
+    // Check if no relationships point to objects, then purge in this context
+    const stixDomainObjectsToDelete = stixDomainObjectsToCheckForPurging
+      .map((value) => {
+        const rels = stixCoreRelationships.filter(
+          (n) => !stixCoreRelationshipsToDeleteIds.includes(n.id)
+            && (n.source_ref === value.id || n.target_ref === value.id),
+        );
+        if (rels.length === 0) {
+          return value;
+        }
+        return null;
+      })
+      .filter((n) => n !== null);
+    stixDomainObjectsToDelete.forEach((n) => this.deleteObject(n));
+    const stixDomainObjectsToDeleteIds = stixDomainObjectsToDelete.map(
+      (n) => n.id,
+    );
     this.setState({
       stixDomainObjects: uniqWithByFields(
         ['name', 'type', 'identity_class', 'x_opencti_location_type'],
-        R.uniqBy(R.prop('id'), [...stixDomainObjects, ...newEntities]),
+        R.uniqBy(R.prop('id'), [
+          ...stixDomainObjects.filter(
+            (n) => !stixDomainObjectsToDeleteIds.includes(n.id),
+          ),
+          ...newEntities,
+        ]),
       ),
       stixCoreRelationships: uniqWithByFields(
         ['source_ref', 'target_ref', 'relationship_type'],
-        R.uniqBy(R.prop('id'), [...stixCoreRelationships, ...newRelationships]),
+        R.uniqBy(R.prop('id'), [
+          ...stixCoreRelationships.filter(
+            (n) => !stixCoreRelationshipsToDeleteIds.includes(n.id),
+          ),
+          ...newRelationships,
+        ]),
       ),
     });
     this.handleCloseEntity();
@@ -1268,7 +1342,7 @@ class WorkbenchFileContentComponent extends Component {
                 />
                 <ListItemSecondaryAction>
                   <IconButton
-                    onClick={this.handleDeleteEntity.bind(this, object)}
+                    onClick={this.handleDeleteObject.bind(this, object)}
                     aria-haspopup="true"
                   >
                     <DeleteOutlined />
@@ -1449,7 +1523,7 @@ class WorkbenchFileContentComponent extends Component {
                 />
                 <ListItemSecondaryAction>
                   <IconButton
-                    onClick={this.handleDeleteRelation.bind(this, object)}
+                    onClick={this.handleDeleteObject.bind(this, object)}
                     aria-haspopup="true"
                   >
                     <DeleteOutlined />
@@ -1467,7 +1541,7 @@ class WorkbenchFileContentComponent extends Component {
     const { classes, file, t, connectorsImport } = this.props;
     const {
       currentTab,
-      deleteEntity,
+      deleteObject,
       stixDomainObjects,
       stixCyberObservables,
       stixCoreRelationships,
@@ -1517,24 +1591,24 @@ class WorkbenchFileContentComponent extends Component {
         {currentTab === 0 && this.renderEntities()}
         {currentTab === 2 && this.renderRelationships()}
         <Dialog
-          open={deleteEntity !== null}
+          open={deleteObject !== null}
           PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDeleteEntity.bind(this)}
+          onClose={this.handleCloseDeleteObject.bind(this)}
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to remove this entity?')}
+              {t('Do you want to remove this object?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDeleteEntity.bind(this)}>
+            <Button onClick={this.handleCloseDeleteObject.bind(this)}>
               {t('Cancel')}
             </Button>
             <Button
               color="secondary"
-              onClick={this.submitDeleteEntity.bind(this)}
+              onClick={this.submitDeleteObject.bind(this)}
             >
               {t('Remove')}
             </Button>

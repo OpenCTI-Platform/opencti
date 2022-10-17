@@ -116,14 +116,11 @@ const DynamicResolutionField = (props) => {
       value
         .split('\n')
         .map((n) => n
-          .trim(n)
           .split(',')
-          .map((o) => o
-            .trim(o)
-            .split(';')
-            .map((p) => p.trim(p)))
+          .map((o) => o.split(';'))
           .flat())
         .flat()
+        .map((n) => n.trim())
         .join('\n'),
     );
   };

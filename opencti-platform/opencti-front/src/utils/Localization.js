@@ -1229,7 +1229,7 @@ const i18n = {
       'Add and complete': 'Agregar y completar',
       'Update and complete': 'Actualizar y completar',
       'Manage an entity': 'Administrar una entidad',
-      'Do you want to remove this entity?': '¿Desea eliminar esta entidad?',
+      'Do you want to remove this entity?': '¿Quieres eliminar este objeto?',
       'Add context': 'Agregar contexto',
       // Time
       '24h': '24 h',
@@ -2760,8 +2760,8 @@ const i18n = {
       'Add and complete': 'Ajouter et compléter',
       'Update and complete': 'Modifier et compléter',
       'Manage an entity': 'Gérer une entité',
-      'Do you want to remove this entity?':
-        'Souhaitez-vous retirer cette entité ?',
+      'Do you want to remove this object?':
+        'Souhaitez-vous retirer cet object ?',
       'Add context': 'Ajouter du contexte',
       // Time
       '24h': '24h',
@@ -4252,7 +4252,7 @@ const i18n = {
       'Add and complete': '追加して完成',
       'Update and complete': '更新して完了',
       'Manage an entity': 'エンティティを管理する',
-      'Do you want to remove this entity?': 'このエンティティを削除しますか?',
+      'Do you want to remove this object?': 'このオブジェクトを削除しますか?',
       'Add context': 'コンテキストを追加',
       // Time
       '24h': '24時間',
@@ -5678,7 +5678,7 @@ const i18n = {
       'Add and complete': '添加并完成',
       'Update and complete': '更新并完成',
       'Manage an entity': '管理实体',
-      'Do you want to remove this entity?': '是否要删除此实体？',
+      'Do you want to remove this object?': '是否要删除此对象？',
       'Add context': '添加上下文',
       // Time
       '24h': '24小时',
