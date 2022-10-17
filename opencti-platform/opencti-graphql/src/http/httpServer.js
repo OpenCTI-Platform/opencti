@@ -17,7 +17,6 @@ const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 const createHttpServer = async () => {
   const { app, seeMiddleware } = await createApp();
-  const apolloServer = createApolloServer(app);
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     const key = readFileSync(CERT_KEY_PATH);
@@ -29,7 +28,7 @@ const createHttpServer = async () => {
     httpServer = http.createServer(app);
   }
   httpServer.setTimeout(REQ_TIMEOUT || 120000);
-  apolloServer.installSubscriptionHandlers(httpServer);
+  await createApolloServer(app, httpServer);
   return { httpServer, seeMiddleware };
 };
 
