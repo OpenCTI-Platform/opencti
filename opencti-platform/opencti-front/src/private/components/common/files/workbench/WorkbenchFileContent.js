@@ -865,7 +865,7 @@ class WorkbenchFileContentComponent extends Component {
       'Malware',
       'Tool',
     ];
-    const targetsVulnerabilities = [
+    /* const targetsVulnerabilities = [
       'Threat-Actor',
       'Intrusion-Set',
       'Campaign',
@@ -882,7 +882,7 @@ class WorkbenchFileContentComponent extends Component {
       'Tool',
     ];
     const isTargetedByThreats = ['Identity', 'Location', 'Event'];
-    const hasVulnerabilities = ['System'];
+    const hasVulnerabilities = ['System']; */
     const initialValues = {};
     const resolveObjects = (relationshipType, source, target) => stixCoreRelationships
       .filter(
@@ -916,6 +916,13 @@ class WorkbenchFileContentComponent extends Component {
         'target_ref',
       );
     }
+    if (usesAttackPatterns.includes(type)) {
+      initialValues['uses-from'] = resolveObjects(
+        'uses',
+        'source_ref',
+        'target_ref',
+      );
+    }
     return (
       <Formik
         initialValues={initialValues}
@@ -941,6 +948,17 @@ class WorkbenchFileContentComponent extends Component {
                   'City',
                   'Position',
                 ]}
+              />
+            )}
+            {usesAttackPatterns.includes(type) && (
+              <Field
+                component={DynamicResolutionField}
+                variant="standard"
+                name="uses-from"
+                title={t('Attack Patterns')}
+                fullWidth={true}
+                types={['Attack-Pattern']}
+                style={{ marginTop: 20 }}
               />
             )}
             <div className={classes.buttons}>

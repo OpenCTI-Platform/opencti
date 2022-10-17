@@ -54,6 +54,7 @@ const DynamicResolutionField = (props) => {
     field,
     title,
     types,
+    style,
   } = props;
   const { t } = useFormatter();
   const [textFieldValue, setTextFieldValue] = useState(
@@ -72,7 +73,7 @@ const DynamicResolutionField = (props) => {
             filters: [
               {
                 key: ['name', 'aliases', 'x_opencti_aliases', 'x_mitre_id'],
-                values: val,
+                values: val.trim(),
               },
             ],
             count: 1,
@@ -101,7 +102,7 @@ const DynamicResolutionField = (props) => {
                 : {
                   id: `${convertToStixType(R.head(types))}--${uuid()}`,
                   type: R.head(types),
-                  name: val,
+                  name: val.trim(),
                   in_platform: false,
                 };
             })),
@@ -120,7 +121,6 @@ const DynamicResolutionField = (props) => {
           .map((o) => o.split(';'))
           .flat())
         .flat()
-        .map((n) => n.trim())
         .join('\n'),
     );
   };
@@ -138,7 +138,7 @@ const DynamicResolutionField = (props) => {
   };
   const [, meta] = useField(field.name);
   return (
-    <div>
+    <div style={style}>
       <Typography variant="h2">{title}</Typography>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={5}>
