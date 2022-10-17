@@ -125,7 +125,7 @@ class RiskObservationPopover extends Component {
                 </DialogContentText>
                 <div className={classes.componentScroll}>
                   {
-                    data.origins.map((value) => value.origin_actors.map((s, i) => (
+                    data?.origins && data.origins.map((value) => value.origin_actors.map((s, i) => (
                       <Link
                         key={i}
                         component="button"
@@ -143,7 +143,7 @@ class RiskObservationPopover extends Component {
                     <DialogContentText>
                       {t('Methods')}
                     </DialogContentText>
-                    {data.methods.map((value, i) => (
+                    {data?.methods && data.methods.map((value, i) => (
                       <Button
                         variant="outlined"
                         size="small"
@@ -162,7 +162,7 @@ class RiskObservationPopover extends Component {
                     <DialogContentText>
                       {t('Type')}
                     </DialogContentText>
-                    {data.observation_types.map((value, i) => (
+                    {data?.observation_types && data.observation_types.map((value, i) => (
                       <Button
                         variant="outlined"
                         size="small"
