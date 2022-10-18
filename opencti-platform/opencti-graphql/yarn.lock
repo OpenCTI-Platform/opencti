@@ -10762,9 +10762,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-calls-python@patch:node-calls-python@1.7.3#./patch/node-calls-python-1.7.2.patch::locator=opencti-graphql%40workspace%3A.":
+"node-calls-python@patch:node-calls-python@1.7.3#./patch/node-calls-python-1.7.3.patch::locator=opencti-graphql%40workspace%3A.":
   version: 1.7.3
-  resolution: "node-calls-python@patch:node-calls-python@npm%3A1.7.3#./patch/node-calls-python-1.7.2.patch::version=1.7.3&hash=719dfd&locator=opencti-graphql%40workspace%3A."
+  resolution: "node-calls-python@patch:node-calls-python@npm%3A1.7.3#./patch/node-calls-python-1.7.3.patch::version=1.7.3&hash=719dfd&locator=opencti-graphql%40workspace%3A."
   dependencies:
     node-gyp: latest
   checksum: c6ff0643c5b62239b85d1eec5ef37328995f049188e2d56ed8955c3cca438599036af944fbf7438bfd1a2e5d6453d981448e75e9d7c56252a650aa28292036e2
@@ -11177,7 +11177,7 @@ __metadata:
     node-calls-python: 1.7.3
     nodemailer: 6.8.0
     openid-client: 5.1.10
-    opentelemetry-node-metrics: "https://github.com/richard-julien/opentelemetry-node-metrics.git"
+    opentelemetry-node-metrics: 3.0.0
     otplib: 12.0.1
     passport: 0.6.0
     passport-auth0: 1.4.3
@@ -11220,10 +11220,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"opentelemetry-node-metrics@https://github.com/richard-julien/opentelemetry-node-metrics.git":
-  version: 0.0.0-placeholder
-  resolution: "opentelemetry-node-metrics@https://github.com/richard-julien/opentelemetry-node-metrics.git#commit=17464705f8be3d5bda1a1618acedf6afc8d4df9c"
-  checksum: f908069432cc945cfa9a26160d282304c6391197298f9074cdfa80e1ebc38e673c0694f75894bf8ee5442997c69963ff4385367292ef989121a73abdf7f648c4
+"opentelemetry-node-metrics@npm:3.0.0":
+  version: 3.0.0
+  resolution: "opentelemetry-node-metrics@npm:3.0.0"
+  checksum: 1bfa70e24996a225a128753cc183f25135ffb9f2fa1ebef9cfe7d7d73c419d093aeeff739ccee2ddfae89e32924efd408a5c988e83ea7a0d66888755c6f10d5f
   languageName: node
   linkType: hard
 
