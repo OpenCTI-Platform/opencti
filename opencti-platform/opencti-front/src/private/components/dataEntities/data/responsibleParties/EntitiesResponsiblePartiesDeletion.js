@@ -106,6 +106,7 @@ class EntitiesResponsiblePartiessDeletion extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
+        this.props.history.push('/data/entities/responsible_parties');
       },
       onError: () => {
         toastGenericError('Failed to delete responsible party');

@@ -143,7 +143,7 @@ class Filters extends Component {
             const assetTypeEntities = R.pipe(
               R.pathOr([], ['__type', 'enumValues']),
               R.map((n) => ({
-                label: t(n.description),
+                label: n.description,
                 value: n.name,
                 type: n.name,
               })),
@@ -166,7 +166,7 @@ class Filters extends Component {
         let namePath = [];
         if (this.props.filterEntityType === 'Device') {
           nameQuery = itAssetFiltersDeviceFieldsQuery;
-          namePath = ['computingDeviceAssetList', 'edges'];
+          namePath = ['hardwareAssetList', 'edges'];
         }
         if (this.props.filterEntityType === 'Network') {
           nameQuery = itAssetFiltersNetworkFieldsQuery;
@@ -213,7 +213,7 @@ class Filters extends Component {
             const riskLevelEntities = R.pipe(
               R.pathOr([], ['__type', 'enumValues']),
               R.map((n) => ({
-                label: t(n.name),
+                label: n.name,
                 value: n.name,
                 type: 'attribute',
               })),
@@ -238,7 +238,7 @@ class Filters extends Component {
             const riskStatusEntities = R.pipe(
               R.pathOr([], ['__type', 'enumValues']),
               R.map((n) => ({
-                label: t(n.name),
+                label: n.name,
                 value: n.name,
                 type: 'attribute',
               })),
@@ -263,7 +263,7 @@ class Filters extends Component {
             const riskLifecycleEntities = R.pipe(
               R.pathOr([], ['__type', 'enumValues']),
               R.map((n) => ({
-                label: t(n.name),
+                label: n.name,
                 value: n.name,
                 type: 'attribute',
               })),
@@ -288,7 +288,7 @@ class Filters extends Component {
             const riskResponseEntities = R.pipe(
               R.pathOr([], ['__type', 'enumValues']),
               R.map((n) => ({
-                label: t(n.name),
+                label: n.name,
                 value: n.name,
                 type: 'attribute',
               })),
@@ -313,7 +313,7 @@ class Filters extends Component {
             const vendorEntities = R.pipe(
               R.pathOr([], ['softwareAssetList', 'edges']),
               R.map((n) => ({
-                label: t(n.node.vendor_name),
+                label: n.node.vendor_name,
                 value: n.node.vendor_name,
                 type: n.node.vendor_name === 'apple' || n.node.vendor_name === 'microsoft' || n.node.vendor_name === 'linux' ? n.node.vendor_name : 'other',
               })),
@@ -339,7 +339,7 @@ class Filters extends Component {
             const cyioLabelEntities = R.pipe(
               R.pathOr([], ['cyioLabels', 'edges']),
               R.map((n) => ({
-                label: n.node?.name && t(n.node?.name),
+                label: n.node?.name,
                 value: n.node?.name,
                 type: 'Label',
                 color: n.node?.color,

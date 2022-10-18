@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema, } from '../../risk-mappings.js';
-import { compareValues, updateQuery, filterValues } from '../../../utils.js';
+import { compareValues, updateQuery, filterValues,CyioError } from '../../../utils.js';
 import { objectMap, selectObjectIriByIdQuery, selectObjectByIriQuery } from '../../../global/global-utils.js';
 import { UserInputError } from "apollo-server-express";
 import {
@@ -180,7 +180,7 @@ const actorResolvers = {
             console.log(e)
             throw e
         }
-      if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${input.actor_ref}`);
+      if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${input.actor_ref}`);
       input.actor_ref = result[0].iri;
       }
 
@@ -199,7 +199,7 @@ const actorResolvers = {
             console.log(e)
             throw e
         }
-      if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${input.role_ref}`);
+      if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${input.role_ref}`);
       input.role_ref = result[0].iri;
       }
 
@@ -251,7 +251,7 @@ const actorResolvers = {
         throw e
       }
 
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       let reducer = getReducer("ACTOR");
       const actor = (reducer(response[0]));
 
@@ -297,10 +297,13 @@ const actorResolvers = {
     },
     editActor: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -312,11 +315,17 @@ const actorResolvers = {
         queryId: "Select Actor",
         singularizeSchema
       })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -324,22 +333,36 @@ const actorResolvers = {
         }
       }
 
-      // Push an edit to update the modified time of the object
-      const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
-      input.push(update);
-
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Actor-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Actor",
         input,
         actorPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Actor"
-      });
+      );
+      if (query !== null) {
+        let response;
+        try {
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update OSCAL Actor"
+          });  
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+
+        if (response !== undefined && 'status' in response) {
+          if (response.ok === false || response.status > 299) {
+            // Handle reporting Stardog Error
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
+        }
+      }
+
       const select = selectActorQuery(id, selectMap.getNode("editActor"));
       const result = await dataSources.Stardog.queryById({
         dbName,

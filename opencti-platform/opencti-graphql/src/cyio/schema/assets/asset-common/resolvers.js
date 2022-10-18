@@ -1,5 +1,5 @@
 import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
-import {compareValues, filterValues, updateQuery} from '../../utils.js';
+import {compareValues, filterValues, updateQuery, CyioError} from '../../utils.js';
 import { UserInputError } from "apollo-server-express";
 import { 
   getSelectSparqlQuery,
@@ -494,13 +494,17 @@ const assetCommonResolvers = {
     },
     editAssetLocation: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
+
       const sparqlQuery = selectLocationQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
@@ -508,11 +512,17 @@ const assetCommonResolvers = {
         queryId: "Select Asset Location",
         singularizeSchema
       })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -522,8 +532,15 @@ const assetCommonResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
+
       const query = updateQuery(
           `http://darklight.ai/ns/common#CivicLocation-${id}`,
           "http://darklight.ai/ns/common#CivicLocation",

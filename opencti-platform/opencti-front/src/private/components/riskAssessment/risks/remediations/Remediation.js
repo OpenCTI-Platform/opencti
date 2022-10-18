@@ -155,6 +155,8 @@ class RemediationComponent extends Component {
             history={history}
             openCreation={this.state.openCreation}
             handleOpenCreation={this.handleOpenCreation.bind(this)}
+            handleCreation={this.handleOpen.bind(this)}
+            refreshQuery={refreshQuery}
         />
         </div>
         {/* <RemediationEdition

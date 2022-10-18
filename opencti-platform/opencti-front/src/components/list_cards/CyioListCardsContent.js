@@ -74,7 +74,7 @@ class CyioListCardsContent extends Component {
       });
     }
     if (window.pageYOffset < 40 && this.state.newDataList.length > 50
-      && this.props.offset > 0) {
+      && this.props.offset >= 0) {
       window.scrollTo(0, 3000);
       this.props.handleDecrementedOffsetChange();
       this.setState({ newDataList: this.state.newDataList.slice(-this.props.dataList.length) });
@@ -84,7 +84,7 @@ class CyioListCardsContent extends Component {
       && (this.state.loadingCardCount !== 0 || this.props.offset === 0)) {
       if (this.props.dataList.length === 0) {
         this.setState({ newDataList: [] });
-        this.listRef.forceUpdateGrid();
+        this.gridRef.forceUpdate();
       }
       if (!checker(this.state.newDataList, this.props.dataList)) {
         this.setState({
