@@ -77,7 +77,7 @@ import ItemBoolean from '../../../../../components/ItemBoolean';
 import StixItemLabels from '../../../../../components/StixItemLabels';
 import { defaultValue } from '../../../../../utils/Graph';
 import StixItemMarkings from '../../../../../components/StixItemMarkings';
-import { buildDate } from '../../../../../utils/Time';
+import { buildDate, now } from '../../../../../utils/Time';
 import DynamicResolutionField from '../../form/DynamicResolutionField';
 import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/StixDomainObjectsLines';
 import SelectField from '../../../../../components/SelectField';
@@ -2162,6 +2162,7 @@ class WorkbenchFileContentComponent extends Component {
             }
             return (
               <ListItem
+                key={object.id}
                 classes={{ root: classes.item }}
                 divider={true}
                 button={true}
@@ -2463,6 +2464,7 @@ class WorkbenchFileContentComponent extends Component {
             }
             return (
               <ListItem
+                key={object.id}
                 classes={{ root: classes.item }}
                 divider={true}
                 button={object.type !== 'marking-definition'}
@@ -2705,6 +2707,7 @@ class WorkbenchFileContentComponent extends Component {
             const type = convertFromStixType(object.type);
             return (
               <ListItem
+                key={object.id}
                 classes={{ root: classes.item }}
                 divider={true}
                 button={object.type !== 'marking-definition'}
@@ -2953,6 +2956,7 @@ class WorkbenchFileContentComponent extends Component {
             const isInPlatform = true;
             return (
               <ListItem
+                key={object.id}
                 classes={{ root: classes.item }}
                 divider={true}
                 button={true}
@@ -3106,6 +3110,7 @@ class WorkbenchFileContentComponent extends Component {
             const type = convertFromStixType(object.type);
             return (
               <ListItem
+                key={object.id}
                 classes={{ root: classes.item }}
                 divider={true}
                 button={object.type !== 'marking-definition'}
