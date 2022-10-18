@@ -684,8 +684,9 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     // Other providers doesn't need specific validation, session management is enough
     // For impersonate auth, the applicant id must match the session
     const applicantId = req.headers['opencti-applicant-id'];
-    const isImpersonateChange = auth.impersonate && auth.id !== applicantId;
-    const isNowImpersonate = !auth.impersonate && isBypassUser(auth) && applicantId;
+    const isNotSameUser = auth.id !== applicantId;
+    const isImpersonateChange = auth.impersonate && isNotSameUser;
+    const isNowImpersonate = isNotSameUser && !auth.impersonate && isBypassUser(auth) && applicantId;
     if (isImpersonateChange || isNowImpersonate) {
       // Impersonate doesn't match, kill the current session and try to re auth
       await logout(context, auth, req, res);
