@@ -149,20 +149,6 @@ nconf.add('argv', {
   },
 });
 
-// Setup nconf etcd connection
-var etcdOptions = {
-  ca:   readFileSync(process.env.OPENCTI_ETCD_CA_CRT)
-};
-nconf.use('etcd', { namespace:'system', hosts:[process.env.OPENCTI_ETCD_HOSTS], etcd:etcdOptions});
-nconf.load();
-
-// START TEST CODE
-var etcdValue = nconf.get('foo:bar');
-console.log("ETCD TEST VALUE: " + etcdValue)
-nconf.set( 'foo:bar', Math.floor((Math.random() * (100))));
-nconf.save(Etcd); // Saved to etcd!
-// END TEST CODE
-
 const { timestamp } = format;
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = (relativePath) => path.join(currentPath, relativePath);
@@ -179,6 +165,21 @@ if (externalConfigurationFile) {
 
 nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
+
+// Setup nconf etcd connection
+var etcdOptions = {
+  ca:   readFileSync(process.env.OPENCTI_ETCD_CA_CRT)
+};
+const provEtcd = nconf.use('etcd', { namespace:'system', hosts:[process.env.OPENCTI_ETCD_HOSTS], etcd:etcdOptions});
+nconf.load();
+
+// START TEST CODE
+// var etcdValue = nconf.get('foo:bar');
+// console.log("ETCD TEST VALUE: " + etcdValue)
+// var jsonValue = nconf.get('fizz:buzz');
+// console.log("JSON TEST VALUE: " + jsonValue)
+// nconf.set('fizz:buzz', Math.floor((Math.random() * (100))));
+// END TEST CODE
 
 // Setup application logApp
 const appLogLevel = nconf.get('app:app_logs:logs_level');
