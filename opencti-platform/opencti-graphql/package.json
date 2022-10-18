@@ -124,6 +124,7 @@
     "winston-daily-rotate-file": "4.7.1"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.18.6",
     "@graphql-codegen/cli": "2.13.6",
     "@graphql-codegen/introspection": "2.2.1",
     "@graphql-codegen/typescript": "2.7.4",
@@ -169,6 +170,11 @@
     "nconf": "patch:nconf@0.12.0#./patch/nconf-0.12.0.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.7.3#./patch/node-calls-python-1.7.3.patch"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-typescript"
+    ]
   },
   "packageManager": "yarn@3.2.0"
 }
