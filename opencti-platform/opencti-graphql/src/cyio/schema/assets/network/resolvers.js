@@ -1,6 +1,6 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
 import { UserInputError } from "apollo-server-express";
-import { compareValues, filterValues, generateId, DARKLIGHT_NS, updateQuery } from '../../utils.js';
+import { compareValues, filterValues, generateId, DARKLIGHT_NS, updateQuery, CyioError } from '../../utils.js';
 import { addToInventoryQuery, removeFromInventoryQuery } from "../assetUtil.js";
 import {
   getReducer,
@@ -282,7 +282,7 @@ const networkResolvers = {
         queryId: "Select Network Asset",
         singularizeSchema
       });
-      if (response.length === 0) throw new UserInputError(`Entity does not exists with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exists with ID ${id}`);
       const reducer = getReducer("NETWORK");
       const asset = reducer(response[0]);
       if (asset.netaddr_range_iri) {
@@ -336,13 +336,17 @@ const networkResolvers = {
     },
     editNetworkAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
+
       const sparqlQuery = selectNetworkQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
@@ -350,7 +354,7 @@ const networkResolvers = {
         queryId: "Select Network asset",
         singularizeSchema
       });
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // retrieve the IRI of the Network Asset
       const iri = response[0].iri;
@@ -358,6 +362,12 @@ const networkResolvers = {
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -367,7 +377,13 @@ const networkResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
 
       // obtain the IRIs for the referenced objects so that if one doesn't 
@@ -395,7 +411,7 @@ const networkResolvers = {
                   queryId: "Select IP Address Range",
                   singularizeSchema
                 });
-                if (result.length === 0) throw new UserInputError(`Entity ${id} does not have a network range specified.`);
+                if (result.length === 0) throw new CyioError(`Entity ${id} does not have a network range specified.`);
                 const rangeId = (Array.isArray(result[0].id) ? result[0].id[0] : result[0].id);
                 let start = (Array.isArray(result[0].starting_ip_address) ? result[0].starting_ip_address[0] : result[0].starting_ip_address);
                 let end = (Array.isArray(result[0].ending_ip_address) ? result[0].ending_ip_address[0] : result[0].ending_ip_address);

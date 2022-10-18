@@ -247,7 +247,7 @@ class DeviceCreation extends Component {
             hostname: '',
             default_gateway: '',
             labels: [],
-            asset_type: 'physical_device',
+            asset_type: 'computing_device',
             mac_address: [],
             installed_operating_system: '',
             installed_hardware: [],

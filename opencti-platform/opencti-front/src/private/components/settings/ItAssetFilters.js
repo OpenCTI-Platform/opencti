@@ -6,7 +6,7 @@ export const itAssetFiltersDeviceFieldsQuery = graphql`
     $search: String
     # $first: Int
   ) {
-    computingDeviceAssetList(search: $search) {
+    hardwareAssetList(search: $search) {
       edges {
         node {
           id

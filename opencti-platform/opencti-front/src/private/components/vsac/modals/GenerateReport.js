@@ -144,15 +144,25 @@ class GenerateReport extends Component {
 			client: this.props.client,
 			open: false,
 			analysisToTrend: [],
-			checkedAnalysesToTrend: [],
+			checkedAnalysesToTrend: [this.props.id],
 			success: this.props.success
 		};
 	}
 
+	componentDidMount() {
+		fetchTrendableAnalyses(this.state.analysis_id, this.state.client)
+			.then((response) => {
+				this.setState({ analysisToTrend: response.data });
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
 	componentWillReceiveProps(nextProps) {
-    	this.setState({ success: nextProps.success });
-   		this.forceUpdate();
-  	}
+		this.setState({ success: nextProps.success });
+		this.forceUpdate();
+	}
 
 	render() {
 		const {
@@ -184,7 +194,6 @@ class GenerateReport extends Component {
 
 		const handleDialogOpen = () => {
 			this.setState({ open: true });
-			getTrendableAnalysis(analysis_id, client)
 		};
 
 		const handleClose = () => {
@@ -195,44 +204,32 @@ class GenerateReport extends Component {
 			this.props.onClose();
 		}
 
-		const getTrendableAnalysis = (id, client) => {
-			fetchTrendableAnalyses(id, client)
-				.then((response) => {
-					this.setState({ analysisToTrend: response.data });
-				})
-				.catch((error) => {
-					console.log(error);
-				});
-		};
-
 		const handleAnalysesToTrend = (event) => {
-			event.preventDefault();
-			if (event.target.checked) {
+			if (event.target.checked && event.target.value !== this.props.id) {
 				this.state.checkedAnalysesToTrend.push(event.target.value)
-				this.setState({checkedAnalysesToTrend: checkedAnalysesToTrend })
-			} else {
-				const array = checkedAnalysesToTrend;
-				const index = array.indexOf(event.target.value);
-				this.setState({checkedAnalysesToTrend: array.splice(index, 1)});
+				this.setState({ checkedAnalysesToTrend: checkedAnalysesToTrend })
+			}
+			if (!event.target.checked && event.target.value !== this.props.id) {
+				this.setState({ checkedAnalysesToTrend: checkedAnalysesToTrend.filter((trend) => trend !== event.target.value) });
 			}
 		};
 
 		const handleSubmit = (event) => {
 			const params = {
-		      title: report_title,
-		      include_title: includeTitle,
-		      toc: includeTOC,
-		      benchmark_comparison: includeBenchmarkComparison,
-		      trending_comparison: includeTrendingComparison,
-		      analyses_to_trend: checkedAnalysesToTrend,
-		      most_vulnerable_hosts: includeMostVulnerableHosts,
-		      most_vulnerable_products: includeMostVulnerableProducts,
-		      vulnerabilities_by_severity: includeVulnerabilitiesByServerity,
-		      scoring_method: "tbc",
-		      charts: includeCharts,
-		      appendices: includeAppendices,
-		      top_n: Number(topN),
-		    };
+				title: report_title,
+				include_title: includeTitle,
+				toc: includeTOC,
+				benchmark_comparison: includeBenchmarkComparison,
+				trending_comparison: includeTrendingComparison,
+				analyses_to_trend: checkedAnalysesToTrend,
+				most_vulnerable_hosts: includeMostVulnerableHosts,
+				most_vulnerable_products: includeMostVulnerableProducts,
+				vulnerabilities_by_severity: includeVulnerabilitiesByServerity,
+				scoring_method: "tbc",
+				charts: includeCharts,
+				appendices: includeAppendices,
+				top_n: Number(topN),
+			};
 
 			this.props.action(analysis_id, client, params);
 			event.preventDefault()
@@ -245,7 +242,7 @@ class GenerateReport extends Component {
 			>
 				<Card>
 					<CardHeader title="Create Vulnerability Assessment Report" />
-					{ success ? (
+					{success ? (
 						<CardContent>
 							<p>An e-mail will be sent to your address with a download link when the report is ready.</p>
 						</CardContent>
@@ -371,6 +368,7 @@ class GenerateReport extends Component {
 										<ListItemSecondaryAction>
 											<Button
 												color="primary"
+												disabled={analysisToTrend.length === 1}
 												onClick={handleDialogOpen}>
 												Choose Analysis for Trending
 											</Button>
@@ -393,7 +391,7 @@ class GenerateReport extends Component {
 													<ListItem dense button>
 														<ListItemIcon>
 															<Checkbox
-																checked={checked}
+																checked={scan.analysis_id === analysis_id || checked}
 																edge="start"
 																tabIndex={-1}
 																disableRipple
@@ -588,7 +586,7 @@ class GenerateReport extends Component {
 						</CardContent>
 					)}
 					<CardActions style={{ justifyContent: "right" }}>
-						{ success ? (
+						{success ? (
 							<Button size="small" color="primary" onClick={handleGenerateReportClose}>
 								Close
 							</Button>

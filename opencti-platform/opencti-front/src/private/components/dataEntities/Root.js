@@ -61,7 +61,7 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/data/entities/notes"
-          render={(routeProps) => <NotesEntities {...routeProps} me={me} />}
+          component={NotesEntities}
         />
         <BoundaryRoute
           exact

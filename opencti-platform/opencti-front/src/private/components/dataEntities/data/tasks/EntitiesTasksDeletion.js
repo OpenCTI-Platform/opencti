@@ -106,6 +106,7 @@ class EntitiesTasksDeletion extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
+        this.props.history.push('/data/entities/tasks');
       },
       onError: () => {
         toastGenericError('Failed to delete task');

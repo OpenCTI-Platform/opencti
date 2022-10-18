@@ -106,7 +106,7 @@ class RoleEntityEditionContainer extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleDisplayEdit();
   }
 
   handleCancelCloseClick() {
@@ -114,24 +114,17 @@ class RoleEntityEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = R.evolve(
-      {
-        modified: () => values.modified === null ? null : parse(values.modified).format(),
-        created: () => values.created === null ? null : parse(values.created).format(),
-      },
-      values,
-    );
     const finalValues = R.pipe(
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
       })),
-    )(adaptedValues);
+    )(values);
     commitMutation({
       mutation: roleEntityEditionContainerMutation,
       variables: {
-        id: this.props.cyioCoreRelationshipId,
+        id: this.props.responsibility.id,
         input: finalValues,
       },
       setSubmitting,
@@ -447,6 +440,7 @@ class RoleEntityEditionContainer extends Component {
 
 RoleEntityEditionContainer.propTypes = {
   handleDisplayEdit: PropTypes.func,
+  refreshQuery: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
   disabled: PropTypes.bool,
