@@ -9,12 +9,13 @@
     "build:types": "graphql-codegen --config graphql-codegen.yml",
     "build:schema": "node builder/schema/schema.js && node build/script-generate-schema.js",
     "build:prod": "yarn build:types && yarn check-ts && node builder/prod/prod.js",
+    "build:dev": "yarn build:schema && yarn build:types && node builder/dev/dev.js",
     "build:antlr": "java -jar ./builder/antlr/antlr-4.10.1-complete.jar -Dlanguage=JavaScript ./src/stixpattern/STIXPattern.g4 -o ./src/stixpattern/",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "clean:relations": "yarn build:prod && node build/script-clean-relations.js",
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
     "build": "yarn install:python && yarn build:prod",
-    "start": "yarn build:schema && yarn build:types && node builder/dev/dev.js",
+    "start": "yarn build:dev && node build/index.js",
     "serv": "node build/index.js",
     "test": "node --max-old-space-size=8192 --expose-gc ./node_modules/jest/bin/jest.js --bail --testSequencer ./tests/utils/testSequencer.js --logHeapUsage --no-watchman --verbose --runInBand --forceExit --coverage --e test"
   },
@@ -123,7 +124,6 @@
     "winston-daily-rotate-file": "4.7.1"
   },
   "devDependencies": {
-    "@babel/preset-typescript": "7.18.6",
     "@graphql-codegen/cli": "2.13.6",
     "@graphql-codegen/introspection": "2.2.1",
     "@graphql-codegen/typescript": "2.7.4",
@@ -169,11 +169,6 @@
     "nconf": "patch:nconf@0.12.0#./patch/nconf-0.12.0.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.7.3#./patch/node-calls-python-1.7.3.patch"
-  },
-  "babel": {
-    "presets": [
-      "@babel/preset-typescript"
-    ]
   },
   "packageManager": "yarn@3.2.0"
 }
