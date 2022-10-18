@@ -61,6 +61,7 @@ class EntitiesNotesCards extends Component {
     const {
       initialLoading,
       relay,
+      history,
       selectAll,
       onLabelClick,
       onToggleEntity,
@@ -82,7 +83,7 @@ class EntitiesNotesCards extends Component {
           this.props.data,
         )}
         offset={offset}
-        CardComponent={<EntityNoteCard />}
+        CardComponent={<EntityNoteCard history={history}/>}
         DummyCardComponent={<EntityNoteCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
         selectAll={selectAll}
@@ -98,6 +99,7 @@ class EntitiesNotesCards extends Component {
 EntitiesNotesCards.propTypes = {
   data: PropTypes.object,
   extra: PropTypes.object,
+  history: PropTypes.object,
   connectorsExport: PropTypes.array,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,

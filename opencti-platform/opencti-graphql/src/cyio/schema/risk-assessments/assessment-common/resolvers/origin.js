@@ -1,6 +1,6 @@
 import {riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {selectObjectIriByIdQuery} from '../../../global/global-utils.js';
-import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {compareValues, updateQuery, filterValues, CyioError} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
   getReducer, 
@@ -154,7 +154,7 @@ const originResolvers = {
       // Setup to handle embedded objects to be created
       let tasks, actors;
       if (input.origin_actors !== undefined) {
-        if (input.origin_actors.length === 0) throw new UserInputError(`No origin of the Risk Response provided.`)
+        if (input.origin_actors.length === 0) throw new CyioError(`No origin of the Risk Response provided.`)
         actors = input.origin_actors;
       }
 
@@ -175,7 +175,7 @@ const originResolvers = {
 							console.log(e)
 							throw e
 					}
-					if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${taskId}`);
+					if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${taskId}`);
 					taskIris.push(result[0].iri)
 				}
 				if (taskIris.length > 0) input.related_tasks = taskIris;
@@ -197,7 +197,7 @@ const originResolvers = {
           console.log(e)
           throw e
         }
-        if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.actor_ref}`);
+        if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${actor.actor_ref}`);
         actor.actor_ref = result[0].iri;
 
         // if a role reference was provided
@@ -215,7 +215,7 @@ const originResolvers = {
             console.log(e)
             throw e
           }
-          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.role_ref}`);
+          if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${actor.role_ref}`);
           actor.role_ref = result[0].iri;
         }
       }
@@ -293,7 +293,7 @@ const originResolvers = {
         throw e
       }
 
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       let reducer = getReducer("ORIGIN");
       const origin = (reducer(response[0]));
 
@@ -345,10 +345,13 @@ const originResolvers = {
     },
     editOrigin: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -360,11 +363,17 @@ const originResolvers = {
         queryId: "Select Origin",
         singularizeSchema
       })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -372,22 +381,36 @@ const originResolvers = {
         }
       }
 
-      // Push an edit to update the modified time of the object
-      const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
-      input.push(update);
-
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Origin-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Origin",
         input,
         originPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Origin"
-      });
+      );
+      if (query !== null) {
+        let response;
+        try {
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update Origin"
+          });  
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+
+        if (response !== undefined && 'status' in response) {
+          if (response.ok === false || response.status > 299) {
+            // Handle reporting Stardog Error
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
+        }
+      }
+
       const select = selectOriginQuery(id, selectMap.getNode("editOrigin"));
       const result = await dataSources.Stardog.queryById({
         dbName,

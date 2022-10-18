@@ -120,7 +120,7 @@ class LocationEntityEditionContainer extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleDisplayEdit();
   }
 
   handleCancelCloseClick() {
@@ -497,6 +497,7 @@ class LocationEntityEditionContainer extends Component {
 
 LocationEntityEditionContainer.propTypes = {
   handleDisplayEdit: PropTypes.func,
+  refreshQuery: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
   disabled: PropTypes.bool,

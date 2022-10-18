@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import {
   compose,
@@ -60,6 +61,10 @@ const ExportPoamMutation = graphql`
     exportOscal(model: $model, id: $exportOscalId, media_type: $mediaType)
   }
 `;
+
+const RelatedTaskValidation = (t) => Yup.object().shape({
+  mediaType: Yup.string().required(t('This field is required')),
+});
 
 class ExportPoam extends Component {
   constructor(props) {
@@ -186,7 +191,7 @@ class ExportPoam extends Component {
             mediaType: '',
             marking: '',
           }}
-          // validationSchema={RelatedTaskValidation(t)}
+          validationSchema={RelatedTaskValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >

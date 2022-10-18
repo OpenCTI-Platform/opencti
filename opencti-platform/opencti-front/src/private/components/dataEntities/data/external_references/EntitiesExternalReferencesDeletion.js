@@ -106,6 +106,7 @@ class EntitiesExternalReferencesDeletion extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
+        this.props.history.push('/data/entities/external_references');
       },
       onError: () => {
         toastGenericError('Failed to delete external reference');

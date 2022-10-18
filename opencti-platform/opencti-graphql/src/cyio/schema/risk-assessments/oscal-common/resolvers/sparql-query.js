@@ -173,6 +173,8 @@ export const oscalResponsiblePartyReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.created && {created: item.created}),
+    ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
     ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
@@ -197,6 +199,8 @@ export const oscalResponsibleRoleReducer = (item) => {
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.created && {created: item.created}),
+    ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
     ...(item.props && {props: item.props}),
     ...(item.links && {links_iri: item.links}),
@@ -317,13 +321,13 @@ export const selectAllExternalIdentifiers = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -467,13 +471,13 @@ export const selectAllLocations = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -644,13 +648,13 @@ export const selectAllParties = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -802,13 +806,13 @@ export const selectAllResponsibleParties = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -960,13 +964,13 @@ export const selectAllResponsibleRoles = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1175,13 +1179,13 @@ export const selectAllRoles = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1513,6 +1517,16 @@ export const responsiblePartyPredicateMap = {
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  created: {
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  modified: {
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
