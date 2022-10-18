@@ -853,9 +853,9 @@ class WorkbenchFileContentComponent extends Component {
     const { classes, t } = this.props;
     const entity = R.head(stixDomainObjects.filter((n) => n.id === entityId)) || {};
     let type = entityType;
-    if (type === 'Identity' && entity) {
+    if (type === 'Identity') {
       type = resolveIdentityType(entity.identity_class);
-    } else if (type === 'Location' && entity) {
+    } else if (type === 'Location') {
       type = resolveLocationType(entity);
     }
     return (
@@ -1044,9 +1044,9 @@ class WorkbenchFileContentComponent extends Component {
       ...R.indexBy(R.prop('id'), stixCyberObservables),
     };
     let type = entityType;
-    if (type === 'Identity' && entity) {
+    if (type === 'Identity') {
       type = resolveIdentityType(entity.identity_class);
-    } else if (type === 'Location' && entity) {
+    } else if (type === 'Location') {
       type = resolveLocationType(entity);
     }
     const targetsFrom = [
@@ -1095,9 +1095,9 @@ class WorkbenchFileContentComponent extends Component {
         const object = indexedStixObjects[n[target]];
         if (object) {
           let objectType = convertFromStixType(object.type);
-          if (objectType === 'Identity' && entity) {
+          if (objectType === 'Identity') {
             objectType = resolveIdentityType(object.identity_class);
-          } else if (objectType === 'Location' && object) {
+          } else if (objectType === 'Location') {
             objectType = resolveLocationType(object);
           }
           return {
