@@ -128,11 +128,17 @@ export const stixCyberObservablesLinesQuery = graphql`
 
 export const stixCyberObservablesLinesSearchQuery = graphql`
   query StixCyberObservablesLinesSearchQuery(
+    $types: [String]
     $search: String
     $filters: [StixCyberObservablesFiltering]
     $count: Int
   ) {
-    stixCyberObservables(search: $search, filters: $filters, first: $count) {
+    stixCyberObservables(
+      types: $types
+      search: $search
+      filters: $filters
+      first: $count
+    ) {
       edges {
         node {
           id

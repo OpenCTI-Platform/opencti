@@ -14090,6 +14090,7 @@ export enum StixCyberObservablesFilter {
   ObjectContained = 'objectContained',
   RelatedTo = 'relatedTo',
   SightedBy = 'sightedBy',
+  Subject = 'subject',
   UpdatedAt = 'updated_at',
   Value = 'value',
   XOpenctiOrganizationType = 'x_opencti_organization_type',

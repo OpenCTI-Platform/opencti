@@ -39,6 +39,7 @@ import Slide from '@mui/material/Slide';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
+import Select from '@mui/material/Select';
 import inject18n from '../../../../../components/i18n';
 import {
   booleanAttributes,
@@ -1374,14 +1375,12 @@ class WorkbenchFileContentComponent extends Component {
         }));
       })
       .flat();
-
     const fromRelationshipsTypes = Object.keys(values)
-      .filter((n) => n.includes('-from'))
+      .filter((n) => n.includes('_from'))
       .map((n) => n.split('_')[0]);
     const toRelationshipsTypes = Object.keys(values)
-      .filter((n) => n.includes('-to'))
+      .filter((n) => n.includes('_to'))
       .map((n) => n.split('_')[0]);
-
     // Compute relationships to delete
     const stixCoreRelationshipsToDelete = [
       ...stixCoreRelationships.filter(
@@ -1678,6 +1677,51 @@ class WorkbenchFileContentComponent extends Component {
         }}
       />
     );
+  }
+
+  handleChangeObservableType(observableId, event) {
+    const { stixCyberObservables, stixCoreRelationships, containers } = this.state;
+    const observable = R.head(stixCyberObservables.filter((n) => n.id === observableId)) || {};
+    const stixType = convertToStixType(event.target.value);
+    const updatedObservable = {
+      ...observable,
+      id: `${stixType}--${uuid()}`,
+      type: stixType,
+    };
+    const updatedStixCoreRelationships = stixCoreRelationships.map((n) => {
+      if (n.source_ref === observableId) {
+        return R.assoc('source_ref', updatedObservable.id, n);
+      }
+      if (n.target_ref === observableId) {
+        return R.assoc('target_ref', updatedObservable.id, n);
+      }
+      return n;
+    });
+    const updatedContainers = containers.map((n) => {
+      if ((n.object_refs || []).includes(observableId)) {
+        return R.assoc(
+          'object_refs',
+          [
+            ...n.object_refs.filter((o) => o !== observableId),
+            updatedObservable.id,
+          ],
+          n,
+        );
+      }
+      return n;
+    });
+    this.setState({
+      stixCyberObservables: uniqWithByFields(
+        ['value', 'type'],
+        R.uniqBy(R.prop('id'), [
+          ...stixCyberObservables.filter((n) => n.id !== observableId),
+          updatedObservable,
+        ]),
+      ),
+      stixCoreRelationships: updatedStixCoreRelationships,
+      containers: updatedContainers,
+    });
+    this.saveFile();
   }
 
   onSubmitObservable(values) {
@@ -2350,13 +2394,17 @@ class WorkbenchFileContentComponent extends Component {
     };
     let containerElementsIds = [];
     if (containerSelectAll) {
-      containerElementsIds = R.values(indexedStixObjects)
-        .filter(
-          (n) => !Object.keys(containerDeSelectedElements || {}).includes(n.id),
-        )
-        .map((n) => n.id);
+      containerElementsIds = R.uniq(
+        R.values(indexedStixObjects)
+          .filter(
+            (n) => !Object.keys(containerDeSelectedElements || {}).includes(n.id),
+          )
+          .map((n) => n.id),
+      );
     } else {
-      containerElementsIds = Object.keys(containerSelectedElements || {});
+      containerElementsIds = R.uniq(
+        Object.keys(containerSelectedElements || {}),
+      );
     }
     const updatedContainer = {
       ...container,
@@ -2641,7 +2689,7 @@ class WorkbenchFileContentComponent extends Component {
   }
 
   renderObservables() {
-    const { classes, t } = this.props;
+    const { classes, t, observableTypes } = this.props;
     const {
       observableType,
       stixCyberObservables,
@@ -2653,6 +2701,14 @@ class WorkbenchFileContentComponent extends Component {
       selectedElements,
       displayObservable,
     } = this.state;
+    const subTypesEdges = observableTypes.edges;
+    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
+    const translatedOrderedList = R.pipe(
+      R.map((n) => n.node),
+      R.filter((n) => !typesContainers.includes(convertToStixType(n.label))),
+      R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
+      sortByLabel,
+    )(subTypesEdges);
     const resolvedStixCyberObservables = stixCyberObservables.map((n) => ({
       ...n,
       ttype: t(`entity_${convertFromStixType(n.type)}`),
@@ -2746,7 +2802,28 @@ class WorkbenchFileContentComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.ttype}
                       >
-                        {object.ttype}
+                        <Select
+                          variant="standard"
+                          labelId="type"
+                          value={convertFromStixType(object.type)}
+                          onChange={(event) => this.handleChangeObservableType(object.id, event)
+                          }
+                          style={{
+                            margin: 0,
+                            width: '80%',
+                            height: '100%',
+                          }}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            event.preventDefault();
+                          }}
+                        >
+                          {translatedOrderedList.map((n) => (
+                            <MenuItem key={n.label} value={n.label}>
+                              {n.tlabel}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -2786,12 +2863,13 @@ class WorkbenchFileContentComponent extends Component {
                               filters: [
                                 {
                                   key: [
+                                    'name',
                                     'value',
                                     'hashes_MD5',
                                     'hashes_SHA1',
                                     'hashes_SHA256',
                                   ],
-                                  values: object.observable_value,
+                                  values: [object.default_value || 'Unknown'],
                                 },
                               ],
                               count: 1,
@@ -3197,7 +3275,8 @@ class WorkbenchFileContentComponent extends Component {
                                   values:
                                     object.name
                                     || object.value
-                                    || object.definition,
+                                    || object.definition
+                                    || 'Unknown',
                                 },
                               ],
                               count: 1,
@@ -3311,8 +3390,18 @@ class WorkbenchFileContentComponent extends Component {
       connectorsImport,
     );
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    let elements = [];
+    if (currentTab === 0) {
+      elements = stixDomainObjects;
+    } else if (currentTab === 1) {
+      elements = stixCyberObservables;
+    } else if (currentTab === 2) {
+      elements = stixCoreRelationships;
+    } else if (currentTab === 3) {
+      elements = containers;
+    }
     if (selectAll) {
-      numberOfSelectedElements = stixDomainObjects.length - Object.keys(deSelectedElements || {}).length;
+      numberOfSelectedElements = elements.length - Object.keys(deSelectedElements || {}).length;
     }
     return (
       <div className={classes.container}>
@@ -3433,6 +3522,7 @@ class WorkbenchFileContentComponent extends Component {
           )}
         </Formik>
         <WorkbenchFileToolbar
+          selectAll={selectAll}
           selectedElements={selectedElements}
           deSelectedElements={deSelectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
