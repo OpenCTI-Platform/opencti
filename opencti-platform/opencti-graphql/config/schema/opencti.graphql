@@ -5451,6 +5451,7 @@ enum StixCyberObservablesFilter {
   sightedBy
   value
   name
+  subject
   confidence
   hashes_MD5
   hashes_SHA1

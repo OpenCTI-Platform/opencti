@@ -139,7 +139,7 @@ const DynamicResolutionField = (props) => {
   const [, meta] = useField(field.name);
   return (
     <div style={style}>
-      <Typography variant="h2">{title}</Typography>
+      <Typography variant="h3">{title}</Typography>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={5}>
           <TextField
@@ -154,55 +154,73 @@ const DynamicResolutionField = (props) => {
           />
         </Grid>
         <Grid item={true} xs={7}>
-          <List style={{ marginTop: 0 }}>
-            {(field.value || []).map((item) => (
-              <ListItem key={item.id} dense={true} divider={true}>
-                <ListItemIcon>
-                  <ItemIcon type={item.type} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <div>
-                      <div style={inlineStyles.type}>
-                        {item.in_platform ? (
-                          t(`entity_${item.type}`)
-                        ) : (
-                          <Select
-                            variant="standard"
-                            labelId="type"
-                            value={item.type}
-                            onChange={(event) => handleChangeType(item.id, event)
+          {(field.value || []).length > 0 ? (
+            <List style={{ marginTop: 0 }}>
+              {(field.value || []).map((item) => (
+                <ListItem key={item.id} dense={true} divider={true}>
+                  <ListItemIcon>
+                    <ItemIcon type={item.type} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div>
+                        <div style={inlineStyles.type}>
+                          {item.in_platform ? (
+                            t(`entity_${item.type}`)
+                          ) : (
+                            <Select
+                              variant="standard"
+                              labelId="type"
+                              value={item.type}
+                              onChange={(event) => handleChangeType(item.id, event)
+                              }
+                              style={{
+                                margin: 0,
+                                width: '80%',
+                                height: '100%',
+                              }}
+                            >
+                              {types.map((n) => (
+                                <MenuItem key={n} value={n}>
+                                  {t(`entity_${n}`)}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          )}
+                        </div>
+                        <div style={inlineStyles.default_value}>
+                          {item.name}
+                        </div>
+                        <div style={inlineStyles.in_platform}>
+                          <ItemBoolean
+                            variant="inList"
+                            status={item.in_platform}
+                            label={
+                              item.in_platform
+                                ? t('In platform')
+                                : t('To create')
                             }
-                            style={{
-                              margin: 0,
-                              width: '80%',
-                              height: '100%',
-                            }}
-                          >
-                            {types.map((n) => (
-                              <MenuItem key={n} value={n}>
-                                {t(`entity_${n}`)}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
+                          />
+                        </div>
                       </div>
-                      <div style={inlineStyles.default_value}>{item.name}</div>
-                      <div style={inlineStyles.in_platform}>
-                        <ItemBoolean
-                          variant="inList"
-                          status={item.in_platform}
-                          label={
-                            item.in_platform ? t('In platform') : t('To create')
-                          }
-                        />
-                      </div>
-                    </div>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No entities added in this context.')}
+              </span>
+            </div>
+          )}
         </Grid>
       </Grid>
     </div>

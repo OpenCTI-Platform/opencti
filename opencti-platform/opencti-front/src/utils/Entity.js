@@ -929,6 +929,8 @@ export const workbenchAttributes = [
   'x_opencti_description',
   'first_seen',
   'last_seen',
+  'published',
+  'content',
 ];
 
 export const ignoredAttributesInFeeds = [
@@ -960,6 +962,7 @@ export const dateAttributes = [
   'publication_date',
   'first_seen',
   'last_seen',
+  'published',
 ];
 
 export const numberAttributes = [
