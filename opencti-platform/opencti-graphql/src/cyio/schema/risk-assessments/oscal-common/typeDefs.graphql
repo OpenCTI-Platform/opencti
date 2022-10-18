@@ -816,6 +816,11 @@ type OscalResponsibleParty {
   entity_type: String!
   "Identifies the parent types of this object."
   parent_types: [String]!
+  # CoreObject
+  "Indicates the date and time at which the object was originally created."
+  created: Timestamp
+  "Indicates the date and time that this particular version of the object was last modified."
+  modified: Timestamp
   # OscalObject
   "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
   labels: [CyioLabel]
@@ -896,6 +901,11 @@ type OscalResponsibleRole {
   entity_type: String!
   "Identifies the parent types of this object."
   parent_types: [String]!
+  # CoreObject
+  "Indicates the date and time at which the object was originally created."
+  created: Timestamp
+  "Indicates the date and time that this particular version of the object was last modified."
+  modified: Timestamp
   # OscalObject
   "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
   labels: [CyioLabel]
@@ -976,7 +986,7 @@ type OscalRole implements BasicObject & LifecycleObject & OscalObject {
   entity_type: String!
   "Identifies the parent types of this object."
   parent_types: [String]!
-  # CoreObject
+  # LifecycleObject
   "Indicates the date and time at which the object was originally created."
   created: Timestamp
   "Indicates the date and time that this particular version of the object was last modified."
@@ -1000,7 +1010,7 @@ type OscalRole implements BasicObject & LifecycleObject & OscalObject {
   ): OscalRelationshipConnection
   # OscalRole
   "Identifies the unique identifier for a specific role instance."
-  role_identifier: RoleType!
+  role_identifier: String!
   "Identifies the name given to the role."
   name: String!
   "Identifies a short common name, abbreviation, or acronym for the role."
@@ -1011,7 +1021,7 @@ type OscalRole implements BasicObject & LifecycleObject & OscalObject {
 input OscalRoleAddInput {
   # OscalRole
   "Identifies the unique identifier for a specific role instance."
-  role_identifier: RoleType!
+  role_identifier: String!
   "Identifies the name given to the role."
   name: String!
   "Identifies a short common name, abbreviation, or acronym for the role."
