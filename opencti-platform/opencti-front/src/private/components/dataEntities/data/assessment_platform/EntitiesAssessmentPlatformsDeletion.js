@@ -106,6 +106,7 @@ class EntitiesAssessmentPlatformsDeletion extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
+        this.props.history.push('/data/entities/assessment_platform');
       },
       onError: () => {
         toastGenericError('Failed to delete Assessment Platform');

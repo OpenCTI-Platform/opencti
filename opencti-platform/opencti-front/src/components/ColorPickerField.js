@@ -1,21 +1,25 @@
 /* eslint-disable */
 /* Refactor */
 import React from 'react';
-// import TextField from '@material-ui/core/TextField';
 import { SketchPicker } from 'react-color';
 import IconButton from '@material-ui/core/IconButton';
-import Popover from '@material-ui/core/Popover';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import Popover from '@material-ui/core/Popover';
 import { useField, Field } from 'formik';
 import { fieldToTextField } from 'formik-material-ui';
-import Box from '@material-ui/core/Box';
 import CardContent from '@material-ui/core/CardContent';
 import TextField from './TextField';
-import { ColorLens, Add } from '@material-ui/icons';
+import { ColorLens } from '@material-ui/icons';
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme) => ({
+  margin: {
+    margin: theme.spacing(1),
+  },
+}));
 
 const ColorPickerField = (props) => {
-  const anchorEl = React.createRef();
-  const [open, setOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
   const [color, setColor] = React.useState('');
   const {
     form: { setFieldValue, setTouched },
@@ -25,6 +29,9 @@ const ColorPickerField = (props) => {
     onSubmit,
   } = props;
   const [, meta] = useField(name);
+  const open = Boolean(anchorEl);
+  const classes = useStyles();
+
   const internalOnChange = React.useCallback(
     (event) => {
       const { value } = event.target;
@@ -63,6 +70,13 @@ const ColorPickerField = (props) => {
     }
   };
 
+  const handleOpen = event => {
+    setAnchorEl(event.currentTarget);
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  }
   return (
     <div style={{ margin: '10px 0' }}>
       <CardContent
@@ -78,46 +92,28 @@ const ColorPickerField = (props) => {
           name="color"
           label='Color'
           fullWidth={true}
-        />
-        <IconButton style={{ position: 'absolute', right: '20px' }} aria-label="open" onClick={() => setOpen(true)}>
-          <ColorLens />
-        </IconButton>
-      </CardContent>
-      {/* <MuiTextField
-        {...fieldToTextField(props)}
-        ref={anchorEl}
-        onChange={internalOnChange}
-        onFocus={internalOnFocus}
-        onBlur={internalOnBlur}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment>
-              <IconButton aria-label="open" onClick={() => setOpen(true)}>
-                <Add />
-              </IconButton>
-            </InputAdornment>
-          ),
-          startAdornment: (
-            <InputAdornment>
-                <IconButton>
-                    <Box
-                    sx={{
-                      width: 30,
-                      height: 30,
-                      bgcolor: 'primary.main',
-                    }}
-                    style={{ borderRadius: '50%' }}/>
+          className={classes.margin}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton  aria-label="open" onClick={handleOpen}>
+                  <ColorLens />
                 </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      /> */}
+              </InputAdornment>
+            ),
+          }}
+        />
+      </CardContent>
       <Popover
         open={open}
-        anchorEl={anchorEl.current}
-        onClose={() => setOpen(false)}
+        anchorEl={anchorEl}
+        onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
           horizontal: 'center',
         }}
       >

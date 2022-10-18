@@ -1,4 +1,4 @@
-import { buildSelectVariables } from '../utils.js';
+import { buildSelectVariables, CyioError } from '../utils.js';
 import {UserInputError} from "apollo-server-express";
 
 import {
@@ -100,7 +100,7 @@ export const selectObjectIriByIdQuery = (id, type) => {
         break;
       }
     }
-    if (!found) throw new UserInputError(`Unknown object type '${type}'`);
+    if (!found) throw new CyioError(`Unknown object type '${type}'`);
   }
 
   // determine the parent, if any, to select the correct object type
@@ -139,7 +139,7 @@ export const selectObjectByIriQuery = (iri, type, select) => {
         break;
       }
     }
-    if (!found) throw new UserInputError(`Unknown object type '${type}'`);
+    if (!found) throw new CyioError(`Unknown object type '${type}'`);
   }
 
   const predicateMap = objectMap[type].predicateMap;
@@ -449,7 +449,7 @@ export const objectMap = {
     attachQuery: attachToSubjectQuery,
     detachQuery: detachFromSubjectQuery,
     graphQLType: "Subject",
-    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Subjec"
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Subject"
   },
   "telephone-number": {
     predicateMap: phoneNumberPredicateMap,

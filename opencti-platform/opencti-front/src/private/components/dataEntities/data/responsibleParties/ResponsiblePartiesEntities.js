@@ -57,6 +57,30 @@ class ResponsiblePartiesEntities extends Component {
     );
   }
 
+  componentWillUnmount() {
+    const {
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+    } = this.state;
+    if (this.props.history.location.pathname !== '/data/entities/responsible_parties'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-responsibleParties',
+        {
+          view,
+          sortBy,
+          searchTerm,
+          orderAsc,
+          filters: [],
+        },
+      );
+    }
+  }
+
   handleChangeView(mode) {
     this.setState({ view: mode }, () => this.saveView());
   }
@@ -138,13 +162,13 @@ class ResponsiblePartiesEntities extends Component {
               ]),
             this.state.filters,
           ),
-        },
+        }, () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
+        }, () => this.saveView(),
       );
     }
   }

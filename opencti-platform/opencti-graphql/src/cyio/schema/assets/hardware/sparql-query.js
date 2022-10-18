@@ -1,6 +1,6 @@
 import {
   buildSelectVariables, optionalizePredicate, parameterizePredicate, 
-  generateId, OASIS_SCO_NS
+  generateId, OASIS_SCO_NS, CyioError
 } from "../../utils.js";
 import {
   ipAddressReducer,
@@ -115,7 +115,7 @@ export const insertHardwareQuery = (propValues) => {
   const id = generateId( id_material, OASIS_SCO_NS );
   const timestamp = new Date().toISOString();
   
-  if (!deviceMap.hasOwnProperty(propValues.asset_type)) throw new UserInputError(`Unsupported hardware type ' ${propValues.asset_type}'`);
+  if (!deviceMap.hasOwnProperty(propValues.asset_type)) throw new CyioError(`Unsupported hardware type ' ${propValues.asset_type}'`);
 
   // escape any special characters (e.g., newline)
   if (propValues.description !== undefined) {
@@ -197,13 +197,13 @@ export const selectAllHardware = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 

@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import { compareValues, updateQuery, filterValues } from '../../../utils.js';
+import { compareValues, updateQuery, filterValues, CyioError} from '../../../utils.js';
 import { UserInputError } from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -10,7 +10,9 @@ import {
   deleteAddressByIriQuery,
   deletePhoneNumberByIriQuery,
   insertAddressQuery,
+  insertPhoneNumberQuery,
   insertPhoneNumbersQuery,
+  selectPhoneNumberQuery,
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
 import {
@@ -24,6 +26,7 @@ import {
   selectAllLocations,
   deleteLocationQuery,
   attachToLocationQuery,
+  detachFromLocationQuery,
   locationPredicateMap,
 } from './sparql-query.js';
 
@@ -195,9 +198,27 @@ const oscalLocationResolvers = {
         input.urls = urls;
       }
 
-      // create the Location
+      // generate query to create the Location
       const { iri, id, query } = insertLocationQuery(input);
-      let results = await dataSources.Stardog.create({
+
+      // TODO: AB#5864 - Check if the Location already exists
+      let checkQuery = selectLocationQuery(id, ["id","created","modified","name"]);
+      let results;
+      try {
+        results = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: checkQuery,
+          queryId: "Select OSCAL Location",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (results !== undefined && results.length > 0) throw new CyioError(`Location already exists with the name "${results[0].name}"`);
+
+      // create the Location
+      results = await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
         queryId: "Create OSCAL Location"
@@ -287,7 +308,7 @@ const oscalLocationResolvers = {
         throw e
       }
 
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer("LOCATION");
       const location = (reducer(response[0]));
 
@@ -354,10 +375,13 @@ const oscalLocationResolvers = {
     },
     editOscalLocation: async (_, { id, input }, { dbName, dataSources, selectMap }) => {
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified','address','telephone_numbers'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -369,11 +393,17 @@ const oscalLocationResolvers = {
         queryId: "Select OSCAL Location",
         singularizeSchema
       })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -383,20 +413,207 @@ const oscalLocationResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
+
+      // obtain the IRIs for the referenced objects so that if one doesn't 
+      // exists we have created anything yet.  For complex objects that are
+      // private to this object, remove them (if needed) and add the new instances
+      for (let editItem  of input) {
+        let value, objType, objArray, iris=[], isId = true;
+        let relationshipQuery;
+        for (value of editItem.value) {
+          switch(editItem.key) {
+            case 'address':
+              objType = 'address';
+              isId = false;
+              objArray = JSON.parse(value);
+              let {iri: addressIri, id: addressId, query: addressQuery} = insertAddressQuery(objArray);
+              if (response[0].hasOwnProperty('address')) {
+                // check if being changed
+                if (addressIri === `<${response[0].address}>`) {
+                  editItem.operation  = 'skip';
+                  break;
+                }
+              }
+
+              if (editItem.operation === 'skip') break;
+              if (editItem.operation !== 'add') {
+                if (response[0].hasOwnProperty('address')) {
+                  let address = response[0].address;
+                  let addressQuery;
+
+                  // detach the Address
+                  addressQuery = detachFromLocationQuery(id, 'address', address);
+                  await dataSources.Stardog.delete({
+                    dbName,
+                    sparqlQuery: addressQuery,
+                    queryId: "Detach Address from Location"
+                  });
+
+                  // delete the Address
+                  addressQuery = deleteAddressByIriQuery(address.iri);
+                  let result = await dataSources.Stardog.delete({
+                    dbName,
+                    sparqlQuery: addressQuery,
+                    queryId: "Delete Address"
+                  });
+                }
+              }
+
+              if (editItem.operation !== 'delete') {
+                let results;
+                let address = objArray;
+                let {iri: addressIri, id: addressId, query: addressQuery} = insertAddressQuery(address);
+
+                // create the new Address object
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: addressQuery,
+                  queryId: "Create Address for Location"
+                });
+                // attach the new Address object to the Location
+                relationshipQuery = attachToLocationQuery(id, 'address', addressIri);
+                await dataSources.Stardog.create({
+                  dbName,
+                  sparqlQuery: relationshipQuery,
+                  queryId: "Add Address to Location"
+                });
+              }
+
+              editItem.operation = 'skip';
+              break;
+
+            case 'telephone_numbers':
+              if (editItem.operation === 'skip') break;
+              objType = 'telephone-number';
+              isId = false;
+              objArray = [];
+              for (let item of editItem.value) {
+                objArray.push(JSON.parse(item));
+              }
+
+              if (editItem.operation !== 'add') {
+                if (response[0].hasOwnProperty('telephone_numbers')) {
+                  // find the existing 
+                  for (const phone of response[0].telephone_numbers) {
+                    if (phone.includes('TelephoneNumber')) {
+                      let phoneQuery;
+
+                      // detach the Location
+                      phoneQuery = detachFromLocationQuery(id, 'telephone_numbers', phone);
+                      await dataSources.Stardog.delete({
+                        dbName,
+                        sparqlQuery: phoneQuery,
+                        queryId: "Detach Phone from Location"
+                      });
+                    }
+                  }
+                }
+              }
+
+              if (editItem.operation !== 'delete') {
+                for (let phone of objArray) {
+                  let results;
+                  let {iri: phoneIri, id: phoneId, query: phoneQuery} = insertPhoneNumberQuery(phone);
+
+                  // check if requested telephone number already exists
+                  let sparqlQuery = selectPhoneNumberQuery(phoneId, ['id']);
+                  try {
+                    results = await dataSources.Stardog.queryById({
+                        dbName,
+                        sparqlQuery,
+                        queryId: "Select Telephone Number",
+                        singularizeSchema
+                        });
+                  } catch (e) {
+                      console.log(e)
+                      throw e
+                  }
+                  if (results === undefined || results.length === 0) {
+                    // create the new Telephone object
+                    await dataSources.Stardog.create({
+                      dbName,
+                      sparqlQuery: phoneQuery,
+                      queryId: "Create TelephoneNumber for Location"
+                    });
+                  }
+
+                  // attach the new TelephoneNumber object(s) to the Location
+                  relationshipQuery = attachToLocationQuery(id, 'telephone_numbers', phoneIri);
+                  await dataSources.Stardog.create({
+                    dbName,
+                    sparqlQuery: relationshipQuery,
+                    queryId: "Add TelephoneNumber to Location"
+                  });
+                }
+              }
+
+              editItem.operation = 'skip';
+              break;
+            default:
+              isId = false;
+              if (response[0].hasOwnProperty(editItem.key)) {
+                if (response[0][editItem.key] === value) editItem.operation = 'skip';
+              } else if (editItem.operation === 'remove') {
+                editItem.operation = 'skip';
+              }
+              break;
+          }
+
+          if (isId && editItem.operation !== 'skip') {
+            let query = selectObjectIriByIdQuery(value, objType);
+            let result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery: query,
+              queryId: "Obtaining IRI for object by id",
+              singularizeSchema
+            });
+            if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${value}`);
+            iris.push(`<${result[0].iri}>`);    
+          }
+        }
+
+        // update value with array of IRIs
+        if (iris.length > 0) editItem.value = iris;
+      }
 
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/common#Location-${id}`,
         `http://csrc.nist.gov/ns/oscal/common#Location`,
         input,
         locationPredicateMap
-      )
-      await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update OSCAL Location"
-      });
+      );
+      if (query !== null) {
+        let response;
+        try {
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update OSCAL Location"
+          });  
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+
+        if (response !== undefined && 'status' in response) {
+          if (response.ok === false || response.status > 299) {
+            // Handle reporting Stardog Error
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
+        }
+      }
+
       const select = selectLocationQuery(id, selectMap.getNode("editOscalLocation"));
       const result = await dataSources.Stardog.queryById({
         dbName,
@@ -530,7 +747,7 @@ const oscalLocationResolvers = {
       }
     },
     address: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.address_iri === undefined) return [];
+      if (parent.address_iri === undefined) return null;
       let iri = parent.address_iri[0];
       const sparqlQuery = selectAddressByIriQuery(iri, selectMap.getNode("address"));
       let response;

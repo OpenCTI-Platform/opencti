@@ -1,5 +1,5 @@
 import { assetSingularizeSchema as singularizeSchema } from '../../assets/asset-mappings.js';
-import {compareValues, updateQuery, filterValues} from '../../utils.js';
+import {compareValues, updateQuery, filterValues, CyioError} from '../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
   getReducer, 
@@ -193,11 +193,18 @@ const cyioExternalReferenceResolvers = {
       return id;
     },
     editCyioExternalReference: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // make sure there is input data containing what is to be edited
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
+
       // check that the object to be edited exists with the predicates - only get the minimum of data
       let editSelect = ['id'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
+
       const sparqlQuery = selectExternalReferenceQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
@@ -205,13 +212,23 @@ const cyioExternalReferenceResolvers = {
         queryId: "Select ExternalReference",
         singularizeSchema
       })
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
-      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      // determine operation, if missing
       for (let editItem of input) {
-        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+        if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
+        if (!response[0].hasOwnProperty(editItem.key)) {
+          editItem.operation = 'add';
+        } else {
+          editItem.operation = 'replace';
+        }
       }
-      // END WORKAROUND
 
       const query = updateQuery(
         `http://darklight.ai/ns/common#ExternalReference-${id}`,
