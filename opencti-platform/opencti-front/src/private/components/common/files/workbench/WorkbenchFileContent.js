@@ -2246,7 +2246,7 @@ class WorkbenchFileContentComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.default_value}
                       >
-                        {object.default_value || t('Unknown')}
+                        {object.default_value}
                       </div>
                       <div
                         className={classes.bodyItem}
