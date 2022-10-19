@@ -14,6 +14,8 @@ import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import { withStyles } from '@material-ui/core/styles';
 import {
+  fetchAnalysis,
+  fetchAllAnalysis,
   getAnalysisHosts,
   getAnalysisSoftware,
   getAnalysisWeaknesses,
@@ -24,6 +26,7 @@ import {
   getAnalysisFilteredResultsVulnerability,
   createVulnerabilityAssessmentReport,
 } from '../../../services/analysis.service';
+import { fetchAllScans, fetchScan } from "../../../services/scan.service";
 import moment from 'moment';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -45,6 +48,7 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import GenerateReport from "./modals/GenerateReport";
 import Dialog from "@material-ui/core/Dialog";
+import Loader from '../../../components/Loader';
 
 
 const styles = (theme) => ({
@@ -56,11 +60,11 @@ const styles = (theme) => ({
 });
 
 function TabPanel(props) {
-  const { 
+  const {
     children,
     value,
     index,
-    ...other 
+    ...other
   } = props;
 
   return (
@@ -96,11 +100,17 @@ function a11yProps(index) {
 class ExploreResults extends Component {
   constructor(props) {
     super(props);
+    const {
+      match: {
+        params: { exploreResultId },
+      },
+    } = props;
 
     this.state = {
-      client:  (this.props.location.state? this.props.location.state.client : null),
-      analysis: (this.props.location.state? this.props.location.state.analysis : null),
-      scan: (this.props.location.state? this.props.location.state.scan : null),
+      client_ID: (exploreResultId || null),
+      client: null,
+      analysis: null,
+      scan: null,
       hosts: null,
       software: null,
       filteredResultsParams: {},
@@ -118,54 +128,74 @@ class ExploreResults extends Component {
       cve_id: null,
       cwe_id: null,
       generateReportSuccess: false,
-      openDialog: false, 
+      openDialog: false,
     };
   }
 
   componentDidMount() {
-    if(this.state.client){
-      this.resetAllData()
-    }
+    this.setState({ client: localStorage.getItem('client_id') }, function () {
+      this.refreshAnalyses();
+    });
   }
+
+  refreshAnalyses() {
+    fetchAnalysis(this.state.client_ID, this.state.client)
+      .then((response) => {
+        this.setState({ analysis: response.data });
+
+        fetchScan(response.data.scan.id, this.state.client)
+          .then((response) => {
+            this.setState({ scan: response.data });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+        if (this.state.client) {
+          this.resetAllData()
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   resetAllData() {
     getAnalysisHosts(this.state.analysis.id, this.state.client)
-        .then((response) => {
-          this.setState({ hosts: response.data });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      .then((response) => {
+        this.setState({ hosts: response.data });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     getAnalysisSoftware(this.state.analysis.id, this.state.client)
-        .then((response) => {
-          this.setState({ software: response.data });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      .then((response) => {
+        this.setState({ software: response.data });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     getAnalysisWeaknesses(this.state.analysis.id, this.state.client)
-        .then((response) => {
-          this.setState({ weakness: response.data });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      .then((response) => {
+        this.setState({ weakness: response.data });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     getAnalysisVulnerabilities(this.state.analysis.id, this.state.client)
-        .then((response) => {
-          this.setState({ vulnerabilities: response.data });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      .then((response) => {
+        this.setState({ vulnerabilities: response.data });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   render() {
 
-    if(this.props.location.state == undefined) return <Redirect to="/activities/vulnerability assessment/scans" />;
-    
     const { classes } = this.props;
     const {
       client,
@@ -192,8 +222,6 @@ class ExploreResults extends Component {
       openDialog,
     } = this.state;
 
-    
-
     const handleFilterResults = (params, name, type) => {
       this.setState({ filteredResultsData: 'loading' });
 
@@ -203,7 +231,7 @@ class ExploreResults extends Component {
           handleGetAnalysisFilteredResults(params, type)
         );
 
-        this.setState({ selectedRow: {...this.state.selectedRow, host_ip: name}});
+        this.setState({ selectedRow: { ...this.state.selectedRow, host_ip: name } });
       }
       if (params.cpe) {
         this.setState(
@@ -211,7 +239,7 @@ class ExploreResults extends Component {
           handleGetAnalysisFilteredResults(params, type)
         );
 
-        this.setState({ selectedRow: {...this.state.selectedRow, cpe: name}});
+        this.setState({ selectedRow: { ...this.state.selectedRow, cpe: name } });
       }
       if (params.cwe_id) {
         this.setState(
@@ -219,16 +247,16 @@ class ExploreResults extends Component {
           handleGetAnalysisFilteredResults(params, type)
         );
 
-        this.setState({ selectedRow: {...this.state.selectedRow, cwe_id: name}});
+        this.setState({ selectedRow: { ...this.state.selectedRow, cwe_id: name } });
       }
       if (params.cve_id) {
         this.setState(
           { cve_id: params.cve_id },
           handleGetAnalysisFilteredResults(params, type)
         );
-        this.setState({ selectedRow: {...this.state.selectedRow, cve_id: name}});
+        this.setState({ selectedRow: { ...this.state.selectedRow, cve_id: name } });
       }
-     
+
     };
 
     const handleGetAnalysisFilteredResults = (params, type) => {
@@ -250,7 +278,7 @@ class ExploreResults extends Component {
 
           const detailParams = {
             ...(params.host_ip && { host_ip: params.host_ip }),
-            ...(params.cpe && { cpe: params.cpe}),
+            ...(params.cpe && { cpe: params.cpe }),
             ...(params.cve_id && { cve_id: params.cve_id }),
             ...(params.cwe_id && { cwe_id: params.cwe_id }),
           };
@@ -265,64 +293,64 @@ class ExploreResults extends Component {
           console.log(error);
         });
 
-    
-          getAnalysisHosts(this.state.analysis.id, this.state.client, {
-              host_ip: params.host_ip || host_ip,
-              cpe: params.cpe || cpe,
-              cwe_id: params.cwe_id || cwe_id,
-              cve_id: params.cve_id || cve_id,
-            })
-            .then((response) => {
-              this.setState({ hosts: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-          getAnalysisSoftware(this.state.analysis.id, this.state.client, {
-              host_ip: params.host_ip || host_ip,
-              cpe: params.cpe || cpe,
-              cwe_id: params.cwe_id || cwe_id,
-              cve_id: params.cve_id || cve_id,
-            })
-            .then((response) => {
-              this.setState({ software: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
 
-          getAnalysisWeaknesses(
-            this.state.analysis.id,
-            this.state.client,
-            {
-              host_ip: params.host_ip || host_ip,
-              cpe: params.cpe || cpe,
-              cwe_id: params.cwe_id || cwe_id,
-              cve_id: params.cve_id || cve_id,
-            })
-            .then((response) => {
-              this.setState({ weakness: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
+      getAnalysisHosts(this.state.analysis.id, this.state.client, {
+        host_ip: params.host_ip || host_ip,
+        cpe: params.cpe || cpe,
+        cwe_id: params.cwe_id || cwe_id,
+        cve_id: params.cve_id || cve_id,
+      })
+        .then((response) => {
+          this.setState({ hosts: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      getAnalysisSoftware(this.state.analysis.id, this.state.client, {
+        host_ip: params.host_ip || host_ip,
+        cpe: params.cpe || cpe,
+        cwe_id: params.cwe_id || cwe_id,
+        cve_id: params.cve_id || cve_id,
+      })
+        .then((response) => {
+          this.setState({ software: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
-          getAnalysisVulnerabilities(
-            this.state.analysis.id,
-            this.state.client,
-            {
-              host_ip: params.host_ip || host_ip,
-              cpe: params.cpe || cpe,
-              cwe_id: params.cwe_id || cwe_id,
-              cve_id: params.cve_id || cve_id,
-            })
-            .then((response) => {
-              this.setState({ vulnerabilities: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        
+      getAnalysisWeaknesses(
+        this.state.analysis.id,
+        this.state.client,
+        {
+          host_ip: params.host_ip || host_ip,
+          cpe: params.cpe || cpe,
+          cwe_id: params.cwe_id || cwe_id,
+          cve_id: params.cve_id || cve_id,
+        })
+        .then((response) => {
+          this.setState({ weakness: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      getAnalysisVulnerabilities(
+        this.state.analysis.id,
+        this.state.client,
+        {
+          host_ip: params.host_ip || host_ip,
+          cpe: params.cpe || cpe,
+          cwe_id: params.cwe_id || cwe_id,
+          cve_id: params.cve_id || cve_id,
+        })
+        .then((response) => {
+          this.setState({ vulnerabilities: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
     };
 
     const handleFilterResultsDetails = (id, client, params) => {
@@ -431,346 +459,352 @@ class ExploreResults extends Component {
     };
 
     const handleReset = () => {
-      this.setState({weaknessDetails: null});
-      this.setState({weaknessAccordion: false});
-      this.setState({selectedRow: {}});
-      this.setState({currentResult: null});
-      this.setState({filteredResultsParams: {}});
-      this.setState({filteredResultsData: null});
-      this.setState({filteredResultsDataDetails: null});
-      this.setState({vulnerabilitiesDetails: null});
-      this.setState({vulnerabilitiesAccordion: false});
-      this.setState({host_ip: null});
-      this.setState({cpe: null});
-      this.setState({cve_id: null});
-      this.setState({cwe_id: null});
+      this.setState({ weaknessDetails: null });
+      this.setState({ weaknessAccordion: false });
+      this.setState({ selectedRow: {} });
+      this.setState({ currentResult: null });
+      this.setState({ filteredResultsParams: {} });
+      this.setState({ filteredResultsData: null });
+      this.setState({ filteredResultsDataDetails: null });
+      this.setState({ vulnerabilitiesDetails: null });
+      this.setState({ vulnerabilitiesAccordion: false });
+      this.setState({ host_ip: null });
+      this.setState({ cpe: null });
+      this.setState({ cve_id: null });
+      this.setState({ cwe_id: null });
       this.resetAllData()
     }
 
     return (
       <div>
-        <Grid container={true} spacing={3}>
-          <Grid item={true} xs={12}>
-            <Typography variant="h1" component="h2" gutterBottom>
-              {`${analysis.scan.scan_name}: ${moment(analysis.completed_date).fromNow()}`}
-            </Typography>
-            <div style={{display: "flex", alignItems: "center"}}>
-              <Chip size="small" style={{ margin: 3 }} label="Top 4" />
-              <Chip
-                size="small"
-                style={{ margin: 3 }}
-                label="Previous 33 Years"
-              />
-              {analysis.completed_date && (
-                <Chip
-                  size="small"
-                  style={{ margin: 3 }}
-                  label={moment(analysis.completed_date).fromNow()}
-                />
-              )}
-              {analysis.weakness_range && (
-                <Chip
-                  size="small"
-                  style={{ margin: 3 }}
-                  label={`Top  ${analysis.weakness_range}`}
-                />
-              )}
-              {analysis.vulnerability_range && (
-                <Chip
-                  size="small"
-                  style={{ margin: 3 }}
-                  label={`Previous ${analysis.vulnerability_range} Years`}
-                />
-              )}
-              {analysis.vignette_name && (
-                <Chip
-                  size="small"
-                  style={{ margin: 3 }}
-                  label={analysis.vignette_name}
-                />
-              )}
-              <Button
-                  size="medium"
-                  variant="contained"
-                  style={{margin: 3, marginLeft: "auto"}}
-                  disabled={selectedRow == null}
-                  onClick={handleReset}
-              >
-                Reset Filters
-              </Button>
-              <Button
-                  size="medium"
-                  variant="contained"
-                  style={{margin: 3, }}
-                  onClick={handleDialogOpen}
-              >
-                Generate Report
-              </Button>
-            </div>
-          </Grid>
-          <Grid item={true} xs={4}>
-            {hosts && (
-              <Hosts
-                hosts={hosts}
-                action={handleFilterResults}
-                selectedRow={selectedRow}
-              />
-            )}
-            {software && (
-              <Products
-                software={software}
-                action={handleFilterResults}
-                selectedRow={selectedRow}
-              />
-            )}
-            {weakness && (
-              <WeaknessAccordionCards
-                weakness={weakness}
-                action={handleFilterResults}
-                selectedRow={selectedRow}
-              />
-            )}
-            {vulnerabilities && (
-              <VulnerabilityAccordionCards
-                vulnerabilities={vulnerabilities}
-                action={handleFilterResults}
-                selectedRow={selectedRow}
-              />
-            )}
-          </Grid>
-          <Grid item={true} xs={8}>
-            <Grid container spacing={3}>
+        {this.state.analysis && this.state.scan ? (
+          <>
+            <Grid container={true} spacing={3}>
               <Grid item={true} xs={12}>
-                <Typography variant="h4" gutterBottom={true}>
-                  Filtered Results
+                <Typography variant="h1" component="h2" gutterBottom>
+                  {`${analysis.scan.scan_name}: ${moment(analysis.completed_date).fromNow()}`}
                 </Typography>
-                <Paper elevation={2} style={{ minHeight: 350 }}>
-                  <TableContainer style={{ maxHeight: 325 }}>
-                    <Table stickyHeader size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Score</TableCell>
-                          <TableCell>Records</TableCell>
-                          <TableCell>Host IP</TableCell>
-                          <TableCell>Product</TableCell>
-                          <TableCell>Solution</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {filteredResultsData === 'loading' ? (
-                          <CircularProgress
-                            style={{
-                              position: 'absolute',
-                              left: '50%',
-                              top: '50%',
-                            }}
-                          />
-                        ) : filteredResultsData ? (
-                          filteredResultsData.map((result, i) => {
-                            const rowName = 'resultsRow-' + i;
-
-                            return (
-                              <TableRow
-                                key={rowName}
-                                selected={rowName === selectedRow}
-                                onClick={() => handleFilterResults({host_ip: result.host_ip}, rowName) }
-                                hover
-                                classes={{ root: classes.selectedTableRow }}
-                              >
-                                <TableCell component="th" scope="row">
-                                  {result.score}
-                                </TableCell>
-                                <TableCell>{result.records}</TableCell>
-                                <TableCell>{result.host_ip}</TableCell>
-                                <TableCell>{result.software}</TableCell>
-                                <TableCell>{result.solution}</TableCell>
-                              </TableRow>
-                            );
-                          })
-                        ) : (
-                          <div>No filters selected.</div>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Paper>
-              </Grid>
-            </Grid>
-            <Grid container spacing={3}>
-              <Grid item={true} xs={8}>
-                <Typography variant="h4" gutterBottom={true}>
-                  Solutions
-                </Typography>
-                <div style={{ maxHeight: 250, overflow: 'auto' }}>
-                  {ReactHtmlParser(filteredResultsDataDetails?.solution)}
-                </div>
-                <Tabs value={tabValue} onChange={handleTabChange}>
-                  <Tab label="Problem Details" {...a11yProps(0)} />
-                  <Tab label="Weaknesses" />
-                  <Tab label="Vulnerabilities" />
-                </Tabs>
-                <TabPanel
-                  style={{ maxHeight: 700, overflow: 'auto' }}
-                  value={tabValue}
-                  index={0}
-                >
-                  <Typography variant="h4" gutterBottom={true}>
-                    Problems
-                  </Typography>
-                  {filteredResultsDataDetails?.details.map((i, j) => (
-                    <p key={j}>{ReactHtmlParser(i)}</p>
-                  ))}
-                  {filteredResultsDataDetails?.plugins.map((i, j) => (
-                    <p key={j}>{ReactHtmlParser(i)}</p>
-                  ))}
-                  <Typography variant="h4" gutterBottom={true}>
-                    Exploitable?
-                  </Typography>
-                  {filteredResultsDataDetails?.exploit_frameworks.map(
-                    (i, j) => (
-                      <p key={j}>{ReactHtmlParser(i)}</p>
-                    ),
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <Chip size="small" style={{ margin: 3 }} label="Top 4" />
+                  <Chip
+                    size="small"
+                    style={{ margin: 3 }}
+                    label="Previous 33 Years"
+                  />
+                  {analysis.completed_date && (
+                    <Chip
+                      size="small"
+                      style={{ margin: 3 }}
+                      label={moment(analysis.completed_date).fromNow()}
+                    />
                   )}
-                  <Typography variant="h4" gutterBottom={true}>
-                    Details
-                  </Typography>
-                  {filteredResultsDataDetails?.problems.map((i, j) => (
-                    <p key={j}>{ReactHtmlParser(i)}</p>
-                  ))}
-                </TabPanel>
-                <TabPanel value={tabValue} index={1}>
-                  {weakness?.map((i, j) => (
-                    <Accordion
-                      key={j}
-                      expanded={weaknessAccordion === 'panel-' + j}
-                      onChange={handleWeaknessAccordion('panel-' + j, {
-                        cwe_id: i.cwe_id,
-                      })}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel1a-content"
-                        id="panel1a-header"
-                      >
-                        <Typography>
-                          {i.cwe_id}: {i.tooltip}
-                        </Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        {weaknessDetails?.description ? (
-                          <Typography>
-                            {weaknessDetails?.description}
-                          </Typography>
-                        ) : (
-                          <CircularProgress />
-                        )}
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
-                </TabPanel>
-                <TabPanel value={tabValue} index={2}>
-                  {vulnerabilities?.map((i, j) => (
-                    <Accordion
-                      key={j}
-                      expanded={vulnerabilitiesAccordion === 'panel-' + j}
-                      onChange={handleVulnerabilitiesAccordion('panel-' + j, {
-                        cve_id: i.cve_id,
-                      })}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel1a-content"
-                        id="panel1a-header"
-                      >
-                        <Typography>{i.cve_id}</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails style={{ display: 'block' }}>
-                        <div style={{ marginBottom: '10px' }}>
-                          <Typography variant="h4" gutterBottom={true}>
-                            Publish Date:
-                          </Typography>
-                          <p>{vulnerabilitiesDetails?.pub_date}</p>
-                        </div>
-                        <div style={{ marginBottom: '10px' }}>
-                          <Typography variant="h4" gutterBottom={true}>
-                            CVSS2 Base Score:
-                          </Typography>
-                          <p>
-                            {vulnerabilitiesDetails?.v2_base}{' '}
-                            {vulnerabilitiesDetails?.v2_vector}
-                          </p>
-                        </div>
-                        <div style={{ marginBottom: '10px' }}>
-                          <Typography variant="h4" gutterBottom={true}>
-                            CVSS3 Base Score:
-                          </Typography>
-                          <p>
-                            {vulnerabilitiesDetails?.v3_base}{' '}
-                            {vulnerabilitiesDetails?.v3_vector}
-                          </p>
-                        </div>
-                        <div style={{ marginBottom: '10px' }}>
-                          <Typography variant="h4" gutterBottom={true}>
-                            Description
-                          </Typography>
-                          {ReactHtmlParser(vulnerabilitiesDetails?.description)}
-                        </div>
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
-                </TabPanel>
+                  {analysis.weakness_range && (
+                    <Chip
+                      size="small"
+                      style={{ margin: 3 }}
+                      label={`Top  ${analysis.weakness_range}`}
+                    />
+                  )}
+                  {analysis.vulnerability_range && (
+                    <Chip
+                      size="small"
+                      style={{ margin: 3 }}
+                      label={`Previous ${analysis.vulnerability_range} Years`}
+                    />
+                  )}
+                  {analysis.vignette_name && (
+                    <Chip
+                      size="small"
+                      style={{ margin: 3 }}
+                      label={analysis.vignette_name}
+                    />
+                  )}
+                  <Button
+                    size="medium"
+                    variant="contained"
+                    style={{ margin: 3, marginLeft: "auto" }}
+                    disabled={selectedRow == null}
+                    onClick={handleReset}
+                  >
+                    Reset Filters
+                  </Button>
+                  <Button
+                    size="medium"
+                    variant="contained"
+                    style={{ margin: 3, }}
+                    onClick={handleDialogOpen}
+                  >
+                    Generate Report
+                  </Button>
+                </div>
               </Grid>
               <Grid item={true} xs={4}>
-                <Typography variant="h4" gutterBottom={true}>
-                  Host Info
-                </Typography>
-                <Card>
-                  <CardContent>
-                    <div>
-                      <Typography variant="h3" gutterBottom={true}>
-                        IP Address
-                      </Typography>
-                      <p>{currentResult?.host_ip}</p>
+                {hosts && (
+                  <Hosts
+                    hosts={hosts}
+                    action={handleFilterResults}
+                    selectedRow={selectedRow}
+                  />
+                )}
+                {software && (
+                  <Products
+                    software={software}
+                    action={handleFilterResults}
+                    selectedRow={selectedRow}
+                  />
+                )}
+                {weakness && (
+                  <WeaknessAccordionCards
+                    weakness={weakness}
+                    action={handleFilterResults}
+                    selectedRow={selectedRow}
+                  />
+                )}
+                {vulnerabilities && (
+                  <VulnerabilityAccordionCards
+                    vulnerabilities={vulnerabilities}
+                    action={handleFilterResults}
+                    selectedRow={selectedRow}
+                  />
+                )}
+              </Grid>
+              <Grid item={true} xs={8}>
+                <Grid container spacing={3}>
+                  <Grid item={true} xs={12}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      Filtered Results
+                    </Typography>
+                    <Paper elevation={2} style={{ minHeight: 350 }}>
+                      <TableContainer style={{ maxHeight: 325 }}>
+                        <Table stickyHeader size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Score</TableCell>
+                              <TableCell>Records</TableCell>
+                              <TableCell>Host IP</TableCell>
+                              <TableCell>Product</TableCell>
+                              <TableCell>Solution</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {filteredResultsData === 'loading' ? (
+                              <CircularProgress
+                                style={{
+                                  position: 'absolute',
+                                  left: '50%',
+                                  top: '50%',
+                                }}
+                              />
+                            ) : filteredResultsData ? (
+                              filteredResultsData.map((result, i) => {
+                                const rowName = 'resultsRow-' + i;
+
+                                return (
+                                  <TableRow
+                                    key={rowName}
+                                    selected={rowName === selectedRow}
+                                    onClick={() => handleFilterResults({ host_ip: result.host_ip }, rowName)}
+                                    hover
+                                    classes={{ root: classes.selectedTableRow }}
+                                  >
+                                    <TableCell component="th" scope="row">
+                                      {result.score}
+                                    </TableCell>
+                                    <TableCell>{result.records}</TableCell>
+                                    <TableCell>{result.host_ip}</TableCell>
+                                    <TableCell>{result.software}</TableCell>
+                                    <TableCell>{result.solution}</TableCell>
+                                  </TableRow>
+                                );
+                              })
+                            ) : (
+                              <div>No filters selected.</div>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </Paper>
+                  </Grid>
+                </Grid>
+                <Grid container spacing={3}>
+                  <Grid item={true} xs={8}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      Solutions
+                    </Typography>
+                    <div style={{ maxHeight: 250, overflow: 'auto' }}>
+                      {ReactHtmlParser(filteredResultsDataDetails?.solution)}
                     </div>
-                    <div>
-                      <Typography variant="h3" gutterBottom={true}>
-                        Hostname
+                    <Tabs value={tabValue} onChange={handleTabChange}>
+                      <Tab label="Problem Details" {...a11yProps(0)} />
+                      <Tab label="Weaknesses" />
+                      <Tab label="Vulnerabilities" />
+                    </Tabs>
+                    <TabPanel
+                      style={{ maxHeight: 700, overflow: 'auto' }}
+                      value={tabValue}
+                      index={0}
+                    >
+                      <Typography variant="h4" gutterBottom={true}>
+                        Problems
                       </Typography>
-                      <p>{currentResult?.host_name}</p>
-                    </div>
-                    <div>
-                      <Typography variant="h3" gutterBottom={true}>
-                        MAC Address
+                      {filteredResultsDataDetails?.details.map((i, j) => (
+                        <p key={j}>{ReactHtmlParser(i)}</p>
+                      ))}
+                      {filteredResultsDataDetails?.plugins.map((i, j) => (
+                        <p key={j}>{ReactHtmlParser(i)}</p>
+                      ))}
+                      <Typography variant="h4" gutterBottom={true}>
+                        Exploitable?
                       </Typography>
-                      <p>{currentResult?.host_mac}</p>
-                    </div>
-                    <div>
-                      <Typography variant="h3" gutterBottom={true}>
-                        Operating System
+                      {filteredResultsDataDetails?.exploit_frameworks.map(
+                        (i, j) => (
+                          <p key={j}>{ReactHtmlParser(i)}</p>
+                        ),
+                      )}
+                      <Typography variant="h4" gutterBottom={true}>
+                        Details
                       </Typography>
-                      <p>{currentResult?.host_os}</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                      {filteredResultsDataDetails?.problems.map((i, j) => (
+                        <p key={j}>{ReactHtmlParser(i)}</p>
+                      ))}
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={1}>
+                      {weakness?.map((i, j) => (
+                        <Accordion
+                          key={j}
+                          expanded={weaknessAccordion === 'panel-' + j}
+                          onChange={handleWeaknessAccordion('panel-' + j, {
+                            cwe_id: i.cwe_id,
+                          })}
+                        >
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                          >
+                            <Typography>
+                              {i.cwe_id}: {i.tooltip}
+                            </Typography>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            {weaknessDetails?.description ? (
+                              <Typography>
+                                {weaknessDetails?.description}
+                              </Typography>
+                            ) : (
+                              <CircularProgress />
+                            )}
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={2}>
+                      {vulnerabilities?.map((i, j) => (
+                        <Accordion
+                          key={j}
+                          expanded={vulnerabilitiesAccordion === 'panel-' + j}
+                          onChange={handleVulnerabilitiesAccordion('panel-' + j, {
+                            cve_id: i.cve_id,
+                          })}
+                        >
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                          >
+                            <Typography>{i.cve_id}</Typography>
+                          </AccordionSummary>
+                          <AccordionDetails style={{ display: 'block' }}>
+                            <div style={{ marginBottom: '10px' }}>
+                              <Typography variant="h4" gutterBottom={true}>
+                                Publish Date:
+                              </Typography>
+                              <p>{vulnerabilitiesDetails?.pub_date}</p>
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                              <Typography variant="h4" gutterBottom={true}>
+                                CVSS2 Base Score:
+                              </Typography>
+                              <p>
+                                {vulnerabilitiesDetails?.v2_base}{' '}
+                                {vulnerabilitiesDetails?.v2_vector}
+                              </p>
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                              <Typography variant="h4" gutterBottom={true}>
+                                CVSS3 Base Score:
+                              </Typography>
+                              <p>
+                                {vulnerabilitiesDetails?.v3_base}{' '}
+                                {vulnerabilitiesDetails?.v3_vector}
+                              </p>
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                              <Typography variant="h4" gutterBottom={true}>
+                                Description
+                              </Typography>
+                              {ReactHtmlParser(vulnerabilitiesDetails?.description)}
+                            </div>
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
+                    </TabPanel>
+                  </Grid>
+                  <Grid item={true} xs={4}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      Host Info
+                    </Typography>
+                    <Card>
+                      <CardContent>
+                        <div>
+                          <Typography variant="h3" gutterBottom={true}>
+                            IP Address
+                          </Typography>
+                          <p>{currentResult?.host_ip}</p>
+                        </div>
+                        <div>
+                          <Typography variant="h3" gutterBottom={true}>
+                            Hostname
+                          </Typography>
+                          <p>{currentResult?.host_name}</p>
+                        </div>
+                        <div>
+                          <Typography variant="h3" gutterBottom={true}>
+                            MAC Address
+                          </Typography>
+                          <p>{currentResult?.host_mac}</p>
+                        </div>
+                        <div>
+                          <Typography variant="h3" gutterBottom={true}>
+                            Operating System
+                          </Typography>
+                          <p>{currentResult?.host_os}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
-          </Grid>
-        </Grid>
-        <Dialog
-            open={openDialog}
-            onClose={() => handleDialogClose()}
-            maxWidth="md"
-          >
-          <GenerateReport
-            id={analysis.id}
-            client={client}
-            scanName={analysis.scan.scan_name}
-            success={generateReportSuccess}
-            onClose={handleDialogClose}
-            action={onGenerateReport}
-          />
-        </Dialog>
-
+            <Dialog
+              open={openDialog}
+              onClose={() => handleDialogClose()}
+              maxWidth="md"
+            >
+              <GenerateReport
+                id={analysis.id}
+                client={client}
+                scanName={analysis.scan.scan_name}
+                success={generateReportSuccess}
+                onClose={handleDialogClose}
+                action={onGenerateReport}
+              />
+            </Dialog>
+          </>
+        ) : (
+          <Loader />
+        )
+        }
       </div>
     );
   }
