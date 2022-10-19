@@ -23,6 +23,8 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -188,6 +190,7 @@ class InfrastructureCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
+                infrastructure_types: [],
                 description: '',
                 createdBy: '',
                 objectMarking: [],
@@ -214,6 +217,13 @@ class InfrastructureCreation extends Component {
                     fullWidth={true}
                     detectDuplicate={['Infrastructure']}
                   />
+                  <OpenVocabField
+                    label={t('Infrastructure types')}
+                    type="infrastructure-type-ov"
+                    name="infrastructure_types"
+                    containerstyle={fieldSpacingContainerStyle}
+                    multiple={true}
+                  />
                   <Field
                     component={MarkDownField}
                     name="description"
@@ -225,22 +235,22 @@ class InfrastructureCreation extends Component {
                   />
                   <CreatedByField
                     name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                   />
                   <ObjectLabelField
                     name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                   />
                   <ObjectMarkingField
                     name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                   <ExternalReferencesField
                     name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                   />
