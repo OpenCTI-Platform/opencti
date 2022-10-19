@@ -962,15 +962,6 @@ class Scans extends Component {
                               <MenuItem
                                 onClick={() => this.props.history.push(`/activities/vulnerability assessment/scans/explore results/${analysis.id}`)}
                               >
-                                {/* <MenuItem
-                                    onClick={() =>
-                                        handleLinkClink(`/activities/vulnerability assessment/scans/explore results`,
-                                            {
-                                              analysis: analysis,
-                                              client: client_ID,
-                                              scan: getCurrentScan(analysis.scan.id, renderScans)
-                                            })}
-                                > */}
                                 <ListItemIcon>
                                   <ExploreIcon fontSize="small" />
                                 </ListItemIcon>
@@ -1199,13 +1190,6 @@ class Scans extends Component {
                           color="primary"
                           startIcon={<CloudUploadIcon />}
                           onClick={() => this.props.history.push(`/activities/vulnerability assessment/scans/explore results/${analysis.id}`)}
-                        // onClick={() =>
-                        //     handleLinkClink('/activities/vulnerability assessment/scans/explore results',
-                        //         {
-                        //           analysis,
-                        //           client: client_ID,
-                        //           scan: getCurrentScan(analysis.scan.id, renderScans)
-                        //         })}
                         >
                           Explore Results
                         </Button>
