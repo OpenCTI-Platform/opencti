@@ -54,17 +54,16 @@ const themeBuilder = (settings: AppThemeProvider_settings$data, themeColor: stri
   );
 };
 
-const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = (props) => {
-  const { children } = props;
+const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({ children, settings }) => {
   const { me } = useContext<UserContextType>(UserContext);
-  const platformTitle = props.settings?.platform_title ?? 'OpenCTI - Cyber Threat Intelligence Platform';
+  const platformTitle = settings?.platform_title ?? 'OpenCTI - Cyber Threat Intelligence Platform';
   useDocumentModifier(platformTitle);
-  useDocumentFaviconModifier(props.settings?.platform_favicon);
+  useDocumentFaviconModifier(settings?.platform_favicon);
   // region theming
-  const defaultTheme = props.settings?.platform_theme ?? null;
+  const defaultTheme = settings?.platform_theme ?? null;
   const platformTheme = defaultTheme !== null && defaultTheme !== 'auto' ? defaultTheme : 'dark';
   const theme = me?.theme && me.theme !== 'default' ? me.theme : platformTheme;
-  const themeComponent = themeBuilder(props.settings, theme);
+  const themeComponent = themeBuilder(settings, theme);
   const muiTheme = createTheme(themeComponent as ThemeOptions);
   useDocumentThemeModifier(theme);
   // endregion

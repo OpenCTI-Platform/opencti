@@ -1,21 +1,16 @@
 import React, { FunctionComponent, useContext } from 'react';
-import { filter, includes, map } from 'ramda';
-
-interface Capability {
-  id: string;
-  name: string;
-}
-
-export interface Me {
-  theme: string;
-  capabilities: Array<Capability>;
-}
+import { filter, includes } from 'ramda';
+import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
+import { ModuleHelper } from './PlatformModulesHelper';
 
 export interface UserContextType {
-  me: Me | undefined;
+  me: RootPrivateQuery$data['me'] | undefined;
+  settings: RootPrivateQuery$data['settings'] | undefined;
+  helper: ModuleHelper | undefined;
 }
 
-export const UserContext = React.createContext<UserContextType>({ me: undefined });
+const defaultContext = { me: undefined, settings: undefined, helper: undefined };
+export const UserContext = React.createContext<UserContextType>(defaultContext);
 
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const BYPASS = 'BYPASS';
@@ -44,8 +39,8 @@ interface SecurityProps {
   placeholder: any
 }
 
-export const granted = (me: Me, capabilities: Array<string>, matchAll = false) => {
-  const userCapabilities = map((c) => c.name, me.capabilities);
+export const granted = (me: RootPrivateQuery$data['me'], capabilities: Array<string>, matchAll = false) => {
+  const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
   if (userCapabilities.includes(BYPASS)) return true;
   let numberOfAvailableCapabilities = 0;
   for (let index = 0; index < capabilities.length; index += 1) {

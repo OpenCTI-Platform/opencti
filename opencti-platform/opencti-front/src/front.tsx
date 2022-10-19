@@ -13,17 +13,13 @@ import * as serviceWorker from './config/serviceWorker';
 import App from './app';
 import { environment } from './relay/environment';
 import Loader, { LoaderVariant } from './components/Loader';
-import ThemeDark from './components/ThemeDark';
+import { THEME_DARK_DEFAULT_BACKGROUND } from './components/ThemeDark';
 
 const { Suspense } = React;
 
 const Loading = () => (
   <div
-    style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: ThemeDark().palette.background.default,
-    }}>
+    style={{ width: '100%', height: '100%', backgroundColor: THEME_DARK_DEFAULT_BACKGROUND }}>
     <Loader variant={LoaderVariant.container} withRightPadding={false} />
   </div>
 );

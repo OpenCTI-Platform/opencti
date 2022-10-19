@@ -8,10 +8,10 @@ interface ExtendedBackground extends TypeBackground {
 }
 
 interface ExtendedPaletteOptions extends PaletteOptions {
-  background?: Partial<ExtendedBackground>;
+  background: Partial<ExtendedBackground>;
 }
 
 interface ExtendedThemeOptions extends ThemeOptions {
   logo: string | null,
-  palette?: ExtendedPaletteOptions;
+  palette: ExtendedPaletteOptions;
 }

@@ -54,47 +54,47 @@ const useStyles = makeStyles(() => ({
 }));
 
 const profileOverviewFieldPatch = graphql`
-    mutation ProfileOverviewFieldPatchMutation(
-        $input: [EditInput]!
-        $password: String
-    ) {
-        meEdit(input: $input, password: $password) {
-            ...ProfileOverview_me
-        }
+  mutation ProfileOverviewFieldPatchMutation(
+    $input: [EditInput]!
+    $password: String
+  ) {
+    meEdit(input: $input, password: $password) {
+      ...ProfileOverview_me
     }
+  }
 `;
 
 const renewTokenPatch = graphql`
-    mutation ProfileOverviewTokenRenewMutation {
-        meTokenRenew {
-            ...ProfileOverview_me
-        }
+  mutation ProfileOverviewTokenRenewMutation {
+    meTokenRenew {
+      ...ProfileOverview_me
     }
+  }
 `;
 
 const generateOTP = graphql`
-    query ProfileOverviewOTPQuery {
-        otpGeneration {
-            secret
-            uri
-        }
+  query ProfileOverviewOTPQuery {
+    otpGeneration {
+      secret
+      uri
     }
+  }
 `;
 
 const validateOtpPatch = graphql`
-    mutation ProfileOverviewOtpMutation($input: UserOTPActivationInput) {
-        otpActivation(input: $input) {
-            ...ProfileOverview_me
-        }
+  mutation ProfileOverviewOtpMutation($input: UserOTPActivationInput) {
+    otpActivation(input: $input) {
+      ...ProfileOverview_me
     }
+  }
 `;
 
 const disableOtpPatch = graphql`
-    mutation ProfileOverviewOtpDisableMutation {
-        otpDeactivation {
-            ...ProfileOverview_me
-        }
+  mutation ProfileOverviewOtpDisableMutation {
+    otpDeactivation {
+      ...ProfileOverview_me
     }
+  }
 `;
 
 const userValidation = (t) => Yup.object().shape({
@@ -160,7 +160,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
   }, [uri, theme]);
   return (
     <div style={{ textAlign: 'center' }}>
-      <img src={otpQrImage} style={{ width: 265 }} alt=""/>
+      <img src={otpQrImage} style={{ width: 265 }} alt="" />
       {error ? (
         <Alert
           severity="error"
@@ -230,7 +230,7 @@ const OtpComponent = ({ closeFunction }) => (
           />
         );
       }
-      return <Loader/>;
+      return <Loader />;
     }}
   />
 );
@@ -292,7 +292,7 @@ const ProfileOverviewComponent = (props) => {
           {t('Enable two-factor authentication')}
         </DialogTitle>
         <DialogContent>
-          <OtpComponent closeFunction={() => setDisplay2FA(false)}/>
+          <OtpComponent closeFunction={() => setDisplay2FA(false)} />
         </DialogContent>
       </Dialog>
       <Grid container={true} spacing={3}>
@@ -427,7 +427,7 @@ const ProfileOverviewComponent = (props) => {
                         disabled={!subscriptionStatus}
                       >
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <SendClockOutline/>
+                          <SendClockOutline />
                         </ListItemIcon>
                         <ListItemText
                           primary={userSubscription.name}
@@ -481,7 +481,7 @@ const ProfileOverviewComponent = (props) => {
                 <Button
                   type="button"
                   color="primary"
-                  startIcon={<NoEncryptionOutlined/>}
+                  startIcon={<NoEncryptionOutlined />}
                   onClick={disableOtp}
                   classes={{ root: classes.button }}
                 >
@@ -492,7 +492,7 @@ const ProfileOverviewComponent = (props) => {
                 <Button
                   type="button"
                   color="secondary"
-                  startIcon={<LockOutlined/>}
+                  startIcon={<LockOutlined />}
                   onClick={() => setDisplay2FA(true)}
                   classes={{ root: classes.button }}
                 >
@@ -500,7 +500,7 @@ const ProfileOverviewComponent = (props) => {
                 </Button>
               )}
             </div>
-            <div className="clearfix"/>
+            <div className="clearfix" />
             <Formik
               enableReinitialize={true}
               initialValues={{
@@ -595,7 +595,7 @@ const ProfileOverviewComponent = (props) => {
               </Typography>
               <pre>
                 Content-Type: application/json
-                <br/>
+                <br />
                 Authorization: Bearer {me.api_token}
               </pre>
               <Button

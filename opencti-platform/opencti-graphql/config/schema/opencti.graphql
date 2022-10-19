@@ -915,14 +915,14 @@ type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
   entity_type: String! @auth
-  parent_types: [String]! @auth
+  parent_types: [String!]! @auth
   # Settings
   platform_title: String
   platform_favicon: String
   platform_url: String
   platform_email: String @auth
   platform_modules: [Module!] @auth
-  platform_providers: [Provider]
+  platform_providers: [Provider!]
   platform_language: String
   platform_theme: String
   platform_theme_dark_background: String
@@ -944,14 +944,14 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
-  platform_enable_reference: [String] @auth
+  platform_enable_reference: [String!] @auth
   platform_reference_attachment: Boolean @auth
-  platform_feature_flags: [Module] @auth
-  platform_hidden_types: [String] @auth
+  platform_feature_flags: [Module!] @auth
+  platform_hidden_types: [String!] @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   # Technical
-  editContext: [EditUserContext] @auth(for: [SETTINGS])
+  editContext: [EditUserContext!] @auth(for: [SETTINGS])
 }
 
 ############## Groups
@@ -1062,7 +1062,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   user_email: String!
   name: String!
   description: String
@@ -1074,8 +1074,8 @@ type MeUser implements BasicObject & InternalObject {
   language: String
   external: Boolean
   api_token: String!
-  capabilities: [Capability]!
-  allowed_marking: [MarkingDefinition]
+  capabilities: [Capability!]!
+  allowed_marking: [MarkingDefinition!]
   userSubscriptions(first: Int): UserSubscriptionConnection
 }
 type SessionDetail {
@@ -9117,13 +9117,13 @@ type Query {
 
   ######## INTERNAL OBJECT ENTITIES
 
-  settings: Settings
+  settings: Settings!
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
     @auth(for: [SETTINGS_SETACCESSES])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
     @auth(for: [SETTINGS_SETACCESSES])
-  me: MeUser @auth
+  me: MeUser! @auth
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
   users(
