@@ -24,17 +24,17 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { stixCyberObservablesLinesAttributesQuery } from './StixCyberObservablesLines';
+import { buildDate } from '../../../../utils/Time';
+import SwitchField from '../../../../components/SwitchField';
+import MarkDownField from '../../../../components/MarkDownField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import {
   booleanAttributes,
   dateAttributes,
   ignoredAttributes,
   numberAttributes,
   multipleAttributes,
-} from './StixCyberObservableCreation';
-import { buildDate } from '../../../../utils/Time';
-import SwitchField from '../../../../components/SwitchField';
-import MarkDownField from '../../../../components/MarkDownField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
+} from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   drawerPaper: {

@@ -42,6 +42,7 @@ class CreatedByField extends Component {
             label: defaultCreatedBy.name,
             value: defaultCreatedBy.id,
             type: defaultCreatedBy.entity_type,
+            entity: defaultCreatedBy,
           },
         ]
         : [],
@@ -75,7 +76,7 @@ class CreatedByField extends Component {
 
   searchIdentities() {
     fetchQuery(identitySearchIdentitiesSearchQuery, {
-      types: ['Individual', 'Organization'],
+      types: ['Individual', 'Organization', 'System'],
       search: this.state.keyword,
       first: 10,
     })
@@ -87,6 +88,7 @@ class CreatedByField extends Component {
             label: n.node.name,
             value: n.node.id,
             type: n.node.entity_type,
+            entity: n.node,
           })),
         )(data);
         this.setState({ identities: union(this.state.identities, identities) });
@@ -143,12 +145,14 @@ class CreatedByField extends Component {
               label: data.identityAdd.name,
               value: data.identityAdd.id,
               type: data.identityAdd.entity_type,
+              entity: data.identityAdd,
             });
             if (typeof onChange === 'function') {
               onChange(name, {
                 label: data.identityAdd.name,
                 value: data.identityAdd.id,
                 type: data.identityAdd.entity_type,
+                entity: data.identityAdd,
               });
             }
           }}

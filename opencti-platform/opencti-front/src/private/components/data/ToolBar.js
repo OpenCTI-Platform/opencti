@@ -55,14 +55,22 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../relay/environment';
 import ItemMarking from '../../../components/ItemMarking';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
 import { defaultValue } from '../../../utils/Graph';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
-import Security, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, UserContext } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  UserContext,
+} from '../../../utils/Security';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesSearchQuery } from '../analysis/ExternalReferences';
@@ -295,7 +303,9 @@ class ToolBar extends Component {
       enrichType = R.head(this.props.filters.entity_type).id;
     } else {
       const selected = this.props.selectedElements;
-      const selectedTypes = R.uniq(R.map((o) => o.entity_type, R.values(selected || {})));
+      const selectedTypes = R.uniq(
+        R.map((o) => o.entity_type, R.values(selected || {})),
+      );
       enrichType = R.head(selectedTypes);
     }
     // Get available connectors
@@ -428,10 +438,14 @@ class ToolBar extends Component {
 
   handleChangeEnrichSelected(connectorId) {
     if (this.state.enrichSelected.includes(connectorId)) {
-      const filtered = this.state.enrichSelected.filter((e) => e !== connectorId);
+      const filtered = this.state.enrichSelected.filter(
+        (e) => e !== connectorId,
+      );
       this.setState({ enrichSelected: filtered });
     } else {
-      this.setState({ enrichSelected: [...this.state.enrichSelected, connectorId] });
+      this.setState({
+        enrichSelected: [...this.state.enrichSelected, connectorId],
+      });
     }
   }
 
@@ -452,7 +466,9 @@ class ToolBar extends Component {
   }
 
   handleLaunchEnrichment() {
-    const actions = [{ type: 'ENRICHMENT', context: { values: this.state.enrichSelected } }];
+    const actions = [
+      { type: 'ENRICHMENT', context: { values: this.state.enrichSelected } },
+    ];
     this.setState({ actions }, () => {
       this.handleCloseEnrichment();
       this.handleOpenTask();
@@ -1036,16 +1052,21 @@ class ToolBar extends Component {
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs } = this.state;
     const isOpen = numberOfSelectedElements > 0;
-    const selectedTypes = R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})));
+    const selectedTypes = R.uniq(
+      R.map((o) => o.entity_type, R.values(selectedElements || {})),
+    );
     const typesAreDifferent = selectedTypes.length > 1;
     // region promote filters
     const promotionTypes = ['Stix-Cyber-Observable', 'Indicator'];
     const observablesFiltered = (filters?.entity_type ?? []).length === 1
-        && R.head(filters.entity_type).id === 'Stix-Cyber-Observable';
-    const isManualPromoteSelect = observablesFiltered || (!selectAll && selectedTypes.length === 1
+      && R.head(filters.entity_type).id === 'Stix-Cyber-Observable';
+    const isManualPromoteSelect = observablesFiltered
+      || (!selectAll
+        && selectedTypes.length === 1
         && promotionTypes.includes(R.head(selectedTypes)));
-    const isAllPromoteSelect = selectAll && (filters?.entity_type ?? []).length === 1
-        && promotionTypes.includes(R.head(filters.entity_type).id);
+    const isAllPromoteSelect = selectAll
+      && (filters?.entity_type ?? []).length === 1
+      && promotionTypes.includes(R.head(filters.entity_type).id);
     const promoteDisable = !isManualPromoteSelect && !isAllPromoteSelect;
     // endregion
     // region enrich
@@ -1169,11 +1190,12 @@ class ToolBar extends Component {
             <Tooltip title={t('Enrichment')}>
               <span>
                 <IconButton
-                    aria-label="enrichment"
-                    disabled={ enrichDisable || this.state.processing }
-                    onClick={this.handleOpenEnrichment.bind(this)}
-                    color="primary"
-                    size="large">
+                  aria-label="enrichment"
+                  disabled={enrichDisable || this.state.processing}
+                  onClick={this.handleOpenEnrichment.bind(this)}
+                  color="primary"
+                  size="large"
+                >
                   <CloudRefresh />
                 </IconButton>
               </span>
@@ -1181,11 +1203,12 @@ class ToolBar extends Component {
             <Tooltip title={t('Indicators/observables generation')}>
               <span>
                 <IconButton
-                    aria-label="promote"
-                    disabled={ promoteDisable || this.state.processing }
-                    onClick={this.handleOpenPromote.bind(this)}
-                    color="primary"
-                    size="large">
+                  aria-label="promote"
+                  disabled={promoteDisable || this.state.processing}
+                  onClick={this.handleOpenPromote.bind(this)}
+                  color="primary"
+                  size="large"
+                >
                   <TransformOutlined />
                 </IconButton>
               </span>
@@ -1574,7 +1597,11 @@ class ToolBar extends Component {
             <Typography variant="h6">{t('Merge entities')}</Typography>
           </div>
           <div className={classes.container}>
-            <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
+            <Typography
+              variant="h4"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
               {t('Selected entities')}
             </Typography>
             <List>
@@ -1706,106 +1733,150 @@ class ToolBar extends Component {
             </div>
           </div>
         </Drawer>
-        <Drawer open={this.state.displayEnrichment}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={this.handleCloseEnrichment.bind(this)}>
+        <Drawer
+          open={this.state.displayEnrichment}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseEnrichment.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label="Close"
-                        className={classes.closeButton}
-                        onClick={this.handleCloseEnrichment.bind(this)}
-                        size="large"
-                        color="primary">
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleCloseEnrichment.bind(this)}
+              size="large"
+              color="primary"
+            >
               <CloseOutlined fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Entity enrichment')}</Typography>
           </div>
           <div className={classes.container}>
-            <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
+            <Typography
+              variant="h4"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
               {t('Selected connectors')}
             </Typography>
             <List>
-              {this.state.enrichConnectors.length === 0 && <Alert severity="warning">
-                {t('No connector available for the selected entities.')}
-              </Alert>}
+              {this.state.enrichConnectors.length === 0 && (
+                <Alert severity="warning">
+                  {t('No connector available for the selected entities.')}
+                </Alert>
+              )}
               {this.state.enrichConnectors.map((connector) => (
-                  <ListItem key={connector.id} dense={true} divider={true}>
-                    <ListItemIcon>
-                      <CloudRefresh />
-                    </ListItemIcon>
-                    <ListItemText primary={connector.name}/>
-                    <ListItemSecondaryAction>
-                      <MuiSwitch checked={this.state.enrichSelected.includes(connector.id)}
-                          onChange={this.handleChangeEnrichSelected.bind(this, connector.id)}
-                          inputProps={{ 'aria-label': 'controlled' }}
-                      />
-                    </ListItemSecondaryAction>
-                  </ListItem>
+                <ListItem key={connector.id} dense={true} divider={true}>
+                  <ListItemIcon>
+                    <CloudRefresh />
+                  </ListItemIcon>
+                  <ListItemText primary={connector.name} />
+                  <ListItemSecondaryAction>
+                    <MuiSwitch
+                      checked={this.state.enrichSelected.includes(connector.id)}
+                      onChange={this.handleChangeEnrichSelected.bind(
+                        this,
+                        connector.id,
+                      )}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                  </ListItemSecondaryAction>
+                </ListItem>
               ))}
             </List>
             <div className={classes.buttons}>
-              <Button variant="contained"
-                      disabled={this.state.enrichConnectors.length === 0
-                          || this.state.enrichSelected.length === 0}
-                      color="secondary"
-                      onClick={this.handleLaunchEnrichment.bind(this)}
-                      classes={{ root: classes.button }}>
+              <Button
+                variant="contained"
+                disabled={
+                  this.state.enrichConnectors.length === 0
+                  || this.state.enrichSelected.length === 0
+                }
+                color="secondary"
+                onClick={this.handleLaunchEnrichment.bind(this)}
+                classes={{ root: classes.button }}
+              >
                 {t('Enrich')}
               </Button>
             </div>
           </div>
         </Drawer>
-        <Drawer open={this.state.displayPromote}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={this.handleClosePromote.bind(this)}>
+        <Drawer
+          open={this.state.displayPromote}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClosePromote.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label="Close"
-                className={classes.closeButton}
-                onClick={this.handleClosePromote.bind(this)}
-                size="large"
-                color="primary">
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClosePromote.bind(this)}
+              size="large"
+              color="primary"
+            >
               <CloseOutlined fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t('Observables and indicators conversion')}</Typography>
+            <Typography variant="h6">
+              {t('Observables and indicators conversion')}
+            </Typography>
           </div>
           <div className={classes.container}>
-            { !observablesFiltered && <div>
-              <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
-                {t('Indicators')}
-              </Typography>
-              <Alert severity="warning" style={{ marginTop: 20 }}>
-                {t('This action will generate observables from the selected indicators.')}
-              </Alert>
-            </div> }
-            { observablesFiltered && <div>
-              <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
-                {t('Observables')}
-              </Typography>
-              <Alert severity="warning" style={{ marginTop: 20 }}>
-                {t('This action will generate STIX patterns indicators from the selected observables.')}
-              </Alert>
-            </div> }
+            {!observablesFiltered && (
+              <div>
+                <Typography
+                  variant="h4"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Indicators')}
+                </Typography>
+                <Alert severity="warning" style={{ marginTop: 20 }}>
+                  {t(
+                    'This action will generate observables from the selected indicators.',
+                  )}
+                </Alert>
+              </div>
+            )}
+            {observablesFiltered && (
+              <div>
+                <Typography
+                  variant="h4"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Observables')}
+                </Typography>
+                <Alert severity="warning" style={{ marginTop: 20 }}>
+                  {t(
+                    'This action will generate STIX patterns indicators from the selected observables.',
+                  )}
+                </Alert>
+              </div>
+            )}
             <div className={classes.buttons}>
-              <Button variant="contained"
-                  color="secondary"
-                  onClick={this.handleLaunchPromote.bind(this)}
-                  classes={{ root: classes.button }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={this.handleLaunchPromote.bind(this)}
+                classes={{ root: classes.button }}
+              >
                 {t('Generate')}
               </Button>
             </div>
           </div>
         </Drawer>
-        <Drawer open={this.state.displayRescan}
+        <Drawer
+          open={this.state.displayRescan}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseRescan.bind(this)}>
+          onClose={this.handleCloseRescan.bind(this)}
+        >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
@@ -1819,14 +1890,23 @@ class ToolBar extends Component {
             <Typography variant="h6">{t('Rule entity rescan')}</Typography>
           </div>
           <div className={classes.container}>
-            <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
+            <Typography
+              variant="h4"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
               {t('Selected rules')}
             </Typography>
             <Alert severity="warning" style={{ marginTop: 20 }}>
               {t('Element will be rescan with all compatible activated rules')}
             </Alert>
             <div className={classes.buttons}>
-              <Button variant="contained" color="secondary" onClick={this.handleLaunchRescan.bind(this)} classes={{ root: classes.button }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={this.handleLaunchRescan.bind(this)}
+                classes={{ root: classes.button }}
+              >
                 {t('Rescan')}
               </Button>
             </div>

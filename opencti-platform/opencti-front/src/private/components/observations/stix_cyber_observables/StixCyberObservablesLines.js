@@ -127,11 +127,22 @@ export const stixCyberObservablesLinesQuery = graphql`
 `;
 
 export const stixCyberObservablesLinesSearchQuery = graphql`
-  query StixCyberObservablesLinesSearchQuery($search: String) {
-    stixCyberObservables(search: $search) {
+  query StixCyberObservablesLinesSearchQuery(
+    $types: [String]
+    $search: String
+    $filters: [StixCyberObservablesFiltering]
+    $count: Int
+  ) {
+    stixCyberObservables(
+      types: $types
+      search: $search
+      filters: $filters
+      first: $count
+    ) {
       edges {
         node {
           id
+          standard_id
           entity_type
           observable_value
           created_at
@@ -171,6 +182,7 @@ export default createPaginationContainer(
           edges {
             node {
               id
+              standard_id
               entity_type
               observable_value
               created_at

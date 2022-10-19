@@ -11,6 +11,8 @@ export const identitySearchIdentitiesSearchQuery = graphql`
       edges {
         node {
           id
+          standard_id
+          identity_class
           name
           entity_type
         }

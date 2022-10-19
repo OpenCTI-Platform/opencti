@@ -11,12 +11,9 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import {
-  dateAttributes,
-  ignoredAttributes,
-} from './StixCyberObservableCreation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
+import { dateAttributes, ignoredAttributes } from '../../../../utils/Entity';
 
 const styles = () => ({
   paper: {

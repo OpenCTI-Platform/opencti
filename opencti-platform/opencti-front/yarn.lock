@@ -2442,7 +2442,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jest/environment@npm:^29.2.0":
+"@jest/environment@npm:^29.1.2, @jest/environment@npm:^29.2.0":
   version: 29.2.0
   resolution: "@jest/environment@npm:29.2.0"
   dependencies:
@@ -2473,7 +2473,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jest/fake-timers@npm:^29.2.0":
+"@jest/fake-timers@npm:^29.1.2, @jest/fake-timers@npm:^29.2.0":
   version: 29.2.0
   resolution: "@jest/fake-timers@npm:29.2.0"
   dependencies:
@@ -3141,7 +3141,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/react@npm:^13.4.0":
+"@testing-library/react@npm:13.4.0":
   version: 13.4.0
   resolution: "@testing-library/react@npm:13.4.0"
   dependencies:
@@ -3580,7 +3580,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-test-renderer@npm:^18.0.0":
+"@types/react-test-renderer@npm:18.0.0":
   version: 18.0.0
   resolution: "@types/react-test-renderer@npm:18.0.0"
   dependencies:
@@ -3627,7 +3627,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-test-utils@npm:^14.1.0":
+"@types/relay-test-utils@npm:14.1.0":
   version: 14.1.0
   resolution: "@types/relay-test-utils@npm:14.1.0"
   dependencies:
@@ -9983,24 +9983,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-environment-jsdom@npm:^29.1.2":
-  version: 29.2.0
-  resolution: "jest-environment-jsdom@npm:29.2.0"
+"jest-environment-jsdom@npm:29.1.2":
+  version: 29.1.2
+  resolution: "jest-environment-jsdom@npm:29.1.2"
   dependencies:
-    "@jest/environment": ^29.2.0
-    "@jest/fake-timers": ^29.2.0
-    "@jest/types": ^29.2.0
+    "@jest/environment": ^29.1.2
+    "@jest/fake-timers": ^29.1.2
+    "@jest/types": ^29.1.2
     "@types/jsdom": ^20.0.0
     "@types/node": "*"
-    jest-mock: ^29.2.0
-    jest-util: ^29.2.0
+    jest-mock: ^29.1.2
+    jest-util: ^29.1.2
     jsdom: ^20.0.0
-  peerDependencies:
-    canvas: ^2.5.0
-  peerDependenciesMeta:
-    canvas:
-      optional: true
-  checksum: 401f37f74c14a5c49775441b415fad6015a695b152d44a6587b9af85a5e0448768bf2595a59a46b410d068e70354911acea72bfbe0b44473dce3f59b68e8467d
+  checksum: 75737ab504fe6a2ed4e4973724deca46176b80380e4e5b040c8e318af56e31d5ab9679e4a2dd1a1e2a27ca6009312f9a12309c9433d645e3ec09354f52b0e287
   languageName: node
   linkType: hard
 
@@ -10112,7 +10107,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-mock@npm:^29.2.0":
+"jest-mock@npm:^29.1.2, jest-mock@npm:^29.2.0":
   version: 29.2.0
   resolution: "jest-mock@npm:29.2.0"
   dependencies:
@@ -10291,7 +10286,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-util@npm:^29.2.0":
+"jest-util@npm:^29.1.2, jest-util@npm:^29.2.0":
   version: 29.2.0
   resolution: "jest-util@npm:29.2.0"
   dependencies:
@@ -12516,7 +12511,7 @@ __metadata:
     "@mui/styles": 5.10.9
     "@mui/utils": 5.10.9
     "@mui/x-date-pickers": 5.0.4
-    "@testing-library/react": ^13.4.0
+    "@testing-library/react": 13.4.0
     "@types/jest": 29.1.2
     "@types/node": 18.8.5
     "@types/ramda": 0.28.15
@@ -12524,8 +12519,8 @@ __metadata:
     "@types/react-dom": 18.0.6
     "@types/react-relay": 14.1.2
     "@types/react-router-dom": 5.3.3
-    "@types/react-test-renderer": ^18.0.0
-    "@types/relay-test-utils": ^14.1.0
+    "@types/react-test-renderer": 18.0.0
+    "@types/relay-test-utils": 14.1.0
     apexcharts: 3.36.0
     axios: 1.1.2
     chokidar: 3.5.3
@@ -12556,7 +12551,7 @@ __metadata:
     html-to-pdfmake: 2.4.8
     http-proxy-middleware: 2.0.6
     jest: 29.1.2
-    jest-environment-jsdom: ^29.1.2
+    jest-environment-jsdom: 29.1.2
     js-file-download: 0.4.12
     leaflet: 1.9.2
     lodash: 4.17.21
@@ -12587,18 +12582,18 @@ __metadata:
     react-relay-network-modern: 6.2.1
     react-router-dom: 5.3.4
     react-router-dom-v5-compat: 6.4.2
-    react-test-renderer: ^18.2.0
+    react-test-renderer: 18.2.0
     react-timeline-range-slider: 1.4.1
     react-virtualized: 9.22.3
     recharts: 2.1.15
     relay-compiler: 14.1.0
     relay-runtime: 14.1.0
-    relay-test-utils: ^14.1.0
+    relay-test-utils: 14.1.0
     remark-gfm: 3.0.1
     remark-parse: 10.0.1
     rxjs: 7.5.7
     subscriptions-transport-ws: 0.11.0
-    tap: ^16.3.0
+    tap: 16.3.0
     three-spritetext: 1.6.5
     typeface-ibm-plex-sans: 1.1.13
     typeface-roboto: 1.1.13
@@ -14145,7 +14140,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-test-renderer@npm:^18.2.0":
+"react-test-renderer@npm:18.2.0":
   version: 18.2.0
   resolution: "react-test-renderer@npm:18.2.0"
   dependencies:
@@ -14527,7 +14522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"relay-test-utils@npm:^14.1.0":
+"relay-test-utils@npm:14.1.0":
   version: 14.1.0
   resolution: "relay-test-utils@npm:14.1.0"
   dependencies:
@@ -15950,7 +15945,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tap@npm:^16.3.0":
+"tap@npm:16.3.0":
   version: 16.3.0
   resolution: "tap@npm:16.3.0"
   dependencies:

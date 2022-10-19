@@ -1678,6 +1678,7 @@ enum StixDomainObjectsFilter {
   entity_type
   aliases
   x_opencti_aliases
+  x_mitre_id
   created
   modified
   created_at
@@ -5451,6 +5452,7 @@ enum StixCyberObservablesFilter {
   sightedBy
   value
   name
+  subject
   confidence
   hashes_MD5
   hashes_SHA1

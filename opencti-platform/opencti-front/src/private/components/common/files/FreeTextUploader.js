@@ -103,14 +103,14 @@ class FreeTextUploader extends Component {
   }
 
   render() {
-    const { t, color } = this.props;
+    const { t, color, size } = this.props;
     return (
       <React.Fragment>
         <Tooltip title={t('Copy/paste text content')}>
           <IconButton
             onClick={this.handleOpen.bind(this)}
             color={color || 'primary'}
-            size="large"
+            size={size || 'large'}
           >
             <TextFieldsOutlined />
           </IconButton>

@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import { Extension } from '@mui/icons-material';
+import { AddOutlined, Extension } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
@@ -22,6 +22,8 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
+import { v4 as uuid } from 'uuid';
+import IconButton from '@mui/material/IconButton';
 import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import {
@@ -32,8 +34,9 @@ import FileLine from '../common/files/FileLine';
 import inject18n from '../../../components/i18n';
 import FileUploader from '../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
-import PendingFileLine from '../common/files/PendingFileLine';
+import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
+import TextField from '../../../components/TextField';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -53,6 +56,7 @@ const styles = (theme) => ({
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
     borderRadius: 6,
+    marginTop: 2,
   },
   item: {
     paddingLeft: 10,
@@ -88,7 +92,7 @@ export const importContentQuery = graphql`
       edges {
         node {
           id
-          ...PendingFileLine_file
+          ...WorkbenchFileLine_file
           metaData {
             mimetype
           }
@@ -98,14 +102,31 @@ export const importContentQuery = graphql`
   }
 `;
 
+const importContentMutation = graphql`
+  mutation ImportContentMutation($file: Upload!) {
+    uploadPending(file: $file) {
+      id
+      ...FileLine_file
+    }
+  }
+`;
+
 const importValidation = (t) => Yup.object().shape({
   connector_id: Yup.string().required(t('This field is required')),
+});
+
+const fileValidation = (t) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
 });
 
 class ImportContentComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { fileToImport: null, fileToValidate: null };
+    this.state = {
+      fileToImport: null,
+      fileToValidate: null,
+      displayCreate: false,
+    };
   }
 
   componentDidMount() {
@@ -132,6 +153,14 @@ class ImportContentComponent extends Component {
 
   handleCloseValidate() {
     this.setState({ fileToValidate: null });
+  }
+
+  handleOpenCreate() {
+    this.setState({ displayCreate: true });
+  }
+
+  handleCloseCreate() {
+    this.setState({ displayCreate: false });
   }
 
   onSubmitImport(values, { setSubmitting, resetForm }) {
@@ -167,6 +196,34 @@ class ImportContentComponent extends Component {
     });
   }
 
+  onSubmitCreate(values, { setSubmitting, resetForm }) {
+    let { name } = values;
+    if (!name.endsWith('.json')) {
+      name += '.json';
+    }
+    const data = { id: `bundle--${uuid()}`, type: 'bundle', objects: [] };
+    const json = JSON.stringify(data);
+    const blob = new Blob([json], { type: 'text/json' });
+    const file = new File([blob], name, {
+      type: 'application/json',
+    });
+    commitMutation({
+      mutation: importContentMutation,
+      variables: { file },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        this.handleCloseCreate();
+        this.props.relay.refetch();
+      },
+    });
+  }
+
+  onResetCreate() {
+    this.handleCloseCreate();
+  }
+
   render() {
     const {
       classes,
@@ -179,7 +236,7 @@ class ImportContentComponent extends Component {
     } = this.props;
     const { edges: importFilesEdges } = importFiles;
     const { edges: pendingFilesEdges } = pendingFiles;
-    const { fileToImport, fileToValidate } = this.state;
+    const { fileToImport, fileToValidate, displayCreate } = this.state;
     const connectors = R.filter((n) => !n.only_contextual, connectorsImport);
     const importConnsPerFormat = scopesConn(connectors);
     return (
@@ -196,7 +253,7 @@ class ImportContentComponent extends Component {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 10 }}
+          style={{ marginTop: 0 }}
         >
           <Grid item={true} xs={8}>
             <div style={{ height: '100%' }} className="break">
@@ -207,9 +264,15 @@ class ImportContentComponent extends Component {
               >
                 {t('Uploaded files')}
               </Typography>
-              <div style={{ float: 'left', marginTop: -17 }}>
-                <FileUploader onUploadSuccess={() => relay.refetch()} />
-                <FreeTextUploader onUploadSuccess={() => relay.refetch()} />
+              <div style={{ float: 'left', marginTop: -15 }}>
+                <FileUploader
+                  onUploadSuccess={() => relay.refetch()}
+                  size="medium"
+                />
+                <FreeTextUploader
+                  onUploadSuccess={() => relay.refetch()}
+                  size="medium"
+                />
               </div>
               <div className="clearfix" />
               <Paper classes={{ root: classes.paper }} variant="outlined">
@@ -251,7 +314,7 @@ class ImportContentComponent extends Component {
             <Paper
               classes={{ root: classes.paper }}
               variant="outlined"
-              style={{ marginTop: 15 }}
+              style={{ marginTop: 12 }}
             >
               {connectors.length ? (
                 <List>
@@ -305,25 +368,29 @@ class ImportContentComponent extends Component {
               )}
             </Paper>
           </Grid>
-          <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+          <Grid item={true} xs={12} style={{ marginTop: 40 }}>
             <div style={{ height: '100%' }} className="break">
               <Typography
                 variant="h4"
                 gutterBottom={true}
                 style={{ float: 'left' }}
               >
-                {t('Pending files')}
+                {t('Analyst workbenches')}
               </Typography>
+              <div style={{ float: 'left', marginTop: -15 }}>
+                <IconButton
+                  onClick={this.handleOpenCreate.bind(this)}
+                  color="primary"
+                >
+                  <AddOutlined />
+                </IconButton>
+              </div>
               <div className="clearfix" />
-              <Paper
-                classes={{ root: classes.paper }}
-                variant="outlined"
-                style={{ marginTop: 10 }}
-              >
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 {pendingFilesEdges.length ? (
                   <List>
                     {pendingFilesEdges.map((file) => (
-                      <PendingFileLine
+                      <WorkbenchFileLine
                         key={file.node.id}
                         file={file.node}
                         connectors={
@@ -464,6 +531,48 @@ class ImportContentComponent extends Component {
                       {t('Cancel')}
                     </Button>
                     <Button
+                      color="secondary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                    >
+                      {t('Create')}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Form>
+            )}
+          </Formik>
+          <Formik
+            enableReinitialize={true}
+            initialValues={{ name: '' }}
+            validationSchema={fileValidation(t)}
+            onSubmit={this.onSubmitCreate.bind(this)}
+            onReset={this.onResetCreate.bind(this)}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form>
+                <Dialog
+                  PaperProps={{ elevation: 1 }}
+                  open={displayCreate}
+                  onClose={this.handleCloseCreate.bind(this)}
+                  fullWidth={true}
+                >
+                  <DialogTitle>{t('Create a workbench')}</DialogTitle>
+                  <DialogContent>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="name"
+                      label={t('Name')}
+                      fullWidth={true}
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleReset} disabled={isSubmitting}>
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      type="submit"
                       color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}

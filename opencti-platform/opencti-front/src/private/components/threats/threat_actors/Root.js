@@ -30,7 +30,7 @@ const subscription = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
-      ...FilePendingViewer_entity
+      ...WorkbenchFileViewer_entity
     }
   }
 `;
@@ -48,7 +48,7 @@ const threatActorQuery = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
-      ...FilePendingViewer_entity
+      ...WorkbenchFileViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport

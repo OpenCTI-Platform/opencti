@@ -34,7 +34,7 @@ import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
-import FilePendingViewer from './FilePendingViewer';
+import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 
 const styles = () => ({
   container: {
@@ -217,7 +217,7 @@ const FileManager = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
-        <FilePendingViewer
+        <WorkbenchFileViewer
           entity={entity}
           handleOpenImport={handleOpenImport}
         />

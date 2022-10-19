@@ -25,6 +25,8 @@ export const objectMarkingFieldAllowedMarkingsQuery = graphql`
     me {
       allowed_marking {
         id
+        entity_type
+        standard_id
         definition_type
         definition
         x_opencti_color
@@ -44,6 +46,7 @@ class ObjectMarkingField extends Component {
             label: n.definition,
             value: n.id,
             color: n.x_opencti_color,
+            entity: n,
           }),
           defaultMarkingDefinitions,
         )
@@ -61,6 +64,7 @@ class ObjectMarkingField extends Component {
             label: n.definition,
             value: n.id,
             color: n.x_opencti_color,
+            entity: n,
           })),
         )(data);
         this.setState({ markingDefinitions });

@@ -26,7 +26,10 @@ export const adaptFieldValue = (value) => {
 
 export const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
 
-export const convertStixType = (s) => {
+export const convertFromStixType = (s) => {
+  if (!s) {
+    return s;
+  }
   let type = pascalize(s);
   if (type.includes('Opencti')) {
     type = type.replaceAll('Opencti', 'OpenCTI');
@@ -38,6 +41,22 @@ export const convertStixType = (s) => {
     return 'StixFile';
   }
   return type;
+};
+
+export const convertToStixType = (type) => {
+  if (!type) {
+    return type;
+  }
+  if (type === 'Stixfile') {
+    return 'file';
+  }
+  if (['Sector', 'Organization', 'Individual', 'System'].includes(type)) {
+    return 'identity';
+  }
+  if (['Region', 'Country', 'City', 'Position'].includes(type)) {
+    return 'location';
+  }
+  return type.toLowerCase();
 };
 
 export const isValidStixBundle = (bundle) => {
@@ -52,3 +71,5 @@ export const isValidStixBundle = (bundle) => {
 export const toB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 
 export const fromB64 = (str) => decodeURIComponent(escape(window.atob(str)));
+
+export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));

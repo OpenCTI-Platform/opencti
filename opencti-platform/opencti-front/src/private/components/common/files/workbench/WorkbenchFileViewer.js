@@ -8,9 +8,9 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
-import { TEN_SECONDS } from '../../../../utils/Time';
-import inject18n from '../../../../components/i18n';
-import PendingFileLine from './PendingFileLine';
+import { TEN_SECONDS } from '../../../../../utils/Time';
+import inject18n from '../../../../../components/i18n';
+import WorkbenchFileLine from './WorkbenchFileLine';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -19,12 +19,12 @@ const styles = () => ({
     height: '100%',
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
-    marginTop: 13,
+    marginTop: 8,
     borderRadius: 6,
   },
 });
 
-const FilePendingViewerBase = ({
+const WorkbenchFileViewerBase = ({
   entity,
   disableImport,
   handleOpenImport,
@@ -49,14 +49,14 @@ const FilePendingViewerBase = ({
     <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Pending files')}
+          {t('Analyst workbenches')}
         </Typography>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {edges.length ? (
             <List>
               {edges.map((file) => (
-                <PendingFileLine
+                <WorkbenchFileLine
                   key={file.node.id}
                   dense={true}
                   disableImport={isContainer || disableImport}
@@ -87,31 +87,31 @@ const FilePendingViewerBase = ({
   );
 };
 
-const FilePendingViewerComponent = compose(
+const WorkbenchFileViewerComponent = compose(
   inject18n,
   withStyles(styles),
-)(FilePendingViewerBase);
+)(WorkbenchFileViewerBase);
 
-const FilePendingViewerRefetchQuery = graphql`
-  query FilePendingViewerRefetchQuery($id: String!) {
+const WorkbenchFileViewerRefetchQuery = graphql`
+  query WorkbenchFileViewerRefetchQuery($id: String!) {
     stixCoreObject(id: $id) {
-      ...FilePendingViewer_entity
+      ...WorkbenchFileViewer_entity
     }
   }
 `;
 
-const FilePendingViewer = createRefetchContainer(
-  FilePendingViewerComponent,
+const WorkbenchFileViewer = createRefetchContainer(
+  WorkbenchFileViewerComponent,
   {
     entity: graphql`
-      fragment FilePendingViewer_entity on StixCoreObject {
+      fragment WorkbenchFileViewer_entity on StixCoreObject {
         id
         entity_type
         pendingFiles(first: 1000) @connection(key: "Pagination_pendingFiles") {
           edges {
             node {
               id
-              ...PendingFileLine_file
+              ...WorkbenchFileLine_file
               metaData {
                 mimetype
               }
@@ -121,13 +121,13 @@ const FilePendingViewer = createRefetchContainer(
       }
     `,
   },
-  FilePendingViewerRefetchQuery,
+  WorkbenchFileViewerRefetchQuery,
 );
 
-FilePendingViewer.propTypes = {
+WorkbenchFileViewer.propTypes = {
   entity: PropTypes.object,
   disableImport: PropTypes.bool,
   connectors: PropTypes.object,
 };
 
-export default FilePendingViewer;
+export default WorkbenchFileViewer;
