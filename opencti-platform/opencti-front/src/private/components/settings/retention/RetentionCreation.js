@@ -235,7 +235,7 @@ const RetentionCreation = (props) => {
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({ submitForm, handleReset, isSubmitting, values }) => (
+            {({ submitForm, handleReset, isSubmitting, values: formValues }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -261,10 +261,10 @@ const RetentionCreation = (props) => {
                       'markedBy',
                       'labelledBy',
                       'createdBy',
-                      'x_opencti_score_gt',
+                      'x_opencti_score',
                       'x_opencti_detection',
                       'revoked',
-                      'confidence_gt',
+                      'confidence',
                       'pattern_type',
                     ]}
                     currentFilters={[]}
@@ -279,7 +279,7 @@ const RetentionCreation = (props) => {
                       t(`filter_${currentFilter[0]}`),
                       20,
                     )}`;
-                    const filterValues = (
+                    const values = (
                       <span>
                         {R.map(
                           (n) => (
@@ -302,7 +302,7 @@ const RetentionCreation = (props) => {
                           classes={{ root: classes.filter }}
                           label={
                             <div>
-                              <strong>{label}</strong>: {filterValues}
+                              <strong>{label}</strong>: {values}
                             </div>
                           }
                           onDelete={() => handleRemoveFilter(currentFilter[0])}
@@ -330,7 +330,7 @@ const RetentionCreation = (props) => {
                   <Button
                     variant="contained"
                     color="secondary"
-                    onClick={() => handleVerify(values)}
+                    onClick={() => handleVerify(formValues)}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >

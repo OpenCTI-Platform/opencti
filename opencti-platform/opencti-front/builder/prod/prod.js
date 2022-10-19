@@ -11,7 +11,7 @@ esbuild
   .build({
     logLevel: "info",
     plugins: [RelayPlugin],
-    entryPoints: ["src/index.tsx"],
+    entryPoints: ["src/front.tsx"],
     publicPath: '/',
     bundle: true,
     loader: {

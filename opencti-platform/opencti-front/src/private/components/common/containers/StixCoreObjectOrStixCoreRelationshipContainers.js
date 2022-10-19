@@ -259,7 +259,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             availableFilterKeys={[
               'report_types',
               'container_type',
-              'confidence_gt',
+              'confidence',
               'x_opencti_workflow_id',
               'labelledBy',
               'createdBy',

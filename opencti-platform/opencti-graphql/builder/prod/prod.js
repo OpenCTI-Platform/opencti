@@ -8,7 +8,7 @@ esbuild.build({
     define: {'process.env.NODE_ENV': '\"production\"'},
     plugins: [importGlobPlugin(), graphqlLoaderPlugin(), nativeNodePlugin()],
     entryPoints: [
-        'src/index.js',
+        'src/back.js',
         'script/script-clean-relations.js'
     ],
     entryNames: "[name]",

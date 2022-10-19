@@ -26,7 +26,7 @@ esbuild
   .build({
     logLevel: "info",
     plugins: [RelayPlugin],
-    entryPoints: ["src/index.tsx"],
+    entryPoints: ["src/front.tsx"],
     publicPath: "/",
     bundle: true,
     banner: {
@@ -45,7 +45,7 @@ esbuild
     target: ["chrome58"],
     minify: false,
     keepNames: true,
-    sourcemap: true,
+    sourcemap: 'inline',
     sourceRoot: "src",
     outdir: "builder/dev/build",
     incremental: true,

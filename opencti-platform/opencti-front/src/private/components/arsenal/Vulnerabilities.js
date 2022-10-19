@@ -153,7 +153,7 @@ class Vulnerabilities extends Component {
           'markedBy',
           'created_start_date',
           'created_end_date',
-          'x_opencti_base_score_gt',
+          'x_opencti_base_score',
           'x_opencti_base_severity',
           'x_opencti_attack_vector',
           'createdBy',

@@ -237,10 +237,10 @@ const StreamCollectionCreation = (props) => {
                       'markedBy',
                       'labelledBy',
                       'createdBy',
-                      'x_opencti_score_gt',
+                      'x_opencti_score',
                       'x_opencti_detection',
                       'revoked',
-                      'confidence_gt',
+                      'confidence',
                       'pattern_type',
                     ]}
                     handleAddFilter={handleAddFilter}

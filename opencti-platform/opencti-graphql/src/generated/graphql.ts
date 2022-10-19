@@ -1687,6 +1687,7 @@ export type ContainerEditMutationsRelationDeleteArgs = {
 export enum ContainersFilter {
   AttributeAbstract = 'attribute_abstract',
   Authors = 'authors',
+  Confidence = 'confidence',
   Content = 'content',
   Created = 'created',
   CreatedBy = 'createdBy',

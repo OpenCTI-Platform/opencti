@@ -2048,6 +2048,7 @@ enum ContainersOrdering {
 
 enum ContainersFilter {
   entity_type
+  confidence
   attribute_abstract
   report_types
   content

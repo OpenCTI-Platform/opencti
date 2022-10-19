@@ -146,7 +146,7 @@ class Search extends Component {
               'markedBy',
               'labelledBy',
               'createdBy',
-              'confidence_gt',
+              'confidence',
               'x_opencti_organization_type',
               'created_start_date',
               'created_end_date',
