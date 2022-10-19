@@ -9,11 +9,12 @@ extend type Query {
   end date and time.
   """
   assetsCount(
-    field: String!
+    type: String
+    field: String
     match: [String]
     operation: StatsOperation
     endDate: DateTime
-  ): Number
+  ): Number  @hasPermission(resources: ["Knowledge:view","Explore:view"])
   """
   Retrieves the total number of assets that were created between the
   start and end date that match the filter, and buckets the counts 
@@ -28,6 +29,20 @@ extend type Query {
     endDate: DateTime!
     interval: Interval!
   ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  """
+  Retrieves the total number of assets that were created between the
+  start and end date that match the filter, and returns only as many
+  as the limit specifies
+  """
+  assetsDistribution(
+    objectId: ID
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    limit: Int
+  ): [CyioDistribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
 
 
   # Risk dashboard query support
@@ -37,13 +52,12 @@ extend type Query {
   end date and time.
   """
   risksCount(
-    "field on which to match risk"
+    type: String
     field: String!
-    "list of value(s) that the specified field must match at least one"
     match: [String]
     operation: StatsOperation
     endDate: DateTime!
-  ): Number
+  ): Number  @hasPermission(resources: ["Knowledge:view","Explore:view"])
   """
   Retrieves the total number of risks that were created between the
   start and end date that match the filter, and buckets the counts 
