@@ -929,6 +929,8 @@ export const workbenchAttributes = [
   'x_opencti_description',
   'first_seen',
   'last_seen',
+  'start_time',
+  'stop_time',
   'published',
   'content',
 ];
@@ -963,6 +965,8 @@ export const dateAttributes = [
   'first_seen',
   'last_seen',
   'published',
+  'start_time',
+  'stop_time',
 ];
 
 export const numberAttributes = [

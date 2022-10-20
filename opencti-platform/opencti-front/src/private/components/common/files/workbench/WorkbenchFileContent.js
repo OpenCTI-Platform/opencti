@@ -519,6 +519,95 @@ class WorkbenchFileContentComponent extends Component {
     });
   }
 
+  onSubmitApplyMarking(values) {
+    const markingDefinitions = R.pluck('entity', values.objectMarking).map(
+      (n) => ({
+        ...n,
+        id: n.standard_id || n.id,
+        type: 'marking-definition',
+      }),
+    );
+    const {
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+      currentTab,
+      stixDomainObjects,
+      stixCyberObservables,
+      stixCoreRelationships,
+      containers,
+    } = this.state;
+    let objects = [];
+    if (currentTab === 0) {
+      objects = stixDomainObjects;
+    } else if (currentTab === 1) {
+      objects = stixCyberObservables;
+    } else if (currentTab === 2) {
+      objects = stixCoreRelationships;
+    } else if (currentTab === 3) {
+      objects = containers;
+    }
+    let objectsToBeProcessed;
+    if (selectAll) {
+      objectsToBeProcessed = objects.filter(
+        (n) => !Object.keys(deSelectedElements || {}).includes(n.id),
+      );
+    } else {
+      objectsToBeProcessed = objects.filter((n) => Object.keys(selectedElements || {}).includes(n.id));
+    }
+    let finalStixDomainObjects = stixDomainObjects;
+    let finalStixCyberObservables = stixCyberObservables;
+    let finalStixCoreRelationships = stixCoreRelationships;
+    let finalContainers = containers;
+    if (currentTab === 0) {
+      finalStixDomainObjects = objectsToBeProcessed.map((n) => R.assoc(
+        'object_marking_refs',
+        R.uniq([
+          ...(n.object_marking_refs || []),
+          ...markingDefinitions.map((o) => o.id),
+        ]),
+        n,
+      ));
+    } else if (currentTab === 1) {
+      finalStixCyberObservables = objectsToBeProcessed.map((n) => R.assoc(
+        'object_marking_refs',
+        R.uniq([
+          ...(n.object_marking_refs || []),
+          ...markingDefinitions.map((o) => o.id),
+        ]),
+        n,
+      ));
+    } else if (currentTab === 2) {
+      finalStixCoreRelationships = objectsToBeProcessed.map((n) => R.assoc(
+        'object_marking_refs',
+        R.uniq([
+          ...(n.object_marking_refs || []),
+          ...markingDefinitions.map((o) => o.id),
+        ]),
+        n,
+      ));
+    } else if (currentTab === 3) {
+      finalContainers = objectsToBeProcessed.map((n) => R.assoc(
+        'object_marking_refs',
+        R.uniq([
+          ...(n.object_marking_refs || []),
+          ...markingDefinitions.map((o) => o.id),
+        ]),
+        n,
+      ));
+    }
+    this.setState({
+      stixDomainObjects: R.uniqBy(R.prop('id'), [
+        ...finalStixDomainObjects,
+        ...markingDefinitions,
+      ]),
+      stixCyberObservables: finalStixCyberObservables,
+      stixCoreRelationships: finalStixCoreRelationships,
+      containers: finalContainers,
+    });
+    this.saveFile();
+  }
+
   reverseBy(field) {
     this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
   }
@@ -2620,7 +2709,7 @@ class WorkbenchFileContentComponent extends Component {
       ),
       containerSelectAll:
         (container.object_refs || []).length
-        === Object.keys(indexedStixObjects).length,
+        >= Object.keys(indexedStixObjects).length,
       containerStep: 1,
     });
     this.saveFile();
@@ -3120,7 +3209,7 @@ class WorkbenchFileContentComponent extends Component {
                                     'hashes_SHA1',
                                     'hashes_SHA256',
                                   ],
-                                  values: [object.default_value || 'Unknown'],
+                                  values: [object.default_value],
                                 },
                               ],
                               count: 1,
@@ -3236,6 +3325,8 @@ class WorkbenchFileContentComponent extends Component {
         source_ref_name: defaultValue(indexedStixObjects[n.source_ref] || {}),
         target_ref_name: defaultValue(indexedStixObjects[n.target_ref] || {}),
       }),
+      source_ref_name: defaultValue(indexedStixObjects[n.source_ref] || {}),
+      target_ref_name: defaultValue(indexedStixObjects[n.target_ref] || {}),
       markings: this.resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3276,98 +3367,83 @@ class WorkbenchFileContentComponent extends Component {
                   {this.SortHeader('default_value', 'Default value', true)}
                   {this.SortHeader('labels', 'Labels', true)}
                   {this.SortHeader('markings', 'Marking definitions', true)}
-                  {this.SortHeader('in_platform', 'Already in plat.', true)}
                 </div>
               }
             />
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
-          {sortedStixCoreRelationships.map((object) => {
-            const isInPlatform = true;
-            return (
-              <ListItem
-                key={object.id}
-                classes={{ root: classes.item }}
-                divider={true}
-                button={true}
-                onClick={this.handleOpenRelationship.bind(this, object.id)}
+          {sortedStixCoreRelationships.map((object) => (
+            <ListItem
+              key={object.id}
+              classes={{ root: classes.item }}
+              divider={true}
+              button={true}
+              onClick={this.handleOpenRelationship.bind(this, object.id)}
+            >
+              <ListItemIcon
+                classes={{ root: classes.itemIcon }}
+                style={{ minWidth: 40 }}
+                onClick={this.handleToggleSelectObject.bind(this, object)}
               >
-                <ListItemIcon
-                  classes={{ root: classes.itemIcon }}
-                  style={{ minWidth: 40 }}
-                  onClick={this.handleToggleSelectObject.bind(this, object)}
-                >
-                  <Checkbox
-                    edge="start"
-                    checked={
-                      (selectAll
-                        && !(object.id in (deSelectedElements || {})))
-                      || object.id in (selectedElements || {})
-                    }
-                    disableRipple={true}
-                  />
-                </ListItemIcon>
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon type={object.relationship_type} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.ttype}
-                      >
-                        {object.ttype}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.default_value}
-                      >
-                        {object.default_value || t('Unknown')}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.labels}
-                      >
-                        <StixItemLabels
-                          variant="inList"
-                          labels={object.labels || []}
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.markings}
-                      >
-                        <StixItemMarkings
-                          variant="inList"
-                          markingDefinitions={object.markings || []}
-                          limit={2}
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.in_platform}
-                      >
-                        <ItemBoolean
-                          variant="inList"
-                          status={isInPlatform}
-                          label={isInPlatform ? t('Yes') : t('No')}
-                        />
-                      </div>
-                    </div>
+                <Checkbox
+                  edge="start"
+                  checked={
+                    (selectAll && !(object.id in (deSelectedElements || {})))
+                    || object.id in (selectedElements || {})
                   }
+                  disableRipple={true}
                 />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    onClick={this.handleDeleteObject.bind(this, object)}
-                    aria-haspopup="true"
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            );
-          })}
+              </ListItemIcon>
+              <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ItemIcon type={object.relationship_type} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.ttype}
+                    >
+                      {object.ttype}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.default_value}
+                    >
+                      {object.default_value || t('Unknown')}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.labels}
+                    >
+                      <StixItemLabels
+                        variant="inList"
+                        labels={object.labels || []}
+                      />
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.markings}
+                    >
+                      <StixItemMarkings
+                        variant="inList"
+                        markingDefinitions={object.markings || []}
+                        limit={2}
+                      />
+                    </div>
+                  </div>
+                }
+              />
+              <ListItemSecondaryAction>
+                <IconButton
+                  onClick={this.handleDeleteObject.bind(this, object)}
+                  aria-haspopup="true"
+                >
+                  <DeleteOutlined />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
+          ))}
         </List>
         <Drawer
           open={relationshipId !== null}
@@ -3802,6 +3878,7 @@ class WorkbenchFileContentComponent extends Component {
             this,
           )}
           submitDelete={this.handleDeleteObjects.bind(this)}
+          submitApplyMarking={this.onSubmitApplyMarking.bind(this)}
         />
       </div>
     );

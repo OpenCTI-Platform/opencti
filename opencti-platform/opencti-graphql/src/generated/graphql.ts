@@ -13699,6 +13699,7 @@ export enum StixCoreRelationshipsFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   FromId = 'fromId',
+  FromName = 'fromName',
   FromTypes = 'fromTypes',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',

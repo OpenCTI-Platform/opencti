@@ -6,7 +6,11 @@ import withStyles from '@mui/styles/withStyles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import { ClearOutlined, DeleteOutlined } from '@mui/icons-material';
+import {
+  CenterFocusStrongOutlined,
+  ClearOutlined,
+  DeleteOutlined,
+} from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -14,7 +18,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Slide from '@mui/material/Slide';
+import { Form, Formik } from 'formik';
+import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../../components/i18n';
+import ObjectMarkingField from '../../form/ObjectMarkingField';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -98,7 +105,18 @@ class WorkbenchFileToolbar extends Component {
     super(props);
     this.state = {
       displayDelete: false,
+      displayApplyMarking: false,
     };
+  }
+
+  handleOpenApplyMarking() {
+    this.setState({ displayApplyMarking: true });
+  }
+
+  handleCloseApplyMarking() {
+    this.setState({
+      displayApplyMarking: false,
+    });
   }
 
   handleOpenDelete() {
@@ -111,6 +129,15 @@ class WorkbenchFileToolbar extends Component {
     });
   }
 
+  onSubmitApplyMarking(values) {
+    this.props.submitApplyMarking(values);
+    this.handleCloseApplyMarking();
+  }
+
+  onResetApplyMarking() {
+    this.handleCloseApplyMarking();
+  }
+
   render() {
     const {
       t,
@@ -120,8 +147,9 @@ class WorkbenchFileToolbar extends Component {
       submitDelete,
       theme,
     } = this.props;
-    const { displayDelete } = this.state;
+    const { displayDelete, displayApplyMarking } = this.state;
     const isOpen = numberOfSelectedElements > 0;
+    const initialValues = { objectMarking: [] };
     return (
       <Drawer
         anchor="bottom"
@@ -161,6 +189,14 @@ class WorkbenchFileToolbar extends Component {
           </Typography>
           <IconButton
             disabled={numberOfSelectedElements === 0}
+            onClick={this.handleOpenApplyMarking.bind(this)}
+            color="primary"
+            size="large"
+          >
+            <CenterFocusStrongOutlined />
+          </IconButton>
+          <IconButton
+            disabled={numberOfSelectedElements === 0}
             onClick={this.handleOpenDelete.bind(this)}
             color="primary"
             size="large"
@@ -168,6 +204,47 @@ class WorkbenchFileToolbar extends Component {
             <DeleteOutlined />
           </IconButton>
         </Toolbar>
+        <Dialog
+          open={displayApplyMarking}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseApplyMarking.bind(this)}
+          maxWidth="xs"
+          fullWidth={true}
+        >
+          <DialogTitle>{t('Apply marking definitions')}</DialogTitle>
+          <DialogContent>
+            <Formik
+              initialValues={initialValues}
+              onSubmit={this.onSubmitApplyMarking.bind(this)}
+              onReset={this.onResetApplyMarking.bind(this)}
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
+                <Form>
+                  <ObjectMarkingField name="objectMarking" />
+                  <div className={classes.buttons}>
+                    <Button
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Update')}
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </DialogContent>
+        </Dialog>
         <Dialog
           open={displayDelete}
           PaperProps={{ elevation: 1 }}
@@ -211,6 +288,7 @@ WorkbenchFileToolbar.propTypes = {
   search: PropTypes.string,
   handleClearSelectedElements: PropTypes.func,
   submitDelete: PropTypes.func,
+  submitApplyMarking: PropTypes.func,
 };
 
 export default R.compose(

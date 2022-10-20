@@ -87,6 +87,36 @@ const styles = (theme) => ({
   },
 });
 
+export const stixCoreRelationshipsListSearchQuery = graphql`
+  query StixCoreRelationshipsListSearchQuery(
+    $search: String
+    $fromId: [String]
+    $toId: [String]
+    $relationship_type: [String]
+    $count: Int!
+    $filters: [StixCoreRelationshipsFiltering]
+  ) {
+    stixCoreRelationships(
+      search: $search
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+      first: $count
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          standard_id
+          entity_type
+          parent_types
+          relationship_type
+        }
+      }
+    }
+  }
+`;
+
 const stixCoreRelationshipsListQuery = graphql`
   query StixCoreRelationshipsListQuery(
     $search: String

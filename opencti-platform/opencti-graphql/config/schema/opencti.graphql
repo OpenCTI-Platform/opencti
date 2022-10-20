@@ -8715,6 +8715,7 @@ enum StixCoreRelationshipsFilter {
   createdBy
   markedBy
   labelledBy
+  fromName
   toName
   toCreatedAt
   toPatternType
