@@ -7,7 +7,7 @@ import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import Index from './Index';
 import { UserContext } from '../utils/Security';
 import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
-import platformModuleHelper from '../utils/PlatformModulesHelper';
+import platformModuleHelper from '../utils/platformModulesHelper';
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {

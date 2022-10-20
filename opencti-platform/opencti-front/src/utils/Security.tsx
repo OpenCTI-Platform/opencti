@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useContext } from 'react';
 import { filter, includes } from 'ramda';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
-import { ModuleHelper } from './PlatformModulesHelper';
+import { ModuleHelper } from './platformModulesHelper';
 
 export interface UserContextType {
   me: RootPrivateQuery$data['me'] | undefined;
