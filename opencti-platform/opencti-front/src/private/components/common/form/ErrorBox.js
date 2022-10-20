@@ -64,6 +64,9 @@ class ErrorBox extends Component {
       if ((error.every((value) => value.type !== undefined && value.type.includes('CyioError')))) {
         return this.renderCyioError();
       }
+      else if (error.every((value) => value.name && value.name.includes('AuthRequired'))) {
+        return this.renderUnauthenticated();
+      }
       else if (error.every((value) => value.type.includes('BAD_USER_INPUT'))) {
         return this.renderBadUserInput();
       }
