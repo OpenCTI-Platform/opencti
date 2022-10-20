@@ -6930,9 +6930,9 @@ export enum MarkingDefinitionsOrdering {
 
 export type MeUser = BasicObject & InternalObject & {
   __typename?: 'MeUser';
-  allowed_marking?: Maybe<Array<Maybe<MarkingDefinition>>>;
+  allowed_marking?: Maybe<Array<MarkingDefinition>>;
   api_token: Scalars['String'];
-  capabilities: Array<Maybe<Capability>>;
+  capabilities: Array<Capability>;
   description?: Maybe<Scalars['String']>;
   entity_type: Scalars['String'];
   external?: Maybe<Scalars['Boolean']>;
@@ -6943,7 +6943,7 @@ export type MeUser = BasicObject & InternalObject & {
   name: Scalars['String'];
   otp_activated?: Maybe<Scalars['Boolean']>;
   otp_qr?: Maybe<Scalars['String']>;
-  parent_types: Array<Maybe<Scalars['String']>>;
+  parent_types: Array<Scalars['String']>;
   standard_id: Scalars['String'];
   theme?: Maybe<Scalars['String']>;
   userSubscriptions?: Maybe<UserSubscriptionConnection>;
@@ -10484,7 +10484,7 @@ export type Query = {
   malwares?: Maybe<MalwareConnection>;
   markingDefinition?: Maybe<MarkingDefinition>;
   markingDefinitions?: Maybe<MarkingDefinitionConnection>;
-  me?: Maybe<MeUser>;
+  me: MeUser;
   myOpinion?: Maybe<Opinion>;
   narrative?: Maybe<Narrative>;
   narratives?: Maybe<NarrativeConnection>;
@@ -10534,7 +10534,7 @@ export type Query = {
   sector?: Maybe<Sector>;
   sectors?: Maybe<SectorConnection>;
   sessions?: Maybe<Array<Maybe<UserSession>>>;
-  settings?: Maybe<Settings>;
+  settings: Settings;
   status?: Maybe<Status>;
   statusTemplate?: Maybe<StatusTemplate>;
   statusTemplates?: Maybe<StatusTemplateConnection>;
@@ -13036,21 +13036,21 @@ export type SessionDetail = {
 export type Settings = BasicObject & InternalObject & {
   __typename?: 'Settings';
   created_at: Scalars['DateTime'];
-  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
+  editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
-  parent_types: Array<Maybe<Scalars['String']>>;
+  parent_types: Array<Scalars['String']>;
   platform_email?: Maybe<Scalars['String']>;
-  platform_enable_reference?: Maybe<Array<Maybe<Scalars['String']>>>;
+  platform_enable_reference?: Maybe<Array<Scalars['String']>>;
   platform_favicon?: Maybe<Scalars['String']>;
-  platform_feature_flags?: Maybe<Array<Maybe<Module>>>;
-  platform_hidden_types?: Maybe<Array<Maybe<Scalars['String']>>>;
+  platform_feature_flags?: Maybe<Array<Module>>;
+  platform_hidden_types?: Maybe<Array<Scalars['String']>>;
   platform_language?: Maybe<Scalars['String']>;
   platform_login_message?: Maybe<Scalars['String']>;
   platform_map_tile_server_dark?: Maybe<Scalars['String']>;
   platform_map_tile_server_light?: Maybe<Scalars['String']>;
   platform_modules?: Maybe<Array<Module>>;
-  platform_providers?: Maybe<Array<Maybe<Provider>>>;
+  platform_providers?: Maybe<Array<Provider>>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']>;
   platform_theme?: Maybe<Scalars['String']>;
   platform_theme_dark_accent?: Maybe<Scalars['String']>;
@@ -21199,9 +21199,9 @@ export type MarkingDefinitionEditMutationsResolvers<ContextType = any, ParentTyp
 }>;
 
 export type MeUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeUser'] = ResolversParentTypes['MeUser']> = ResolversObject<{
-  allowed_marking?: Resolver<Maybe<Array<Maybe<ResolversTypes['MarkingDefinition']>>>, ParentType, ContextType>;
+  allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  capabilities?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
+  capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -21212,7 +21212,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   userSubscriptions?: Resolver<Maybe<ResolversTypes['UserSubscriptionConnection']>, ParentType, ContextType, Partial<MeUserUserSubscriptionsArgs>>;
@@ -22159,7 +22159,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   malwares?: Resolver<Maybe<ResolversTypes['MalwareConnection']>, ParentType, ContextType, Partial<QueryMalwaresArgs>>;
   markingDefinition?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<QueryMarkingDefinitionArgs, 'id'>>;
   markingDefinitions?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType, Partial<QueryMarkingDefinitionsArgs>>;
-  me?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
+  me?: Resolver<ResolversTypes['MeUser'], ParentType, ContextType>;
   myOpinion?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<QueryMyOpinionArgs, 'id'>>;
   narrative?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<QueryNarrativeArgs, 'id'>>;
   narratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType, Partial<QueryNarrativesArgs>>;
@@ -22209,7 +22209,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
   sectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType, Partial<QuerySectorsArgs>>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserSession']>>>, ParentType, ContextType>;
-  settings?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
+  settings?: Resolver<ResolversTypes['Settings'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryStatusArgs, 'id'>>;
   statusTemplate?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, RequireFields<QueryStatusTemplateArgs, 'id'>>;
   statusTemplates?: Resolver<Maybe<ResolversTypes['StatusTemplateConnection']>, ParentType, ContextType, Partial<QueryStatusTemplatesArgs>>;
@@ -22670,21 +22670,21 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  platform_enable_reference?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  platform_enable_reference?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  platform_feature_flags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Module']>>>, ParentType, ContextType>;
-  platform_hidden_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
+  platform_hidden_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
-  platform_providers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Provider']>>>, ParentType, ContextType>;
+  platform_providers?: Resolver<Maybe<Array<ResolversTypes['Provider']>>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_accent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

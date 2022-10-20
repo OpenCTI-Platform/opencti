@@ -960,13 +960,13 @@ type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   platform_title: String
   platform_favicon: String
   platform_url: String
   platform_email: String
   platform_modules: [Module!]
-  platform_providers: [Provider]
+  platform_providers: [Provider!]
   platform_language: String
   platform_theme: String
   platform_theme_dark_background: String
@@ -988,13 +988,13 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
-  platform_enable_reference: [String]
+  platform_enable_reference: [String!]
   platform_reference_attachment: Boolean
-  platform_feature_flags: [Module]
-  platform_hidden_types: [String]
+  platform_feature_flags: [Module!]
+  platform_hidden_types: [String!]
   created_at: DateTime!
   updated_at: DateTime!
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 enum GroupsOrdering {
@@ -1110,7 +1110,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   user_email: String!
   name: String!
   description: String
@@ -1122,8 +1122,8 @@ type MeUser implements BasicObject & InternalObject {
   language: String
   external: Boolean
   api_token: String!
-  capabilities: [Capability]!
-  allowed_marking: [MarkingDefinition]
+  capabilities: [Capability!]!
+  allowed_marking: [MarkingDefinition!]
   userSubscriptions(first: Int): UserSubscriptionConnection
 }
 
@@ -6776,11 +6776,11 @@ type Query {
   file(id: String!): File
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
-  settings: Settings
+  settings: Settings!
   group(id: String!): Group
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
-  me: MeUser
+  me: MeUser!
   otpGeneration: OtpElement
   user(id: String!): User
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: [UsersFiltering], filterMode: FilterMode, search: String, toStix: Boolean): UserConnection

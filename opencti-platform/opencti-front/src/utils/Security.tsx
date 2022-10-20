@@ -1,7 +1,16 @@
-import React from 'react';
-import { filter, includes, map } from 'ramda';
+import React, { FunctionComponent, useContext } from 'react';
+import { filter, includes } from 'ramda';
+import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
+import { ModuleHelper } from './platformModulesHelper';
 
-export const UserContext = React.createContext({});
+export interface UserContextType {
+  me: RootPrivateQuery$data['me'] | undefined;
+  settings: RootPrivateQuery$data['settings'] | undefined;
+  helper: ModuleHelper | undefined;
+}
+
+const defaultContext = { me: undefined, settings: undefined, helper: undefined };
+export const UserContext = React.createContext<UserContextType>(defaultContext);
 
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const BYPASS = 'BYPASS';
@@ -22,8 +31,16 @@ export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 
-export const granted = (me, capabilities, matchAll = false) => {
-  const userCapabilities = map((c) => c.name, me.capabilities);
+interface SecurityProps {
+  children: React.ReactNode
+  needs: Array<string>
+  matchAll: boolean
+  // eslint-disable-next-line
+  placeholder: any
+}
+
+export const granted = (me: RootPrivateQuery$data['me'], capabilities: Array<string>, matchAll = false) => {
+  const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
   if (userCapabilities.includes(BYPASS)) return true;
   let numberOfAvailableCapabilities = 0;
   for (let index = 0; index < capabilities.length; index += 1) {
@@ -42,13 +59,12 @@ export const granted = (me, capabilities, matchAll = false) => {
   return numberOfAvailableCapabilities > 0;
 };
 
-const Security = ({ needs, matchAll, children, placeholder = <span /> }) => (
-  <UserContext.Consumer>
-    {({ me }) => {
-      if (granted(me, needs, matchAll)) return children;
-      return placeholder;
-    }}
-  </UserContext.Consumer>
-);
+const Security: FunctionComponent<SecurityProps> = ({ needs, matchAll, children, placeholder = <span /> }) => {
+  const userContext = useContext(UserContext);
+  if (userContext.me && granted(userContext.me, needs, matchAll)) {
+    return children;
+  }
+  return placeholder;
+};
 
 export default Security;

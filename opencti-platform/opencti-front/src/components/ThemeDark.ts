@@ -1,22 +1,25 @@
-import { fileUri } from '../relay/environment';
+import { ExtendedThemeOptions } from './Theme';
 import LogoText from '../static/images/logo_text.png';
+import { fileUri } from '../relay/environment';
 
-export default (
-  logo = null,
-  background = null,
-  paper = null,
-  nav = null,
-  primary = null,
-  secondary = null,
-  accent = null,
-) => ({
+export const THEME_DARK_DEFAULT_BACKGROUND = '#0a1929';
+
+const ThemeDark = (
+  logo: string | null = null,
+  background: string | null = null,
+  paper: string | null = null,
+  nav: string | null = null,
+  primary: string | null = null,
+  secondary: string | null = null,
+  accent: string | null = null,
+): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   palette: {
     mode: 'dark',
     primary: { main: primary || '#00b1ff' },
     secondary: { main: secondary || '#ec407a' },
     background: {
-      default: background || '#0a1929',
+      default: background || THEME_DARK_DEFAULT_BACKGROUND,
       paper: paper || '#001e3c',
       nav: nav || '#071a2e',
       accent: accent || '#01478d',
@@ -204,3 +207,5 @@ export default (
     },
   },
 });
+
+export default ThemeDark;

@@ -147,7 +147,12 @@ esbuild
     );
     app.get("*", (req, res) => {
       const data = readFileSync(`${__dirname}/index.html`, "utf8");
-      const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
+      const withOptionValued = data
+        .replace(/%BASE_PATH%/g, basePath)
+        .replace(/%APP_TITLE%/g, "OpenCTI Dev")
+        .replace(/%APP_DESCRIPTION%/g, "OpenCTI Development platform")
+        .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
+        .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
       res.header(
         "Cache-Control",
         "private, no-cache, no-store, must-revalidate"

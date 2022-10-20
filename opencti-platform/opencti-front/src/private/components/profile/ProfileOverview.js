@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import qrcode from 'qrcode';
 import withStyles from '@mui/styles/withStyles';
 import { compose, pick } from 'ramda';
@@ -28,11 +28,7 @@ import { makeStyles, useTheme } from '@mui/styles';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import {
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
 import { OPENCTI_ADMIN_UUID } from '../../../utils/Security';
 import UserSubscriptionCreation from './UserSubscriptionCreation';
 import UserSubscriptionPopover from './UserSubscriptionPopover';
@@ -243,20 +239,9 @@ const ProfileOverviewComponent = (props) => {
   const { t, me, classes, fldt, subscriptionStatus, about } = props;
   const { external, otp_activated: useOtp } = me;
   const [display2FA, setDisplay2FA] = useState(false);
-
-  const initialValues = pick(
-    [
-      'name',
-      'description',
-      'user_email',
-      'firstname',
-      'lastname',
-      'theme',
-      'language',
-      'otp_activated',
-    ],
-    me,
-  );
+  const subscriptionEdges = me.userSubscriptions?.edges ?? [];
+  const fieldNames = ['name', 'description', 'user_email', 'firstname', 'lastname', 'theme', 'language', 'otp_activated'];
+  const initialValues = pick(fieldNames, me);
 
   const disableOtp = () => {
     commitMutation({
@@ -301,12 +286,8 @@ const ProfileOverviewComponent = (props) => {
 
   return (
     <div>
-      <Dialog
-        open={display2FA}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={false}
-        onClose={() => setDisplay2FA(false)}
-      >
+      <Dialog open={display2FA} PaperProps={{ elevation: 1 }}
+              keepMounted={false} onClose={() => setDisplay2FA(false)}>
         <DialogTitle style={{ textAlign: 'center' }}>
           {t('Enable two-factor authentication')}
         </DialogTitle>
@@ -320,11 +301,9 @@ const ProfileOverviewComponent = (props) => {
             <Typography variant="h1" gutterBottom={true}>
               {t('Profile')} {external && `(${t('external')})`}
             </Typography>
-            <Formik
-              enableReinitialize={true}
-              initialValues={initialValues}
-              validationSchema={userValidation(t)}
-            >
+            <Formik enableReinitialize={true}
+                    initialValues={initialValues}
+                    validationSchema={userValidation(t)}>
               {() => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
@@ -435,10 +414,10 @@ const ProfileOverviewComponent = (props) => {
                 )}
               </Alert>
             )}
-            {me.userSubscriptions.edges.length > 0 ? (
+            {subscriptionEdges.length > 0 ? (
               <div style={{ marginTop: 10 }}>
                 <List>
-                  {me.userSubscriptions.edges.map((userSubscriptionEdge) => {
+                  {subscriptionEdges.map((userSubscriptionEdge) => {
                     const userSubscription = userSubscriptionEdge.node;
                     return (
                       <ListItem
