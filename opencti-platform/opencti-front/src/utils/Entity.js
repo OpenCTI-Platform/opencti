@@ -106,40 +106,6 @@ export const pascalize = (str) => str.replace(
   (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase(),
 );
 
-export const observableKeyToType = (key) => {
-  const keySplit = key.split('.');
-  let type = pascalize(keySplit[0]);
-  if (type.toLowerCase() === 'file') {
-    type = 'StixFile';
-  } else if (type.toLowerCase() === 'ipv4-addr') {
-    type = 'IPv4-Addr';
-  } else if (type.toLowerCase() === 'ipv6-addr') {
-    type = 'IPv6-Addr';
-  }
-  return type;
-};
-
-export const patternMapping = {
-  'Autonomous-System': ['number'],
-  Directory: ['path'],
-  'Email-Message': ['body'],
-  'Email-Mime-Part-Type': ['body'],
-  Mutex: ['name'],
-  'Network-Traffic': ['dst_port'],
-  Process: ['pid'],
-  Software: ['name'],
-  'User-Account': ['acount_login'],
-  'Windows-Registry-Key': ['key'],
-  'Windows-Registry-Value-Type': ['name'],
-};
-
-export const getObservablePatternMapping = (type) => {
-  if (patternMapping[type]) {
-    return `${type}.${patternMapping[type].join('.')}`;
-  }
-  return `${type}.value`;
-};
-
 export const resolveIdentityClass = (identityType) => {
   if (identityType === 'Individual') {
     return 'individual';
@@ -920,6 +886,7 @@ export const ignoredAttributes = [
   'observable_value',
   'indicators',
   'importFiles',
+  'startup_info',
 ];
 
 export const workbenchAttributes = [
@@ -993,9 +960,11 @@ export const booleanAttributes = [
   'is_privileged',
   'is_service_account',
   'can_escalate_privs',
+  'aslr_enabled',
+  'dep_enabled',
 ];
 
-export const multipleAttributes = ['x_opencti_additional_names', 'protocols'];
+export const multipleAttributes = ['x_opencti_additional_names', 'protocols', 'descriptions'];
 
 export const markdownAttributes = ['description', 'x_opencti_description'];
 
