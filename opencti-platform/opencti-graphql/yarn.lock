@@ -4804,6 +4804,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"async@npm:^1.5.0":
+  version: 1.5.2
+  resolution: "async@npm:1.5.2"
+  checksum: fe5d6214d8f15bd51eee5ae8ec5079b228b86d2d595f47b16369dec2e11b3ff75a567bb5f70d12d79006665fbbb7ee0a7ec0e388524eefd454ecbe651c124ebd
+  languageName: node
+  linkType: hard
+
 "async@npm:^3.0.0, async@npm:^3.1.0":
   version: 3.2.4
   resolution: "async@npm:3.2.4"
@@ -5115,6 +5122,15 @@ __metadata:
   version: 2.2.0
   resolution: "binary-extensions@npm:2.2.0"
   checksum: ccd267956c58d2315f5d3ea6757cf09863c5fc703e50fbeb13a7dc849b812ef76e3cf9ca8f35a0c48498776a7478d7b4a0418e1e2b8cb9cb9731f2922aaad7f8
+  languageName: node
+  linkType: hard
+
+"bindings@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "bindings@npm:1.5.0"
+  dependencies:
+    file-uri-to-path: 1.0.0
+  checksum: 65b6b48095717c2e6105a021a7da4ea435aa8d3d3cd085cb9e85bcb6e5773cf318c4745c3f7c504412855940b585bdf9b918236612a1c7a7942491de176f1ae7
   languageName: node
   linkType: hard
 
@@ -6072,6 +6088,16 @@ chromedriver@latest:
   version: 1.0.2
   resolution: "de-indent@npm:1.0.2"
   checksum: 8deacc0f4a397a4414a0fc4d0034d2b7782e7cb4eaf34943ea47754e08eccf309a0e71fa6f56cc48de429ede999a42d6b4bca761bf91683be0095422dbf24611
+  languageName: node
+  linkType: hard
+
+"deasync@npm:^0.1.13":
+  version: 0.1.28
+  resolution: "deasync@npm:0.1.28"
+  dependencies:
+    bindings: ^1.5.0
+    node-addon-api: ^1.7.1
+  checksum: e0c1ef427875c897e0d903a08410df1d0a3dfd0d2a0a1e43fb6c2824dfbc504b810bd08a0d30653117259316e1aa65409c96dbed40101c934f75bac7499e1265
   languageName: node
   linkType: hard
 
@@ -7334,6 +7360,13 @@ chromedriver@latest:
   dependencies:
     moment: ^2.11.2
   checksum: 2e76726780803186f5851da596d7b3d0306649114f25e95689a269668f7a8b58528695b2cbbd8ffcee4f220e682eb58630ac19c7e3cc6eda5a139d9a72883cca
+  languageName: node
+  linkType: hard
+
+"file-uri-to-path@npm:1.0.0":
+  version: 1.0.0
+  resolution: "file-uri-to-path@npm:1.0.0"
+  checksum: b648580bdd893a008c92c7ecc96c3ee57a5e7b6c4c18a9a09b44fb5d36d79146f8e442578bc0e173dc027adf3987e254ba1dfd6e3ec998b7c282873010502144
   languageName: node
   linkType: hard
 
@@ -10583,6 +10616,13 @@ chromedriver@latest:
   languageName: node
   linkType: hard
 
+"mout@npm:^1.0.0":
+  version: 1.2.4
+  resolution: "mout@npm:1.2.4"
+  checksum: 761801ab6616cea1a7f3c2082d1e2fb0b984898cc92117c70f34aab104723285eadf03545b5e092d44a17d6cfbd367a005064d7b23a8517ee4f6b77a8d345561
+  languageName: node
+  linkType: hard
+
 "ms@npm:2.0.0":
   version: 2.0.0
   resolution: "ms@npm:2.0.0"
@@ -10637,6 +10677,18 @@ chromedriver@latest:
   languageName: node
   linkType: hard
 
+"nconf-etcd2@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "nconf-etcd2@npm:1.4.0"
+  dependencies:
+    async: ^1.5.0
+    flat: ^2.0.1
+    mout: ^1.0.0
+    node-etcd: ^7.0.0
+  checksum: f5f480bc6eb761b6c3e2c66398521023dc5fcf2372c8a2e52d09bfe9f39064172b85304f3820d78441623dc0036163466884755e7710add08973413d0301066a
+  languageName: node
+  linkType: hard
+
 "nconf@npm:0.12.0":
   version: 0.12.0
   resolution: "nconf@npm:0.12.0"
@@ -10680,6 +10732,15 @@ chromedriver@latest:
   languageName: node
   linkType: hard
 
+"node-addon-api@npm:^1.7.1":
+  version: 1.7.2
+  resolution: "node-addon-api@npm:1.7.2"
+  dependencies:
+    node-gyp: latest
+  checksum: 938922b3d7cb34ee137c5ec39df6289a3965e8cab9061c6848863324c21a778a81ae3bc955554c56b6b86962f6ccab2043dd5fa3f33deab633636bd28039333f
+  languageName: node
+  linkType: hard
+
 "node-environment-flags@npm:^1.0.5":
   version: 1.0.6
   resolution: "node-environment-flags@npm:1.0.6"
@@ -10687,6 +10748,18 @@ chromedriver@latest:
     object.getownpropertydescriptors: ^2.0.3
     semver: ^5.7.0
   checksum: 268139ed0f7fabdca346dcb26931300ec7a1dc54a58085a849e5c78a82b94967f55df40177a69d4e819da278d98686d5c4fd49ab0d7bcff16fda25b6fffc4ca3
+  languageName: node
+  linkType: hard
+
+"node-etcd@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "node-etcd@npm:7.0.0"
+  dependencies:
+    deasync: ^0.1.13
+    lodash: ^4.17.10
+    request: ^2.87.0
+    url-parse: ^1.4.3
+  checksum: 2b6feca869384b5f4116d6b7ded1d29d7ec3d9e1627e16e049ecaf3eee7c36c4065c28d2ca36fefac6366b151c1bda66a4315f6c4fb9f04ca9d4ff4528ed13e2
   languageName: node
   linkType: hard
 
@@ -11084,6 +11157,7 @@ chromedriver@latest:
     moment: 2.29.3
     moment-range: 4.0.2
     nconf: 0.12.0
+    nconf-etcd2: ^1.4.0
     node-fetch: 2.6.1
     nodemailer: 6.6.3
     openid-client: 4.7.4
@@ -12193,7 +12267,7 @@ chromedriver@latest:
   languageName: node
   linkType: hard
 
-"request@npm:^2.88.0":
+"request@npm:^2.87.0, request@npm:^2.88.0":
   version: 2.88.2
   resolution: "request@npm:2.88.2"
   dependencies:

@@ -1,5 +1,6 @@
 import { lstatSync, readFileSync } from 'fs';
 import nconf from 'nconf';
+import Etcd  from 'nconf-etcd2';
 import * as R from 'ramda';
 import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
@@ -164,6 +165,21 @@ if (externalConfigurationFile) {
 
 nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
+
+// Setup nconf etcd connection
+var etcdOptions = {
+  ca:   readFileSync(process.env.OPENCTI_ETCD_CA_CRT)
+};
+const provEtcd = nconf.use('etcd', { namespace:'system', hosts:[process.env.OPENCTI_ETCD_HOSTS], etcd:etcdOptions});
+nconf.load();
+
+// START TEST CODE
+// var etcdValue = nconf.get('foo:bar');
+// console.log("ETCD TEST VALUE: " + etcdValue)
+// var jsonValue = nconf.get('fizz:buzz');
+// console.log("JSON TEST VALUE: " + jsonValue)
+// nconf.set('fizz:buzz', Math.floor((Math.random() * (100))));
+// END TEST CODE
 
 // Setup application logApp
 const appLogLevel = nconf.get('app:app_logs:logs_level');

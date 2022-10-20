@@ -16,6 +16,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import { IconButton } from '@material-ui/core';
+import { Add } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
@@ -115,7 +117,6 @@ class RemediationCreation extends Component {
 
   handleClose() {
     this.setState({ anchorEl: null });
-    this.props.handleOpenCreation();
   }
 
   handleSubmit() {
@@ -123,7 +124,7 @@ class RemediationCreation extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    this.handleCancelOpenClick();
   }
 
   handleCancelOpenClick() {
@@ -131,7 +132,7 @@ class RemediationCreation extends Component {
   }
 
   handleCancelCloseClick() {
-    this.setState({ open: false, displayCancel: false, close: false });
+    this.setState({ close: false });
     this.props.handleOpenCreation();
   }
 
@@ -159,16 +160,23 @@ class RemediationCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
-        this.props.history.push(
-          `/activities/risk assessment/risks/${this.props.riskId}/remediation`
-        );
+        this.handleCancelCloseClick();
+        this.props.refreshQuery();
+        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
       },
       onError: (err) => {
         toastGenericError('Failed to create Remediation');
       },
     });
     this.setState({ onSubmit: true });
+  }
+
+  handleCreation(event) {
+    this.setState({ openCreation: event.currentTarget });
+  }
+
+  handleOpenCreation() {
+    this.setState({ openCreation: false });
   }
 
   render() {
@@ -180,6 +188,15 @@ class RemediationCreation extends Component {
     } = this.props;
     return (
       <>
+        <IconButton
+          color="default"
+          aria-label="Label"
+          edge="end"
+          onClick={this.props.handleCreation.bind(this)}
+          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+        >
+          <Add fontSize="small" />
+        </IconButton>
         <Dialog
           open={this.props.openCreation}
           keepMounted={true}
@@ -206,6 +223,7 @@ class RemediationCreation extends Component {
               isSubmitting,
               setFieldValue,
               values,
+              handleReset,
             }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
@@ -414,7 +432,7 @@ class RemediationCreation extends Component {
                   <Button
                     variant='outlined'
                     // onClick={handleReset}
-                    onClick={this.handleCancelOpenClick.bind(this)}
+                    onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -493,7 +511,6 @@ RemediationCreation.propTypes = {
   remediation: PropTypes.object,
   remediationId: PropTypes.string,
   openCreation: PropTypes.bool,
-  handleOpenCreation: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(RemediationCreation);
