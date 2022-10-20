@@ -21,10 +21,14 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT, SETTINGS_SETLABELS } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  SETTINGS_SETLABELS,
+} from '../../../../utils/Security';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import {
-  convertCreatedBy, convertOrganizations,
+  convertCreatedBy,
+  convertOrganizations,
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
@@ -33,11 +37,6 @@ import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
-  restrictions: {
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: theme.palette.background.nav,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -110,7 +109,10 @@ const reportMutationRelationAdd = graphql`
 `;
 
 const reportMutationGroupAdd = graphql`
-  mutation ReportEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+  mutation ReportEditionOverviewGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
         ...ReportEditionOverview_report
@@ -120,7 +122,10 @@ const reportMutationGroupAdd = graphql`
 `;
 
 const reportMutationGroupDelete = graphql`
-  mutation ReportEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!) {
+  mutation ReportEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
         ...ReportEditionOverview_report
@@ -367,14 +372,6 @@ class ReportEditionOverviewComponent extends Component {
                   }) => (
                     <div>
                       <Form style={{ margin: '0px 0 20px 0' }}>
-                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                          <div className={classes.restrictions}>
-                            <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}
-                                helpertext={<SubscriptionFocus context={context} fieldname="objectOrganization"/>}
-                                onChange={this.handleChangeObjectOrganization.bind(this)}
-                            />
-                          </div>
-                        </Security>
                         <Field
                           component={TextField}
                           variant="standard"
@@ -538,7 +535,12 @@ class ReportEditionOverviewComponent extends Component {
                         <ObjectMarkingField
                           name="objectMarking"
                           style={{ marginTop: 20, width: '100%' }}
-                          helpertext={<SubscriptionFocus context={context} fieldname="objectMarking"/>}
+                          helpertext={
+                            <SubscriptionFocus
+                              context={context}
+                              fieldname="objectMarking"
+                            />
+                          }
                           onChange={this.handleChangeObjectMarking.bind(this)}
                         />
                         {enableReferences && (
@@ -551,6 +553,21 @@ class ReportEditionOverviewComponent extends Component {
                             id={report.id}
                           />
                         )}
+                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                          <ObjectOrganizationField
+                            name="objectOrganization"
+                            style={{ marginTop: 20, width: '100%' }}
+                            helpertext={
+                              <SubscriptionFocus
+                                context={context}
+                                fieldname="objectOrganization"
+                              />
+                            }
+                            onChange={this.handleChangeObjectOrganization.bind(
+                              this,
+                            )}
+                          />
+                        </Security>
                       </Form>
                     </div>
                   )}
