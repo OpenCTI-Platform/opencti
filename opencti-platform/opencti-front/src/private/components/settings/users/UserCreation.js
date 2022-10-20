@@ -228,8 +228,6 @@ class UserCreation extends Component {
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <ObjectOrganizationField name="objectOrganization" label="Organizations"
-                                           style={{ marginTop: 20, width: '100%' }}/>
                   <Field
                     component={MarkDownField}
                     name="description"
@@ -256,6 +254,11 @@ class UserCreation extends Component {
                     type="password"
                     fullWidth={true}
                     style={{ marginTop: 20 }}
+                  />
+                  <ObjectOrganizationField
+                    name="objectOrganization"
+                    label="Organizations"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
                     <Button

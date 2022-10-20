@@ -116,7 +116,10 @@ const userMutationGroupAdd = graphql`
 `;
 
 const userMutationGroupDelete = graphql`
-  mutation UserEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!) {
+  mutation UserEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     userEdit(id: $id) {
       organizationDelete(organizationId: $organizationId) {
         ...UserEditionOverview_user
@@ -248,7 +251,9 @@ class UserEditionOverviewComponent extends Component {
   render() {
     const { t, user, context, classes } = this.props;
     const external = user.external === true;
-    const userRoles = pipe(map((n) => ({ label: n.name, value: n.id })))(user.roles);
+    const userRoles = pipe(map((n) => ({ label: n.name, value: n.id })))(
+      user.roles,
+    );
     const objectOrganization = convertOrganizations(user);
     const initialValues = pipe(
       assoc('roles', userRoles),
@@ -371,10 +376,6 @@ class UserEditionOverviewComponent extends Component {
                 )}
                 style={{ marginTop: 20, width: '100%' }}
               />
-              <ObjectOrganizationField name="objectOrganization"
-                                       label="Organizations"
-                                       onChange={this.handleChangeObjectOrganization.bind(this)}
-                                       style={{ marginTop: 20, width: '100%' }}/>
               <Field
                 component={TextField}
                 variant="standard"
@@ -405,6 +406,12 @@ class UserEditionOverviewComponent extends Component {
                     fieldName="description"
                   />
                 }
+              />
+              <ObjectOrganizationField
+                name="objectOrganization"
+                label="Organizations"
+                onChange={this.handleChangeObjectOrganization.bind(this)}
+                style={{ marginTop: 20, width: '100%' }}
               />
             </Form>
           )}

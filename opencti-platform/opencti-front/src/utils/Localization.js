@@ -1252,6 +1252,7 @@ const i18n = {
       'Manage an entity': 'Administrar una entidad',
       'Do you want to remove this entity?': '¿Quieres eliminar este objeto?',
       'Add context': 'Agregar contexto',
+      'Organizations restriction': 'Restricción de organizaciones',
       'Delete the element if no other containers contain it':
         'Eliminar el elemento si ningún otro contenedor lo contiene',
       'Bulk search': 'Búsqueda masiva',
@@ -2840,6 +2841,7 @@ const i18n = {
       'Do you want to remove this object?':
         'Souhaitez-vous retirer cet object ?',
       'Add context': 'Ajouter du contexte',
+      'Organizations restriction': "Restriction d'organisations",
       'Delete the element if no other containers contain it':
         "Supprimer l'élément si aucun autre conteneur ne le contient",
       IF: 'SI',
@@ -4378,6 +4380,7 @@ const i18n = {
       'Manage an entity': 'エンティティを管理する',
       'Do you want to remove this object?': 'このオブジェクトを削除しますか?',
       'Add context': 'コンテキストを追加',
+      'Organizations restriction': '組織の制限',
       'Delete the element if no other containers contain it':
         '他のコンテナに要素が含まれていない場合は、要素を削除します',
       'Bulk search': '一括検索',
@@ -5846,6 +5849,7 @@ const i18n = {
       'Manage an entity': '管理实体',
       'Do you want to remove this object?': '是否要删除此对象？',
       'Add context': '添加上下文',
+      'Organizations restriction': '组织限制',
       'Delete the element if no other containers contain it':
         '如果沒有其他容器包含該元素，則刪除該元素',
       'Bulk search': '批量搜索',
