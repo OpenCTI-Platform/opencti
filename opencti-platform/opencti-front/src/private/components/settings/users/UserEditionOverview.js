@@ -376,6 +376,13 @@ class UserEditionOverviewComponent extends Component {
                 )}
                 style={{ marginTop: 20, width: '100%' }}
               />
+              <ObjectOrganizationField
+                name="objectOrganization"
+                label="Organizations"
+                onChange={this.handleChangeObjectOrganization.bind(this)}
+                style={{ marginTop: 20, width: '100%' }}
+                outlined={false}
+              />
               <Field
                 component={TextField}
                 variant="standard"
@@ -406,12 +413,6 @@ class UserEditionOverviewComponent extends Component {
                     fieldName="description"
                   />
                 }
-              />
-              <ObjectOrganizationField
-                name="objectOrganization"
-                label="Organizations"
-                onChange={this.handleChangeObjectOrganization.bind(this)}
-                style={{ marginTop: 20, width: '100%' }}
               />
             </Form>
           )}
