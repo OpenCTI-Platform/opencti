@@ -41,7 +41,7 @@ class RiskObservationLinesContainer extends Component {
   }
 
   render() {
-    const { risk } = this.props;
+    const { risk, history } = this.props;
     const RelatedObservations = R.pathOr([], ['related_observations', 'edges'], risk);
     return (
       <div>
@@ -50,6 +50,7 @@ class RiskObservationLinesContainer extends Component {
             key={observation.node.id}
             observationId={observation.node.id}
             observation={observation}
+            history={history}
           />
         ))}
       </div>
@@ -64,6 +65,7 @@ RiskObservationLinesContainer.propTypes = {
   fldt: PropTypes.func,
   fd: PropTypes.func,
   relay: PropTypes.object,
+  history: PropTypes.object,
 };
 
 export const riskObservationLinesQuery = graphql`

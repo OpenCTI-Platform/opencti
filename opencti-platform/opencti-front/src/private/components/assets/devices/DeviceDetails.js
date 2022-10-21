@@ -146,7 +146,7 @@ class DeviceDetailsComponent extends Component {
                             software.id && history.push(`/defender HQ/assets/software/${software.id}`)
                           )}
                         >
-                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)} {t(software.version)}
+                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)} {t(software.version || " ")}
                         </Link>}
                     </div>
                   ))}
