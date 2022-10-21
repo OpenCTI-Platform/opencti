@@ -57,6 +57,8 @@ import {
 } from '../../../../utils/Entity';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -497,11 +499,6 @@ class StixCyberObservableCreation extends Component {
                 }) => (
                   <Form style={{ margin: this.props.contextual ? '10px 0 0 0' : '0px 0 20px 0' }}>
                     <div>
-                      <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                        <div className={classes.restrictions}>
-                          <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
-                        </div>
-                      </Security>
                       <Field
                         component={TextField}
                         variant="standard"
