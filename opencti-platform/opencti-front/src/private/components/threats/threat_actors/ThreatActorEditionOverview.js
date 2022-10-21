@@ -21,8 +21,13 @@ import StatusField from '../../common/form/StatusField';
 import {
   convertCreatedBy,
   convertMarkings,
+  convertOrganizations,
   convertStatus,
 } from '../../../../utils/Edition';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -110,6 +115,32 @@ const threatActorMutationRelationDelete = graphql`
   }
 `;
 
+const threatActorMutationGroupAdd = graphql`
+  mutation ThreatActorEditionOverviewGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationAdd(organizationId: $organizationId) {
+        ...ThreatActorEditionOverview_threatActor
+      }
+    }
+  }
+`;
+
+const threatActorMutationGroupDelete = graphql`
+  mutation ThreatActorEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationDelete(organizationId: $organizationId) {
+        ...ThreatActorEditionOverview_threatActor
+      }
+    }
+  }
+`;
+
 const threatActorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   threat_actor_types: Yup.array(),
@@ -144,6 +175,10 @@ class ThreatActorEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc(
+        'objectOrganization',
+        R.pluck('value', values.objectOrganization),
+      ),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -182,6 +217,37 @@ class ThreatActorEditionOverviewComponent extends Component {
           });
         })
         .catch(() => false);
+    }
+  }
+
+  handleChangeObjectOrganization(name, values) {
+    const { threatActor } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(threatActor);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: threatActorMutationGroupAdd,
+        variables: {
+          id: this.props.threatActor.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: threatActorMutationGroupDelete,
+        variables: {
+          id: this.props.threatActor.id,
+          organizationId: R.head(removed).value,
+        },
+      });
     }
   }
 
@@ -238,6 +304,7 @@ class ThreatActorEditionOverviewComponent extends Component {
     const { t, threatActor, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(threatActor);
     const objectMarking = convertMarkings(threatActor);
+    const objectOrganization = convertOrganizations(threatActor);
     const status = convertStatus(t, threatActor);
     const killChainPhases = R.pipe(
       R.pathOr([], ['killChainPhases', 'edges']),
@@ -250,6 +317,7 @@ class ThreatActorEditionOverviewComponent extends Component {
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('objectOrganization', objectOrganization),
       R.assoc('x_opencti_workflow_id', status),
       R.assoc(
         'threat_actor_types',
@@ -263,6 +331,7 @@ class ThreatActorEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'objectOrganization',
         'x_opencti_workflow_id',
       ]),
     )(threatActor);
@@ -417,6 +486,19 @@ class ThreatActorEditionOverviewComponent extends Component {
                 id={threatActor.id}
               />
             )}
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+              <ObjectOrganizationField
+                name="objectOrganization"
+                style={{ marginTop: 20, width: '100%' }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldname="objectOrganization"
+                  />
+                }
+                onChange={this.handleChangeObjectOrganization.bind(this)}
+              />
+            </Security>
           </Form>
         )}
       </Formik>
@@ -457,6 +539,14 @@ const ThreatActorEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
+            }
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
             }
           }
         }

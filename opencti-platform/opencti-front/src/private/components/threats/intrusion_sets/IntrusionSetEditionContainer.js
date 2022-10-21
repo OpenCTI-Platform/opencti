@@ -9,22 +9,12 @@ import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import { Form, Formik } from 'formik';
-import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
 import IntrusionSetEditionDetails from './IntrusionSetEditionDetails';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
-import { convertOrganizations } from '../../../../utils/Edition';
-import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
-  restrictions: {
-    padding: 10,
-    backgroundColor: theme.palette.background.nav,
-  },
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -48,26 +38,6 @@ const styles = (theme) => ({
   },
 });
 
-const intrusionSetMutationGroupAdd = graphql`
-  mutation IntrusionSetEditionContainerGroupAddMutation($id: ID!, $organizationId: ID!) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...IntrusionSetEditionOverview_intrusionSet
-      }
-    }
-  }
-`;
-
-const intrusionSetMutationGroupDelete = graphql`
-  mutation IntrusionSetEditionContainerGroupDeleteMutation($id: ID!, $organizationId: ID!) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...IntrusionSetEditionOverview_intrusionSet
-      }
-    }
-  }
-`;
-
 class IntrusionSetEditionContainer extends Component {
   constructor(props) {
     super(props);
@@ -78,45 +48,9 @@ class IntrusionSetEditionContainer extends Component {
     this.setState({ currentTab: value });
   }
 
-  handleChangeObjectOrganization(name, values) {
-    const { intrusionSet } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(intrusionSet);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: intrusionSetMutationGroupAdd,
-        variables: {
-          id: this.props.intrusionSet.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: intrusionSetMutationGroupDelete,
-        variables: {
-          id: this.props.intrusionSet.id,
-          organizationId: R.head(removed).value,
-        },
-      });
-    }
-  }
-
   render() {
     const { t, classes, handleClose, intrusionSet } = this.props;
     const { editContext } = intrusionSet;
-    const objectOrganization = convertOrganizations(intrusionSet);
-    const initialValues = R.pipe(
-      R.assoc('objectOrganization', objectOrganization),
-      R.pick(['objectOrganization']),
-    )(intrusionSet);
     return (
       <div>
         <div className={classes.header}>
@@ -136,17 +70,6 @@ class IntrusionSetEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-            <Formik enableReinitialize={true} initialValues={initialValues}>
-              {() => (
-                  <Form>
-                    <div className={classes.restrictions}>
-                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}
-                                        onChange={this.handleChangeObjectOrganization.bind(this)}/>
-                    </div>
-                  </Form>)}
-             </Formik>
-          </Security>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               value={this.state.currentTab}
@@ -194,14 +117,6 @@ const IntrusionSetEditionFragment = createFragmentContainer(
         id
         ...IntrusionSetEditionOverview_intrusionSet
         ...IntrusionSetEditionDetails_intrusionSet
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
-        }
         editContext {
           name
           focusOn

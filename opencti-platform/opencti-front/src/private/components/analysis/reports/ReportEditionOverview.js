@@ -108,32 +108,6 @@ const reportMutationRelationAdd = graphql`
   }
 `;
 
-const reportMutationGroupAdd = graphql`
-  mutation ReportEditionOverviewGroupAddMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...ReportEditionOverview_report
-      }
-    }
-  }
-`;
-
-const reportMutationGroupDelete = graphql`
-  mutation ReportEditionOverviewGroupDeleteMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...ReportEditionOverview_report
-      }
-    }
-  }
-`;
-
 const reportMutationRelationDelete = graphql`
   mutation ReportEditionOverviewRelationDeleteMutation(
     $id: ID!
@@ -146,6 +120,32 @@ const reportMutationRelationDelete = graphql`
       }
     }
   }
+`;
+
+const reportMutationGroupAdd = graphql`
+    mutation ReportEditionOverviewGroupAddMutation(
+        $id: ID!
+        $organizationId: ID!
+    ) {
+        stixCoreObjectEdit(id: $id) {
+            restrictionOrganizationAdd(organizationId: $organizationId) {
+                ...ReportEditionOverview_report
+            }
+        }
+    }
+`;
+
+const reportMutationGroupDelete = graphql`
+    mutation ReportEditionOverviewGroupDeleteMutation(
+        $id: ID!
+        $organizationId: ID!
+    ) {
+        stixCoreObjectEdit(id: $id) {
+            restrictionOrganizationDelete(organizationId: $organizationId) {
+                ...ReportEditionOverview_report
+            }
+        }
+    }
 `;
 
 const reportValidation = (t) => Yup.object().shape({
@@ -183,6 +183,10 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc(
+        'objectOrganization',
+        R.pluck('value', values.objectOrganization),
+      ),
       R.toPairs,
       R.map((n) => ({
         key: n[0],

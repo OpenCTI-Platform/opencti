@@ -19,8 +19,13 @@ import StatusField from '../../common/form/StatusField';
 import {
   convertCreatedBy,
   convertMarkings,
+  convertOrganizations,
   convertStatus,
 } from '../../../../utils/Edition';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -109,6 +114,32 @@ const campaignMutationRelationDelete = graphql`
   }
 `;
 
+const campaignMutationGroupAdd = graphql`
+  mutation CampaignEditionOverviewGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationAdd(organizationId: $organizationId) {
+        ...CampaignEditionOverview_campaign
+      }
+    }
+  }
+`;
+
+const campaignMutationGroupDelete = graphql`
+  mutation CampaignEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationDelete(organizationId: $organizationId) {
+        ...CampaignEditionOverview_campaign
+      }
+    }
+  }
+`;
+
 const campaignValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
@@ -142,6 +173,10 @@ class CampaignEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc(
+        'objectOrganization',
+        R.pluck('value', values.objectOrganization),
+      ),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -183,6 +218,37 @@ class CampaignEditionOverviewComponent extends Component {
           });
         })
         .catch(() => false);
+    }
+  }
+
+  handleChangeObjectOrganization(name, values) {
+    const { campaign } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(campaign);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: campaignMutationGroupAdd,
+        variables: {
+          id: this.props.campaign.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: campaignMutationGroupDelete,
+        variables: {
+          id: this.props.campaign.id,
+          organizationId: R.head(removed).value,
+        },
+      });
     }
   }
 
@@ -242,10 +308,12 @@ class CampaignEditionOverviewComponent extends Component {
     const { t, campaign, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(campaign);
     const objectMarking = convertMarkings(campaign);
+    const objectOrganization = convertOrganizations(campaign);
     const status = convertStatus(t, campaign);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('objectOrganization', objectOrganization),
       R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'name',
@@ -253,6 +321,7 @@ class CampaignEditionOverviewComponent extends Component {
         'description',
         'createdBy',
         'objectMarking',
+        'objectOrganization',
         'x_opencti_workflow_id',
       ]),
     )(campaign);
@@ -353,6 +422,19 @@ class CampaignEditionOverviewComponent extends Component {
                 id={campaign.id}
               />
             )}
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+              <ObjectOrganizationField
+                name="objectOrganization"
+                style={{ marginTop: 20, width: '100%' }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldname="objectOrganization"
+                  />
+                }
+                onChange={this.handleChangeObjectOrganization.bind(this)}
+              />
+            </Security>
           </Form>
         )}
       </Formik>
@@ -390,6 +472,14 @@ const CampaignEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
+            }
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
             }
           }
         }

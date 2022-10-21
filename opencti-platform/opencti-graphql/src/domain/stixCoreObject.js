@@ -99,8 +99,8 @@ export const batchLabels = (context, user, stixCoreObjectIds) => {
   return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const batchObjectOrganizations = (user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_GRANTED_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+export const batchObjectOrganizations = (context, user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_GRANTED_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };
 
 export const batchMarkingDefinitions = (context, user, stixCoreObjectIds) => {
