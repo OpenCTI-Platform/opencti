@@ -86,6 +86,7 @@
     "moment": "2.29.3",
     "moment-range": "4.0.2",
     "nconf": "0.12.0",
+    "nconf-etcd2": "^1.4.0",
     "nodemailer": "6.6.3",
     "openid-client": "4.7.4",
     "passport": "0.4.1",

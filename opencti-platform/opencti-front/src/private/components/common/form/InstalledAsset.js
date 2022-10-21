@@ -39,6 +39,7 @@ const installedSoftwareAssetQuery = graphql`
           id
           name
           asset_type
+          version
         }
       }
     }
@@ -89,11 +90,17 @@ class InstalledAsset extends Component {
             .then((data) => {
               const installedSoftwareEntities = R.pipe(
                 R.pathOr([], ['softwareAssetList', 'edges']),
-                R.map((n) => ({
-                  id: n.node.id,
-                  name: n.node.name,
-                  type: n.node.vendor_name,
-                })),
+                R.map((n) => {
+                  const softwareName = R.concat(n.node.name, " ");
+                  const softwareNameWithVersion = R.concat(softwareName, n.node.version ? n.node.version : "");
+                  return {
+                    id: n.node.id,
+                    name: n.node.name,
+                    type: n.node.vendor_name,
+                    version: n.node.version,
+                    softwareNameWithVersion
+                  }
+                }),
               )(data);
               this.setState({
                 softwareList: {
@@ -127,7 +134,16 @@ class InstalledAsset extends Component {
       [],
       ['installedHardwareEntities'],
       this.state.devices,
+    ); 
+
+    const sort = R.sortWith(
+      [
+        R.ascend(R.prop('name'))
+      ]
     );
+
+    const sortedDeviceList = sort(devices);
+
     return (
       <div>
         <Field
@@ -143,7 +159,7 @@ class InstalledAsset extends Component {
           style={style}
           helperText={helperText}
         >
-          {devices.map((device) => (
+          {sortedDeviceList.map((device) => (
             <MenuItem key={device.id} value={device.id}>
               {device.name && t(device.name)}
             </MenuItem>
@@ -174,6 +190,13 @@ class InstalledAsset extends Component {
       ['installedSoftwareEntities'],
       this.state.softwareList,
     );
+
+    const sortedSoftwareList = softwareList.sort(function(a, b) {
+      return a.softwareNameWithVersion.localeCompare(b.softwareNameWithVersion, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    });
     return (
       <Field
         component={SelectField}
@@ -188,12 +211,16 @@ class InstalledAsset extends Component {
         style={style}
         helperText={helperText}
       >
-        {softwareList.map((software) => (
-          software.name
-          && <MenuItem key={software.id} value={software.id}>
-              {t(software.name)}
-          </MenuItem>
-        ))}
+        {sortedSoftwareList.map((software) => 
+          {            
+            return(
+              software.softwareNameWithVersion
+                && <MenuItem key={software.id} value={software.id}>
+                  {t(software.softwareNameWithVersion)}
+                </MenuItem>
+            )
+          }
+        )}
       </Field>
     );
   }

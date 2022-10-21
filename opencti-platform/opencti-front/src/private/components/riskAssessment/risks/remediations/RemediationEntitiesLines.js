@@ -12,12 +12,14 @@ import inject18n from '../../../../../components/i18n';
 import {
   RemediationEntityLine,
 } from './RemediationEntityLine';
+import RemediationCreation from './RemediationCreation';
 
 const styles = () => ({
   paper: {
     listStyle: 'none',
     height: '100%',
     boxShadow: 'none',
+    padding: '0 10px',
   },
   ListItem: {
     width: '97%',
@@ -32,6 +34,12 @@ const styles = () => ({
 });
 
 class RemediationEntitiesLines extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openCreation: false,
+    };
+  }
   // componentDidMount() {
   //   this.subscription = interval$.subscribe(() => {
   //     this.props.relay.refetchConnection(25);
@@ -42,6 +50,18 @@ class RemediationEntitiesLines extends Component {
   //   this.subscription.unsubscribe();
   // }
 
+  handleOpen() {
+    this.setState({ openCreation: true });
+  }
+
+  handleClose() {
+    this.setState({ openCreation: false });
+  }
+
+  handleOpenCreation() {
+    this.setState({ openCreation: false });
+  }
+
   render() {
     const {
       classes,
@@ -49,10 +69,31 @@ class RemediationEntitiesLines extends Component {
       t,
       risk,
       riskId,
+      refreshQuery,
+      entityId,
     } = this.props;
     const RemediationEntitiesLogEdges = R.pathOr([], ['remediations'], risk);
+
     return (
-      <Paper className={classes.paper}>
+      <div>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Remediations')}
+        </Typography>
+        {/* <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 29 }} />}
+        > */}
+        <RemediationCreation
+        remediationId={entityId}
+        riskId={riskId}
+        history={history}
+        refreshQuery={refreshQuery}
+        openCreation={this.state.openCreation}
+        handleCreation={this.handleOpen.bind(this)}
+        handleOpenCreation={this.handleOpenCreation.bind(this)}
+      />
+      <div className="clearfix" />
+      <Paper className={classes.paper} elevation={2}>
         <ListItem style={{ borderBottom: '2px solid white' }}>
           <ListItemText
             primary={<div className={classes.ListItem} >
@@ -96,10 +137,13 @@ class RemediationEntitiesLines extends Component {
             key={remediationEdge.id}
             history={history}
             riskId={riskId}
+            remediationId={entityId}
+            refreshQuery={refreshQuery}
           />,
         )) : <div style={{ textAlign: 'center', padding: '20px 0' }}>
           No Record Found </div>)}
       </Paper>
+      </div>
     );
   }
 }

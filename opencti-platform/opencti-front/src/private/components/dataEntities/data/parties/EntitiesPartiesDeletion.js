@@ -106,6 +106,7 @@ class EntitiesPartiesDeletion extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
+        this.props.history.push('/data/entities/parties');
       },
       onError: () => toastGenericError('Failed to delete party'),
     });

@@ -1,0 +1,114 @@
+extend type Query {
+  # Dashboard Wizard Configuration
+  workspaceWizardConfig: String!
+
+  # Asset dashboard query support
+  """
+  Retrieves the total number of assets that match the filter
+  and counts those that have been created since the specified
+  end date and time.
+  """
+  assetsCount(
+    type: String
+    field: String
+    match: [String]
+    operation: StatsOperation
+    endDate: DateTime
+  ): Number  @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  """
+  Retrieves the total number of assets that were created between the
+  start and end date that match the filter, and buckets the counts 
+  into intervals, as specified.
+  """
+  assetsTimeSeries(
+    type: String
+    objectId: ID
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: Interval!
+  ): [CyioTimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  """
+  Retrieves the total number of assets that were created between the
+  start and end date that match the filter, and returns only as many
+  as the limit specifies
+  """
+  assetsDistribution(
+    type: String
+    objectId: ID
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    limit: Int
+  ): [CyioDistribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+
+
+  # Risk dashboard query support
+  """
+  Retrieves the total number of risks that match the filter
+  and counts those that have been created since the specified
+  end date and time.
+  """
+  risksCount(
+    type: String
+    field: String
+    match: [String]
+    operation: StatsOperation
+    endDate: DateTime!
+  ): Number  @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  """
+  Retrieves the total number of risks that were created between the
+  start and end date that match the filter, and buckets the counts 
+  into intervals, as specified.
+  """
+  risksTimeSeries(
+    type: String
+    objectId: ID
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: Interval!
+  ): [CyioTimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  """
+  Retrieves the total number of risks that were created between the
+  start and end date that match the filter, and returns only as many
+  as the limit specifies
+  """
+  risksDistribution(
+    type: String
+    objectId: ID
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    limit: Int
+  ): [CyioDistribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+}
+
+enum Interval {
+  day
+  week
+  month
+  year
+}
+
+union CyioObject = Risk | Component | InventoryItem
+
+type CyioTimeSeries {
+  date: DateTime!
+  label: String
+  value: Int!
+}
+
+type CyioDistribution {
+  label: String!
+  entity: CyioObject
+  value: Int
+}
