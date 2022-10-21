@@ -73,7 +73,7 @@ const userResolvers = {
   },
   User: {
     groups: (current, _, context) => groupsLoader.load(current.id, context, context.user),
-    objectOrganization: (current, _, { user }) => organizationsLoader.load(current.id, user, { withInferences: false }),
+    objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
     roles: (current, _, context) => rolesLoader.load(current.id, context, context.user),
     allowed_marking: (current, _, context) => getMarkings(context, current.id, context.user.capabilities),
     capabilities: (current, _, context) => getCapabilities(context, current.id),
