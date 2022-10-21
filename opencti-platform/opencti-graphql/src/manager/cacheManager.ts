@@ -64,7 +64,6 @@ const initCacheManager = () => {
       writeCacheForEntity(ENTITY_TYPE_RULE, await platformRules(context));
       writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, await platformMarkings(context));
       writeCacheForEntity(ENTITY_TYPE_SETTINGS, await platformSettings(context));
-      writeCacheForEntity(ENTITY_TYPE_SETTINGS, await platformSettings(context));
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
       subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {
