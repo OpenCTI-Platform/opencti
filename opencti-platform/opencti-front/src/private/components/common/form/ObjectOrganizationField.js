@@ -106,12 +106,7 @@ class ObjectOrganizationField extends Component {
       );
     }
     return (
-      <Alert
-        severity="warning"
-        variant="outlined"
-        style={style}
-        classes={{ message: classes.message }}
-      >
+      <Alert severity="warning" variant="outlined" style={style} classes={{ message: classes.message }}>
         <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
         <Field
           component={AutocompleteField}

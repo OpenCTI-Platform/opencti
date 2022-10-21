@@ -13,7 +13,6 @@ import {
   mergeEntities,
   storeLoadById,
   storeLoadByIdWithRefs,
-  updateAttribute,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
@@ -21,16 +20,11 @@ import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent 
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
-import {
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_IDENTITY,
-  INPUT_GRANTED_REFS
-} from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE, RELATION_GRANTED_TO,
+  RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
@@ -40,8 +34,7 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION
+  ENTITY_TYPE_CONTAINER_REPORT
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
@@ -58,7 +51,6 @@ import { deleteFile, loadFile, storeFileConverter, upload } from '../database/fi
 import { elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -99,10 +91,6 @@ export const batchLabels = (context, user, stixCoreObjectIds) => {
   return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const batchObjectOrganizations = (context, user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_GRANTED_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-};
-
 export const batchMarkingDefinitions = (context, user, stixCoreObjectIds) => {
   return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
@@ -127,13 +115,6 @@ export const stixCoreObjectAddRelation = async (context, user, stixCoreObjectId,
   }
   const finalInput = R.assoc('fromId', stixCoreObjectId, input);
   return createRelation(context, user, finalInput);
-};
-
-export const addOrganizationRestriction = async (context, user, stixCoreObjectId, organizationId) => {
-  const stixCoreObject = await findById(context, user, stixCoreObjectId);
-  const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_ADD }];
-  const data = await updateAttribute(context, user, stixCoreObjectId, stixCoreObject.entity_type, updates);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, data.element, user);
 };
 
 export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId, input) => {
@@ -166,13 +147,6 @@ export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObject
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
 };
 
-export const removeOrganizationRestriction = async (context, user, stixCoreObjectId, organizationId) => {
-  const stixCoreObject = await findById(context, user, stixCoreObjectId);
-  const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_REMOVE }];
-  const data = await updateAttribute(context, user, stixCoreObjectId, stixCoreObject.entity_type, updates);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, data.element, user);
-};
-
 export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
@@ -184,7 +158,6 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
 export const stixCoreObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
-// endregion
 
 export const askElementEnrichmentForConnector = async (context, user, elementId, connectorId) => {
   const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
@@ -219,6 +192,7 @@ export const stixCoreObjectExportAsk = async (context, user, args) => {
   const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
 };
+
 export const stixCoreObjectsExportPush = async (context, user, type, file, listFilters) => {
   await upload(context, user, `export/${type}`, file, { list_filters: listFilters });
   return true;
@@ -228,7 +202,6 @@ export const stixCoreObjectExportPush = async (context, user, entityId, file) =>
   await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
   return true;
 };
-// endregion
 
 export const stixCoreObjectImportPush = async (context, user, id, file, noTriggerImport = false) => {
   let lock;

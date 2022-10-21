@@ -28,11 +28,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
-import {
-  batchObjectOrganizations,
-  addOrganizationRestriction,
-  removeOrganizationRestriction
-} from '../domain/stixCoreObject';
+import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { batchUsers } from '../domain/user';
 
 const createdByLoader = batchLoader(batchCreatedBy);

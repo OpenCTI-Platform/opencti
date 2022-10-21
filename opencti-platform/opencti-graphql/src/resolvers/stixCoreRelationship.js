@@ -32,11 +32,7 @@ import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { filesListing } from '../database/file-storage';
 import { batchUsers } from '../domain/user';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
-import {
-  batchObjectOrganizations,
-  addOrganizationRestriction,
-  removeOrganizationRestriction
-} from '../domain/stixCoreObject';
+import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);

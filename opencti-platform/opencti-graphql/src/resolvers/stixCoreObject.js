@@ -4,7 +4,6 @@ import {
   askElementEnrichmentForConnector,
   batchCreatedBy,
   batchExternalReferences,
-  batchObjectOrganizations,
   batchLabels,
   batchMarkingDefinitions,
   batchNotes,
@@ -13,7 +12,6 @@ import {
   batchReports,
   findAll,
   findById,
-  addOrganizationRestriction,
   stixCoreObjectAddRelation,
   stixCoreObjectAddRelations,
   stixCoreObjectDelete,
@@ -22,7 +20,6 @@ import {
   stixCoreObjectExportPush,
   stixCoreObjectImportPush,
   stixCoreObjectMerge,
-  removeOrganizationRestriction,
   stixCoreRelationships,
   stixCoreObjectsExportAsk,
   stixCoreObjectsExportPush,
@@ -38,6 +35,7 @@ import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { batchUsers } from '../domain/user';
+import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);

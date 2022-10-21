@@ -1,6 +1,6 @@
 import mime from 'mime-types';
 import { assoc, invertObj, map, pipe, propOr } from 'ramda';
-import { deleteElementById, internalLoadById } from '../database/middleware';
+import { batchListThroughGetTo, deleteElementById, internalLoadById, updateAttribute } from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -9,6 +9,12 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
+import { RELATION_GRANTED_TO } from '../schema/stixMetaRelationship';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_OBJECT, INPUT_GRANTED_REFS } from '../schema/general';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { notify } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -121,4 +127,22 @@ export const exportTransformFilters = (listFilters, filterOptions, orderOptions)
         : listFilters.orderBy
     )
   )(listFilters);
+};
+
+export const batchObjectOrganizations = (context, user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_GRANTED_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+};
+
+export const addOrganizationRestriction = async (context, user, fromId, organizationId) => {
+  const from = await internalLoadById(context, user, fromId);
+  const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_ADD }];
+  const data = await updateAttribute(context, user, fromId, from.entity_type, updates);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
+};
+
+export const removeOrganizationRestriction = async (context, user, fromId, organizationId) => {
+  const from = await internalLoadById(context, user, fromId);
+  const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_REMOVE }];
+  const data = await updateAttribute(context, user, fromId, from.entity_type, updates);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
 };

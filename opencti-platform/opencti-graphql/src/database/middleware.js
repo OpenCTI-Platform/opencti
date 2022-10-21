@@ -1768,7 +1768,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
           if (relsToDelete.length > 0) {
             // eslint-disable-next-line no-use-before-define
             await deleteElements(context, user, relsToDelete, streamOpts);
-            updatedInputs.push({ key, value: relsToDelete, operation });
+            updatedInputs.push({ key, value: targets, operation });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
           }
         }
