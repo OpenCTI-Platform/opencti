@@ -29,21 +29,19 @@ import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import {
-  convertCreatedBy, convertOrganizations,
+  convertCreatedBy,
+  convertOrganizations,
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
-  restrictions: {
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: theme.palette.background.nav,
-  },
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -149,7 +147,10 @@ const stixSightingRelationshipMutationRelationDelete = graphql`
 `;
 
 const stixSightingRelationshipMutationGroupAdd = graphql`
-  mutation StixSightingRelationshipEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+  mutation StixSightingRelationshipEditionOverviewGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     stixSightingRelationshipEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
         ...StixSightingRelationshipEditionOverview_stixSightingRelationship
@@ -159,7 +160,10 @@ const stixSightingRelationshipMutationGroupAdd = graphql`
 `;
 
 const stixSightingRelationshipMutationGroupDelete = graphql`
-  mutation StixSightingRelationshipEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!) {
+  mutation StixSightingRelationshipEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     stixSightingRelationshipEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
         ...StixSightingRelationshipEditionOverview_stixSightingRelationship
@@ -188,7 +192,7 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-const StixSightingRelationshipEditionContainer = ({
+const StixSightingRelationshipEditionOverview = ({
   t,
   classes,
   handleClose,
@@ -362,11 +366,6 @@ const StixSightingRelationshipEditionContainer = ({
         >
           {(setFieldValue) => (
             <Form style={{ margin: '0px 0 20px 0' }}>
-              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                <div className={classes.restrictions}>
-                  <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }} onChange={handleChangeObjectOrganization}/>
-                </div>
-              </Security>
               <Field
                 component={TextField}
                 variant="standard"
@@ -490,6 +489,19 @@ const StixSightingRelationshipEditionContainer = ({
                 disabled={inferred}
                 onChange={handleChangeObjectMarking}
               />
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                <ObjectOrganizationField
+                  name="objectOrganization"
+                  style={{ marginTop: 20, width: '100%' }}
+                  helpertext={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldname="objectOrganization"
+                    />
+                  }
+                  onChange={handleChangeObjectOrganization}
+                />
+              </Security>
               <Field
                 component={SwitchField}
                 type="checkbox"
@@ -535,7 +547,7 @@ const StixSightingRelationshipEditionContainer = ({
   );
 };
 
-StixSightingRelationshipEditionContainer.propTypes = {
+StixSightingRelationshipEditionOverview.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
@@ -548,7 +560,7 @@ StixSightingRelationshipEditionContainer.propTypes = {
 };
 
 const StixSightingRelationshipEditionFragment = createFragmentContainer(
-  StixSightingRelationshipEditionContainer,
+  StixSightingRelationshipEditionOverview,
   {
     stixSightingRelationship: graphql`
       fragment StixSightingRelationshipEditionOverview_stixSightingRelationship on StixSightingRelationship {
@@ -566,20 +578,20 @@ const StixSightingRelationshipEditionFragment = createFragmentContainer(
             entity_type
           }
         }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
-        }
         objectMarking {
           edges {
             node {
               id
               definition
               definition_type
+            }
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
             }
           }
         }

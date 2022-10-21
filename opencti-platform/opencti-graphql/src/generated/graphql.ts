@@ -5922,6 +5922,7 @@ export type InfrastructureAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
@@ -14475,6 +14476,7 @@ export type StixCoreRelationshipAddInput = {
   modified?: InputMaybe<Scalars['DateTime']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   relationship_type: Scalars['String'];
   revoked?: InputMaybe<Scalars['Boolean']>;
   start_time?: InputMaybe<Scalars['DateTime']>;
@@ -15738,6 +15740,7 @@ export type StixSightingRelationshipAddInput = {
   modified?: InputMaybe<Scalars['DateTime']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   toId: Scalars['StixRef'];
   update?: InputMaybe<Scalars['Boolean']>;

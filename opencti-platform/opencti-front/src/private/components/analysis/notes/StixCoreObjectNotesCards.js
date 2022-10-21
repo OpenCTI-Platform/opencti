@@ -19,7 +19,10 @@ import { ConnectionHandler } from 'relay-runtime';
 import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';
@@ -96,7 +99,10 @@ class StixCoreObjectNotesCardsContainer extends Component {
         ...defaultMarking,
         ...R.pluck('value', values.objectMarking),
       ]),
-      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
+      R.assoc(
+        'objectOrganization',
+        R.pluck('value', values.objectOrganization),
+      ),
       R.assoc('objects', [stixCoreObjectId]),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
@@ -107,7 +113,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
       },
       setSubmitting,
       updater: (store) => {
-        const payload = store.getRootField('noteAdd');
+        const payload = store.getRootField('userNoteAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         sharedUpdater(store, stixCoreObjectId, newEdge);
       },
@@ -131,12 +137,16 @@ class StixCoreObjectNotesCardsContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes about this entity')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNPARTICIPATE]} placeholder={<div style={{ height: 29 }} />}>
+        <Security
+          needs={[KNOWLEDGE_KNPARTICIPATE]}
+          placeholder={<div style={{ height: 29 }} />}
+        >
           <IconButton
             color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
-            size="large">
+            size="large"
+          >
             <EditOutlined fontSize="small" />
           </IconButton>
           <AddNotes
@@ -160,7 +170,8 @@ class StixCoreObjectNotesCardsContainer extends Component {
             style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
             expanded={open}
             onChange={this.handleToggleWrite.bind(this)}
-            variant="outlined">
+            variant="outlined"
+          >
             <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
               <Typography className={classes.heading}>
                 <RateReviewOutlined />
@@ -189,11 +200,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
                   isSubmitting,
                 }) => (
                   <Form style={{ width: '100%' }}>
-                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                      <div style={{ marginBottom: 20 }}>
-                        <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
-                      </div>
-                    </Security>
                     <Field
                       component={TextField}
                       variant="standard"
@@ -220,6 +226,12 @@ class StixCoreObjectNotesCardsContainer extends Component {
                       name="objectMarking"
                       style={{ marginTop: 20, width: '100%' }}
                     />
+                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                      <ObjectOrganizationField
+                        name="objectOrganization"
+                        style={{ marginTop: 20, width: '100%' }}
+                      />
+                    </Security>
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"

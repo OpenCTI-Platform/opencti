@@ -3663,6 +3663,7 @@ input InfrastructureAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -6855,6 +6856,7 @@ input StixCoreRelationshipAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   killChainPhases: [String]
@@ -6972,6 +6974,7 @@ input StixSightingRelationshipAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  objectOrganization: [String]
   externalReferences: [String]
   created: DateTime
   modified: DateTime

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { commitMutation } from '../../../../relay/environment';
@@ -17,44 +16,17 @@ import CommitMessage from '../../common/form/CommitMessage';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import {
-  convertCreatedBy, convertOrganizations,
+  convertCreatedBy,
+  convertOrganizations,
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-const styles = (theme) => ({
-  restrictions: {
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: theme.palette.background.nav,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -118,7 +90,10 @@ const observedDataMutationRelationDelete = graphql`
 `;
 
 const observedDataMutationGroupAdd = graphql`
-  mutation ObservedDataEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+  mutation ObservedDataEditionOverviewGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
         ...ObservedDataEditionOverview_observedData
@@ -128,7 +103,10 @@ const observedDataMutationGroupAdd = graphql`
 `;
 
 const observedDataMutationGroupDelete = graphql`
-  mutation ObservedDataEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!) {
+  mutation ObservedDataEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
         ...ObservedDataEditionOverview_observedData
@@ -174,6 +152,10 @@ class ObservedDataEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc(
+        'objectOrganization',
+        R.pluck('value', values.objectOrganization),
+      ),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -215,6 +197,37 @@ class ObservedDataEditionOverviewComponent extends Component {
           });
         })
         .catch(() => false);
+    }
+  }
+
+  handleChangeObjectOrganization(name, values) {
+    const { observedData } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(observedData);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: observedDataMutationGroupAdd,
+        variables: {
+          id: this.props.observedData.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: observedDataMutationGroupDelete,
+        variables: {
+          id: this.props.observedData.id,
+          organizationId: R.head(removed).value,
+        },
+      });
     }
   }
 
@@ -267,39 +280,8 @@ class ObservedDataEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeObjectOrganization(name, values) {
-    const { observedData } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(observedData);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: observedDataMutationGroupAdd,
-        variables: {
-          id: this.props.observedData.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: observedDataMutationGroupDelete,
-        variables: {
-          id: this.props.observedData.id,
-          organizationId: R.head(removed).value,
-        },
-      });
-    }
-  }
-
   render() {
-    const { t, observedData, classes, context, enableReferences } = this.props;
+    const { t, observedData, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(observedData);
     const objectMarking = convertMarkings(observedData);
     const objectOrganization = convertOrganizations(observedData);
@@ -338,14 +320,6 @@ class ObservedDataEditionOverviewComponent extends Component {
         }) => (
           <div>
             <Form style={{ margin: '0px 0 20px 0' }}>
-              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                <div className={classes.restrictions}>
-                  <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}
-                                    helpertext={<SubscriptionFocus context={context} fieldname="objectOrganization"/>}
-                                    onChange={this.handleChangeObjectOrganization.bind(this)}
-                  />
-                </div>
-              </Security>
               <Field
                 component={DateTimePickerField}
                 name="first_observed"
@@ -452,6 +426,19 @@ class ObservedDataEditionOverviewComponent extends Component {
                   values={values}
                 />
               )}
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                <ObjectOrganizationField
+                  name="objectOrganization"
+                  style={{ marginTop: 20, width: '100%' }}
+                  helpertext={
+                    <SubscriptionFocus
+                      context={context}
+                      fieldname="objectOrganization"
+                    />
+                  }
+                  onChange={this.handleChangeObjectOrganization.bind(this)}
+                />
+              </Security>
             </Form>
           </div>
         )}
@@ -486,20 +473,20 @@ const ObservedDataEditionOverview = createFragmentContainer(
             entity_type
           }
         }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
-        }
         objectMarking {
           edges {
             node {
               id
               definition
               definition_type
+            }
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
             }
           }
         }
@@ -518,7 +505,4 @@ const ObservedDataEditionOverview = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ObservedDataEditionOverview);
+export default inject18n(ObservedDataEditionOverview);

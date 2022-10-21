@@ -9,10 +9,10 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { compose, pluck, evolve, path } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
@@ -22,6 +22,10 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -129,11 +133,12 @@ class ArtifactCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
-    const adaptedValues = evolve(
+    const adaptedValues = R.evolve(
       {
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-        objectLabel: pluck('value'),
+        createdBy: R.path(['value']),
+        objectMarking: R.pluck('value'),
+        objectOrganization: R.pluck('value'),
+        objectLabel: R.pluck('value'),
       },
       values,
     );
@@ -211,6 +216,7 @@ class ArtifactCreation extends Component {
                 x_opencti_description: '',
                 file: '',
                 createdBy: '',
+                objectOrganization: [],
                 objectMarking: [],
                 objectLabel: [],
               }}
@@ -262,6 +268,12 @@ class ArtifactCreation extends Component {
                     name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <ObjectOrganizationField
+                      name="objectOrganization"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                  </Security>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -299,7 +311,7 @@ ArtifactCreation.propTypes = {
   openExports: PropTypes.bool,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(ArtifactCreation);

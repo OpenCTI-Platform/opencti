@@ -60,11 +60,6 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
-  restrictions: {
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: theme.palette.background.nav,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -653,6 +648,12 @@ class StixCyberObservableCreation extends Component {
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
+                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                      <ObjectOrganizationField
+                        name="objectOrganization"
+                        style={{ marginTop: 20, width: '100%' }}
+                      />
+                    </Security>
                     <Field
                       component={SwitchField}
                       type="checkbox"

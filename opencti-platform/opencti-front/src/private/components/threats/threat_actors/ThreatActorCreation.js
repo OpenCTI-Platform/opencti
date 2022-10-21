@@ -107,21 +107,21 @@ class ThreatActorCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
-    const finalValues = R.pipe(
-      R.assoc('confidence', parseInt(values.confidence, 10)),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
+    const adaptedValues = R.evolve(
+      {
+        confidence: () => parseInt(values.confidence, 10),
+        createdBy: R.path(['value']),
+        objectMarking: R.pluck('value'),
+        objectOrganization: R.pluck('value'),
+        objectLabel: R.pluck('value'),
+        externalReferences: R.pluck('value'),
+      },
+      values,
+    );
     commitMutation({
       mutation: threatActorMutation,
       variables: {
-        input: finalValues,
+        input: adaptedValues,
       },
       updater: (store) => insertNode(
         store,

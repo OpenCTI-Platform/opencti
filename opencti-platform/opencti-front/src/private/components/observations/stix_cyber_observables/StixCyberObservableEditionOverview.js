@@ -5,6 +5,7 @@ import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import { assoc, compose, difference, filter, fromPairs, head, includes, map, pathOr, pick, pipe } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -27,6 +28,11 @@ import {
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { convertOrganizations } from '../../../../utils/Edition';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -34,7 +40,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -111,6 +116,32 @@ const stixCyberObservableMutationRelationDelete = graphql`
   }
 `;
 
+const stixCyberObservableMutationGroupAdd = graphql`
+  mutation StixCyberObservableEditionOverviewGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationAdd(organizationId: $organizationId) {
+        ...StixCyberObservableEditionOverview_stixCyberObservable
+      }
+    }
+  }
+`;
+
+const stixCyberObservableMutationGroupDelete = graphql`
+  mutation StixCyberObservableEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationDelete(organizationId: $organizationId) {
+        ...StixCyberObservableEditionOverview_stixCyberObservable
+      }
+    }
+  }
+`;
+
 class StixCyberObservableEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
@@ -156,6 +187,37 @@ class StixCyberObservableEditionOverviewComponent extends Component {
     });
   }
 
+  handleChangeObjectOrganization(name, values) {
+    const { stixCyberObservable } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(stixCyberObservable);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: stixCyberObservableMutationGroupAdd,
+        variables: {
+          id: this.props.stixCyberObservable.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: stixCyberObservableMutationGroupDelete,
+        variables: {
+          id: this.props.stixCyberObservable.id,
+          organizationId: R.head(removed).value,
+        },
+      });
+    }
+  }
+
   handleChangeCreatedBy(name, value) {
     if (!this.props.enableReferences) {
       commitMutation({
@@ -189,10 +251,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(stixCyberObservable);
-
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
-
     if (added.length > 0) {
       commitMutation({
         mutation: stixCyberObservableMutationRelationAdd,
@@ -205,7 +265,6 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         },
       });
     }
-
     if (removed.length > 0) {
       commitMutation({
         mutation: stixCyberObservableMutationRelationDelete,
@@ -247,15 +306,18 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                 value: n.node.id,
               })),
             )(stixCyberObservable);
+            const objectOrganization = convertOrganizations(stixCyberObservable);
             const initialValues = pipe(
               assoc('createdBy', createdBy),
               assoc('objectMarking', objectMarking),
+              assoc('objectOrganization', objectOrganization),
               pick([
                 'x_opencti_score',
                 'x_opencti_description',
                 'createdBy',
                 'killChainPhases',
                 'objectMarking',
+                'objectOrganization',
               ]),
             )(stixCyberObservable);
             const attributes = pipe(
@@ -530,6 +592,21 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                       }
                       onChange={this.handleChangeObjectMarking.bind(this)}
                     />
+                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                      <ObjectOrganizationField
+                        name="objectOrganization"
+                        style={{ marginTop: 20, width: '100%' }}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldname="objectOrganization"
+                          />
+                        }
+                        onChange={this.handleChangeObjectOrganization.bind(
+                          this,
+                        )}
+                      />
+                    </Security>
                   </Form>
                 )}
               </Formik>
@@ -792,6 +869,14 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
+            }
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
             }
           }
         }

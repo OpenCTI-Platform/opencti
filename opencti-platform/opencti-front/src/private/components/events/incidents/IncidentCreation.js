@@ -19,7 +19,9 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { insertNode } from '../../../../utils/Store';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -27,10 +29,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
-  restrictions: {
-    padding: 10,
-    backgroundColor: theme.palette.background.nav,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -184,11 +182,6 @@ const IncidentCreation = ({ paginationOptions }) => {
           >
             {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
               <Form style={{ margin: '0px 0 20px 0' }}>
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                  <div className={classes.restrictions}>
-                    <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }} />
-                  </div>
-                </Security>
                 <Field
                   component={TextField}
                   variant="standard"
@@ -235,26 +228,32 @@ const IncidentCreation = ({ paginationOptions }) => {
                   style={{ marginTop: 20 }}
                 />
                 <CreatedByField
-                  name="createdBy"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={{ marginTop: 20, width: '100%' }}
-                />
-                <ExternalReferencesField
-                  name="externalReferences"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.externalReferences}
-                />
+                    name="createdBy"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
+                  />
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <ObjectOrganizationField
+                      name="objectOrganization"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                  </Security>
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"

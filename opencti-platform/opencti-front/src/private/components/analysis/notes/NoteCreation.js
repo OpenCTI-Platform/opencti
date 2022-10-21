@@ -26,16 +26,13 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { dayStartDate } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
-  restrictions: {
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: theme.palette.background.nav,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -143,7 +140,7 @@ class NoteCreation extends Component {
         input: adaptedValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('noteAdd');
+        const payload = store.getRootField('userNoteAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(
@@ -226,11 +223,6 @@ class NoteCreation extends Component {
                 values,
               }) => (
                 <Form style={{ margin: '0px 0 20px 0' }}>
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <div className={classes.restrictions}>
-                      <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
-                    </div>
-                  </Security>
                   <Field
                     component={DateTimePickerField}
                     name="created"
@@ -278,6 +270,12 @@ class NoteCreation extends Component {
                     name="objectMarking"
                     style={fieldSpacingContainerStyle}
                   />
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <ObjectOrganizationField
+                      name="objectOrganization"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                  </Security>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -388,6 +386,12 @@ class NoteCreation extends Component {
                     name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <ObjectOrganizationField
+                      name="objectOrganization"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                  </Security>
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>

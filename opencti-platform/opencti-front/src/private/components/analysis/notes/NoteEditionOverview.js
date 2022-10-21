@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -11,7 +10,11 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
-import { convertMarkings, convertOrganizations, convertStatus } from '../../../../utils/Edition';
+import {
+  convertMarkings,
+  convertOrganizations,
+  convertStatus,
+} from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
@@ -23,35 +26,6 @@ import Security, {
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const useStyles = makeStyles((theme) => ({
-  restrictions: {
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: theme.palette.background.nav,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-}));
-
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
     $id: ID!
@@ -60,7 +34,8 @@ export const noteMutationFieldPatch = graphql`
   ) {
     noteEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...NoteEditionOverview_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
+        ...NoteEditionOverview_note
+          @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
         ...Note_note
       }
     }
@@ -86,7 +61,8 @@ const noteMutationRelationAdd = graphql`
     noteEdit(id: $id) {
       relationAdd(input: $input) {
         from {
-          ...NoteEditionOverview_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
+          ...NoteEditionOverview_note
+            @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
         }
       }
     }
@@ -102,27 +78,38 @@ const noteMutationRelationDelete = graphql`
   ) {
     noteEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...NoteEditionOverview_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
+        ...NoteEditionOverview_note
+          @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
       }
     }
   }
 `;
 
 const noteMutationGroupAdd = graphql`
-  mutation NoteEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!, $userIsOrganizationEditor: Boolean!) {
+  mutation NoteEditionOverviewGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+    $userIsOrganizationEditor: Boolean!
+  ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...NoteEditionOverview_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
+        ...NoteEditionOverview_note
+          @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
       }
     }
   }
 `;
 
 const noteMutationGroupDelete = graphql`
-  mutation NoteEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!, $userIsOrganizationEditor: Boolean!) {
+  mutation NoteEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+    $userIsOrganizationEditor: Boolean!
+  ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...NoteEditionOverview_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
+        ...NoteEditionOverview_note
+          @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
       }
     }
   }
@@ -141,9 +128,10 @@ const noteValidation = (t) => Yup.object().shape({
 const NoteEditionOverviewComponent = (props) => {
   const { note, context } = props;
   const { t } = useFormatter();
-  const classes = useStyles();
   const { me } = useContext(UserContext);
-  const userIsOrganizationEditor = granted(me, [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+  const userIsOrganizationEditor = granted(me, [
+    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  ]);
 
   const handleChangeFocus = (name) => {
     commitMutation({
@@ -265,104 +253,112 @@ const NoteEditionOverviewComponent = (props) => {
   )(note);
 
   return (
-      <Formik enableReinitialize={true} initialValues={initialValues}
-              validationSchema={noteValidation(t)}>
-        {({ setFieldValue }) => (
-          <div>
-            <Form style={{ margin: '0px 0 20px 0' }}>
-              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                <div className={classes.restrictions}>
-                  <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}
-                                    helpertext={<SubscriptionFocus context={context} fieldname="objectOrganization"/>}
-                                    onChange={handleChangeObjectOrganization}
-                  />
-                </div>
-              </Security>
-              <Field
-                component={DateTimePickerField}
-                name="created"
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                TextFieldProps={{
-                  label: t('Publication date'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  helperText: (
-                    <SubscriptionFocus context={context} fieldName="created" />
-                  ),
-                }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="attribute_abstract"
-                label={t('Abstract')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="attribute_abstract"
-                  />
-                }
-              />
-              <Field
-                component={MarkDownField}
-                name="content"
-                label={t('Content')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="content" />
-                }
-              />
-              <ConfidenceField
-                name="confidence"
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={noteValidation(t)}
+    >
+      {({ setFieldValue }) => (
+        <div>
+          <Form style={{ margin: '0px 0 20px 0' }}>
+            <Field
+              component={DateTimePickerField}
+              name="created"
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              TextFieldProps={{
+                label: t('Publication date'),
+                variant: 'standard',
+                fullWidth: true,
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="created" />
+                ),
+              }}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="attribute_abstract"
+              label={t('Abstract')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="attribute_abstract"
+                />
+              }
+            />
+            <Field
+              component={MarkDownField}
+              name="content"
+              label={t('Content')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="content" />
+              }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              variant="edit"
+            />
+            {note.workflowEnabled && (
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="Note"
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}
-                label={t('Confidence')}
-                fullWidth={true}
-                containerStyle={fieldSpacingContainerStyle}
-                editContext={context}
-                variant="edit"
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
+                }
               />
-              {note.workflowEnabled && (
-                <StatusField
-                  name="x_opencti_workflow_id"
-                  type="Note"
-                  onFocus={handleChangeFocus}
-                  onChange={handleSubmitField}
-                  setFieldValue={setFieldValue}
-                  style={{ marginTop: 20 }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="x_opencti_workflow_id"
-                    />
-                  }
+            )}
+            <ObjectMarkingField
+              name="objectMarking"
+              style={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldname="objectMarking"
                 />
-              )}
-              <ObjectMarkingField
-                name="objectMarking"
+              }
+              onChange={handleChangeObjectMarking}
+            />
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+              <ObjectOrganizationField
+                name="objectOrganization"
                 style={{ marginTop: 20, width: '100%' }}
                 helpertext={
                   <SubscriptionFocus
                     context={context}
-                    fieldname="objectMarking"
+                    fieldname="objectOrganization"
                   />
                 }
-                onChange={handleChangeObjectMarking}
+                onChange={handleChangeObjectOrganization}
               />
-            </Form>
-          </div>
-        )}
-      </Formik>
+            </Security>
+          </Form>
+        </div>
+      )}
+    </Formik>
   );
 };
 
@@ -370,8 +366,10 @@ const NoteEditionOverview = createFragmentContainer(
   NoteEditionOverviewComponent,
   {
     note: graphql`
-      fragment NoteEditionOverview_note on Note 
-      @argumentDefinitions(userIsOrganizationEditor: { type: "Boolean", defaultValue: false }) {
+      fragment NoteEditionOverview_note on Note
+      @argumentDefinitions(
+        userIsOrganizationEditor: { type: "Boolean", defaultValue: false }
+      ) {
         id
         created
         attribute_abstract

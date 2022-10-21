@@ -32,16 +32,13 @@ import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
-  restrictions: {
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: theme.palette.background.nav,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -224,11 +221,6 @@ class ObservedDataCreation extends Component {
                 values,
               }) => (
                 <Form style={{ margin: '0px 0 20px 0' }}>
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                      <div className={classes.restrictions}>
-                          <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
-                      </div>
-                  </Security>
                   <StixCoreObjectsField
                     name="objects"
                     style={{ width: '100%' }}
@@ -291,6 +283,12 @@ class ObservedDataCreation extends Component {
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                   />
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                    <ObjectOrganizationField
+                      name="objectOrganization"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                  </Security>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"

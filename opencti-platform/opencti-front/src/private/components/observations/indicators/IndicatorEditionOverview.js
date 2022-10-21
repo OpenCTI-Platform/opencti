@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
@@ -22,44 +21,18 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import {
   convertCreatedBy,
-  convertMarkings, convertOrganizations,
+  convertMarkings,
+  convertOrganizations,
   convertStatus,
 } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/Security';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-const styles = (theme) => ({
-  restrictions: {
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: theme.palette.background.nav,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -124,7 +97,10 @@ const indicatorMutationRelationDelete = graphql`
 `;
 
 const indicatorMutationOrganizationAdd = graphql`
-  mutation IndicatorEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+  mutation IndicatorEditionOverviewGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
         ...IndicatorEditionOverview_indicator
@@ -134,7 +110,10 @@ const indicatorMutationOrganizationAdd = graphql`
 `;
 
 const indicatorMutationOrganizationDelete = graphql`
-  mutation IndicatorEditionOverviewGroupDeleteMutation($id: ID!, $organizationId: ID!) {
+  mutation IndicatorEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
         ...IndicatorEditionOverview_indicator
@@ -184,6 +163,10 @@ class IndicatorEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc(
+        'objectOrganization',
+        R.pluck('value', values.objectOrganization),
+      ),
       R.assoc(
         'valid_from',
         values.valid_from ? parse(values.valid_from).format() : null,
@@ -236,6 +219,37 @@ class IndicatorEditionOverviewComponent extends Component {
           });
         })
         .catch(() => false);
+    }
+  }
+
+  handleChangeObjectOrganization(name, values) {
+    const { indicator } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(indicator);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: indicatorMutationOrganizationAdd,
+        variables: {
+          id: this.props.indicator.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: indicatorMutationOrganizationDelete,
+        variables: {
+          id: this.props.indicator.id,
+          organizationId: R.head(removed).value,
+        },
+      });
     }
   }
 
@@ -325,39 +339,8 @@ class IndicatorEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeObjectOrganization(name, values) {
-    const { indicator } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(indicator);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: indicatorMutationOrganizationAdd,
-        variables: {
-          id: this.props.indicator.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: indicatorMutationOrganizationDelete,
-        variables: {
-          id: this.props.indicator.id,
-          organizationId: R.head(removed).value,
-        },
-      });
-    }
-  }
-
   render() {
-    const { t, indicator, classes, context, enableReferences } = this.props;
+    const { t, indicator, context, enableReferences } = this.props;
     const killChainPhases = R.pipe(
       R.pathOr([], ['killChainPhases', 'edges']),
       R.map((n) => ({
@@ -375,7 +358,10 @@ class IndicatorEditionOverviewComponent extends Component {
       R.assoc('objectMarking', objectMarking),
       R.assoc('objectOrganization', objectOrganization),
       R.assoc('x_opencti_workflow_id', status),
-      R.assoc('x_mitre_platforms', R.propOr([], 'x_mitre_platforms', indicator)),
+      R.assoc(
+        'x_mitre_platforms',
+        R.propOr([], 'x_mitre_platforms', indicator),
+      ),
       R.assoc('indicator_types', R.propOr([], 'indicator_types', indicator)),
       R.assoc('valid_from', buildDate(indicator.valid_from)),
       R.assoc('valid_until', buildDate(indicator.valid_until)),
@@ -413,14 +399,6 @@ class IndicatorEditionOverviewComponent extends Component {
           values,
         }) => (
           <Form style={{ margin: '0px 0 20px 0' }}>
-            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-              <div className={classes.restrictions}>
-                <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}
-                                         helpertext={<SubscriptionFocus context={context} fieldname="objectOrganization"/>}
-                                         onChange={this.handleChangeObjectOrganization.bind(this)}
-                />
-              </div>
-            </Security>
             <Field
               component={TextField}
               variant="standard"
@@ -627,6 +605,19 @@ class IndicatorEditionOverviewComponent extends Component {
                 id={indicator.id}
               />
             )}
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+              <ObjectOrganizationField
+                name="objectOrganization"
+                style={{ marginTop: 20, width: '100%' }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldname="objectOrganization"
+                  />
+                }
+                onChange={this.handleChangeObjectOrganization.bind(this)}
+              />
+            </Security>
           </Form>
         )}
       </Formik>
@@ -635,7 +626,6 @@ class IndicatorEditionOverviewComponent extends Component {
 }
 
 IndicatorEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   indicator: PropTypes.object,
@@ -707,7 +697,4 @@ const IndicatorEditionOverview = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IndicatorEditionOverview);
+export default inject18n(IndicatorEditionOverview);
