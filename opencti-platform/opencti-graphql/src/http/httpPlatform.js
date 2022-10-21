@@ -20,8 +20,8 @@ import initTaxiiApi from './httpTaxii';
 import { LOGIN_ACTION } from '../config/audit';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { getEntitiesFromCache } from '../manager/cacheManager';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { getEntityFromCache } from '../database/cache';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -260,16 +260,12 @@ const createApp = async (app) => {
   // Other routes - Render index.html
   app.get('*', async (req, res) => {
     const context = executionContext('app_loading');
-    const settings = await getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const getSetting = async (field) => {
-      const isSettings = settings && settings.length > 0;
-      return isSettings ? settings[0][field] : undefined;
-    };
+    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
-    const title = await getSetting('platform_title') ?? 'Cyber threat intelligence platform';
+    const title = await settings?.platform_title ?? 'Cyber threat intelligence platform';
     const description = 'OpenCTI is an open source platform allowing organizations'
       + ' to manage their cyber threat intelligence knowledge and observables.';
-    const settingFavicon = await getSetting('platform_favicon');
+    const settingFavicon = settings?.platform_favicon;
     const withOptionValued = data
       .replace(/%BASE_PATH%/g, basePath)
       .replace(/%APP_TITLE%/g, title)

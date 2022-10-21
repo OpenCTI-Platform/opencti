@@ -1010,7 +1010,7 @@ type Settings implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  platform_organization: ID
+  platform_organization: Organization
   platform_title: String
   platform_favicon: String
   platform_url: String
@@ -4471,6 +4471,7 @@ input MalwareAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
