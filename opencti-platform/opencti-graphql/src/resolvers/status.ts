@@ -4,7 +4,9 @@ import {
   findAllTemplates,
   findById,
   findTemplateById,
+  statusTemplateCleanContext,
   statusTemplateDelete,
+  statusTemplateEditContext,
   statusTemplateEditField
 } from '../domain/status';
 import type { Resolvers } from '../generated/graphql';
@@ -23,6 +25,8 @@ const statusResolvers: Resolvers = {
     statusTemplateAdd: (_, { input }, context) => createStatusTemplate(context, context.user, input),
     statusTemplateDelete: (_, { id }, context) => statusTemplateDelete(context, context.user, id),
     statusTemplateFieldPatch: (_, { id, input }, context) => statusTemplateEditField(context, context.user, id, input),
+    statusTemplateContextPatch: (_, { id, input }, context) => statusTemplateEditContext(context, context.user, id, input),
+    statusTemplateContextClean: (_, { id }, context) => statusTemplateCleanContext(context, context.user, id),
   },
 };
 

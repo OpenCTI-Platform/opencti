@@ -879,7 +879,7 @@ class Filters extends Component {
             const statusEntities = R.pipe(
               R.pathOr([], ['statuses', 'edges']),
               R.map((n) => ({
-                label: t(`status_${n.node.template.name}`),
+                label: n.node.template.name,
                 color: n.node.template.color,
                 value: n.node.id,
                 order: n.node.order,

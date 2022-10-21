@@ -145,7 +145,7 @@ class WorkflowLinesComponent extends Component {
           {translatedOrderedList.map((subType) => {
             const statuses = R.pipe(R.map((n) => n.node))(
               subType.statuses.edges,
-            );
+            ).filter((currentObject) => Boolean(currentObject.template));
             return (
               <ListItem
                 key={subType.id}
@@ -169,7 +169,7 @@ class WorkflowLinesComponent extends Component {
                               <Chip
                                 classes={{ root: classes.label }}
                                 variant="outlined"
-                                label={t(`status_${status.template.name}`)}
+                                label={status.template.name}
                                 style={{
                                   color: status.template.color,
                                   borderColor: status.template.color,

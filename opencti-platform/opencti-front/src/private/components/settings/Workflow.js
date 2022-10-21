@@ -12,6 +12,7 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../utils/ListParameters';
+import WorkflowsStatusesMenu from './workflow/WorkflowsStatusesMenu';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -21,7 +22,7 @@ Transition.displayName = 'TransitionSlide';
 const styles = () => ({
   container: {
     margin: 0,
-    padding: 0,
+    padding: '0 200px 50px 0',
   },
   parameters: {
     float: 'left',
@@ -57,8 +58,13 @@ class Sessions extends Component {
   }
 
   render() {
-    const { searchTerm } = this.state;
     const { classes } = this.props;
+    const { view, sortBy, orderAsc, searchTerm } = this.state;
+    const paginationOptions = {
+      search: searchTerm,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
+    };
     return (
       <div className={classes.container}>
         <div className={classes.parameters}>
@@ -80,6 +86,8 @@ class Sessions extends Component {
             return <div />;
           }}
         />
+        <WorkflowsStatusesMenu />
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
       </div>
     );
   }

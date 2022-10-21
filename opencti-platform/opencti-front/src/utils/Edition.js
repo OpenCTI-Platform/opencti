@@ -3,9 +3,7 @@ import * as R from 'ramda';
 export const convertStatus = (t, element) => (R.pathOr(null, ['status', 'template', 'name'], element) === null
   ? ''
   : {
-    label: t(
-      `status_${R.pathOr(null, ['status', 'template', 'name'], element)}`,
-    ),
+    label: R.pathOr(null, ['status', 'template', 'name'], element),
     color: R.pathOr(null, ['status', 'template', 'color'], element),
     value: R.pathOr(null, ['status', 'id'], element),
     order: R.pathOr(null, ['status', 'order'], element),

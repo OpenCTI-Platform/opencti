@@ -75,7 +75,7 @@ const TopMenuSettings = ({ t, location, classes }) => (
       }
       size="small"
       color={
-        location.pathname === '/dashboard/settings/workflow'
+        location.pathname.includes('/dashboard/settings/workflow')
           ? 'secondary'
           : 'primary'
       }

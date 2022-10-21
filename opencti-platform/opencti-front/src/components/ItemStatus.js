@@ -35,7 +35,7 @@ const ItemStatus = (props) => {
       <Chip
         classes={{ root: style }}
         variant="outlined"
-        label={t(`status_${status.template.name}`)}
+        label={status.template.name}
         style={{
           color: status.template.color,
           borderColor: status.template.color,

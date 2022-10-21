@@ -594,6 +594,7 @@ type StatusTemplate {
   id: ID!
   name: String!
   color: String!
+  editContext: [EditUserContext]
 }
 
 type StatusTemplateConnection {
@@ -7182,7 +7183,7 @@ type Query {
   userSubscription(id: String!): UserSubscription
   userSubscriptions(first: Int, after: ID, orderBy: UserSubscriptionOrdering, orderMode: OrderingMode, search: String): UserSubscriptionConnection
   statusTemplate(id: String!): StatusTemplate
-  statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode): StatusTemplateConnection
+  statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   status(id: String!): Status
   statuses(first: Int, after: ID, orderBy: StatusOrdering, orderMode: OrderingMode, filters: [StatusesFiltering!], filterMode: FilterMode, search: String): StatusConnection
   task(id: String!): Task
@@ -7338,6 +7339,7 @@ type Subscription {
   user(id: ID!): User
   workspace(id: ID!): Workspace
   label(id: ID!): Label
+  statusTemplate(id: ID!): StatusTemplate
   markingDefinition(id: ID!): MarkingDefinition
   killChainPhase(id: ID!): KillChainPhase
   stixCoreObject(id: ID!): StixCoreObject
@@ -7816,6 +7818,8 @@ type Mutation {
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate!
   statusTemplateDelete(id: ID!): ID!
   statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate!
+  statusTemplateContextPatch(id: ID!, input: EditContext!): StatusTemplate!
+  statusTemplateContextClean(id: ID!): StatusTemplate!
   groupAdd(input: GroupAddInput): Group
   groupEdit(id: ID!): GroupEditMutations
   userAdd(input: UserAddInput): User

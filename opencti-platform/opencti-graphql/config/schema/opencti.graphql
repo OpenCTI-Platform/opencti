@@ -583,6 +583,7 @@ type StatusTemplate {
   id: ID!
   name: String!
   color: String!
+  editContext: [EditUserContext]
 }
 type StatusTemplateConnection {
   pageInfo: PageInfo!
@@ -9586,6 +9587,7 @@ type Query {
     after: ID
     orderBy: StatusTemplateOrdering
     orderMode: OrderingMode
+    search: String
   ): StatusTemplateConnection @auth
   status(id: String!): Status @auth
   statuses(
@@ -10410,6 +10412,7 @@ type Subscription {
   user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
   workspace(id: ID!): Workspace @auth(for: [EXPLORE])
   label(id: ID!): Label @auth(for: [SETTINGS])
+  statusTemplate(id: ID!): StatusTemplate @auth(for: [SETTINGS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
   killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
   stixCoreObject(id: ID!): StixCoreObject @auth(for: [KNOWLEDGE])
@@ -10918,6 +10921,8 @@ type Mutation {
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS])
   statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS])
   statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate! @auth(for: [SETTINGS])
+  statusTemplateContextPatch(id: ID!, input: EditContext!): StatusTemplate! @auth(for: [SETTINGS])
+  statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS])
   groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
