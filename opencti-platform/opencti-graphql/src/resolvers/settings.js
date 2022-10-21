@@ -14,6 +14,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { PROVIDERS } from '../config/providers';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
+import { findById } from '../domain/organization';
 
 const settingsResolvers = {
   Query: {
@@ -29,6 +30,7 @@ const settingsResolvers = {
     platform_modules: () => getModules(),
     platform_map_tile_server_dark: () => nconf.get('app:map_tile_server_dark'),
     platform_map_tile_server_light: () => nconf.get('app:map_tile_server_light'),
+    platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
     editContext: (settings) => fetchEditContext(settings.id),
   },
   Mutation: {

@@ -26,6 +26,8 @@ import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
+import AutocompleteField from '../../../components/AutocompleteField';
+import ItemIcon from '../../../components/ItemIcon';
 
 const styles = (theme) => ({
   container: {
@@ -49,6 +51,19 @@ const styles = (theme) => ({
   nested: {
     paddingLeft: theme.spacing(4),
   },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
+  autoCompleteIndicator: {
+    display: 'none',
+  },
 });
 
 const settingsQuery = graphql`
@@ -57,7 +72,6 @@ const settingsQuery = graphql`
       id
       platform_title
       platform_favicon
-      platform_organization
       platform_email
       platform_theme
       platform_language
@@ -80,6 +94,10 @@ const settingsQuery = graphql`
       platform_theme_light_logo_login
       platform_enable_reference
       platform_hidden_types
+      platform_organization {
+        id
+        name
+      }
       platform_providers {
         name
         strategy
@@ -93,7 +111,7 @@ const settingsQuery = graphql`
         focusOn
       }
     }
-    organizations {
+    organizations(orderBy: name, first: 5000) {
       edges {
         node {
           id
@@ -132,7 +150,10 @@ const settingsMutationFieldPatch = graphql`
         platform_language
         platform_login_message
         platform_hidden_types
-        platform_organization
+        platform_organization {
+          id
+          name
+        }
       }
     }
   }
@@ -186,7 +207,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
   platform_hidden_types: Yup.array().nullable(),
-  platform_organization: Yup.string().nullable(),
+  platform_organization: Yup.object().nullable(),
 });
 
 class Settings extends Component {
@@ -264,6 +285,9 @@ class Settings extends Component {
         );
       }
     }
+    if (name === 'platform_organization') {
+      finalValue = finalValue.value;
+    }
     settingsValidation(this.props.t)
       .validateAt(name, { [name]: finalValue })
       .then(() => {
@@ -289,6 +313,15 @@ class Settings extends Component {
                 R.assoc(
                   'platform_hidden_types',
                   settings.platform_hidden_types || [],
+                ),
+                R.assoc(
+                  'platform_organization',
+                  settings.platform_organization
+                    ? {
+                      label: settings.platform_organization.name,
+                      value: settings.platform_organization.id,
+                    }
+                    : '',
                 ),
                 R.pick([
                   'platform_title',
@@ -355,24 +388,42 @@ class Settings extends Component {
                                   />
                                 }
                               />
-                              <Field component={SelectField}
-                                     variant="standard"
-                                     name="platform_organization"
-                                     label={t('Platform organization')}
-                                     fullWidth={true}
-                                     containerstyle={{ marginTop: 20, width: '100%' }}
-                                     onFocus={this.handleChangeFocus.bind(this, id)}
-                                     onChange={this.handleSubmitField.bind(this, id)}
-                                     helpertext={<SubscriptionFocus context={editContext} fieldName="platform_organization"/>}>
-                                <MenuItem value="">&nbsp;</MenuItem>
-                                {/* eslint-disable-next-line max-len */}
-                                {organizations.edges.map((o) => {
-                                  const key = `menu_${o.node.id}`;
-                                  return <MenuItem key={key} value={o.node.id}>
-                                    {t(o.node.name)}
-                                  </MenuItem>;
-                                })}
-                              </Field>
+                              <Field
+                                component={AutocompleteField}
+                                onChange={this.handleSubmitField.bind(this, id)}
+                                style={{ marginTop: 20 }}
+                                name="platform_organization"
+                                multiple={false}
+                                createLabel={t('Add')}
+                                textfieldprops={{
+                                  variant: 'standard',
+                                  label: t('Platform organization'),
+                                  helperText: (
+                                    <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_organization"
+                                    />
+                                  ),
+                                }}
+                                options={organizations.edges.map((n) => ({
+                                  id: n.node.id,
+                                  value: n.node.id,
+                                  label: n.node.name,
+                                }))}
+                                renderOption={(optionProps, option) => (
+                                  <li {...optionProps}>
+                                    <div className={classes.icon}>
+                                      <ItemIcon type="Organization" />
+                                    </div>
+                                    <div className={classes.text}>
+                                      {option.label}
+                                    </div>
+                                  </li>
+                                )}
+                                classes={{
+                                  clearIndicator: classes.autoCompleteIndicator,
+                                }}
+                              />
                               <Field
                                 component={TextField}
                                 variant="standard"
