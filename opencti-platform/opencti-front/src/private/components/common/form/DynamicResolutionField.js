@@ -15,8 +15,12 @@ import { fetchQuery } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { convertToStixType } from '../../../../utils/String';
+import {
+  convertFromStixType,
+  convertToStixType,
+} from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
+import { defaultValue } from '../../../../utils/Graph';
 
 const inlineStyles = {
   type: {
@@ -55,6 +59,7 @@ const DynamicResolutionField = (props) => {
     title,
     types,
     style,
+    stixDomainObjects,
   } = props;
   const { t } = useFormatter();
   const [textFieldValue, setTextFieldValue] = useState(
@@ -68,44 +73,59 @@ const DynamicResolutionField = (props) => {
         textFieldValue
           .split('\n')
           .filter((n) => n.length > 1)
-          .map((val) => fetchQuery(stixDomainObjectsLinesSearchQuery, {
-            types,
-            filters: [
-              {
-                key: ['name', 'aliases', 'x_opencti_aliases', 'x_mitre_id'],
-                values: val.trim(),
-              },
-            ],
-            count: 1,
-          })
-            .toPromise()
-            .then((data) => {
-              const stixDomainObjectsEdges = data.stixDomainObjects.edges;
-              const firstStixDomainObject = R.head(
-                stixDomainObjectsEdges,
-              )?.node;
-              if (firstStixDomainObject) {
-                return {
-                  id: firstStixDomainObject.standard_id,
-                  type: firstStixDomainObject.entity_type,
-                  name: firstStixDomainObject.name,
-                  in_platform: true,
-                };
-              }
-              return currentValueIndexed[val]
-                ? {
-                  id: currentValueIndexed[val].id,
-                  type: currentValueIndexed[val].type,
-                  name: currentValueIndexed[val].name,
-                  in_platform: false,
+          .map((val) => {
+            const filteredStixDomainObjects = stixDomainObjects.filter(
+              (n) => types.includes(convertFromStixType(n.type))
+                && (n.name === val.trim() || n.value === val.trim()),
+            );
+            if (filteredStixDomainObjects.length > 0) {
+              const firstStixDomainObject = R.head(filteredStixDomainObjects);
+              return {
+                id: firstStixDomainObject.id,
+                type: convertFromStixType(firstStixDomainObject.type),
+                name: defaultValue(firstStixDomainObject),
+                in_platform: null,
+              };
+            }
+            return fetchQuery(stixDomainObjectsLinesSearchQuery, {
+              types,
+              filters: [
+                {
+                  key: ['name', 'aliases', 'x_opencti_aliases', 'x_mitre_id'],
+                  values: val.trim(),
+                },
+              ],
+              count: 1,
+            })
+              .toPromise()
+              .then((data) => {
+                const stixDomainObjectsEdges = data.stixDomainObjects.edges;
+                const firstStixDomainObject = R.head(
+                  stixDomainObjectsEdges,
+                )?.node;
+                if (firstStixDomainObject) {
+                  return {
+                    id: firstStixDomainObject.standard_id,
+                    type: firstStixDomainObject.entity_type,
+                    name: firstStixDomainObject.name,
+                    in_platform: true,
+                  };
                 }
-                : {
-                  id: `${convertToStixType(R.head(types))}--${uuid()}`,
-                  type: R.head(types),
-                  name: val.trim(),
-                  in_platform: false,
-                };
-            })),
+                return currentValueIndexed[val]
+                  ? {
+                    id: currentValueIndexed[val].id,
+                    type: currentValueIndexed[val].type,
+                    name: currentValueIndexed[val].name,
+                    in_platform: false,
+                  }
+                  : {
+                    id: `${convertToStixType(R.head(types))}--${uuid()}`,
+                    type: R.head(types),
+                    name: val.trim(),
+                    in_platform: false,
+                  };
+              });
+          }),
       );
       setFieldValue(field.name, resolvedEntities);
     };
@@ -196,9 +216,12 @@ const DynamicResolutionField = (props) => {
                             variant="inList"
                             status={item.in_platform}
                             label={
+                              // eslint-disable-next-line no-nested-ternary
                               item.in_platform
                                 ? t('In platform')
-                                : t('To create')
+                                : item.in_platform === null
+                                  ? t('N/A')
+                                  : t('To create')
                             }
                           />
                         </div>

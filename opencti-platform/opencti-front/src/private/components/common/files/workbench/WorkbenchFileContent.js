@@ -742,7 +742,7 @@ class WorkbenchFileContentComponent extends Component {
       .map((n) => n.id);
     finalContainers = finalContainers.map((n) => R.assoc(
       'object_refs',
-      n.object_refs.filter(
+      (n.object_refs || []).filter(
         (o) => o !== object.id && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
@@ -869,7 +869,7 @@ class WorkbenchFileContentComponent extends Component {
       .map((n) => n.id);
     finalContainers = finalContainers.map((n) => R.assoc(
       'object_refs',
-      n.object_refs.filter(
+      (n.object_refs || []).filter(
         (o) => !objectsToBeDeletedIds.includes(o)
             && !stixCoreRelationshipsToRemove.includes(o),
       ),
@@ -1176,6 +1176,7 @@ class WorkbenchFileContentComponent extends Component {
       'Position',
       'Event',
     ];
+    const attributedToTo = ['Threat-Actor', 'Intrusion-Set', 'Campaign'];
     const usesTo = ['Attack-Pattern', 'Malware', 'Tool'];
     const initialValues = {};
     const resolveObjects = (relationshipType, source, target) => stixCoreRelationships
@@ -1238,6 +1239,13 @@ class WorkbenchFileContentComponent extends Component {
         'source_ref',
       );
     }
+    if (attributedToTo.includes(type)) {
+      initialValues['attributed-to_to'] = resolveObjects(
+        'attributed-to',
+        'target_ref',
+        'source_ref',
+      );
+    }
     if (usesTo.includes(type)) {
       initialValues.uses_to = resolveObjects(
         'uses',
@@ -1272,6 +1280,7 @@ class WorkbenchFileContentComponent extends Component {
                   'Event',
                   'Vulnerability',
                 ]}
+                stixDomainObjects={stixDomainObjects}
               />
             )}
             {usesFrom.includes(type) && (
@@ -1288,6 +1297,7 @@ class WorkbenchFileContentComponent extends Component {
                   'Infrastructure',
                   'Narrative',
                 ]}
+                stixDomainObjects={stixDomainObjects}
                 style={{ marginTop: 20 }}
               />
             )}
@@ -1299,6 +1309,7 @@ class WorkbenchFileContentComponent extends Component {
                 title={t('relationship_attributed-to')}
                 fullWidth={true}
                 types={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
+                stixDomainObjects={stixDomainObjects}
                 style={{ marginTop: 20 }}
               />
             )}
@@ -1317,6 +1328,19 @@ class WorkbenchFileContentComponent extends Component {
                   'Malware',
                   'Tool',
                 ]}
+                stixDomainObjects={stixDomainObjects}
+                style={{ marginTop: 20 }}
+              />
+            )}
+            {attributedToTo.includes(type) && (
+              <Field
+                component={DynamicResolutionField}
+                variant="standard"
+                name="attributed-to_to"
+                title={t('relationship_attributed-to') + t(' (reversed)')}
+                fullWidth={true}
+                types={['Intrusion-Set', 'Campaign', 'Incident']}
+                stixDomainObjects={stixDomainObjects}
                 style={{ marginTop: 20 }}
               />
             )}
@@ -1325,7 +1349,7 @@ class WorkbenchFileContentComponent extends Component {
                 component={DynamicResolutionField}
                 variant="standard"
                 name="uses_to"
-                title={t('relationship_uses')}
+                title={t('relationship_uses') + t(' (reversed)')}
                 fullWidth={true}
                 types={[
                   'Threat-Actor',
@@ -1334,6 +1358,7 @@ class WorkbenchFileContentComponent extends Component {
                   'Incident',
                   'Malware',
                 ]}
+                stixDomainObjects={stixDomainObjects}
                 style={{ marginTop: 20 }}
               />
             )}
@@ -2042,7 +2067,7 @@ class WorkbenchFileContentComponent extends Component {
         return R.assoc(
           'object_refs',
           [
-            ...n.object_refs.filter((o) => o !== observableId),
+            ...(n.object_refs || []).filter((o) => o !== observableId),
             updatedObservable.id,
           ],
           n,
