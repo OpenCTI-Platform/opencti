@@ -584,6 +584,10 @@ input StatusAddInput {
   template_id: String!
   order: Int!
 }
+input StatusTemplateAddInput {
+  name: String!
+  color: String!
+}
 
 ############## Sync
 enum SynchronizersOrdering {
@@ -10604,6 +10608,7 @@ type Mutation {
   containerEdit(id: ID!): ContainerEditMutations
   noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   noteEdit(id: ID!): NoteEditMutations
+  statusTemplateAdd(input: StatusTemplateAddInput): StatusTemplate @auth(for: [SETTINGS])
   observedDataAdd(input: ObservedDataAddInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   observedDataEdit(id: ID!): ObservedDataEditMutations
   opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])

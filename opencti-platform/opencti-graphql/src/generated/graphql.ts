@@ -7237,6 +7237,7 @@ export type Mutation = {
   sectorEdit?: Maybe<SectorEditMutations>;
   sessionKill?: Maybe<Scalars['ID']>;
   settingsEdit?: Maybe<SettingsEditMutations>;
+  statusTemplateAdd?: Maybe<StatusTemplate>;
   stixCoreObjectEdit?: Maybe<StixCoreObjectEditMutations>;
   stixCoreRelationshipAdd?: Maybe<StixCoreRelationship>;
   stixCoreRelationshipDelete: Scalars['Boolean'];
@@ -7881,6 +7882,11 @@ export type MutationSessionKillArgs = {
 
 export type MutationSettingsEditArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationStatusTemplateAddArgs = {
+  input?: InputMaybe<StatusTemplateAddInput>;
 };
 
 
@@ -13304,6 +13310,11 @@ export type StatusTemplate = {
   name: Scalars['String'];
 };
 
+export type StatusTemplateAddInput = {
+  color: Scalars['String'];
+  name: Scalars['String'];
+};
+
 export type StatusTemplateConnection = {
   __typename?: 'StatusTemplateConnection';
   edges?: Maybe<Array<Maybe<StatusTemplateEdge>>>;
@@ -18202,6 +18213,7 @@ export type ResolversTypes = ResolversObject<{
   StatusFilter: StatusFilter;
   StatusOrdering: StatusOrdering;
   StatusTemplate: ResolverTypeWrapper<StatusTemplate>;
+  StatusTemplateAddInput: StatusTemplateAddInput;
   StatusTemplateConnection: ResolverTypeWrapper<StatusTemplateConnection>;
   StatusTemplateEdge: ResolverTypeWrapper<StatusTemplateEdge>;
   StatusTemplateOrdering: StatusTemplateOrdering;
@@ -18733,6 +18745,7 @@ export type ResolversParentTypes = ResolversObject<{
   StatusConnection: StatusConnection;
   StatusEdge: StatusEdge;
   StatusTemplate: StatusTemplate;
+  StatusTemplateAddInput: StatusTemplateAddInput;
   StatusTemplateConnection: StatusTemplateConnection;
   StatusTemplateEdge: StatusTemplateEdge;
   StatusesFiltering: StatusesFiltering;
@@ -21388,6 +21401,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sectorEdit?: Resolver<Maybe<ResolversTypes['SectorEditMutations']>, ParentType, ContextType, RequireFields<MutationSectorEditArgs, 'id'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;
   settingsEdit?: Resolver<Maybe<ResolversTypes['SettingsEditMutations']>, ParentType, ContextType, RequireFields<MutationSettingsEditArgs, 'id'>>;
+  statusTemplateAdd?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, Partial<MutationStatusTemplateAddArgs>>;
   stixCoreObjectEdit?: Resolver<Maybe<ResolversTypes['StixCoreObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectEditArgs, 'id'>>;
   stixCoreRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<MutationStixCoreRelationshipAddArgs>>;
   stixCoreRelationshipDelete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationStixCoreRelationshipDeleteArgs, 'fromId' | 'relationship_type' | 'toId'>>;

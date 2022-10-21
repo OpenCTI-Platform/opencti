@@ -1,4 +1,4 @@
-import { findById, findAll, findTemplateById, findAllTemplates } from '../domain/status';
+import { findById, findAll, findTemplateById, findAllTemplates, createStatusTemplate } from '../domain/status';
 import type { Resolvers } from '../generated/graphql';
 
 const statusResolvers: Resolvers = {
@@ -10,6 +10,9 @@ const statusResolvers: Resolvers = {
   },
   Status: {
     template: (current, _, context) => findTemplateById(context, context.user, current.template_id),
+  },
+  Mutation: {
+    statusTemplateAdd: (_, { input }, context) => createStatusTemplate(context.user, <StatusTemplateInput>input)
   },
 };
 
