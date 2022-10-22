@@ -7,13 +7,13 @@ import {
   storeLoadById,
   updateAttribute
 } from '../database/middleware';
-import { completeConnector, connectorsFor } from '../database/repository';
-import { registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
+import { completeConnector, connectors, connectorsFor } from '../database/repository';
+import { registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
-import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
+import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -25,19 +25,14 @@ import { listEntities } from '../database/middleware-loader';
 export const loadConnectorById = (context, user, id) => {
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
 };
-
 export const connectorForWork = async (context, user, id) => {
   const work = await elLoadById(context, user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   if (work) return loadConnectorById(context, user, work.connector_id);
   return null;
 };
-
 export const connectorsForExport = async (context, user, scope, onlyAlive = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 };
-// endregion
-
-// region mutations
 export const pingConnector = async (context, user, id, state) => {
   const creation = now();
   const connector = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
@@ -57,12 +52,57 @@ export const pingConnector = async (context, user, id, state) => {
   }
   return storeLoadById(context, user, id, 'Connector').then((data) => completeConnector(data));
 };
-
 export const resetStateConnector = async (context, user, id) => {
   const patch = { connector_state: '', connector_state_reset: true };
   await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
+export const registerConnector = async (context, user, connectorData) => {
+  // eslint-disable-next-line camelcase
+  const { id, name, type, scope, auto = null, only_contextual = null } = connectorData;
+  const connector = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
+  // Register queues
+  await registerConnectorQueues(id, name, type, scope);
+  if (connector) {
+    // Simple connector update
+    const patch = {
+      name,
+      updated_at: now(),
+      connector_user_id: user.id,
+      connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
+      auto,
+      only_contextual,
+    };
+    const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
+    // Notify configuration change for caching system
+    await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+    return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+  }
+  // Need to create the connector
+  const connectorToCreate = {
+    internal_id: id,
+    name,
+    connector_type: type,
+    connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
+    auto,
+    only_contextual,
+    connector_user_id: user.id,
+  };
+  const createdConnector = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
+  // Return the connector
+  return completeConnector(createdConnector);
+};
+export const connectorDelete = async (context, user, connectorId) => {
+  await deleteWorkForConnector(context, user, connectorId);
+  await unregisterConnector(connectorId);
+  const { element } = await internalDeleteElementById(context, user, connectorId);
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
+  return element.internal_id;
+};
+// endregion
 
 // region syncs
 export const patchSync = async (context, user, id, patch) => {
@@ -143,50 +183,14 @@ export const syncEditContext = async (context, user, syncId, input) => {
 };
 // endregion
 
-export const registerConnector = async (context, user, connectorData) => {
-  // eslint-disable-next-line camelcase
-  const { id, name, type, scope, auto = null, only_contextual = null } = connectorData;
-  const connector = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
-  // Register queues
-  await registerConnectorQueues(id, name, type, scope);
-  if (connector) {
-    // Simple connector update
-    const patch = {
-      name,
-      updated_at: now(),
-      connector_user_id: user.id,
-      connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
-      auto,
-      only_contextual,
-    };
-    const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
-    // Notify configuration change for caching system
-    await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-    return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+// region testing
+export const deleteQueues = async (context, user) => {
+  try { await unregisterConnector(INTERNAL_SYNC_QUEUE); } catch (e) { /* nothing */ }
+  const platformConnectors = await connectors(context, user);
+  for (let index = 0; index < platformConnectors.length; index += 1) {
+    const connector = platformConnectors[index];
+    await unregisterConnector(connector.id);
   }
-  // Need to create the connector
-  const connectorToCreate = {
-    internal_id: id,
-    name,
-    connector_type: type,
-    connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
-    auto,
-    only_contextual,
-    connector_user_id: user.id,
-  };
-  const createdConnector = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
-  // Notify configuration change for caching system
-  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
-  // Return the connector
-  return completeConnector(createdConnector);
-};
-
-export const connectorDelete = async (context, user, connectorId) => {
-  await deleteWorkForConnector(context, user, connectorId);
-  await unregisterConnector(connectorId);
-  const { element } = await internalDeleteElementById(context, user, connectorId);
-  // Notify configuration change for caching system
-  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
-  return element.internal_id;
+  try { await unregisterExchanges(); } catch (e) { /* nothing */ }
 };
 // endregion

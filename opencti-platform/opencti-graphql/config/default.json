@@ -135,6 +135,7 @@
     "use_aws_role": false
   },
   "rabbitmq": {
+    "queue_prefix": "",
     "hostname": "localhost",
     "vhost": "/",
     "use_ssl": false,

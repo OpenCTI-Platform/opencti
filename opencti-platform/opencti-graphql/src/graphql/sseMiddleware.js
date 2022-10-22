@@ -7,16 +7,14 @@ import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/u
 import { createStreamProcessor, EVENT_CURRENT_VERSION, STREAM_BATCH_TIME } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { findById, streamCollectionGroups } from '../domain/stream';
+import { internalLoadById, stixLoadById, stixLoadByIds, storeLoadByIdWithRefs } from '../database/middleware';
+import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
-  EVENT_TYPE_UPDATE
-} from '../database/rabbitmq';
-import { internalLoadById, stixLoadById, stixLoadByIds, storeLoadByIdWithRefs } from '../database/middleware';
-import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
-import {
+  EVENT_TYPE_UPDATE,
   generateCreateMessage,
   isEmptyField,
   isNotEmptyField,

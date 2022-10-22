@@ -12,8 +12,13 @@ import {
   stixLoadById,
   storeLoadByIdWithRefs
 } from '../database/middleware';
-import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
+import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE,
+  isEmptyField,
+  isNotEmptyField,
+  READ_DATA_INDICES
+} from '../database/utils';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { TYPE_LOCK_ERROR } from '../config/errors';

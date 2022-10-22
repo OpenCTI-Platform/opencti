@@ -5,7 +5,8 @@ import { Promise as BluePromise } from 'bluebird';
 import { lockResource, storeCreateEntityEvent } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
-  ACTION_TYPE_DELETE, ACTION_TYPE_ENRICHMENT,
+  ACTION_TYPE_DELETE,
+  ACTION_TYPE_ENRICHMENT,
   ACTION_TYPE_MERGE,
   ACTION_TYPE_PROMOTE,
   ACTION_TYPE_REMOVE,
@@ -26,7 +27,8 @@ import { resolveUserById } from '../domain/user';
 import {
   createRelation,
   deleteElementById,
-  deleteRelationsByFromAndTo, internalFindByIds,
+  deleteRelationsByFromAndTo,
+  internalFindByIds,
   internalLoadById,
   mergeEntities,
   patchAttribute,
@@ -35,6 +37,7 @@ import {
 } from '../database/middleware';
 import { now } from '../utils/format';
 import {
+  EVENT_TYPE_CREATE,
   INDEX_INTERNAL_OBJECTS,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
@@ -52,7 +55,6 @@ import { listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
-import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';

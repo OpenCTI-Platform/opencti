@@ -1,24 +1,15 @@
 import { readFileSync } from 'node:fs';
 import amqp from 'amqplib';
 import axios from 'axios';
-import * as R from 'ramda';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, configureCA } from '../config/conf';
 import { DatabaseError, UnknownError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
+import { RABBIT_QUEUE_PREFIX } from './utils';
 
-export const INTERNAL_SYNC_QUEUE = 'sync';
-export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
-export const WORKER_EXCHANGE = 'amqp.worker.exchange';
-
-export const EVENT_TYPE_DEPENDENCIES = 'init-dependencies';
-export const EVENT_TYPE_INIT = 'init-create';
-
-export const EVENT_TYPE_CREATE = 'create';
-export const EVENT_TYPE_UPDATE = 'update';
-export const EVENT_TYPE_MERGE = 'merge';
-export const EVENT_TYPE_DELETE = 'delete';
+export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
+export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
 
 const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
 const QUEUE_TYPE = conf.get('rabbitmq:queue_type');
@@ -105,9 +96,10 @@ export const metrics = async (context, user) => {
         return response.data;
       });
     // Compute number of push queues
-    const pushQueues = R.filter((q) => R.includes('push_', q.name) && q.consumers > 0, queues);
-    const consumers = R.head(pushQueues) ? R.head(pushQueues).consumers : 0;
-    return { overview, consumers, queues };
+    const platformQueues = queues.filter((q) => q.name.startsWith(RABBIT_QUEUE_PREFIX));
+    const pushQueues = platformQueues.filter((q) => q.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_`) && q.consumers > 0);
+    const consumers = pushQueues.length > 0 ? pushQueues[0].consumers : 0;
+    return { overview, consumers, queues: platformQueues };
   };
   return telemetry(context, user, 'QUEUE metrics', {
     [SemanticAttributes.DB_NAME]: 'messaging_engine',
@@ -117,19 +109,19 @@ export const metrics = async (context, user) => {
 
 export const connectorConfig = (id) => ({
   connection: config(),
-  push: `push_${id}`,
-  push_exchange: 'amqp.worker.exchange',
-  listen: `listen_${id}`,
-  listen_exchange: 'amqp.connector.exchange',
+  push: `${RABBIT_QUEUE_PREFIX}push_${id}`,
+  push_exchange: WORKER_EXCHANGE,
+  listen: `${RABBIT_QUEUE_PREFIX}listen_${id}`,
+  listen_exchange: CONNECTOR_EXCHANGE,
 });
 
-export const listenRouting = (connectorId) => `listen_routing_${connectorId}`;
+export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
 
-export const pushRouting = (connectorId) => `push_routing_${connectorId}`;
+export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
 export const registerConnectorQueues = async (id, name, type, scope) => {
-  const listenQueue = `listen_${id}`;
-  const pushQueue = `push_${id}`;
+  const listenQueue = `${RABBIT_QUEUE_PREFIX}listen_${id}`;
+  const pushQueue = `${RABBIT_QUEUE_PREFIX}push_${id}`;
   await amqpExecute(async (channel) => {
     // 01. Ensure exchange exists
     await channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
@@ -157,13 +149,17 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 };
 
 export const unregisterConnector = async (id) => {
-  const listen = await amqpExecute((channel) => channel.deleteQueue(`listen_${id}`));
-  const push = await amqpExecute((channel) => channel.deleteQueue(`push_${id}`));
+  const listen = await amqpExecute((channel) => channel.deleteQueue(`${RABBIT_QUEUE_PREFIX}listen_${id}`));
+  const push = await amqpExecute((channel) => channel.deleteQueue(`${RABBIT_QUEUE_PREFIX}push_${id}`));
   return { listen, push };
 };
 
+export const unregisterExchanges = async () => {
+  await amqpExecute((channel) => channel.deleteExchange(CONNECTOR_EXCHANGE));
+  await amqpExecute((channel) => channel.deleteExchange(WORKER_EXCHANGE));
+};
+
 export const rabbitMQIsAlive = async () => {
-  // 01. Ensure exchange exists
   await amqpExecute((channel) => channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', {
     durable: true,
   })).catch(
@@ -171,8 +167,6 @@ export const rabbitMQIsAlive = async () => {
       throw DatabaseError('RabbitMQ seems down', { error: e.message });
     }
   );
-  // 02. Ensure sync queue exists
-  await registerConnectorQueues(INTERNAL_SYNC_QUEUE, 'Internal sync manager', 'internal', 'sync');
 };
 
 export const pushToSync = (message) => {

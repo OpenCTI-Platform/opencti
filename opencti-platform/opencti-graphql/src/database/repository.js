@@ -1,9 +1,10 @@
 import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { connectorConfig, INTERNAL_SYNC_QUEUE } from './rabbitmq';
+import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 import { listEntities } from './middleware-loader';
+import { INTERNAL_SYNC_QUEUE } from './utils';
 
 // region global queries
 // TODO Will be removed during typescript migration

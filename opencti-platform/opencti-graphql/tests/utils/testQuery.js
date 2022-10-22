@@ -67,7 +67,11 @@ export const serverFromUser = (user = ADMIN_USER) => {
     schema: createSchema(),
     introspection: true,
     persistedQueries: false,
-    context: () => ({ user }),
+    context: () => {
+      const executeContext = executionContext('test');
+      executeContext.user = user;
+      return executeContext;
+    },
   });
 };
 

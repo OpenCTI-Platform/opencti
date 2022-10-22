@@ -1,18 +1,9 @@
 import * as R from 'ramda';
 import { FIVE_MINUTES, RAW_EVENTS_SIZE } from '../../utils/testQuery';
 import { shutdownModules, startModules } from '../../../src/modules';
-import {
-  checkStreamData,
-  checkStreamGenericContent,
-  fetchStreamEvents,
-} from '../../utils/testStream';
-import {
-  EVENT_TYPE_CREATE,
-  EVENT_TYPE_DELETE,
-  EVENT_TYPE_MERGE,
-  EVENT_TYPE_UPDATE,
-} from '../../../src/database/rabbitmq';
+import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, } from '../../utils/testStream';
 import { PORT } from '../../../src/config/conf';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 
 describe('Raw streams tests', () => {
   beforeAll(async () => {
