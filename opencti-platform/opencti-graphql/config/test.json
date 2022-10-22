@@ -1,12 +1,20 @@
 {
   "app": {
     "port": 4010,
-    "logs_level": "info",
     "performance_logger": false,
     "sync_raw_start_remote_uri": "http://localhost:4200/graphql",
     "sync_live_start_remote_uri": "http://localhost:4200/graphql",
     "sync_direct_start_remote_uri": "http://localhost:4200/graphql",
     "sync_restore_start_remote_uri": "http://localhost:4200/graphql",
+    "app_logs": {
+      "logs_level": "error",
+      "logs_files": false,
+      "logs_console": true
+    },
+    "audit_logs": {
+      "logs_files": false,
+      "logs_console": false
+    },
     "telemetry": {
       "tracing": {
         "enabled": false,
@@ -33,6 +41,15 @@
     "index_prefix": "test",
     "url": "http://localhost:9200"
   },
+  "minio": {
+    "bucket_name": "test",
+    "endpoint": "localhost",
+    "port": 9000
+  },
+  "rabbitmq": {
+    "queue_prefix": "test",
+    "hostname": "localhost"
+  },
   "subscription_scheduler": {
     "enabled": false
   },
@@ -56,14 +73,6 @@
   },
   "retention_manager": {
     "enabled": true
-  },
-  "minio": {
-    "bucket_name": "test",
-    "endpoint": "localhost",
-    "port": 9000
-  },
-  "rabbitmq": {
-    "hostname": "localhost"
   },
   "providers": {
     "local": {

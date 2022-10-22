@@ -78,6 +78,15 @@ export const initializeBucket = async () => {
   }
 };
 
+export const deleteBucket = async () => {
+  try {
+    // Try to access to the bucket
+    await s3Client.send(new s3.DeleteBucketCommand({ Bucket: bucketName }));
+  } catch (err) {
+    // Dont care
+  }
+};
+
 export const isStorageAlive = () => initializeBucket();
 
 export const deleteFile = async (context, user, id) => {

@@ -5,7 +5,7 @@ import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, isStorageAlive } from './database/file-storage';
-import { rabbitMQIsAlive } from './database/rabbitmq';
+import { rabbitMQIsAlive, registerConnectorQueues } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
@@ -15,7 +15,7 @@ import { cachePurge, lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
-import { INDEX_INTERNAL_OBJECTS } from './database/utils';
+import { INDEX_INTERNAL_OBJECTS, INTERNAL_SYNC_QUEUE } from './database/utils';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from './config/errors';
 import { BYPASS, BYPASS_REFERENCE, executionContext, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
@@ -150,6 +150,10 @@ const initializeSchema = async () => {
   await elCreateIndexes();
   logApp.info('[INIT] Search engine indexes loaded');
   return true;
+};
+
+const initializeQueues = async () => {
+  await registerConnectorQueues(INTERNAL_SYNC_QUEUE, 'Internal sync manager', 'internal', 'sync');
 };
 
 const initializeMigration = async (context) => {
@@ -323,6 +327,7 @@ const platformInit = async (withMarkings = true) => {
     const alreadyExists = await isExistingPlatform(context);
     if (!alreadyExists) {
       logApp.info('[INIT] New platform detected, initialization...');
+      await initializeQueues();
       await initializeBucket();
       await initializeSchema();
       await initializeMigration(context);

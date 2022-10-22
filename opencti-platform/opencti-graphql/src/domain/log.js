@@ -1,11 +1,10 @@
-import { head } from 'ramda';
 import * as R from 'ramda';
+import { head } from 'ramda';
 import { elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
-import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById } from './user';
 import { storeLoadById, timeSeriesEntities } from '../database/middleware';
-import { READ_INDEX_HISTORY, INDEX_HISTORY } from '../database/utils';
+import { EVENT_TYPE_CREATE, INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
 import { SYSTEM_USER } from '../utils/access';
 
 export const findAll = (context, user, args) => {

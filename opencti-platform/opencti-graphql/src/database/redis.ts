@@ -8,6 +8,10 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, configureCA, DEV_MODE, ENABLED_CACHING, getStoppingState, logApp } from '../config/conf';
 import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_MERGE,
+  EVENT_TYPE_UPDATE,
   generateCreateMessage,
   generateDeleteMessage,
   generateMergeMessage,
@@ -16,7 +20,6 @@ import {
   waitInSec,
 } from './utils';
 import { isStixData } from '../schema/stixCoreObject';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
@@ -74,7 +77,7 @@ const redisOptions = (database: number): RedisOptions => ({
   showFriendlyErrorStack: DEV_MODE,
 });
 
-const createRedisClient = (provider: string, database?: number) : Redis => {
+const createRedisClient = (provider: string, database?: number): Redis => {
   const client = new Redis(redisOptions(database ?? BASE_DATABASE));
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
@@ -83,13 +86,13 @@ const createRedisClient = (provider: string, database?: number) : Redis => {
   client.defineCommand('cacheGet', {
     lua:
       'local index = 1\n'
-      + "local resolvedKeys = redis.call('mget', unpack(KEYS))\n"
+      + 'local resolvedKeys = redis.call(\'mget\', unpack(KEYS))\n'
       + 'for p, k in pairs(resolvedKeys) do \n'
       + '    if (k==nil or (type(k) == "boolean" and not k)) then \n'
       + '        index = index+1\n'
       + '    elseif (k:sub(0, 1) == "@") then \n'
       + '        local subKey = "cache:" .. k:sub(2, #k)\n'
-      + "        resolvedKeys[index] = redis.call('get', subKey)\n"
+      + '        resolvedKeys[index] = redis.call(\'get\', subKey)\n'
       + '        index = index+1\n'
       + '    else \n'
       + '        index = index+1\n'
@@ -591,6 +594,7 @@ export interface StreamProcessor {
   start: (from: string | undefined) => Promise<void>;
   shutdown: () => Promise<void>;
 }
+
 export const createStreamProcessor = (user: AuthUser, provider: string, callback: any, maxRange = MAX_RANGE_MESSAGES): StreamProcessor => {
   let client: Redis;
   let startEventId: string;

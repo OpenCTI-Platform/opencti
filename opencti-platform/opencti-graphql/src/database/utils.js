@@ -14,13 +14,22 @@ import {
 } from '../schema/stixCyberObservableRelationship';
 import { isStixMetaRelationship, META_FIELD_TO_STIX_ATTRIBUTE } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isDictionaryAttribute, isJsonAttribute } from '../schema/fieldDataAdapter';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
+const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
+export const RABBIT_QUEUE_PREFIX = rabbitmqPrefix ? `${rabbitmqPrefix}_` : '';
+
+export const INTERNAL_SYNC_QUEUE = 'sync';
+export const EVENT_TYPE_CREATE = 'create';
+export const EVENT_TYPE_DELETE = 'delete';
+export const EVENT_TYPE_DEPENDENCIES = 'init-dependencies';
+export const EVENT_TYPE_INIT = 'init-create';
+export const EVENT_TYPE_UPDATE = 'update';
+export const EVENT_TYPE_MERGE = 'merge';
 
 // Operations definition
 export const UPDATE_OPERATION_ADD = 'add';
@@ -283,6 +292,7 @@ const generateCreateDeleteMessage = (type, instance) => {
   }
   return '-';
 };
+
 export const generateCreateMessage = (instance) => {
   return generateCreateDeleteMessage(EVENT_TYPE_CREATE, instance);
 };
