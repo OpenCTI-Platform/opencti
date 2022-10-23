@@ -36,7 +36,6 @@ import Unknown from '../static/images/entities/unknown.svg';
 import StixCyberObservable from '../static/images/entities/stix-cyber-observable.svg';
 import relationship from '../static/images/entities/relationship.svg';
 import { itemColor } from './Colors';
-import themeDark from '../components/ThemeDark';
 import {
   dateFormat,
   dayEndDate,
@@ -709,6 +708,8 @@ export const buildGraphData = (objects, graphData, t) => {
       toId: n.to?.id,
       toType: n.to?.entity_type,
       isObservable: !!n.observable_value,
+      isNestedInferred:
+        (n.types?.includes('inferred') && !n.types.includes('manual')) || false,
       markedBy:
         !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
           ? R.map(
@@ -760,6 +761,8 @@ export const buildGraphData = (objects, graphData, t) => {
       source_id: n.from.id,
       target_id: n.to.id,
       inferred: n.is_inferred,
+      isNestedInferred:
+        (n.types?.includes('inferred') && !n.types.includes('manual')) || false,
       defaultDate: jsDate(defaultDate(n)),
       markedBy:
         !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
@@ -822,6 +825,9 @@ export const buildGraphData = (objects, graphData, t) => {
         parent_types: n.parent_types,
         entity_type: n.entity_type,
         relationship_type: n.relationship_type,
+        isNestedInferred:
+          (n.types?.includes('inferred') && !n.types.includes('manual'))
+          || false,
         source: n.id,
         target: n.to.id,
         label: '',
@@ -860,6 +866,7 @@ export const buildGraphData = (objects, graphData, t) => {
 };
 
 export const nodePaint = (
+  colors,
   {
     // eslint-disable-next-line camelcase
     label,
@@ -870,6 +877,7 @@ export const nodePaint = (
   color,
   ctx,
   selected = false,
+  inferred = false,
 ) => {
   ctx.beginPath();
   ctx.fillStyle = color;
@@ -877,7 +885,11 @@ export const nodePaint = (
   ctx.fill();
   if (selected) {
     ctx.lineWidth = 0.8;
-    ctx.strokeStyle = themeDark().palette.secondary.main;
+    ctx.strokeStyle = colors.selected;
+    ctx.stroke();
+  } else if (inferred) {
+    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = colors.inferred;
     ctx.stroke();
   }
   const size = 8;

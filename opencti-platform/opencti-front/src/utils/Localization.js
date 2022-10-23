@@ -1232,6 +1232,8 @@ const i18n = {
       'Manage an entity': 'Administrar una entidad',
       'Do you want to remove this entity?': '¿Quieres eliminar este objeto?',
       'Add context': 'Agregar contexto',
+      'Delete the element if no other reports contain it':
+        'Eliminar el elemento si ningún otro informe lo contiene',
       // Time
       '24h': '24 h',
       // Types
@@ -1565,7 +1567,7 @@ const i18n = {
       // Interface
       gt: 'Supérieur à',
       lte: 'Inférieur ou égal à',
-      Login: 'Nom d\'utilisateur',
+      Login: "Nom d'utilisateur",
       'Two-factor authentication': 'Authentification double facteur',
       '2FA': 'ADF',
       'Use 2FA authentication': "Utiliser l'authentification à double facteur",
@@ -2773,6 +2775,8 @@ const i18n = {
       'Do you want to remove this object?':
         'Souhaitez-vous retirer cet object ?',
       'Add context': 'Ajouter du contexte',
+      'Delete the element if no other reports contain it':
+        "Supprimer l'élément si aucun autre rapport ne le contient",
       // Time
       '24h': '24h',
       // Types
@@ -2996,7 +3000,7 @@ const i18n = {
       filter_modified_start_date: 'Modifié après',
       filter_modified_end_date: 'Modifié avant',
       filter_valid_from_start_date: 'Valid depuis',
-      filter_valid_until_end_date: 'Valide jusqu\'à',
+      filter_valid_until_end_date: "Valide jusqu'à",
       filter_x_opencti_score: 'Score',
       filter_x_opencti_negative: 'Qualification',
       filter_x_opencti_score_gt: 'Score supérieur à',
@@ -3190,7 +3194,8 @@ const i18n = {
         'この観測結果からインジケータを作成しますか？',
       'Do you want to enable this rule?': 'このルールを有効にしますか？',
       'Do you want to disable this rule?': 'このルールを無効にしますか？',
-      'Do you want to delete this workbench?': 'このワークスペースを削除しますか?',
+      'Do you want to delete this workbench?':
+        'このワークスペースを削除しますか?',
       'Applying this rule on the existing data':
         '既存のデータにルールを適用しています',
       'This rule has been applied on the existing data':
@@ -4273,6 +4278,8 @@ const i18n = {
       'Manage an entity': 'エンティティを管理する',
       'Do you want to remove this object?': 'このオブジェクトを削除しますか?',
       'Add context': 'コンテキストを追加',
+      'Delete the element if no other reports contain it':
+        '他のレポートに要素が含まれていない場合は要素を削除します',
       // Time
       '24h': '24時間',
       // Types
@@ -5708,6 +5715,8 @@ const i18n = {
       'Manage an entity': '管理实体',
       'Do you want to remove this object?': '是否要删除此对象？',
       'Add context': '添加上下文',
+      'Delete the element if no other reports contain it':
+        '如果没有其他报告包含该元素，则删除该元素',
       // Time
       '24h': '24小时',
       // Types

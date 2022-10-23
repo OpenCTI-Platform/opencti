@@ -65,7 +65,7 @@ const reportResolvers = {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objectContains: buildRefRelationKey(RELATION_OBJECT),
+    objectContains: buildRefRelationKey(RELATION_OBJECT, '*')
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({

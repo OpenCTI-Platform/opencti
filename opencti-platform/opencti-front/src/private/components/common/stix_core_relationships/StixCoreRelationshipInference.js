@@ -110,7 +110,16 @@ class StixCoreRelationshipInference extends Component {
           height={400}
           graphData={graphData}
           nodeRelSize={4}
-          nodeCanvasObject={(node, ctx) => nodePaint(node, node.color, ctx, false)
+          nodeCanvasObject={(node, ctx) => nodePaint(
+            {
+              selected: theme.palette.secondary.main,
+              inferred: theme.palette.warning.main,
+            },
+            node,
+            node.color,
+            ctx,
+            false,
+          )
           }
           nodePointerAreaPaint={nodeAreaPaint}
           linkCanvasObjectMode={() => 'after'}

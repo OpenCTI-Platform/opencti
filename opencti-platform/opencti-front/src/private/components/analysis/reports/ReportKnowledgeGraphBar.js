@@ -31,6 +31,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
@@ -46,7 +49,6 @@ import {
 import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
@@ -107,6 +109,7 @@ class ReportKnowledgeGraphBar extends Component {
       openEditNested: false,
       openEditEntity: false,
       displayRemove: false,
+      deleteObject: false,
     };
   }
 
@@ -115,7 +118,11 @@ class ReportKnowledgeGraphBar extends Component {
   }
 
   handleCloseRemove() {
-    this.setState({ displayRemove: false });
+    this.setState({ displayRemove: false, deleteObject: false });
+  }
+
+  handleToggleDeleteObject() {
+    this.setState({ deleteObject: !this.state.deleteObject });
   }
 
   handleOpenStixCoreObjectsTypes(event) {
@@ -337,12 +344,15 @@ class ReportKnowledgeGraphBar extends Component {
       openEditSighting,
       openEditEntity,
       openEditNested,
+      deleteObject,
     } = this.state;
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
     let viewLink = null;
-    const isInferred = R.filter((n) => n.inferred, selectedNodes).length > 0
-      || R.filter((n) => n.inferred, selectedLinks).length > 0;
+    const isInferred = R.filter((n) => n.inferred || n.isNestedInferred, selectedNodes).length
+        > 0
+      || R.filter((n) => n.inferred || n.isNestedInferred, selectedLinks).length
+        > 0;
     if (viewEnabled) {
       if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
         if (
@@ -386,6 +396,8 @@ class ReportKnowledgeGraphBar extends Component {
         && numberOfSelectedLinks === 1
         && selectedLinks.length === 1
         && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
+    const deletionEnabled = !isInferred
+      && (numberOfSelectedNodes !== 0 || numberOfSelectedLinks !== 0);
     const fromSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];
@@ -998,10 +1010,7 @@ class ReportKnowledgeGraphBar extends Component {
                       <IconButton
                         color="primary"
                         onClick={this.handleOpenRemove.bind(this)}
-                        disabled={
-                          numberOfSelectedNodes === 0
-                          && numberOfSelectedLinks === 0
-                        }
+                        disabled={!deletionEnabled}
                         size="large"
                       >
                         <DeleteOutlined />
@@ -1017,11 +1026,24 @@ class ReportKnowledgeGraphBar extends Component {
                   onClose={this.handleCloseRemove.bind(this)}
                 >
                   <DialogContent>
-                    <DialogContentText>
+                    <Typography variant="body">
                       {t(
                         'Do you want to remove these elements from this report?',
                       )}
-                    </DialogContentText>
+                    </Typography>
+                    <FormGroup>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={deleteObject}
+                            onChange={this.handleToggleDeleteObject.bind(this)}
+                          />
+                        }
+                        label={t(
+                          'Delete the element if no other reports contain it',
+                        )}
+                      />
+                    </FormGroup>
                   </DialogContent>
                   <DialogActions>
                     <Button onClick={this.handleCloseRemove.bind(this)}>
@@ -1030,7 +1052,7 @@ class ReportKnowledgeGraphBar extends Component {
                     <Button
                       onClick={() => {
                         this.handleCloseRemove();
-                        handleDeleteSelected();
+                        handleDeleteSelected(deleteObject);
                       }}
                       color="secondary"
                     >
