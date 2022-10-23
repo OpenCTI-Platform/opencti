@@ -4,6 +4,7 @@ import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
 import {
   DatabaseError,
+  ForbiddenAccess,
   FunctionalError,
   LockTimeoutError,
   MissingReferenceError,
@@ -98,7 +99,8 @@ import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   ID_INTERNAL,
@@ -195,8 +197,10 @@ import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles, storeFileConverter, upload } from './file-storage';
 import {
   BYPASS,
-  BYPASS_REFERENCE, executionContext,
+  BYPASS_REFERENCE,
+  executionContext,
   filterElementsAccordingToUser,
+  isBypassUser,
   isUserCanAccessElement,
   SYSTEM_USER
 } from '../utils/access';
@@ -683,8 +687,16 @@ const inputResolveRefs = async (context, user, input, type) => {
     throw MissingReferenceError({ input, unresolvedIds });
   }
   const complete = { ...cleanedInput, entity_type: type };
-  const resolvedRefs = R.mergeAll(resolved);
-  return R.mergeRight(complete, resolvedRefs);
+  const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
+  // Check the marking allow for the user and asked inside the input
+  if (!isBypassUser(user) && inputResolved[INPUT_MARKINGS]) {
+    const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
+    const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
+    if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
+      throw ForbiddenAccess({ input });
+    }
+  }
+  return inputResolved;
 };
 const indexCreatedElement = async (context, user, { type, element, update, relations }) => {
   if (type === TRX_CREATION) {
@@ -1060,7 +1072,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
-        // eslint-disable-next-line camelcase
+          // eslint-disable-next-line camelcase
           const { _index, entity_type } = R.head(vals);
           const ids = vals.map((v) => v.data.internal_id);
           return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
@@ -1768,7 +1780,10 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     if (updatedInputs.length > 0) {
       const message = generateUpdateMessage(updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
-      const commit = isContainCommitReferences ? { message: opts.commitMessage, references: opts.references } : undefined;
+      const commit = isContainCommitReferences ? {
+        message: opts.commitMessage,
+        references: opts.references
+      } : undefined;
       const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { commit });
       return { element: updatedInstance, event };
     }
@@ -2255,7 +2270,10 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   // endregion
   // If modification must be done, reload the instance with dependencies to allow complete stix generation
   if (impactedInputs.length > 0 && patchInputs.length === 0) {
-    throw UnsupportedError('[OPENCTI] Upsert will produce only internal modification', { element, impact: impactedInputs });
+    throw UnsupportedError('[OPENCTI] Upsert will produce only internal modification', {
+      element,
+      impact: impactedInputs
+    });
   }
   const isUpdated = impactedInputs.length > 0 || rawRelations.length > 0;
   // Manage update_at
