@@ -289,7 +289,7 @@ export const roleAddRelation = async (context, user, roleId, input) => {
   const finalInput = R.assoc('fromId', roleId, input);
   const relationData = await createRelation(context, user, finalInput);
   await roleSessionRefresh(context, user, roleId);
-  notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
 };
 
 export const roleDeleteRelation = async (context, user, roleId, toId, relationshipType) => {
