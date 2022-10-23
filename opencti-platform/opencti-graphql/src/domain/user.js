@@ -12,13 +12,19 @@ import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
+  listThroughGetFrom,
   listThroughGetTo,
   patchAttribute,
   storeLoadById,
   updateAttribute,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER, } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -32,7 +38,7 @@ import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
-import { applicationSession } from '../database/session';
+import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
 import {
   convertRelationToAction,
   IMPERSONATE_ACTION,
@@ -48,9 +54,22 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
+const AUTH_BEARER = 'Bearer';
+const AUTH_BASIC = 'BasicAuth';
 export const STREAMAPI = 'STREAMAPI';
 export const TAXIIAPI = 'TAXIIAPI';
 export const ROLE_DEFAULT = 'Default';
+
+const roleSessionRefresh = async (context, user, roleId) => {
+  const members = await listThroughGetFrom(context, user, [roleId], RELATION_HAS_ROLE, ENTITY_TYPE_USER);
+  const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
+  sessions.forEach((s) => markSessionForRefresh(s.id));
+};
+
+const userSessionRefresh = async (userId) => {
+  const sessions = await findSessionsForUsers([userId]);
+  sessions.forEach((s) => markSessionForRefresh(s.id));
+};
 
 export const userWithOrigin = (req, user) => {
   // /!\ This metadata information is used in different ways
@@ -171,64 +190,6 @@ export const findRoles = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
-// region session management
-export const findSessions = () => {
-  const { store } = applicationSession();
-  return new Promise((accept) => {
-    store.all((err, result) => {
-      const sessionsPerUser = R.groupBy(
-        (s) => s.user.id,
-        R.filter((n) => n.user, result)
-      );
-      const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
-        return {
-          user_id: k,
-          sessions: v.map((s) => ({ id: s.id, created: s.user.session_creation })),
-        };
-      });
-      accept(sessions);
-    });
-  });
-};
-
-export const findUserSessions = async (userId) => {
-  const sessions = await findSessions();
-  const userSessions = sessions.filter((s) => s.user_id === userId);
-  if (userSessions.length > 0) {
-    return R.head(userSessions).sessions;
-  }
-  return [];
-};
-
-export const fetchSessionTtl = (session) => {
-  const { store } = applicationSession();
-  return new Promise((accept) => {
-    store.expiration(session.id, (err, ttl) => {
-      accept(ttl);
-    });
-  });
-};
-
-export const killSession = (id) => {
-  const { store } = applicationSession();
-  return new Promise((accept) => {
-    store.destroy(id, () => {
-      accept(id);
-    });
-  });
-};
-
-export const killUserSessions = async (userId) => {
-  const sessions = await findUserSessions(userId);
-  const sessionsIds = sessions.map((s) => s.id);
-  for (let index = 0; index < sessionsIds.length; index += 1) {
-    const sessionId = sessionsIds[index];
-    await killSession(sessionId);
-  }
-  return sessionsIds;
-};
-// endregion
-
 export const findCapabilities = (context, user, args) => {
   const finalArgs = R.assoc('orderBy', 'attribute_order', args);
   return listEntities(context, user, [ENTITY_TYPE_CAPABILITY], finalArgs);
@@ -326,10 +287,9 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = R.assoc('fromId', roleId, input);
-  return createRelation(context, user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+  const relationData = await createRelation(context, user, finalInput);
+  await roleSessionRefresh(context, user, roleId);
+  notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
 };
 
 export const roleDeleteRelation = async (context, user, roleId, toId, relationshipType) => {
@@ -341,6 +301,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(context, user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
@@ -433,6 +394,7 @@ export const userAddRelation = async (context, user, userId, input) => {
   const relationData = await createRelation(context, user, finalInput);
   const operation = convertRelationToAction(input.relationship_type);
   logAudit.info(user, operation, { from: userId, to: input.toId, type: input.relationship_type });
+  await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
 };
 
@@ -443,6 +405,7 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
   await deleteRelationsByFromAndTo(context, user, targetUser.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   const operation = convertRelationToAction(relationshipType, false);
   logAudit.info(user, operation, { from: targetUser.id, to: toId, type: relationshipType });
+  await userSessionRefresh(targetUser.id);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
@@ -626,11 +589,9 @@ export const userRenewToken = async (context, user, userId) => {
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
 };
 
-export const authenticateUser = async (context, req, user, provider, token = '') => {
-  // Build the user session with only required fields
-  const logged = await buildCompleteUser(context, user);
-  logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
+export const internalAuthenticateUser = async (context, req, user, provider, token) => {
   let impersonate;
+  const logged = await buildCompleteUser(context, user);
   const applicantId = req.headers['opencti-applicant-id'];
   if (isNotEmptyField(applicantId) && logged.id !== applicantId) {
     if (isBypassUser(logged)) {
@@ -648,11 +609,16 @@ export const authenticateUser = async (context, req, user, provider, token = '')
   const sessionUser = buildSessionUser(logged, impersonate, provider);
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
+  req.session.session_refresh = false;
   return sessionUser;
 };
 
-const AUTH_BEARER = 'Bearer';
-const AUTH_BASIC = 'BasicAuth';
+export const authenticateUser = async (context, req, user, provider, token = '') => {
+  // Build the user session with only required fields
+  logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
+  return internalAuthenticateUser(context, req, user, provider, token);
+};
+
 export const authenticateUserFromRequest = async (context, req, res) => {
   const auth = req.session?.user;
   // If user already have a session
@@ -691,6 +657,11 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       // Impersonate doesn't match, kill the current session and try to re auth
       await logout(context, auth, req, res);
       return authenticateUserFromRequest(context, req, res);
+    }
+    // If session is marked for refresh, reload the user data in the session
+    if (req.session.session_refresh) {
+      const { provider: userProvider, token: userToken } = req.session.session_provider;
+      return internalAuthenticateUser(context, req, auth, userProvider, userToken);
     }
     // If everything ok, return the authenticated user.
     return auth;

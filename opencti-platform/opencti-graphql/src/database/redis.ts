@@ -22,7 +22,7 @@ import {
 import { isStixData } from '../schema/stixCoreObject';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
-import RedisStore from './sessionStore-redis';
+import RedisStore, { REDIS_PREFIX } from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
 import { getInstanceIds } from '../schema/identifier';
 import { convertStoreToStix } from './stix-converter';
@@ -47,7 +47,6 @@ import { telemetry } from '../config/tracing';
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => readFileSync(path));
-const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 
 export const EVENT_CURRENT_VERSION = '4';

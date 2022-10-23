@@ -1,24 +1,27 @@
 import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import {
+  addBookmark,
   addUser,
+  authenticateUser,
   batchGroups,
   batchRoleCapabilities,
   batchRoles,
-  fetchSessionTtl,
+  bookmarks,
+  deleteBookmark,
   findAll,
   findById,
   findCapabilities,
   findRoleById,
   findRoles,
-  findSessions,
-  findUserSessions,
   getCapabilities,
   getMarkings,
-  killSession,
-  killUserSessions,
   logout,
   meEditField,
+  otpUserActivation,
+  otpUserDeactivation,
+  otpUserGeneration,
+  otpUserLogin,
   roleAddRelation,
   roleCleanContext,
   roleDelete,
@@ -28,18 +31,11 @@ import {
   userAddRelation,
   userCleanContext,
   userDelete,
-  userIdDeleteRelation,
   userEditContext,
   userEditField,
-  userWithOrigin,
-  bookmarks,
-  addBookmark,
-  deleteBookmark,
+  userIdDeleteRelation,
   userRenewToken,
-  authenticateUser,
-  otpUserGeneration,
-  otpUserLogin,
-  otpUserActivation, otpUserDeactivation,
+  userWithOrigin,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -52,6 +48,7 @@ import { batchLoader } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
 import { getUserSubscriptions } from '../domain/userSubscription';
 import { executionContext } from '../utils/access';
+import { fetchSessionTtl, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 
 const groupsLoader = batchLoader(batchGroups);
 const rolesLoader = batchLoader(batchRoles);
@@ -87,7 +84,7 @@ const userResolvers = {
     user: (session, _, context) => findById(context, context.user, session.user_id),
   },
   SessionDetail: {
-    ttl: (session) => fetchSessionTtl(session),
+    ttl: (session) => fetchSessionTtl(session.id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
@@ -140,7 +137,9 @@ const userResolvers = {
       contextPatch: ({ input }) => roleEditContext(context, context.user, id, input),
       contextClean: () => roleCleanContext(context, context.user, id),
       relationAdd: ({ input }) => roleAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => roleDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => {
+        return roleDeleteRelation(context, context.user, id, toId, relationshipType);
+      },
     }),
     roleAdd: (_, { input }, context) => addRole(context, context.user, input),
     userEdit: (_, { id }, context) => ({
@@ -150,7 +149,9 @@ const userResolvers = {
       contextClean: () => userCleanContext(context, context.user, id),
       tokenRenew: () => userRenewToken(context, context.user, id),
       relationAdd: ({ input }) => userAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => userIdDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => {
+        return userIdDeleteRelation(context, context.user, id, toId, relationshipType);
+      },
     }),
     meEdit: (_, { input, password }, context) => meEditField(context, context.user, context.user.id, input, password),
     meTokenRenew: (_, __, context) => userRenewToken(context, context.user, context.user.id),
