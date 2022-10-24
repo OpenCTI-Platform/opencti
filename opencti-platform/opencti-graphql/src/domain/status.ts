@@ -1,8 +1,8 @@
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
-import { internalDeleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import { deleteElementById, internalDeleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntitiesPaginated } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { getParentTypes } from '../schema/schemaUtils';
@@ -12,7 +12,7 @@ import type {
   StatusTemplate,
   QueryStatusTemplatesArgs,
   QueryStatusesArgs,
-  EditInput,
+  EditInput, StatusTemplateAddInput, StatusAddInput,
 } from '../generated/graphql';
 import { OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -47,7 +47,7 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
   };
   return findAll(context, user, args);
 };
-export const createStatusTemplate = async (user: AuthUser, input: StatusTemplateInput) => {
+export const createStatusTemplate = async (user: AuthUser, input: StatusTemplateAddInput) => {
   const statusTemplateId = generateInternalId();
   const data = {
     id: statusTemplateId,
@@ -61,7 +61,7 @@ export const createStatusTemplate = async (user: AuthUser, input: StatusTemplate
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
   return data;
 };
-export const createStatus = async (user: AuthUser, subTypeId: string, input: StatusInput, returnStatus = false) => {
+export const createStatus = async (user: AuthUser, subTypeId: string, input: StatusAddInput, returnStatus = false) => {
   const statusId = generateInternalId();
   const data = {
     id: statusId,
@@ -87,9 +87,21 @@ export const statusEditField = async (context: AuthContext, user: AuthUser, subT
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return findSubTypeById(subTypeId);
 };
+export const statusTemplateEditField = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditInput[]) => {
+  const { element } = await updateAttribute(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE, input);
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return findTemplateById(context, user, statusTemplateId);
+};
+// export const statusTemplateEditField = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditInput) => {
+//   const { element } = await updateAttribute(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE, input);
+//   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+// };
 export const statusDelete = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string) => {
   const { element: deleted } = await internalDeleteElementById(context, user, statusId);
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, user);
   return findSubTypeById(subTypeId);
+};
+export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  return deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
 };

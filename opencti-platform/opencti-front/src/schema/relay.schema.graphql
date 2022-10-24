@@ -602,6 +602,11 @@ input StatusAddInput {
   order: Int!
 }
 
+input StatusTemplateAddInput {
+  name: String!
+  color: String!
+}
+
 enum SynchronizersOrdering {
   id
   name
@@ -7425,6 +7430,9 @@ type Mutation {
   otpLogin(input: UserOTPLoginInput): Boolean
   settingsEdit(id: ID!): SettingsEditMutations
   subTypeEdit(id: ID!): SubTypeEditMutations
+  statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate!
+  statusTemplateDelete(id: ID!): ID!
+  statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate!
   groupAdd(input: GroupAddInput): Group
   groupEdit(id: ID!): GroupEditMutations
   userAdd(input: UserAddInput): User

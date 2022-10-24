@@ -10535,6 +10535,9 @@ type Mutation {
   otpLogin(input: UserOTPLoginInput): Boolean @auth
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS])
+  statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS])
+  statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS])
+  statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate! @auth(for: [SETTINGS])
   groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
@@ -10608,7 +10611,6 @@ type Mutation {
   containerEdit(id: ID!): ContainerEditMutations
   noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   noteEdit(id: ID!): NoteEditMutations
-  statusTemplateAdd(input: StatusTemplateAddInput): StatusTemplate @auth(for: [SETTINGS])
   observedDataAdd(input: ObservedDataAddInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   observedDataEdit(id: ID!): ObservedDataEditMutations
   opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
