@@ -1,7 +1,7 @@
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { deleteElementById, internalDeleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntitiesPaginated } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
