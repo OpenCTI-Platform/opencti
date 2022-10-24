@@ -1,11 +1,12 @@
 import { assoc } from 'ramda';
 import {
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
   createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
+  listThroughGetFrom,
   storeLoadById,
   updateAttribute,
 } from '../database/middleware';
@@ -17,6 +18,13 @@ import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
+
+const groupSessionRefresh = async (context, user, groupId) => {
+  const members = await listThroughGetFrom(context, user, [groupId], RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+  const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
+  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
+};
 
 export const findById = (context, user, groupId) => {
   return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
@@ -63,10 +71,9 @@ export const groupAddRelation = async (context, user, groupId, input) => {
   } else if (input.toId) {
     finalInput = assoc('fromId', groupId, input);
   }
-  return createRelation(context, user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+  const createdRelation = await createRelation(context, user, finalInput);
+  await groupSessionRefresh(context, user, groupId);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, createdRelation, user);
 };
 
 export const groupDeleteRelation = async (context, user, groupId, fromId, toId, relationshipType) => {
@@ -82,6 +89,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
   } else if (toId) {
     await deleteRelationsByFromAndTo(context, user, groupId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   }
+  await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 

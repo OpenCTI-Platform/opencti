@@ -1,6 +1,9 @@
 import session from 'express-session';
 import LRU from 'lru-cache';
 import AsyncLock from 'async-lock';
+import conf from '../config/conf';
+
+export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 
 const { Store } = session;
 
@@ -65,7 +68,7 @@ class RedisStore extends Store {
   }
 
   touch(sid, sess, cb = noop) {
-    const key = this.prefix + sid;
+    const key = REDIS_PREFIX + this.prefix + sid;
     const { touchCache } = this;
     const sessionExtender = (done) => {
       const cachedTouch = touchCache.get(`touch-${key}`);
@@ -100,13 +103,13 @@ class RedisStore extends Store {
   }
 
   all(cb = noop) {
-    const prefixLen = this.prefix.length;
+    const prefixLen = REDIS_PREFIX.length + this.prefix.length;
 
     this._getAllKeys((err, keys) => {
       if (err) return cb(err);
       if (keys.length === 0) return cb(null, []);
 
-      return this.client.mget(keys, (mgetErr, sessions) => {
+      return this.client.call('MGET', keys, (mgetErr, sessions) => {
         if (mgetErr) return cb(mgetErr);
 
         let result;
@@ -163,7 +166,7 @@ class RedisStore extends Store {
   }
 
   _scanKeys(keys, cursor, pattern, count, cb = noop) {
-    const args = [cursor, 'match', pattern, 'count', count];
+    const args = [cursor, 'match', REDIS_PREFIX + pattern, 'count', count];
     this.client.scan(args, (err, data) => {
       if (err) return cb(err);
 
