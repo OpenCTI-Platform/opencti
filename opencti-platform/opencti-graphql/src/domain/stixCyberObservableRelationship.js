@@ -44,11 +44,11 @@ export const stixCyberObservableRelationshipDelete = async (context, user, stixC
 };
 
 export const stixCyberObservableRelationshipCleanContext = (context, user, stixCyberObservableRelationshipId) => {
-  return stixCoreRelationshipCleanContext(user, stixCyberObservableRelationshipId);
+  return stixCoreRelationshipCleanContext(context, user, stixCyberObservableRelationshipId);
 };
 
 export const stixCyberObservableRelationshipEditContext = (context, user, stixCyberObservableRelationshipId, input) => {
-  return stixCoreRelationshipEditContext(user, stixCyberObservableRelationshipId, input);
+  return stixCoreRelationshipEditContext(context, user, stixCyberObservableRelationshipId, input);
 };
 
 export const stixCyberObservableRelationshipEditField = async (context, user, relationshipId, input) => {
