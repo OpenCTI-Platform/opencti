@@ -2,7 +2,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
-import { lockResource, storeCreateEntityEvent } from '../database/redis';
+import { buildCreateEvent, lockResource } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_DELETE,
@@ -255,7 +255,7 @@ const executeRuleApply = async (context, user, actionContext, element) => {
   const { rule } = actionContext;
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, element.internal_id);
-  const event = await storeCreateEntityEvent(context, user, instance, '-', { publishStreamEvent: false });
+  const event = await buildCreateEvent(user, instance, '-');
   await rulesApplyHandler(context, user, [event], [rule]);
 };
 const executeRuleClean = async (context, user, actionContext, element) => {

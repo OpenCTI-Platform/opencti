@@ -19,7 +19,7 @@ import {
   isInferredIndex,
   waitInSec,
 } from './utils';
-import { isStixData } from '../schema/stixCoreObject';
+import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
@@ -463,7 +463,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
 };
 export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
   try {
-    if (isStixData(instance)) {
+    if (isStixExportableData(instance)) {
       const event = buildUpdateEvent(user, previous, instance, message, opts.commit);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
         await pushToStream(context, user, clientBase, instance, event);
@@ -476,7 +476,7 @@ export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, pre
   }
 };
 // Create
-const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): Event => {
+export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): Event => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
     version: EVENT_CURRENT_VERSION,
@@ -488,7 +488,7 @@ const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string
 };
 export const storeCreateRelationEvent = async (context: AuthContext, user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
   try {
-    if (isStixData(instance)) {
+    if (isStixExportableData(instance)) {
       const { withoutMessage = false } = opts;
       const message = withoutMessage ? '-' : generateCreateMessage(instance);
       const event = buildCreateEvent(user, instance, message);
@@ -504,7 +504,7 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
 };
 export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
-    if (isStixData(instance)) {
+    if (isStixExportableData(instance)) {
       const event = buildCreateEvent(user, instance, message);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
         await pushToStream(context, user, clientBase, instance, event);
@@ -533,7 +533,7 @@ const buildDeleteEvent = async (user: AuthUser, instance: StoreObject, message: 
 };
 export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: DeleteEventOpts = {}) => {
   try {
-    if (isStixData(instance)) {
+    if (isStixExportableData(instance)) {
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message, deletions);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {

@@ -4,7 +4,7 @@ import { isStixCyberObservableRelationship } from './stixCyberObservableRelation
 import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isInternalRelationship } from './internalRelationship';
 
-export const isStixRelationShipExceptMeta = (type) => isStixCoreRelationship(type) || isStixSightingRelationship(type) || isStixCyberObservableRelationship(type);
+export const isStixRelationShipExceptMeta = (type) => isStixCoreRelationship(type) || isStixSightingRelationship(type);
 
 export const isStixRelationship = (type) => isStixCoreRelationship(type)
   || isStixSightingRelationship(type)
