@@ -23,7 +23,7 @@ import { findSessionsForUsers, markSessionForRefresh } from '../database/session
 const groupSessionRefresh = async (context, user, groupId) => {
   const members = await listThroughGetFrom(context, user, [groupId], RELATION_MEMBER_OF, ENTITY_TYPE_USER);
   const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
-  sessions.forEach((s) => markSessionForRefresh(s.id));
+  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
 export const findById = (context, user, groupId) => {

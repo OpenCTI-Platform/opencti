@@ -38,7 +38,7 @@ import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
-import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
+import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import {
   convertRelationToAction,
   IMPERSONATE_ACTION,
@@ -63,12 +63,12 @@ export const ROLE_DEFAULT = 'Default';
 const roleSessionRefresh = async (context, user, roleId) => {
   const members = await listThroughGetFrom(context, user, [roleId], RELATION_HAS_ROLE, ENTITY_TYPE_USER);
   const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
-  sessions.forEach((s) => markSessionForRefresh(s.id));
+  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
 const userSessionRefresh = async (userId) => {
   const sessions = await findSessionsForUsers([userId]);
-  sessions.forEach((s) => markSessionForRefresh(s.id));
+  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
 export const userWithOrigin = (req, user) => {
@@ -379,6 +379,7 @@ export const meEditField = (context, user, userId, inputs, password = null) => {
 export const userDelete = async (context, user, userId) => {
   await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   logAudit.info(user, USER_DELETION, { user: userId });
+  await killUserSessions(userId);
   return userId;
 };
 
