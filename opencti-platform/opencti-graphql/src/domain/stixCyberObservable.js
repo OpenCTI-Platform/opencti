@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   batchListThroughGetFrom,
-  batchListThroughGetTo, batchLoadThroughGetTo,
+  batchListThroughGetTo,
+  batchLoadThroughGetTo,
   createEntity,
   createRelation,
   createRelations,
@@ -225,9 +226,6 @@ export const stixCyberObservableAddRelation = async (context, user, stixCyberObs
   const stixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
     throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
-  }
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('fromId', stixCyberObservableId, input);
   return createRelation(context, user, finalInput).then((relationData) => {

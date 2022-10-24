@@ -22,6 +22,8 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
+  isStixDomainObjectContainer,
+  isStixDomainObjectIdentity,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -35,7 +37,8 @@ import {
   ENTITY_HOSTNAME,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
-  ENTITY_MAC_ADDR, ENTITY_MEDIA_CONTENT,
+  ENTITY_MAC_ADDR,
+  ENTITY_MEDIA_CONTENT,
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
@@ -58,7 +61,8 @@ import {
   RELATION_CONTROLS,
   RELATION_COOPERATES_WITH,
   RELATION_DELIVERS,
-  RELATION_DERIVED_FROM, RELATION_DETECTS,
+  RELATION_DERIVED_FROM,
+  RELATION_DETECTS,
   RELATION_DOWNLOADS,
   RELATION_DROPS,
   RELATION_EXFILTRATES_TO,
@@ -73,7 +77,8 @@ import {
   RELATION_ORIGINATES_FROM,
   RELATION_OWNS,
   RELATION_PART_OF,
-  RELATION_PARTICIPATES_IN, RELATION_PUBLISHES,
+  RELATION_PARTICIPATES_IN,
+  RELATION_PUBLISHES,
   RELATION_RELATED_TO,
   RELATION_REMEDIATES,
   RELATION_RESOLVES_TO,
@@ -119,6 +124,20 @@ import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
 import type { StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
+import {
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../schema/stixMetaRelationship';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION
+} from '../schema/stixMetaObject';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -1169,4 +1188,23 @@ export const checkStixCyberObservableRelationshipMapping = (fromType: string, to
   const data = stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || [];
   const targetRelations = data.map((r) => r.name);
   return R.includes(relationshipType, targetRelations);
+};
+
+export const checkMetaRelationship = (fromType: string, toType: string, relationshipType: string): boolean => {
+  switch (relationshipType) {
+    case RELATION_CREATED_BY:
+      return isStixDomainObjectIdentity(toType);
+    case RELATION_OBJECT_MARKING:
+      return ENTITY_TYPE_MARKING_DEFINITION === toType;
+    case RELATION_OBJECT:
+      return isStixDomainObjectContainer(fromType);
+    case RELATION_OBJECT_LABEL:
+      return toType === ENTITY_TYPE_LABEL;
+    case RELATION_EXTERNAL_REFERENCE:
+      return toType === ENTITY_TYPE_EXTERNAL_REFERENCE;
+    case RELATION_KILL_CHAIN_PHASE:
+      return toType === ENTITY_TYPE_KILL_CHAIN_PHASE;
+    default:
+      return false;
+  }
 };
