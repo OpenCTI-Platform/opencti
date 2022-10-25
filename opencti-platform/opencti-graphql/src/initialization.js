@@ -143,8 +143,8 @@ const initializeSchema = async () => {
   const isInternalIndexExists = await elIndexExists(INDEX_INTERNAL_OBJECTS);
   if (isInternalIndexExists) {
     throw ConfigurationError('[INIT] Fail initialize schema, index already exists, previous initialization fail '
-        + 'because you kill the platform before the end of the initialization. Please remove your '
-        + 'elastic/opensearch data and restart.');
+      + 'because you kill the platform before the end of the initialization. Please remove your '
+      + 'elastic/opensearch data and restart.');
   }
   // Create default indexes
   await elCreateIndexes();
@@ -213,17 +213,17 @@ const createMarkingDefinitions = async (context) => {
   });
 };
 
-const createDefaultStatusTemplates = async () => {
-  const statusNew = await createStatusTemplate(SYSTEM_USER, { name: 'NEW', color: '#ff9800' });
-  const statusInProgress = await createStatusTemplate(SYSTEM_USER, { name: 'IN_PROGRESS', color: '#5c7bf5' });
-  await createStatusTemplate(SYSTEM_USER, { name: 'PENDING', color: '#5c7bf5' });
-  await createStatusTemplate(SYSTEM_USER, { name: 'TO_BE_QUALIFIED', color: '#5c7bf5' });
-  const statusAnalyzed = await createStatusTemplate(SYSTEM_USER, { name: 'ANALYZED', color: '#4caf50' });
-  const statusClosed = await createStatusTemplate(SYSTEM_USER, { name: 'CLOSED', color: '#607d8b' });
-  await createStatus(SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusNew.id, order: 1 }, true);
-  await createStatus(SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusInProgress.id, order: 2 }, true);
-  await createStatus(SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusAnalyzed.id, order: 3 }, true);
-  await createStatus(SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusClosed.id, order: 4 }, true);
+const createDefaultStatusTemplates = async (context) => {
+  const statusNew = await createStatusTemplate(context, SYSTEM_USER, { name: 'NEW', color: '#ff9800' });
+  const statusProgress = await createStatusTemplate(context, SYSTEM_USER, { name: 'IN_PROGRESS', color: '#5c7bf5' });
+  await createStatusTemplate(context, SYSTEM_USER, { name: 'PENDING', color: '#5c7bf5' });
+  await createStatusTemplate(context, SYSTEM_USER, { name: 'TO_BE_QUALIFIED', color: '#5c7bf5' });
+  const statusAnalyzed = await createStatusTemplate(context, SYSTEM_USER, { name: 'ANALYZED', color: '#4caf50' });
+  const statusClosed = await createStatusTemplate(context, SYSTEM_USER, { name: 'CLOSED', color: '#607d8b' });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusNew.id, order: 1 });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusProgress.id, order: 2 });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusAnalyzed.id, order: 3 });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusClosed.id, order: 4 });
 };
 
 export const createCapabilities = async (context, capabilities, parentName = '') => {
@@ -281,7 +281,7 @@ const initializeDefaultValues = async (context, withMarkings = true) => {
     platform_theme: 'dark',
     platform_language: 'auto',
   });
-  await createDefaultStatusTemplates();
+  await createDefaultStatusTemplates(context);
   await createBasicRolesAndCapabilities(context);
   if (withMarkings) {
     await createMarkingDefinitions(context);

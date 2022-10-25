@@ -1,4 +1,4 @@
-import { findAll, findById } from '../domain/subType';
+import { findAll, findById as findSubTypeById, findById } from '../domain/subType';
 import { createStatus, getTypeStatuses, statusDelete, statusEditField } from '../domain/status';
 
 const subTypeResolvers = {
@@ -15,7 +15,7 @@ const subTypeResolvers = {
   },
   Mutation: {
     subTypeEdit: (_, { id }, context) => ({
-      statusAdd: ({ input }) => createStatus(context, context.user, id, input),
+      statusAdd: ({ input }) => createStatus(context, context.user, id, input).then(() => findSubTypeById(id)),
       statusFieldPatch: ({ statusId, input }) => statusEditField(context, context.user, id, statusId, input),
       statusDelete: ({ statusId }) => statusDelete(context, context.user, id, statusId),
     }),
