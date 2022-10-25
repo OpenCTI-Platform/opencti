@@ -17,15 +17,10 @@ import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import {
   convertCreatedBy,
-  convertOrganizations,
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const observedDataMutationFieldPatch = graphql`
