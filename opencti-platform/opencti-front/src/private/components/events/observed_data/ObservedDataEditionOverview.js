@@ -89,32 +89,6 @@ const observedDataMutationRelationDelete = graphql`
   }
 `;
 
-const observedDataMutationGroupAdd = graphql`
-  mutation ObservedDataEditionOverviewGroupAddMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...ObservedDataEditionOverview_observedData
-      }
-    }
-  }
-`;
-
-const observedDataMutationGroupDelete = graphql`
-  mutation ObservedDataEditionOverviewGroupDeleteMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...ObservedDataEditionOverview_observedData
-      }
-    }
-  }
-`;
-
 const observedDataValidation = (t) => Yup.object().shape({
   first_observed: Yup.date()
     .required(t('This field is required'))
@@ -152,10 +126,6 @@ class ObservedDataEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -197,37 +167,6 @@ class ObservedDataEditionOverviewComponent extends Component {
           });
         })
         .catch(() => false);
-    }
-  }
-
-  handleChangeObjectOrganization(name, values) {
-    const { observedData } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(observedData);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: observedDataMutationGroupAdd,
-        variables: {
-          id: this.props.observedData.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: observedDataMutationGroupDelete,
-        variables: {
-          id: this.props.observedData.id,
-          organizationId: R.head(removed).value,
-        },
-      });
     }
   }
 
@@ -284,12 +223,10 @@ class ObservedDataEditionOverviewComponent extends Component {
     const { t, observedData, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(observedData);
     const objectMarking = convertMarkings(observedData);
-    const objectOrganization = convertOrganizations(observedData);
     const status = convertStatus(t, observedData);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('objectOrganization', objectOrganization),
       R.assoc('first_observed', buildDate(observedData.first_observed)),
       R.assoc('last_observed', buildDate(observedData.last_observed)),
       R.assoc('x_opencti_workflow_id', status),
@@ -299,7 +236,6 @@ class ObservedDataEditionOverviewComponent extends Component {
         'number_observed',
         'confidence',
         'createdBy',
-        'objectOrganization',
         'objectMarking',
         'x_opencti_workflow_id',
       ]),
@@ -426,19 +362,6 @@ class ObservedDataEditionOverviewComponent extends Component {
                   values={values}
                 />
               )}
-              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                <ObjectOrganizationField
-                  name="objectOrganization"
-                  style={{ marginTop: 20, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldname="objectOrganization"
-                    />
-                  }
-                  onChange={this.handleChangeObjectOrganization.bind(this)}
-                />
-              </Security>
             </Form>
           </div>
         )}
@@ -479,14 +402,6 @@ const ObservedDataEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
-            }
-          }
-        }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
             }
           }
         }

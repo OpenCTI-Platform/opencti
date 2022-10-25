@@ -21,19 +21,14 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  SETTINGS_SETLABELS,
-} from '../../../../utils/Security';
+import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import {
   convertCreatedBy,
-  convertOrganizations,
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -122,32 +117,6 @@ const reportMutationRelationDelete = graphql`
   }
 `;
 
-const reportMutationGroupAdd = graphql`
-    mutation ReportEditionOverviewGroupAddMutation(
-        $id: ID!
-        $organizationId: ID!
-    ) {
-        stixCoreObjectEdit(id: $id) {
-            restrictionOrganizationAdd(organizationId: $organizationId) {
-                ...ReportEditionOverview_report
-            }
-        }
-    }
-`;
-
-const reportMutationGroupDelete = graphql`
-    mutation ReportEditionOverviewGroupDeleteMutation(
-        $id: ID!
-        $organizationId: ID!
-    ) {
-        stixCoreObjectEdit(id: $id) {
-            restrictionOrganizationDelete(organizationId: $organizationId) {
-                ...ReportEditionOverview_report
-            }
-        }
-    }
-`;
-
 const reportValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   published: Yup.date()
@@ -183,10 +152,6 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -249,37 +214,6 @@ class ReportEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeObjectOrganization(name, values) {
-    const { report } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(report);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: reportMutationGroupAdd,
-        variables: {
-          id: this.props.report.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: reportMutationGroupDelete,
-        variables: {
-          id: this.props.report.id,
-          organizationId: R.head(removed).value,
-        },
-      });
-    }
-  }
-
   handleChangeObjectMarking(name, values) {
     if (!this.props.enableReferences) {
       const { report } = this.props;
@@ -321,12 +255,10 @@ class ReportEditionOverviewComponent extends Component {
     const { t, report, context, enableReferences, classes } = this.props;
     const createdBy = convertCreatedBy(report);
     const objectMarking = convertMarkings(report);
-    const objectOrganization = convertOrganizations(report);
     const status = convertStatus(t, report);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('objectOrganization', objectOrganization),
       R.assoc('published', buildDate(report.published)),
       R.assoc('x_opencti_workflow_id', status),
       R.assoc(
@@ -340,7 +272,6 @@ class ReportEditionOverviewComponent extends Component {
         'report_types',
         'createdBy',
         'objectMarking',
-        'objectOrganization',
         'confidence',
         'x_opencti_workflow_id',
       ]),
@@ -557,21 +488,6 @@ class ReportEditionOverviewComponent extends Component {
                             id={report.id}
                           />
                         )}
-                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                          <ObjectOrganizationField
-                            name="objectOrganization"
-                            style={{ marginTop: 20, width: '100%' }}
-                            helpertext={
-                              <SubscriptionFocus
-                                context={context}
-                                fieldname="objectOrganization"
-                              />
-                            }
-                            onChange={this.handleChangeObjectOrganization.bind(
-                              this,
-                            )}
-                          />
-                        </Security>
                       </Form>
                     </div>
                   )}
@@ -610,14 +526,6 @@ const ReportEditionOverview = createFragmentContainer(
             id
             name
             entity_type
-          }
-        }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
           }
         }
         objectMarking {

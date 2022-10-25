@@ -62,6 +62,14 @@ export const isStixDomainObjectContainer = (type: string): boolean => {
   return R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
 };
 
+const STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS: Array<string> = [
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_REPORT,
+];
+export const isStixDomainObjectShareableContainer = (type: string): boolean => {
+  return R.includes(type, STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS);
+};
+
 const STIX_DOMAIN_OBJECT_IDENTITIES: Array<string> = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,

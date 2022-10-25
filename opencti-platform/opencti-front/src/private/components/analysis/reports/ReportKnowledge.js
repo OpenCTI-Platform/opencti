@@ -176,6 +176,7 @@ class ReportKnowledgeComponent extends Component {
             modes={['graph', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
+            enableSharing={true}
           />
         )}
         <Route

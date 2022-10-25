@@ -33,6 +33,7 @@ class ReportComponent extends Component {
           container={report}
           PopoverComponent={<ReportPopover />}
           enableSuggestions={true}
+          enableSharing={true}
         />
         <Grid
           container={true}

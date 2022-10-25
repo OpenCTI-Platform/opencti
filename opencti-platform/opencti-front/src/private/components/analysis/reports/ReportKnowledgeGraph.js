@@ -1183,6 +1183,7 @@ class ReportKnowledgeGraphComponent extends Component {
           adjust={this.handleZoomToFit.bind(this)}
           knowledge={true}
           enableSuggestions={true}
+          enableSharing={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
         <ReportKnowledgeGraphBar
@@ -1753,6 +1754,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
             }
           }
         }
+        ...ContainerHeader_container
       }
     `,
   },

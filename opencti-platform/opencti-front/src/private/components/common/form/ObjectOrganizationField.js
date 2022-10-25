@@ -74,6 +74,7 @@ class ObjectOrganizationField extends Component {
       helpertext,
       disabled,
       outlined = true,
+      multiple = true,
     } = this.props;
     if (outlined === false) {
       return (
@@ -106,12 +107,17 @@ class ObjectOrganizationField extends Component {
       );
     }
     return (
-      <Alert severity="warning" variant="outlined" style={style} classes={{ message: classes.message }}>
+      <Alert
+        severity="warning"
+        variant="outlined"
+        style={style}
+        classes={{ message: classes.message }}
+      >
         <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
         <Field
           component={AutocompleteField}
           name={name}
-          multiple={true}
+          multiple={multiple}
           disabled={disabled}
           style={{ width: '100%', marginTop: 10 }}
           textfieldprops={{
