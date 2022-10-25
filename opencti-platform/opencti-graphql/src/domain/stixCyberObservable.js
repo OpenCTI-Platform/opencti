@@ -1,5 +1,5 @@
 import { assoc, dissoc, filter, map } from 'ramda';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -48,7 +48,7 @@ import { ENTITY_TYPE_INDICATOR, ENTITY_TYPE_VULNERABILITY } from '../schema/stix
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { escape, now, observableValue } from '../utils/format';
-import { RELATION_CONTENT,RELATION_SERVICE_DLL } from '../schema/stixCyberObservableRelationship';
+import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixCyberObservableRelationship';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
