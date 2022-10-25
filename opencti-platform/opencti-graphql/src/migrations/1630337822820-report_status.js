@@ -11,30 +11,12 @@ export const up = async (next) => {
   const context = executionContext('migration');
   const start = new Date().getTime();
   logApp.info('[MIGRATION] Creating the report workflow statuses');
-  const statusNew = await createStatusTemplate(SYSTEM_USER, {
-    name: 'NEW',
-    color: '#ff9800',
-  });
-  const statusInProgress = await createStatusTemplate(SYSTEM_USER, {
-    name: 'IN_PROGRESS',
-    color: '#5c7bf5',
-  });
-  await createStatusTemplate(SYSTEM_USER, {
-    name: 'PENDING',
-    color: '#5c7bf5',
-  });
-  await createStatusTemplate(SYSTEM_USER, {
-    name: 'TO_BE_QUALIFIED',
-    color: '#5c7bf5',
-  });
-  const statusAnalyzed = await createStatusTemplate(SYSTEM_USER, {
-    name: 'ANALYZED',
-    color: '#4caf50',
-  });
-  const statusClosed = await createStatusTemplate(SYSTEM_USER, {
-    name: 'CLOSED',
-    color: '#607d8b',
-  });
+  const statusNew = await createStatusTemplate(context, SYSTEM_USER, { name: 'NEW', color: '#ff9800' });
+  const statusInProgress = await createStatusTemplate(context, SYSTEM_USER, { name: 'IN_PROGRESS', color: '#5c7bf5' });
+  await createStatusTemplate(context, SYSTEM_USER, { name: 'PENDING', color: '#5c7bf5' });
+  await createStatusTemplate(context, SYSTEM_USER, { name: 'TO_BE_QUALIFIED', color: '#5c7bf5' });
+  const statusAnalyzed = await createStatusTemplate(context, SYSTEM_USER, { name: 'ANALYZED', color: '#4caf50' });
+  const statusClosed = await createStatusTemplate(context, SYSTEM_USER, { name: 'CLOSED', color: '#607d8b' });
   const workflowStatusNew = await createStatus(
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_REPORT,

@@ -213,13 +213,13 @@ const createMarkingDefinitions = async (context) => {
   });
 };
 
-const createDefaultStatusTemplates = async () => {
-  const statusNew = await createStatusTemplate(SYSTEM_USER, { name: 'NEW', color: '#ff9800' });
-  const statusInProgress = await createStatusTemplate(SYSTEM_USER, { name: 'IN_PROGRESS', color: '#5c7bf5' });
-  await createStatusTemplate(SYSTEM_USER, { name: 'PENDING', color: '#5c7bf5' });
-  await createStatusTemplate(SYSTEM_USER, { name: 'TO_BE_QUALIFIED', color: '#5c7bf5' });
-  const statusAnalyzed = await createStatusTemplate(SYSTEM_USER, { name: 'ANALYZED', color: '#4caf50' });
-  const statusClosed = await createStatusTemplate(SYSTEM_USER, { name: 'CLOSED', color: '#607d8b' });
+const createDefaultStatusTemplates = async (context) => {
+  const statusNew = await createStatusTemplate(context, SYSTEM_USER, { name: 'NEW', color: '#ff9800' });
+  const statusInProgress = await createStatusTemplate(context, SYSTEM_USER, { name: 'IN_PROGRESS', color: '#5c7bf5' });
+  await createStatusTemplate(context, SYSTEM_USER, { name: 'PENDING', color: '#5c7bf5' });
+  await createStatusTemplate(context, SYSTEM_USER, { name: 'TO_BE_QUALIFIED', color: '#5c7bf5' });
+  const statusAnalyzed = await createStatusTemplate(context, SYSTEM_USER, { name: 'ANALYZED', color: '#4caf50' });
+  const statusClosed = await createStatusTemplate(context, SYSTEM_USER, { name: 'CLOSED', color: '#607d8b' });
   await createStatus(SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusNew.id, order: 1 }, true);
   await createStatus(SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusInProgress.id, order: 2 }, true);
   await createStatus(SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusAnalyzed.id, order: 3 }, true);
@@ -281,7 +281,7 @@ const initializeDefaultValues = async (context, withMarkings = true) => {
     platform_theme: 'dark',
     platform_language: 'auto',
   });
-  await createDefaultStatusTemplates();
+  await createDefaultStatusTemplates(context);
   await createBasicRolesAndCapabilities(context);
   if (withMarkings) {
     await createMarkingDefinitions(context);
