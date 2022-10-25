@@ -1085,9 +1085,10 @@ const stixCyberObservableRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_OPERATING_SYSTEM, type: REL_BUILT_IN }
   ],
   // From OBSERVED_DATA
-  [`${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
-    { name: OBS_RELATION_CONTENT, type: REL_BUILT_IN }
-  ],
+  // TODO Check with SAM before merge
+  // [`${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
+  //   { name: OBS_RELATION_CONTENT, type: REL_BUILT_IN }
+  // ],
   // From USER_ACCOUNT
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_PROCESS}`]: [
     { name: RELATION_CREATOR_USER, type: REL_BUILT_IN }
