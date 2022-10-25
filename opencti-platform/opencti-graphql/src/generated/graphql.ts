@@ -16352,7 +16352,9 @@ export enum TaskActionType {
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
   Replace = 'REPLACE',
-  RuleElementRescan = 'RULE_ELEMENT_RESCAN'
+  RuleElementRescan = 'RULE_ELEMENT_RESCAN',
+  Share = 'SHARE',
+  Unshare = 'UNSHARE'
 }
 
 export type TaskConnection = {

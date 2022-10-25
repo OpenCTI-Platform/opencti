@@ -817,6 +817,8 @@ enum TaskActionType {
   ENRICHMENT
   PROMOTE
   RULE_ELEMENT_RESCAN
+  SHARE
+  UNSHARE
 }
 
 enum TaskContextType {

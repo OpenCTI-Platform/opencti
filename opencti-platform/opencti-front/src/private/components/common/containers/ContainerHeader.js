@@ -505,7 +505,38 @@ const ContainerHeader = (props) => {
         organizationId,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('This container has been unshared');
+        const filters = {
+          containedBy: [
+            {
+              id: container.id,
+              value: container.name,
+            },
+          ],
+          entity_type: [
+            { id: 'Basic-Object', value: t('All entities') },
+            { id: 'basic-relationship', value: t('All relationships') },
+          ],
+        };
+        const jsonFilters = JSON.stringify(filters);
+        commitMutation({
+          mutation: containerHeaderTaskAddMutation,
+          variables: {
+            input: {
+              filters: jsonFilters,
+              actions: [
+                {
+                  type: 'UNSHARE',
+                  context: {
+                    values: [organizationId],
+                  },
+                },
+              ],
+            },
+          },
+          onCompleted: () => {
+            MESSAGING$.notifySuccess('This container has been unshared');
+          },
+        });
       },
     });
   };
@@ -542,10 +573,8 @@ const ContainerHeader = (props) => {
                 filters: jsonFilters,
                 actions: [
                   {
-                    type: 'ADD',
+                    type: 'SHARE',
                     context: {
-                      field: 'objectOrganization',
-                      type: 'ATTRIBUTE',
                       values: [objectOrganization.value],
                     },
                   },

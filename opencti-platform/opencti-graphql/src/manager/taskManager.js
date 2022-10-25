@@ -14,6 +14,8 @@ import {
   ACTION_TYPE_RULE_APPLY,
   ACTION_TYPE_RULE_CLEAR,
   ACTION_TYPE_RULE_ELEMENT_RESCAN,
+  ACTION_TYPE_SHARE,
+  ACTION_TYPE_UNSHARE,
   executeTaskQuery,
   findAll,
   MAX_TASK_ELEMENTS,
@@ -29,7 +31,7 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalFindByIds,
-  internalLoadById,
+  internalLoadById, listAllThings,
   mergeEntities,
   patchAttribute,
   stixLoadById,
@@ -47,7 +49,12 @@ import {
 } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
+import {
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER,
+  RULE_PREFIX
+} from '../schema/general';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
@@ -62,6 +69,7 @@ import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { promoteIndicatorToObservable } from '../domain/indicator';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { creatorFromHistory } from '../domain/log';
+import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -311,7 +319,26 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
     }
   }
 };
-
+const executeShare = async (context, user, actionContext, element) => {
+  const { values } = actionContext;
+  for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+    const target = values[indexCreate];
+    await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: RELATION_GRANTED_TO });
+  }
+};
+const executeUnshare = async (context, user, actionContext, element) => {
+  const { values } = actionContext;
+  for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+    const target = values[indexCreate];
+    // resolve all containers of this element
+    const args = { filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [element.id] }], };
+    const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args);
+    const grantedTo = containers.map((n) => n[buildRefRelationKey(RELATION_GRANTED_TO)]).flat();
+    if (!grantedTo.includes(target)) {
+      await deleteRelationsByFromAndTo(context, user, element.id, target, RELATION_GRANTED_TO, ABSTRACT_BASIC_RELATIONSHIP);
+    }
+  }
+};
 const executeProcessing = async (context, user, processingElements) => {
   const errors = [];
   for (let index = 0; index < processingElements.length; index += 1) {
@@ -349,6 +376,12 @@ const executeProcessing = async (context, user, processingElements) => {
         }
         if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
           await executeRuleElementRescan(context, user, actionContext, element);
+        }
+        if (type === ACTION_TYPE_SHARE) {
+          await executeShare(context, user, actionContext, element);
+        }
+        if (type === ACTION_TYPE_UNSHARE) {
+          await executeUnshare(context, user, actionContext, element);
         }
       }
     } catch (err) {
