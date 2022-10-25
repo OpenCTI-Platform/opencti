@@ -275,8 +275,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                             </Avatar>
                           </ListItemIcon>
                           <ListItemText
-                            primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(externalReferenceSecondary, 90)}
+                            primary={truncate(`${externalReference.source_name} ${externalReferenceId}`, 70)}
+                            secondary={truncate(externalReferenceSecondary, 70)}
                           />
                           <ListItemSecondaryAction>
                             <Security needs={[KNOWLEDGE_KNUPLOAD]}>

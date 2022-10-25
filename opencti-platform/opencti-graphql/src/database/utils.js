@@ -18,6 +18,7 @@ import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isDictionaryAttribute, isJsonAttribute } from '../schema/fieldDataAdapter';
+import { truncate } from '../utils/mailData';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -309,8 +310,8 @@ export const generateUpdateMessage = (inputs) => {
     throw UnsupportedError('[OPENCTI] Error generating update message with empty inputs');
   }
   // noinspection UnnecessaryLocalVariableJS
-  const generatedMessage = patchElements.map(([type, operations]) => {
-    return `${type}s ${operations.map(({ key, value }) => {
+  const generatedMessage = patchElements.slice(0, 3).map(([type, operations]) => {
+    return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
       let message = 'nothing';
       let convertedKey = key;
       if (META_FIELD_TO_STIX_ATTRIBUTE[key]) {
@@ -320,25 +321,25 @@ export const generateUpdateMessage = (inputs) => {
         convertedKey = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key];
       }
       const fromArray = Array.isArray(value) ? value : [value];
-      const values = fromArray.filter((v) => isNotEmptyField(v));
+      const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
       if (isNotEmptyField(values)) {
         // If update is based on internal ref, we need to extract the value
         if (META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
-          message = values.map((val) => extractEntityMainValue(val)).join(', ');
+          message = values.map((val) => truncate(extractEntityMainValue(val))).join(', ');
         } else if (isDictionaryAttribute(key)) {
-          message = Object.entries(R.head(values)).map(([k, v]) => `${k}:${v}`).join(', ');
+          message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
         } else if (isJsonAttribute(key)) {
-          message = values.map((v) => JSON.stringify(v));
+          message = values.map((v) => truncate(JSON.stringify(v)));
         } else {
           // If standard primitive data, just join the values
           message = values.join(', ');
         }
       }
-      return `\`${message}\` in \`${convertedKey}\``;
+      return `\`${message}\` in \`${convertedKey}\`${(fromArray.length > 3) ? ` and ${fromArray.length - 3} more items` : ''}`;
     }).join(' - ')}`;
   }).join(' | ');
   // Return generated update message
-  return generatedMessage;
+  return `${generatedMessage}${patchElements.length > 3 ? ` and ${patchElements.length - 3} more operations` : ''}`;
 };
 
 export const pascalize = (s) => {
