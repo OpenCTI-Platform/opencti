@@ -1,24 +1,29 @@
-FROM node:16.6.0-alpine3.14 AS base
+FROM node:16-alpine AS base
 
+RUN corepack enable
 
 FROM base AS graphql-deps-builder
 WORKDIR /opt/opencti-build/opencti-graphql
-COPY ./package.json ./yarn.lock ./
-RUN yarn install --frozen-lockfile --production && yarn cache clean --all
+COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
+COPY ./.yarn ./.yarn
+RUN yarn install --network-timeout 300000 --frozen-lockfile && yarn cache clean --all
 
 
 FROM base AS graphql-builder
 WORKDIR /opt/opencti-build/opencti-graphql
-COPY ./package.json ./yarn.lock ./
-RUN yarn install
+COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
+COPY ./.yarn ./.yarn
+RUN yarn install --network-timeout 300000
 COPY . /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production
+RUN yarn schema-compile
 
 
 # FROM base AS front-builder
 # WORKDIR /opt/opencti-build/opencti-front
-# COPY opencti-front/package.json opencti-front/yarn.lock ./
-# RUN yarn install
+# COPY opencti-front/package.json opencti-front/yarn.lock opencti-front/.yarnrc.yml ./
+# COPY opencti-front/.yarn ./.yarn
+# RUN yarn install --network-timeout 300000
 # COPY opencti-front /opt/opencti-build/opencti-front
 # COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql /opt/opencti-build/opencti-graphql/config/schema/compiled.graphql
 # RUN yarn relay && yarn generate
@@ -45,6 +50,8 @@ COPY ./script ./script
 ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS=--max_old_space_size=8192
 ENV NODE_ENV=production
+
+# RUN rm /opt/opencti/config/schema/compiled.graphql
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "build/index.js"]
