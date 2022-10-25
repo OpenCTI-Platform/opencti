@@ -10,6 +10,7 @@ import {
   ViewColumnOutlined,
   AssistantOutlined,
   ShareOutlined,
+  AccountBalanceOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -793,14 +794,20 @@ const ContainerHeader = (props) => {
             {container.objectOrganization.edges.map((organizationEdge) => (userIsOrganizationEditor ? (
                 <Chip
                   key={organizationEdge.node.id}
+                  icon={<AccountBalanceOutlined />}
                   classes={{ root: classes.organization }}
+                  color="warning"
+                  variant="outlined"
                   label={organizationEdge.node.name}
                   onDelete={() => removeOrganization(organizationEdge.node.id)}
                 />
             ) : (
                 <Chip
                   key={organizationEdge.node.id}
+                  icon={<AccountBalanceOutlined />}
                   classes={{ root: classes.organization }}
+                  color="warning"
+                  variant="outlined"
                   label={organizationEdge.node.name}
                 />
             )))}
