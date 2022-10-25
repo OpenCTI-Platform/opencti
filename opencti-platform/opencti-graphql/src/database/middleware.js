@@ -87,13 +87,7 @@ import {
   storeMergeEvent,
   storeUpdateEvent,
 } from './redis';
-import {
-  checkStixCoreRelationshipMapping,
-  checkStixCyberObservableRelationshipMapping,
-  cleanStixIds,
-  STIX_SPEC_VERSION,
-  stixCyberObservableFieldsForType,
-} from './stix';
+import { cleanStixIds, STIX_SPEC_VERSION, stixCyberObservableFieldsForType, } from './stix';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -106,9 +100,6 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
-  INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
-  INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
@@ -221,6 +212,7 @@ import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listEntities, listRelations } from './middleware-loader';
 import { getEntitiesFromCache } from '../manager/cacheManager';
+import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -2306,35 +2298,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   // No update done, return IDLE action
   return { type: TRX_IDLE, element, relations: [] };
 };
-const checkRelationConsistency = (relationshipType, from, to) => {
-  // 01 - check type consistency
-  const fromType = from.entity_type;
-  const toType = to.entity_type;
-  // Check if StixCoreRelationship is allowed
-  if (isStixCoreRelationship(relationshipType)) {
-    if (!checkStixCoreRelationshipMapping(fromType, toType, relationshipType)) {
-      throw FunctionalError(
-        `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
-      );
-    }
-  }
-  // Check if StixCyberObservableRelationship is allowed
-  if (isStixCyberObservableRelationship(relationshipType)) {
-    if (!checkStixCyberObservableRelationshipMapping(fromType, toType, relationshipType)) {
-      throw FunctionalError(
-        `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
-      );
-    }
-  }
-};
-const isRelationConsistent = (relationshipType, from, to) => {
-  try {
-    checkRelationConsistency(relationshipType, from, to);
-    return true;
-  } catch {
-    return false;
-  }
-};
+
 const buildRelationData = async (context, user, input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
@@ -2682,12 +2646,8 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     R.assoc('entity_type', type),
     R.dissoc('update'),
     R.dissoc('file'),
-    R.dissoc(INPUT_CREATED_BY),
-    R.dissoc(INPUT_MARKINGS),
-    R.dissoc(INPUT_LABELS),
-    R.dissoc(INPUT_KILLCHAIN),
-    R.dissoc(INPUT_EXTERNAL_REFS),
-    R.dissoc(INPUT_OBJECTS)
+    R.omit(STIX_META_RELATIONSHIPS_INPUTS),
+    R.omit(STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS),
   )(input);
   if (inferred) {
     // Simply add the rule

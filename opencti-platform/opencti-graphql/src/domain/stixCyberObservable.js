@@ -1,10 +1,11 @@
-import * as R from 'ramda';
-import { assoc, dissoc, filter, map, pipe } from 'ramda';
+import { assoc, dissoc, filter, map } from 'ramda';
 import { createHash } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
-  batchListThroughGetFrom, batchListThroughGetTo,
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
+  batchLoadThroughGetTo,
   createEntity,
   createRelation,
   createRelations,
@@ -47,6 +48,7 @@ import { ENTITY_TYPE_INDICATOR, ENTITY_TYPE_VULNERABILITY } from '../schema/stix
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { escape, now, observableValue } from '../utils/format';
+import { RELATION_CONTENT } from '../schema/stixCyberObservableRelationship';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -82,9 +84,6 @@ export const stixCyberObservablesTimeSeries = (context, user, args) => {
 // endregion
 
 // region mutations
-export const batchIndicators = (context, user, stixCyberObservableIds) => {
-  return batchListThroughGetFrom(context, user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
-};
 
 const createIndicatorFromObservable = async (context, user, input, observable) => {
   try {
@@ -167,31 +166,53 @@ export const addStixCyberObservable = async (context, user, input) => {
     throw FunctionalError(`Observable type ${input.type} is not supported.`);
   }
   // If type is ok, get the correct data that represent the observable
-  const graphQLType = input.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
-  let observableInput = pipe(
-    dissoc('type'),
-    dissoc('createIndicator')
-  )({ ...dissoc(graphQLType, input), ...input[graphQLType] });
-  if (!observableInput) {
+  const {
+    stix_id,
+    x_opencti_score,
+    x_opencti_description,
+    createdBy,
+    objectMarking,
+    objectLabel,
+    externalReferences,
+    update,
+    type,
+    createIndicator,
+    payload_bin,
+    url,
+  } = input;
+  const graphQLType = type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
+  if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
-  if (isNotEmptyField(input.payload_bin) && isNotEmptyField(input.url)) {
+
+  const observableInput = {
+    stix_id,
+    x_opencti_score,
+    x_opencti_description,
+    createdBy,
+    objectMarking,
+    objectLabel,
+    externalReferences,
+    update,
+    ...input[graphQLType]
+  };
+  if (isNotEmptyField(payload_bin) && isNotEmptyField(url)) {
     throw FunctionalError('Cannot create observable with both payload_bin and url filled.');
   }
   // Convert hashes to dictionary if needed.
-  if (isStixCyberObservableHashedObservable(input.type) && observableInput.hashes) {
+  if (isStixCyberObservableHashedObservable(type) && observableInput.hashes) {
     const hashInputToJson = inputHashesToStix(observableInput.hashes);
-    observableInput = R.assoc('hashes', hashInputToJson, observableInput);
+    observableInput.hashes = hashInputToJson;
   }
   // Check the consistency of the observable.
-  const observableSyntaxResult = checkObservableSyntax(input.type, observableInput);
+  const observableSyntaxResult = checkObservableSyntax(type, observableInput);
   if (observableSyntaxResult !== true) {
-    throw FunctionalError(`Observable of type ${input.type} is not correctly formatted.`, { observableSyntaxResult });
+    throw FunctionalError(`Observable of type ${type} is not correctly formatted.`, { observableSyntaxResult });
   }
   // If everything ok, create adapt/create the observable
-  const created = await createEntity(context, user, observableInput, input.type);
+  const created = await createEntity(context, user, observableInput, type);
   // create the linked indicator if needed
-  if (input.createIndicator) {
+  if (createIndicator) {
     await createIndicatorFromObservable(context, user, input, created);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].ADDED_TOPIC, created, user);
@@ -205,9 +226,6 @@ export const stixCyberObservableAddRelation = async (context, user, stixCyberObs
   const stixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
     throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
-  }
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('fromId', stixCyberObservableId, input);
   return createRelation(context, user, finalInput).then((relationData) => {
@@ -412,6 +430,14 @@ export const artifactImport = async (context, user, args) => {
   return artifact;
 };
 
+export const batchIndicators = (context, user, stixCyberObservableIds) => {
+  return batchListThroughGetFrom(context, user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+};
+
 export const batchVulnerabilities = (context, user, softwareIds) => {
   return batchListThroughGetTo(context, user, softwareIds, RELATION_HAS, ENTITY_TYPE_VULNERABILITY);
+};
+
+export const batchArtifacts = (context, user, softwareIds) => {
+  return batchLoadThroughGetTo(context, user, softwareIds, RELATION_CONTENT, ENTITY_HASHED_OBSERVABLE_ARTIFACT);
 };

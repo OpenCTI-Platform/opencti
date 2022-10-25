@@ -1,7 +1,7 @@
-import * as R from 'ramda';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, schemaTypes } from './general';
 import {
-  RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE,
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
@@ -105,9 +105,7 @@ export const STIX_CORE_RELATIONSHIPS = [
 ];
 
 schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
-export const isStixCoreRelationship = (type: string): boolean => {
-  return R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
-};
+export const isStixCoreRelationship = (type: string): boolean => [...STIX_CORE_RELATIONSHIPS, ABSTRACT_STIX_CORE_RELATIONSHIP].includes(type);
 
 export const stixCoreRelationshipOptions = {
   StixCoreRelationshipsFilter: {
@@ -149,4 +147,4 @@ export const stixCoreRelationshipsAttributes = [
   'x_opencti_workflow_id',
 ];
 schemaTypes.registerAttributes(ABSTRACT_STIX_CORE_RELATIONSHIP, stixCoreRelationshipsAttributes);
-R.map((type) => schemaTypes.registerAttributes(type, stixCoreRelationshipsAttributes), STIX_CORE_RELATIONSHIPS);
+STIX_CORE_RELATIONSHIPS.map((type) => schemaTypes.registerAttributes(type, stixCoreRelationshipsAttributes));

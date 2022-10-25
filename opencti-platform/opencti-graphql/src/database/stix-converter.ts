@@ -571,7 +571,7 @@ const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote =>
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id)
   };
 };
-const convertObservedDateToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
+const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
   assertType(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, type);
   return {
     ...buildStixDomain(instance),
@@ -1253,7 +1253,7 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
       return convertOpinionToStix(basic, type);
     }
     if (ENTITY_TYPE_CONTAINER_OBSERVED_DATA === type) {
-      return convertObservedDateToStix(basic, type);
+      return convertObservedDataToStix(basic, type);
     }
     if (ENTITY_TYPE_COURSE_OF_ACTION === type) {
       return convertCourseOfActionToStix(basic, type);

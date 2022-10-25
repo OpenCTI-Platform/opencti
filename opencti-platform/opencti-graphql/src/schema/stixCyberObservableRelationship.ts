@@ -238,8 +238,8 @@ export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
   ...SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
   ...MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 ];
-export const isStixCyberObservableRelationship = (type: string): boolean => R.includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
-export const singleStixCyberObservableRelationships = [
+export const isStixCyberObservableRelationship = (type: string): boolean => STIX_CYBER_OBSERVABLE_RELATIONSHIPS.includes(type);
+export const SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_FROM,
   RELATION_SENDER,
   RELATION_RAW_EMAIL,
@@ -256,8 +256,8 @@ export const singleStixCyberObservableRelationships = [
   RELATION_PARENT,
   RELATION_BODY_MULTIPART,
 ];
-export const isSingleStixCyberObservableRelationship = (type: string): boolean => R.includes(type, singleStixCyberObservableRelationships);
-export const isSingleStixCyberObservableRelationshipInput = (input: string): boolean => R.includes(input, SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS);
+export const isSingleStixCyberObservableRelationship = (type: string): boolean => SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS.includes(type);
+export const isSingleStixCyberObservableRelationshipInput = (input: string): boolean => SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.includes(input);
 
 export const stixCyberObservableRelationshipsAttributes = [
   'internal_id',
@@ -285,4 +285,4 @@ export const stixCyberObservableRelationshipsAttributes = [
   'i_stop_time_month',
   'i_stop_time_year',
 ];
-R.map((obsType) => schemaTypes.registerAttributes(obsType, stixCyberObservableRelationshipsAttributes), STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
+STIX_CYBER_OBSERVABLE_RELATIONSHIPS.map((obsType) => schemaTypes.registerAttributes(obsType, stixCyberObservableRelationshipsAttributes));

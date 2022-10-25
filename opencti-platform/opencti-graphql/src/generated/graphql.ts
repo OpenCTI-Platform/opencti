@@ -14409,6 +14409,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
+  obsContent?: Maybe<Artifact>;
   observable_value: Scalars['String'];
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -14543,6 +14544,7 @@ export type StixFileAddInput = {
   mtime?: InputMaybe<Scalars['DateTime']>;
   name?: InputMaybe<Scalars['String']>;
   name_enc?: InputMaybe<Scalars['String']>;
+  obsContent?: InputMaybe<Scalars['ID']>;
   size?: InputMaybe<Scalars['Int']>;
   x_opencti_additional_names?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -23128,6 +23130,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixFileNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  obsContent?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType>;
   observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixFileObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixFileOpinionsArgs>>;
