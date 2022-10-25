@@ -471,7 +471,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
 export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
-      const event = buildUpdateEvent(user, previous, instance, message, opts.commit);
+      const event = buildUpdateEvent(user, previous, instance, message, opts);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
         await pushToStream(context, user, clientBase, instance, event);
       }
@@ -511,7 +511,7 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
 export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
-      const event = buildCreateEvent(user, instance, message);
+      const event = buildCreateEvent(user, instance, message, opts);
       if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
         await pushToStream(context, user, clientBase, instance, event);
       }
