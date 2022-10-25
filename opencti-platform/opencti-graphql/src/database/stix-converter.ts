@@ -47,14 +47,7 @@ import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
-import type {
-  BasicStoreCommon,
-  StoreBase,
-  StoreCyberObservable,
-  StoreEntity,
-  StoreObject,
-  StoreRelation,
-} from '../types/store';
+import type { StoreCyberObservable, StoreEntity, StoreObject, StoreRelation, } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -194,7 +187,7 @@ const cleanDate = (date: Date | string | undefined): string | undefined => {
 };
 
 // Extensions
-const buildOCTIExtensions = (instance: StoreBase): S.StixOpenctiExtension => {
+const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
   const octiExtensions: S.StixOpenctiExtension = {
     extension_type: 'property-extension',
     id: instance.internal_id,
@@ -227,7 +220,7 @@ const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
 };
 
 // Builders
-export const buildStixObject = (instance: BasicStoreCommon): S.StixObject => {
+export const buildStixObject = (instance: StoreObject): S.StixObject => {
   return {
     id: instance.standard_id,
     spec_version: '2.1',

@@ -3,12 +3,7 @@ import { offsetToCursor, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } fro
 import { elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
-import type {
-  BasicStoreCommon,
-  StoreProxyConnection,
-  StoreProxyEntity,
-  StoreProxyRelation
-} from '../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, StoreEntityConnection, StoreProxyRelation } from '../types/store';
 import { UnsupportedError } from '../config/errors';
 
 const MAX_SEARCH_SIZE = 5000;
@@ -41,7 +36,7 @@ export const elList = async <T extends BasicStoreCommon>(context: AuthContext, u
   let hasNextPage = true;
   let continueProcess = true;
   let searchAfter = options.after;
-  const listing:Array<T> = [];
+  const listing: Array<T> = [];
   const publish = async (elements: Array<T>) => {
     const { callback } = options;
     if (callback) {
@@ -97,9 +92,11 @@ interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   endDate?: Date,
   confidences?: Array<number>,
 }
+
 export interface RelationOptions<T extends BasicStoreCommon> extends RelationFilters<T> {
   indices?: Array<string>;
 }
+
 const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
   const relationsToGet = Array.isArray(relationshipTypes) ? relationshipTypes : [relationshipTypes || 'stix-core-relationship'];
   const { relationFilter } = args;
@@ -217,9 +214,9 @@ export const listAllRelations = async <T extends StoreProxyRelation>(context: Au
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   connectionFormat?: boolean;
   elementId?: string | Array<string>;
-  fromId?: string | Array <string>;
+  fromId?: string | Array<string>;
   fromRole?: string;
-  toId?: string | Array <string>;
+  toId?: string | Array<string>;
   toRole?: string;
   fromTypes?: Array<string>;
   toTypes?: Array<string>;
@@ -228,9 +225,11 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   relationshipTypes?: Array<string>;
   elementWithTargetTypes?: Array<string>;
 }
+
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
   indices?: Array<string>;
 }
+
 const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {
   const builtFilters = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
@@ -295,8 +294,8 @@ const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> =
   builtFilters.filters = customFilters;
   return builtFilters;
 };
-export const listEntities = async <T extends StoreProxyEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args:EntityOptions<T> = {}): Promise<Array<T>> => {
+export const listEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+  args: EntityOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_ENTITIES_INDICES } = args;
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
@@ -306,9 +305,8 @@ export const listEntities = async <T extends StoreProxyEntity>(context: AuthCont
   return elPaginate(context, user, indices, paginateArgs);
 };
 
-export const listEntitiesPaginated = async <T extends StoreProxyEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args:EntityOptions<T> = {}):
-Promise<StoreProxyConnection<T>> => {
+export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+  args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');

@@ -1,12 +1,12 @@
 import * as R from 'ramda';
 import type { Request } from 'express';
-import { context as telemetryContext, trace } from '@opentelemetry/api';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
+import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { INPUT_MARKINGS, OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { basePath, baseUrl } from '../config/conf';
-import type { StixCoreObject } from '../types/stix-common';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { StoreCommon } from '../types/store';
+import type { BasicStoreCommon, StoreCommon } from '../types/store';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
@@ -23,11 +23,17 @@ class TracingContext {
     this.ctx = undefined;
   }
 
-  getCtx() { return this.ctx; }
+  getCtx() {
+    return this.ctx;
+  }
 
-  getTracer() { return this.tracer; }
+  getTracer() {
+    return this.tracer;
+  }
 
-  setCurrentCtx(span: Span) { this.ctx = trace.setSpan(telemetryContext.active(), span); }
+  setCurrentCtx(span: Span) {
+    this.ctx = trace.setSpan(telemetryContext.active(), span);
+  }
 }
 
 export const executionContext = (source: string): AuthContext => {
@@ -93,12 +99,15 @@ export const isUserCanAccessElement = (user: AuthUser, element: StoreCommon) => 
   return isElementMarkingsAllowed(elementMarkingIds, authorizedMarkings);
 };
 
-export const filterElementsAccordingToUser = (user: AuthUser, elements: Array<StixCoreObject>): Array<StixCoreObject> => {
+export const filterElementsAccordingToUser = (user: AuthUser, elements: Array<BasicStoreCommon>) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
     return elements;
   }
   // If not filter by the inner markings
   const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
-  return elements.filter((e) => isElementMarkingsAllowed(e.object_marking_refs, authorizedMarkings));
+  return elements.filter((element) => {
+    const elementMarkings = element[RELATION_OBJECT_MARKING] ?? [];
+    return isElementMarkingsAllowed(elementMarkings, authorizedMarkings);
+  });
 };

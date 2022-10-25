@@ -51,7 +51,7 @@ interface StoreFile {
   mime_type: string;
 }
 
-interface StoreBase {
+interface BasicStoreBase {
   _index: string;
   standard_id: StixId;
   internal_id: string;
@@ -63,28 +63,27 @@ interface StoreBase {
   x_opencti_aliases?: Array<string>;
   x_opencti_stix_ids?: Array<StixId>;
   x_opencti_workflow_id?: string;
-  [INPUT_LINKED]?: Array<BasicStoreObject>;
 }
 
-interface StoreMarkingDefinition extends StoreBase {
+interface StoreMarkingDefinition extends BasicStoreBase {
   definition: string;
   definition_type: string;
   x_opencti_order: number;
   x_opencti_color: string;
 }
 
-interface StoreLabel extends StoreBase {
+interface StoreLabel extends BasicStoreBase {
   value: string;
   color: string;
 }
 
-interface StoreKillChainPhases extends StoreBase {
+interface StoreKillChainPhases extends BasicStoreBase {
   kill_chain_name: string;
   phase_name: string;
   x_opencti_order: number;
 }
 
-interface StoreExternalReferences extends StoreBase {
+interface StoreExternalReferences extends BasicStoreBase {
   source_name: string;
   description: string;
   url: string;
@@ -92,7 +91,7 @@ interface StoreExternalReferences extends StoreBase {
   external_id: string;
 }
 
-interface StoreWindowsRegistryValueType extends StoreBase {
+interface StoreWindowsRegistryValueType extends BasicStoreBase {
   name: string;
   data: string;
   data_type: string;
@@ -116,7 +115,7 @@ interface StoreRule {
   explanation: Array<string>;
 }
 
-interface BasicStoreCommon extends StoreBase {
+interface BasicStoreCommon extends BasicStoreBase {
   // Array
   [k: `i_rule_${string}`]: Array<StoreRawRule>;
   // [k: `rel_${string}`]: Array<string>;
@@ -132,6 +131,7 @@ interface BasicStoreCommon extends StoreBase {
 
 interface StoreCommon {
   // inputs
+  [INPUT_LINKED]?: Array<BasicStoreObject>;
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
   [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
 }
@@ -178,20 +178,17 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
 }
 
-interface StoreProxyEdge<T extends StoreProxyEntity> {
+interface BasicStoreEntityEdge<T extends BasicStoreEntity> {
   cursor: string;
   node: T;
 }
 
-interface StoreProxyConnection<T extends StoreProxyEntity> {
-  edges?: Array<StoreProxyEdge<T>>;
+interface StoreEntityConnection<T extends BasicStoreEntity> {
+  edges?: Array<BasicStoreEntityEdge<T>>;
   pageInfo: PageInfo;
 }
 
-interface StoreProxyEntity extends BasicStoreCommon {
-  _index: string;
-}
-interface BasicStoreEntity extends StoreProxyEntity {
+interface BasicStoreEntity extends BasicStoreCommon {
   id: string;
   name: string;
   spec_version: string;
@@ -302,7 +299,7 @@ interface StoreEntity extends BasicStoreEntity, StoreCommon {
   [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
 }
 
-interface StoreEntityFeed extends StoreProxyEntity {
+interface StoreEntityFeed extends StoreEntity {
   id: string;
   name: string;
   filters: string;

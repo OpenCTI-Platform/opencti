@@ -11,7 +11,7 @@ import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import { listEntities } from '../database/middleware-loader';
-import type { BasicRuleEntity, StoreProxyEntity } from '../types/store';
+import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
@@ -32,14 +32,13 @@ interface HistoryContext {
   commit?: string | undefined;
   references?: Array<string>;
 }
-interface HistoryData extends StoreProxyEntity {
+interface HistoryData extends BasicStoreEntity {
   event_type: string;
   timestamp: string;
   entity_type: 'History';
   user_id: string | undefined;
   applicant_id: string | undefined;
   context_data: HistoryContext;
-  'rel_object-marking.internal_id': Array<string>;
 }
 
 export const eventsApplyHandler = async (context: AuthContext, events: Array<StreamEvent>) => {
@@ -67,7 +66,7 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
     return true;
   });
   // Build the history data
-  const historyElements: Array<HistoryData> = filteredEvents.map((event) => {
+  const historyElements = filteredEvents.map((event) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const stix = event.data.data;
@@ -98,7 +97,7 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    const data:HistoryData = {
+    const data = {
       _index: INDEX_HISTORY,
       internal_id: event.id,
       standard_id: standardId,
