@@ -763,12 +763,14 @@ const ContainerHeader = (props) => {
           <div className={classes.organizations}>
             {container.objectOrganization.edges.map((organizationEdge) => (userIsOrganizationEditor ? (
                 <Chip
+                  key={organizationEdge.node.id}
                   classes={{ root: classes.organization }}
                   label={organizationEdge.node.name}
                   onDelete={() => removeOrganization(organizationEdge.node.id)}
                 />
             ) : (
                 <Chip
+                  key={organizationEdge.node.id}
                   classes={{ root: classes.organization }}
                   label={organizationEdge.node.name}
                 />
@@ -791,7 +793,7 @@ const ContainerHeader = (props) => {
                     color="secondary"
                     exclusive={true}
                   >
-                    {enableSharing && userIsKnowledgeEditor && (
+                    {enableSharing && userIsOrganizationEditor && (
                       <Tooltip title={t('Share with organizations')}>
                         <ToggleButton onClick={handleOpenSharing}>
                           <ShareOutlined fontSize="small" color="primary" />

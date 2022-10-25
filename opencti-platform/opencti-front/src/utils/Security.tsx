@@ -45,7 +45,7 @@ interface SecurityProps {
 }
 
 export const granted = (
-  me: RootPrivateQuery$data['me'] | undefined,
+  me: RootPrivateQuery$data['me']| undefined,
   capabilities: Array<string>,
   matchAll = false,
 ) => {
@@ -81,14 +81,21 @@ const Security: FunctionComponent<SecurityProps> = ({
   return placeholder;
 };
 
-export const CollaborativeSecurity = ({ data, needs, matchAll,
-  children, placeholder = <span /> }) => (
+export const CollaborativeSecurity = ({
+  data,
+  needs,
+  matchAll,
+  children,
+  placeholder = <span />,
+}) => (
   <UserContext.Consumer>
     {({ me }) => {
       const haveCapability = granted(me, needs, matchAll);
       if (haveCapability) return children;
       const canParticipate = granted(me, [KNOWLEDGE_KNPARTICIPATE], false);
-      const isCreator = data.createdBy?.id ? data.createdBy?.id === me.individual_id : false;
+      const isCreator = data.createdBy?.id
+        ? data.createdBy?.id === me.individual_id
+        : false;
       if (canParticipate && isCreator) return children;
       return placeholder;
     }}
