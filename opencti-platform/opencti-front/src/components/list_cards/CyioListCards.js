@@ -91,6 +91,15 @@ const styles = (theme) => ({
     display: 'flex',
     placeItems: 'center',
   },
+  menuItemText: {
+    width: '100%',
+    paddingLeft: '10px',
+  },
+  iconsContainer: {
+    minWidth: '20px',
+    display: 'flex',
+    justifyContent: 'center',
+  },
   selectedViews: {
     width: '430px',
     minWidth: '415px',
@@ -269,8 +278,12 @@ class CyioListCards extends Component {
                     value='responsibility'
                   >
                   <div className={ classes.menuItems }>
-                    <img src={roles} className={classes.icon} alt="" />
-                    {t('Responsibility')}
+                    <div className={classes.iconsContainer}>
+                      <img src={roles} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Responsibility')}
+                    </div>
                   </div>
                   </MenuItem>
                   <MenuItem
@@ -279,8 +292,12 @@ class CyioListCards extends Component {
                     value='locations'
                   >
                   <div className={ classes.menuItems }>
-                    <img src={locations} className={classes.icon} alt="" />
-                    {t('Locations')}
+                    <div className={classes.iconsContainer}>
+                      <img src={locations} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Locations')}
+                    </div>
                   </div>
                   </MenuItem>
                   <MenuItem
@@ -289,8 +306,12 @@ class CyioListCards extends Component {
                     value='parties'
                   >
                   <div className={ classes.menuItems }>
-                    <img src={parties} className={classes.icon} alt="" />
-                    {t('Parties')}
+                    <div className={classes.iconsContainer}>
+                      <img src={parties} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Parties')}
+                    </div>
                   </div>
                   </MenuItem>
                   <MenuItem
@@ -299,8 +320,12 @@ class CyioListCards extends Component {
                     value='responsible_parties'
                   >
                   <div className={ classes.menuItems }>
-                    <img src={responsiblePartiesIcon} style={{ marginRight: '12px' }} alt="" />
-                    {t('Responsible Parties')}
+                    <div className={classes.iconsContainer}>
+                      <img src={responsiblePartiesIcon} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Responsible Parties')}
+                    </div>
                   </div>
                   </MenuItem>
                   <MenuItem
@@ -309,8 +334,12 @@ class CyioListCards extends Component {
                     value='tasks'
                   >
                   <div className={ classes.menuItems }>
-                    <img src={tasksIcon} className={classes.icon} alt="" />
-                    {t('Tasks')}
+                    <div className={classes.iconsContainer}>
+                      <img src={tasksIcon} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Tasks')}
+                    </div>
                   </div>
                   </MenuItem>
                   <MenuItem
@@ -319,8 +348,12 @@ class CyioListCards extends Component {
                     value='assessment_platform'
                   >
                   <div className={ classes.menuItems }>
-                    <img src={assessmentPlatform} className={classes.icon} alt="" />
-                    {t('Assessment Platform')}
+                    <div className={classes.iconsContainer}>
+                      <img src={assessmentPlatform} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Assessment Platform')}
+                    </div>
                   </div>
                   </MenuItem>
                   <MenuItem
@@ -328,8 +361,12 @@ class CyioListCards extends Component {
                     to='/data/entities/notes'
                     value='notes'
                   >
-                    <img src={notes} className={classes.icon} alt="" />
-                    {t('Notes')}
+                    <div className={classes.iconsContainer}>
+                      <img src={notes} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Notes')}
+                    </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
@@ -337,8 +374,12 @@ class CyioListCards extends Component {
                     value='labels'
                   >
                   <div className={ classes.menuItems }>
-                    <img src={labels} className={classes.icon} alt="" />
-                    {t('Labels')}
+                    <div className={classes.iconsContainer}>
+                      <img src={labels} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Labels')}
+                    </div>
                   </div>
                   </MenuItem>
                   <MenuItem
@@ -347,8 +388,12 @@ class CyioListCards extends Component {
                     value='external_references'
                   >
                   <div className={ classes.menuItems }>
-                    <img src={externalReferenceIcon} className={classes.icon} alt="" />
-                    {t('External References')}
+                    <div className={classes.iconsContainer}>
+                      <img src={externalReferenceIcon} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('External References')}
+                    </div>
                   </div>
                   </MenuItem>
                 </Select>
