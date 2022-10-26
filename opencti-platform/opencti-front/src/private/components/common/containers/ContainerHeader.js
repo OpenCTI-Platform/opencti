@@ -51,7 +51,6 @@ import { containerAddStixCoreObjectsLinesRelationAddMutation } from './Container
 const styles = () => ({
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',
@@ -60,7 +59,7 @@ const styles = () => ({
   marking: {
     float: 'left',
     overflowX: 'hidden',
-    margin: '2px 0 0 20px',
+    margin: '3px 0 0 15px',
   },
   aliases: {
     marginRight: 7,

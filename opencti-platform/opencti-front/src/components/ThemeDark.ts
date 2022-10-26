@@ -131,8 +131,13 @@ const ThemeDark = (
             borderTopRightRadius: 'inherit',
           },
           pre: {
+            fontFamily: 'Consolas, monaco, monospace',
             color: '#ffffff !important',
             background: `${accent || '#01478d'} !important`,
+          },
+          'pre.light': {
+            fontFamily: 'Consolas, monaco, monospace',
+            background: `${nav || '#071a2e'} !important`,
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',

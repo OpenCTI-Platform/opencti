@@ -102,42 +102,6 @@ class StixDomainObjectOverview extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Standard STIX ID')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip
-                  title={t(
-                    'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                  )}
-                >
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
-              </div>
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
-                  <IconButton
-                    aria-label="Close"
-                    disableRipple={true}
-                    size="small"
-                    disabled={stixIds.length === 0}
-                    onClick={this.handleToggleOpenStixIds.bind(this)}
-                  >
-                    <BrushOutlined
-                      fontSize="small"
-                      color={stixIds.length === 0 ? 'inherit' : 'secondary'}
-                    />
-                  </IconButton>
-                </div>
-              </Security>
-              <div className="clearfix" />
-              <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
-            </Grid>
             <Grid item={true} xs={6}>
               {withPattern && (
                 <div>
@@ -254,6 +218,44 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
+              <div style={{ marginTop: 20 }}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Standard STIX ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <InformationOutline fontSize="small" color="primary" />
+                  </Tooltip>
+                </div>
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
+                    <IconButton
+                      aria-label="Close"
+                      disableRipple={true}
+                      size="small"
+                      disabled={stixIds.length === 0}
+                      onClick={this.handleToggleOpenStixIds.bind(this)}
+                    >
+                      <BrushOutlined
+                        fontSize="small"
+                        color={stixIds.length === 0 ? 'inherit' : 'secondary'}
+                      />
+                    </IconButton>
+                  </div>
+                </Security>
+                <div className="clearfix" />
+                <pre className="light" style={{ margin: 0 }}>
+                  {stixDomainObject.standard_id}
+                </pre>
+              </div>
             </Grid>
           </Grid>
         </Paper>

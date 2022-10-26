@@ -39,11 +39,10 @@ Transition.displayName = 'TransitionSlide';
 const styles = () => ({
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',
-    marginTop: '-13px',
+    marginTop: '-12px',
   },
   aliases: {
     float: 'right',

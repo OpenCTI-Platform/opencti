@@ -12,7 +12,6 @@ import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObj
 const styles = () => ({
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',

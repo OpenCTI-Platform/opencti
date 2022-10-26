@@ -11,7 +11,6 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 const styles = () => ({
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',
