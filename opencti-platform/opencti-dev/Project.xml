@@ -1,11 +1,8 @@
 <code_scheme name="Project" version="173">
-<<<<<<< HEAD
   <option name="LINE_SEPARATOR" value="&#10;" />
   <HTMLCodeStyleSettings>
     <option name="HTML_SPACE_INSIDE_EMPTY_TAG" value="true" />
   </HTMLCodeStyleSettings>
-=======
->>>>>>> bc4f4c498 ([tool] Update testing for dev env)
   <JSCodeStyleSettings version="0">
     <option name="SPACES_WITHIN_OBJECT_LITERAL_BRACES" value="true" />
     <option name="SPACES_WITHIN_IMPORTS" value="true" />
@@ -16,15 +13,12 @@
     <option name="SPACES_WITHIN_OBJECT_LITERAL_BRACES" value="true" />
     <option name="SPACES_WITHIN_IMPORTS" value="true" />
   </TypeScriptCodeStyleSettings>
-<<<<<<< HEAD
   <codeStyleSettings language="GraphQL">
     <indentOptions>
       <option name="INDENT_SIZE" value="2" />
       <option name="TAB_SIZE" value="2" />
     </indentOptions>
   </codeStyleSettings>
-=======
->>>>>>> bc4f4c498 ([tool] Update testing for dev env)
   <codeStyleSettings language="JavaScript">
     <indentOptions>
       <option name="INDENT_SIZE" value="2" />
