@@ -13,7 +13,6 @@ import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
@@ -38,9 +37,9 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import WorkspaceHeader from '../WorkspaceHeader';
-import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
+import TypesField from '../../common/form/TypesField';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -1465,11 +1464,13 @@ class InvestigationGraphComponent extends Component {
         {
           elementId: n,
           relationship_type:
-            filters.relationship_type === 'All'
+            filters.relationship_types.length === 0
               ? null
-              : filters.relationship_type,
+              : filters.relationship_types.map((o) => o.value),
           elementWithTargetTypes:
-            filters.entity_type === 'All' ? null : [filters.entity_type],
+            filters.entity_types.length === 0
+              ? null
+              : filters.entity_types.map((o) => o.value),
           count: parseInt(filters.limit, 10),
         },
       )
@@ -1640,12 +1641,14 @@ class InvestigationGraphComponent extends Component {
           PaperProps={{ elevation: 1 }}
           open={openExpandElements}
           onClose={this.handleCloseExpandElements.bind(this)}
+          fullWidth={true}
+          maxWidth="md"
         >
           <Formik
             enableReinitialize={true}
             initialValues={{
-              entity_type: 'All',
-              relationship_type: 'All',
+              entity_types: [],
+              relationship_types: [],
               limit: 100,
               reset_filters: true,
             }}
@@ -1656,96 +1659,25 @@ class InvestigationGraphComponent extends Component {
               <Form>
                 <DialogTitle>{t('Expand elements')}</DialogTitle>
                 <DialogContent>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="entity_type"
+                  <TypesField
+                    types={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+                    name="entity_types"
                     label={t('Entity types')}
                     fullWidth={true}
-                    containerstyle={{
-                      width: '100%',
-                    }}
-                  >
-                    {R.pipe(
-                      R.map((n) => ({ key: n, label: t(`entity_${n}`) })),
-                      R.sortWith([R.ascend(R.prop('label'))]),
-                    )([
-                      'All',
-                      'Attack-Pattern',
-                      'Campaign',
-                      'Note',
-                      'Observed-Data',
-                      'Opinion',
-                      'Report',
-                      'Course-Of-Action',
-                      'Individual',
-                      'Organization',
-                      'Sector',
-                      'Indicator',
-                      'Infrastructure',
-                      'Intrusion-Set',
-                      'City',
-                      'Country',
-                      'Region',
-                      'Position',
-                      'Malware',
-                      'Threat-Actor',
-                      'Tool',
-                      'Vulnerability',
-                      'Incident',
-                      'Label',
-                      'Marking-Definition',
-                      'External-Reference',
-                      'Stix-Cyber-Observable',
-                      'Domain-Name',
-                      'IPv4-Addr',
-                      'IPv6-Addr',
-                      'StixFile',
-                    ]).map((entityType) => (
-                      <MenuItem key={entityType.key} value={entityType.key}>
-                        {entityType.label}
-                      </MenuItem>
-                    ))}
-                  </Field>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="relationship_type"
-                    label={t('Relationship type')}
+                    multiple={true}
+                    style={{ width: '100%' }}
+                  />
+                  <TypesField
+                    types={[
+                      'stix-core-relationship',
+                      'stix-cyber-observable-relationship',
+                    ]}
+                    name="relationship_types"
+                    label={t('Relationship types')}
                     fullWidth={true}
-                    containerstyle={{
-                      marginTop: 20,
-                      width: '100%',
-                    }}
-                  >
-                    {R.pipe(
-                      R.map((n) => ({ key: n, label: t(`relationship_${n}`) })),
-                      R.sortWith([R.ascend(R.prop('label'))]),
-                    )([
-                      'All',
-                      'uses',
-                      'indicates',
-                      'targets',
-                      'located-at',
-                      'related-to',
-                      'communicates-with',
-                      'attributed-to',
-                      'based-on',
-                      'mitigates',
-                      'variant-of',
-                      'compromises',
-                      'delivers',
-                      'belongs-to',
-                      'amplifies',
-                    ]).map((relationshipType) => (
-                      <MenuItem
-                        key={relationshipType.key}
-                        value={relationshipType.key}
-                      >
-                        {relationshipType.label}
-                      </MenuItem>
-                    ))}
-                  </Field>
+                    multiple={true}
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
                   <Field
                     component={TextField}
                     variant="standard"

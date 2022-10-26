@@ -914,6 +914,7 @@ const i18n = {
       'This sector does not have any description.':
         'Este sector no tiene ninguna descripción.',
       'Relationship type': 'Tipo de relación',
+      'Relationship types': 'Tipos de relaciones',
       'From type': 'Tipo origen',
       'From name': 'Nombre origen',
       'To type': 'Tipo de destino',
@@ -2484,6 +2485,7 @@ const i18n = {
       'This sector does not have any description.':
         "Ce secteur n'a aucune description.",
       'Relationship type': 'Type de relation',
+      'Relationship types': 'Types de relation',
       'From type': 'Type source',
       'From name': 'Nom source',
       'To type': 'Type cible',
@@ -4004,6 +4006,7 @@ const i18n = {
       'This sector does not have any description.':
         'このセクターには説明がありません。',
       'Relationship type': 'リレーションシップタイプ',
+      'Relationship types': '関係の種類',
       'From type': 'ソースタイプ',
       'From name': 'ソース名',
       'To type': 'ターゲットタイプ',
@@ -5462,6 +5465,7 @@ const i18n = {
       'Implementation languages': '实现语言',
       'This sector does not have any description.': '此部门没有任何描述。',
       'Relationship type': '关系类型',
+      'Relationship types': '关系类型',
       'From type': '源类型',
       'From name': '源名称',
       'To type': '目标类型',

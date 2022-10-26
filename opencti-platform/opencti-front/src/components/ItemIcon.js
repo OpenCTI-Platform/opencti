@@ -209,6 +209,10 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'cooperates-with':
     case 'derived-from':
     case 'downloads':
+    case 'has':
+    case 'bcc':
+    case 'cc':
+    case 'obs_belongs-to':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     default:
       return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
