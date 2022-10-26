@@ -251,7 +251,8 @@ export const idGen = (type, raw, data, namespace) => {
   if (isEmptyField(data)) {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type];
-    throw UnsupportedError(`Cant create key for ${type} from empty data`, { data: raw, properties });
+    const missingKeys = properties.map((p) => p.src).join(' - ');
+    throw UnsupportedError(`Missing required elements for ${type} creation (${missingKeys})`, { data: raw, properties });
   }
   // In some cases like TLP, standard id are fixed by the community
   const findStaticId = getStaticIdFromData(data);

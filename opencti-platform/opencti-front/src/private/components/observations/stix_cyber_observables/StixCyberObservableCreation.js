@@ -463,7 +463,9 @@ class StixCyberObservableCreation extends Component {
               ),
             )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
-              if (includes(attribute.value, dateAttributes)) {
+              if (Object.keys(openVocabularies).includes(`${attribute.value}-ov`)) {
+                initialValues[attribute.value] = null;
+              } else if (includes(attribute.value, dateAttributes)) {
                 initialValues[attribute.value] = null;
               } else if (includes(attribute.value, booleanAttributes)) {
                 initialValues[attribute.value] = false;
@@ -549,6 +551,7 @@ class StixCyberObservableCreation extends Component {
                         if (Object.keys(openVocabularies).includes(`${attribute.value}-ov`)) {
                           return (
                             <OpenVocabField
+                              key={attribute.value}
                               label={t(attribute.value)}
                               type={`${attribute.value}-ov`}
                               name={attribute.value}
