@@ -81,6 +81,22 @@ class RemediationEntityLineComponent extends Component {
       R.path(['origin_actors']),
       R.mergeAll,
     )(node);
+
+    const orderedStartDate = R.sort((a, b) => Date.parse(a) - Date.parse(b));
+    const orderedEndDate = R.sort((a, b) => Date.parse(b) - Date.parse(a));
+
+    const startDate = R.pipe(
+      R.map((n) => n.timing.start_date),
+      orderedStartDate,
+      R.head,
+    )(R.pathOr([], ['tasks'], node));
+
+    const endDate = R.pipe(
+      R.map((n) => n.timing.end_date),
+      orderedEndDate,
+      R.head,
+    )(R.pathOr([], ['tasks'], node));
+
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -133,16 +149,27 @@ class RemediationEntityLineComponent extends Component {
                   {node.lifecycle && t(node.lifecycle)}
                 </Button>
               </div>
-              <div className={classes.bodyItem}>
-                <Typography align="left">
-                  {node.created && fldt(node.created)}
-                </Typography>
-              </div>
-              <div className={classes.bodyItem}>
-                <Typography align="left">
-                  {node.modified && fldt(node.modified)}
-                </Typography>
-              </div>
+              {node?.tasks.length > 0
+                ? <>
+                    <div className={classes.bodyItem}>
+                      <Typography align="left">
+                        {node.created && fldt(startDate)}
+                      </Typography>
+                    </div>
+                    <div className={classes.bodyItem}>
+                      <Typography align="left">
+                        {node.modified && fldt(endDate)}
+                      </Typography>
+                    </div>
+                  </>
+                : <>
+                <div style={{ display: 'grid', placeItems: 'center' }}>
+                  -
+                </div>
+                <div style={{ display: 'grid', placeItems: 'center' }}>
+                  -
+                </div>
+              </>}
             </div>
           }
         />
