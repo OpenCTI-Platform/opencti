@@ -316,12 +316,6 @@ class StixCyberObservableCreation extends Component {
       }
     }
     adaptedValues = pipe(
-      // enum for process
-      // dissoc('integrity_level'),
-      // dissoc('service_type'),
-      // dissoc('service_start_type'),
-      // dissoc('service_status'),
-      // Other
       dissoc('x_opencti_description'),
       dissoc('x_opencti_score'),
       dissoc('createdBy'),
@@ -347,11 +341,6 @@ class StixCyberObservableCreation extends Component {
     )(adaptedValues);
     const finalValues = {
       type: this.state.type,
-      // integrity_level: values.integrity_level.length > 0 ? values.integrity_level : null,
-      // start_type: values.start_type.length > 0 ? values.start_type : null,
-      // service_type: values.service_type.length > 0 ? values.service_type : null,
-      // service_start_type: values.service_start_type.length > 0 ? values.service_start_type : null,
-      // service_status: values.service_status.length > 0 ? values.service_status : null,
       x_opencti_description: values.x_opencti_description.length > 0 ? values.x_opencti_description : null,
       x_opencti_score: parseInt(values.x_opencti_score, 10),
       createdBy: propOr(null, 'value', values.createdBy),
