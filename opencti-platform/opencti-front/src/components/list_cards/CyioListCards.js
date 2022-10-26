@@ -64,7 +64,8 @@ const styles = (theme) => ({
     // boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
   dataEntities: {
-    width: '180px',
+    minWidth: '180px',
+    width: 'auto',
   },
   parameters: {
     // float: 'left',
@@ -85,6 +86,10 @@ const styles = (theme) => ({
     float: 'right',
     marginTop: '5px',
     padding: '14px 10px 12px 18px',
+  },
+  menuItems: {
+    display: 'flex',
+    placeItems: 'center',
   },
   selectedViews: {
     width: '430px',
@@ -257,55 +262,66 @@ class CyioListCards extends Component {
                   variant='outlined'
                   label='Data Types'
                   value={selectedDataEntity}
-                  className={classes.dataEntitiesSelect}
                 >
                   <MenuItem
                     component={Link}
                     to='/data/entities/responsibility'
                     value='responsibility'
                   >
+                  <div className={ classes.menuItems }>
                     <img src={roles} className={classes.icon} alt="" />
                     {t('Responsibility')}
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/locations'
                     value='locations'
                   >
+                  <div className={ classes.menuItems }>
                     <img src={locations} className={classes.icon} alt="" />
                     {t('Locations')}
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/parties'
                     value='parties'
                   >
+                  <div className={ classes.menuItems }>
                     <img src={parties} className={classes.icon} alt="" />
                     {t('Parties')}
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/responsible_parties'
                     value='responsible_parties'
                   >
+                  <div className={ classes.menuItems }>
                     <img src={responsiblePartiesIcon} style={{ marginRight: '12px' }} alt="" />
                     {t('Responsible Parties')}
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/tasks'
                     value='tasks'
                   >
+                  <div className={ classes.menuItems }>
                     <img src={tasksIcon} className={classes.icon} alt="" />
                     {t('Tasks')}
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/assessment_platform'
                     value='assessment_platform'
                   >
+                  <div className={ classes.menuItems }>
                     <img src={assessmentPlatform} className={classes.icon} alt="" />
                     {t('Assessment Platform')}
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
@@ -320,16 +336,20 @@ class CyioListCards extends Component {
                     to='/data/entities/labels'
                     value='labels'
                   >
+                  <div className={ classes.menuItems }>
                     <img src={labels} className={classes.icon} alt="" />
                     {t('Labels')}
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/external_references'
                     value='external_references'
                   >
+                  <div className={ classes.menuItems }>
                     <img src={externalReferenceIcon} className={classes.icon} alt="" />
                     {t('External References')}
+                  </div>
                   </MenuItem>
                 </Select>
               </FormControl>
