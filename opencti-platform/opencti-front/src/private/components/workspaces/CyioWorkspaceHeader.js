@@ -6,8 +6,10 @@ import {
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
+import ArrowBack from '@material-ui/icons/ArrowBackOutlined';
 import IconButton from '@material-ui/core/IconButton';
 import Slide from '@material-ui/core/Slide';
 import { Add, Close } from '@material-ui/icons';
@@ -16,16 +18,20 @@ import Button from '@material-ui/core/Button';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import inject18n from '../../../components/i18n';
-import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 import WorkspacePopover from './WorkspacePopover';
-import ExportButtons from '../../../components/ExportButtons';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = () => ({
+const styles = (theme) => ({
+  header: {
+    margin: '0 0 20px 0',
+    padding: '24px 20px 30px 20px',
+    height: '70px',
+    backgroundColor: theme.palette.background.paper,
+  },
   title: {
     float: 'left',
     textTransform: 'uppercase',
@@ -38,7 +44,15 @@ const styles = () => ({
     float: 'right',
     marginTop: '-13px',
   },
+  iconButton: {
+    float: 'left',
+    minWidth: '0px',
+    marginRight: 15,
+    marginTop: -4,
+    padding: '7px',
+  },
   tags: {
+    display: 'flex',
     float: 'right',
     marginTop: '-5px',
   },
@@ -61,7 +75,7 @@ const styles = () => ({
 });
 
 const workspaceMutation = graphql`
-  mutation WorkspaceHeaderFieldMutation($id: ID!, $input: [EditInput]!) {
+  mutation CyioWorkspaceHeaderFieldMutation($id: ID!, $input: [EditInput]!) {
     workspaceEdit(id: $id) {
       fieldPatch(input: $input) {
         tags
@@ -132,11 +146,19 @@ class WorkspaceHeader extends Component {
 
   render() {
     const {
-      t, classes, workspace, variant,
+      t, classes, workspace, history, handleWidgetCreation,
     } = this.props;
     const tags = propOr([], 'tags', workspace);
     return (
-      <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
+      <div className={classes.header}>
+        <Button
+          variant="outlined"
+          className={classes.iconButton}
+          size="large"
+          onClick={() => history.goBack()}
+        >
+          <ArrowBack fontSize="inherit" />
+        </Button>
         <Typography
           variant="h1"
           gutterBottom={true}
@@ -144,37 +166,38 @@ class WorkspaceHeader extends Component {
         >
           {workspace.name}
         </Typography>
-        <Security needs={[EXPLORE_EXUPDATE]}>
-          <div className={classes.popover}>
-            <WorkspacePopover id={workspace.id} type={workspace.type} />
-          </div>
-        </Security>
-        <div className={classes.export}>
-          <ExportButtons domElementId="container" name={workspace.name} />
+        {/* <Security needs={[EXPLORE_EXUPDATE]}> */}
+        <div className={classes.popover}>
+          <WorkspacePopover id={workspace.id} type={workspace.type} />
         </div>
+        {/* </Security> */}
+        {/* <div className={classes.export}>
+          <ExportButtons domElementId="container" name={workspace.name} />
+        </div> */}
         <div className={classes.tags}>
           {take(5, tags).map(
             (tag) => tag.length > 0 && (
-                <Chip
-                  key={tag}
-                  classes={{ root: classes.tag }}
-                  label={tag}
-                  onDelete={this.deleteTag.bind(this, tag)}
-                />
+              <Chip
+                key={tag}
+                classes={{ root: classes.tag }}
+                label={tag}
+                onDelete={this.deleteTag.bind(this, tag)}
+              />
             ),
           )}
-          <Security needs={[EXPLORE_EXUPDATE]}>
-            {tags.length > 5 ? (
-              <Button
-                color="primary"
-                aria-tag="More"
-                onClick={this.handleToggleOpenTags.bind(this)}
-                style={{ fontSize: 14 }}
-              >
-                <DotsHorizontalCircleOutline />
-                &nbsp;&nbsp;{t('More')}
-              </Button>
-            ) : (
+          {/* <Security needs={[EXPLORE_EXUPDATE]}> */}
+          {tags.length > 5 ? (
+            <Button
+              color="primary"
+              aria-tag="More"
+              onClick={this.handleToggleOpenTags.bind(this)}
+              style={{ fontSize: 14 }}
+            >
+              <DotsHorizontalCircleOutline />
+              &nbsp;&nbsp;{t('More')}
+            </Button>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <IconButton
                 style={{ float: 'left', marginTop: -5 }}
                 color="secondary"
@@ -187,8 +210,9 @@ class WorkspaceHeader extends Component {
                   <Add fontSize="small" />
                 )}
               </IconButton>
-            )}
-          </Security>
+              {!this.state.openTag && t('New Tag')}
+            </div>
+          )}
           <Slide
             direction="left"
             in={this.state.openTag}
@@ -212,6 +236,17 @@ class WorkspaceHeader extends Component {
               </Formik>
             </div>
           </Slide>
+          <Button
+            color='primary'
+            aria-tag='More'
+            variant='contained'
+            onClick={() => handleWidgetCreation()}
+            style={{ fontSize: 14, marginLeft: '20px' }}
+          >
+            <AddCircleOutlineIcon />
+            &nbsp;&nbsp;{t('New')}
+          </Button>
+          {/* </Security> */}
         </div>
         <div className="clearfix" />
       </div>
@@ -225,6 +260,7 @@ WorkspaceHeader.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
   variant: PropTypes.string,
+  handleWidgetCreation: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(WorkspaceHeader);

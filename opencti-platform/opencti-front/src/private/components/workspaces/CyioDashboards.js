@@ -8,10 +8,11 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ListLines from '../../../components/list_lines/ListLines';
+import CyioListLines from '../../../components/list_lines/CyioListLines';
+import CyioListCards from '../../../components/list_cards/CyioListCards';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
 import WorkspaceCreation from './WorkspaceCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import WorkspaceDelete from './WorkspaceDelete';
 
 class Dashboards extends Component {
   constructor(props) {
@@ -27,6 +28,7 @@ class Dashboards extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
+      openDashboard: false,
       numberOfElements: { number: 0, symbol: '' },
     };
   }
@@ -38,6 +40,14 @@ class Dashboards extends Component {
       'view-workspaces',
       this.state,
     );
+  }
+
+  handleChangeView(mode) {
+    this.setState({ view: mode }, () => this.saveView());
+  }
+
+  handleCreateDashboard() {
+    this.setState({ openDashboard: !this.state.openDashboard });
   }
 
   handleSearch(value) {
@@ -79,12 +89,73 @@ class Dashboards extends Component {
       },
     };
     return (
-      <ListLines
+      <CyioListLines
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
+        handleChangeView={this.handleChangeView.bind(this)}
+        handleNewCreation={this.handleCreateDashboard.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        OperationsComponent={<WorkspaceDelete />}
+        keyword={searchTerm}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+        style={{ marginTop: -50 }}
+      >
+        <QueryRenderer
+          query={workspacesLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
+            <WorkspacesLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
+            />
+          )}
+        />
+      </CyioListLines>
+    );
+  }
+
+  renderCards(paginationOptions) {
+    const {
+      sortBy, orderAsc, searchTerm, numberOfElements,
+    } = this.state;
+    const dataColumns = {
+      name: {
+        label: 'Name',
+        width: '35%',
+        isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '25%',
+        isSortable: false,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+      updated_at: {
+        label: 'Modification date',
+        width: '15%',
+        isSortable: true,
+      },
+    };
+    return (
+      <CyioListCards
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleNewCreation={this.handleCreateDashboard.bind(this)}
+        handleChangeView={this.handleChangeView.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        OperationsComponent={<WorkspaceDelete />}
         keyword={searchTerm}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
@@ -102,7 +173,7 @@ class Dashboards extends Component {
             />
           )}
         />
-      </ListLines>
+      </CyioListCards>
     );
   }
 
@@ -119,12 +190,15 @@ class Dashboards extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <WorkspaceCreation
-            paginationOptions={paginationOptions}
-            type="dashboard"
-          />
-        </Security>
+        {view === 'cards' ? this.renderCards(paginationOptions) : ''}
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
+        <WorkspaceCreation
+          open={this.state.openDashboard}
+          handleCreateDashboard={this.handleCreateDashboard.bind(this)}
+          paginationOptions={paginationOptions}
+          type="dashboard"
+        />
+        {/* </Security> */}
       </div>
     );
   }

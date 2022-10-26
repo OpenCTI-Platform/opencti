@@ -18,8 +18,7 @@ import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import { Add, MapOutlined } from '@material-ui/icons';
+import { MapOutlined } from '@material-ui/icons';
 import {
   FlaskOutline,
   FolderTableOutline,
@@ -59,18 +58,21 @@ const styles = (theme) => ({
     zIndex: 1001,
   },
   card: {
-    height: 180,
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.default,
     textAlign: 'center',
   },
   card2: {
     height: 100,
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.default,
   },
   card3: {
     height: 100,
-    backgroundColor: theme.palette.background.paperLight,
+    backgroundColor: theme.palette.background.default,
     textAlign: 'center',
+  },
+  cardAction: {
+    height: 'max-content',
+    paddingBottom: '2rem',
   },
   dialog: {
     height: 600,
@@ -100,6 +102,88 @@ const visualizationTypesMapping = {
   reports: [HORIZONTAL_BAR, DONUT, VERTICAL_BAR, AREA, LIST],
 };
 
+const entityList = [
+  {
+    perspective: 'global_threats',
+    data_type: [
+      { name: 'Victimonlogy-All', value: 'all', description: 'Targeted entities' },
+      { name: 'Victimology-Sector', value: 'sectors', description: 'Target sectors' },
+      { name: 'Victimology-Regions', value: 'all', description: 'Targeted regions' },
+      { name: 'Victimology-Countries', value: 'countries', description: 'Targeted countries' },
+      { name: 'Activity-Intrusion Sets', value: 'intrusion-sets', description: '' },
+      { name: 'Activity-Vulnerabilities', value: 'vulnerabilities', description: '' },
+      { name: 'Activity-Reports', value: 'reports', description: 'Number of reports' },
+      { name: 'Activity-Indicators', value: 'indicators', description: 'Number of indicators' },
+      { name: 'Activity-Indicators Lifecycle', value: 'indicators_lifecycle', description: '' },
+      { name: 'Activity-Indicators Detection', value: 'indicators_detection', description: '' },
+      { name: 'Activity-all relationships', value: 'all', description: '' },
+    ],
+  },
+  {
+    perspective: 'global_assets',
+    data_type: [
+      { name: 'Total Inventory Items', value: 'all', description: '' },
+      { name: 'Top-N most vulnerable inventory-items', value: 'all', description: '' },
+      { name: 'Total Vulnerabilities by Year', value: 'all', description: '' },
+      { name: 'Total Components', value: 'components', description: '' },
+      { name: 'Activity-Intrusion Sets', value: 'intrusion-sets', description: '' },
+      { name: 'Top-N most vulnerable components/products', value: 'all', description: '' },
+    ],
+  },
+  {
+    perspective: 'global_risks',
+    data_type: [
+      { name: "Total 'Active' Risks", value: 'active-risks', description: '' },
+      { name: 'Top-N Risk Occurrences', value: 'all', description: '' },
+      { name: 'Top-N Risks by severity', value: 'all', description: '' },
+      { name: "Total 'Accpeted' Risks", value: 'accepted-risks', description: '' },
+    ],
+  },
+  {
+    perspective: 'threat',
+    data_type: [
+      { name: 'Victimonlogy-All', value: 'all', description: 'Targeted entries' },
+      { name: 'Victimology-Sector', value: 'sectors', description: 'Targeted sectors' },
+      { name: 'Victimology-Countries', value: 'countries', description: 'Targeted countries' },
+      { name: 'Vulnerabilities', value: 'vulnerabilities', description: 'Targeted vulnerabilities' },
+      { name: 'Activity-Campaigns', value: 'campaigns', description: 'Number of campaigns' },
+      { name: 'Activity-Indicators', value: 'indicators', description: 'Number of indicators' },
+      { name: 'Activity-Reports', value: 'reports', description: 'Number of reports' },
+    ],
+  },
+  {
+    perspective: 'threat',
+    data_type: [
+      { name: 'Victimonlogy-All', value: 'all', description: 'Targeted entries' },
+      { name: 'Victimology-Sector', value: 'sectors', description: 'Targeted sectors' },
+      { name: 'Victimology-Countries', value: 'countries', description: 'Targeted countries' },
+      { name: 'Vulnerabilities', value: 'vulnerabilities', description: 'Targeted vulnerabilities' },
+      { name: 'Activity-Campaigns', value: 'campaigns', description: 'Number of campaigns' },
+      { name: 'Activity-Indicators', value: 'indicators', description: 'Number of indicators' },
+      { name: 'Activity-Reports', value: 'reports', description: 'Number of reports' },
+    ],
+  },
+  {
+    perspective: 'identity',
+    data_type: [
+      { name: 'Threats-All', value: 'all', description: '' },
+      { name: 'Threats-Intrusion Sets', value: 'intrusion-sets', description: '' },
+      { name: 'Threats-Malwares', value: 'malwares', description: '' },
+      { name: 'Activity-Campaigns', value: 'campaigns', description: 'Number of campaigns' },
+      { name: 'Activity-Incidents', value: 'incidents', description: 'Number of indicators' },
+      { name: 'Activity-Reports', value: 'reports', description: 'Number of reports' },
+    ],
+  },
+  {
+    perspective: 'asset_item',
+    data_type: [],
+  },
+  {
+    perspective: 'risk',
+    data_type: [],
+  },
+];
+
 class WidgetCreation extends Component {
   constructor(props) {
     super(props);
@@ -114,13 +198,8 @@ class WidgetCreation extends Component {
     };
   }
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
   handleClose() {
     this.setState({
-      open: false,
       stepIndex: 0,
       keyword: '',
       perspective: null,
@@ -131,7 +210,8 @@ class WidgetCreation extends Component {
   }
 
   handleSelectPerspective(perspective) {
-    this.setState({ perspective, stepIndex: perspective === 'global' ? 2 : 1 });
+    const avoidEntity = ['global_assets', 'global_risks'];
+    this.setState({ perspective, stepIndex: avoidEntity.includes(perspective) ? 2 : 1 });
   }
 
   handleSelectEntity(stixDomainObject) {
@@ -782,8 +862,8 @@ class WidgetCreation extends Component {
             <Grid item={true} xs="4">
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
-                  onClick={this.handleSelectPerspective.bind(this, 'global')}
-                  style={{ height: '100%' }}
+                  onClick={this.handleSelectPerspective.bind(this, 'global_threats')}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
@@ -792,12 +872,62 @@ class WidgetCreation extends Component {
                       variant="h1"
                       style={{ marginTop: 20 }}
                     >
-                      {t('Global')}
+                      {t('Global Threats')}
                     </Typography>
                     <br />
                     <Typography variant="body1">
                       {t(
-                        'Display global data without selecting a specific entity.',
+                        'Display threat data without selecting a specific entity.',
+                      )}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+            <Grid item={true} xs="4">
+              <Card elevation={3} className={classes.card}>
+                <CardActionArea
+                  onClick={this.handleSelectPerspective.bind(this, 'global_assets')}
+                  classes={{ root: classes.cardAction }}
+                >
+                  <CardContent>
+                    <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
+                    <Typography
+                      gutterBottom
+                      variant="h1"
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Global Assets')}
+                    </Typography>
+                    <br />
+                    <Typography variant="body1">
+                      {t(
+                        'Display asset data without selecting a specific entity.',
+                      )}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+            <Grid item={true} xs="4">
+              <Card elevation={3} className={classes.card}>
+                <CardActionArea
+                  onClick={this.handleSelectPerspective.bind(this, 'global_risks')}
+                  classes={{ root: classes.cardAction }}
+                >
+                  <CardContent>
+                    <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
+                    <Typography
+                      gutterBottom
+                      variant="h1"
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Global Risks')}
+                    </Typography>
+                    <br />
+                    <Typography variant="body1">
+                      {t(
+                        'Display risk data without selecting a specific entity.',
                       )}
                     </Typography>
                   </CardContent>
@@ -808,7 +938,7 @@ class WidgetCreation extends Component {
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'threat')}
-                  style={{ height: '100%' }}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <FlaskOutline style={{ fontSize: 40 }} color="primary" />
@@ -817,7 +947,7 @@ class WidgetCreation extends Component {
                       variant="h1"
                       style={{ marginTop: 20 }}
                     >
-                      {t('Threat or arsenal item')}
+                      {t('Threat Or Arsenal Item')}
                     </Typography>
                     <br />
                     <Typography variant="body1">
@@ -832,8 +962,8 @@ class WidgetCreation extends Component {
             <Grid item={true} xs="4">
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
-                  onClick={this.handleSelectPerspective.bind(this, 'entity')}
-                  style={{ height: '100%' }}
+                  onClick={this.handleSelectPerspective.bind(this, 'identity')}
+                  classes={{ root: classes.cardAction }}
                 >
                   <CardContent>
                     <FolderTableOutline
@@ -845,12 +975,68 @@ class WidgetCreation extends Component {
                       variant="h1"
                       style={{ marginTop: 20 }}
                     >
-                      {t('Identity or location')}
+                      {t('Identity Or Location')}
                     </Typography>
                     <br />
                     <Typography variant="body1">
                       {t(
                         'Display data about organizations, sectors, countries, etc.',
+                      )}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+            <Grid item={true} xs="4">
+              <Card elevation={3} className={classes.card}>
+                <CardActionArea
+                  onClick={this.handleSelectPerspective.bind(this, 'asset_item')}
+                  classes={{ root: classes.cardAction }}
+                >
+                  <CardContent>
+                    <FolderTableOutline
+                      style={{ fontSize: 40 }}
+                      color="primary"
+                    />
+                    <Typography
+                      gutterBottom
+                      variant="h1"
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Asset Item')}
+                    </Typography>
+                    <br />
+                    <Typography variant="body1">
+                      {t(
+                        'Display data about a specific Component, Inventory, Item, etc.',
+                      )}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+            <Grid item={true} xs="4">
+              <Card elevation={3} className={classes.card}>
+                <CardActionArea
+                  onClick={this.handleSelectPerspective.bind(this, 'risk')}
+                  classes={{ root: classes.cardAction }}
+                >
+                  <CardContent>
+                    <FolderTableOutline
+                      style={{ fontSize: 40 }}
+                      color="primary"
+                    />
+                    <Typography
+                      gutterBottom
+                      variant="h1"
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Risk Or Vulnerability Item')}
+                    </Typography>
+                    <br />
+                    <Typography variant="body1">
+                      {t(
+                        'Display data about a specific Risk or Vulnerability.',
                       )}
                     </Typography>
                   </CardContent>
@@ -873,13 +1059,45 @@ class WidgetCreation extends Component {
         );
       case 2:
         return (
+          // entityList
+          // <div>
+          //   {this.state.perspective === 'global_threats'
+          //     && this.renderGlobalDataTypes()}
+          //   {this.state.perspective === 'threat'
+          //     && this.renderThreatDataTypes()}
+          //   {this.state.perspective === 'entity'
+          //     && this.renderEntityDataTypes()}
+          // </div>
           <div>
-            {this.state.perspective === 'global'
-              && this.renderGlobalDataTypes()}
-            {this.state.perspective === 'threat'
-              && this.renderThreatDataTypes()}
-            {this.state.perspective === 'entity'
-              && this.renderEntityDataTypes()}
+            <Grid
+              container={true}
+              spacing={3}
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {(entityList
+                .filter((value) => (value.perspective === this.state.perspective))[0].data_type)
+                .map((entity, i) => (
+                  <Grid key={i} item={true} xs="4">
+                    <Card elevation={3} className={classes.card2}>
+                      <CardActionArea
+                        onClick={this.handleSelectDataType.bind(this, entity.value)}
+                        style={{ height: '100%' }}
+                      >
+                        <CardContent>
+                          <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                            {entity.name}
+                          </Typography>
+                          <br />
+                          <Typography variant="body1">
+                            {entity.description}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                ))
+              }
+            </Grid>
           </div>
         );
       case 3:
@@ -891,21 +1109,13 @@ class WidgetCreation extends Component {
 
   render() {
     const { stepIndex } = this.state;
-    const { t, classes } = this.props;
+    const {
+      t, open, handleWidgetCreation,
+    } = this.props;
     return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
         <Dialog
-          open={this.state.open}
+          open={open}
           TransitionComponent={Transition}
-          onClose={this.handleClose.bind(this)}
           fullWidth={true}
           maxWidth="md"
         >
@@ -949,15 +1159,16 @@ class WidgetCreation extends Component {
           </DialogTitle>
           <DialogContent>{this.getStepContent(stepIndex)}</DialogContent>
           <DialogActions>
-            <Button onClick={this.handleClose.bind(this)}>{t('Cancel')}</Button>
+            <Button variant='outlined' onClick={() => handleWidgetCreation()}>{t('Cancel')}</Button>
           </DialogActions>
         </Dialog>
-      </div>
     );
   }
 }
 
 WidgetCreation.propTypes = {
+  handleWidgetCreation: PropTypes.func,
+  open: PropTypes.bool,
   onComplete: PropTypes.func,
   classes: PropTypes.object,
   theme: PropTypes.object,

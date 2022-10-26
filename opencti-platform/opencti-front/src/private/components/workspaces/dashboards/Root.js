@@ -7,7 +7,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import Dashboard from './Dashboard';
+import CyioDashboard from './CyioDashboard';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
@@ -69,7 +69,7 @@ class RootDashboard extends Component {
                       exact
                       path="/dashboard/workspaces/dashboards/:workspaceId"
                       render={(routeProps) => (
-                        <Dashboard
+                        <CyioDashboard
                           {...routeProps}
                           workspace={props.workspace}
                         />

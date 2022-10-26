@@ -5,7 +5,6 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { DatePicker } from '@material-ui/pickers';
-import Drawer from '@material-ui/core/Drawer';
 import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -21,10 +20,10 @@ import {
   dayStartDate,
 } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
-import WorkspaceHeader from '../WorkspaceHeader';
-import { commitMutation } from '../../../../relay/environment';
+import CyioWorkspaceHeader from '../CyioWorkspaceHeader';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import WidgetCreation from './WidgetCreation';
+import CyioWidgetCreation from './CyioWidgetCreation';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 import ThreatVictimologyAll from './ThreatVictimologyAll';
 import ThreatVictimologySectors from './ThreatVictimologySectors';
@@ -52,16 +51,15 @@ import ThreatVulnerabilities from './ThreatVulnerabilities';
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const styles = (theme) => ({
-  container: {
-    margin: '0 -20px 0 -20px',
-  },
   bottomNav: {
-    zIndex: 1000,
-    padding: '7px 0 0 205px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
-    height: 64,
+    padding: '17px 50px',
+    zIndex: '1',
     overflow: 'hidden',
+    backgroundColor: theme.palette.navBottom.background,
+    position: 'fixed',
+    width: '100%',
+    bottom: '0',
+    marginLeft: '-30px',
   },
   paper: {
     height: '100%',
@@ -73,10 +71,21 @@ const styles = (theme) => ({
   },
 });
 
+const cyioDashboardWizardQuery = graphql`
+  query CyioDashboardWizardQuery {
+    workspaceWizardConfig
+  }
+`;
+
 class DashboardComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { openConfig: false, currentWidget: {}, mapReload: false };
+    this.state = {
+      openConfig: false,
+      currentWidget: {},
+      mapReload: false,
+      openWidgetCreate: false,
+    };
   }
 
   saveManifest(manifest) {
@@ -96,6 +105,17 @@ class DashboardComponent extends Component {
         },
       });
     }
+  }
+
+  handleWidgetCreation() {
+    // console.log('CyioDashboardCalled!!');
+    fetchQuery(cyioDashboardWizardQuery)
+      .toPromise()
+      .then((data) => {
+        console.log('CyioDashboardQuery', data);
+      });
+    // .catch((error) => )
+    this.setState({ openWidgetCreate: !this.state.openWidgetCreate });
   }
 
   decodeManifest() {
@@ -437,17 +457,25 @@ class DashboardComponent extends Component {
   }
 
   render() {
-    const { t, classes, workspace } = this.props;
+    const {
+      t, classes, workspace, history,
+    } = this.props;
     const manifest = this.decodeManifest();
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
     return (
       <div className={classes.container} id="container">
-        <WorkspaceHeader workspace={workspace} variant="dashboard" />
-        <Drawer
+        <CyioWorkspaceHeader
+          history={history}
+          workspace={workspace}
+          variant="dashboard"
+          handleWidgetCreation={this.handleWidgetCreation.bind(this)}
+        />
+        {/* <Drawer
           anchor="bottom"
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
-        >
+        > */}
+        <div className={classes.bottomNav}>
           <Security
             needs={[EXPLORE_EXUPDATE]}
             placeholder={
@@ -550,8 +578,9 @@ class DashboardComponent extends Component {
               </Grid>
             </Grid>
           </Security>
-        </Drawer>
-        <Security
+        </div>
+        {/* </Drawer> */}
+        {/* <Security
           needs={[EXPLORE_EXUPDATE]}
           placeholder={
             <ResponsiveGridLayout
@@ -592,48 +621,52 @@ class DashboardComponent extends Component {
               ))}
             </ResponsiveGridLayout>
           }
+        > */}
+        <ResponsiveGridLayout
+          className="layout"
+          margin={[20, 20]}
+          rowHeight={50}
+          breakpoints={{
+            lg: 1200,
+            md: 1200,
+            sm: 1200,
+            xs: 1200,
+            xxs: 1200,
+          }}
+          cols={{
+            lg: 18,
+            md: 18,
+            sm: 18,
+            xs: 18,
+            xxs: 18,
+          }}
+          onLayoutChange={this.onLayoutChange.bind(this)}
         >
-          <ResponsiveGridLayout
-            className="layout"
-            margin={[20, 20]}
-            rowHeight={50}
-            breakpoints={{
-              lg: 1200,
-              md: 1200,
-              sm: 1200,
-              xs: 1200,
-              xxs: 1200,
-            }}
-            cols={{
-              lg: 18,
-              md: 18,
-              sm: 18,
-              xs: 18,
-              xxs: 18,
-            }}
-            onLayoutChange={this.onLayoutChange.bind(this)}
-          >
-            {R.values(manifest.widgets).map((widget) => (
-              <Paper
-                key={widget.id}
-                data-grid={widget.layout}
-                classes={{ root: classes.paper }}
-                elevation={2}
-              >
-                <WidgetPopover
-                  onDelete={this.handleDeleteWidget.bind(this, widget.id)}
-                />
-                {widget.perspective === 'global'
-                  && this.renderGlobalVisualization(widget, manifest.config)}
-                {widget.perspective === 'threat'
-                  && this.renderThreatVisualization(widget, manifest.config)}
-                {widget.perspective === 'entity'
-                  && this.renderEntityVisualization(widget, manifest.config)}
-              </Paper>
-            ))}
-          </ResponsiveGridLayout>
-          <WidgetCreation onComplete={this.handleAddWidget.bind(this)} />
-        </Security>
+          {R.values(manifest.widgets).map((widget) => (
+            <Paper
+              key={widget.id}
+              data-grid={widget.layout}
+              classes={{ root: classes.paper }}
+              elevation={2}
+            >
+              <WidgetPopover
+                onDelete={this.handleDeleteWidget.bind(this, widget.id)}
+              />
+              {widget.perspective === 'global'
+                && this.renderGlobalVisualization(widget, manifest.config)}
+              {widget.perspective === 'threat'
+                && this.renderThreatVisualization(widget, manifest.config)}
+              {widget.perspective === 'entity'
+                && this.renderEntityVisualization(widget, manifest.config)}
+            </Paper>
+          ))}
+        </ResponsiveGridLayout>
+        <CyioWidgetCreation
+          open={this.state.openWidgetCreate}
+          handleWidgetCreation={this.handleWidgetCreation.bind(this)}
+          onComplete={this.handleAddWidget.bind(this)}
+        />
+        {/* </Security> */}
       </div>
     );
   }
@@ -647,7 +680,7 @@ DashboardComponent.propTypes = {
 
 const Dashboard = createFragmentContainer(DashboardComponent, {
   workspace: graphql`
-    fragment Dashboard_workspace on Workspace {
+    fragment CyioDashboard_workspace on Workspace {
       id
       type
       name

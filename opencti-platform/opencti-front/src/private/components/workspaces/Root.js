@@ -1,6 +1,6 @@
 import React from 'react';
 import { Switch } from 'react-router-dom';
-import Dashboards from './Dashboards';
+import CyioDashboards from './CyioDashboards';
 import Investigations from './Investigations';
 import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
@@ -11,7 +11,7 @@ const Root = () => (
     <BoundaryRoute
       exact
       path="/dashboard/workspaces/dashboards"
-      component={Dashboards}
+      component={CyioDashboards}
     />
     <BoundaryRoute
       path="/dashboard/workspaces/dashboards/:workspaceId"
