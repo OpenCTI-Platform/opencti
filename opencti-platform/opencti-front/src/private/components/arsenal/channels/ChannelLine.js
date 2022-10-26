@@ -78,7 +78,7 @@ const ChannelLineComponent = (props) => {
               <StixCoreObjectLabels
                 variant="inList"
                 labels={node.objectLabel}
-                onClick={onLabelClick.bind(this)}
+                onClick={onLabelClick}
               />
             </div>
             <div
