@@ -1717,63 +1717,58 @@ class Filters extends Component {
       R.sortWith([R.ascend(R.prop('label'))]),
     )(entityTypes);
     return (
-      <React.Fragment>
-        <InputAdornment position="start">
-          <IconButton
-            onClick={this.handleOpenSearchScope.bind(this, key)}
-            size="small"
-            edge="end"
-            style={{ marginRight: -8 }}
-          >
-            <PaletteOutlined
-              fontSize="small"
-              color={
-                searchScope[key] && searchScope[key].length > 0
-                  ? 'secondary'
-                  : 'primary'
-              }
-            />
-          </IconButton>
-          <Popover
-            classes={{ paper: classes.container2 }}
-            open={openSearchScope[key]}
-            anchorEl={anchorElSearchScope[key]}
-            onClose={this.handleCloseSearchScope.bind(this, key)}
-            anchorOrigin={{
-              vertical: 'center',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'center',
-              horizontal: 'left',
-            }}
-            elevation={8}
-          >
-            <MenuList dense={true}>
-              {entitiesTypes.map((entityType) => (
-                <MenuItem
-                  key={entityType.value}
-                  value={entityType.value}
-                  dense={true}
-                  onClick={this.handleToggleSearchScope.bind(
-                    this,
-                    key,
-                    entityType.value,
-                  )}
-                >
-                  <Checkbox
-                    size="small"
-                    checked={(searchScope[key] || []).includes(
-                      entityType.value,
-                    )}
-                  />
-                  <ListItemText primary={entityType.label} />
-                </MenuItem>
-              ))}
-            </MenuList>
-          </Popover>
-        </InputAdornment>
-      </React.Fragment>
+      <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
+        <IconButton
+          onClick={this.handleOpenSearchScope.bind(this, key)}
+          size="small"
+          edge="end"
+        >
+          <PaletteOutlined
+            fontSize="small"
+            color={
+              searchScope[key] && searchScope[key].length > 0
+                ? 'secondary'
+                : 'primary'
+            }
+          />
+        </IconButton>
+        <Popover
+          classes={{ paper: classes.container2 }}
+          open={openSearchScope[key]}
+          anchorEl={anchorElSearchScope[key]}
+          onClose={this.handleCloseSearchScope.bind(this, key)}
+          anchorOrigin={{
+            vertical: 'center',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'center',
+            horizontal: 'left',
+          }}
+          elevation={8}
+        >
+          <MenuList dense={true}>
+            {entitiesTypes.map((entityType) => (
+              <MenuItem
+                key={entityType.value}
+                value={entityType.value}
+                dense={true}
+                onClick={this.handleToggleSearchScope.bind(
+                  this,
+                  key,
+                  entityType.value,
+                )}
+              >
+                <Checkbox
+                  size="small"
+                  checked={(searchScope[key] || []).includes(entityType.value)}
+                />
+                <ListItemText primary={entityType.label} />
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Popover>
+      </InputAdornment>
     );
   }
 
