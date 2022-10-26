@@ -329,6 +329,7 @@ const stixCyberObservableRelationshipTypesMapping = {
   'Observed-Data_StixFile': ['obs_content'],
   'Process_Network-Traffic': ['opened-connection'],
   Process_Process: ['parent', 'child'],
+  Process_StixFile: ['service-dll'],
   Malware_Software: ['operating-system'],
   StixFile_Artifact: ['contains'],
   'StixFile_Autonomous-System': ['contains'],

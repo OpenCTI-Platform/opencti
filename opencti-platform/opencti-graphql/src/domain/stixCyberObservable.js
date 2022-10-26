@@ -30,7 +30,8 @@ import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax } from '../utils/syntax';
 import { upload } from '../database/file-storage';
 import {
-  ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions
@@ -201,8 +202,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   }
   // Convert hashes to dictionary if needed.
   if (isStixCyberObservableHashedObservable(type) && observableInput.hashes) {
-    const hashInputToJson = inputHashesToStix(observableInput.hashes);
-    observableInput.hashes = hashInputToJson;
+    observableInput.hashes = inputHashesToStix(observableInput.hashes);
   }
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(type, observableInput);

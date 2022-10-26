@@ -1313,6 +1313,8 @@ const i18n = {
       'entity_Media-Content': 'Contenido multimedia',
       // Relations
       relationship_All: 'Todos los tipos de relación',
+      'relationship_service-dll': 'Dll Servicio',
+      relationship_image: 'imagen',
       relationship_object: 'contiene',
       'relationship_x_opencti_linked-to': 'relacionado con',
       relationship_to: 'to',
@@ -2851,6 +2853,8 @@ const i18n = {
       'entity_Media-Content': 'Contenu média',
       // Relations
       relationship_All: 'Tous les types de relation',
+      'relationship_service-dll': 'Service Dll',
+      relationship_image: 'image',
       relationship_object: 'contient',
       'relationship_x_opencti_linked-to': 'lié à',
       relationship_to: 'to',
@@ -4349,6 +4353,8 @@ const i18n = {
       'entity_Media-Content': 'メディアコンテンツ',
       // Relations
       relationship_All: '全てのタイプのリレーション',
+      'relationship_service-dll': 'サービス DLL',
+      relationship_image: '画像',
       relationship_object: '含む',
       'relationship_x_opencti_linked-to': '関連あり',
       relationship_to: 'to',
@@ -5782,6 +5788,8 @@ const i18n = {
       'entity_Media-Content': '媒体内容',
       // Relations
       relationship_All: '所有关系',
+      'relationship_service-dll': '服務DLL',
+      relationship_image: '圖片',
       relationship_object: '对象',
       'relationship_x_opencti_linked-to': '链接到',
       relationship_to: '到',
@@ -6090,6 +6098,8 @@ const i18n = {
       'entity_Media-Content': 'Media content',
       // Relations
       relationship_All: 'All types of relationship',
+      'relationship_service-dll': 'Service Dll',
+      relationship_image: 'image',
       relationship_object: 'contains',
       'relationship_x_opencti_linked-to': 'linked to',
       relationship_to: 'to',

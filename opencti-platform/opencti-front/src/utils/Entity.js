@@ -868,6 +868,34 @@ export const openVocabularies = {
         'State actors who create vulnerabilities through an active program to "influence" commercial products and services during design, development or manufacturing, or with the ability to impact products while in the supply chain to enable exploitation of networks and systems of interest.',
     },
   ],
+  'integrity_level-ov': [
+    { key: 'low', description: '' },
+    { key: 'medium', description: '' },
+    { key: 'high', description: '' },
+    { key: 'system', description: '' },
+  ],
+  'start_type-ov': [
+    { key: 'SERVICE_AUTO_START', description: '' },
+    { key: 'SERVICE_BOOT_START', description: '' },
+    { key: 'SERVICE_DEMAND_START', description: '' },
+    { key: 'SERVICE_DISABLED', description: '' },
+    { key: 'SERVICE_SYSTEM_ALERT', description: '' },
+  ],
+  'service_type-ov': [
+    { key: 'SERVICE_KERNEL_DRIVER', description: '' },
+    { key: 'SERVICE_FILE_SYSTEM_DRIVER', description: '' },
+    { key: 'SERVICE_WIN32_OWN_PROCESS', description: '' },
+    { key: 'SERVICE_WIN32_SHARE_PROCESS', description: '' },
+  ],
+  'service_status-ov': [
+    { key: 'SERVICE_CONTINUE_PENDING', description: '' },
+    { key: 'SERVICE_PAUSE_PENDING', description: '' },
+    { key: 'SERVICE_PAUSED', description: '' },
+    { key: 'SERVICE_RUNNING', description: '' },
+    { key: 'SERVICE_START_PENDING', description: '' },
+    { key: 'SERVICE_STOP_PENDING', description: '' },
+    { key: 'SERVICE_STOPPED', description: '' },
+  ],
 };
 
 export const ignoredAttributes = [

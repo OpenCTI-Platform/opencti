@@ -57,9 +57,7 @@ class StixCyberObservableDetailsComponent extends Component {
                   {t('File')}
                 </Typography>
                 <Button
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                    file.id,
-                  )}`}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
                   variant="outlined"
                   color="secondary"
                   size="small"
