@@ -16,9 +16,17 @@ import { buildDate } from '../../../../utils/Time';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/Entity';
+import {
+  booleanAttributes,
+  dateAttributes,
+  ignoredAttributes,
+  multipleAttributes,
+  numberAttributes,
+  openVocabularies,
+} from '../../../../utils/Entity';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -259,15 +267,11 @@ class StixCyberObservableEditionOverviewComponent extends Component {
             )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {
-                initialValues[attribute.value] = stixCyberObservable[
-                  attribute.value
-                ]
+                initialValues[attribute.value] = stixCyberObservable[attribute.value]
                   ? buildDate(stixCyberObservable[attribute.value])
                   : null;
               } else if (includes(attribute.value, multipleAttributes)) {
-                initialValues[attribute.value] = stixCyberObservable[
-                  attribute.value
-                ]
+                initialValues[attribute.value] = stixCyberObservable[attribute.value]
                   ? stixCyberObservable[attribute.value].join(',')
                   : null;
               } else if (attribute.value === 'hashes') {
@@ -454,13 +458,31 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           />
                         );
                       }
+                      if (Object.keys(openVocabularies).includes(`${attribute.value}-ov`)) {
+                        return (
+                          <OpenVocabField
+                            key={attribute.value}
+                            label={t(attribute.value)}
+                            type={`${attribute.value}-ov`}
+                            name={attribute.value}
+                            variant={'edit'}
+                            onChange={this.handleSubmitField.bind(this)}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
+                            multiple={false}
+                            editContext={context}
+                          />
+                        );
+                      }
                       if (attribute.value === 'obsContent') {
                         const artifact = stixCyberObservable[attribute.value];
                         return (
                           <ArtifactField
                             key={attribute.value}
                             attributeName={attribute.value}
-                            attributeValue={artifact ? { label: artifact.observable_value ?? artifact.id, value: artifact.id } : undefined}
+                            attributeValue={artifact ? {
+                              label: artifact.observable_value ?? artifact.id,
+                              value: artifact.id,
+                            } : undefined}
                             onChange={this.handleChangeRef.bind(this)}
                           />
                         );

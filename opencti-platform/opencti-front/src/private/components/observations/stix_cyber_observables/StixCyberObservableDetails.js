@@ -13,7 +13,8 @@ import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
-import { dateAttributes, ignoredAttributes } from '../../../../utils/Entity';
+import { dateAttributes, ignoredAttributes, openVocabularies } from '../../../../utils/Entity';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const styles = () => ({
   paper: {
@@ -92,6 +93,14 @@ class StixCyberObservableDetailsComponent extends Component {
                       <pre>{hash.value}</pre>
                     </Grid>
                 ));
+              }
+              if (Object.keys(openVocabularies).includes(`${observableAttribute.key}-ov`)) {
+                return <Grid key={observableAttribute.key} item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t(observableAttribute.key)}
+                  </Typography>
+                  <ItemOpenVocab small={false} type={`${observableAttribute.key}-ov`} value={observableAttribute.value} />
+                </Grid>;
               }
               let finalValue = observableAttribute.value;
               if (includes(observableAttribute.key, dateAttributes)) {

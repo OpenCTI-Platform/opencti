@@ -1,4 +1,4 @@
-export const resolveLink = (type) => {
+export const resolveLink = (type: string): string | null => {
   switch (type) {
     case 'Attack-Pattern':
       return '/dashboard/arsenal/attack_patterns';
@@ -101,12 +101,12 @@ export const typesContainers = [
   'grouping',
 ];
 
-export const pascalize = (str) => str.replace(
+export const pascalize = (str: string): string => str.replace(
   /(\w)(\w*)/g,
   (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase(),
 );
 
-export const resolveIdentityClass = (identityType) => {
+export const resolveIdentityClass = (identityType: string) : string => {
   if (identityType === 'Individual') {
     return 'individual';
   }
@@ -119,7 +119,7 @@ export const resolveIdentityClass = (identityType) => {
   return 'organization';
 };
 
-export const resolveIdentityType = (identityClass) => {
+export const resolveIdentityType = (identityClass: string) : string => {
   if (identityClass === 'individual') {
     return 'Individual';
   }
@@ -132,7 +132,7 @@ export const resolveIdentityType = (identityClass) => {
   return 'Organization';
 };
 
-export const resolveLocationType = (entity) => {
+export const resolveLocationType = (entity: { [k:string] : string }) : string => {
   if (entity.x_opencti_location_type) {
     return entity.x_opencti_location_type;
   }
@@ -148,7 +148,7 @@ export const resolveLocationType = (entity) => {
   return 'Position';
 };
 
-export const openVocabularies = {
+export const openVocabularies: { [k: string]: Array<{ key: string, description: string }> } = {
   'malware-type-ov': [
     {
       key: 'adware',
@@ -869,32 +869,32 @@ export const openVocabularies = {
     },
   ],
   'integrity_level-ov': [
-    { key: 'low', description: '' },
-    { key: 'medium', description: '' },
-    { key: 'high', description: '' },
-    { key: 'system', description: '' },
+    { key: 'low', description: 'A low level of integrity.' },
+    { key: 'medium', description: 'A medium level of integrity.' },
+    { key: 'high', description: 'A high level of integrity.' },
+    { key: 'system', description: 'A system level of integrity.' },
   ],
   'start_type-ov': [
-    { key: 'SERVICE_AUTO_START', description: '' },
-    { key: 'SERVICE_BOOT_START', description: '' },
-    { key: 'SERVICE_DEMAND_START', description: '' },
-    { key: 'SERVICE_DISABLED', description: '' },
-    { key: 'SERVICE_SYSTEM_ALERT', description: '' },
+    { key: 'SERVICE_AUTO_START', description: 'A service started automatically by the service control manager during system startup.' },
+    { key: 'SERVICE_BOOT_START', description: 'A device driver started by the system loader. This value is valid only for driver services.' },
+    { key: 'SERVICE_DEMAND_START', description: 'A service started by the service control manager when a process calls the StartService function.' },
+    { key: 'SERVICE_DISABLED', description: 'A service that cannot be started. Attempts to start the service result in the error code ERROR_SERVICE_DISABLED.' },
+    { key: 'SERVICE_SYSTEM_ALERT', description: 'A device driver started by the IoInitSystem function. This value is valid only for driver services.' },
   ],
   'service_type-ov': [
-    { key: 'SERVICE_KERNEL_DRIVER', description: '' },
-    { key: 'SERVICE_FILE_SYSTEM_DRIVER', description: '' },
-    { key: 'SERVICE_WIN32_OWN_PROCESS', description: '' },
-    { key: 'SERVICE_WIN32_SHARE_PROCESS', description: '' },
+    { key: 'SERVICE_KERNEL_DRIVER', description: 'The service is a device driver.' },
+    { key: 'SERVICE_FILE_SYSTEM_DRIVER', description: 'The service is a file system driver.' },
+    { key: 'SERVICE_WIN32_OWN_PROCESS', description: 'The service runs in its own process.' },
+    { key: 'SERVICE_WIN32_SHARE_PROCESS', description: 'The service shares a process with other services.' },
   ],
   'service_status-ov': [
-    { key: 'SERVICE_CONTINUE_PENDING', description: '' },
-    { key: 'SERVICE_PAUSE_PENDING', description: '' },
-    { key: 'SERVICE_PAUSED', description: '' },
-    { key: 'SERVICE_RUNNING', description: '' },
-    { key: 'SERVICE_START_PENDING', description: '' },
-    { key: 'SERVICE_STOP_PENDING', description: '' },
-    { key: 'SERVICE_STOPPED', description: '' },
+    { key: 'SERVICE_CONTINUE_PENDING', description: 'The service continue is pending.' },
+    { key: 'SERVICE_PAUSE_PENDING', description: 'The service pause is pending.' },
+    { key: 'SERVICE_PAUSED', description: 'The service is paused.' },
+    { key: 'SERVICE_RUNNING', description: 'The service is running.' },
+    { key: 'SERVICE_START_PENDING', description: 'The service is starting.' },
+    { key: 'SERVICE_STOP_PENDING', description: 'The service is stopping.' },
+    { key: 'SERVICE_STOPPED', description: 'The service is not running.' },
   ],
 };
 
