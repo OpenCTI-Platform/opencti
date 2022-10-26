@@ -1025,7 +1025,7 @@ class Scans extends Component {
                                 <ListItemIcon>
                                   <ImportExportIcon fontSize="small" />
                                 </ListItemIcon>
-                                Export Data (CVS)
+                                Export Data (CSV)
                               </MenuItem>
                               <MenuItem
                                 onClick={() =>
