@@ -107,8 +107,6 @@ class EntitiesLocationsCreation extends Component {
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
-      values.location_class === '' && R.dissoc('location_class'),
-      values.location_type === '' && R.dissoc('location_type'),
     )(adaptedValues);
     commitMutation({
       mutation: entitiesLocationsCreationMutation,
@@ -163,7 +161,6 @@ class EntitiesLocationsCreation extends Component {
       t,
       classes,
       openDataCreation,
-      handleLocationCreation,
     } = this.props;
     return (
       <>
@@ -180,8 +177,8 @@ class EntitiesLocationsCreation extends Component {
               modified: null,
               description: '',
               address: [],
-              location_type: '',
-              location_class: '',
+              location_type: null,
+              location_class: null,
               email_addresses: [],
               telephone_numbers: [],
             }}
@@ -190,6 +187,7 @@ class EntitiesLocationsCreation extends Component {
             onReset={this.onReset.bind(this)}
           >
             {({
+              handleReset,
               submitForm,
               isSubmitting,
               setFieldValue,
@@ -447,7 +445,7 @@ class EntitiesLocationsCreation extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    onClick={() => handleLocationCreation()}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}

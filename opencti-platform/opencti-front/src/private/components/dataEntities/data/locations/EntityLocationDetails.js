@@ -8,19 +8,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { Grid, Switch, Tooltip } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
+
 const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: '24px 24px 32px 24px',
+    padding: '24px 24px 0 24px',
     borderRadius: 6,
   },
   link: {
@@ -63,7 +64,7 @@ const styles = (theme) => ({
     width: '100px',
     textAlign: 'center',
     padding: '3px 0',
-  }
+  },
 });
 
 class EntityLocationDetailsComponent extends Component {
@@ -82,79 +83,215 @@ class EntityLocationDetailsComponent extends Component {
           {t('Basic Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={3}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Name')}
-                </Typography>
-                <div className="clearfix" />
-                {location.name && t(location.name)}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Created')}
-                </Typography>
-                <div className="clearfix" />
-                {location.created && fldt(location.created)}
-
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Short Name')}
-                </Typography>
-                <div className="clearfix" />
-                {location?.short_name && t(location?.short_name)}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Role Identifier')}
-                </Typography>
-                <div className="clearfix" />
-                {location?.role_identifier && t(location?.role_identifier)}
-              </div>
+        <Grid container={true}>
+          <Grid container item xs={8} spacing={1}>
+            <Grid container item xs={12} spacing={1}>
+              <Grid item xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Name')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location.name && t(location.name)}
+                </div>
+              </Grid>
+              <Grid item xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('ID')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location.id && t(location.id)}
+                </div>
+              </Grid>
             </Grid>
-            <Grid item={true} xs={4}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('ID')}
-                </Typography>
-                <div className="clearfix" />
-                {location.id && t(location.id)}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Last Modified')}
-                </Typography>
-                <div className="clearfix" />
-                {location.modified && fldt(location.modified)}
-              </div>
+            <Grid container item xs={12} spacing={1}>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Created')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location.created && fldt(location.created)}
+                </div>
+              </Grid>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Last Modified')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location.modified && fldt(location.modified)}
+                </div>
+              </Grid>
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid container item xs={12} spacing={1}>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Street Address')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location?.address?.street_address && t(location?.address?.street_address)}
+                </div>
+              </Grid>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Administrative Area')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location?.address?.administrative_area && t(location?.address?.administrative_area)}
+                </div>
+              </Grid>
+            </Grid>            
+            <Grid container item xs={12} spacing={1}>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Country')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location?.address?.country_code && t(location?.address?.country_code)}
+                </div>
+              </Grid>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Postal Code')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location?.address?.postal_code && t(location?.address?.postal_code)}
+                </div>
+              </Grid>
+            </Grid>
+            <Grid container item xs={12} spacing={1}>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Telephone Number')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location?.telephone_numbers && location?.telephone_numbers.length > 0 && 
+                    location?.telephone_numbers.map(
+                      (number) => <div>{t(number?.phone_number)}</div>
+                    )
+                  }
+                </div>
+              </Grid>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Email Address(es)')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location?.email_addresses && location?.email_addresses.length > 0 && 
+                    location?.email_addresses.map(
+                      (email) => <div>{t(email)}</div>
+                    )
+                  }
+                </div>
+              </Grid>
+            </Grid>
+            <Grid container item xs={12} spacing={1}>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Location Type')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location?.location_type && t(location?.location_type)}
+                </div>
+              </Grid>
+              <Grid item xs={6}>
+                <div style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Location Class')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {location?.location_class && t(location?.location_class)}
+                </div>
+              </Grid>
+            </Grid>
+            <Grid container item xs={12} spacing={1} style={{ marginTop: '25%' }}>
+              <Grid item={true} xs={6}>
+                <CyioCoreObjectLabelsView
+                  labels={location.labels}
+                  marginTop={0}
+                  refreshQuery={refreshQuery}
+                  id={location.id}
+                  typename={location.__typename}
+                />
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Markings')}
+                </Typography>
+                <div className="clearfix" />
+                {
+                  location?.markings && (
+                    <p className={classes.markingText}>
+                      {t(location?.markings)}
+                    </p>
+                  )
+                }
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid container item={true} xs={4} spacing={3}>
+            <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -179,33 +316,6 @@ class EntityLocationDetailsComponent extends Component {
               </div>
             </Grid>
           </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={3}>
-              <CyioCoreObjectLabelsView
-                labels={location.labels}
-                marginTop={0}
-                refreshQuery={refreshQuery}
-                id={location.id}
-                typename={location.__typename}
-              />
-            </Grid>
-            <Grid item={true} xs={4}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-              >
-                {t('Markings')}
-              </Typography>
-              <div className="clearfix" />
-              {
-                location?.markings && (
-                  <p className={classes.markingText}>
-                    {t(location?.markings)}
-                  </p>
-                )
-              }
-            </Grid>
           </Grid>
         </Paper>
       </div>
