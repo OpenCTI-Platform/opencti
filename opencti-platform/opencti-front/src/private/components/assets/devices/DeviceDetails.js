@@ -114,7 +114,7 @@ class DeviceDetailsComponent extends Component {
                     className={classes.link}
                     onClick={() => (history.push(`/defender HQ/assets/software/${device.installed_operating_system.id}`))}
                   >
-                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.installed_operating_system.name)} {t(device.installed_operating_system.version)}
+                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.installed_operating_system.name)} {t(device.installed_operating_system.version || " ")}
                   </Link>}
               </div>
               <div style={{ marginBottom: '10px' }}>
