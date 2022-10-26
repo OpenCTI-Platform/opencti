@@ -74,20 +74,18 @@ const Index = ({ me }) => {
   }, [clientId]);
   return (
     <div className={classes.root}>
-      <TopBarBreadcrumbs drawer={drawer} />
       <LeftBar
         clientId={clientId}
-        setClientId={setClientId}
-        drawerValue={drawerValue}
-      />
-      <main
-        className={drawer ? classes.contentClose : classes.contentOpen}
-      // style={{ paddingRight: 24 }}
       >
-        <Message />
-        <div className={classes.toolbar} />
-        <IndexRoutePath me={me}/>
-      </main>
+        <main
+        // style={{ paddingRight: 24 }}
+        >
+          <Message />
+          <div className={classes.toolbar} />
+          <IndexRoutePath me={me} />
+        </main>
+      </LeftBar>
+
     </div>
   );
 };

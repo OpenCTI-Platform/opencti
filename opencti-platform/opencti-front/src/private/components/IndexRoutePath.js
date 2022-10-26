@@ -86,4 +86,4 @@ IndexRoutePath.propTypes = {
   me: PropTypes.object,
 };
 
-export default React.memo(IndexRoutePath);
+export default IndexRoutePath;
