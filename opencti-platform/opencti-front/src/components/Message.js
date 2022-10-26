@@ -5,23 +5,28 @@ import Alert from '@material-ui/lab/Alert';
 import { head } from 'ramda';
 import { MESSAGING$ } from '../relay/environment';
 import inject18n from './i18n';
+import ErrorBox from '../private/components/common/form/ErrorBox';
 
 class Message extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, error: false, text: '' };
+    this.state = {
+      open: false,
+      error: {},
+      pathname: '',
+      openMessage: false,
+      message: '',
+    };
   }
 
   componentDidMount() {
     this.subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
-        const firstMessage = head(messages);
-        if (firstMessage) {
-          const text = firstMessage.text instanceof String
-            ? this.props.t(firstMessage.text)
-            : firstMessage.text;
-          const error = firstMessage.type === 'error';
-          this.setState({ open: true, error, text });
+        const headMessage = head(messages);
+        if (headMessage.type === 'message') {
+          this.setState({ openMessage: true, message: headMessage.text });
+        } else {
+          this.setState({ open: true, error: messages, pathname: headMessage.pathanme });
         }
       },
     });
@@ -32,6 +37,10 @@ class Message extends Component {
     this.subscription.unsubscribe();
   }
 
+  handleClearError() {
+    this.setState({ error: {} });
+  }
+
   handleCloseMessage(event, reason) {
     if (reason === 'clickaway') return;
     this.setState({ open: false });
@@ -39,24 +48,33 @@ class Message extends Component {
 
   render() {
     return (
-      <Snackbar
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={this.state.open}
-        onClose={this.handleCloseMessage.bind(this)}
-      >
-        {this.state.error ? (
-          <Alert severity="error" onClose={this.handleCloseMessage.bind(this)}>
-            {this.state.text}
-          </Alert>
-        ) : (
-          <Alert
-            severity="success"
-            onClose={this.handleCloseMessage.bind(this)}
-          >
-            {this.state.text}
-          </Alert>
-        )}
-      </Snackbar>
+      <>
+        {
+          this.state.open && (
+            <ErrorBox
+              error={this.state.error}
+              pathname={this.state.pathname}
+              handleClearError={this.handleClearError.bind(this)}
+            />
+          )
+        }
+        {
+          this.state.openMessage && (
+            <Snackbar
+              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+              open={this.state.openMessage}
+              onClose={this.handleCloseMessage.bind(this)}
+            >
+              <Alert
+                severity="success"
+                onClose={this.handleCloseMessage.bind(this)}
+              >
+                {this.state.message}
+              </Alert>
+            </Snackbar>
+          )
+        }
+      </>
     );
   }
 }

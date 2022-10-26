@@ -30,7 +30,6 @@ import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_obje
 import SoftwareCreationDetails from './SoftwareCreationDetails';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import { toastGenericError } from "../../../../utils/bakedToast";
-import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -156,7 +155,6 @@ class SoftwareCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       open: false,
       openAutocomplete: false,
       products: [],
@@ -213,10 +211,6 @@ class SoftwareCreation extends Component {
       });
   }
 
-  handleClearError() {
-    this.setState({ error: {} });
-  }
-
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
@@ -235,16 +229,15 @@ class SoftwareCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/defender HQ/assets/software',
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
         this.props.history.push('/defender HQ/assets/software');
       },
-      onError: (err) => {
+      onError: () => {
         toastGenericError('Failed to create Software');
-        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors))
-        this.setState({ error: ErrorResponse });
       }
     });
     // commitMutation({
@@ -481,11 +474,6 @@ class SoftwareCreation extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <ErrorBox
-          error={this.state.error}
-          pathname='/defender HQ/assets/software'
-          handleClearError={this.handleClearError.bind(this)}
-        />
       </div>
     );
   }
