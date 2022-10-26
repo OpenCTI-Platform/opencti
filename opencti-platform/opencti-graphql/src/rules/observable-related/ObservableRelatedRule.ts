@@ -7,11 +7,10 @@ import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { computeAverage } from '../../database/utils';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { StixRelation } from '../../types/stix-sro';
-import type { Event } from '../../types/event';
+import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
-import type { RelationCreation } from '../../types/inputs';
 import { executionContext } from '../../utils/access';
 
 const ruleRelatedObservableBuilder = () => {

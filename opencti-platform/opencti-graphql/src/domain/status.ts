@@ -24,7 +24,6 @@ import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesFromCache } from '../manager/cacheManager';
-import type { StatusInput, StatusTemplateInput } from '../types/inputs';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;

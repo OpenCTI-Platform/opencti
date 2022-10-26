@@ -20,10 +20,9 @@ import type { StixRelation } from '../types/stix-sro';
 import type { BasicStoreRelation, StoreEntity, StoreObject } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations } from '../database/middleware-loader';
-import type { DependenciesDeleteEvent, Event, RuleEvent, UpdateEvent } from '../types/event';
+import type { DependenciesDeleteEvent, Event, RelationCreation, RuleEvent, UpdateEvent } from '../types/event';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { storeUpdateEvent } from '../database/redis';
-import type { RelationCreation } from '../types/inputs';
 import type { AuthContext } from '../types/user';
 import { executionContext } from '../utils/access';
 

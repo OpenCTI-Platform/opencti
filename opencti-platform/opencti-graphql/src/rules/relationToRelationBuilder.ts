@@ -5,13 +5,12 @@ import { createRuleContent, RULE_MANAGER_USER } from './rules';
 import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
 import type { RuleRuntime, RuleDefinition, RelationTypes } from '../types/rules';
-import type { Event } from '../types/event';
+import type { Event, RelationCreation } from '../types/event';
 import type { BasicStoreRelation, StoreObject } from '../types/store';
 import type { StixRelation } from '../types/stix-sro';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { executionContext } from '../utils/access';
-import type { RelationCreation } from '../types/inputs';
 
 const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;

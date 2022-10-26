@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import def from './SightingIndicatorDefinition';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import type { StixRelation, StixSighting } from '../../types/stix-sro';
-import type { Event } from '../../types/event';
+import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
@@ -17,7 +17,6 @@ import type { RuleRuntime } from '../../types/rules';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import type { AuthContext } from '../../types/user';
 import { executionContext } from '../../utils/access';
-import type { RelationCreation } from '../../types/inputs';
 
 /*
 'If **indicator A** is `sighted` in **identity/location B** and '

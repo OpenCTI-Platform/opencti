@@ -20,10 +20,9 @@ import type { StixRelation } from '../../types/stix-sro';
 import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { listAllRelations } from '../../database/middleware-loader';
-import type { Event } from '../../types/event';
+import type { Event, RelationCreation } from '../../types/event';
 import { executionContext } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
-import type { RelationCreation } from '../../types/inputs';
 
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
 // 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';

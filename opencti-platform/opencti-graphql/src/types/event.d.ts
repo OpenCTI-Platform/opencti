@@ -1,6 +1,7 @@
 import type { Operation } from 'fast-json-patch';
 import { StixCoreObject } from './stix-common';
 import { UserOrigin } from './user';
+import type { StoreRelation } from './store';
 
 interface CommitContext {
   message: string;
@@ -39,6 +40,12 @@ interface Event extends RuleEvent {
   origin: Partial<UserOrigin>;
   message: string;
   data: StixCoreObject;
+}
+
+interface RelationCreation {
+  element: StoreRelation;
+  event: Event | undefined;
+  isCreation: boolean;
 }
 
 interface UpdateEvent extends Event {

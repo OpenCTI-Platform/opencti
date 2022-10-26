@@ -10,7 +10,6 @@ import { RABBIT_QUEUE_PREFIX } from './utils';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
-export const EVENT_TYPE_DELETE_DEPENDENCIES = 'delete-dependencies';
 
 const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
 const QUEUE_TYPE = conf.get('rabbitmq:queue_type');

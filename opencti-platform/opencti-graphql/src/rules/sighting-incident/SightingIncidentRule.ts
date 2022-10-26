@@ -15,12 +15,11 @@ import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../schema/stixCoreRela
 import { listAllRelations } from '../../database/middleware-loader';
 import type { StixIndicator } from '../../types/stix-sdo';
 import type { StixSighting } from '../../types/stix-sro';
-import type { Event } from '../../types/event';
+import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { executionContext } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
-import type { RelationCreation } from '../../types/inputs';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
