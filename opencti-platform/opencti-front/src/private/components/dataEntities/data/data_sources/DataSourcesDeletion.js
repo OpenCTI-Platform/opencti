@@ -52,8 +52,8 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const DataSourceDeletionDarkLightMutation = graphql`
-  mutation DataSourceDeletionDarkLightMutation($id: ID!) {
+const DataSourcesDeletionDarklightMutation = graphql`
+  mutation DataSourcesDeletionDarklightMutation($id: ID!) {
   deleteOscalRole(id: $id)
 }
 `;
@@ -98,7 +98,7 @@ class DataSourceDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: DataSourceDeletionDarkLightMutation,
+      mutation: DataSourcesDeletionDarklightMutation,
       variables: {
         id: this.props.id,
       },
