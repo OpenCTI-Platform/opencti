@@ -619,6 +619,7 @@ class OpenCTIStix2:
             "observed-data": self.opencti.observed_data.import_from_stix2,
             "opinion": self.opencti.opinion.import_from_stix2,
             "report": self.opencti.report.import_from_stix2,
+            "grouping": self.opencti.grouping.import_from_stix2,
             "course-of-action": self.opencti.course_of_action.import_from_stix2,
             "identity": self.opencti.identity.import_from_stix2,
             "indicator": self.opencti.indicator.import_from_stix2,
@@ -1260,6 +1261,10 @@ class OpenCTIStix2:
                     "entity_type"
                 ] not in ["Opinion"]:
                     entity["object_refs"].append(entity_object["standard_id"])
+                elif entity["type"] == "observed-data":
+                    entity["object_refs"].append(entity_object["standard_id"])
+                elif entity["type"] == "grouping":
+                    entity["object_refs"].append(entity_object["standard_id"])
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
@@ -1574,7 +1579,13 @@ class OpenCTIStix2:
             # Refilter all the reports object refs
             final_result = []
             for entity in result:
-                if entity["type"] == "report" or entity["type"] == "note":
+                if entity["type"] in [
+                    "report",
+                    "note",
+                    "opinion",
+                    "observed-data",
+                    "grouping",
+                ]:
                     if "object_refs" in entity:
                         entity["object_refs"] = [
                             k for k in entity["object_refs"] if k in uuids
@@ -1619,6 +1630,7 @@ class OpenCTIStix2:
             "Observed-Data": self.opencti.observed_data.read,
             "Opinion": self.opencti.opinion.read,
             "Report": self.opencti.report.read,
+            "Grouping": self.opencti.grouping.read,
             "Course-Of-Action": self.opencti.course_of_action.read,
             "Identity": self.opencti.identity.read,
             "Indicator": self.opencti.indicator.read,
@@ -1713,6 +1725,7 @@ class OpenCTIStix2:
             "Observed-Data": self.opencti.observed_data.list,
             "Opinion": self.opencti.opinion.list,
             "Report": self.opencti.report.list,
+            "Grouping": self.opencti.grouping.list,
             "Course-Of-Action": self.opencti.course_of_action.list,
             "Identity": self.opencti.identity.list,
             "Indicator": self.opencti.indicator.list,

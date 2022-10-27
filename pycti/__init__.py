@@ -13,6 +13,7 @@ from .entities.opencti_attack_pattern import AttackPattern
 from .entities.opencti_campaign import Campaign
 from .entities.opencti_course_of_action import CourseOfAction
 from .entities.opencti_external_reference import ExternalReference
+from .entities.opencti_grouping import Grouping
 from .entities.opencti_identity import Identity
 from .entities.opencti_incident import Incident
 from .entities.opencti_indicator import Indicator
@@ -56,6 +57,7 @@ __all__ = [
     "ConnectorType",
     "CourseOfAction",
     "ExternalReference",
+    "Grouping",
     "Identity",
     "Incident",
     "Indicator",

@@ -172,7 +172,7 @@ class ListenQueue(threading.Thread):
         self.helper.work_id = work_id
         if applicant_id is not None:
             self.helper.applicant_id = applicant_id
-            self.helper.api.set_applicant_id_header(applicant_id)
+            self.helper.api_impersonate.set_applicant_id_header(applicant_id)
         # Execute the callback
         try:
             self.helper.api.work.to_received(
@@ -543,12 +543,22 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         logging.basicConfig(level=numeric_level)
 
         # Initialize configuration
+        # - Classic API that will be directly attached to the connector rights
         self.api = OpenCTIApiClient(
             self.opencti_url,
             self.opencti_token,
             self.log_level,
             json_logging=self.opencti_json_logging,
         )
+        # - Impersonate API that will use applicant id
+        # Behave like standard api if applicant not found
+        self.api_impersonate = OpenCTIApiClient(
+            self.opencti_url,
+            self.opencti_token,
+            self.log_level,
+            json_logging=self.opencti_json_logging,
+        )
+
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
             self.connect_id,

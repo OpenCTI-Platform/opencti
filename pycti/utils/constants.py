@@ -71,6 +71,7 @@ class ContainerTypes(Enum):
     OBSERVED_DATA = "Observed-Data"
     OPINION = "Opinion"
     REPORT = "Report"
+    GROUPING = "Grouping"
 
     @classmethod
     def has_value(cls, value):
