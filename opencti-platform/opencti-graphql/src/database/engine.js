@@ -724,7 +724,7 @@ export const elAggregationCount = (context, user, type, aggregationField, start,
   const histoFilters = R.map((f) => {
     let key = `${f.type}.keyword`;
     if (f.isRelation) {
-      key = buildRefRelationSearchKey(f.type, '*');
+      key = buildRefRelationSearchKey(f.type ?? '*', '*');
     } else if (booleanAttributes.includes(f.type)) {
       key = f.type;
     }
@@ -1205,7 +1205,7 @@ export const elHistogramCount = async (context, user, type, field, interval, sta
       key = `${filterType}`;
     }
     if (isRelation) {
-      key = buildRefRelationSearchKey(filterType, '*');
+      key = buildRefRelationSearchKey(filterType ?? '*', '*');
     }
     return {
       multi_match: {

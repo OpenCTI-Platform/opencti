@@ -189,22 +189,6 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Malware')).toEqual(1);
     expect(aggregationMap.get('Sector')).toEqual(1);
   });
-
-  /*
-  export const elAggregationRelationsCount = async (
-    user,
-    type,
-    start,
-    end,
-    toTypes,
-    fromId = null,
-    field = null,
-    dateAttribute = 'created_at',
-    isTo = false,
-    noDirection = false
-  ) => {
-   */
-
   it('should relation aggregation with date accurate', async () => {
     // "target_ref": "location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c", City -> Hietzing
     // "target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c"
@@ -287,7 +271,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2019')).toEqual(5);
     expect(aggregationMap.get('2020')).toEqual(15);
   });
-  it('should year histogram with relation filter accurate', async () => {
+  it('should year histogram with relation filter accurate (uses)', async () => {
     const attackPattern = await elLoadById(testContext, ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
     const data = await elHistogramCount(
       testContext,
@@ -310,7 +294,7 @@ describe('Elasticsearch computation', () => {
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(1);
   });
-  it('should year histogram with relation filter accurate', async () => {
+  it('should year histogram with relation filter accurate (undefined)', async () => {
     const attackPattern = await elLoadById(testContext, ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
     const data = await elHistogramCount(
       testContext,
