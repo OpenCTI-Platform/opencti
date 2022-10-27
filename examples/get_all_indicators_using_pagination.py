@@ -3,8 +3,8 @@
 from pycti import OpenCTIApiClient
 
 # Variables
-api_url = "https://demo.opencti.io"
-api_token = "YOUR_TOKEN"
+api_url = "http://opencti:4000"
+api_token = "bfa014e0-e02e-4aa6-a42b-603b19dcf159"
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
@@ -17,7 +17,7 @@ custom_attributes = """
 """
 
 final_indicators = []
-data = {"pagination": {"hasNextPage": True, "endCursor": 0}}
+data = {"pagination": {"hasNextPage": True, "endCursor": None}}
 while data["pagination"]["hasNextPage"]:
     after = data["pagination"]["endCursor"]
     if after:

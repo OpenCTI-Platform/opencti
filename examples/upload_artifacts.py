@@ -5,11 +5,11 @@ import magic
 
 from pycti import OpenCTIApiClient
 
-API_URL = "API_URL_HERE"
-API_TOKEN = "API_TOKEN_HERE"
+api_url = "http://opencti:4000"
+api_token = "bfa014e0-e02e-4aa6-a42b-603b19dcf159"
 
 # OpenCTI instantiation
-OPENCTI_API_CLIENT = OpenCTIApiClient(API_URL, API_TOKEN)
+OPENCTI_API_CLIENT = OpenCTIApiClient(api_url, api_token)
 
 
 def main():
