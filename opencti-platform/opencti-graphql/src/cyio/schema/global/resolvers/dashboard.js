@@ -1,9 +1,11 @@
 import { CyioError } from '../../utils.js';
+import { UserInputError } from 'apollo-server-errors';
 import conf from '../../../../config/conf.js';
 import { 
   getReducer,
   entitiesCountQuery,
   entitiesTimeSeriesQuery,
+  entitiesDistributionQuery,
   dashboardSingularizeSchema as singularizeSchema,
 } from './dashboard-sparqlQuery.js';
 
@@ -12,7 +14,11 @@ const cyioDashboardResolvers = {
     // Dashboard Workspace Wizard
     workspaceWizardConfig: async (_, args, { dbName, dataSources, selectMap }) => {
       const config = conf.get('workspaces:wizard:config');
-      if (config === undefined || config.length === 0) throw new CyioError('Could not find workspace wizard configuration');
+      if (config === undefined || config.length === 0 || config === null) {
+        throw new CyioError('Could not find workspace wizard configuration');
+        // throw new UserInputError('Could not find workspace wizard configuration',{time_thrown: new Date()})
+      }
+
       return config;
     },
     assetsCount: async (_, args, { dbName, dataSources, selectMap }) => {
@@ -305,7 +311,7 @@ const cyioDashboardResolvers = {
     risksDistribution: async (_, args, { dbName, dataSources, selectMap }) => {
       // TODO: WORKAROUND to remove argument fields with null or empty values
       if (args !== undefined) {
-        for (const [key, value] of Object.entries(args)) {
+        for (let [key, value] of Object.entries(args)) {
           if (Array.isArray(args[key]) && args[key].length === 0) {
             delete args[key];
             continue;
@@ -314,12 +320,69 @@ const cyioDashboardResolvers = {
             delete args[key];
             continue;
           }
-          if (!Array.isArray(args[key]) && value.trim().length === 0) {
-            delete args[key];
+          if (!Array.isArray(args[key])) {
+            if (value instanceof Date ) value = value.toISOString();
+            if (typeof(value) === "number" && value === 0) {
+              delete args[key];
+              continue;
+            }
+            if (value instanceof String) {
+              if (value.trim().length === 0) {
+                delete args[key];
+                continue;
+              }  
+            }
           }
         }
       }
       // END WORKAROUND
+
+      if (!('type'in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
+      if (('field' in args) && !('match') in args) throw new CyioError(`"match" must be specified when using "field"`);
+      if (('match' in args) && !('field') in args) throw new CyioError(`"field" must specified when using "match"`);
+
+      let response;
+      let query = entitiesDistributionQuery(args);
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: query,
+          queryId: `Select Distribution of Entity`,
+          singularizeSchema
+        });
+      } catch (e) {
+        console.error(e)
+        throw e
+      }
+
+      // none found
+      if (response === undefined || response.length === 0 ) return null; 
+      if (Object.entries(response[0]).length === 0) return null;
+      
+      // build buckets for each of the potential match items
+      let bucket = {};
+      if ('match' in args) {
+        for (let value of args.match) {
+          bucket[value] = {label:value, value: 0}
+        }  
+      }
+
+      // for each response, increment the count in the match bucket
+      for (let value of response ) {
+        if (value.o in bucket) {
+          bucket[value.o].value++;
+        } else {
+          bucket[value.o] = {label: value.o, value: 1};
+        }
+      }
+
+      //convert the buckets into result format
+      let results = []
+      for (let key in bucket) {
+        results.push(bucket[key]);
+      }
+
+      return results;
     }
   }
 };
