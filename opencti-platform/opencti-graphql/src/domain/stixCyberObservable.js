@@ -1,5 +1,5 @@
 import { assoc, dissoc, filter, map } from 'ramda';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -31,6 +31,7 @@ import { checkObservableSyntax } from '../utils/syntax';
 import { upload } from '../database/file-storage';
 import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions
@@ -48,7 +49,7 @@ import { ENTITY_TYPE_INDICATOR, ENTITY_TYPE_VULNERABILITY } from '../schema/stix
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { escape, now, observableValue } from '../utils/format';
-import { RELATION_CONTENT } from '../schema/stixCyberObservableRelationship';
+import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixCyberObservableRelationship';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -201,8 +202,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   }
   // Convert hashes to dictionary if needed.
   if (isStixCyberObservableHashedObservable(type) && observableInput.hashes) {
-    const hashInputToJson = inputHashesToStix(observableInput.hashes);
-    observableInput.hashes = hashInputToJson;
+    observableInput.hashes = inputHashesToStix(observableInput.hashes);
   }
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(type, observableInput);
@@ -436,6 +436,10 @@ export const batchIndicators = (context, user, stixCyberObservableIds) => {
 
 export const batchVulnerabilities = (context, user, softwareIds) => {
   return batchListThroughGetTo(context, user, softwareIds, RELATION_HAS, ENTITY_TYPE_VULNERABILITY);
+};
+
+export const batchStixFiles = (user, softwareIds) => {
+  return batchListThroughGetTo(user, softwareIds, RELATION_SERVICE_DLL, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
 };
 
 export const batchArtifacts = (context, user, softwareIds) => {

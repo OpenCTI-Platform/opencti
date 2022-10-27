@@ -55,6 +55,37 @@ enum Capabilities {
   TAXIIAPI_SETCOLLECTIONS
 }
 
+### STIX ENUM
+
+enum WindowsIntegrityLevel {
+  low
+  medium
+  high
+  system
+}
+enum WindowsServiceStartType {
+  SERVICE_AUTO_START
+  SERVICE_BOOT_START
+  SERVICE_DEMAND_START
+  SERVICE_DISABLED
+  SERVICE_SYSTEM_ALERT
+}
+enum WindowsServiceType {
+  SERVICE_KERNEL_DRIVER
+  SERVICE_FILE_SYSTEM_DRIVER
+  SERVICE_WIN32_OWN_PROCESS
+  SERVICE_WIN32_SHARE_PROCESS
+}
+enum WindowsServiceStatus {
+  SERVICE_CONTINUE_PENDING
+  SERVICE_PAUSE_PENDING
+  SERVICE_PAUSED
+  SERVICE_RUNNING
+  SERVICE_START_PENDING
+  SERVICE_STOP_PENDING
+  SERVICE_STOPPED
+}
+
 ### RELAY
 
 type PageInfo {
@@ -91,6 +122,14 @@ input EditContext {
 type EditUserContext {
   name: String!
   focusOn: String # Field name
+}
+input DictionaryInput {
+  key: String!
+  value: String!
+}
+type Dictionary {
+  key: String!
+  value: String!
 }
 
 ### INFO
@@ -6124,6 +6163,15 @@ type Hash {
   algorithm: String!
   hash: String
 }
+type StixFileEdge {
+  cursor: String!
+  node: StixFile!
+}
+type StixFileConnection {
+  pageInfo: PageInfo!
+  edges: [StixFileEdge]
+}
+
 interface HashedObservable {
   id: ID! # internal_id
   standard_id: String!
@@ -7105,6 +7153,23 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   cwd: String
   command_line: String
   environment_variables: [String]
+  ## windows-process-ext
+  aslr_enabled: Boolean
+  dep_enabled: Boolean
+  priority: String
+  owner_sid: String
+  window_title: String
+  startup_info: [Dictionary]
+  integrity_level: String
+  ## windows-service-ext
+  service_name: String
+  descriptions: [String]
+  display_name: String
+  group_name: String
+  start_type: String
+  serviceDlls: StixFileConnection
+  service_type: String
+  service_status: String
   # Technical
   creator: User
   toStix: String
@@ -7120,8 +7185,26 @@ input ProcessAddInput {
   pid: Int
   created_time: DateTime
   cwd: String
+  x_opencti_description: String
   command_line: String!
   environment_variables: [String]
+  ## windows-process-ext
+  aslr_enabled: Boolean
+  dep_enabled: Boolean
+  priority: String
+  owner_sid: String
+  window_title: String
+  startup_info: [DictionaryInput]
+  integrity_level: WindowsIntegrityLevel # windows-integrity-level-enum
+  ## windows-service-ext
+  service_name: String
+  descriptions: [String]
+  display_name: String
+  group_name: String
+  start_type: WindowsServiceStartType # windows-service-start-type-enum
+  serviceDlls: [String] # service_dll_refs
+  service_type: WindowsServiceType # windows-service-type-enum
+  service_status: WindowsServiceStatus # windows-service-status-enum
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id

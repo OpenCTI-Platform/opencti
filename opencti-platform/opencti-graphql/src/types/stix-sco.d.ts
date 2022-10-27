@@ -408,7 +408,7 @@ interface StixProcess extends StixCyberObject {
     [STIX_EXT_OCTI]: StixOpenctiExtension
     [STIX_EXT_OCTI_SCO]: CyberObjectExtension
     // Windows™ Process Extension
-    'windows-process-ext'?: {
+    'windows-process-ext': {
       aslr_enabled: boolean; // optional
       dep_enabled: boolean; // optional
       priority: string; // optional
@@ -418,7 +418,7 @@ interface StixProcess extends StixCyberObject {
       integrity_level: windows_integrity_level_enum; // optional
     }
     // Windows™ Service Extension
-    'windows-service-ext'?: {
+    'windows-service-ext': {
       service_name: string; // optional
       descriptions: Array<string>; // optional
       display_name: string; // optional

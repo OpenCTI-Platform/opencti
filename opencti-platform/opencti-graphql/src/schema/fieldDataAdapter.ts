@@ -58,6 +58,7 @@ export const multipleAttributes = [
   'platform_enable_reference',
   'feed_types',
   'platform_hidden_types',
+  'descriptions',
   // meta
   INPUT_OBJECTS,
   INPUT_MARKINGS,
@@ -168,8 +169,10 @@ export const booleanAttributes = [
   'ssl_verify',
   'include_header',
   'otp_activated',
+  'aslr_enabled',
+  'dep_enabled',
 ];
-export const dictAttributes = ['hashes'];
+export const dictAttributes = ['hashes', 'startup_info'];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 
 export const isJsonAttribute = (key: string): boolean => jsonAttributes.includes(key);

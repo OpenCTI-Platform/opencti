@@ -13,7 +13,8 @@ import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
-import { dateAttributes, ignoredAttributes } from '../../../../utils/Entity';
+import { dateAttributes, ignoredAttributes, openVocabularies } from '../../../../utils/Entity';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const styles = () => ({
   paper: {
@@ -57,14 +58,11 @@ class StixCyberObservableDetailsComponent extends Component {
                   {t('File')}
                 </Typography>
                 <Button
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                    file.id,
-                  )}`}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
                   variant="outlined"
                   color="secondary"
                   size="small"
-                  startIcon={<GetAppOutlined />}
-                >
+                  startIcon={<GetAppOutlined />}>
                   {t('Download')} ({b(file.size)})
                 </Button>
               </Grid>
@@ -73,21 +71,36 @@ class StixCyberObservableDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
-              <ExpandableMarkdown
-                source={stixCyberObservable.x_opencti_description}
-                limit={400}
-              />
+              <ExpandableMarkdown source={stixCyberObservable.x_opencti_description} limit={400}/>
             </Grid>
             {observableAttributes.map((observableAttribute) => {
               if (observableAttribute.key === 'hashes') {
                 return observableAttribute.value.map((hash) => (
                   <Grid key={hash.algorithm} item={true} xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {hash.algorithm}
+                      {hash.algorithm} - hashes
                     </Typography>
                     <pre>{hash.hash}</pre>
                   </Grid>
                 ));
+              }
+              if (observableAttribute.key === 'startup_info') {
+                return observableAttribute.value.map((hash) => (
+                    <Grid key={hash.key} item={true} xs={6}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {hash.key} - startup_info
+                      </Typography>
+                      <pre>{hash.value}</pre>
+                    </Grid>
+                ));
+              }
+              if (Object.keys(openVocabularies).includes(`${observableAttribute.key}-ov`)) {
+                return <Grid key={observableAttribute.key} item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t(observableAttribute.key)}
+                  </Typography>
+                  <ItemOpenVocab small={false} type={`${observableAttribute.key}-ov`} value={observableAttribute.value} />
+                </Grid>;
               }
               let finalValue = observableAttribute.value;
               if (includes(observableAttribute.key, dateAttributes)) {
@@ -112,9 +125,7 @@ class StixCyberObservableDetailsComponent extends Component {
             })}
           </Grid>
           <Divider />
-          <StixCyberObservableIndicators
-            stixCyberObservable={stixCyberObservable}
-          />
+          <StixCyberObservableIndicators stixCyberObservable={stixCyberObservable}/>
         </Paper>
       </div>
     );
@@ -275,6 +286,25 @@ const StixCyberObservableDetails = createFragmentContainer(
           cwd
           command_line
           environment_variables
+          ## windows-process-ext
+          aslr_enabled
+          dep_enabled
+          priority
+          owner_sid
+          window_title
+          startup_info {
+            key
+            value
+          }
+          integrity_level
+          ## windows-service-ext
+          service_name
+          descriptions
+          display_name
+          group_name
+          start_type
+          service_type
+          service_status
         }
         ... on Software {
           name

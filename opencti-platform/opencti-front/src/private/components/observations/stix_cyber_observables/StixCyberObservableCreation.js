@@ -8,7 +8,22 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
+import {
+  assoc,
+  compose,
+  dissoc,
+  filter,
+  fromPairs,
+  includes,
+  map,
+  pipe,
+  pluck,
+  prop,
+  propOr,
+  sortBy,
+  toLower,
+  toPairs,
+} from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
@@ -25,13 +40,23 @@ import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesAttributesQuery,
+  stixCyberObservablesLinesSubTypesQuery,
+} from './StixCyberObservablesLines';
 import { parse } from '../../../../utils/Time';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/Entity';
+import {
+  booleanAttributes,
+  dateAttributes,
+  ignoredAttributes,
+  multipleAttributes,
+  numberAttributes, openVocabularies,
+} from '../../../../utils/Entity';
 import ArtifactField from '../../common/form/ArtifactField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -316,10 +341,7 @@ class StixCyberObservableCreation extends Component {
     )(adaptedValues);
     const finalValues = {
       type: this.state.type,
-      x_opencti_description:
-        values.x_opencti_description.length > 0
-          ? values.x_opencti_description
-          : null,
+      x_opencti_description: values.x_opencti_description.length > 0 ? values.x_opencti_description : null,
       x_opencti_score: parseInt(values.x_opencti_score, 10),
       createdBy: propOr(null, 'value', values.createdBy),
       objectMarking: pluck('value', values.objectMarking),
@@ -430,7 +452,9 @@ class StixCyberObservableCreation extends Component {
               ),
             )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
-              if (includes(attribute.value, dateAttributes)) {
+              if (Object.keys(openVocabularies).includes(`${attribute.value}-ov`)) {
+                initialValues[attribute.value] = null;
+              } else if (includes(attribute.value, dateAttributes)) {
                 initialValues[attribute.value] = null;
               } else if (includes(attribute.value, booleanAttributes)) {
                 initialValues[attribute.value] = false;
@@ -511,6 +535,19 @@ class StixCyberObservableCreation extends Component {
                                 style={{ marginTop: 20 }}
                               />
                             </div>
+                          );
+                        }
+                        if (Object.keys(openVocabularies).includes(`${attribute.value}-ov`)) {
+                          return (
+                            <OpenVocabField
+                              key={attribute.value}
+                              label={t(attribute.value)}
+                              type={`${attribute.value}-ov`}
+                              name={attribute.value}
+                              onChange={(data) => setFieldValue(data)}
+                              containerstyle={{ marginTop: 20, width: '100%' }}
+                              multiple={false}
+                            />
                           );
                         }
                         if (includes(attribute.value, dateAttributes)) {

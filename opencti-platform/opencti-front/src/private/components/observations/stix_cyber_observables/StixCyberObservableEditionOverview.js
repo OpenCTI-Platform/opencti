@@ -16,9 +16,17 @@ import { buildDate } from '../../../../utils/Time';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/Entity';
+import {
+  booleanAttributes,
+  dateAttributes,
+  ignoredAttributes,
+  multipleAttributes,
+  numberAttributes,
+  openVocabularies,
+} from '../../../../utils/Entity';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -259,15 +267,11 @@ class StixCyberObservableEditionOverviewComponent extends Component {
             )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {
-                initialValues[attribute.value] = stixCyberObservable[
-                  attribute.value
-                ]
+                initialValues[attribute.value] = stixCyberObservable[attribute.value]
                   ? buildDate(stixCyberObservable[attribute.value])
                   : null;
               } else if (includes(attribute.value, multipleAttributes)) {
-                initialValues[attribute.value] = stixCyberObservable[
-                  attribute.value
-                ]
+                initialValues[attribute.value] = stixCyberObservable[attribute.value]
                   ? stixCyberObservable[attribute.value].join(',')
                   : null;
               } else if (attribute.value === 'hashes') {
@@ -450,6 +454,22 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             name={attribute.value}
                             label={attribute.value}
                             containerstyle={{ marginTop: 20 }}
+                            onChange={this.handleSubmitField.bind(this)}
+                          />
+                        );
+                      }
+                      if (Object.keys(openVocabularies).includes(`${attribute.value}-ov`)) {
+                        return (
+                          <OpenVocabField
+                            key={attribute.value}
+                            label={t(attribute.value)}
+                            type={`${attribute.value}-ov`}
+                            name={attribute.value}
+                            variant={'edit'}
+                            onChange={this.handleSubmitField.bind(this)}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
+                            multiple={false}
+                            editContext={context}
                           />
                         );
                       }
@@ -459,7 +479,10 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           <ArtifactField
                             key={attribute.value}
                             attributeName={attribute.value}
-                            attributeValue={artifact ? { label: artifact.observable_value ?? artifact.id, value: artifact.id } : undefined}
+                            attributeValue={artifact ? {
+                              label: artifact.observable_value ?? artifact.id,
+                              value: artifact.id,
+                            } : undefined}
                             onChange={this.handleChangeRef.bind(this)}
                           />
                         );
@@ -664,6 +687,21 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           cwd
           command_line
           environment_variables
+          ## windows-process-ext
+          aslr_enabled
+          dep_enabled
+          priority
+          owner_sid
+          window_title
+          integrity_level
+          ## windows-service-ext
+          service_name
+          descriptions
+          display_name
+          group_name
+          start_type
+          service_type
+          service_status
         }
         ... on Software {
           name
