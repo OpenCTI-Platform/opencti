@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "type": "node-terminal",
+            "name": "Run Script: start GraphQL Server",
+            "request": "launch",
+            "command": "npm run start",
+            "cwd": "${workspaceFolder}/opencti-platform/opencti-graphql",
+            "envFile": "${workspaceFolder}/docker/.env"
+        }
+    ]
+}

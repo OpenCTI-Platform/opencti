@@ -26,6 +26,7 @@ const LINUX_CERTFILES = [
   '/etc/ssl/ca-bundle.pem', // OpenSUSE
   '/etc/pki/tls/cacert.pem', // OpenELEC
   '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem', // CentOS/RHEL 7
+  '/etc/ssl/certs/ca.crt',   // MacOS
   '/etc/ssl/cert.pem',
 ];
 
@@ -166,12 +167,38 @@ if (externalConfigurationFile) {
 nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
 
-// Setup nconf etcd connection
-var etcdOptions = {
-  ca:   readFileSync(process.env.OPENCTI_ETCD_CA_CRT)
-};
-const provEtcd = nconf.use('etcd', { namespace:'system', hosts:[process.env.OPENCTI_ETCD_HOSTS], etcd:etcdOptions});
-nconf.load();
+const etcdHosts = process.env.OPENCTI_ETCD_HOSTS || "https://etcd.aws.darklight.ai:2379";
+// if (process.env.OPENCTI_ETCD_CA_CRT) {
+  let etcdCaCert = process.env.OPENCTI_ETCD_CA_CRT;
+  if (etcdCaCert === undefined || etcdCaCert === null ) {
+    for (const cert of LINUX_CERTFILES) {
+      try {
+        if (lstatSync(cert).isFile()) {
+          etcdCaCert = cert;
+          break;
+        }
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          // eslint-disable-next-line no-continue
+          continue;
+        } else {
+          throw err;
+        }
+      }
+    }  
+  }
+
+  var etcdOptions = {
+    ca: readFileSync(etcdCaCert)
+  };
+  try {
+  const provEtcd = nconf.use('etcd', { namespace: 'system', hosts: [etcdHosts], etcd: etcdOptions});
+  } catch(e) {
+    console.error(e);
+    throw e;
+  }  
+// }
+
 
 // START TEST CODE
 // var etcdValue = nconf.get('foo:bar');

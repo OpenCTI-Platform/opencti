@@ -6,7 +6,6 @@
 venv
 .env
 node_modules
-.vscode
 opencti-platform/opencti-graphql/config/schema/compiled.graphql
 *.crt
 *.key
