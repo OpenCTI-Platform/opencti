@@ -81,6 +81,7 @@ const createApolloServer = (app) => {
   const server = new ApolloServer({
     schema,
     introspection: true,
+    mocks: false,
     mockEntireSchema: false,
     dataSources: () => ({
       Stardog: new StardogKB( ),
