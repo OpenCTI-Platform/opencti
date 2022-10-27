@@ -30,6 +30,7 @@ export const ENTITY_TYPE_CONTAINER_NOTE = 'Note';
 export const ENTITY_TYPE_CONTAINER_OBSERVED_DATA = 'Observed-Data';
 export const ENTITY_TYPE_CONTAINER_OPINION = 'Opinion';
 export const ENTITY_TYPE_CONTAINER_REPORT = 'Report';
+export const ENTITY_TYPE_CONTAINER_GROUPING = 'Grouping';
 export const ENTITY_TYPE_COURSE_OF_ACTION = 'Course-Of-Action';
 export const ENTITY_TYPE_IDENTITY_INDIVIDUAL = 'Individual';
 export const ENTITY_TYPE_IDENTITY_ORGANIZATION = 'Organization';
