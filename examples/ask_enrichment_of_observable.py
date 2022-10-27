@@ -2,8 +2,8 @@
 from pycti import OpenCTIApiClient
 
 # Variables
-api_url = "https://demo.opencti.io"
-api_token = "YOUR_TOKEN"
+api_url = "http://opencti:4000"
+api_token = "bfa014e0-e02e-4aa6-a42b-603b19dcf159"
 # Define name of INTERNAL_ENRICHMENT Connector which can enrich IPv4 addresses
 connector_name = "AbuseIPDB"
 

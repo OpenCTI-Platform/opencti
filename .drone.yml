@@ -26,6 +26,15 @@ steps:
       - pip3 install -r test-requirements.txt --user
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
 
+  # always run the examples last since they don't clean up
+  - name: example-tests
+    image: python:3.10
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install .
+      - cd examples/
+      - /bin/bash run_all.sh
+
   - name: slack
     image: plugins/slack
     settings:

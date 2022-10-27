@@ -5,8 +5,8 @@ from dateutil.parser import parse
 from pycti import OpenCTIApiClient
 
 # Variables
-api_url = "https://demo.opencti.io"
-api_token = "YOUR_TOKEN"
+api_url = "http://opencti:4000"
+api_token = "bfa014e0-e02e-4aa6-a42b-603b19dcf159"
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
@@ -35,10 +35,17 @@ report = opencti_api_client.report.create(
 
 # Associate the TTPs to the incident
 
-# Spearphishing Attachment
-ttp1 = opencti_api_client.attack_pattern.read(
-    filters=[{"key": "x_mitre_id", "values": ["T1193"]}]
+kcp_ia = opencti_api_client.kill_chain_phase.create(
+    phase_name="initial-access", kill_chain_name="mitre-attack"
 )
+
+ttp1 = opencti_api_client.attack_pattern.create(
+    name="Phishing: Spearphishing Attachment",
+    description="Adversaries may send spearphishing emails with a malicious attachment in an attempt to gain access to victim systems. Spearphishing attachment is a specific variant of spearphishing. Spearphishing attachment is different from other forms of spearphishing in that it employs the use of malware attached to an email. All forms of spearphishing are electronically delivered social engineering targeted at a specific individual, company, or industry. In this scenario, adversaries attach a file to the spearphishing email and usually rely upon User Execution to gain execution. Spearphishing may also involve social engineering techniques, such as posing as a trusted source.",
+    x_mitre_id="T1566.001",
+    killChainPhases=[kcp_ia["id"]],
+)
+ttp1 = opencti_api_client.attack_pattern.read(id=ttp1["id"])
 ttp1_relation = opencti_api_client.stix_core_relationship.create(
     fromId=incident["id"],
     toId=ttp1["id"],
@@ -52,7 +59,6 @@ for kill_chain_phase_id in ttp1["killChainPhasesIds"]:
     opencti_api_client.stix_core_relationship.add_kill_chain_phase(
         id=ttp1_relation["id"], kill_chain_phase_id=kill_chain_phase_id
     )
-
 
 # Create the observable and indicator and indicates to the relation
 # Create the observable
@@ -84,10 +90,21 @@ object_refs.extend(
 )
 observable_refs.append(observable_ttp1["id"])
 
-# Registry Run Keys / Startup Folder
-ttp2 = opencti_api_client.attack_pattern.read(
-    filters=[{"key": "x_mitre_id", "values": ["T1060"]}]
+kcp_p = opencti_api_client.kill_chain_phase.create(
+    phase_name="persistence", kill_chain_name="mitre-attack"
 )
+kcp_pe = opencti_api_client.kill_chain_phase.create(
+    phase_name="privilege-escalation", kill_chain_name="mitre-attack"
+)
+
+# Registry Run Keys / Startup Folder
+ttp2 = opencti_api_client.attack_pattern.create(
+    name="Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder ",
+    description="Adversaries may achieve persistence by adding a program to a startup folder or referencing it with a Registry run key. Adding an entry to the 'run keys' in the Registry or startup folder will cause the program referenced to be executed when a user logs in. These programs will be executed under the context of the user and will have the account's associated permissions level.",
+    x_mitre_id="T1547.001",
+    killChainPhases=[kcp_pe["id"], kcp_p["id"]],
+)
+ttp2 = opencti_api_client.attack_pattern.read(id=ttp2["id"])
 # Create the relation
 ttp2_relation = opencti_api_client.stix_core_relationship.create(
     fromId=incident["id"],
@@ -132,10 +149,17 @@ object_refs.extend(
 )
 observable_refs.append(observable_ttp2["id"])
 
-# Data Encrypted
-ttp3 = opencti_api_client.attack_pattern.read(
-    filters=[{"key": "x_mitre_id", "values": ["T1022"]}]
+kcp_c = opencti_api_client.kill_chain_phase.create(
+    phase_name="collection", kill_chain_name="mitre-attack"
 )
+# Data Encrypted
+ttp3 = opencti_api_client.attack_pattern.create(
+    name=" Archive Collected Data",
+    description="An adversary may compress and/or encrypt data that is collected prior to exfiltration. Compressing the data can help to obfuscate the collected data and minimize the amount of data sent over the network. Encryption can be used to hide information that is being exfiltrated from detection or make exfiltration less conspicuous upon inspection by a defender.",
+    x_mitre_id="T1560",
+    killChainPhases=[kcp_c["id"]],
+)
+ttp3 = opencti_api_client.attack_pattern.read(id=ttp3["id"])
 ttp3_relation = opencti_api_client.stix_core_relationship.create(
     fromId=incident["id"],
     toId=ttp3["id"],
