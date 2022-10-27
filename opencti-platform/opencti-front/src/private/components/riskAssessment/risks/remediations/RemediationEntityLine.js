@@ -163,23 +163,23 @@ class RemediationEntityLineComponent extends Component {
                     </div>
                   </>
                 : <>
-                <div style={{ display: 'grid', placeItems: 'center' }}>
+                {/* <div style={{ display: 'grid', placeItems: 'center' }}>
                   -
                 </div>
                 <div style={{ display: 'grid', placeItems: 'center' }}>
                   -
-                </div>
+                </div> */}
               </>}
             </div>
           }
         />
         <ListItemSecondaryAction>
-        {location.pathname.includes(`/activities/risk assessment/risks/${riskId}/remediation/${remediationId}`) && <RemediationPopover
+          <RemediationPopover
             cyioCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             history={history}
             riskId={riskId}
-          />}
+          />
         </ListItemSecondaryAction>
       </ListItem>
     );

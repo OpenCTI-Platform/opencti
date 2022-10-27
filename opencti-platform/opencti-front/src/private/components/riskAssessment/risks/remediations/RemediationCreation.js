@@ -133,6 +133,10 @@ class RemediationCreation extends Component {
     this.setState({ close: true });
   }
 
+  handleCancelClose() {
+    this.setState({ close: false });
+  }
+
   handleCancelCloseClick() {
     this.setState({ close: false });
     this.props.handleOpenCreation();
@@ -477,7 +481,7 @@ class RemediationCreation extends Component {
               // onClick={this.handleCloseDelete.bind(this)}
               // disabled={this.state.deleting}
               // onClick={handleReset}
-              onClick={this.handleCancelCloseClick.bind(this)}
+              onClick={this.handleCancelClose.bind(this)}
               classes={{ root: classes.buttonPopover }}
               variant='outlined'
               size='small'
