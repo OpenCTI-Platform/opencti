@@ -5,13 +5,8 @@ import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { PublicOutlined, LaptopChromebookOutlined } from '@material-ui/icons';
-import { DiamondOutline, ChessKnight } from 'mdi-material-ui';
+import Button from '@material-ui/core/Button';s
 import inject18n from '../../../components/i18n';
-import deviceIcon from '../../../resources/images/assets/deviceIcon.svg';
-import networkIcon from '../../../resources/images/assets/networkIcon.svg';
-import softwareIcon from '../../../resources/images/assets/softwareIcon.svg';
 
 const styles = (theme) => ({
   button: {
@@ -53,15 +48,15 @@ class TopMenuDataResponsiblePartiesEntities extends Component {
         </Button>
         <Button
           component={Link}
-          to="/data/data source/responsible_parties"
+          to="/data/data source"
           variant={
-            location.pathname.includes('/data/data source/responsible_parties')
+            location.pathname.includes('/data/data source')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/data/data source/responsible_parties')
+            location.pathname.includes('/data/data source')
               ? 'secondary'
               : 'inherit'
           }
