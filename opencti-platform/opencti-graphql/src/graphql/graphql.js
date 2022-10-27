@@ -107,6 +107,7 @@ const createApolloServer = async (app, httpServer) => {
   const server = new ApolloServer({
     schema,
     introspection: true,
+    mocks: false,
     preserveResolvers: true,
     dataSources: () => ({
       Stardog: new StardogKB( ),
