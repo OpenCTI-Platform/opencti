@@ -225,6 +225,27 @@ class StixDomainObject:
                     }
                 }
             }
+            ... on Grouping {
+                name
+                description
+                context
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                            ... on BasicRelationship {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                        }
+                    }
+                }
+            }            
             ... on CourseOfAction {
                 name
                 description
@@ -384,6 +405,12 @@ class StixDomainObject:
                         }
                     }
                 }
+            }
+            ... on Event {
+                name
+                description
+                aliases
+                event_types
             }
             ... on Channel {
                 name

@@ -187,6 +187,21 @@ class StixCoreRelationship:
                 ... on Incident {
                     name
                 }
+                ... on Event {
+                    name
+                    description
+                }
+                ... on Channel {
+                    name
+                    description
+                }
+                ... on Narrative {
+                    name
+                    description
+                }
+                ... on Language {
+                    name
+                }
                 ... on StixCyberObservable {
                     observable_value
                 }
@@ -269,6 +284,21 @@ class StixCoreRelationship:
                     name
                 }
                 ... on Incident {
+                    name
+                }
+                ... on Event {
+                    name
+                    description
+                }
+                ... on Channel {
+                    name
+                    description
+                }
+                ... on Narrative {
+                    name
+                    description
+                }
+                ... on Language {
                     name
                 }
                 ... on StixCyberObservable {

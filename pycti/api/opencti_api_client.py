@@ -19,6 +19,7 @@ from pycti.entities.opencti_channel import Channel
 from pycti.entities.opencti_course_of_action import CourseOfAction
 from pycti.entities.opencti_event import Event
 from pycti.entities.opencti_external_reference import ExternalReference
+from pycti.entities.opencti_grouping import Grouping
 from pycti.entities.opencti_identity import Identity
 from pycti.entities.opencti_incident import Incident
 from pycti.entities.opencti_indicator import Indicator
@@ -180,6 +181,7 @@ class OpenCTIApiClient:
         self.note = Note(self)
         self.observed_data = ObservedData(self)
         self.opinion = Opinion(self)
+        self.grouping = Grouping(self)
         self.indicator = Indicator(self)
 
         # Check if openCTI is available

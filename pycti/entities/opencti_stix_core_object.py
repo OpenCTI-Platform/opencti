@@ -150,6 +150,11 @@ class StixCoreObject:
                 report_types
                 published
             }
+            ... on Grouping {
+                name
+                description
+                context
+            }          
             ... on CourseOfAction {
                 name
                 description
@@ -231,7 +236,7 @@ class StixCoreObject:
                 precision
                 x_opencti_aliases
             }
-            ... on  Region {
+            ... on Region {
                 name
                 description
                 latitude
