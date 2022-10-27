@@ -67,6 +67,10 @@ export const stixDomainObjectsFieldSearchQuery = graphql`
             description
             published
           }
+          ... on Grouping {
+            name
+            description
+          }
           ... on CourseOfAction {
             name
             description

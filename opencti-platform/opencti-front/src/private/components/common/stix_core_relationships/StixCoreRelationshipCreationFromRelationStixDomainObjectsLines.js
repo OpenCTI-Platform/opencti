@@ -250,6 +250,9 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
                 ... on Report {
                   name
                 }
+                ... on Grouping {
+                  name
+                }
                 ... on Campaign {
                   name
                   description

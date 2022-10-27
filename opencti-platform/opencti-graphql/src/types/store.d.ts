@@ -226,6 +226,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   definition_type: string;
   objective: string;
   tool_version: string;
+  context: string;
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree';
   x_mitre_id: string;
   x_mitre_detection: string;

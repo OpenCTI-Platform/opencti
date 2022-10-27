@@ -9,6 +9,7 @@ import {
   WorkOutline,
   DescriptionOutlined,
   FeedbackOutlined,
+  WorkspacesOutlined,
 } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 
@@ -48,6 +49,25 @@ class TopMenuAnalysis extends Component {
         >
           <DescriptionOutlined className={classes.icon} fontSize="small" />
           {t('Reports')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/analysis/groupings"
+          variant={
+            location.pathname === '/dashboard/analysis/groupings'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/analysis/groupings'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <WorkspacesOutlined className={classes.icon} fontSize="small" />
+          {t('Groupings')}
         </Button>
         <Button
           component={Link}

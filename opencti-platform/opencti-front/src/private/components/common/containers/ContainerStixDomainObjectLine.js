@@ -199,6 +199,9 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         ... on ObservedData {
           name
         }
+        ... on Grouping {
+          name
+        }
         ... on Individual {
           name
         }

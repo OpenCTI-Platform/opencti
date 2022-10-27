@@ -700,6 +700,10 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
                 name
                 published
               }
+              ... on Grouping {
+                name
+                description
+              }
               ... on Individual {
                 name
               }

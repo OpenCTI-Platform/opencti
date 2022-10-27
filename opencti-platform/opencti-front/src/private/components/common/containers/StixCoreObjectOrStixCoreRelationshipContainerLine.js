@@ -171,6 +171,10 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             name
             published
           }
+          ... on Grouping {
+            name
+            created
+          }
           createdBy {
             ... on Identity {
               id

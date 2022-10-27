@@ -361,6 +361,9 @@ const ContainerStixCyberObservables = createFragmentContainer(
         ... on Report {
           name
         }
+        ... on Grouping {
+          name
+        }
         ... on Note {
           attribute_abstract
           content

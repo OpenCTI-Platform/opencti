@@ -74,6 +74,8 @@ export const resolveLink = (type: string) => {
       return '/dashboard/analysis/opinions';
     case 'Report':
       return '/dashboard/analysis/reports';
+    case 'Grouping':
+      return '/dashboard/analysis/groupings';
     case 'Course-Of-Action':
       return '/dashboard/arsenal/courses_of_action';
     case 'Individual':
@@ -82,6 +84,10 @@ export const resolveLink = (type: string) => {
       return '/dashboard/entities/organizations';
     case 'Sector':
       return '/dashboard/entities/sectors';
+    case 'System':
+      return '/dashboard/entities/systems';
+    case 'Event':
+      return '/dashboard/entities/events';
     case 'Indicator':
       return '/dashboard/observations/indicators';
     case 'Infrastructure':
@@ -98,6 +104,10 @@ export const resolveLink = (type: string) => {
       return '/dashboard/entities/positions';
     case 'Malware':
       return '/dashboard/arsenal/malwares';
+    case 'Channel':
+      return '/dashboard/arsenal/channels';
+    case 'Narrative':
+      return '/dashboard/arsenal/narratives';
     case 'Threat-Actor':
       return '/dashboard/threats/threat_actors';
     case 'Tool':
@@ -133,6 +143,9 @@ export const resolveLink = (type: string) => {
     case 'Hostname':
     case 'Text':
     case 'User-Agent':
+    case 'Bank-Account':
+    case 'Payment-Card':
+    case 'Phone-Number':
       return '/dashboard/observations/observables';
     default:
       return null;

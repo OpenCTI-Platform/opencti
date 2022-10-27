@@ -394,6 +394,10 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 description
                 published
               }
+              ... on Grouping {
+                name
+                description
+              }
               ... on CourseOfAction {
                 name
                 description

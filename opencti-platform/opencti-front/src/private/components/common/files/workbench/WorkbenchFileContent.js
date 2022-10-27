@@ -3970,6 +3970,9 @@ const WorkbenchFileContent = createFragmentContainer(
             ... on Report {
               name
             }
+            ... on Grouping {
+              name
+            }
             ... on CourseOfAction {
               name
             }

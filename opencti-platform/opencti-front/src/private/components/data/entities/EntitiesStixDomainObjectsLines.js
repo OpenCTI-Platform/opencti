@@ -136,6 +136,10 @@ export const entitiesStixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
+          ... on Grouping {
+            name
+            description
+          }
           ... on CourseOfAction {
             name
             description

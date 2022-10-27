@@ -62,6 +62,8 @@ const i18n = {
       'Do you want to delete this kill chain phase?':
         '¿Quieres borrar esta fase de la «kill chain»?',
       'Do you want to delete this report?': '¿Quieres borrar este informe?',
+      'Do you want to delete this grouping?':
+        '¿Quieres eliminar esta agrupación?',
       'Do you want to kill this session?': '¿Quieres cerrar esta sesión?',
       'Do you want to kill all the sessions of this user?':
         '¿Quieres cerrar todas las sesiones de este usuario?',
@@ -98,13 +100,18 @@ const i18n = {
         '¿Quieres borrar este conjunto de datos observados?',
       'Do you want to remove the entity from this report?':
         '¿Quieres borrar esta entidad de este informe?',
+      'Do you want to remove the entity from this grouping?':
+        '¿Desea eliminar la entidad de esta agrupación?',
       'Do you want to delete this attribute?': '¿Quieres borrar este atributo?',
       'Do you want to remove this external reference?':
         '¿Quieres borrar esta referencia externa?',
       'Do you want to remove this note?': '¿Quieres borrar esta nota?',
       'Do you want to remove this report?': '¿Quieres borrar este informe?',
+      'Do you want to remove this grouping?': '¿Quieres borrar esta agrupación?',
       'Do you want to remove these elements from this report?':
         '¿Quieres borrar estos elementos de este informe?',
+      'Do you want to remove these elements from this grouping?':
+          '¿Quieres borrar estos elementos de esta agrupación?',
       'Do you want to remove these elements from this investigation?':
         '¿Quieres borrar estos elementos de esta investigación?',
       'Do you want to remove this opinion?': '¿Quieres borrar esta opinión?',
@@ -155,6 +162,7 @@ const i18n = {
       Information: 'Información',
       'Last reports': 'Últimos informes',
       'Related reports': 'Informes relacionados',
+      'Related groupings': 'Agrupaciones relacionadas',
       Enable: 'Activar',
       Disable: 'Desactivar',
       Rescan: 'Reescanear',
@@ -324,8 +332,8 @@ const i18n = {
       Periodicity: 'Periodicidad',
       'Knowledge update (except indicators & observables)':
         'Actualización de base de conocimiento (excepto indicadores y observables)',
-      'Containers (reports, notes & opinions)':
-        'Contenedores (informes, notas y opiniones)',
+      'Containers (reports, groupings, notes & opinions)':
+        'Contenedores (informes, agrupaciones, notas y opiniones)',
       Containers: 'Contenedores',
       'Technical elements (indicators & observables)':
         'Elementos técnicos (indicadores y observables)',
@@ -360,6 +368,8 @@ const i18n = {
       'Update a kill chain phase': 'Actualizar una fase de la «kill-chain»',
       'Create a report': 'Crear un informe',
       'Update a report': 'Actualizar un informe',
+      'Create a grouping': 'Crear una agrupación',
+      'Update a grouping': 'Actualizar una agrupación',
       'Create a region': 'Crear una région',
       'Update a region': 'Actualizar una región',
       'Create a country': 'Crear un país',
@@ -555,6 +565,8 @@ const i18n = {
       Opinions: 'Opiniones',
       Reports: 'Informes',
       Report: 'Informe',
+      Groupings: 'Agrupaciones',
+      Grouping: 'Agrupación',
       Synchronization: 'Sincronización',
       Indicator: 'Indicador',
       Indicators: 'Indicadores',
@@ -1258,6 +1270,7 @@ const i18n = {
       'entity_Observed-Data': 'Datos observados',
       entity_Opinion: 'Opinión',
       entity_Report: 'Informe',
+      entity_Grouping: 'Agrupación',
       'entity_Course-Of-Action': 'Contramedida',
       entity_Individual: 'Individuo',
       entity_Organization: 'Organización',
@@ -1612,6 +1625,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette étape de kill chain ?',
       'Do you want to delete this report?':
         'Souhaitez-vous supprimer ce rapport ?',
+      'Do you want to delete this grouping?':
+          'Souhaitez-vous supprimer ce groupement ?',
       'Do you want to kill this session?':
         'Souhaitez-vous supprimer cette session ?',
       'Do you want to kill all the sessions of this user?':
@@ -1656,6 +1671,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette données observée ?',
       'Do you want to remove the entity from this report?':
         'Souhaitez-vous retirer cette entité de ce rapport ?',
+      'Do you want to remove the entity from this grouping?':
+          'Souhaitez-vous retirer cette entité de ce groupement ?',
       'Do you want to delete this attribute?':
         'Souhaitez-vous supprimer cet attribut ?',
       'Do you want to remove this external reference?':
@@ -1663,8 +1680,12 @@ const i18n = {
       'Do you want to remove this note?': 'Souhaitez-vous retirer cette note ?',
       'Do you want to remove this report?':
         'Souhaitez-vous supprimer ce rapport ?',
+      'Do you want to remove this groupement?':
+          'Souhaitez-vous supprimer ce groupement ?',
       'Do you want to remove these elements from this report?':
         'Souhaitez-vous supprimer ces éléments de ce rapport ?',
+      'Do you want to remove these elements from this grouping?':
+          'Souhaitez-vous supprimer ces éléments de ce grouping ?',
       'Do you want to remove these elements from this investigation?':
         'Souhaitez-vous supprimer ces éléments de cette investigation ?',
       'Do you want to remove this opinion?':
@@ -1719,6 +1740,7 @@ const i18n = {
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       'Related reports': 'Rapports liés',
+      'Related groupings': 'Groupements liés',
       Enable: 'Activer',
       Disable: 'Désactiver',
       Rescan: 'Rescanner',
@@ -1879,8 +1901,8 @@ const i18n = {
       Periodicity: 'Périodicité',
       'Knowledge update (except indicators & observables)':
         'Modification des connaissances (sauf indicateurs et observables)',
-      'Containers (reports, notes & opinions)':
-        'Conteneurs (rapports, notes et opinions)',
+      'Containers (reports, groupings, notes & opinions)':
+        'Conteneurs (rapports, groupements, notes et opinions)',
       Containers: 'Conteneurs',
       'Technical elements (indicators & observables)':
         'Eléments techniques (indicateurs & observables)',
@@ -1912,6 +1934,8 @@ const i18n = {
       'Update a kill chain phase': 'Modifier une étape de kill chain',
       'Create a report': 'Créer un rapport',
       'Update a report': 'Modifier un rapport',
+      'Create a grouping': 'Créer un groupement',
+      'Update a grouping': 'Modifier un groupement',
       'Create a region': 'Créer une région',
       'Update a region': 'Modifier une région',
       'Create a country': 'Créer un pays',
@@ -2104,6 +2128,8 @@ const i18n = {
       'Connectors & workers': 'Connecteurs et workers',
       Reports: 'Rapports',
       Report: 'Report',
+      Groupings: 'Groupements',
+      Grouping: 'Groupement',
       Synchronization: 'Synchronisation',
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
@@ -2801,6 +2827,7 @@ const i18n = {
       'entity_Observed-Data': 'Donnée observée',
       entity_Opinion: 'Opinion',
       entity_Report: 'Rapport',
+      entity_Grouping: 'Groupement',
       'entity_Course-Of-Action': 'Conduite à suivre',
       entity_Individual: 'Individu',
       entity_Organization: 'Organisation',

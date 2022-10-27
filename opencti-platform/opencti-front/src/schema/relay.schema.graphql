@@ -1724,6 +1724,7 @@ interface StixCoreObject {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   creator: User
   toStix: String
@@ -1773,6 +1774,7 @@ enum StixDomainObjectsFilter {
   pattern_type
   x_opencti_main_observable_type
   report_types
+  context
   x_opencti_organization_type
   published
   x_opencti_workflow_id
@@ -1813,6 +1815,7 @@ interface StixDomainObject {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -1917,6 +1920,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2034,6 +2038,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2098,6 +2103,7 @@ enum ContainersFilter {
   confidence
   attribute_abstract
   report_types
+  context
   content
   authors
   created
@@ -2147,6 +2153,7 @@ interface Container {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2223,6 +2230,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2334,6 +2342,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2442,6 +2451,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2551,6 +2561,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2596,6 +2607,116 @@ input ReportAddInput {
   clientMutationId: String
   update: Boolean
 }
+
+enum GroupingsOrdering {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  createdBy
+  objectMarking
+  x_opencti_workflow_id
+}
+
+enum GroupingsFilter {
+  name
+  context
+  created
+  created_at
+  confidence
+  objectLabel
+  createdBy
+  markedBy
+  labelledBy
+  objectContains
+  x_opencti_workflow_id
+  revoked
+}
+
+input GroupingsFiltering {
+  key: [GroupingsFilter!]!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+
+type GroupingConnection {
+  pageInfo: PageInfo!
+  edges: [GroupingEdge]
+}
+
+type GroupingEdge {
+  cursor: String!
+  node: Grouping!
+}
+
+type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipConnection
+  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  name: String!
+  description: String
+  context: String!
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+
+input GroupingAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_2!
+  description: String
+  context: context_String_NotNull_minLength_2!
+  revoked: Boolean
+  lang: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  objects: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+}
+
+scalar context_String_NotNull_minLength_2
 
 enum CoursesOfActionOrdering {
   name
@@ -2658,6 +2779,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2772,6 +2894,7 @@ interface Identity {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -2883,6 +3006,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3006,6 +3130,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3121,6 +3246,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3231,6 +3357,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3361,6 +3488,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3489,6 +3617,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3597,6 +3726,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3720,6 +3850,7 @@ interface Location {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3829,6 +3960,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -3944,6 +4076,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -4050,6 +4183,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -4156,6 +4290,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -4274,6 +4409,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -4389,6 +4525,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -4508,6 +4645,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -4618,6 +4756,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -4732,6 +4871,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -4847,6 +4987,7 @@ interface StixCyberObservable {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -4882,6 +5023,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -4926,6 +5068,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -4974,6 +5117,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   observable_value: String!
   x_opencti_score: Int
@@ -5014,6 +5158,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5056,6 +5201,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5108,6 +5254,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5175,6 +5322,7 @@ interface HashedObservable {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5211,6 +5359,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5263,6 +5412,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5324,6 +5474,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5418,6 +5569,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5460,6 +5612,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5500,6 +5653,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5540,6 +5694,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5580,6 +5735,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5639,6 +5795,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5721,6 +5878,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5772,6 +5930,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5812,6 +5971,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5879,6 +6039,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5923,6 +6084,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -5967,6 +6129,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6007,6 +6170,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6047,6 +6211,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6087,6 +6252,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6127,6 +6293,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6167,6 +6334,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6211,6 +6379,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6251,6 +6420,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6297,6 +6467,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   x_opencti_score: Int
   x_opencti_description: String
@@ -6414,6 +6585,7 @@ type StixObjectOrStixRelationshipEdge {
   node: StixObjectOrStixRelationship!
 }
 
+<<<<<<< HEAD
 type StixObjectOrStixRelationshipRefEdge {
   cursor: String!
   types: [String]!
@@ -6421,8 +6593,11 @@ type StixObjectOrStixRelationshipRefEdge {
 }
 
 union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship
+=======
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship
+>>>>>>> af2ce9a3a ([api/frontend] Implement grouping entity type (#2475))
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -6580,6 +6755,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   killChainPhases: KillChainPhaseConnection
   creator: User
@@ -6697,6 +6873,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
+  groupings(first: Int): GroupingConnection
   creator: User
   toStix: String
   editContext: [EditUserContext]
@@ -6781,6 +6958,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
+  groupings(first: Int): GroupingConnection
   relationship_type: String!
   start_time: DateTime
   stop_time: DateTime
@@ -6971,6 +7149,12 @@ type Query {
   reportsNumber(reportType: String, objectId: String, authorId: String, endDate: DateTime): Number
   reportsDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  grouping(id: String): Grouping
+  groupings(first: Int, after: ID, orderBy: GroupingsOrdering, orderMode: OrderingMode, filters: [GroupingsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): GroupingConnection
+  groupingsTimeSeries(objectId: String, authorId: String, groupingType: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+  groupingsNumber(groupingContext: String, objectId: String, authorId: String, endDate: DateTime): Number
+  groupingsDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
+  groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   courseOfAction(id: String): CourseOfAction
   coursesOfAction(first: Int, after: ID, orderBy: CoursesOfActionOrdering, orderMode: OrderingMode, filters: [CoursesOfActionFiltering], filterMode: FilterMode, search: String, toStix: Boolean): CourseOfActionConnection
   identity(id: String!): Identity
@@ -7284,6 +7468,15 @@ type ReportEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): Report
 }
 
+type GroupingEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Grouping
+  contextPatch(input: EditContext): Grouping
+  contextClean: Grouping
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): Grouping
+}
+
 type CourseOfActionEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): CourseOfAction
@@ -7586,6 +7779,8 @@ type Mutation {
   opinionEdit(id: ID!): OpinionEditMutations
   reportAdd(input: ReportAddInput): Report
   reportEdit(id: ID!): ReportEditMutations
+  groupingAdd(input: GroupingAddInput): Grouping
+  groupingEdit(id: ID!): GroupingEditMutations
   courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction
   courseOfActionEdit(id: ID!): CourseOfActionEditMutations
   identityAdd(input: IdentityAddInput): Identity
@@ -7688,6 +7883,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -7793,6 +7989,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -7893,6 +8090,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int
@@ -8002,6 +8200,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   revoked: Boolean!
   confidence: Int

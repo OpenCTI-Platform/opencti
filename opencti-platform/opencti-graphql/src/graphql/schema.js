@@ -53,6 +53,7 @@ import containerResolvers from '../resolvers/container';
 import noteResolvers from '../resolvers/note';
 import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
+import groupingResolvers from '../resolvers/grouping';
 import indicatorResolvers from '../resolvers/indicator';
 import incidentResolvers from '../resolvers/incident';
 import { authDirectiveBuilder } from './authDirective';
@@ -178,6 +179,7 @@ const schemaResolvers = [
   observedDataResolvers,
   opinionResolvers,
   reportResolvers,
+  groupingResolvers,
   courseOfActionResolvers,
   // Identities
   identityResolvers,

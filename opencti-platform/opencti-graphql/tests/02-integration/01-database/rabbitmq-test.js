@@ -1,6 +1,5 @@
 import { v4 as uuid } from 'uuid';
 import {
-  getRabbitMQVersion,
   metrics,
   pushToConnector,
   registerConnectorQueues,
@@ -11,17 +10,10 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { RABBIT_QUEUE_PREFIX } from '../../../src/database/utils';
 
 describe('Rabbit basic and utils', () => {
-  it('should rabbit in correct version', async () => {
-    // Just wait one second to let redis client initialize
-    const rabbitVersion = await getRabbitMQVersion(testContext);
-    expect(rabbitVersion).toEqual(expect.stringMatching(/^3.11\./g));
-  });
-
   it('should rabbit metrics accurate', async () => {
     // Just wait one second to let redis client initialize
     const data = await metrics(testContext, ADMIN_USER);
     expect(data).not.toBeNull();
-    expect(data.overview.management_version).toEqual(expect.stringMatching(/^3.11\./g));
   });
 });
 

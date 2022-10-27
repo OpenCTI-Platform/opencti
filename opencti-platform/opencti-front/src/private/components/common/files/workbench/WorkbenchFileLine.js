@@ -257,6 +257,9 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
           ... on Report {
             name
           }
+          ... on Grouping {
+            name
+          }
           ... on CourseOfAction {
             name
           }

@@ -423,9 +423,6 @@ const elCreateIndexTemplate = async () => {
             confidence: {
               type: 'integer',
             },
-            x_opencti_report_status: {
-              type: 'integer',
-            },
             attribute_order: {
               type: 'integer',
             },

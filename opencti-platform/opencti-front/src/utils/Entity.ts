@@ -12,6 +12,8 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/analysis/opinions';
     case 'Report':
       return '/dashboard/analysis/reports';
+    case 'Grouping':
+      return '/dashboard/analysis/groupings';
     case 'Course-Of-Action':
       return '/dashboard/arsenal/courses_of_action';
     case 'Individual':
@@ -866,6 +868,23 @@ export const openVocabularies: { [k: string]: Array<{ key: string, description: 
       key: 'strategic',
       description:
         'State actors who create vulnerabilities through an active program to "influence" commercial products and services during design, development or manufacturing, or with the ability to impact products while in the supply chain to enable exploitation of networks and systems of interest.',
+    },
+  ],
+  'grouping-context-ov': [
+    {
+      key: 'suspicious-activity',
+      description:
+        'A set of STIX content related to a particular suspicious activity event.',
+    },
+    {
+      key: 'malware-analysis',
+      description:
+        'A set of STIX content related to a particular malware instance or family.',
+    },
+    {
+      key: 'unspecified',
+      description:
+        'A set of STIX content contextually related but without any precise characterization of the contextual relationship between the objects.',
     },
   ],
   'integrity_level-ov': [

@@ -818,6 +818,9 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
       ... on Report {
         name
       }
+      ... on Grouping {
+        name
+      }
       ... on Note {
         attribute_abstract
         content

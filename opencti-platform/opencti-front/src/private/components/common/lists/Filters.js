@@ -211,6 +211,9 @@ export const filtersStixCoreObjectsSearchQuery = graphql`
           ... on Report {
             name
           }
+          ... on Grouping {
+            name
+          }
           ... on Campaign {
             name
             description

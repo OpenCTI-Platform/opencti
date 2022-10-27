@@ -51,7 +51,7 @@ import type * as SMO from '../types/stix-smo';
 import type { StoreCyberObservable, StoreEntity, StoreObject, StoreRelation, } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_GROUPING,
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
@@ -114,6 +114,7 @@ import {
 import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin } from './stix';
+import type { StixGrouping } from '../types/stix-sdo';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -627,6 +628,16 @@ const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpin
         object_refs_inferred: convertObjectReferences(instance, true),
       })
     }
+  };
+};
+const convertGroupingToStix = (instance: StoreEntity, type: string): SDO.StixGrouping => {
+  assertType(ENTITY_TYPE_CONTAINER_GROUPING, type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    context: instance.context,
+    object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id)
   };
 };
 
@@ -1291,6 +1302,9 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     // Remaining
     if (ENTITY_TYPE_CONTAINER_REPORT === type) {
       return convertReportToStix(basic, type);
+    }
+    if (ENTITY_TYPE_CONTAINER_GROUPING === type) {
+      return convertGroupingToStix(basic, type);
     }
     if (ENTITY_TYPE_MALWARE === type) {
       return convertMalwareToStix(basic, type);

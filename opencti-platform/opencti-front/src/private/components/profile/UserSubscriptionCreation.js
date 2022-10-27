@@ -150,6 +150,10 @@ const userSubscriptionMutation = graphql`
           name
           published
         }
+        ... on Grouping {
+          name
+          description
+        }
         ... on Individual {
           name
         }
@@ -483,7 +487,7 @@ class UserSubscriptionCreation extends Component {
                         label={
                           <div>
                             <div style={{ float: 'left' }}>
-                              {t('Containers (reports, notes & opinions)')}
+                              {t('Containers (reports, groupings, notes & opinions)')}
                             </div>
                             <div
                               style={{

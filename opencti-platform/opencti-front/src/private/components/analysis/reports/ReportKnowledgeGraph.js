@@ -1508,6 +1508,9 @@ const ReportKnowledgeGraph = createFragmentContainer(
               ... on ObservedData {
                 name
               }
+              ... on Grouping {
+                name
+              }              
               ... on CourseOfAction {
                 name
               }
