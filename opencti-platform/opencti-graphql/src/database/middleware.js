@@ -100,6 +100,7 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
@@ -124,7 +125,8 @@ import {
 import {
   FIELD_TO_META_RELATION,
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE, RELATION_GRANTED_TO,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
@@ -190,7 +192,8 @@ import {
   executionContext,
   filterElementsAccordingToUser,
   isBypassUser,
-  isUserCanAccessElement, KNOWLEDGE_ORGANIZATION_RESTRICT,
+  isUserCanAccessElement,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
   SYSTEM_USER
 } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
@@ -2194,23 +2197,35 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   // Upsert entities
   const upsertAttributes = schemaTypes.getUpsertAttributes(type);
   if (isInternalObject(type) && forceUpdate) {
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
+    const {
+      upsertImpacted,
+      upsertUpdated
+    } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixDomainObject(type) && forceUpdate) {
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
+    const {
+      upsertImpacted,
+      upsertUpdated
+    } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   if (isStixMetaObject(type) && forceUpdate) {
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
+    const {
+      upsertImpacted,
+      upsertUpdated
+    } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
   // Upsert SCOs
   if (isStixCyberObservable(type) && forceUpdate) {
-    const { upsertImpacted, upsertUpdated } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
+    const {
+      upsertImpacted,
+      upsertUpdated
+    } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
     impactedInputs.push(...upsertImpacted);
     patchInputs.push(...upsertUpdated);
   }
@@ -2424,7 +2439,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   const relToCreate = [];
   // For global granted
   if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-    relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
+    relToCreate.push(...buildInnerRelation(data, input.objectOrganization, RELATION_GRANTED_TO));
   }
   if (isStixCoreRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
@@ -2630,7 +2645,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
   const patch = createRuleDataPatch(instance);
   const inputRelation = { ...instance, ...patch };
   logApp.info('Create inferred relation', { relation: inputRelation });
-  return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, opts);
+  return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
 };
 /* istanbul ignore next */
 export const createRelations = async (context, user, inputs) => {

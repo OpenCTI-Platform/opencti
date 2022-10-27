@@ -146,6 +146,7 @@ interface StoreCommon {
   [INPUT_LINKED]?: Array<BasicStoreObject>;
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
   [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
+  [INPUT_GRANTED_REFS]?: Array<BasicStoreObject>;
 }
 
 interface StoreProxyRelation extends BasicStoreCommon {

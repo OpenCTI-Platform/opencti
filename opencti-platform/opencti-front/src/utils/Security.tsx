@@ -44,6 +44,10 @@ interface SecurityProps {
   placeholder?: ReactElement;
 }
 
+interface DataSecurityProps extends SecurityProps {
+  data: { createdBy: { id: string } };
+}
+
 export const granted = (
   me: RootPrivateQuery$data['me']| undefined,
   capabilities: Array<string>,
@@ -74,32 +78,31 @@ const Security: FunctionComponent<SecurityProps> = ({
   children,
   placeholder = <span />,
 }) => {
-  const userContext = useContext(UserContext);
-  if (userContext.me && granted(userContext.me, needs, matchAll)) {
+  const { me } = useContext<UserContextType>(UserContext);
+  if (me && granted(me, needs, matchAll)) {
     return children;
   }
   return placeholder;
 };
 
-export const CollaborativeSecurity = ({
+export const CollaborativeSecurity: FunctionComponent<DataSecurityProps> = ({
   data,
   needs,
   matchAll,
   children,
   placeholder = <span />,
-}) => (
-  <UserContext.Consumer>
-    {({ me }) => {
-      const haveCapability = granted(me, needs, matchAll);
-      if (haveCapability) return children;
-      const canParticipate = granted(me, [KNOWLEDGE_KNPARTICIPATE], false);
-      const isCreator = data.createdBy?.id
-        ? data.createdBy?.id === me.individual_id
-        : false;
-      if (canParticipate && isCreator) return children;
-      return placeholder;
-    }}
-  </UserContext.Consumer>
-);
+}) => {
+  const { me } = useContext<UserContextType>(UserContext);
+  if (me) {
+    const haveCapability = granted(me, needs, matchAll);
+    if (haveCapability) return children;
+    const canParticipate = granted(me, [KNOWLEDGE_KNPARTICIPATE], false);
+    const isCreator = data.createdBy?.id ? data.createdBy?.id === me.individual_id : false;
+    if (canParticipate && isCreator) {
+      return children;
+    }
+  }
+  return placeholder;
+};
 
 export default Security;
