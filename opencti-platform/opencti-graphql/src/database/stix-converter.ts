@@ -114,7 +114,6 @@ import {
 import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin } from './stix';
-import type { StixGrouping } from '../types/stix-sdo';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');

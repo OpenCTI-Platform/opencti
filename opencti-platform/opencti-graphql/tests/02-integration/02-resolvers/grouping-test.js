@@ -1,6 +1,5 @@
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
-import { elLoadById } from '../../../src/database/engine';
+import { queryAsAdmin } from '../../utils/testQuery';
 import { now } from '../../../src/utils/format';
 
 const LIST_QUERY = gql`
@@ -64,26 +63,6 @@ const NUMBER_QUERY = gql`
     groupingsNumber(objectId: $objectId, endDate: $endDate) {
       total
       count
-    }
-  }
-`;
-
-const DISTRIBUTION_QUERY = gql`
-  query groupingsDistribution(
-    $objectId: String
-    $field: String!
-    $operation: StatsOperation!
-    $limit: Int
-    $order: String
-  ) {
-    groupingsDistribution(objectId: $objectId, field: $field, operation: $operation, limit: $limit, order: $order) {
-      label
-      value
-      entity {
-        ... on Identity {
-          name
-        }
-      }
     }
   }
 `;

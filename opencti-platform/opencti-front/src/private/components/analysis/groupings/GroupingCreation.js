@@ -173,7 +173,7 @@ const GroupingCreation = ({ paginationOptions }) => {
               externalReferences: [],
             }}
             validationSchema={groupingValidation(t)}
-            onSubmit={onSubmit.bind(this)}
+            onSubmit={onSubmit}
             onReset={() => setOpen(false)}
           >
             {({
