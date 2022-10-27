@@ -2564,7 +2564,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       // an update of the from entity that host this embedded ref.
       if (isStixEmbeddedRelationship(relationshipType)) {
         const previous = resolvedInput.from; // Complete resolution done by the input resolver
-        const targetElement = { ...resolvedInput.to, i_relation: { _index: resolvedInput._index } };
+        const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
         const instance = R.clone(previous);
         const key = STIX_EMBEDDED_RELATION_TO_FIELD[relationshipType];
         if (isSingleStixEmbeddedRelationship(relationshipType)) {
@@ -2949,6 +2949,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     if (isStixEmbeddedRelationship(element.entity_type)) {
+      const targetElement = { ...element.to, i_relation: element };
       const previous = await storeLoadByIdWithRefs(context, user, element.fromId);
       const key = STIX_EMBEDDED_RELATION_TO_FIELD[element.entity_type];
       const instance = R.clone(previous);
@@ -2958,7 +2959,6 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         message = generateUpdateMessage(inputs);
         instance[key] = undefined; // Generate the new version of the from
       } else {
-        const targetElement = { ...element.to, i_relation: { _index: element._index } };
         const inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_REMOVE }];
         message = generateUpdateMessage(inputs);
         // To prevent to many patch operations, removed key must be put at the end
