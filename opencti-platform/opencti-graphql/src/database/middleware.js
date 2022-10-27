@@ -1940,6 +1940,7 @@ const buildRelationInput = (input) => {
   }
   // stix-observable-relationship
   if (isStixCyberObservableRelationship(relationshipType)) {
+    relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
