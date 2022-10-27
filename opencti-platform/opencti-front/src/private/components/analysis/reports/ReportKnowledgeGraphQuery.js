@@ -48,3 +48,11 @@ export const reportKnowledgeGraphQueryStixRelationshipDeleteMutation = graphql`
     }
   }
 `;
+
+export const reportKnowledgeGraphQueryStixObjectDeleteMutation = graphql`
+  mutation ReportKnowledgeGraphQueryStixCoreObjectDeleteMutation($id: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      delete
+    }
+  }
+`;

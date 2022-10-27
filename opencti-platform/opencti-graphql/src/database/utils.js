@@ -27,6 +27,7 @@ export const INTERNAL_SYNC_QUEUE = 'sync';
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_DELETE = 'delete';
 export const EVENT_TYPE_DEPENDENCIES = 'init-dependencies';
+export const EVENT_TYPE_DELETE_DEPENDENCIES = 'delete-dependencies';
 export const EVENT_TYPE_INIT = 'init-create';
 export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_MERGE = 'merge';
@@ -208,6 +209,7 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
     if (isStixDomainObject(conceptType)) return INDEX_INFERRED_ENTITIES;
     if (isStixCoreRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isStixSightingRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
+    if (isStixMetaRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     throw DatabaseError(`Cant find inferred index for type ${conceptType}`);
   }
   // Entities

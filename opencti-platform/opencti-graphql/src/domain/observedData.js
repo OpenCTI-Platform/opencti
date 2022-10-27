@@ -28,15 +28,12 @@ export const findAll = async (context, user, args) => {
 };
 
 export const resolveName = async (context, user, observedData) => {
-  const observedDataObjects = await objects(context, user, observedData.id, {
-    first: 1,
-    types: [ABSTRACT_STIX_CORE_OBJECT],
-    connectionFormat: false,
-  });
-  if (observedDataObjects.length > 0) {
-    const firstObject = R.head(observedDataObjects);
-    if (isStixDomainObject(firstObject.entity_type)) {
-      return firstObject.name;
+  const args = { first: 1, types: [ABSTRACT_STIX_CORE_OBJECT] };
+  const observedDataObjects = await objects(context, user, observedData.id, args);
+  if (observedDataObjects.edges.length === 1) {
+    const firstObject = observedDataObjects.edges[0];
+    if (isStixDomainObject(firstObject.node.entity_type)) {
+      return firstObject.node.name;
     }
     return observableValue(firstObject);
   }

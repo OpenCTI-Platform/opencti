@@ -942,7 +942,16 @@ class ReportKnowledgeCorrelationComponent extends Component {
               ctx, //
             ) =>
               // eslint-disable-next-line implicit-arrow-linebreak
-              nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
+              nodePaint(
+                {
+                  selected: theme.palette.secondary.main,
+                  inferred: theme.palette.warning.main,
+                },
+                node,
+                node.color,
+                ctx,
+                this.selectedNodes.has(node),
+              )
             }
             nodePointerAreaPaint={nodeAreaPaint}
             // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}

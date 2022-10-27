@@ -596,7 +596,7 @@ const idLabel = (label) => {
 const inputResolveRefs = async (context, user, input, type) => {
   const fetchingIds = [];
   const expectedIds = [];
-  const cleanedInput = { ...input };
+  const cleanedInput = { _index: inferIndexFromConceptType(type), ...input };
   let embeddedFromResolution;
   for (let index = 0; index < depsKeys.length; index += 1) {
     const { src, dst } = depsKeys[index];
@@ -2546,7 +2546,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     } else {
       // Check cyclic reference consistency for embedded relationships before creation
       if (isStixEmbeddedRelationship(relationshipType)) {
-        const toRefs = instanceMetaRefsExtractor(to);
+        const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
         // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
         // Checking the direction of the relation to allow relationships
         if (toRefs.includes(from.internal_id) && isRelationConsistent(relationshipType, to, from)) {
@@ -2565,19 +2565,20 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       // an update of the from entity that host this embedded ref.
       if (isStixEmbeddedRelationship(relationshipType)) {
         const previous = resolvedInput.from; // Complete resolution done by the input resolver
+        const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
         const instance = R.clone(previous);
         const key = STIX_EMBEDDED_RELATION_TO_FIELD[relationshipType];
         if (isSingleStixEmbeddedRelationship(relationshipType)) {
-          const inputs = [{ key, value: [resolvedInput.to] }];
+          const inputs = [{ key, value: [targetElement] }];
           const message = generateUpdateMessage(inputs);
           // Generate the new version of the from
-          instance[key] = resolvedInput.to;
+          instance[key] = targetElement;
           event = await storeUpdateEvent(context, user, previous, instance, message, opts);
         } else {
-          const inputs = [{ key, value: [resolvedInput.to], operation: UPDATE_OPERATION_ADD }];
+          const inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_ADD }];
           const message = generateUpdateMessage(inputs);
           // Generate the new version of the from
-          instance[key] = [...(instance[key] ?? []), resolvedInput.to];
+          instance[key] = [...(instance[key] ?? []), targetElement];
           event = await storeUpdateEvent(context, user, previous, instance, message, opts);
         }
       } else {
@@ -2588,7 +2589,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       event = await storeUpdateEvent(context, user, dataRel.previous, dataRel.element, dataRel.message, opts);
     }
     // - TRANSACTION END
-    return { element: dataRel.element, event };
+    return { element: dataRel.element, event, isCreation: dataRel.type === TRX_CREATION };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -2602,8 +2603,8 @@ export const createRelation = async (context, user, input) => {
   const data = await createRelationRaw(context, user, input);
   return data.element;
 };
-export const createInferredRelation = async (context, input, ruleContent) => {
-  const opts = { fromRule: ruleContent.field };
+export const createInferredRelation = async (context, input, ruleContent, opts = {}) => {
+  const args = { ...opts, fromRule: ruleContent.field };
   // eslint-disable-next-line camelcase
   const { fromId, toId, relationship_type } = input;
   logApp.info('Create inferred relation', { fromId, toId, relationshipType: relationship_type });
@@ -2615,8 +2616,7 @@ export const createInferredRelation = async (context, input, ruleContent) => {
   const instance = { fromId, toId, relationship_type, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
   const inputRelation = { ...instance, ...patch };
-  const data = await createRelationRaw(context, RULE_MANAGER_USER, inputRelation, opts);
-  return data.event;
+  return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
 };
 /* istanbul ignore next */
 export const createRelations = async (context, user, inputs) => {
@@ -2950,6 +2950,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     if (isStixEmbeddedRelationship(element.entity_type)) {
+      const targetElement = { ...element.to, i_relation: element };
       const previous = await storeLoadByIdWithRefs(context, user, element.fromId);
       const key = STIX_EMBEDDED_RELATION_TO_FIELD[element.entity_type];
       const instance = R.clone(previous);
@@ -2959,11 +2960,11 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         message = generateUpdateMessage(inputs);
         instance[key] = undefined; // Generate the new version of the from
       } else {
-        const inputs = [{ key, value: [element.to], operation: UPDATE_OPERATION_REMOVE }];
+        const inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_REMOVE }];
         message = generateUpdateMessage(inputs);
         // To prevent to many patch operations, removed key must be put at the end
-        const withoutElementDeleted = (previous[key] ?? []).filter((e) => e.internal_id !== element.to.internal_id);
-        previous[key] = [...withoutElementDeleted, element.to];
+        const withoutElementDeleted = (previous[key] ?? []).filter((e) => e.internal_id !== targetElement.internal_id);
+        previous[key] = [...withoutElementDeleted, targetElement];
         // Generate the new version of the from
         instance[key] = withoutElementDeleted;
       }
@@ -3041,10 +3042,12 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     if (rebuildRuleContent.length === 0) {
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
+        logApp.info('Delete inferred element', { rule, id: instance.id });
         const { event } = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id);
         derivedEvents.push(event);
       } else {
         // If not we need to clean the rule and keep the element for other rules.
+        logApp.info('Cleanup inferred element', { rule, id: instance.id });
         const input = { [completeRuleName]: null };
         const upsertOpts = { fromRule, ruleOverride: true };
         const { event } = await upsertRelationRule(context, instance, input, upsertOpts);
@@ -3053,6 +3056,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
         }
       }
     } else {
+      logApp.info('Upsert inferred element', { rule, id: instance.id });
       // Rule still have other explanation, update the rule
       const input = { [completeRuleName]: rebuildRuleContent };
       const ruleOpts = { fromRule, ruleOverride: true };

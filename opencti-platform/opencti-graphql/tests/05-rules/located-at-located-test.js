@@ -42,7 +42,6 @@ describe('Located at located rule', () => {
       await activateRule(LocatedAtLocatedRule.id);
       // Check database state
       const afterActivationRelations = await getInferences(RELATION_LOCATED_AT);
-      // expect(afterActivationRelations.length).toBe(3);
       const hietzingToWesternEurope = await inferenceLookup(afterActivationRelations, HIETZING, WESTERN_EUROPE, RELATION_LOCATED_AT);
       expect(hietzingToWesternEurope).not.toBeNull();
       expect(hietzingToWesternEurope.confidence).toBe(23); // AVG 2 relations (30 + 0) = 15

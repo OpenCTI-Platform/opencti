@@ -6,7 +6,7 @@ import def from './LocalizationOfTargetsDefinition';
 import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { computeAverage } from '../../database/utils';
 import type { StixRelation } from '../../types/stix-sro';
-import type { Event } from '../../types/event';
+import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
@@ -44,10 +44,10 @@ const ruleLocalizationOfTargetsBuilder = () => {
         stop_time: range.end,
         objectMarking: elementMarkings,
       });
-      const event = await createInferredRelation(context, input, ruleContent) as Event;
+      const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
       // Re inject event if needed
-      if (event) {
-        events.push(event);
+      if (inferredRelation.event) {
+        events.push(inferredRelation.event);
       }
     }
     return events;

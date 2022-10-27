@@ -681,8 +681,16 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
             onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
-            nodeCanvasObject={
-              (node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
+            nodeCanvasObject={(node, ctx) => nodePaint(
+              {
+                selected: theme.palette.secondary.main,
+                inferred: theme.palette.warning.main,
+              },
+              node,
+              node.color,
+              ctx,
+              this.selectedNodes.has(node),
+            )
             }
             nodePointerAreaPaint={nodeAreaPaint}
             // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}

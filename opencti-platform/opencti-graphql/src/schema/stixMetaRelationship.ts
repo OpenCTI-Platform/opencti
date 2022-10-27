@@ -95,6 +95,7 @@ export const stixMetaRelationshipsAttributes = [
   'created',
   'modified',
   'relationship_type',
+  'i_inference_weight',
 ];
 R.map(
   (stixMetaRelationshipType) => schemaTypes.registerAttributes(stixMetaRelationshipType, stixMetaRelationshipsAttributes),

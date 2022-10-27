@@ -125,12 +125,13 @@ class ListLinesContent extends Component {
         </div>
       );
     }
-    const { node } = edge;
+    const { node, types } = edge;
     return (
       <div key={key} style={style}>
         {React.cloneElement(LineComponent, {
           dataColumns,
           node,
+          types,
           paginationOptions,
           entityId,
           entityLink,

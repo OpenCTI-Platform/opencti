@@ -1546,7 +1546,7 @@ export type Container = {
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
-  objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -8770,7 +8770,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
-  objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -9028,7 +9028,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   number_observed: Scalars['Int'];
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
-  objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -9273,7 +9273,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
-  objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinion: Scalars['String'];
   opinions?: Maybe<OpinionConnection>;
@@ -12480,7 +12480,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
-  objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
@@ -14724,6 +14724,19 @@ export type StixObjectOrStixRelationshipEdge = {
   __typename?: 'StixObjectOrStixRelationshipEdge';
   cursor: Scalars['String'];
   node: StixObjectOrStixRelationship;
+};
+
+export type StixObjectOrStixRelationshipRefConnection = {
+  __typename?: 'StixObjectOrStixRelationshipRefConnection';
+  edges?: Maybe<Array<Maybe<StixObjectOrStixRelationshipRefEdge>>>;
+  pageInfo: PageInfo;
+};
+
+export type StixObjectOrStixRelationshipRefEdge = {
+  __typename?: 'StixObjectOrStixRelationshipRefEdge';
+  cursor: Scalars['String'];
+  node: StixObjectOrStixRelationship;
+  types: Array<Maybe<Scalars['String']>>;
 };
 
 export enum StixObjectOrStixRelationshipsFilter {
@@ -17538,7 +17551,7 @@ export type Workspace = {
   id: Scalars['ID'];
   manifest?: Maybe<Scalars['String']>;
   name: Scalars['String'];
-  objects?: Maybe<StixObjectOrStixRelationshipConnection>;
+  objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   owner?: Maybe<User>;
   tags?: Maybe<Array<Maybe<Scalars['String']>>>;
   type?: Maybe<Scalars['String']>;
@@ -18379,6 +18392,8 @@ export type ResolversTypes = ResolversObject<{
   StixObjectOrStixRelationship: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
   StixObjectOrStixRelationshipConnection: ResolverTypeWrapper<StixObjectOrStixRelationshipConnection>;
   StixObjectOrStixRelationshipEdge: ResolverTypeWrapper<Omit<StixObjectOrStixRelationshipEdge, 'node'> & { node: ResolversTypes['StixObjectOrStixRelationship'] }>;
+  StixObjectOrStixRelationshipRefConnection: ResolverTypeWrapper<StixObjectOrStixRelationshipRefConnection>;
+  StixObjectOrStixRelationshipRefEdge: ResolverTypeWrapper<Omit<StixObjectOrStixRelationshipRefEdge, 'node'> & { node: ResolversTypes['StixObjectOrStixRelationship'] }>;
   StixObjectOrStixRelationshipsFilter: StixObjectOrStixRelationshipsFilter;
   StixObjectOrStixRelationshipsFiltering: StixObjectOrStixRelationshipsFiltering;
   StixObjectOrStixRelationshipsOrdering: StixObjectOrStixRelationshipsOrdering;
@@ -18906,6 +18921,8 @@ export type ResolversParentTypes = ResolversObject<{
   StixObjectOrStixRelationship: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
   StixObjectOrStixRelationshipConnection: StixObjectOrStixRelationshipConnection;
   StixObjectOrStixRelationshipEdge: Omit<StixObjectOrStixRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixObjectOrStixRelationship'] };
+  StixObjectOrStixRelationshipRefConnection: StixObjectOrStixRelationshipRefConnection;
+  StixObjectOrStixRelationshipRefEdge: Omit<StixObjectOrStixRelationshipRefEdge, 'node'> & { node: ResolversParentTypes['StixObjectOrStixRelationship'] };
   StixObjectOrStixRelationshipsFiltering: StixObjectOrStixRelationshipsFiltering;
   StixRef: Scalars['StixRef'];
   StixRelationship: ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'];
@@ -19595,7 +19612,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ContainerNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ContainerObjectsArgs>>;
+  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<ContainerObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ContainerObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ContainerOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -21742,7 +21759,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NoteNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<NoteObjectsArgs>>;
+  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<NoteObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<NoteObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NoteOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -21822,7 +21839,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   number_observed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ObservedDataObjectsArgs>>;
+  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<ObservedDataObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ObservedDataObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ObservedDataOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -21887,7 +21904,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OpinionNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<OpinionObjectsArgs>>;
+  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<OpinionObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<OpinionObservedDataArgs>>;
   opinion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<OpinionOpinionsArgs>>;
@@ -22583,7 +22600,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ReportNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ReportObjectsArgs>>;
+  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<ReportObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ReportObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ReportOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -23388,6 +23405,19 @@ export type StixObjectOrStixRelationshipConnectionResolvers<ContextType = any, P
 export type StixObjectOrStixRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipEdge'] = ResolversParentTypes['StixObjectOrStixRelationshipEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixObjectOrStixRelationshipRefConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipRefConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipRefConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixObjectOrStixRelationshipRefEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipRefEdge'] = ResolversParentTypes['StixObjectOrStixRelationshipRefEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
+  types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -24352,7 +24382,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<WorkspaceObjectsArgs>>;
+  objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<WorkspaceObjectsArgs>>;
   owner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -24712,6 +24742,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixObjectOrStixRelationship?: StixObjectOrStixRelationshipResolvers<ContextType>;
   StixObjectOrStixRelationshipConnection?: StixObjectOrStixRelationshipConnectionResolvers<ContextType>;
   StixObjectOrStixRelationshipEdge?: StixObjectOrStixRelationshipEdgeResolvers<ContextType>;
+  StixObjectOrStixRelationshipRefConnection?: StixObjectOrStixRelationshipRefConnectionResolvers<ContextType>;
+  StixObjectOrStixRelationshipRefEdge?: StixObjectOrStixRelationshipRefEdgeResolvers<ContextType>;
   StixRef?: GraphQLScalarType;
   StixRelationship?: StixRelationshipResolvers<ContextType>;
   StixRelationshipConnection?: StixRelationshipConnectionResolvers<ContextType>;

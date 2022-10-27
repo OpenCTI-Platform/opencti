@@ -33,6 +33,7 @@ import {
   reportKnowledgeGraphtMutationRelationAddMutation,
   reportKnowledgeGraphMutationRelationDeleteMutation,
   reportKnowledgeGraphQueryStixRelationshipDeleteMutation,
+  reportKnowledgeGraphQueryStixObjectDeleteMutation,
 } from './ReportKnowledgeGraphQuery';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportPopover from './ReportPopover';
@@ -50,12 +51,29 @@ export const reportKnowledgeGraphQuery = graphql`
   }
 `;
 
-const reportKnowledgeGraphCheckRelationQuery = graphql`
-  query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
-    stixRelationship(id: $id) {
-      id
-      is_inferred
+const reportKnowledgeGraphCheckObjectQuery = graphql`
+  query ReportKnowledgeGraphCheckObjectQuery($id: String!) {
+    stixObjectOrStixRelationship(id: $id) {
+      ... on BasicObject {
+        id
+      }
+      ... on StixCoreObject {
+        is_inferred
+        parent_types
+        reports {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+      ... on BasicRelationship {
+        id
+      }
       ... on StixCoreRelationship {
+        is_inferred
+        parent_types
         reports {
           edges {
             node {
@@ -65,6 +83,8 @@ const reportKnowledgeGraphCheckRelationQuery = graphql`
         }
       }
       ... on StixCyberObservableRelationship {
+        is_inferred
+        parent_types
         reports {
           edges {
             node {
@@ -74,6 +94,8 @@ const reportKnowledgeGraphCheckRelationQuery = graphql`
         }
       }
       ... on StixSightingRelationship {
+        is_inferred
+        parent_types
         reports {
           edges {
             node {
@@ -365,7 +387,10 @@ class ReportKnowledgeGraphComponent extends Component {
       `view-report-${this.props.report.id}-knowledge`,
     );
     this.zoom = R.propOr(null, 'zoom', params);
-    this.graphObjects = R.map((n) => n.node, props.report.objects.edges);
+    this.graphObjects = props.report.objects.edges.map((n) => ({
+      ...n.node,
+      types: n.types,
+    }));
     this.graphData = buildGraphData(
       this.graphObjects,
       decodeGraphData(props.report.x_opencti_graph_data),
@@ -867,19 +892,20 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
-  async handleDeleteSelected() {
+  async handleDeleteSelected(deleteObject = false) {
     // Remove selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
     R.forEach((n) => {
-      fetchQuery(reportKnowledgeGraphCheckRelationQuery, {
+      fetchQuery(reportKnowledgeGraphCheckObjectQuery, {
         id: n.id,
       })
         .toPromise()
         .then(async (data) => {
           if (
-            !data.stixRelationship.is_inferred
-            && data.stixRelationship.reports.edges.length === 1
+            deleteObject
+            && !data.stixObjectOrStixRelationship.is_inferred
+            && data.stixObjectOrStixRelationship.reports.edges.length === 1
           ) {
             commitMutation({
               mutation: reportKnowledgeGraphQueryStixRelationshipDeleteMutation,
@@ -930,14 +956,33 @@ class ReportKnowledgeGraphComponent extends Component {
       });
     }, relationshipsToRemove);
     R.forEach((n) => {
-      commitMutation({
-        mutation: reportKnowledgeGraphMutationRelationDeleteMutation,
-        variables: {
-          id: this.props.report.id,
-          toId: n.id,
-          relationship_type: 'object',
-        },
-      });
+      fetchQuery(reportKnowledgeGraphCheckObjectQuery, {
+        id: n.id,
+      })
+        .toPromise()
+        .then(async (data) => {
+          if (
+            deleteObject
+            && !data.stixObjectOrStixRelationship.is_inferred
+            && data.stixObjectOrStixRelationship.reports.edges.length === 1
+          ) {
+            commitMutation({
+              mutation: reportKnowledgeGraphQueryStixObjectDeleteMutation,
+              variables: {
+                id: n.id,
+              },
+            });
+          } else {
+            commitMutation({
+              mutation: reportKnowledgeGraphMutationRelationDeleteMutation,
+              variables: {
+                id: this.props.report.id,
+                toId: n.id,
+                relationship_type: 'object',
+              },
+            });
+          }
+        });
     }, selectedNodes);
     this.selectedNodes.clear();
     this.graphData = buildGraphData(
@@ -1195,10 +1240,14 @@ class ReportKnowledgeGraphComponent extends Component {
             nodeThreeObjectExtend={true}
             nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
             }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
-            }
+            linkColor={(link) => {
+              // eslint-disable-next-line no-nested-ternary
+              return this.selectedLinks.has(link)
+                ? theme.palette.secondary.main
+                : link.isNestedInferred
+                  ? theme.palette.warning.main
+                  : theme.palette.primary.main;
+            }}
             linkLineDash={[2, 1]}
             linkWidth={0.2}
             linkDirectionalArrowLength={3}
@@ -1288,8 +1337,17 @@ class ReportKnowledgeGraphComponent extends Component {
             onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
-            nodeCanvasObject={
-              (node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
+            nodeCanvasObject={(node, ctx) => nodePaint(
+              {
+                selected: theme.palette.secondary.main,
+                inferred: theme.palette.warning.main,
+              },
+              node,
+              node.color,
+              ctx,
+              this.selectedNodes.has(node),
+              node.isNestedInferred,
+            )
             }
             nodePointerAreaPaint={nodeAreaPaint}
             // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
@@ -1300,11 +1358,16 @@ class ReportKnowledgeGraphComponent extends Component {
               ? linkPaint(link, ctx, theme.palette.text.primary)
               : null)
             }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
+            linkColor={(link) => {
+              // eslint-disable-next-line no-nested-ternary
+              return this.selectedLinks.has(link)
+                ? theme.palette.secondary.main
+                : link.isNestedInferred
+                  ? theme.palette.warning.main
+                  : theme.palette.primary.main;
+            }}
+            linkLineDash={(link) => (link.inferred || link.isNestedInferred ? [2, 1] : null)
             }
-            linkLineDash={(link) => (link.inferred ? [2, 1] : null)}
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
             onNodeClick={this.handleNodeClick.bind(this)}
@@ -1404,6 +1467,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
         }
         objects(all: true) {
           edges {
+            types
             node {
               ... on BasicObject {
                 id

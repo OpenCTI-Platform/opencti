@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, graphql } from 'react-relay';
 import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  ContainerStixDomainObjectLine,
-  ContainerStixDomainObjectLineDummy,
-} from './ContainerStixDomainObjectLine';
+import { ContainerStixDomainObjectLine, ContainerStixDomainObjectLineDummy } from './ContainerStixDomainObjectLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
@@ -37,6 +34,8 @@ class ContainerStixDomainObjectsLines extends Component {
       deSelectedElements,
       selectAll,
     } = this.props;
+    const currentSelection = pathOr([], ['objects', 'edges'], container);
+    const selectWithoutInferred = currentSelection.filter((edge) => (edge.types ?? ['manual']).includes('manual'));
     return (
       <div>
         <ListLinesContent
@@ -67,11 +66,7 @@ class ContainerStixDomainObjectsLines extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
             containerId={propOr(null, 'id', container)}
-            containerStixCoreObjects={pathOr(
-              [],
-              ['objects', 'edges'],
-              container,
-            )}
+            containerStixCoreObjects={selectWithoutInferred}
             paginationOptions={paginationOptions}
             withPadding={true}
             targetStixCoreObjectTypes={['Stix-Domain-Object']}
@@ -156,6 +151,7 @@ export default createPaginationContainer(
           filters: $filters
         ) @connection(key: "Pagination_objects") {
           edges {
+            types
             node {
               ... on BasicObject {
                 id

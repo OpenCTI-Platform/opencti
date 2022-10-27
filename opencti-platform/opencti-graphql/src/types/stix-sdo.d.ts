@@ -191,6 +191,10 @@ interface StixMalwareAnalysis extends StixDomainObject {
   sample_ref: StixId; // optional
 }
 
+interface StixContainerExtension extends StixOpenctiExtension {
+  object_refs_inferred: Array<StixId>;
+}
+
 // Note Specific Properties
 // abstract, content, authors, object_refs
 interface StixNote extends StixDomainObject {
@@ -198,6 +202,9 @@ interface StixNote extends StixDomainObject {
   content: string;
   authors: Array<string>;
   object_refs: Array<StixId>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixContainerExtension;
+  };
 }
 
 // Observed Data Specific Properties
@@ -207,6 +214,9 @@ interface StixObservedData extends StixDomainObject {
   last_observed: Date;
   number_observed: number;
   object_refs: Array<StixId>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixContainerExtension;
+  };
 }
 
 // Opinion Specific Properties
@@ -216,6 +226,9 @@ interface StixOpinion extends StixDomainObject {
   authors: Array<string>; // optional
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree';
   object_refs: Array<StixId>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixContainerExtension;
+  };
 }
 
 // Report Specific Properties
@@ -226,6 +239,9 @@ interface StixReport extends StixDomainObject {
   report_types: Array<string>;
   published: Date;
   object_refs: Array<StixId>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixContainerExtension;
+  };
 }
 
 // Threat Actor Specific Properties

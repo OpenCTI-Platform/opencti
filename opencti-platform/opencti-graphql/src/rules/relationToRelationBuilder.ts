@@ -5,7 +5,7 @@ import { createRuleContent, RULE_MANAGER_USER } from './rules';
 import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
 import type { RuleRuntime, RuleDefinition, RelationTypes } from '../types/rules';
-import type { Event } from '../types/event';
+import type { Event, RelationCreation } from '../types/event';
 import type { BasicStoreRelation, StoreObject } from '../types/store';
 import type { StixRelation } from '../types/stix-sro';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
@@ -51,10 +51,10 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
             stop_time: range.end,
             objectMarking: elementMarkings,
           });
-          const event = await createInferredRelation(context, input, ruleContent) as Event;
+          const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
           // Re inject event if needed
-          if (event) {
-            events.push(event);
+          if (inferredRelation.event) {
+            events.push(inferredRelation.event);
           }
         }
       };
@@ -85,10 +85,10 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
             stop_time: range.end,
             objectMarking: elementMarkings,
           });
-          const event = await createInferredRelation(context, input, ruleContent) as Event;
+          const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
           // Re inject event if needed
-          if (event) {
-            events.push(event);
+          if (inferredRelation.event) {
+            events.push(inferredRelation.event);
           }
         }
       };
