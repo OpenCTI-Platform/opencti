@@ -33,14 +33,12 @@ const styles = (theme) => ({
   },
   bodyItem: {
     float: 'left',
-    height: '48px',
     display: 'flex',
     overflow: 'hidden',
-    fontSize: '13px',
     alignItems: 'center',
-    whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     justifyContent: 'left',
+    marginRight: '1rem',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -73,6 +71,8 @@ class RemediationEntityLineComponent extends Component {
       riskId,
       node,
       paginationOptions,
+      location,
+      remediationId,
     } = this.props;
 
     const SourceOfDetection = R.pipe(
@@ -174,12 +174,12 @@ class RemediationEntityLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <RemediationPopover
+        {location.pathname.includes(`/activities/risk assessment/risks/${riskId}/remediation/${remediationId}`) && <RemediationPopover
             cyioCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             history={history}
             riskId={riskId}
-          />
+          />}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -198,6 +198,7 @@ RemediationEntityLineComponent.propTypes = {
   fldt: PropTypes.func,
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
+  location: PropTypes.object,
 };
 
 const RemediationEntityLineFragment = createFragmentContainer(

@@ -45,13 +45,13 @@ class TopMenuRisk extends Component {
       remediation,
     } = this.props;
     return (
-      <>
-        {
-          location.pathname.includes('/remediation/')
-            ? <TopBarBreadcrumbs riskId={riskId} risk={risk} remediation={remediation}/>
-            : (
+    // <>
+    //   {
+    //     location.pathname.includes('/remediation/')
+    //       ? <TopBarBreadcrumbs riskId={riskId} risk={risk} remediation={remediation}/>
+    //       : (
               <div className={classes.riskMenuContainer}>
-                <TopBarBreadcrumbs risk={risk} riskId={riskId}/>
+                {/* <TopBarBreadcrumbs risk={risk} riskId={riskId}/> */}
                 <Button
                   component={Link}
                   to={`/activities/risk assessment/risks/${riskId}`}
@@ -185,9 +185,6 @@ class TopMenuRisk extends Component {
                   {t('TRACKING')}
                 </Button>
               </div>
-            )
-        }
-      </>
     );
   }
 }
