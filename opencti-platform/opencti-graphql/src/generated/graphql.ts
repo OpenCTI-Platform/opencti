@@ -23058,8 +23058,8 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessExportFilesArgs>>;
   extensions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ProcessExternalReferencesArgs>>;
-  groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ProcessGroupingsArgs>>;
   group_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ProcessGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ProcessIndicatorsArgs>>;
