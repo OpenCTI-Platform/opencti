@@ -520,8 +520,8 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   const resolveLabels = await elFindByIds(context, user, data.map((d) => d.label), { toMap: true });
   return data // Depending of user access, info can be empty, must be filtered
-    .filter((n) => isNotEmptyField(resolveLabels[n.label]))
-    .map((n) => R.assoc('entity', resolveLabels[n.label], n));
+    .filter((n) => isNotEmptyField(resolveLabels[n.label.toLowerCase()]))
+    .map((n) => R.assoc('entity', resolveLabels[n.label.toLowerCase()], n));
 };
 export const timeSeriesEntities = async (context, user, entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
