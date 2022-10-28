@@ -45,7 +45,7 @@ import {
   UPDATE_OPERATION_REMOVE,
 } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
-import { TYPE_LOCK_ERROR } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
@@ -255,6 +255,9 @@ const executeRuleApply = async (context, user, actionContext, element) => {
   const { rule } = actionContext;
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, element.internal_id);
+  if (!instance) {
+    throw FunctionalError('Cant find element to scan', { id: element.internal_id });
+  }
   const event = await buildCreateEvent(user, instance, '-');
   await rulesApplyHandler(context, user, [event], [rule]);
 };

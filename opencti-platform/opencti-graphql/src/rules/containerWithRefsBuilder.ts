@@ -21,7 +21,12 @@ import type { BasicStoreRelation, StoreEntity, StoreObject } from '../types/stor
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations } from '../database/middleware-loader';
 import type { DependenciesDeleteEvent, Event, RelationCreation, RuleEvent, UpdateEvent } from '../types/event';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../database/utils';
+import {
+  generateUpdateMessage,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+  UPDATE_OPERATION_REPLACE
+} from '../database/utils';
 import { storeUpdateEvent } from '../database/redis';
 import type { AuthContext } from '../types/user';
 import { executionContext } from '../utils/access';
@@ -79,8 +84,10 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     }
     if (createdTargets.length > 0) {
       const updatedReport = { ...report };
+      const inputs = [{ key: INPUT_OBJECTS, value: createdTargets, operation: UPDATE_OPERATION_ADD }];
+      const message = generateUpdateMessage(inputs);
       updatedReport[INPUT_OBJECTS] = [...(updatedReport[INPUT_OBJECTS] ?? []), ...createdTargets];
-      await storeUpdateEvent(context, RULE_MANAGER_USER, report, updatedReport, 'Rule update');
+      await storeUpdateEvent(context, RULE_MANAGER_USER, report, updatedReport, message);
     }
   };
   const handleReportCreation = async (context: AuthContext, report: StixReport, addedIdentityRefs: Array<string>) => {

@@ -1,8 +1,9 @@
 import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
 import { findById } from '../domain/user';
-import { SYSTEM_USER } from '../utils/access';
+import { RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { RULE_MANAGER_USER } from '../rules/rules';
 
 const logResolvers = {
   Query: {
@@ -12,7 +13,11 @@ const logResolvers = {
   },
   Log: {
     user: async (log, _, context) => {
-      const findUser = await findById(context, context.user, log.applicant_id || log.user_id);
+      const userId = log.applicant_id || log.user_id;
+      if (userId === SYSTEM_USER.id) return SYSTEM_USER;
+      if (userId === RULE_MANAGER_USER.id) return RULE_MANAGER_USER;
+      if (userId === RETENTION_MANAGER_USER.id) return RETENTION_MANAGER_USER;
+      const findUser = await findById(context, context.user, userId);
       return findUser || SYSTEM_USER;
     },
   },

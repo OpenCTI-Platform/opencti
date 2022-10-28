@@ -41,7 +41,7 @@ export const RULE_MANAGER_USER = {
   internal_id: RULE_MANAGER_USER_UUID,
   name: 'RULE MANAGER',
   user_email: 'RULE MANAGER',
-  origin: {},
+  origin: { user_id: RULE_MANAGER_USER_UUID },
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
   allowed_marking: [],
