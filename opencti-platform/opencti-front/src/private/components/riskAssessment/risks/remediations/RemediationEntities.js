@@ -79,6 +79,7 @@ class RemediationEntities extends Component {
       classes,
       history,
       riskId,
+      location,
     } = this.props;
     const dataColumns = {
       relationship_type: {
@@ -122,10 +123,10 @@ class RemediationEntities extends Component {
         <QueryRenderer
           query={remediationEntitiesQuery}
           variables={{ id: entityId }}
-          render={({ props }) => {
+          render={({ props, retry }) => {
             if (props) {
               return (
-                <RemediationEntitiesLines
+                  <RemediationEntitiesLines
                   risk={props.risk}
                   paginationOptions={paginationOptions}
                   history={history}
@@ -134,11 +135,13 @@ class RemediationEntities extends Component {
                   displayRelation={true}
                   riskId={riskId}
                   entityId={entityId}
+                  refreshQuery={retry}
+                  location={location}
                 />
               );
             }
             return (
-              <div style={{ height: '100%' }}>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem
@@ -226,7 +229,7 @@ class RemediationEntities extends Component {
                     </ListItem>
                   ))}
                 </List>
-              </div>
+              </Paper>
             );
           }}
         />
@@ -241,7 +244,7 @@ class RemediationEntities extends Component {
       orderAsc,
       searchTerm,
     } = this.state;
-    const { classes, entityId } = this.props;
+    const { entityId } = this.props;
     const paginationOptions = {
       elementId: entityId,
       search: searchTerm,
@@ -251,9 +254,7 @@ class RemediationEntities extends Component {
     return (
       <div style={{ height: '100%' }}>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        </Paper>
       </div>
     );
   }
@@ -267,6 +268,7 @@ RemediationEntities.propTypes = {
   risk: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default compose(

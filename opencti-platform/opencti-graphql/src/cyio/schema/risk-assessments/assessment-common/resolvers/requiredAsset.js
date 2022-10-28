@@ -1,5 +1,5 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {compareValues, updateQuery, filterValues, CyioError} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -188,7 +188,7 @@ const requiredAssetResolvers = {
             queryId: "Obtaining IRI for Link object with id",
             singularizeSchema
           });
-          if (result === undefined || result.length === 0) throw new UserInputError(`Link object does not exist with ID ${taskId}`);
+          if (result === undefined || result.length === 0) throw new CyioError(`Link object does not exist with ID ${taskId}`);
           links.push(`<${result[0].iri}>`);
         }
         delete input.links;
@@ -202,7 +202,7 @@ const requiredAssetResolvers = {
             queryId: "Obtaining IRI for Remark object with id",
             singularizeSchema
           });
-          if (result === undefined || result.length === 0) throw new UserInputError(`Remark object does not exist with ID ${taskId}`);
+          if (result === undefined || result.length === 0) throw new CyioError(`Remark object does not exist with ID ${taskId}`);
           remarks.push(`<${result[0].iri}>`);
         }
         delete input.remarks;
@@ -225,7 +225,7 @@ const requiredAssetResolvers = {
             throw e
           }
   
-          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${subject.subject_ref}`);
+          if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${subject.subject_ref}`);
           subject.subject_ref = result[0].iri;
         }
       }
@@ -340,7 +340,7 @@ const requiredAssetResolvers = {
         throw e
       }
 
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       let reducer = getReducer("REQUIRED-ASSET");
       const requiredAsset = (reducer(response[0]));
       
@@ -395,10 +395,13 @@ const requiredAssetResolvers = {
       let targetIri, relationshipQuery, query;
 
       // make sure there is input data containing what is to be edited
-      if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+      if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+
+      // TODO: WORKAROUND to remove immutable fields
+      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','modified'];
+      let editSelect = ['id','created','modified'];
       for (let editItem of input) {
         editSelect.push(editItem.key);
       }
@@ -410,12 +413,18 @@ const requiredAssetResolvers = {
         queryId: "Select Required Asset",
         singularizeSchema
       });
-      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       targetIri = response[0].iri;
 
       // determine operation, if missing
       for (let editItem of input) {
         if (editItem.operation !== undefined) continue;
+
+        // if value if empty then treat as a remove
+        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+          editItem.operation = 'remove';
+          continue;
+        }
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
@@ -425,7 +434,13 @@ const requiredAssetResolvers = {
 
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
-      let update = {key: "modified", value:[`${timestamp}`], operation: "replace"}
+      if (!response[0].hasOwnProperty('created')) {
+        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        input.push(update);
+      }
+      let operation = "replace";
+      if (!response[0].hasOwnProperty('modified')) operation = "add";
+      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
 
       // obtain the IRIs for the referenced objects so that if one doesn't 
@@ -457,7 +472,7 @@ const requiredAssetResolvers = {
                     console.log(e)
                     throw e
                   }
-                  if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${obj.subject_ref}`);
+                  if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${obj.subject_ref}`);
                   subject.subject_ref = result[0].iri;
 
                   // check if there is a corresponding replacement subject already exists
@@ -474,7 +489,7 @@ const requiredAssetResolvers = {
                     console.log(e)
                     throw e
                   }
-                  if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${obj.subject_ref}`);
+                  if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${obj.subject_ref}`);
                   for (let sub of result) {
                     if (sub.subject_type !== subject.subject_type) continue;
                     if (sub.subject_ref[0] == subject.subject_ref) {

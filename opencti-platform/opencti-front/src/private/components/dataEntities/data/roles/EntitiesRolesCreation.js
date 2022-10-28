@@ -91,6 +91,8 @@ class EntitiesRolesCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
       R.assoc('name', values.name),
+      R.dissoc('created'),
+      R.dissoc('modified'),
     )(values);
     commitMutation({
       mutation: entitiesRolesCreationMutation,
@@ -98,10 +100,13 @@ class EntitiesRolesCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/data/entities/responsibility',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        this.props.handleRoleCreation();
+        this.props.history.push('/data/entities/responsibility');
       },
       onError: () => {
         toastGenericError('Failed to create responsibility');
@@ -159,6 +164,9 @@ class EntitiesRolesCreation extends Component {
               name: '',
               created: null,
               modified: null,
+              short_name: '',
+              role_identifier: '',
+              description: '',
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}

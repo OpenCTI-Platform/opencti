@@ -7,6 +7,8 @@ import * as Yup from 'yup';
 import {
   compose,
   evolve,
+  pipe,
+  assoc,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -37,7 +39,6 @@ import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
 import { toastGenericError } from "../../../../utils/bakedToast";
-import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -132,7 +133,6 @@ class RiskLogCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       open: false,
       onSubmit: false,
       displayCancel: false,
@@ -152,7 +152,7 @@ class RiskLogCreation extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, displayCancel: false });
   }
 
   onSubmit(values, { setSubmitting }) {
@@ -166,8 +166,8 @@ class RiskLogCreation extends Component {
       values,
     );
 
-    const finalValues = R.pipe(
-      R.assoc('logged_by', this.state.logged_by),
+    const finalValues = pipe(
+      assoc('logged_by', this.state.logged_by),
     )(adaptedValues)
     commitMutation({
       mutation: RiskLogCreationMutation,
@@ -175,6 +175,7 @@ class RiskLogCreation extends Component {
         input: adaptedValues,
       },
       setSubmitting,
+      pathname: `/activities/risk assessment/risks/${this.props.riskId}/tracking`,
       onCompleted: (response) => {
         setSubmitting(false);
         this.handleClose();
@@ -182,8 +183,6 @@ class RiskLogCreation extends Component {
       },
       onError: (err) => {
         toastGenericError("Failed to create Risk Log");
-        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors));
-        this.setState({ error: ErrorResponse });
         setSubmitting(false);
       },
     });
@@ -616,10 +615,6 @@ class RiskLogCreation extends Component {
               </Form>
             )}
           </Formik>
-          <ErrorBox
-            error={this.state.error}
-            pathname={`/activities/risk assessment/risks/${riskId}/tracking`}
-          />
         </Dialog>
         <Dialog
           open={this.state.displayCancel}
@@ -646,7 +641,7 @@ class RiskLogCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${riskId}/tracking`)}
+              onClick={() => this.handleClose()}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}

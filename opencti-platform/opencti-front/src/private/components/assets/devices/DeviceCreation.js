@@ -30,7 +30,6 @@ import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_obje
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import { toastGenericError } from "../../../../utils/bakedToast";
 import DeviceCreationDetails from './DeviceCreationDetails';
-import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -120,7 +119,6 @@ class DeviceCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       open: false,
       onSubmit: false,
       displayCancel: false,
@@ -160,10 +158,9 @@ class DeviceCreation extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/devices');
       },
-      onError: (err) => {
+      pathname: '/defender HQ/assets/devices',
+      onError: () => {
         toastGenericError("Failed to create Device");
-        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors))
-        this.setState({ error: ErrorResponse });
       }
     });
     // commitMutation({
@@ -247,7 +244,7 @@ class DeviceCreation extends Component {
             hostname: '',
             default_gateway: '',
             labels: [],
-            asset_type: 'physical_device',
+            asset_type: 'computing_device',
             mac_address: [],
             installed_operating_system: '',
             installed_hardware: [],
@@ -275,7 +272,6 @@ class DeviceCreation extends Component {
                 >
                   {t('New Asset')}
                 </Typography>
->>>>>>> 4bd77bde514624cb687e167327902846a7d05db0
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
                     <Button
@@ -388,10 +384,6 @@ class DeviceCreation extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <ErrorBox
-          error={this.state.error}
-          pathname='/defender HQ/assets/devices'
-        />
       </div>
     );
   }

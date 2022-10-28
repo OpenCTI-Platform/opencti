@@ -57,6 +57,27 @@ class LocationsEntities extends Component {
     );
   }
 
+  componentWillUnmount() {
+    const {
+      sortBy,
+      orderAsc,
+    } = this.state;
+    const paginationOptions = {
+      sortBy,
+      orderAsc,
+      filters: [],
+    };
+    if (this.props.history.location.pathname !== '/data/entities/locations'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-locations',
+        paginationOptions,
+      );
+    }
+  }
+
   handleChangeView(mode) {
     this.setState({ view: mode }, () => this.saveView());
   }
@@ -138,13 +159,13 @@ class LocationsEntities extends Component {
               ]),
             this.state.filters,
           ),
-        },
+        }, () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
+        }, () => this.saveView(),
       );
     }
   }

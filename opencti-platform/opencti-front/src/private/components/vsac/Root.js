@@ -21,7 +21,7 @@ class Root extends Component {
         />
          <BoundaryRoute
           exact
-          path="/activities/vulnerability assessment/scans/explore results"
+          path="/activities/vulnerability assessment/scans/explore results/:exploreResultId"
           render={(routeProps) => (
             <ExploreResults {...routeProps} me={me} displayCreate={true} />
           )}

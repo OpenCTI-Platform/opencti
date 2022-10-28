@@ -92,6 +92,8 @@ class EntitiesAssessmentPlatformsCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
       R.assoc('name', values.name),
+      R.dissoc('created'),
+      R.dissoc('modified'),
     )(values);
     commitMutation({
       mutation: entitiesAssessmentPlatformssCreationMutation,
@@ -99,9 +101,11 @@ class EntitiesAssessmentPlatformsCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/data/entities/assessment_platform',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
+        this.props.history.push('/data/entities/assessment_platform');
         this.handleClose();
       },
       onError: () => {
@@ -158,8 +162,6 @@ class EntitiesAssessmentPlatformsCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               name: '',
-              created: null,
-              modified: null,
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -322,10 +324,10 @@ class EntitiesAssessmentPlatformsCreation extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('User Component(s)')}
+                        {t('Uses Component(s)')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('User Component(s)')} >
+                        <Tooltip title={t('Uses Component(s)')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>

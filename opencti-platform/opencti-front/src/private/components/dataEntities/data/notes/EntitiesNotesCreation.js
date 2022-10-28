@@ -20,7 +20,9 @@ import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
+import { UserContext } from '../../../../../utils/Security';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import { commitMutation, fetchQuery } from '../../../../../relay/environment';
 
 const styles = (theme) => ({
   dialogClosebutton: {
@@ -73,6 +75,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 class EntitiesNotesCreation extends Component {
+  static contextType = UserContext;
   constructor(props) {
     super(props);
     this.state = {
@@ -104,15 +107,13 @@ class EntitiesNotesCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data) => {
+      pathname: '/data/entities/notes',
+      onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.props.history.push('/data/entities/notes');
       },
-      onError: (err) => {
-        console.error(err);
-        toastGenericError('Failed to create new note');
-      },
+      onError: () => toastGenericError('Failed to create new note'),
     });
     // commitMutation({
     //   mutation: entitiesNotesCreationMutation,
@@ -151,11 +152,10 @@ class EntitiesNotesCreation extends Component {
       t,
       classes,
       openDataCreation,
-      handleNoteCreation,
       open,
-      me,
       history,
     } = this.props;
+    const { me } = this.context;
     return (
       <>
         <Dialog
@@ -282,7 +282,6 @@ EntitiesNotesCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  me: PropTypes.object,
 };
 
 export default compose(

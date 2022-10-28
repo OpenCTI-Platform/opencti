@@ -137,6 +137,7 @@ class EntitiesPartiesCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/data/entities/parties',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();

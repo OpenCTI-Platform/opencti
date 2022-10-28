@@ -4,7 +4,8 @@ import {
   parameterizePredicate, 
   buildSelectVariables, 
   generateId, 
-  OSCAL_NS
+  OSCAL_NS,
+  CyioError
 } from "../../../utils.js";
 import {
   oscalPartyReducer,
@@ -666,13 +667,13 @@ export const selectAllActivities = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -834,13 +835,13 @@ export const selectAllActors = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -965,13 +966,13 @@ export const selectAllAssessmentAssets = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1144,13 +1145,13 @@ export const selectAllAssessmentPlatforms = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1338,13 +1339,13 @@ export const selectAllAssessmentSubjects = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1488,13 +1489,13 @@ export const selectAllAssociatedActivities = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1646,13 +1647,13 @@ export const selectAllCharacterizations = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1836,13 +1837,13 @@ export const selectAllEvidence = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -2029,13 +2030,13 @@ export const selectAllFacets = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -2137,7 +2138,7 @@ export const insertLogEntryAuthorQuery = (propValues) => {
 export const insertLogEntryAuthorsQuery = (authors) => {
   const graphs = [], authorIris = [];
   authors.forEach((author) => {
-    if (author.party === undefined) throw new UserInputError(`Party ID not specified for LogEntryAuthor`); 
+    if (author.party === undefined) throw new CyioError(`Party ID not specified for LogEntryAuthor`); 
     const id = generateId( );
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor-${id}>`;
@@ -2197,13 +2198,13 @@ export const selectAllLogEntryAuthors = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -2356,13 +2357,13 @@ export const selectAllMitigatingFactors = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -2505,13 +2506,13 @@ export const selectAllObservations = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -2692,13 +2693,13 @@ export const selectAllOrigins = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -2921,13 +2922,13 @@ export const selectAllRequiredAssets = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -3192,13 +3193,13 @@ export const selectAllRisks = (select, args, parent) => {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (filter === undefined || filter === null) continue;
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -3442,13 +3443,13 @@ export const selectAllRiskLogEntries = (select, args, parent) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -3639,13 +3640,13 @@ export const selectAllRiskResponses = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -3833,7 +3834,7 @@ export const selectAllSubjects = (select, args, parent) => {
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -4015,13 +4016,13 @@ export const selectAllOscalTasks = (select, args) => {
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+        if (!select.includes(filter.key)) select.push( filter.key );
       }
     }
     
     // add value of orderedBy's key to cause special predicates to be included
     if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 

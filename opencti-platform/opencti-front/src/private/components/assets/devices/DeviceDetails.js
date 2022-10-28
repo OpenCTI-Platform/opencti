@@ -114,7 +114,7 @@ class DeviceDetailsComponent extends Component {
                     className={classes.link}
                     onClick={() => (history.push(`/defender HQ/assets/software/${device.installed_operating_system.id}`))}
                   >
-                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.installed_operating_system.name)}
+                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.installed_operating_system.name)} {t(device.installed_operating_system.version || " ")}
                   </Link>}
               </div>
               <div style={{ marginBottom: '10px' }}>
@@ -146,7 +146,7 @@ class DeviceDetailsComponent extends Component {
                             software.id && history.push(`/defender HQ/assets/software/${software.id}`)
                           )}
                         >
-                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)}
+                          <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)} {t(software.version || " ")}
                         </Link>}
                     </div>
                   ))}
@@ -693,6 +693,7 @@ const DeviceDetails = createFragmentContainer(
         installed_software {
           id
           name
+          version
         }
         connected_to_network {
           id
@@ -701,6 +702,7 @@ const DeviceDetails = createFragmentContainer(
         installed_operating_system {
           id
           name
+          version
         }
         ipv4_address  {
           ip_address_value

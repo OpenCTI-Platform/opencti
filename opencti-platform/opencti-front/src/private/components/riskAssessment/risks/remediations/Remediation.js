@@ -149,13 +149,17 @@ class RemediationComponent extends Component {
             risk={risk}
             riskId={riskId}
           />
-          <RemediationCreation
-            remediationId={remediation.id}
-            riskId={riskId}
-            history={history}
-            openCreation={this.state.openCreation}
-            handleOpenCreation={this.handleOpenCreation.bind(this)}
-        />
+          {this.state.openCreation 
+            && <RemediationCreation
+                  remediationId={remediation.id}
+                  riskId={riskId}
+                  history={history}
+                  openCreation={this.state.openCreation}
+                  handleOpenCreation={this.handleOpenCreation.bind(this)}
+                  handleCreation={this.handleOpen.bind(this)}
+                  refreshQuery={refreshQuery}
+                />
+          }          
         </div>
         {/* <RemediationEdition
             open={this.state.openEdit}
