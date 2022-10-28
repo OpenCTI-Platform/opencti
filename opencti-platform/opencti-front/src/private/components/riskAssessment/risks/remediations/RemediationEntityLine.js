@@ -71,8 +71,6 @@ class RemediationEntityLineComponent extends Component {
       riskId,
       node,
       paginationOptions,
-      location,
-      remediationId,
     } = this.props;
 
     const SourceOfDetection = R.pipe(

@@ -62,6 +62,7 @@ class RemediationComponent extends Component {
       risk,
       riskId,
       history,
+      location,
     } = this.props;
     return (
       <>
@@ -158,6 +159,7 @@ class RemediationComponent extends Component {
                   handleOpenCreation={this.handleOpenCreation.bind(this)}
                   handleCreation={this.handleOpen.bind(this)}
                   refreshQuery={refreshQuery}
+                  location={location}
                 />
           }          
         </div>
@@ -180,6 +182,7 @@ RemediationComponent.propTypes = {
   risk: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
+  location: PropTypes.object,
 };
 
 const Remediation = createFragmentContainer(RemediationComponent, {
