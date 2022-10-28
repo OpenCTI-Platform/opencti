@@ -196,23 +196,30 @@ class DataSources extends Component {
       history,
     } = this.props;
     const dataColumns = {
-      type: {
-        label: 'Type',
-      },
       name: {
         label: 'Name',
+        width: '16%',
+        isSortable: true,
       },
-      author: {
-        label: 'Author',
+      type: {
+        label: 'Type',
+        width: '14%',
+        isSortable: false,
       },
-      labels: {
-        label: 'Labels',
+      status: {
+        label: 'Status',
+        width: '16%',
+        isSortable: false,
       },
-      creation_date: {
-        label: 'Creation Date',
+      trigger: {
+        label: 'Trigger',
+        width: '20%',
+        isSortable: false,
       },
-      marking: {
-        label: 'Marking',
+      count: {
+        label: 'Count',
+        width: '12%',
+        isSortable: false,
       },
     };
     return (
@@ -286,35 +293,30 @@ class DataSources extends Component {
       history,
     } = this.props;
     const dataColumns = {
-      type: {
-        label: 'Type',
-        width: '14%',
-        isSortable: false,
-      },
       name: {
         label: 'Name',
         width: '16%',
         isSortable: true,
       },
-      author: {
-        label: 'Author',
+      type: {
+        label: 'Type',
+        width: '14%',
+        isSortable: false,
+      },
+      status: {
+        label: 'Status',
         width: '16%',
         isSortable: false,
       },
-      label_name: {
-        label: 'Labels',
+      trigger: {
+        label: 'Trigger',
         width: '20%',
-        isSortable: true,
+        isSortable: false,
       },
-      created: {
-        label: 'Creation Date',
+      count: {
+        label: 'Count',
         width: '12%',
-        isSortable: true,
-      },
-      marking: {
-        label: 'Marking',
-        width: '12%',
-        isSortable: true,
+        isSortable: false,
       },
     };
     return (

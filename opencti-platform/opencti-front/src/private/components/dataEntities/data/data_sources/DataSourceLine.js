@@ -88,21 +88,25 @@ class DataSourceLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
-              >
-                {node.entity_type && t(node.entity_type)}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.type.width }}
+              >
+                {node.entity_type && t(node.entity_type)}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: '16.5%' }}
               >
-                {/* {node.entity_type && node.entity_type} */}
+                <CyioCoreObjectLabels
+                  variant="inList"
+                  labels={node.labels}
+                  onClick={onLabelClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -116,13 +120,13 @@ class DataSourceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.trigger.width }}
               >
                 {node.created && fd(node.created)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
+                style={{ width: dataColumns.count.width }}
               >
                 {/* {node?.parent_types && t(node.parent_types)} */}
               </div>
@@ -259,7 +263,7 @@ class DataSourceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.trigger.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -270,7 +274,7 @@ class DataSourceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
+                style={{ width: dataColumns.count.width }}
               >
                 <Skeleton
                   animation="wave"
