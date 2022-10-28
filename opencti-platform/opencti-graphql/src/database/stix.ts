@@ -24,6 +24,7 @@ import {
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -128,6 +129,7 @@ import { logApp } from '../config/conf';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
+  RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
@@ -1197,6 +1199,9 @@ export const checkStixCyberObservableRelationshipMapping = (fromType: string, to
 
 export const checkMetaRelationship = (fromType: string, toType: string, relationshipType: string): boolean => {
   switch (relationshipType) {
+    case RELATION_GRANTED_TO:
+      return !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType) || isStixDomainObjectLocation(fromType))
+        && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType;
     case RELATION_CREATED_BY:
       return isStixDomainObjectIdentity(toType);
     case RELATION_OBJECT_MARKING:
