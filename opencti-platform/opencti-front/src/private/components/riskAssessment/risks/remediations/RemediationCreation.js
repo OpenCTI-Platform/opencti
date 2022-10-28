@@ -27,7 +27,6 @@ import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
 import { toastGenericError } from '../../../../../utils/bakedToast';
-import ErrorBox from '../../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -103,7 +102,6 @@ class RemediationCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       anchorEl: null,
       details: false,
       close: false,
@@ -133,6 +131,10 @@ class RemediationCreation extends Component {
     this.setState({ close: true });
   }
 
+  handleCancelClose() {
+    this.setState({ close: false });
+  }
+
   handleCancelCloseClick() {
     this.setState({ close: false });
     this.props.handleOpenCreation();
@@ -158,6 +160,7 @@ class RemediationCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: `/activities/risk assessment/risks/${this.props.riskId}/remediation`,
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
@@ -167,8 +170,6 @@ class RemediationCreation extends Component {
       },
       onError: (err) => {
         toastGenericError('Failed to create Remediation');
-        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors));
-        this.setState({ error: ErrorResponse });
       },
     });
     this.setState({ onSubmit: true });
@@ -369,7 +370,7 @@ class RemediationCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
-                      <Source
+                      {this.props.openCreation && <Source
                         variant='outlined'
                         values={values}
                         setFieldValue={setFieldValue}
@@ -377,7 +378,7 @@ class RemediationCreation extends Component {
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '50%', padding: '0 0 12px 0' }}
-                      />
+                      />}
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
@@ -396,14 +397,14 @@ class RemediationCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
-                      <ResponseType
+                      {this.props.openCreation && <ResponseType
                         variant='outlined'
                         name='response_type'
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                      />
+                      />}
                     </Grid>
                     <Grid item={true} xs={6}>
                       <Typography
@@ -420,14 +421,14 @@ class RemediationCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
-                      <RiskLifeCyclePhase
+                      {this.props.openCreation && <RiskLifeCyclePhase
                         variant='outlined'
                         name='lifecycle'
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                      />
+                      />}
                     </Grid>
                   </Grid>
                 </DialogContent>
@@ -454,10 +455,6 @@ class RemediationCreation extends Component {
               </Form>
             )}
           </Formik>
-          <ErrorBox
-            error={this.state.error}
-            pathname={`/activities/risk assessment/risks/${this.props.riskId}/remediation`}
-          />
         </Dialog>
         <Dialog
           open={this.state.close}
@@ -477,7 +474,7 @@ class RemediationCreation extends Component {
               // onClick={this.handleCloseDelete.bind(this)}
               // disabled={this.state.deleting}
               // onClick={handleReset}
-              onClick={this.handleCancelCloseClick.bind(this)}
+              onClick={this.handleCancelClose.bind(this)}
               classes={{ root: classes.buttonPopover }}
               variant='outlined'
               size='small'

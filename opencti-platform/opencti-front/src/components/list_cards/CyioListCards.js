@@ -64,7 +64,8 @@ const styles = (theme) => ({
     // boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
   dataEntities: {
-    width: '180px',
+    minWidth: '180px',
+    width: 'auto',
   },
   parameters: {
     // float: 'left',
@@ -85,6 +86,19 @@ const styles = (theme) => ({
     float: 'right',
     marginTop: '5px',
     padding: '14px 10px 12px 18px',
+  },
+  menuItems: {
+    display: 'flex',
+    placeItems: 'center',
+  },
+  menuItemText: {
+    width: '100%',
+    paddingLeft: '10px',
+  },
+  iconsContainer: {
+    minWidth: '20px',
+    display: 'flex',
+    justifyContent: 'center',
   },
   selectedViews: {
     width: '430px',
@@ -257,79 +271,130 @@ class CyioListCards extends Component {
                   variant='outlined'
                   label='Data Types'
                   value={selectedDataEntity}
-                  className={classes.dataEntitiesSelect}
                 >
                   <MenuItem
                     component={Link}
                     to='/data/entities/responsibility'
                     value='responsibility'
                   >
-                    <img src={roles} className={classes.icon} alt="" />
-                    {t('Responsibility')}
+                  <div className={ classes.menuItems }>
+                    <div className={classes.iconsContainer}>
+                      <img src={roles} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Responsibility')}
+                    </div>
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/locations'
                     value='locations'
                   >
-                    <img src={locations} className={classes.icon} alt="" />
-                    {t('Locations')}
+                  <div className={ classes.menuItems }>
+                    <div className={classes.iconsContainer}>
+                      <img src={locations} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Locations')}
+                    </div>
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/parties'
                     value='parties'
                   >
-                    <img src={parties} className={classes.icon} alt="" />
-                    {t('Parties')}
+                  <div className={ classes.menuItems }>
+                    <div className={classes.iconsContainer}>
+                      <img src={parties} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Parties')}
+                    </div>
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/responsible_parties'
                     value='responsible_parties'
                   >
-                    <img src={responsiblePartiesIcon} style={{ marginRight: '12px' }} alt="" />
-                    {t('Responsible Parties')}
+                  <div className={ classes.menuItems }>
+                    <div className={classes.iconsContainer}>
+                      <img src={responsiblePartiesIcon} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Responsible Parties')}
+                    </div>
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/tasks'
                     value='tasks'
                   >
-                    <img src={tasksIcon} className={classes.icon} alt="" />
-                    {t('Tasks')}
+                  <div className={ classes.menuItems }>
+                    <div className={classes.iconsContainer}>
+                      <img src={tasksIcon} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Tasks')}
+                    </div>
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/assessment_platform'
                     value='assessment_platform'
                   >
-                    <img src={assessmentPlatform} className={classes.icon} alt="" />
-                    {t('Assessment Platform')}
+                  <div className={ classes.menuItems }>
+                    <div className={classes.iconsContainer}>
+                      <img src={assessmentPlatform} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Assessment Platform')}
+                    </div>
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/notes'
                     value='notes'
                   >
-                    <img src={notes} className={classes.icon} alt="" />
-                    {t('Notes')}
+                    <div className={classes.iconsContainer}>
+                      <img src={notes} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Notes')}
+                    </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/labels'
                     value='labels'
                   >
-                    <img src={labels} className={classes.icon} alt="" />
-                    {t('Labels')}
+                  <div className={ classes.menuItems }>
+                    <div className={classes.iconsContainer}>
+                      <img src={labels} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('Labels')}
+                    </div>
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/external_references'
                     value='external_references'
                   >
-                    <img src={externalReferenceIcon} className={classes.icon} alt="" />
-                    {t('External References')}
+                  <div className={ classes.menuItems }>
+                    <div className={classes.iconsContainer}>
+                      <img src={externalReferenceIcon} alt="" />
+                    </div>
+                    <div className={classes.menuItemText}>
+                      {t('External References')}
+                    </div>
+                  </div>
                   </MenuItem>
                 </Select>
               </FormControl>
