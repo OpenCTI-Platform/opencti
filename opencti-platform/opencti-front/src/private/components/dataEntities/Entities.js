@@ -186,6 +186,7 @@ class Entities extends Component {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
+        disabled={true}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
@@ -271,6 +272,8 @@ class Entities extends Component {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
+        noHeaders={true}
+        disabled={true}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
