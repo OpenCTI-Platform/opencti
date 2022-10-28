@@ -177,7 +177,6 @@ const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description', 'confidence'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence', 'explanation'],
   [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description', 'confidence'],
-  [ENTITY_TYPE_CONTAINER_GROUPING]: ['name', 'revoked', 'description', 'confidence', 'context'],
   [ENTITY_TYPE_COURSE_OF_ACTION]: [
     'name',
     'revoked',
