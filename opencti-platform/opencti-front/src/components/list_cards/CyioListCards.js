@@ -361,12 +361,14 @@ class CyioListCards extends Component {
                     to='/data/entities/notes'
                     value='notes'
                   >
+                  <div className={ classes.menuItems }>
                     <div className={classes.iconsContainer}>
                       <img src={notes} alt="" />
                     </div>
                     <div className={classes.menuItemText}>
                       {t('Notes')}
                     </div>
+                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
