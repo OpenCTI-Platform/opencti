@@ -283,7 +283,7 @@ const executeRuleApply = async (context, user, actionContext, element) => {
   if (!instance) {
     throw FunctionalError('Cant find element to scan', { id: element.internal_id });
   }
-  const event = await buildCreateEvent(user, instance, '-');
+  const event = await buildCreateEvent(user, instance, '-', {});
   await rulesApplyHandler(context, user, [event], [rule]);
 };
 const executeRuleClean = async (context, user, actionContext, element) => {
