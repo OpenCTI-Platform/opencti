@@ -2608,116 +2608,6 @@ input ReportAddInput {
   update: Boolean
 }
 
-enum GroupingsOrdering {
-  name
-  created
-  modified
-  context
-  created_at
-  updated_at
-  createdBy
-  objectMarking
-  x_opencti_workflow_id
-}
-
-enum GroupingsFilter {
-  name
-  context
-  created
-  created_at
-  confidence
-  objectLabel
-  createdBy
-  markedBy
-  labelledBy
-  objectContains
-  x_opencti_workflow_id
-  revoked
-}
-
-input GroupingsFiltering {
-  key: [GroupingsFilter!]!
-  values: [String]!
-  operator: String
-  filterMode: FilterMode
-}
-
-type GroupingConnection {
-  pageInfo: PageInfo!
-  edges: [GroupingEdge]
-}
-
-type GroupingEdge {
-  cursor: String!
-  node: Grouping!
-}
-
-type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipConnection
-  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
-  name: String!
-  description: String
-  context: String!
-  creator: User
-  toStix: String
-  importFiles(first: Int): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-}
-
-input GroupingAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  name: name_String_NotNull_minLength_2!
-  description: String
-  context: context_String_NotNull_minLength_2!
-  revoked: Boolean
-  lang: String
-  confidence: Int
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  objects: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
-}
-
-scalar context_String_NotNull_minLength_2
-
 enum CoursesOfActionOrdering {
   name
   created
@@ -6585,17 +6475,13 @@ type StixObjectOrStixRelationshipEdge {
   node: StixObjectOrStixRelationship!
 }
 
-<<<<<<< HEAD
 type StixObjectOrStixRelationshipRefEdge {
   cursor: String!
   types: [String]!
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship
-=======
 union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship
->>>>>>> af2ce9a3a ([api/frontend] Implement grouping entity type (#2475))
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship
 
@@ -7149,12 +7035,6 @@ type Query {
   reportsNumber(reportType: String, objectId: String, authorId: String, endDate: DateTime): Number
   reportsDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  grouping(id: String): Grouping
-  groupings(first: Int, after: ID, orderBy: GroupingsOrdering, orderMode: OrderingMode, filters: [GroupingsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): GroupingConnection
-  groupingsTimeSeries(objectId: String, authorId: String, groupingType: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
-  groupingsNumber(groupingContext: String, objectId: String, authorId: String, endDate: DateTime): Number
-  groupingsDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
-  groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   courseOfAction(id: String): CourseOfAction
   coursesOfAction(first: Int, after: ID, orderBy: CoursesOfActionOrdering, orderMode: OrderingMode, filters: [CoursesOfActionFiltering], filterMode: FilterMode, search: String, toStix: Boolean): CourseOfActionConnection
   identity(id: String!): Identity
@@ -7233,6 +7113,12 @@ type Query {
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: [LanguagesFiltering!], filterMode: FilterMode, search: String): LanguageConnection
   event(id: String!): Event
   events(first: Int, after: ID, orderBy: EventsOrdering, orderMode: OrderingMode, filters: [EventsFiltering!], filterMode: FilterMode, search: String): EventConnection
+  grouping(id: String): Grouping
+  groupings(first: Int, after: ID, orderBy: GroupingsOrdering, orderMode: OrderingMode, filters: [GroupingsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): GroupingConnection
+  groupingsTimeSeries(objectId: String, authorId: String, groupingType: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+  groupingsNumber(groupingContext: String, objectId: String, authorId: String, endDate: DateTime): Number
+  groupingsDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
+  groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   narrative(id: String!): Narrative
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering!], filterMode: FilterMode, search: String): NarrativeConnection
 }
@@ -7466,15 +7352,6 @@ type ReportEditMutations {
   contextClean: Report
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Report
-}
-
-type GroupingEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Grouping
-  contextPatch(input: EditContext): Grouping
-  contextClean: Grouping
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): Grouping
 }
 
 type CourseOfActionEditMutations {
@@ -7779,8 +7656,6 @@ type Mutation {
   opinionEdit(id: ID!): OpinionEditMutations
   reportAdd(input: ReportAddInput): Report
   reportEdit(id: ID!): ReportEditMutations
-  groupingAdd(input: GroupingAddInput): Grouping
-  groupingEdit(id: ID!): GroupingEditMutations
   courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction
   courseOfActionEdit(id: ID!): CourseOfActionEditMutations
   identityAdd(input: IdentityAddInput): Identity
@@ -7855,6 +7730,8 @@ type Mutation {
   eventContextClean(id: ID!): Event
   eventRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
   eventRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Event
+  groupingAdd(input: GroupingAddInput): Grouping
+  groupingEdit(id: ID!): GroupingEditMutations
   narrativeAdd(input: NarrativeAddInput!): Narrative
   narrativeDelete(id: ID!): ID
   narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative
@@ -8179,6 +8056,127 @@ input EventAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+}
+
+type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
+  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  name: String!
+  description: String
+  context: String!
+  x_opencti_aliases: [String]
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+
+enum GroupingsOrdering {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  createdBy
+  objectMarking
+  x_opencti_workflow_id
+}
+
+enum GroupingsFilter {
+  name
+  context
+  created
+  created_at
+  confidence
+  objectLabel
+  createdBy
+  markedBy
+  labelledBy
+  objectContains
+  x_opencti_workflow_id
+  revoked
+}
+
+input GroupingsFiltering {
+  key: [GroupingsFilter!]!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+
+type GroupingConnection {
+  pageInfo: PageInfo!
+  edges: [GroupingEdge]
+}
+
+type GroupingEdge {
+  cursor: String!
+  node: Grouping!
+}
+
+input GroupingAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_2!
+  description: String
+  context: context_String_NotNull_minLength_2!
+  x_opencti_aliases: [String]
+  revoked: Boolean
+  lang: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  objects: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+}
+
+scalar context_String_NotNull_minLength_2
+
+type GroupingEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Grouping
+  contextPatch(input: EditContext): Grouping
+  contextClean: Grouping
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): Grouping
 }
 
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {

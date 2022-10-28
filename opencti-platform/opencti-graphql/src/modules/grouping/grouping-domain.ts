@@ -1,27 +1,34 @@
 import * as R from 'ramda';
+import type { AuthUser, AuthContext } from '../../types/user';
 import {
   createEntity,
   distributionEntities,
   internalLoadById,
   storeLoadById,
-  timeSeriesEntities,
-} from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
-import { BUS_TOPICS } from '../config/conf';
-import { notify } from '../database/redis';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../schema/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
-import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { isStixId } from '../schema/schemaUtils';
+  timeSeriesEntities
+} from '../../database/middleware';
+import { notify } from '../../database/redis';
+import { BUS_TOPICS } from '../../config/conf';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
+import type { GroupingAddInput, QueryGroupingsArgs } from '../../generated/graphql';
+import { listEntitiesPaginated } from '../../database/middleware-loader';
+import { BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
+import { isStixId } from '../../schema/schemaUtils';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixMetaRelationship';
+import { elCount } from '../../database/engine';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 
-export const findById = (context, user, groupingId) => {
-  return storeLoadById(context, user, groupingId, ENTITY_TYPE_CONTAINER_GROUPING);
+export const findById = (context: AuthContext, user: AuthUser, channelId: string): BasicStoreEntityGrouping => {
+  return storeLoadById(context, user, channelId, ENTITY_TYPE_CONTAINER_GROUPING) as unknown as BasicStoreEntityGrouping;
 };
 
-export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], args);
+export const findAll = (context: AuthContext, user: AuthUser, opts: QueryGroupingsArgs) => {
+  return listEntitiesPaginated<BasicStoreEntityGrouping>(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], opts);
+};
+
+export const addGrouping = async (context: AuthContext, user: AuthUser, channel: GroupingAddInput) => {
+  const created = await createEntity(context, user, channel, ENTITY_TYPE_CONTAINER_GROUPING);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
 // Entities tab
@@ -117,12 +124,5 @@ export const groupingsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
   return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, filters, args);
-};
-// endregion
-
-// region mutations
-export const addGrouping = async (context, user, grouping) => {
-  const created = await createEntity(context, user, grouping, ENTITY_TYPE_CONTAINER_GROUPING);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

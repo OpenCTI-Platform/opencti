@@ -1,35 +1,35 @@
+import type { Resolvers } from '../../generated/graphql';
 import {
   addGrouping,
-  findAll,
   findById,
+  findAll,
+  groupingContainsStixObjectOrStixRelationship,
   groupingsDistributionByEntity,
   groupingsNumber,
-  groupingsNumberByEntity,
   groupingsNumberByAuthor,
+  groupingsNumberByEntity,
   groupingsTimeSeries,
   groupingsTimeSeriesByAuthor,
-  groupingsTimeSeriesByEntity,
-  groupingContainsStixObjectOrStixRelationship,
-} from '../domain/grouping';
+  groupingsTimeSeriesByEntity } from './grouping-domain';
+import { buildRefRelationKey } from '../../schema/general';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../../schema/stixMetaRelationship';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField,
-} from '../domain/stixDomainObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
-import { buildRefRelationKey } from '../schema/general';
-import { distributionEntities } from '../database/middleware';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../schema/stixDomainObject';
+  stixDomainObjectEditField
+} from '../../domain/stixDomainObject';
+import { distributionEntities } from '../../database/middleware';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
 
-const groupingResolvers = {
+const groupingResolvers: Resolvers = {
   Query: {
     grouping: (_, { id }, context) => findById(context, context.user, id),
     groupings: (_, args, context) => findAll(context, context.user, args),

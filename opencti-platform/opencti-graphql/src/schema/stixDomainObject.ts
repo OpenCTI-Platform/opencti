@@ -15,6 +15,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from './stixMetaRelationship';
 import { RELATION_INDICATES } from './stixCoreRelationship';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'abstract';
@@ -30,7 +31,6 @@ export const ENTITY_TYPE_CONTAINER_NOTE = 'Note';
 export const ENTITY_TYPE_CONTAINER_OBSERVED_DATA = 'Observed-Data';
 export const ENTITY_TYPE_CONTAINER_OPINION = 'Opinion';
 export const ENTITY_TYPE_CONTAINER_REPORT = 'Report';
-export const ENTITY_TYPE_CONTAINER_GROUPING = 'Grouping';
 export const ENTITY_TYPE_COURSE_OF_ACTION = 'Course-Of-Action';
 export const ENTITY_TYPE_IDENTITY_INDIVIDUAL = 'Individual';
 export const ENTITY_TYPE_IDENTITY_ORGANIZATION = 'Organization';
@@ -91,7 +91,6 @@ const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_CONTAINER_GROUPING,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -142,7 +141,8 @@ export const isStixObjectAliased = (type: string): boolean => {
   return R.includes(type, STIX_DOMAIN_OBJECT_ALIASED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
 };
 export const resolveAliasesField = (type: string): string => {
-  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
+  // eslint-disable-next-line max-len
+  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || type === ENTITY_TYPE_CONTAINER_GROUPING || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
     return ATTRIBUTE_ALIASES_OPENCTI;
   }
   return ATTRIBUTE_ALIASES;
@@ -406,28 +406,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<string> } = {
     'i_published_day',
     'i_published_year',
     'i_published_month',
-    'x_opencti_graph_data',
-    'x_opencti_workflow_id',
-  ],
-  [ENTITY_TYPE_CONTAINER_GROUPING]: [
-    'internal_id',
-    'standard_id',
-    'entity_type',
-    'x_opencti_stix_ids',
-    'spec_version',
-    'created_at',
-    'i_created_at_day',
-    'i_created_at_month',
-    'i_created_at_year',
-    'updated_at',
-    'revoked',
-    'confidence',
-    'lang',
-    'created',
-    'modified',
-    'name',
-    'description',
-    'context',
     'x_opencti_graph_data',
     'x_opencti_workflow_id',
   ],

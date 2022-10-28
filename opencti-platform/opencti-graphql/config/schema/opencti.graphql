@@ -2857,158 +2857,6 @@ input ReportAddInput {
   update: Boolean
 }
 
-################ Groupings
-enum GroupingsOrdering {
-  name
-  created
-  modified
-  context
-  created_at
-  updated_at
-  createdBy
-  objectMarking
-  x_opencti_workflow_id
-}
-enum GroupingsFilter {
-  name
-  context
-  created
-  created_at
-  confidence
-  objectLabel
-  createdBy
-  markedBy
-  labelledBy
-  objectContains
-  x_opencti_workflow_id
-  revoked
-}
-input GroupingsFiltering {
-  key: [GroupingsFilter!]!
-  values: [String]!
-  operator: String
-  filterMode: FilterMode
-}
-type GroupingConnection {
-  pageInfo: PageInfo!
-  edges: [GroupingEdge]
-}
-type GroupingEdge {
-  cursor: String!
-  node: Grouping!
-}
-type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  # StixObject
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
-  ): StixCoreRelationshipConnection
-  # StixDomainObject
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  # Container
-  objects(
-    first: Int
-    after: ID
-    orderBy: StixObjectOrStixRelationshipsOrdering
-    orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
-    filterMode: FilterMode
-    search: String
-    types: [String]
-    all: Boolean
-  ): StixObjectOrStixRelationshipConnection
-  relatedContainers(
-    first: Int
-    after: ID
-    orderBy: ContainersOrdering
-    orderMode: OrderingMode
-    filters: [ContainersFiltering]
-    filterMode: FilterMode
-    search: String
-    types: [String]
-    viaTypes: [String]
-  ): ContainerConnection
-  # Grouping
-  name: String!
-  description: String
-  context: String!
-  # Technical
-  creator: User
-  toStix: String
-  importFiles(first: Int): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-}
-input GroupingAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
-  description: String
-  context: String! @constraint(minLength: 2)
-  revoked: Boolean
-  lang: String
-  confidence: Int
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  objects: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
-}
-
 ############## CoursesOfAction
 enum CoursesOfActionOrdering {
   name
@@ -9838,42 +9686,6 @@ type Query {
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])
-  grouping(id: String): Grouping @auth(for: [KNOWLEDGE])
-  groupings(
-    first: Int
-    after: ID
-    orderBy: GroupingsOrdering
-    orderMode: OrderingMode
-    filters: [GroupingsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): GroupingConnection @auth(for: [KNOWLEDGE])
-  groupingsTimeSeries(
-    objectId: String
-    authorId: String
-    groupingType: String
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime!
-    endDate: DateTime!
-    interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  groupingsNumber(groupingContext: String, objectId: String, authorId: String, endDate: DateTime): Number
-  @auth(for: [KNOWLEDGE, EXPLORE])
-  groupingsDistribution(
-    objectId: String
-    authorId: String
-    field: String!
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  @auth(for: [KNOWLEDGE])
   courseOfAction(id: String): CourseOfAction @auth(for: [KNOWLEDGE])
   coursesOfAction(
     first: Int
@@ -10617,14 +10429,6 @@ type ReportEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): Report @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-type GroupingEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-}
 type CourseOfActionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): CourseOfAction
@@ -10973,8 +10777,6 @@ type Mutation {
   opinionEdit(id: ID!): OpinionEditMutations
   reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   reportEdit(id: ID!): ReportEditMutations
-  groupingAdd(input: GroupingAddInput): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-  groupingEdit(id: ID!): GroupingEditMutations
   courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   courseOfActionEdit(id: ID!): CourseOfActionEditMutations
   ############### Identities
