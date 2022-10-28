@@ -212,7 +212,7 @@ class Entities extends Component {
         ]}
       >
         <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('Select a Data Type')}</Typography>
           <Typography style={{ fontSize: '20px' }} color='textSecondary'>
             {t('Please choose from the Data Type dropdown above.')}
           </Typography>
@@ -300,7 +300,7 @@ class Entities extends Component {
         ]}
       >
         <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('Select a Data Type')}</Typography>
           <Typography style={{ fontSize: '20px' }} color='textSecondary'>
             {t('Please choose from the Data Type dropdown above.')}
           </Typography>
