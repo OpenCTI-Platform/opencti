@@ -6,7 +6,7 @@ import {objectMap} from '../global-utils.js'
 export function getReducer( type ) {
   switch( type ) {
     case 'ENTITY':
-      return entityReducer;
+      return entitiesReducer;
     default:
       throw new Error(`Unsupported reducer type ' ${type}'`)
   }
@@ -219,6 +219,108 @@ export const entitiesTimeSeriesQuery = (args) => {
   `;
 }
 
+export const entitiesDistributionQuery = (args) => {
+  let classIri, predicate, selectionClause, type, field, startDate, endDate, limitClause = "";
+  const matchPredicates = [];
+  if ('type' in args) {
+    type = args.type.toLowerCase();
+    field = 'object_type';
+  } else if (args.field === 'entity_type') {
+    field = 'object_type';
+    for (let match of args.match) {
+      match = match.toLowerCase();
+      type = match;
+      if (!objectMap.hasOwnProperty(match)) {
+        let found = false;
+        for (let [key, value] of Object.entries(objectMap)) {
+          // check for alternate key
+          if (value.alternateKey != undefined && match == value.alternateKey) {
+            type = key;
+            found = true;
+            break;
+          }
+          // check if the GraphQL type name was supplied
+          if (match == value.graphQLType) {
+            type = key;
+            found = true;
+            break;
+          }
+        }
+        if (!found) throw new CyioError(`Unknown field '${args.match}'`);
+      }
+    }
+  }
+  if (type === undefined) throw new CyioError (`Unable to determine object type`);
+
+  // Validate field is defined 
+  const predicateMap = objectMap[type].predicateMap;
+  if ('field' in args && args.field !== 'entity_type') {
+    field = args.field;
+    if (!predicateMap.hasOwnProperty(field)) throw new CyioError(`Field '${field}' is not defined for the entity.`);
+    predicate = predicateMap[args.field].predicate;
+    }
+
+  while (objectMap[type].parent !== undefined) {
+    type = objectMap[type].parent;
+  }
+
+  // construct the IRI
+  if ('objectId' in args) {
+    classIri = `<${objectMap[type].iriTemplate}-${args.objectId}>`;
+  } else {
+    classIri = `<${objectMap[type].iriTemplate}>`;
+  }
+
+  // build filter for start and end dates
+  if (('startDate' in args) && (args.startDate instanceof Date)) {
+    // convert start date to string, if specified 
+    startDate = args.startDate.toISOString();
+  } else {
+    // use Epoch time
+    startDate = '1970-01-01-01T00:00:00Z';
+  }
+  if (('endDate' in args) && (args.endDate instanceof Date)) {
+    // convert end date to string, if specified 
+    endDate = args.endDate.toISOString();
+  } else{
+    // uses the current date and time
+    endDate = new Date().toISOString();
+  }
+
+  // Build values clause to match only those items specified
+  if (args.field !== 'entity_type') {
+    selectionClause = `?${args.field}`;
+    if ('match' in args && args.match.length > 0) {
+      let values = "";
+      for (let match of args.match) {
+        values = values + ` "${match}"`;
+      }
+      if (values.length > 0) {
+        values = values.trim();
+        matchPredicates.push(`  Values ?o {${values}} .`);
+        matchPredicates.push(`  ?iri ${predicate} ?o .`);    
+      }
+    }
+  }
+
+  // build limit clause
+  if ('limit' in args) {
+    limitClause = `LIMIT ${args.limit}`
+  }
+  
+  return `
+  PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+  SELECT ?iri ?created ?o
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    ?iri a ${classIri} .
+    ${matchPredicates.join("\n")}
+    ?iri <http://darklight.ai/ns/common#created> ?created .
+    FILTER (?created > "${startDate}"^^xsd:dateTime && ?created < "${endDate}"^^xsd:dateTime)
+  } GROUP BY ?iri ?created ?o ${limitClause}
+  `;
+}
+
 // Predicate Map
 export const entityPredicateMap = {
   id: {
@@ -249,10 +351,20 @@ export const dashboardSingularizeSchema = { singularizeVariables: {
     "id": true,
     "iri": true,
     "object_type": true,
+    "o": true,
     "total": true,
     "count": true,
     "created": true,
     "modified": true,
+    "name": true,
+    "risk_status": true,
+    "deadline": true,
+    "accepted": true,
+    "false_positive": true,
+    "priority": true,
+    "vendor_dependency": true,
+    "remediation_type": true,
+    "remediation_lifecycle": true,
   }
 };
 

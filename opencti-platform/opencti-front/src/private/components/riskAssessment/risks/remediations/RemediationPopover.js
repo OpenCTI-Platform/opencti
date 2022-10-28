@@ -241,7 +241,8 @@ class RemediationPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <QueryRenderer
+        {this.state.displayEdit
+        && <QueryRenderer
           query={remediationPopoverQuery}
           variables={{ id: cyioCoreRelationshipId }}
           render={({ error, props }) => {
@@ -250,7 +251,7 @@ class RemediationPopover extends Component {
             }
             if (props) {
               return (
-                <RemediationDetailsPopover
+                 <RemediationDetailsPopover
                   cyioCoreRelationshipId={cyioCoreRelationshipId}
                   displayEdit={this.state.displayEdit}
                   history={history}
@@ -261,7 +262,7 @@ class RemediationPopover extends Component {
             }
             return <></>;
           }}
-        />
+        />}
       </div>
     );
   }

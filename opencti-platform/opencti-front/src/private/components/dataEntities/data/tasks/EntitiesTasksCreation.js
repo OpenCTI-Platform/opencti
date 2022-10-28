@@ -170,6 +170,7 @@ class EntitiesTasksCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/data/entities/tasks',
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
