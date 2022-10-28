@@ -101,6 +101,7 @@ class EntitiesAssessmentPlatformsCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/data/entities/assessment_platform',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();

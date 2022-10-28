@@ -137,7 +137,7 @@ class RiskObservationLineContainer extends Component {
 
   render() {
     const {
-      t, classes, fldt, observation, observationId,
+      t, classes, fldt, observation, observationId, history,
     } = this.props;
     return (
       <>
@@ -219,6 +219,7 @@ class RiskObservationLineContainer extends Component {
                       handleCloseUpdate={this.handleCloseUpdate.bind(this)}
                       displayUpdate={this.state.displayDetails}
                       data={props.observation}
+                      history={history}
                     />
                   );
                 }
@@ -247,6 +248,7 @@ RiskObservationLineContainer.propTypes = {
   fldt: PropTypes.func,
   fd: PropTypes.func,
   relay: PropTypes.object,
+  history: PropTypes.object,
 };
 
 export default R.compose(

@@ -14,7 +14,6 @@ import {getSettings} from "../domain/settings";
 import { applicationSession } from '../database/session';
 import StardogKB from '../datasources/stardog.js';
 import Artemis from '../datasources/artemis.js';
-import mockList from './mocks.js' ;
 import nconf from "nconf";
 import querySelectMap from "../cyio/schema/querySelectMap";
 import {
@@ -49,14 +48,6 @@ const buildContext = (user, req, res) => {
 // perform the standard keycloak-connect middleware setup on our app
 // const { keycloak } = configureKeycloak(app, graphqlPath)  // Same ApolloServer initialization as before, plus the drain plugin.
 
-// check to see if mocks are disbled
-let mocks;
-if (process.env.MOCKS === '0') {
-  mocks = false;
-}
-else {
-  mocks = mockList;
-}
 
 let plugins = [
   loggerPlugin,
@@ -90,7 +81,7 @@ const createApolloServer = (app) => {
   const server = new ApolloServer({
     schema,
     introspection: true,
-    mocks,
+    mocks: false,
     mockEntireSchema: false,
     dataSources: () => ({
       Stardog: new StardogKB( ),

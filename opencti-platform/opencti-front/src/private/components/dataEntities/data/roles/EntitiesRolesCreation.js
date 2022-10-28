@@ -100,6 +100,7 @@ class EntitiesRolesCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/data/entities/responsibility',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
