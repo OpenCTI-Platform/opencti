@@ -194,12 +194,10 @@ describe('Grouping resolver standard behavior', () => {
   it('should update grouping', async () => {
     const UPDATE_QUERY = gql`
       mutation GroupingEdit($id: ID!, $input: [EditInput]!) {
-        groupingEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            name
-            description
-          }
+        groupingFieldPatch(id: $idn input: $input) {
+          id
+          name
+          description
         }
       }
     `;
@@ -212,10 +210,8 @@ describe('Grouping resolver standard behavior', () => {
   it('should context patch grouping', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation GroupingEdit($id: ID!, $input: EditContext) {
-        groupingEdit(id: $id) {
-          contextPatch(input: $input) {
-            id
-          }
+        groupingContextPatch(id: $id, input: $input) {
+          id
         }
       }
     `;
@@ -228,10 +224,8 @@ describe('Grouping resolver standard behavior', () => {
   it('should context clean grouping', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation GroupingEdit($id: ID!) {
-        groupingEdit(id: $id) {
-          contextClean {
-            id
-          }
+        groupingContextClean(id: $id) {
+          id
         }
       }
     `;
@@ -244,16 +238,14 @@ describe('Grouping resolver standard behavior', () => {
   it('should add relation in grouping', async () => {
     const RELATION_ADD_QUERY = gql`
       mutation GroupingEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
-        groupingEdit(id: $id) {
-          relationAdd(input: $input) {
-            id
-            from {
-              ... on Grouping {
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
+        groupingRelationAdd(id: $id, input: $input) {
+          id
+          from {
+            ... on Grouping {
+              objectMarking {
+                edges {
+                  node {
+                    id
                   }
                 }
               }
@@ -277,14 +269,12 @@ describe('Grouping resolver standard behavior', () => {
   it('should delete relation in grouping', async () => {
     const RELATION_DELETE_QUERY = gql`
       mutation GroupingEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-        groupingEdit(id: $id) {
-          relationDelete(toId: $toId, relationship_type: $relationship_type) {
-            id
-            objectMarking {
-              edges {
-                node {
-                  id
-                }
+        groupingRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+          id
+          objectMarking {
+            edges {
+              node {
+                id
               }
             }
           }
@@ -304,9 +294,7 @@ describe('Grouping resolver standard behavior', () => {
   it('should grouping deleted', async () => {
     const DELETE_QUERY = gql`
       mutation groupingDelete($id: ID!) {
-        groupingEdit(id: $id) {
-          delete
-        }
+        groupingDelete(id: $id)
       }
     `;
     // Delete the grouping
