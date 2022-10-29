@@ -205,7 +205,7 @@ describe('Grouping resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: groupingInternalId, input: { key: 'name', value: ['Grouping - test'] } },
     });
-    expect(queryResult.data.groupingEdit.fieldPatch.name).toEqual('Grouping - test');
+    expect(queryResult.data.groupingFieldPatch.name).toEqual('Grouping - test');
   });
   it('should context patch grouping', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -219,7 +219,7 @@ describe('Grouping resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: groupingInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.groupingEdit.contextPatch.id).toEqual(groupingInternalId);
+    expect(queryResult.data.groupingContextPatch.id).toEqual(groupingInternalId);
   });
   it('should context clean grouping', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -233,7 +233,7 @@ describe('Grouping resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: groupingInternalId },
     });
-    expect(queryResult.data.groupingEdit.contextClean.id).toEqual(groupingInternalId);
+    expect(queryResult.data.groupingContextClean.id).toEqual(groupingInternalId);
   });
   it('should add relation in grouping', async () => {
     const RELATION_ADD_QUERY = gql`
@@ -264,7 +264,7 @@ describe('Grouping resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.groupingEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.groupingRelationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in grouping', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -289,7 +289,7 @@ describe('Grouping resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.groupingEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.groupingRelationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should grouping deleted', async () => {
     const DELETE_QUERY = gql`
@@ -305,6 +305,6 @@ describe('Grouping resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupingStixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.grouping).toBeNull();
+    expect(queryResult.data.groupingDelete).toBeNull();
   });
 });

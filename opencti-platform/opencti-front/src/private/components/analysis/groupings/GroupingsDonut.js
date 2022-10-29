@@ -1,19 +1,15 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React from 'react';
 import { graphql } from 'react-relay';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import * as R from 'ramda';
 import Chart from 'react-apexcharts';
+import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: 300,
     minHeight: 300,
@@ -22,7 +18,7 @@ const styles = () => ({
     padding: 0,
     borderRadius: 6,
   },
-});
+}));
 
 const groupingsDonutDistributionQuery = graphql`
   query GroupingsDonutDistributionQuery(
@@ -50,9 +46,10 @@ const groupingsDonutDistributionQuery = graphql`
   }
 `;
 
-class GroupingsDonut extends Component {
-  renderContent() {
-    const { t, field, startDate, endDate, theme } = this.props;
+const GroupingsDonut = (props) => {
+  const { t, field, startDate, endDate, theme, height, title, variant } = props;
+  const classes = useStyles();
+  const renderContent = () => {
     const groupingsDistributionVariables = {
       field: field || 'grouping_types',
       operation: 'count',
@@ -64,17 +61,17 @@ class GroupingsDonut extends Component {
       <QueryRenderer
         query={groupingsDonutDistributionQuery}
         variables={groupingsDistributionVariables}
-        render={({ props }) => {
+        render={({ props: resultProps }) => {
           if (
-            props
-            && props.groupingsDistribution
-            && props.groupingsDistribution.length > 0
+            resultProps
+            && resultProps.groupingsDistribution
+            && resultProps.groupingsDistribution.length > 0
           ) {
-            let data = props.groupingsDistribution;
+            let data = resultProps.groupingsDistribution;
             if (field && field.includes('internal_id')) {
               data = R.map(
                 (n) => R.assoc('label', n.entity.name, n),
-                props.groupingsDistribution,
+                resultProps.groupingsDistribution,
               );
             }
             const chartData = data.map((n) => n.value);
@@ -120,41 +117,27 @@ class GroupingsDonut extends Component {
         }}
       />
     );
-  }
-
-  render() {
-    const { t, classes, title, variant, height } = this.props;
-    return (
-      <div style={{ height: height || '100%' }}>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          style={{
-            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          }}
-        >
-          {title || t('Groupings distribution')}
-        </Typography>
-        {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            {this.renderContent()}
-          </Paper>
-        ) : (
-          this.renderContent()
-        )}
-      </div>
-    );
-  }
-}
-
-GroupingsDonut.propTypes = {
-  title: PropTypes.string,
-  field: PropTypes.string,
-  startDate: PropTypes.string,
-  endDate: PropTypes.string,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  };
+  return (
+    <div style={{ height: height || '100%' }}>
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+        }}
+      >
+        {title || t('Groupings distribution')}
+      </Typography>
+      {variant !== 'inLine' ? (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          {renderContent()}
+        </Paper>
+      ) : (
+        renderContent()
+      )}
+    </div>
+  );
 };
 
-export default compose(inject18n, withTheme, withStyles(styles))(GroupingsDonut);
+export default GroupingsDonut;
