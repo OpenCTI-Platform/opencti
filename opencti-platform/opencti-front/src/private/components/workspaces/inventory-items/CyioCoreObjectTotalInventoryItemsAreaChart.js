@@ -34,107 +34,31 @@ const styles = () => ({
   },
 });
 
-// const cyioCoreObjectVulnerabilitiesAreaChartQuery = graphql`
-//   query CyioCoreObjectVulnerabilitiesAreaChartQuery(
-//     $objectId: String
-//     $authorId: String
-//     $reportClass: String
-//     $field: String!
-//     $operation: StatsOperation!
-//     $startDate: DateTime!
-//     $endDate: DateTime!
-//     $interval: String!
-//   ) {
-//     reportsTimeSeries(
-//       objectId: $objectId
-//       authorId: $authorId
-//       reportType: $reportClass
-//       field: $field
-//       operation: $operation
-//       startDate: $startDate
-//       endDate: $endDate
-//       interval: $interval
-//     ) {
-//       date
-//       value
-//     }
-//   }
-// `;
-
-const data = [
-  {
-    name: 'Jan A',
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
-  },
-  {
-    name: 'Jan B',
-    uv: 3000,
-    pv: 1398,
-    amt: 2210,
-  },
-  {
-    name: 'Jan C',
-    uv: 2000,
-    pv: 3800,
-    amt: 2290,
-  },
-  {
-    name: 'Jan D',
-    uv: 2780,
-    pv: 3908,
-    amt: 2000,
-  },
-  {
-    name: 'Jan E',
-    uv: 1890,
-    pv: 4800,
-    amt: 2181,
-  },
-  {
-    name: 'Jan F',
-    uv: 2390,
-    pv: 3800,
-    amt: 2500,
-  },
-  {
-    name: 'Jan G',
-    uv: 3770,
-    pv: 4300,
-    amt: 2100,
-  },
-  {
-    name: 'Jan H',
-    uv: 3490,
-    pv: 3300,
-    amt: 2200,
-  },
-  {
-    name: 'Jan I',
-    uv: 3490,
-    pv: 3500,
-    amt: 2150,
-  },
-  {
-    name: 'Jan J',
-    uv: 4790,
-    pv: 5300,
-    amt: 2850,
-  },
-  {
-    name: 'Jan K',
-    uv: 3790,
-    pv: 4600,
-    amt: 2960,
-  },
-  {
-    name: 'Jan L',
-    uv: 3490,
-    pv: 4700,
-    amt: 2770,
-  },
-];
+const cyioCoreObjectTotalInventoryItemsAreaChartQuery = graphql`
+  query CyioCoreObjectTotalInventoryItemsAreaChartQuery(
+    $type: String
+    $match: [String]
+    $field: String!
+    $operation: StatsOperation
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $interval: Interval!
+  ) {
+    assetsTimeSeries(
+      type: $type
+      match: $match
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      interval: $interval
+    ) {
+      date
+      label
+      value
+    }
+  }
+`;
 
 class CyioCoreObjectTotalInventoryItemsAreaChart extends Component {
   renderContent() {
@@ -142,14 +66,11 @@ class CyioCoreObjectTotalInventoryItemsAreaChart extends Component {
       t,
       md,
       nsd,
-      reportType,
       startDate,
       endDate,
-      stixCoreObjectId,
-      authorId,
       theme,
     } = this.props;
-    const interval = 'day';
+    const interval = 'month';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
     const days = numberOfDays(finalStartDate, finalEndDate);
@@ -157,119 +78,104 @@ class CyioCoreObjectTotalInventoryItemsAreaChart extends Component {
     if (days <= 30) {
       tickFormatter = nsd;
     }
-    let reportsTimeSeriesVariables;
-    if (authorId) {
-      reportsTimeSeriesVariables = {
-        authorId,
-        objectId: null,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    } else {
-      reportsTimeSeriesVariables = {
-        authorId: null,
-        objectId: stixCoreObjectId,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    }
+    const assetTimeSeriesVariables = {
+      type: 'Inventory-Item',
+      field: 'asset_type',
+      match: ['computing-device', 'network-device', 'router'],
+      operation: 'count',
+      startDate: finalStartDate,
+      endDate: finalEndDate,
+      interval,
+    };
+
     return (
-      // <QueryRenderer
-      //   query={cyioCoreObjectVulnerabilitiesAreaChartQuery}
-      //   variables={reportsTimeSeriesVariables}
-      //   render={({ props }) => {
-      //     if (props && props.reportsTimeSeries) {
-      //       return (
-      <ResponsiveContainer height="100%" width="100%">
-        <AreaChart
-          // data={props.reportsTimeSeries}
-          data={data}
-          margin={{
-            top: 20,
-            right: 0,
-            bottom: 20,
-            left: -10,
-          }}
-        >
-          <CartesianGrid
-            strokeDasharray="2 2"
-            // stroke={theme.palette.primary.main}
-            stroke="rgba(241, 241, 242, 0.35)"
-            vertical={false}
-          />
-          <XAxis
-            dataKey="name"
-            stroke={theme.palette.text.primary}
-            // interval={interval}
-            textAnchor="end"
-            // angle={-30}
-            // tickFormatter={tickFormatter}
-          />
-          <YAxis stroke={theme.palette.text.primary} />
-          <Tooltip
-            cursor={{
-              fill: 'rgba(0, 0, 0, 0.2)',
-              stroke: 'rgba(0, 0, 0, 0.2)',
-              strokeWidth: 2,
-            }}
-            contentStyle={{
-              backgroundColor: '#1F2842',
-              fontSize: 12,
-              border: '1px solid #06102D',
-              borderRadius: 10,
-            }}
-            // labelFormatter={tickFormatter}
-          />
-          <Area
-            dataKey="uv"
-            stroke={theme.palette.primary.main}
-            strokeWidth={2}
-            // fill={theme.palette.primary.main}
-            fill="#49B8FC"
-            fillOpacity={0.3}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-      //       );
-      //     }
-      //     if (props) {
-      //       return (
-      //         <div style={{ display: 'table', height: '100%', width: '100%' }}>
-      //           <span
-      //             style={{
-      //               display: 'table-cell',
-      //               verticalAlign: 'middle',
-      //               textAlign: 'center',
-      //             }}
-      //           >
-      //             {t('No entities of this type has been found.')}
-      //           </span>
-      //         </div>
-      //       );
-      //     }
-      //     return (
-      //       <div style={{ display: 'table', height: '100%', width: '100%' }}>
-      //         <span
-      //           style={{
-      //             display: 'table-cell',
-      //             verticalAlign: 'middle',
-      //             textAlign: 'center',
-      //           }}
-      //         >
-      //           <CircularProgress size={40} thickness={2} />
-      //         </span>
-      //       </div>
-      //     );
-      //   }}
-      // />
+      <QueryRenderer
+        query={cyioCoreObjectTotalInventoryItemsAreaChartQuery}
+        variables={assetTimeSeriesVariables}
+        render={({ props }) => {
+          if (props && props.assetsTimeSeries) {
+            return (
+              <ResponsiveContainer height="100%" width="100%">
+                <AreaChart
+                  data={props.assetsTimeSeries}
+                  margin={{
+                    top: 20,
+                    right: 0,
+                    bottom: 20,
+                    left: -10,
+                  }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="2 2"
+                    // stroke={theme.palette.primary.main}
+                    stroke="rgba(241, 241, 242, 0.35)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    stroke={theme.palette.text.primary}
+                    interval={interval}
+                    textAnchor="end"
+                  // angle={-30}
+                  // tickFormatter={tickFormatter}
+                  />
+                  <YAxis stroke={theme.palette.text.primary} />
+                  <Tooltip
+                    cursor={{
+                      fill: 'rgba(0, 0, 0, 0.2)',
+                      stroke: 'rgba(0, 0, 0, 0.2)',
+                      strokeWidth: 2,
+                    }}
+                    contentStyle={{
+                      backgroundColor: '#1F2842',
+                      fontSize: 12,
+                      border: '1px solid #06102D',
+                      borderRadius: 10,
+                    }}
+                  // labelFormatter={tickFormatter}
+                  />
+                  <Area
+                    dataKey="uv"
+                    stroke={theme.palette.primary.main}
+                    strokeWidth={2}
+                    // fill={theme.palette.primary.main}
+                    fill="#49B8FC"
+                    fillOpacity={0.3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            );
+          }
+          if (props) {
+            return (
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('No entities of this type has been found.')}
+                </span>
+              </div>
+            );
+          }
+          return (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                <CircularProgress size={40} thickness={2} />
+              </span>
+            </div>
+          );
+        }}
+      />
     );
   }
 
@@ -297,8 +203,6 @@ class CyioCoreObjectTotalInventoryItemsAreaChart extends Component {
 CyioCoreObjectTotalInventoryItemsAreaChart.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
-  stixCoreObjectId: PropTypes.string,
-  authorId: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
   nsd: PropTypes.func,
