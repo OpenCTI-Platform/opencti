@@ -111,6 +111,7 @@ class Grouping:
             name
             description
             context
+            x_opencti_aliases
             objects {
                 edges {
                     node {
@@ -440,6 +441,7 @@ class Grouping:
         name = kwargs.get("name", None)
         context = kwargs.get("context", None)
         description = kwargs.get("description", "")
+        x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
@@ -473,6 +475,7 @@ class Grouping:
                         "name": name,
                         "context": context,
                         "description": description,
+                        "x_opencti_aliases": x_opencti_aliases,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
@@ -591,10 +594,15 @@ class Grouping:
         if stix_object is not None:
 
             # Search in extensions
+            if "x_opencti_aliases" not in stix_object:
+                stix_object[
+                    "x_opencti_aliases"
+                ] = self.opencti.get_attribute_in_extension("aliases", stix_object)
             if "x_opencti_stix_ids" not in stix_object:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+                # Search in extensions
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -628,6 +636,7 @@ class Grouping:
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,
+                x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
                 update=update,
             )
         else:
