@@ -2369,6 +2369,8 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   }
   // stix-observable-relationship
   if (isStixCyberObservableRelationship(relationshipType)) {
+    // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
+    data.spec_version = STIX_SPEC_VERSION;
     data.relationship_type = relationshipType;
     data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
