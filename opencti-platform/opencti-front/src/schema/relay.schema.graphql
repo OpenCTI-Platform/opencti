@@ -7346,7 +7346,7 @@ type OpinionEditMutations {
 }
 
 type ReportEditMutations {
-  delete: ID
+  delete(purgeElements: Boolean): ID
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report
   contextPatch(input: EditContext): Report
   contextClean: Report

@@ -10,6 +10,7 @@ import {
   reportsTimeSeriesByAuthor,
   reportsTimeSeriesByEntity,
   reportContainsStixObjectOrStixRelationship,
+  reportDeleteWithElements,
 } from '../domain/report';
 import {
   stixDomainObjectAddRelation,
@@ -69,7 +70,7 @@ const reportResolvers = {
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: ({ purgeElements }) => (purgeElements ? reportDeleteWithElements(context, context.user, id) : stixDomainObjectDelete(context, context.user, id)),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import {
   createEntity,
   distributionEntities,
+  internalDeleteElementById,
   internalLoadById,
   storeLoadById,
   timeSeriesEntities,
@@ -125,5 +126,20 @@ export const addReport = async (context, user, report) => {
   const finalReport = R.assoc('created', report.published, report);
   const created = await createEntity(context, user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
+};
+
+// Delete all report contained entities if no other reports are linked
+export const reportDeleteWithElements = async (context, user, reportId) => {
+  const report = await findById(context, user, reportId);
+  await Promise.all(report.object.map(async (objectId) => {
+    const args = { first: 2, filters: [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }] };
+    const reports = await listEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
+    if (reports.edges.length > 1) {
+      return Promise.resolve(true);
+    }
+    return internalDeleteElementById(context, context.user, objectId);
+  }));
+  await internalDeleteElementById(context, context.user, reportId);
+  return reportId;
 };
 // endregion

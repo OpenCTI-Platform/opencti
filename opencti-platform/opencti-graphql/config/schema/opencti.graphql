@@ -10422,7 +10422,7 @@ type OpinionEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type ReportEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  delete(purgeElements: Boolean): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])

@@ -13260,6 +13260,11 @@ export type ReportEditMutationsContextPatchArgs = {
 };
 
 
+export type ReportEditMutationsDeleteArgs = {
+  purgeElements?: InputMaybe<Scalars['Boolean']>;
+};
+
+
 export type ReportEditMutationsFieldPatchArgs = {
   commitMessage?: InputMaybe<Scalars['String']>;
   input: Array<InputMaybe<EditInput>>;
@@ -23496,7 +23501,7 @@ export type ReportEdgeResolvers<ContextType = any, ParentType extends ResolversP
 export type ReportEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReportEditMutations'] = ResolversParentTypes['ReportEditMutations']> = ResolversObject<{
   contextClean?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType>;
   contextPatch?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, Partial<ReportEditMutationsContextPatchArgs>>;
-  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, Partial<ReportEditMutationsDeleteArgs>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<ReportEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<ReportEditMutationsRelationAddArgs>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<ReportEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;

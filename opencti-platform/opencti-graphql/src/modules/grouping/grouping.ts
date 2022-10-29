@@ -31,6 +31,7 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping> = {
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
     { name: 'context', type: 'string', multiple: false, upsert: true },
+    { name: 'x_opencti_graph_data', type: 'string', multiple: false, upsert: false },
   ],
   relations: [],
   converter: convertGroupingToStix
