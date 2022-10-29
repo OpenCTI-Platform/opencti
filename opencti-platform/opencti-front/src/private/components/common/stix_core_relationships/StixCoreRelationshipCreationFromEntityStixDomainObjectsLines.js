@@ -396,6 +396,10 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                           description
                           published
                         }
+                        ... on Grouping {
+                          name
+                          description
+                        }
                         ... on CourseOfAction {
                           name
                           description

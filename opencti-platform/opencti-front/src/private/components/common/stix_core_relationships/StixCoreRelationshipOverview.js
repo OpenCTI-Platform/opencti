@@ -863,6 +863,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           description
                           published
                         }
+                        ... on Grouping {
+                          name
+                          description
+                        }
                         ... on CourseOfAction {
                           name
                           description
@@ -1197,6 +1201,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                               description
                               published
+                            }
+                            ... on Grouping {
+                              name
+                              description
                             }
                             ... on CourseOfAction {
                               name
@@ -1447,6 +1455,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           description
                           published
                         }
+                        ... on Grouping {
+                          name
+                          description
+                        }
                         ... on CourseOfAction {
                           name
                           description
@@ -1699,6 +1711,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                               published
                             }
+                            ... on Grouping {
+                              name
+                              description
+                            }
                             ... on CourseOfAction {
                               name
                               description
@@ -1944,6 +1960,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                               description
                               published
+                            }
+                            ... on Grouping {
+                              name
+                              description
                             }
                             ... on CourseOfAction {
                               name
@@ -2198,6 +2218,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           description
                           published
                         }
+                        ... on Grouping {
+                          name
+                          description
+                        }
                         ... on CourseOfAction {
                           name
                           description
@@ -2532,6 +2556,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                               description
                               published
+                            }
+                            ... on Grouping {
+                              name
+                              description
                             }
                             ... on CourseOfAction {
                               name
@@ -2782,6 +2810,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           description
                           published
                         }
+                        ... on Grouping {
+                          name
+                          description
+                        }
                         ... on CourseOfAction {
                           name
                           description
@@ -3034,6 +3066,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                               published
                             }
+                            ... on Grouping {
+                              name
+                              description
+                            }
                             ... on CourseOfAction {
                               name
                               description
@@ -3279,6 +3315,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                               description
                               published
+                            }
+                            ... on Grouping {
+                              name
+                              description
                             }
                             ... on CourseOfAction {
                               name
@@ -3546,6 +3586,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     name
                     description
                     published
+                  }
+                  ... on Grouping {
+                    name
+                    description
                   }
                   ... on CourseOfAction {
                     name
@@ -3976,6 +4020,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     name
                     description
                     published
+                  }
+                  ... on Grouping {
+                    name
+                    description
                   }
                   ... on CourseOfAction {
                     name

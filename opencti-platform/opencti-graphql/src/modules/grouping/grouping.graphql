@@ -1,0 +1,210 @@
+type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    # StixObject
+    x_opencti_stix_ids: [StixId]
+    is_inferred: Boolean!
+    spec_version: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    # inferences
+    x_opencti_inferences: [Inference]
+    # StixCoreObject
+    createdBy: Identity
+    objectMarking: MarkingDefinitionConnection
+    objectLabel: LabelConnection
+    externalReferences(first: Int): ExternalReferenceConnection
+    reports(first: Int): ReportConnection
+    notes(first: Int): NoteConnection
+    opinions(first: Int): OpinionConnection
+    observedData(first: Int): ObservedDataConnection
+    groupings(first: Int): GroupingConnection
+    stixCoreRelationships(
+        first: Int
+        after: ID
+        orderBy: StixCoreRelationshipsOrdering
+        orderMode: OrderingMode
+        fromId: StixRef
+        toId: StixRef
+        fromTypes: [String]
+        toTypes: [String]
+        relationship_type: String
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): StixCoreRelationshipConnection
+    # StixDomainObject
+    revoked: Boolean!
+    confidence: Int
+    lang: String
+    created: DateTime
+    modified: DateTime
+    x_opencti_graph_data: String
+    # Container
+    objects(
+        first: Int
+        after: ID
+        orderBy: StixObjectOrStixRelationshipsOrdering
+        orderMode: OrderingMode
+        filters: [StixObjectOrStixRelationshipsFiltering]
+        filterMode: FilterMode
+        search: String
+        types: [String]
+        all: Boolean
+    ): StixObjectOrStixRelationshipRefConnection
+    relatedContainers(
+        first: Int
+        after: ID
+        orderBy: ContainersOrdering
+        orderMode: OrderingMode
+        filters: [ContainersFiltering]
+        filterMode: FilterMode
+        search: String
+        types: [String]
+        viaTypes: [String]
+    ): ContainerConnection
+    # Grouping
+    name: String!
+    description: String
+    context: String!
+    x_opencti_aliases: [String]
+    # Technical
+    creator: User
+    toStix: String
+    importFiles(first: Int): FileConnection
+    pendingFiles(first: Int): FileConnection
+    exportFiles(first: Int): FileConnection
+    editContext: [EditUserContext]
+    connectors(onlyAlive: Boolean): [Connector]
+    jobs(first: Int): [Work]
+    status: Status
+    workflowEnabled: Boolean
+}
+
+# Ordering
+enum GroupingsOrdering {
+    name
+    created
+    modified
+    context
+    created_at
+    updated_at
+    createdBy
+    objectMarking
+    x_opencti_workflow_id
+}
+
+# Filtering
+enum GroupingsFilter {
+    name
+    context
+    created
+    created_at
+    confidence
+    objectLabel
+    createdBy
+    markedBy
+    labelledBy
+    objectContains
+    x_opencti_workflow_id
+    revoked
+}
+input GroupingsFiltering {
+    key: [GroupingsFilter!]!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type GroupingConnection {
+    pageInfo: PageInfo!
+    edges: [GroupingEdge]
+}
+type GroupingEdge {
+    cursor: String!
+    node: Grouping!
+}
+
+# Queries
+type Query {
+    grouping(id: String!): Grouping @auth(for: [KNOWLEDGE])
+    groupings(
+        first: Int
+        after: ID
+        orderBy: GroupingsOrdering
+        orderMode: OrderingMode
+        filters: [GroupingsFiltering!]
+        filterMode: FilterMode
+        search: String
+        toStix: Boolean
+    ): GroupingConnection @auth(for: [KNOWLEDGE])
+    groupingsTimeSeries(
+        objectId: String
+        authorId: String
+        groupingType: String
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime!
+        endDate: DateTime!
+        interval: String!
+    ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+    groupingsNumber(groupingContext: String, objectId: String, authorId: String, endDate: DateTime): Number
+    @auth(for: [KNOWLEDGE, EXPLORE])
+    groupingsDistribution(
+        objectId: String
+        authorId: String
+        field: String!
+        operation: StatsOperation!
+        limit: Int
+        order: String
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+    @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input GroupingAddInput {
+    stix_id: StixId
+    x_opencti_stix_ids: [StixId]
+    name: String! @constraint(minLength: 2)
+    description: String
+    context: String! @constraint(minLength: 2)
+    x_opencti_aliases: [String]
+    revoked: Boolean
+    lang: String
+    confidence: Int
+    createdBy: String
+    objectMarking: [String]
+    objectLabel: [String]
+    externalReferences: [String]
+    objects: [String]
+    created: DateTime
+    modified: DateTime
+    clientMutationId: String
+    update: Boolean
+}
+
+type Mutation {
+    groupingAdd(input: GroupingAddInput!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    groupingFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingContextPatch(id: ID!, input: EditContext): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingContextClean(id: ID!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingRelationAdd(id: ID!, input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+}

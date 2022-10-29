@@ -451,6 +451,11 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
                 description
                 published
               }
+              ... on Grouping {
+                name
+                description
+                context
+              }
               ... on CourseOfAction {
                 name
                 description

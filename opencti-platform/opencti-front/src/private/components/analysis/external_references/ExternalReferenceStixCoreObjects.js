@@ -151,6 +151,10 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                 name
                 description
               }
+              ... on Grouping {
+                name
+                description
+              }
               ... on ObservedData {
                 name
               }

@@ -170,6 +170,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on Report {
           name
         }
+        ... on Grouping {
+          name
+        }        
         ... on CourseOfAction {
           name
         }

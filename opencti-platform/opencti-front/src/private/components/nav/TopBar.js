@@ -26,6 +26,7 @@ import TopMenuAnalysis from './TopMenuAnalysis';
 import TopMenuReport from './TopMenuReport';
 import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
+import TopMenuGrouping from './TopMenuGrouping';
 import TopMenuExternalReference from './TopMenuExternalReference';
 import TopMenuEvents from './TopMenuEvents';
 import TopMenuIncident from './TopMenuIncident';
@@ -182,6 +183,9 @@ const TopBar = ({
           )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
+          )}
+          {location.pathname.includes('/dashboard/analysis/groupings/') && (
+            <TopMenuGrouping />
           )}
           {location.pathname.includes('/dashboard/analysis/notes/') && (
             <TopMenuNote />

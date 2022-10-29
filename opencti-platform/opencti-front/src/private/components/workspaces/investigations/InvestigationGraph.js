@@ -103,6 +103,10 @@ const investigationGraphStixCoreObjectQuery = graphql`
         name
         published
       }
+      ... on Grouping {
+        name
+        description
+      }
       ... on Individual {
         name
       }
@@ -357,6 +361,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
               name
               published
             }
+            ... on Grouping {
+              name
+              description
+            }
             ... on Individual {
               name
             }
@@ -565,6 +573,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Report {
               name
               published
+            }
+            ... on Grouping {
+              name
+              description
             }
             ... on Individual {
               name
@@ -2084,6 +2096,10 @@ const InvestigationGraph = createFragmentContainer(
               ... on Report {
                 name
                 published
+              }
+              ... on Grouping {
+                name
+                description
               }
               ... on Individual {
                 name

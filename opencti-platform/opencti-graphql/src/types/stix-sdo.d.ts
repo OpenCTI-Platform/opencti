@@ -244,6 +244,15 @@ interface StixReport extends StixDomainObject {
   };
 }
 
+// Grouping Specific Properties
+// name, description, context, object_refs
+interface StixGrouping extends StixDomainObject {
+  name: string;
+  description: string;
+  context: string;
+  object_refs: Array<StixId>;
+}
+
 // Threat Actor Specific Properties
 // name, description, threat_actor_types, aliases, first_seen, last_seen, roles, goals,
 // sophistication, resource_level, primary_motivation, secondary_motivations, personal_motivations

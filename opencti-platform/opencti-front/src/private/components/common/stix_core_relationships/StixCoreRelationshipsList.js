@@ -394,6 +394,10 @@ const stixCoreRelationshipsListQuery = graphql`
                             description
                             published
                           }
+                          ... on Grouping {
+                            name
+                            description
+                          }
                           ... on CourseOfAction {
                             name
                             description
@@ -687,6 +691,10 @@ const stixCoreRelationshipsListQuery = graphql`
                                 name
                                 description
                                 published
+                              }
+                              ... on Grouping {
+                                name
+                                description
                               }
                               ... on CourseOfAction {
                                 name
@@ -908,6 +916,10 @@ const stixCoreRelationshipsListQuery = graphql`
                             description
                             published
                           }
+                          ... on Grouping {
+                            name
+                            description
+                          }
                           ... on CourseOfAction {
                             name
                             description
@@ -1131,6 +1143,10 @@ const stixCoreRelationshipsListQuery = graphql`
                                 description
                                 published
                               }
+                              ... on Grouping {
+                                name
+                                description
+                              }
                               ... on CourseOfAction {
                                 name
                                 description
@@ -1347,6 +1363,10 @@ const stixCoreRelationshipsListQuery = graphql`
                                 name
                                 description
                                 published
+                              }
+                              ... on Grouping {
+                                name
+                                description
                               }
                               ... on CourseOfAction {
                                 name
@@ -1572,6 +1592,10 @@ const stixCoreRelationshipsListQuery = graphql`
                             description
                             published
                           }
+                          ... on Grouping {
+                            name
+                            description
+                          }
                           ... on CourseOfAction {
                             name
                             description
@@ -1865,6 +1889,10 @@ const stixCoreRelationshipsListQuery = graphql`
                                 name
                                 description
                                 published
+                              }
+                              ... on Grouping {
+                                name
+                                description
                               }
                               ... on CourseOfAction {
                                 name
@@ -2086,6 +2114,10 @@ const stixCoreRelationshipsListQuery = graphql`
                             description
                             published
                           }
+                          ... on Grouping {
+                            name
+                            description
+                          }
                           ... on CourseOfAction {
                             name
                             description
@@ -2309,6 +2341,10 @@ const stixCoreRelationshipsListQuery = graphql`
                                 description
                                 published
                               }
+                              ... on Grouping {
+                                name
+                                description
+                              }
                               ... on CourseOfAction {
                                 name
                                 description
@@ -2525,6 +2561,10 @@ const stixCoreRelationshipsListQuery = graphql`
                                 name
                                 description
                                 published
+                              }
+                              ... on Grouping {
+                                name
+                                description
                               }
                               ... on CourseOfAction {
                                 name
@@ -2763,6 +2803,10 @@ const stixCoreRelationshipsListQuery = graphql`
                       name
                       description
                       published
+                    }
+                    ... on Grouping {
+                      name
+                      description
                     }
                     ... on CourseOfAction {
                       name
@@ -3140,6 +3184,10 @@ const stixCoreRelationshipsListQuery = graphql`
                       name
                       description
                       published
+                    }
+                    ... on Grouping {
+                      name
+                      description
                     }
                     ... on CourseOfAction {
                       name

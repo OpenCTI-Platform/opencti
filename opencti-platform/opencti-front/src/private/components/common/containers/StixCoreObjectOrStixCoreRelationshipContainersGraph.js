@@ -843,6 +843,10 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                   name
                   published
                 }
+                ... on Grouping {
+                  name
+                  created
+                }
                 ... on CourseOfAction {
                   name
                 }

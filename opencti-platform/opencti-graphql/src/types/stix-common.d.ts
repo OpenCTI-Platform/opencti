@@ -48,6 +48,10 @@ interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
   extension_type : 'new-sdo';
 }
 
+interface StixOpenctiExtensionProperty extends StixOpenctiExtension {
+  extension_type : 'property-extension';
+}
+
 interface StixObject {
   id: StixId;
   type: string;

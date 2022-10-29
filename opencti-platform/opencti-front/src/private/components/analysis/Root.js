@@ -4,6 +4,8 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Reports from './Reports';
 import RootReport from './reports/Root';
+import Groupings from './Groupings';
+import RootGrouping from './groupings/Root';
 import Notes from './Notes';
 import RootNote from './notes/Root';
 import Opinions from './Opinions';
@@ -31,6 +33,15 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/analysis/reports/:reportId"
           render={(routeProps) => <RootReport {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/analysis/groupings"
+          component={Groupings}
+        />
+        <BoundaryRoute
+          path="/dashboard/analysis/groupings/:groupingId"
+          render={(routeProps) => <RootGrouping {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

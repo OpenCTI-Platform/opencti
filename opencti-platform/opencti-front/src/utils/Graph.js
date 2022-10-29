@@ -11,6 +11,7 @@ import Note from '../static/images/entities/note.svg';
 import ObservedData from '../static/images/entities/observed-data.svg';
 import Opinion from '../static/images/entities/opinion.svg';
 import Report from '../static/images/entities/report.svg';
+import Grouping from '../static/images/entities/grouping.svg';
 import CourseOfAction from '../static/images/entities/course-of-action.svg';
 import Individual from '../static/images/entities/individual.svg';
 import Organization from '../static/images/entities/organization.svg';
@@ -66,6 +67,7 @@ export const graphImages = {
   'Observed-Data': genImage(ObservedData),
   Opinion: genImage(Opinion),
   Report: genImage(Report),
+  Grouping: genImage(Grouping),
   'Course-Of-Action': genImage(CourseOfAction),
   Individual: genImage(Individual),
   Organization: genImage(Organization),
@@ -128,6 +130,7 @@ export const graphLevel = {
   'Observed-Data': 1,
   Opinion: 1,
   Report: 1,
+  Grouping: 1,
   'Course-Of-Action': 1,
   Individual: 1,
   Organization: 1,
@@ -193,6 +196,7 @@ export const graphRawImages = {
   'Observed-Data': ObservedData,
   Opinion,
   Report,
+  Grouping,
   'Course-Of-Action': CourseOfAction,
   Individual,
   Organization,

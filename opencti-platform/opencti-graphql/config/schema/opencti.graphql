@@ -1665,6 +1665,7 @@ interface StixCoreObject {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1738,6 +1739,7 @@ enum StixDomainObjectsFilter {
   pattern_type
   x_opencti_main_observable_type
   report_types
+  context
   x_opencti_organization_type
   published
   x_opencti_workflow_id
@@ -1776,6 +1778,7 @@ interface StixDomainObject {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1902,6 +1905,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2042,6 +2046,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2130,6 +2135,7 @@ enum ContainersFilter {
   confidence
   attribute_abstract
   report_types
+  context
   content
   authors
   created
@@ -2177,6 +2183,7 @@ interface Container {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2297,6 +2304,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2450,6 +2458,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2540,7 +2549,7 @@ input ObservedDataAddInput {
   update: Boolean
 }
 
-################ Opînions
+################ Opinions
 enum OpinionsOrdering {
   opinion
   created
@@ -2602,6 +2611,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2755,6 +2765,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2906,6 +2917,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3041,6 +3053,7 @@ interface Identity {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3175,6 +3188,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3321,6 +3335,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3460,6 +3475,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3594,6 +3610,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3748,6 +3765,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3899,6 +3917,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4030,6 +4049,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4174,6 +4194,7 @@ interface Location {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4306,6 +4327,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4445,6 +4467,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4575,6 +4598,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4705,6 +4729,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4847,6 +4872,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4985,6 +5011,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5127,6 +5154,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5260,6 +5288,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5397,6 +5426,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5535,6 +5565,7 @@ interface StixCyberObservable {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5618,6 +5649,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5710,6 +5742,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5806,6 +5839,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5894,6 +5928,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5984,6 +6019,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6084,6 +6120,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6192,6 +6229,7 @@ interface HashedObservable {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6277,6 +6315,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6378,6 +6417,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6488,6 +6528,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6633,6 +6674,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6723,6 +6765,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6811,6 +6854,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6899,6 +6943,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6987,6 +7032,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7094,6 +7140,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7228,6 +7275,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7327,6 +7375,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7415,6 +7464,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7530,6 +7580,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7622,6 +7673,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7714,6 +7766,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7802,6 +7855,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7890,6 +7944,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7978,6 +8033,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -8066,6 +8122,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -8154,6 +8211,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -8246,6 +8304,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -8334,6 +8393,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -8428,6 +8488,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -8609,6 +8670,7 @@ union StixObjectOrStixRelationship =
   | ObservedData
   | Opinion
   | Report
+  | Grouping
   | CourseOfAction
   | Individual
   | Organization
@@ -8671,6 +8733,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | ObservedData
   | Opinion
   | Report
+  | Grouping
   | CourseOfAction
   | Individual
   | Organization
@@ -8872,6 +8935,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
+  groupings(first: Int): GroupingConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -9010,6 +9074,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
+  groupings(first: Int): GroupingConnection
   # Technical
   creator: User
   toStix: String
@@ -9092,6 +9157,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
+  groupings(first: Int): GroupingConnection
   # StixCyberObservableRelationship
   relationship_type: String!
   start_time: DateTime

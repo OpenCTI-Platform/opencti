@@ -292,7 +292,7 @@ const UserSubscriptionEditionContainer = (props) => {
                     label={
                       <div>
                         <div style={{ float: 'left' }}>
-                          {t('Containers (reports, notes & opinions)')}
+                          {t('Containers (reports, groupings, notes & opinions)')}
                         </div>
                         <div
                           style={{
@@ -506,6 +506,10 @@ const UserSubscriptionEditionFragment = createFragmentContainer(
           ... on Report {
             name
             published
+          }
+          ... on Grouping {
+            name
+            description
           }
           ... on Individual {
             name

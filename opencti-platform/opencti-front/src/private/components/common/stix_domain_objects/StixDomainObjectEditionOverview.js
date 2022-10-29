@@ -516,6 +516,10 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         ... on Report {
           name
         }
+        ... on Grouping {
+          name
+          description
+        }
         ... on Individual {
           name
           description

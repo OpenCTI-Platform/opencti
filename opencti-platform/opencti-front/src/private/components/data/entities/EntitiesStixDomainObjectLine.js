@@ -209,6 +209,10 @@ const EntitiesStixDomainObjectLineFragment = createFragmentContainer(
           name
           description
         }
+        ... on Grouping {
+          name
+          description
+        }
         ... on CourseOfAction {
           name
           description

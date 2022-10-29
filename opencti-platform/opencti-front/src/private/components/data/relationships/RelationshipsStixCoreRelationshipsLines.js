@@ -337,6 +337,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             description
                             published
                           }
+                          ... on Grouping {
+                            name
+                            description
+                          }
                           ... on CourseOfAction {
                             name
                             description
@@ -630,6 +634,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 name
                                 description
                                 published
+                              }
+                              ... on Grouping {
+                                name
+                                description
                               }
                               ... on CourseOfAction {
                                 name
@@ -851,6 +859,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             description
                             published
                           }
+                          ... on Grouping {
+                            name
+                            description
+                          }
                           ... on CourseOfAction {
                             name
                             description
@@ -1074,6 +1086,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 description
                                 published
                               }
+                              ... on Grouping {
+                                name
+                                description
+                              }
                               ... on CourseOfAction {
                                 name
                                 description
@@ -1290,6 +1306,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 name
                                 description
                                 published
+                              }
+                              ... on Grouping {
+                                name
+                                description
                               }
                               ... on CourseOfAction {
                                 name
@@ -1515,6 +1535,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             description
                             published
                           }
+                          ... on Grouping {
+                            name
+                            description
+                          }
                           ... on CourseOfAction {
                             name
                             description
@@ -1808,6 +1832,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 name
                                 description
                                 published
+                              }
+                              ... on Grouping {
+                                name
+                                description
                               }
                               ... on CourseOfAction {
                                 name
@@ -2029,6 +2057,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             description
                             published
                           }
+                          ... on Grouping {
+                            name
+                            description
+                          }
                           ... on CourseOfAction {
                             name
                             description
@@ -2252,6 +2284,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 description
                                 published
                               }
+                              ... on Grouping {
+                                name
+                                description
+                              }
                               ... on CourseOfAction {
                                 name
                                 description
@@ -2468,6 +2504,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 name
                                 description
                                 published
+                              }
+                              ... on Grouping {
+                                name
+                                description
                               }
                               ... on CourseOfAction {
                                 name
@@ -2706,6 +2746,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                       name
                       description
                       published
+                    }
+                    ... on Grouping {
+                      name
+                      description
                     }
                     ... on CourseOfAction {
                       name
@@ -3083,6 +3127,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                       name
                       description
                       published
+                    }
+                    ... on Grouping {
+                      name
+                      description
                     }
                     ... on CourseOfAction {
                       name

@@ -217,6 +217,10 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                     ... on Report {
                       name
                     }
+                    ... on Grouping {
+                      name
+                      description
+                    }
                     ... on Note {
                       attribute_abstract
                       content
@@ -296,6 +300,10 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                     }
                     ... on Report {
                       name
+                    }
+                    ... on Grouping {
+                      name
+                      description
                     }
                     ... on Note {
                       attribute_abstract

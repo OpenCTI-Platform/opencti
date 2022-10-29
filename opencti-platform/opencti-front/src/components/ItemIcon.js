@@ -24,6 +24,7 @@ import {
   EventOutlined,
   SpeakerNotesOutlined,
   TranslateOutlined,
+  WorkspacesOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -88,6 +89,10 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Report':
       return (
         <DescriptionOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'Grouping':
+      return (
+        <WorkspacesOutlined style={style} fontSize={fontSize} role="img" />
       );
     case 'Course-Of-Action':
       return <ProgressWrench style={style} fontSize={fontSize} role="img" />;

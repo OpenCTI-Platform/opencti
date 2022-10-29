@@ -15,6 +15,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from './stixMetaRelationship';
 import { RELATION_INDICATES } from './stixCoreRelationship';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'abstract';
@@ -53,6 +54,7 @@ const STIX_DOMAIN_OBJECT_CONTAINERS: Array<string> = [
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_GROUPING,
 ];
 
 schemaTypes.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
@@ -139,7 +141,8 @@ export const isStixObjectAliased = (type: string): boolean => {
   return R.includes(type, STIX_DOMAIN_OBJECT_ALIASED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
 };
 export const resolveAliasesField = (type: string): string => {
-  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
+  // eslint-disable-next-line max-len
+  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || type === ENTITY_TYPE_CONTAINER_GROUPING || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
     return ATTRIBUTE_ALIASES_OPENCTI;
   }
   return ATTRIBUTE_ALIASES;
@@ -173,7 +176,7 @@ const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
   [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence', 'attribute_abstract'],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description', 'confidence'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence', 'explanation'],
-  [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description', 'confidence', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description', 'confidence'],
   [ENTITY_TYPE_COURSE_OF_ACTION]: [
     'name',
     'revoked',

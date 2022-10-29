@@ -286,6 +286,10 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
           ... on Report {
             name
           }
+          ... on Grouping {
+            name
+            description
+          }
           ... on Campaign {
             name
             description
@@ -427,6 +431,10 @@ const StixDomainObjectsLines = createPaginationContainer(
               }
               ... on Report {
                 name
+              }
+              ... on Grouping {
+                name
+                description
               }
               ... on CourseOfAction {
                 name

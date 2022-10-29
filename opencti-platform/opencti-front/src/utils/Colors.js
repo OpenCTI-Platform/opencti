@@ -60,6 +60,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#4a148c';
       }
       return '#9c27b0';
+    case 'Grouping':
+      if (dark) {
+        return '#689f38';
+      }
+      return '#9ccc65';
     case 'Course-Of-Action':
       if (dark) {
         return '#558b2f';
