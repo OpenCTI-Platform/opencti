@@ -305,7 +305,6 @@ describe('Grouping resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupingStixId } });
     expect(queryResult).not.toBeNull();
-    console.log(queryResult.data);
-    expect(queryResult.data.groupingDelete).toBeNull();
+    expect(queryResult.data.grouping).toBeNull();
   });
 });
