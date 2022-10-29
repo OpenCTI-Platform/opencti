@@ -94,6 +94,7 @@ class EntitiesLabelsCreation extends Component {
         input: values,
       },
       setSubmitting,
+      pathname: '/data/entities/labels',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();

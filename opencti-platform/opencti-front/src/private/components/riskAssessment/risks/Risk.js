@@ -81,7 +81,7 @@ class RiskComponent extends Component {
               </Grid>
               <Grid item={true} xs={6}>
                 <RiskDetails risk={risk} history={history} />
-                <RiskObservation risk={risk}/>
+                <RiskObservation risk={risk} history={history}/>
               </Grid>
             </Grid>
             <Grid
