@@ -36,7 +36,6 @@ import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
 import { toastGenericError } from '../../../../utils/bakedToast';
-import ErrorBox from '../../common/form/ErrorBox';
 import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
@@ -103,7 +102,6 @@ class RiskTrackingPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       anchorEl: null,
       displayUpdate: false,
       displayCancel: false,
@@ -172,19 +170,14 @@ class RiskTrackingPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data, error) => {
-        if (error) {
-          this.setState({ error });
-        } else {
-          setSubmitting(false);
-          this.handleCloseEditUpdate();
-          this.props.refreshQuery();
-        }
+      pathname: `/activities/risk assessment/risks/${this.props.riskId}/tracking`,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        this.handleCloseEditUpdate();
+        this.props.refreshQuery();
       },
-      onError: (err) => {
+      onError: () => {
         toastGenericError('Request Failed');
-        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors));
-        this.setState({ error: ErrorResponse });
       },
     });
 
@@ -636,10 +629,6 @@ class RiskTrackingPopover extends Component {
               </Form>
             )}
           </Formik>
-          <ErrorBox
-            error={this.state.error}
-            pathname={`/activities/risk assessment/risks/${this.props.riskId}/tracking`}
-          />
         </Dialog>
         <Dialog
           open={this.state.displayCancel}

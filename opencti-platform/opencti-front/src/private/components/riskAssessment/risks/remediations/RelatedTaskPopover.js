@@ -42,7 +42,6 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import TaskType from '../../../common/form/TaskType';
 import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
 import { toastGenericError } from '../../../../../utils/bakedToast';
-import ErrorBox from '../../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -118,7 +117,6 @@ class RelatedTaskPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       anchorEl: null,
       displayUpdate: false,
       displayDelete: false,
@@ -697,10 +695,6 @@ class RelatedTaskPopover extends Component {
               </Form>
             )}
           </Formik>
-          <ErrorBox
-            error={this.state.error}
-            pathname={this.props.history.location.pathname}
-          />
         </Dialog>
         <Dialog
           open={this.state.displayDelete}

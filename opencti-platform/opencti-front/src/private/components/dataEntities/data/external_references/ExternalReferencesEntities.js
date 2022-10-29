@@ -59,24 +59,21 @@ class ExternalReferencesEntities extends Component {
 
   componentWillUnmount() {
     const {
-      view,
       sortBy,
       orderAsc,
-      searchTerm,
     } = this.state;
+    const paginationOptions = {
+      sortBy,
+      orderAsc,
+      filters: [],
+    };
     if (this.props.history.location.pathname !== '/data/entities/external_references'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
         this.props.location,
         'view-external-reference',
-        {
-          view,
-          sortBy,
-          searchTerm,
-          orderAsc,
-          filters: [],
-        },
+        paginationOptions,
       );
     }
   }

@@ -41,7 +41,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Typography from "@material-ui/core/Typography";
 import CardContent from "@material-ui/core/CardContent";
-import {deleteScan, fetchAllScans} from "../../../services/scan.service";
+import { deleteScan, fetchAllScans } from "../../../services/scan.service";
 import {
   fetchAllAnalysis,
   getAnalysisSummary,
@@ -66,7 +66,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Chip from "@material-ui/core/Chip";
-import {toastSuccess} from "../../../utils/bakedToast";
+import { toastSuccess } from "../../../utils/bakedToast";
 import DeleteScanVerify from "./modals/DeleteScanVerify";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import UpdateScan from "./modals/UpdateScan";
@@ -171,10 +171,10 @@ const styles = (theme) => ({
     overflow: "hidden",
     textOverflow: "ellipsis",
     textAlign: "left",
-  },  
-  popoverContainer: { width: '40rem' ,padding:"3%", backgroundColor: 'rgb(56,64,87)'} ,
-  popoverItems: {margin:"1% 0"},
-  popoverHeader: {color: 'rgb(146,150,163)', marginBottom: '0.5em'}
+  },
+  popoverContainer: { width: '40rem', padding: "3%", backgroundColor: 'rgb(56,64,87)' },
+  popoverItems: { margin: "1% 0" },
+  popoverHeader: { color: 'rgb(146,150,163)', marginBottom: '0.5em' }
 
 })
 
@@ -226,99 +226,99 @@ class Scans extends Component {
   sortScans(scans, scanSortBy) {
     let sortedScans = scans;
     if (scanSortBy === ScanSortBy.ScanDate) {
-      sortedScans = scans.slice().sort((a,b) => new Date(b.report_date) - new Date(a.report_date))
+      sortedScans = scans.slice().sort((a, b) => new Date(b.report_date) - new Date(a.report_date))
     } else if (scanSortBy === ScanSortBy.UploadDate) {
-      sortedScans = scans.slice().sort((a,b) => new Date(b.upload_date) - new Date(a.upload_date))
+      sortedScans = scans.slice().sort((a, b) => new Date(b.upload_date) - new Date(a.upload_date))
     }
     return sortedScans
   }
 
-  refreshScans(refreshInBackground){
+  refreshScans(refreshInBackground) {
     this.setState({ loadingScans: true });
     fetchAllScans(this.state.client_ID)
-        .then((response) => {
-          const newScans = response.data;
-          if(refreshInBackground){
+      .then((response) => {
+        const newScans = response.data;
+        if (refreshInBackground) {
 
-            if(JSON.stringify(this.state.renderScans) !== JSON.stringify(newScans)){
-              this.setState({ renderScans: this.sortScans(newScans, this.state.scanSortBy) });
-              clearInterval(this.state.refreshIntervalId);
-
-            }
-          } else {
+          if (JSON.stringify(this.state.renderScans) !== JSON.stringify(newScans)) {
             this.setState({ renderScans: this.sortScans(newScans, this.state.scanSortBy) });
-          }
+            clearInterval(this.state.refreshIntervalId);
 
-          this.setState({ loadingScans: false });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+          }
+        } else {
+          this.setState({ renderScans: this.sortScans(newScans, this.state.scanSortBy) });
+        }
+
+        this.setState({ loadingScans: false });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
-  refreshAnalyses(refreshInBackground){
+  refreshAnalyses(refreshInBackground) {
     const prevAnalysis = this.state.analyses;
 
     fetchAllAnalysis(this.state.client_ID)
-        .then((response) => {
-          let newAnalyses = response.data;
-          let scatterPlotData = {};
-          const associationTable = {}
+      .then((response) => {
+        let newAnalyses = response.data;
+        let scatterPlotData = {};
+        const associationTable = {}
 
-          newAnalyses.forEach(analysis => {
-            let associations = associationTable[analysis.scan.id]
-            if(associations === undefined){
-              associations = 1
-            } else {
-              associations++
-            }
-            associationTable[analysis.scan.id] = associations
-
-            getAnalysisSummary(analysis.id,this.state.client_ID)
-                .then((response) => {
-
-                  let scatterPlot = [];
-                  response.data.forEach((item) => {
-                    if(item.cwe_name){
-                      scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
-                    }
-                  });
-                  if(scatterPlot.length === 0) return;
-                  scatterPlotData[analysis.id] = scatterPlot;
-
-                })
-                .catch((error) => {
-                  console.log(error);
-                })
-          })
-
-          if(refreshInBackground){
-            if(JSON.stringify(prevAnalysis) !== JSON.stringify(newAnalyses)){
-              this.setState({analysisLoaderNoDisplay: true});
-              this.setState({ analyses: newAnalyses });
-              this.setState({ scanAssociation: associationTable });
-              this.setState({scatterPlotData: scatterPlotData},function(){});
-              setTimeout(() => {this.setState({analysisLoaderNoDisplay: false})}, 3000);
-
-              clearInterval(this.state.refreshIntervalId);
-            }
+        newAnalyses.forEach(analysis => {
+          let associations = associationTable[analysis.scan.id]
+          if (associations === undefined) {
+            associations = 1
           } else {
-            this.setState({analysisLoaderNoDisplay: true})
-            this.setState({ scanAssociation: associationTable })
-            this.setState({ analyses: newAnalyses });
-            this.setState({scatterPlotData: scatterPlotData});
-            setTimeout(() => {this.setState({analysisLoaderNoDisplay: false})}, 3000);
+            associations++
           }
+          associationTable[analysis.scan.id] = associations
 
-          this.setState({ loadingAnalyses: false });
+          getAnalysisSummary(analysis.id, this.state.client_ID)
+            .then((response) => {
+
+              let scatterPlot = [];
+              response.data.forEach((item) => {
+                if (item.cwe_name) {
+                  scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                }
+              });
+              if (scatterPlot.length === 0) return;
+              scatterPlotData[analysis.id] = scatterPlot;
+
+            })
+            .catch((error) => {
+              console.log(error);
+            })
         })
-        .catch((error) => {
-          console.log(error);
-        });
+
+        if (refreshInBackground) {
+          if (JSON.stringify(prevAnalysis) !== JSON.stringify(newAnalyses)) {
+            this.setState({ analysisLoaderNoDisplay: true });
+            this.setState({ analyses: newAnalyses });
+            this.setState({ scanAssociation: associationTable });
+            this.setState({ scatterPlotData: scatterPlotData }, function () { });
+            setTimeout(() => { this.setState({ analysisLoaderNoDisplay: false }) }, 3000);
+
+            clearInterval(this.state.refreshIntervalId);
+          }
+        } else {
+          this.setState({ analysisLoaderNoDisplay: true })
+          this.setState({ scanAssociation: associationTable })
+          this.setState({ analyses: newAnalyses });
+          this.setState({ scatterPlotData: scatterPlotData });
+          setTimeout(() => { this.setState({ analysisLoaderNoDisplay: false }) }, 3000);
+        }
+
+        this.setState({ loadingAnalyses: false });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   componentDidMount() {
-    this.setState({client_ID: localStorage.getItem('client_id')},function() {
+    this.setState({ client_ID: localStorage.getItem('client_id') }, function () {
       this.refreshScans(false)
       this.refreshAnalyses(false)
     });
@@ -368,19 +368,19 @@ class Scans extends Component {
       this.setState({ analysisAnchorEl: event.currentTarget, openAnalysisMenu: analysis_id });
     };
 
-    const handleScanClick =(event, scan_id) => {
+    const handleScanClick = (event, scan_id) => {
       handlePopoverClose()
-      this.setState({vulnerabilityAnchorEl: event.currentTarget, openScanMenu: scan_id})
+      this.setState({ vulnerabilityAnchorEl: event.currentTarget, openScanMenu: scan_id })
     }
 
-    const triggerPageRefreshInterval = () =>{
-        this.refreshScans(false);
-        this.refreshAnalyses(false);
-       const intervalId = setInterval(() => {
+    const triggerPageRefreshInterval = () => {
+      this.refreshScans(false);
+      this.refreshAnalyses(false);
+      const intervalId = setInterval(() => {
         this.refreshScans(true);
         this.refreshAnalyses(true);
       }, 30000)
-      this.setState({refreshIntervalId: intervalId});
+      this.setState({ refreshIntervalId: intervalId });
     }
 
     const sortByScanDate = () => {
@@ -400,15 +400,15 @@ class Scans extends Component {
     const handleDialogOpen = (dialogParams) => {
       this.setState({ openDialog: true });
       this.setState({ dialogParams: dialogParams });
-      this.setState({ vulnerabilityAnchorEl: null , openScanMenu: null});
+      this.setState({ vulnerabilityAnchorEl: null, openScanMenu: null });
       this.setState({ analysisAnchorEl: null });
-      this.setState({ analysisByAnchorEl: null,  openAnalysisMenu: null});
+      this.setState({ analysisByAnchorEl: null, openAnalysisMenu: null });
     };
 
     const handleDialogClose = () => {
       this.setState({ openDialog: false });
       this.setState({ openScanMenu: null })
-      this.setState({ openAnalysisMenu: null});
+      this.setState({ openAnalysisMenu: null });
     };
 
     const handleLinkClink = (path, data) => {
@@ -431,10 +431,10 @@ class Scans extends Component {
         .then((response) => {
           toastSuccess("Creating New Analysis")
           handleDialogClose();
-          this.setState({pendingAnalysis: scanName})
+          this.setState({ pendingAnalysis: scanName })
           setTimeout(() => {
             this.refreshAnalyses()
-            this.setState({pendingAnalysis: null})
+            this.setState({ pendingAnalysis: null })
           }, 10000);
         })
         .catch((error) => {
@@ -491,13 +491,13 @@ class Scans extends Component {
         });
     };
 
-    const rerenderParentCallback =() => {
+    const rerenderParentCallback = () => {
       triggerPageRefreshInterval();
     }
 
     const handleDeleteScan = (event, id) => {
       const associations = scanAssociation[id];
-      if(associations === undefined){
+      if (associations === undefined) {
         deleteScan(id, client_ID)
           .then(() => {
             this.refreshScans(false)
@@ -572,17 +572,17 @@ class Scans extends Component {
             onClose={handleDialogClose}
           />;
         case "Scan Delete Verify":
-            return <DeleteScanVerify
-              clientId={this.state.dialogParams.clientId}
-              scan={this.state.dialogParams.scan}
-              analyses={this.state.dialogParams.analyses}
-              onComplete={this.state.dialogParams.action}
-              onClose={handleDialogClose}
-            />
+          return <DeleteScanVerify
+            clientId={this.state.dialogParams.clientId}
+            scan={this.state.dialogParams.scan}
+            analyses={this.state.dialogParams.analyses}
+            onComplete={this.state.dialogParams.action}
+            onClose={handleDialogClose}
+          />
         case "Edit Scan":
           return <UpdateScan
             onClose={(success) => {
-              if(success) {
+              if (success) {
                 this.refreshScans()
               }
               handleDialogClose()
@@ -600,10 +600,10 @@ class Scans extends Component {
         return (
           <div
             className="custom-tooltip"
-            style={{backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10, border: 1, padding: 10}}>
-            <p className="label" style={{paddingBottom: 5}}>{payload[0].payload.cwe_name}</p>
-            <p className="weakness" style={{paddingBottom: 5}}>{`Weakness Score: ${payload[0].payload.score}`}</p>
-            <p className="host" style={{paddingBottom: 5}}>{`Hosts with Weakness: ${payload[0].payload.host_count_total} (${payload[0].payload.x}%)`}</p>
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10, border: 1, padding: 10 }}>
+            <p className="label" style={{ paddingBottom: 5 }}>{payload[0].payload.cwe_name}</p>
+            <p className="weakness" style={{ paddingBottom: 5 }}>{`Weakness Score: ${payload[0].payload.score}`}</p>
+            <p className="host" style={{ paddingBottom: 5 }}>{`Hosts with Weakness: ${payload[0].payload.host_count_total} (${payload[0].payload.x}%)`}</p>
           </div>
         );
       }
@@ -704,22 +704,22 @@ class Scans extends Component {
                       let NoResults = false;
                       let Invalid = false;
 
-                      if(scan.status === 'noRecords'){
+                      if (scan.status === 'noRecords') {
                         NoResults = true;
                       }
 
-                      if(scan.status === 'invalid'){
+                      if (scan.status === 'invalid') {
                         Invalid = true;
                       }
                       return (
                         <ListItem
-                          key={scan.id}                          
-                          className={["scansListItem" , NoResults ? "NoResults" : (Invalid ? "Invalid" : "")]}
+                          key={scan.id}
+                          className={["scansListItem", NoResults ? "NoResults" : (Invalid ? "Invalid" : "")]}
                         >
-                          <ListItemText primary={scan.scan_name} 
+                          <ListItemText primary={scan.scan_name}
                             onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                             onMouseLeave={() => handlePopoverClose()}
-                            style={ { maxWidth:"30%" } }
+                            style={{ maxWidth: "30%" }}
                           />
                           <ListItemSecondaryAction>
                             <IconButton
@@ -733,7 +733,7 @@ class Scans extends Component {
                               anchorEl={this.state.vulnerabilityAnchorEl}
                               open={openScanMenu === scan.id}
                               onClose={() => {
-                                this.setState({vulnerabilityAnchorEl: null, openScanMenu: null})
+                                this.setState({ vulnerabilityAnchorEl: null, openScanMenu: null })
                               }}
                             >
                               <MenuItem
@@ -744,7 +744,7 @@ class Scans extends Component {
                                   })
                                 }
                               >
-                                <ListItemIcon><EditIcon fontSize="small"/></ListItemIcon>
+                                <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
                                 Edit Scan
                               </MenuItem>
                               <MenuItem
@@ -775,8 +775,8 @@ class Scans extends Component {
                           <Popover
                             id="mouse-over-popover"
                             className={classes.popover}
-                            classes={{paper: classes.paper}}
-                            style={{ pointerEvents: 'none'}}
+                            classes={{ paper: classes.paper }}
+                            style={{ pointerEvents: 'none' }}
                             open={openedPopoverId === scan.id}
                             anchorEl={popoverAnchorEl}
 
@@ -793,65 +793,65 @@ class Scans extends Component {
                           >
                             <Box className={classes.popoverContainer}>
                               <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-                                <Grid item xs={6} className={classes.popoverItems}>                              
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" component="div" className={classes.popoverHeader}>
-                                    Report Name 
+                                    Report Name
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.report_name}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    Policy Name  
+                                    Policy Name
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.policy_name}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    Scan Date  
+                                    Scan Date
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.report_date}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    Uploaded  
+                                    Uploaded
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.upload_date}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    Total Vulnerabilities 
+                                    Total Vulnerabilities
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.total_cve}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    Unique Vulnerabilities 
+                                    Unique Vulnerabilities
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.unique_cve}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    Total Records 
+                                    Total Records
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.record_count_total}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    With vulnerabilities                                
+                                    With vulnerabilities
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.vulnerability_count}
@@ -859,20 +859,20 @@ class Scans extends Component {
                                       ` (${percentage(
                                         scan.vulnerability_count,
                                         scan.record_count_total
-                                      )}%)`} 
+                                      )}%)`}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                  Total Hosts
+                                    Total Hosts
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.host_count_total}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    With vulnerabilities                                
+                                    With vulnerabilities
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.host_count}
@@ -880,16 +880,16 @@ class Scans extends Component {
                                       ` (${percentage(scan.host_count, scan.host_count_total)}%)`}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6} className={classes.popoverItems}> 
+                                <Grid item xs={6} className={classes.popoverItems}>
                                   <Typography gutterBottom variant="body2" className={classes.popoverHeader} component="div">
-                                    Cyio Analysis  
+                                    Cyio Analysis
                                   </Typography>
                                   <Typography component="div" variant="h5">
                                     {scan.analysis_count}
                                   </Typography>
-                                </Grid>                            
-                              </Grid>                            
-                            </Box>                            
+                                </Grid>
+                              </Grid>
+                            </Box>
                           </Popover>
                         </ListItem>
 
@@ -921,24 +921,24 @@ class Scans extends Component {
           pendingAnalysis && (
             <Chip
               size="small"
-              style={{height: '17px', fontSize: '0.9em', marginBottom: '10px', textAlign: 'center'}}
+              style={{ height: '17px', fontSize: '0.9em', marginBottom: '10px', textAlign: 'center' }}
               label={`Pending Analysis: ${pendingAnalysis}`}
             />
           )
         }
         <Typography variant="h4" gutterBottom={true}>
           Analyses
-          { loadingAnalyses ? <LinearProgress /> : null }
+          {loadingAnalyses ? <LinearProgress /> : null}
         </Typography>
         <Grid container={true} spacing={3}>
           {!loadingAnalyses ? (
             analyses.map((analysis, i) => {
               return (
-                <Grid item={true} md={6} lg={4} xl={3} style={{minWidth: 425}}>
+                <Grid item={true} md={6} lg={4} xl={3} style={{ minWidth: 425 }}>
                   <Paper
                     classes={{ root: classes.paper }}
                     elevation={2}
-                    style={{ marginBottom: 20, height: 575}}
+                    style={{ marginBottom: 20, height: 575 }}
                   >
                     <CardHeader
                       style={{ padding: 16 }}
@@ -950,150 +950,144 @@ class Scans extends Component {
                           >
                             <MoreVertIcon />
                           </IconButton>
-                              {(scatterPlotData && scatterPlotData[analysis.id]) ? (
-                              <Menu
-                                  id="simple-menu"
-                                  anchorEl={analysisAnchorEl}
-                                  open={openAnalysisMenu === analysis.id}
-                                  onClose={() =>
-                                      this.setState({analysisAnchorEl: null, openAnalysisMenu: null})
-                                  }
+                          {(scatterPlotData && scatterPlotData[analysis.id]) ? (
+                            <Menu
+                              id="simple-menu"
+                              anchorEl={analysisAnchorEl}
+                              open={openAnalysisMenu === analysis.id}
+                              onClose={() =>
+                                this.setState({ analysisAnchorEl: null, openAnalysisMenu: null })
+                              }
+                            >
+                              <MenuItem
+                                onClick={() => this.props.history.push(`/activities/vulnerability assessment/scans/explore results/${analysis.id}`)}
                               >
-                                <MenuItem
-                                    onClick={() =>
-                                        handleLinkClink('/activities/vulnerability assessment/scans/explore results',
-                                            {
-                                              analysis: analysis,
-                                              client: client_ID,
-                                              scan: getCurrentScan(analysis.scan.id, renderScans)
-                                            })}
-                                >
-                                  <ListItemIcon>
-                                    <ExploreIcon fontSize="small"/>
-                                  </ListItemIcon>
-                                  Explore Results
-                                </MenuItem>
-                                <MenuItem
-                                    onClick={() =>
-                                        handleLinkClink('/activities/vulnerability assessment/scans/view charts',
-                                            {
-                                              analysis_id: analysis.id,
-                                              analyses,
-                                            })
+                                <ListItemIcon>
+                                  <ExploreIcon fontSize="small" />
+                                </ListItemIcon>
+                                Explore Results
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  handleLinkClink('/activities/vulnerability assessment/scans/view charts',
+                                    {
+                                      analysis_id: analysis.id,
+                                      analyses,
+                                    })
+                                }
+                              >
+                                <ListItemIcon>
+                                  <ShowChartIcon fontSize="small" />
+                                </ListItemIcon>
+                                View Charts
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  handleLinkClink('/activities/vulnerability assessment/scans/compare analysis',
+                                    {
+                                      analyses,
+                                      scatterPlotData: scatterPlotData
                                     }
-                                >
-                                  <ListItemIcon>
-                                    <ShowChartIcon fontSize="small"/>
-                                  </ListItemIcon>
-                                  View Charts
-                                </MenuItem>
-                                <MenuItem
-                                    onClick={() =>
-                                        handleLinkClink('/activities/vulnerability assessment/scans/compare analysis',
-                                            {
-                                              analyses,
-                                              scatterPlotData: scatterPlotData
-                                            }
-                                        )}
-                                >
-                                  <ListItemIcon>
-                                    <CompareIcon fontSize="small"/>
-                                  </ListItemIcon>
-                                  Compare
-                                </MenuItem>
-                                <MenuItem
-                                    onClick={() =>
-                                        handleDialogOpen({
-                                          modal: "Generate Report",
-                                          id: analysis.id,
-                                          client: client_ID,
-                                          scanName: analysis.scan.scan_name,
-                                          success: false,
-                                        })
-                                    }
-                                >
-                                  <ListItemIcon>
-                                    <DescriptionIcon fontSize="small"/>
-                                  </ListItemIcon>
-                                  Generate Report
-                                </MenuItem>
-                                <MenuItem
-                                    onClick={() =>
-                                        handleDialogOpen({
-                                          modal: "Export Data",
-                                          id: analysis.id,
-                                          client: client_ID,
-                                          isLoading: false,
-                                          success: false,
-                                        })
-                                    }
-                                >
-                                  <ListItemIcon>
-                                    <ImportExportIcon fontSize="small"/>
-                                  </ListItemIcon>
-                                  Export Data (CVS)
-                                </MenuItem>
-                                <MenuItem
-                                    onClick={() =>
-                                        handleDialogOpen({
-                                          modal: "New Analysis",
-                                          id: analysis.id,
-                                          isScan: false,
-                                          client: client_ID,
-                                        })
-                                    }
-                                >
-                                  <ListItemIcon>
-                                    <AddIcon fontSize="small"/>
-                                  </ListItemIcon>
-                                  New Analysis
-                                </MenuItem>
-                                <MenuItem
-                                    onClick={() =>
-                                        handleDialogOpen({
-                                          modal: "Delete Data",
-                                          id: analysis.id,
-                                          client: client_ID,
-                                          date: analysis.completed_date,
-                                        })
-                                    }
-                                >
-                                  <ListItemIcon>
-                                    <DeleteIcon fontSize="small"/>
-                                  </ListItemIcon>
-                                  Delete Analysis
-                                </MenuItem>
-                              </Menu>
-                              ) : (
-                                <Menu
-                                  id="simple-menu"
-                                  anchorEl={analysisAnchorEl}
-                                  open={openAnalysisMenu === analysis.id}
-                                  onClose={() =>
-                                    this.setState({analysisAnchorEl: null, openAnalysisMenu: null})
-                                  }
-                                >
-                                  <MenuItem
-                                    onClick={() =>
-                                      handleDialogOpen({
-                                        modal: "Delete Data",
-                                        id: analysis.id,
-                                        client: client_ID,
-                                        date: analysis.completed_date,
-                                      })
-                                    }
-                                  >
-                                    <ListItemIcon>
-                                      <DeleteIcon fontSize="small"/>
-                                    </ListItemIcon>
-                                    Delete Analysis
-                                  </MenuItem>
-                                </Menu>
-                                )
-                            }
+                                  )}
+                              >
+                                <ListItemIcon>
+                                  <CompareIcon fontSize="small" />
+                                </ListItemIcon>
+                                Compare
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  handleDialogOpen({
+                                    modal: "Generate Report",
+                                    id: analysis.id,
+                                    client: client_ID,
+                                    scanName: analysis.scan.scan_name,
+                                    success: false,
+                                  })
+                                }
+                              >
+                                <ListItemIcon>
+                                  <DescriptionIcon fontSize="small" />
+                                </ListItemIcon>
+                                Generate Report
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  handleDialogOpen({
+                                    modal: "Export Data",
+                                    id: analysis.id,
+                                    client: client_ID,
+                                    isLoading: false,
+                                    success: false,
+                                  })
+                                }
+                              >
+                                <ListItemIcon>
+                                  <ImportExportIcon fontSize="small" />
+                                </ListItemIcon>
+                                Export Data (CSV)
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  handleDialogOpen({
+                                    modal: "New Analysis",
+                                    id: analysis.id,
+                                    isScan: false,
+                                    client: client_ID,
+                                  })
+                                }
+                              >
+                                <ListItemIcon>
+                                  <AddIcon fontSize="small" />
+                                </ListItemIcon>
+                                New Analysis
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  handleDialogOpen({
+                                    modal: "Delete Data",
+                                    id: analysis.id,
+                                    client: client_ID,
+                                    date: analysis.completed_date,
+                                  })
+                                }
+                              >
+                                <ListItemIcon>
+                                  <DeleteIcon fontSize="small" />
+                                </ListItemIcon>
+                                Delete Analysis
+                              </MenuItem>
+                            </Menu>
+                          ) : (
+                            <Menu
+                              id="simple-menu"
+                              anchorEl={analysisAnchorEl}
+                              open={openAnalysisMenu === analysis.id}
+                              onClose={() =>
+                                this.setState({ analysisAnchorEl: null, openAnalysisMenu: null })
+                              }
+                            >
+                              <MenuItem
+                                onClick={() =>
+                                  handleDialogOpen({
+                                    modal: "Delete Data",
+                                    id: analysis.id,
+                                    client: client_ID,
+                                    date: analysis.completed_date,
+                                  })
+                                }
+                              >
+                                <ListItemIcon>
+                                  <DeleteIcon fontSize="small" />
+                                </ListItemIcon>
+                                Delete Analysis
+                              </MenuItem>
+                            </Menu>
+                          )
+                          }
                         </div>
-                        }
-                      title={truncate(t(analysis.scan.scan_name),30)}
+                      }
+                      title={truncate(t(analysis.scan.scan_name), 30)}
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
                     <CardContent
@@ -1101,61 +1095,61 @@ class Scans extends Component {
                         display: "flex", flexDirection: "column", alignItems: "center"
                       }}
                     >
-                    <div style={{ width: 370, height: 370, marginRight: 20 }}>
-                      <div className={analysisLoaderNoDisplay ? "AnalysisLoader" : "NoDisplay"}>
-                        <CircularProgress  />
-                      </div>
-                      {(scatterPlotData && scatterPlotData[analysis.id]) && (
+                      <div style={{ width: 370, height: 370, marginRight: 20 }}>
+                        <div className={analysisLoaderNoDisplay ? "AnalysisLoader" : "NoDisplay"}>
+                          <CircularProgress />
+                        </div>
+                        {(scatterPlotData && scatterPlotData[analysis.id]) && (
 
-                        <ResponsiveContainer
-                          width="100%"
-                          aspect={1}
-                        >
-                          <ScatterChart
-                            margin={{
-                              top: 0,
-                              right: 0,
-                              bottom: 20,
-                              left: 0,
-                            }}
+                          <ResponsiveContainer
+                            width="100%"
+                            aspect={1}
                           >
-                            <XAxis
-                              type="number"
-                              dataKey="x"
-                              label= {{
-                                value: "% of Hosts with Weakness",
-                                fill: 'white',
+                            <ScatterChart
+                              margin={{
+                                top: 0,
+                                right: 0,
+                                bottom: 20,
+                                left: 0,
                               }}
-                              domain={[0, 200]}
-                              tick={false}
-                            />
-                            <YAxis
-                              type="number"
-                              dataKey="y"
-                              label={{
-                                value: 'Weakness Score',
-                                angle: -90,
-                                fill: 'white',
-                              }}
-                              domain={[0, 200]}
-                              tick={false}
-                            />
-                            <ZAxis range={[250]} />
-                            <ReferenceLine x={0} stroke="white" />
-                            <ReferenceLine y={0} stroke="white" />
-                            <Tooltip
-                              content={<CustomTooltip />}
-                              cursor={false}
-                            />
-                            <Scatter
-                              name={analysis.scan.scan_name}
-                              data={scatterPlotData[analysis.id]}
-                              fill="#49B8FC"
-                            />
-                          </ScatterChart>
-                        </ResponsiveContainer>
+                            >
+                              <XAxis
+                                type="number"
+                                dataKey="x"
+                                label={{
+                                  value: "% of Hosts with Weakness",
+                                  fill: 'white',
+                                }}
+                                domain={[0, 200]}
+                                tick={false}
+                              />
+                              <YAxis
+                                type="number"
+                                dataKey="y"
+                                label={{
+                                  value: 'Weakness Score',
+                                  angle: -90,
+                                  fill: 'white',
+                                }}
+                                domain={[0, 200]}
+                                tick={false}
+                              />
+                              <ZAxis range={[250]} />
+                              <ReferenceLine x={0} stroke="white" />
+                              <ReferenceLine y={0} stroke="white" />
+                              <Tooltip
+                                content={<CustomTooltip />}
+                                cursor={false}
+                              />
+                              <Scatter
+                                name={analysis.scan.scan_name}
+                                data={scatterPlotData[analysis.id]}
+                                fill="#49B8FC"
+                              />
+                            </ScatterChart>
+                          </ResponsiveContainer>
 
-                      )}
+                        )}
                       </div>
                       <div id={"chart-chips"}>
                         {analysis.completed_date && (
@@ -1188,20 +1182,14 @@ class Scans extends Component {
                         )}
                       </div>
                     </CardContent>
-                    { (scatterPlotData && scatterPlotData[analysis.id]) && (
-                      <CardActions style={{justifyContent: "right"}}>
+                    {(scatterPlotData && scatterPlotData[analysis.id]) && (
+                      <CardActions style={{ justifyContent: "right" }}>
                         <Button
-                            disabled={loadingAnalyses}
-                            variant="contained"
-                            color="primary"
-                            startIcon={<CloudUploadIcon/>}
-                            onClick={() =>
-                                handleLinkClink('/activities/vulnerability assessment/scans/explore results',
-                                    {
-                                      analysis,
-                                      client: client_ID,
-                                      scan: getCurrentScan(analysis.scan.id, renderScans)
-                                    })}
+                          disabled={loadingAnalyses}
+                          variant="contained"
+                          color="primary"
+                          startIcon={<CloudUploadIcon />}
+                          onClick={() => this.props.history.push(`/activities/vulnerability assessment/scans/explore results/${analysis.id}`)}
                         >
                           Explore Results
                         </Button>
@@ -1245,4 +1233,4 @@ Scans.propTypes = {
   onChangeOpenExports: PropTypes.func,
 };
 
-export default R.compose(inject18n, withRouter,withTheme, withStyles(styles))(Scans);
+export default R.compose(inject18n, withRouter, withTheme, withStyles(styles))(Scans);

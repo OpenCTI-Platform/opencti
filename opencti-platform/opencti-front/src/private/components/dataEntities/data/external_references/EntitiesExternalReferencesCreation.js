@@ -92,6 +92,7 @@ class EntitiesExternalReferencesCreation extends Component {
         input: values,
       },
       setSubmitting,
+      pathname: '/data/entities/external_references',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();

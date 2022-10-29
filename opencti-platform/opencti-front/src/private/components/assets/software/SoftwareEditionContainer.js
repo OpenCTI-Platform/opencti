@@ -29,7 +29,6 @@ import CyioCoreObjectExternalReferences from '../../analysis/external_references
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import { adaptFieldValue } from '../../../../utils/String';
-import ErrorBox from '../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -112,7 +111,6 @@ class SoftwareEditionContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       currentTab: 0,
       onSubmit: false,
       open: false,
@@ -171,6 +169,7 @@ class SoftwareEditionContainer extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/defender HQ/assets/software',
       onCompleted: (data, error) => {
         if (error) {
           this.setState({ error });
@@ -419,10 +418,6 @@ class SoftwareEditionContainer extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <ErrorBox
-          error={this.state.error}
-          pathname='/defender HQ/assets/software'
-        />
       </div>
     );
   }

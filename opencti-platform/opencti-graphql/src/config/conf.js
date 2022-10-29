@@ -1,5 +1,6 @@
 import { lstatSync, readFileSync } from 'fs';
 import nconf from 'nconf';
+import Etcd  from 'nconf-etcd2';
 import * as R from 'ramda';
 import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
@@ -25,6 +26,7 @@ const LINUX_CERTFILES = [
   '/etc/ssl/ca-bundle.pem', // OpenSUSE
   '/etc/pki/tls/cacert.pem', // OpenELEC
   '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem', // CentOS/RHEL 7
+  '/etc/ssl/certs/ca.crt',   // MacOS
   '/etc/ssl/cert.pem',
 ];
 
@@ -164,6 +166,48 @@ if (externalConfigurationFile) {
 
 nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
+
+const etcdHosts = process.env.OPENCTI_ETCD_HOSTS || "https://etcd.aws.darklight.ai:2379";
+// if (process.env.OPENCTI_ETCD_CA_CRT) {
+let etcdCaCert = process.env.OPENCTI_ETCD_CA_CRT;
+if (etcdCaCert === undefined || etcdCaCert === null ) {
+  for (const cert of LINUX_CERTFILES) {
+    try {
+      if (lstatSync(cert).isFile()) {
+        etcdCaCert = cert;
+        break;
+      }
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        // eslint-disable-next-line no-continue
+        continue;
+      } else {
+        throw err;
+      }
+    }
+  }  
+}
+
+var etcdOptions = {
+  ca: readFileSync(etcdCaCert)
+};
+try {
+const provEtcd = nconf.use('etcd', { namespace: 'system', hosts: [etcdHosts], etcd: etcdOptions});
+} catch(e) {
+  console.error(e);
+  throw e;
+}  
+// }
+
+nconf.load();
+
+// START TEST CODE
+// var etcdValue = nconf.get('foo:bar');
+// console.log("ETCD TEST VALUE: " + etcdValue)
+// var jsonValue = nconf.get('fizz:buzz');
+// console.log("JSON TEST VALUE: " + jsonValue)
+// nconf.set('fizz:buzz', Math.floor((Math.random() * (100))));
+// END TEST CODE
 
 // Setup application logApp
 const appLogLevel = nconf.get('app:app_logs:logs_level');
