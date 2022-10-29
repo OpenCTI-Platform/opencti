@@ -1,6 +1,10 @@
 import type { StoreEntity } from './store';
 import type { ConvertFn } from '../database/stix-converter';
-import { registerStixDomainAliased, registerStixDomainType } from '../schema/stixDomainObject';
+import {
+  registerStixDomainAliased,
+  registerStixDomainType,
+  resolveAliasesField
+} from '../schema/stixDomainObject';
 import { registerGraphqlSchema } from '../graphql/schema';
 import { registerModelIdentifier } from '../schema/identifier';
 import { schemaTypes } from '../schema/general';
@@ -70,11 +74,17 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   const attributes = ['standard_id'];
   attributes.push(...definition.attributes.map((attr) => attr.name));
   if (definition.type.aliased) {
-    attributes.push(...['aliases', 'i_aliases_ids']); // Need to be improved to support x_opencti_aliases
+    attributes.push(...[resolveAliasesField(definition.type.name), 'i_aliases_ids']);
+  }
+  if (definition.type.category === 'StixDomainEntity') {
+    attributes.push(...['x_opencti_stix_ids', 'revoked', 'confidence', 'lang']);
   }
   schemaTypes.registerAttributes(definition.type.name, attributes);
   // Register upsert attributes
   const upsertAttributes = definition.attributes.filter((attr) => attr.upsert).map((attr) => attr.name);
+  if (definition.type.category === 'StixDomainEntity') {
+    upsertAttributes.push(...['x_opencti_stix_ids', 'revoked', 'confidence']);
+  }
   schemaTypes.registerUpsertAttributes(definition.type.name, upsertAttributes);
   registerStixDomainConverter(definition.type.name, definition.converter);
   // Register attribute types

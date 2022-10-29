@@ -11,7 +11,7 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping> = {
     id: 'groupings',
     name: ENTITY_TYPE_CONTAINER_GROUPING,
     category: 'StixDomainEntity',
-    aliased: false
+    aliased: true
   },
   graphql: {
     schema: groupingTypeDefs,
@@ -31,7 +31,6 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping> = {
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
     { name: 'context', type: 'string', multiple: false, upsert: true },
-    { name: 'object_refs', type: 'string', multiple: true, upsert: false },
   ],
   relations: [],
   converter: convertGroupingToStix
