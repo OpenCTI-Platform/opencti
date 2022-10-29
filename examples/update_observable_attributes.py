@@ -38,7 +38,7 @@ label = opencti_api_client.label.create(
     color="#ffa500",
 )
 
-opencti_api_client.stix_cyber_observable.add_marking_definition(
+opencti_api_client.stix_cyber_observable.add_label(
     id=observable["id"], marking_definition_id=label["id"]
 )
 
