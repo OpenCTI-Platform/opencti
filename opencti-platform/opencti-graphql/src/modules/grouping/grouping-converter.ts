@@ -13,7 +13,8 @@ const convertGroupingToStix = (instance: StoreEntityGrouping): StixGrouping => {
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
-        ...stixDomainObject.extensions[STIX_EXT_OCTI]
+        ...stixDomainObject.extensions[STIX_EXT_OCTI],
+        extension_type: 'property-extension',
       })
     }
   };
