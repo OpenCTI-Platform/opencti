@@ -106,6 +106,20 @@ class EntityNoteDetailsComponent extends Component {
                 <div className="clearfix" />
                 {note.created && fldt(note.created)}
               </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Author')}
+                </Typography>
+                <div className="clearfix" />
+                {note.authors && note.authors.length > 0 && note.authors.map((author) => (
+                  t(author)
+                  )
+                )}
+              </div>
             </Grid>
             <Grid item={true} xs={4}>
               <div>

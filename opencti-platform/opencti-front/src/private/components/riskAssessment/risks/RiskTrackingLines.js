@@ -304,6 +304,7 @@ const RiskTrackingLines = createFragmentContainer(
                 entity_type
                 name
               }
+              ...RiskTrackingLine_node
             }
           }
         }
