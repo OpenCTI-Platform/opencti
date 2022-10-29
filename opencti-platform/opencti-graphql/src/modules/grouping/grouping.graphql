@@ -139,13 +139,13 @@ type GroupingEdge {
 
 # Queries
 type Query {
-    grouping(id: String): Grouping @auth(for: [KNOWLEDGE])
+    grouping(id: String!): Grouping @auth(for: [KNOWLEDGE])
     groupings(
         first: Int
         after: ID
         orderBy: GroupingsOrdering
         orderMode: OrderingMode
-        filters: [GroupingsFiltering]
+        filters: [GroupingsFiltering!]
         filterMode: FilterMode
         search: String
         toStix: Boolean
@@ -199,16 +199,12 @@ input GroupingAddInput {
     update: Boolean
 }
 
-type GroupingEditMutations {
-    delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    contextPatch(input: EditContext): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    contextClean: Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    relationDelete(toId: StixRef!, relationship_type: String!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-}
-
 type Mutation {
-    groupingAdd(input: GroupingAddInput): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    groupingEdit(id: ID!): GroupingEditMutations
+    groupingAdd(input: GroupingAddInput!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    groupingFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingContextPatch(id: ID!, input: EditContext): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingContextClean(id: ID!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingRelationAdd(id: ID!, input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
 }

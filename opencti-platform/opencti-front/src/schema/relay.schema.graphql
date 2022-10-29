@@ -7113,8 +7113,8 @@ type Query {
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: [LanguagesFiltering!], filterMode: FilterMode, search: String): LanguageConnection
   event(id: String!): Event
   events(first: Int, after: ID, orderBy: EventsOrdering, orderMode: OrderingMode, filters: [EventsFiltering!], filterMode: FilterMode, search: String): EventConnection
-  grouping(id: String): Grouping
-  groupings(first: Int, after: ID, orderBy: GroupingsOrdering, orderMode: OrderingMode, filters: [GroupingsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): GroupingConnection
+  grouping(id: String!): Grouping
+  groupings(first: Int, after: ID, orderBy: GroupingsOrdering, orderMode: OrderingMode, filters: [GroupingsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): GroupingConnection
   groupingsTimeSeries(objectId: String, authorId: String, groupingType: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
   groupingsNumber(groupingContext: String, objectId: String, authorId: String, endDate: DateTime): Number
   groupingsDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
@@ -7730,8 +7730,13 @@ type Mutation {
   eventContextClean(id: ID!): Event
   eventRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
   eventRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Event
-  groupingAdd(input: GroupingAddInput): Grouping
-  groupingEdit(id: ID!): GroupingEditMutations
+  groupingAdd(input: GroupingAddInput!): Grouping
+  groupingDelete(id: ID!): ID
+  groupingFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Grouping
+  groupingContextPatch(id: ID!, input: EditContext): Grouping
+  groupingContextClean(id: ID!): Grouping
+  groupingRelationAdd(id: ID!, input: StixMetaRelationshipAddInput): StixMetaRelationship
+  groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping
   narrativeAdd(input: NarrativeAddInput!): Narrative
   narrativeDelete(id: ID!): ID
   narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative
@@ -8169,15 +8174,6 @@ input GroupingAddInput {
 }
 
 scalar context_String_NotNull_minLength_2
-
-type GroupingEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Grouping
-  contextPatch(input: EditContext): Grouping
-  contextClean: Grouping
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): Grouping
-}
 
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   id: ID!

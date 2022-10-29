@@ -32,7 +32,7 @@ const styles = () => ({
 });
 
 export const groupingKnowledgeAttackPatternsGraphQuery = graphql`
-  query GroupingKnowledgeAttackPatternsGraphQuery($id: String) {
+  query GroupingKnowledgeAttackPatternsGraphQuery($id: String!) {
     grouping(id: $id) {
       id
       name

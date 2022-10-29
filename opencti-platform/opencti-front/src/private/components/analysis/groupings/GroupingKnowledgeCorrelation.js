@@ -33,7 +33,7 @@ const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 
 export const groupingKnowledgeCorrelationQuery = graphql`
-  query GroupingKnowledgeCorrelationQuery($id: String) {
+  query GroupingKnowledgeCorrelationQuery($id: String!) {
     grouping(id: $id) {
       ...GroupingKnowledgeCorrelation_grouping
     }

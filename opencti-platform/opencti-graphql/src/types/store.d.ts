@@ -190,7 +190,7 @@ interface BasicStoreEntityEdge<T extends BasicStoreEntity> {
 }
 
 interface StoreEntityConnection<T extends BasicStoreEntity> {
-  edges?: Array<BasicStoreEntityEdge<T>>;
+  edges: Array<BasicStoreEntityEdge<T>>;
   pageInfo: PageInfo;
 }
 

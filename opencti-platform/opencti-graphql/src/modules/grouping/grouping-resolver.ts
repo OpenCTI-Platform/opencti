@@ -10,7 +10,8 @@ import {
   groupingsNumberByEntity,
   groupingsTimeSeries,
   groupingsTimeSeriesByAuthor,
-  groupingsTimeSeriesByEntity } from './grouping-domain';
+  groupingsTimeSeriesByEntity
+} from './grouping-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import {
   RELATION_CREATED_BY,
@@ -68,16 +69,28 @@ const groupingResolvers: Resolvers = {
     objectContains: buildRefRelationKey(RELATION_OBJECT),
   },
   Mutation: {
-    groupingEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
-    }),
-    groupingAdd: (_, { input }, context) => addGrouping(context, context.user, input),
-  },
+    groupingAdd: (_, { input }, context) => {
+      return addGrouping(context, context.user, input);
+    },
+    groupingDelete: (_, { id }, context) => {
+      return stixDomainObjectDelete(context, context.user, id);
+    },
+    groupingFieldPatch: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+    },
+    groupingContextPatch: (_, { id, input }, context) => {
+      return stixDomainObjectEditContext(context, context.user, id, input);
+    },
+    groupingContextClean: (_, { id }, context) => {
+      return stixDomainObjectCleanContext(context, context.user, id);
+    },
+    groupingRelationAdd: (_, { id, input }, context) => {
+      return stixDomainObjectAddRelation(context, context.user, id, input);
+    },
+    groupingRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+    },
+  }
 };
 
 export default groupingResolvers;

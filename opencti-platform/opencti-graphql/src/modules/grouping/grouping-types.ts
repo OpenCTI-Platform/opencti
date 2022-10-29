@@ -29,3 +29,8 @@ export interface StixGrouping extends StixDomainObject {
   };
 }
 // endregion
+
+export interface GroupingNumberResult {
+  count: number;
+  total: number;
+}

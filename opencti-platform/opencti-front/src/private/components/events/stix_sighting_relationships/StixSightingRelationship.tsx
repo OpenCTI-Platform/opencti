@@ -21,22 +21,22 @@ const stixSightingRelationshipQuery = graphql`
 `;
 
 interface StixSightingRelationshipProps {
-  entityId: string,
-  paddingRight: boolean,
+  entityId: string;
+  paddingRight: boolean;
 }
 
-const StixSightingRelationship: FunctionComponent<StixSightingRelationshipProps> = ({
-  entityId,
-  paddingRight,
-}) => {
+const StixSightingRelationship: FunctionComponent<
+StixSightingRelationshipProps
+> = ({ entityId, paddingRight }) => {
   const classes = useStyles();
   const { sightingId } = useParams() as { sightingId: string };
-
-  const data = useLazyLoadQuery<StixSightingRelationshipQuery>(stixSightingRelationshipQuery, { id: sightingId });
-
+  const data = useLazyLoadQuery<StixSightingRelationshipQuery>(
+    stixSightingRelationshipQuery,
+    { id: sightingId },
+  );
   return (
     <div className={classes.container}>
-      <Suspense fallback={<Loader/>}>
+      <Suspense fallback={<Loader />}>
         <StixSightingRelationshipOverview
           entityId={entityId}
           stixSightingRelationship={data.stixSightingRelationship}

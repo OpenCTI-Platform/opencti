@@ -29,16 +29,14 @@ const groupingLinesMutationRelationAdd = graphql`
     $id: ID!
     $input: StixMetaRelationshipAddInput!
   ) {
-    groupingEdit(id: $id) {
-      relationAdd(input: $input) {
-        id
-        to {
-          ... on Grouping {
-            id
-            name
-            description
-            context
-          }
+    groupingRelationAdd(id: $id, input: $input) {
+      id
+      to {
+        ... on Grouping {
+          id
+          name
+          description
+          context
         }
       }
     }
@@ -51,10 +49,12 @@ export const groupingMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    groupingEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        id
-      }
+    groupingRelationDelete(
+      id: $id
+      toId: $toId
+      relationship_type: $relationship_type
+    ) {
+      id
     }
   }
 `;
@@ -125,7 +125,9 @@ class AddGroupingsLinesContainer extends Component {
         {data.groupings.edges.map((groupingNode) => {
           const grouping = groupingNode.node;
           const alreadyAdded = entityGroupingsIds.includes(grouping.id);
-          const groupingId = grouping.external_id ? `(${grouping.external_id})` : '';
+          const groupingId = grouping.external_id
+            ? `(${grouping.external_id})`
+            : '';
           return (
             <ListItem
               key={grouping.id}
@@ -146,7 +148,8 @@ class AddGroupingsLinesContainer extends Component {
               <ListItemText
                 primary={`${grouping.source_name} ${groupingId}`}
                 secondary={truncate(
-                  grouping.description !== null && grouping.description.length > 0
+                  grouping.description !== null
+                    && grouping.description.length > 0
                     ? grouping.description
                     : grouping.url,
                   120,

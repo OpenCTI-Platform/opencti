@@ -5,22 +5,20 @@ export const groupingKnowledgeGraphtMutationRelationAddMutation = graphql`
     $id: ID!
     $input: StixMetaRelationshipAddInput
   ) {
-    groupingEdit(id: $id) {
-      relationAdd(input: $input) {
-        id
-        entity_type
-        parent_types
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
+    groupingRelationAdd(id: $id, input: $input) {
+      id
+      entity_type
+      parent_types
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+          parent_types
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+          parent_types
         }
       }
     }
@@ -33,10 +31,12 @@ export const groupingKnowledgeGraphMutationRelationDeleteMutation = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    groupingEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        id
-      }
+    groupingRelationDelete(
+      id: $id
+      toId: $toId
+      relationship_type: $relationship_type
+    ) {
+      id
     }
   }
 `;
