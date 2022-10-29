@@ -9,9 +9,11 @@ import Typography from '@material-ui/core/Typography';
 import {
   Card, CardContent, ListItemIcon, SvgIcon,
 } from '@material-ui/core';
+import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { now } from '../../../../utils/Time';
+import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
+import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -54,104 +56,27 @@ const styles = (theme) => ({
     height: 'inherit',
   },
 });
-
-const cyioCoreObjectTotalInventoryItemsCountQuery = graphql`
-  query CyioCoreObjectTotalInventoryItemsCountQuery(
-    $type: String
-    $field: String!
-    $match: [String]
-    $operation: StatsOperation
-    $endDate: DateTime
-  ) {
-    assetsCount(
-      type: $type
-      match: $match
-      field: $field
-      operation: $operation
-      endDate: $endDate
-    ) {
-      total
-      count
-    }
-  }
-`;
-
 class CyioCoreObjectTotalInventoryItemsCount extends Component {
   renderContent() {
-    const {
-      t,
-      title,
-      endDate,
-      classes,
-    } = this.props;
-    const finalEndDate = endDate || now();
-    const assetCountVariables = {
-      type: 'Inventory-Item',
-      field: 'asset_type',
-      match: ['computing-device', 'network-device', 'router'],
-      operation: 'count',
-      endDate: finalEndDate,
-    };
+    const { t, n, classes } = this.props;
     return (
-      <QueryRenderer
-        query={cyioCoreObjectTotalInventoryItemsCountQuery}
-        variables={assetCountVariables}
-        render={({ props }) => {
-          if (props && props.assetsCount) {
-            return (
-              <Card classes={{ root: classes.card }} variant="outlined">
-                <Suspense fallback={<Loader variant="inElement" />}>
-                  <CardContent>
-                    <div className={classes.title}>
-                      {title || t('Total Component')}
-                    </div>
-                    <div className={classes.content}>
-                      <div className={classes.number}>
-                        {props.assetsCount.total && t(props.assetsCount.total)}
-                      </div>
-                    </div>
-                    <div className={classes.icon}>
-                      <ListItemIcon style={{ minWidth: 35 }}>
-                        <SvgIcon style={{ fontSize: '2rem' }}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#ffffff" d="M12 4.942c1.827 1.105 3.474 1.6 5 1.833v7.76c0 1.606-.415 1.935-5 4.76v-14.353zm9-1.942v11.535c0 4.603-3.203 5.804-9 9.465-5.797-3.661-9-4.862-9-9.465v-11.535c3.516 0 5.629-.134 9-3 3.371 2.866 5.484 3 9 3zm-2 1.96c-2.446-.124-4.5-.611-7-2.416-2.5 1.805-4.554 2.292-7 2.416v9.575c0 3.042 1.69 3.83 7 7.107 5.313-3.281 7-4.065 7-7.107v-9.575z" /></svg>
-                        </SvgIcon>
-                      </ListItemIcon>
-                    </div>
-                  </CardContent>
-                </Suspense>
-              </Card>
-            );
-          }
-          if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
-          }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
+      <Card classes={{ root: classes.card }} variant="outlined">
+        <Suspense fallback={<Loader variant="inElement" />}>
+          <CardContent>
+            <div className={classes.title}>{t('Total Inventory Items')}</div>
+            <div className={classes.content}>
+              <div className={classes.number}>{n('10')}</div>
             </div>
-          );
-        }}
-      />
+            <div className={classes.icon}>
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <SvgIcon style={{ fontSize: '2rem' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#ffffff" d="M12 4.942c1.827 1.105 3.474 1.6 5 1.833v7.76c0 1.606-.415 1.935-5 4.76v-14.353zm9-1.942v11.535c0 4.603-3.203 5.804-9 9.465-5.797-3.661-9-4.862-9-9.465v-11.535c3.516 0 5.629-.134 9-3 3.371 2.866 5.484 3 9 3zm-2 1.96c-2.446-.124-4.5-.611-7-2.416-2.5 1.805-4.554 2.292-7 2.416v9.575c0 3.042 1.69 3.83 7 7.107 5.313-3.281 7-4.065 7-7.107v-9.575z" /></svg>
+                </SvgIcon>
+              </ListItemIcon>
+            </div>
+          </CardContent>
+        </Suspense>
+      </Card>
     );
   }
 
