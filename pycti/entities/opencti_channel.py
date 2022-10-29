@@ -163,7 +163,7 @@ class Channel:
         )
         query = (
             """
-            query Channels($filters: [ChannelsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ChannelsOrdering, $orderMode: OrderingMode) {
+            query Channels($filters: [ChannelsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: ChannelsOrdering, $orderMode: OrderingMode) {
                 channels(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

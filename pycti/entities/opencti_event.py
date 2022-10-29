@@ -165,7 +165,7 @@ class Event:
         )
         query = (
             """
-            query Events($filters: [EventsFiltering], $search: String, $first: Int, $after: ID, $orderBy: EventsOrdering, $orderMode: OrderingMode) {
+            query Events($filters: [EventsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: EventsOrdering, $orderMode: OrderingMode) {
                 events(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

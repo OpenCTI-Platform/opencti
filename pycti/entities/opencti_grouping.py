@@ -255,7 +255,7 @@ class Grouping:
         )
         query = (
             """
-            query Groupings($filters: [GroupingsFiltering], $search: String, $first: Int, $after: ID, $orderBy: GroupingsOrdering, $orderMode: OrderingMode) {
+            query Groupings($filters: [GroupingsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: GroupingsOrdering, $orderMode: OrderingMode) {
                 groupings(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
@@ -446,7 +446,7 @@ class Grouping:
         if name is not None and description is not None and context is not None:
             self.opencti.log("info", "Creating Grouping {" + name + "}.")
             query = """
-                mutation GroupingAdd($input: GroupingAddInput) {
+                mutation GroupingAdd($input: GroupingAddInput!) {
                     groupingAdd(input: $input) {
                         id
                         standard_id
@@ -509,10 +509,8 @@ class Grouping:
             )
             query = """
                mutation GroupingEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
-                   groupingEdit(id: $id) {
-                        relationAdd(input: $input) {
-                            id
-                        }
+                   groupingRelationAdd(id: $id, input: $input) {
+                        id
                    }
                }
             """
@@ -558,10 +556,8 @@ class Grouping:
             )
             query = """
                mutation GroupingEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                   groupingEdit(id: $id) {
-                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
-                            id
-                        }
+                   groupingRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+                        id
                    }
                }
             """
