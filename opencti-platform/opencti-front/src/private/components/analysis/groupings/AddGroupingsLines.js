@@ -103,9 +103,9 @@ class AddGroupingsLinesContainer extends Component {
           input,
         },
         updater: (store) => {
-          const payload = store
-            .getRootField('groupingEdit')
-            .getLinkedRecord('relationAdd', { input });
+          const payload = store.getLinkedRecord('groupingRelationAdd', {
+            input,
+          });
           const relationId = payload.getValue('id');
           const node = payload.getLinkedRecord('to');
           const relation = store.get(relationId);

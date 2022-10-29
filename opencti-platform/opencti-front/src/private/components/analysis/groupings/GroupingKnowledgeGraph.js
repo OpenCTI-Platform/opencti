@@ -882,7 +882,8 @@ class GroupingKnowledgeGraphComponent extends Component {
             && data.stixRelationship.groupings.edges.length === 1
           ) {
             commitMutation({
-              mutation: groupingKnowledgeGraphQueryStixRelationshipDeleteMutation,
+              mutation:
+                groupingKnowledgeGraphQueryStixRelationshipDeleteMutation,
               variables: {
                 id: n.id,
               },
@@ -1288,8 +1289,17 @@ class GroupingKnowledgeGraphComponent extends Component {
             onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
-            nodeCanvasObject={
-              (node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
+            nodeCanvasObject={(node, ctx) => nodePaint(
+              {
+                selected: theme.palette.secondary.main,
+                inferred: theme.palette.warning.main,
+              },
+              node,
+              node.color,
+              ctx,
+              this.selectedNodes.has(node),
+              node.isNestedInferred,
+            )
             }
             nodePointerAreaPaint={nodeAreaPaint}
             // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
