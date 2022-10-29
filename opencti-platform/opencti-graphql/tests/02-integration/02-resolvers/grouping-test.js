@@ -8,7 +8,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: GroupingsOrdering
     $orderMode: OrderingMode
-    $filters: [GroupingsFiltering]
+    $filters: [GroupingsFiltering!]
     $filterMode: FilterMode
     $search: String
   ) {
@@ -85,7 +85,7 @@ describe('Grouping resolver standard behavior', () => {
   const groupingStixId = 'grouping--994491f0-f114-4e41-bcf0-3288c0324f53';
   it('should grouping created', async () => {
     const CREATE_QUERY = gql`
-      mutation GroupingAdd($input: GroupingAddInput) {
+      mutation GroupingAdd($input: GroupingAddInput!) {
         groupingAdd(input: $input) {
           id
           standard_id
@@ -194,7 +194,7 @@ describe('Grouping resolver standard behavior', () => {
   it('should update grouping', async () => {
     const UPDATE_QUERY = gql`
       mutation GroupingEdit($id: ID!, $input: [EditInput]!) {
-        groupingFieldPatch(id: $idn input: $input) {
+        groupingFieldPatch(id: $id, input: $input) {
           id
           name
           description
@@ -305,6 +305,7 @@ describe('Grouping resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupingStixId } });
     expect(queryResult).not.toBeNull();
+    console.log(queryResult.data);
     expect(queryResult.data.groupingDelete).toBeNull();
   });
 });

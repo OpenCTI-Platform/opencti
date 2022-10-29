@@ -2184,7 +2184,7 @@ class WorkbenchFileContentComponent extends Component {
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
-      R.filter((n) => ['report', 'note'].includes(convertToStixType(n.label))),
+      R.filter((n) => ['report', 'note', 'grouping'].includes(convertToStixType(n.label))),
       R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
