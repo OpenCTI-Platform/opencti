@@ -36,6 +36,8 @@ interface RuleDefinition {
   id: string;
   name: string;
   description: string;
+  category: string;
+  display: string;
   scan: RuleFilters;
   scopes: Array<RuleScope>;
   behaviors: Array<RuleBehavior>;

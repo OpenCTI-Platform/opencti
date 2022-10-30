@@ -21,12 +21,16 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ItemOpenVocabProps {
-  type: string
-  value?: string
-  small: boolean
+  type: string;
+  value?: string;
+  small: boolean;
 }
 
-const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({ type, value, small = true }) => {
+const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
+  type,
+  value,
+  small = true,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
   if (!value) {
@@ -48,7 +52,9 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({ type, value, sma
   const openVocabList = openVocabularies[type];
   const openVocab = R.head(openVocabList.filter((n) => n.key === value));
   const description = openVocab && openVocab.description ? openVocab.description : t('No value');
-  const preStyle = small ? { margin: 0, paddingTop: 7, paddingBottom: 4 } : { marginTop: 7 };
+  const preStyle = small
+    ? { margin: 0, paddingTop: 7, paddingBottom: 4 }
+    : { marginTop: 7 };
   return (
     <span className={classes.container}>
       <pre style={preStyle}>{value}</pre>

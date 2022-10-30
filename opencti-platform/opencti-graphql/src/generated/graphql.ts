@@ -12232,16 +12232,18 @@ export type QueryStixCoreRelationshipsNumberArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   fromId?: InputMaybe<Scalars['StixRef']>;
   noDirection?: InputMaybe<Scalars['Boolean']>;
+  onlyInferred?: InputMaybe<Scalars['Boolean']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   type?: InputMaybe<Scalars['String']>;
 };
 
 
 export type QueryStixCoreRelationshipsTimeSeriesArgs = {
-  endDate: Scalars['DateTime'];
+  endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
   fromId?: InputMaybe<Scalars['StixRef']>;
   interval: Scalars['String'];
+  onlyInferred?: InputMaybe<Scalars['Boolean']>;
   operation: StatsOperation;
   relationship_type?: InputMaybe<Scalars['String']>;
   startDate: Scalars['DateTime'];
@@ -12386,6 +12388,7 @@ export type QueryStixDomainObjectsExportFilesArgs = {
 
 export type QueryStixDomainObjectsNumberArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
+  onlyInferred?: InputMaybe<Scalars['Boolean']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -12395,6 +12398,7 @@ export type QueryStixDomainObjectsTimeSeriesArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
   interval: Scalars['String'];
+  onlyInferred?: InputMaybe<Scalars['Boolean']>;
   operation: StatsOperation;
   startDate: Scalars['DateTime'];
   type?: InputMaybe<Scalars['String']>;
@@ -13434,7 +13438,9 @@ export enum RolesOrdering {
 export type Rule = {
   __typename?: 'Rule';
   activated: Scalars['Boolean'];
+  category?: Maybe<Scalars['String']>;
   description: Scalars['String'];
+  display?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   name: Scalars['String'];
 };
@@ -23255,7 +23261,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationshipsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsExportFilesArgs, 'type'>>;
   stixCoreRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipsNumberArgs>>;
-  stixCoreRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
+  stixCoreRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixCyberObservable?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<QueryStixCyberObservableArgs, 'id'>>;
   stixCyberObservableRelationship?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationship']>, ParentType, ContextType, Partial<QueryStixCyberObservableRelationshipArgs>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixCyberObservableRelationshipsArgs>>;
@@ -23581,7 +23587,9 @@ export type RoleEditMutationsResolvers<ContextType = any, ParentType extends Res
 
 export type RuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Rule'] = ResolversParentTypes['Rule']> = ResolversObject<{
   activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  display?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

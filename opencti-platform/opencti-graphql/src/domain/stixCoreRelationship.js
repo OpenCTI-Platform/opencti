@@ -13,7 +13,10 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
-import { INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
+import {
+  READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS
+} from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -65,10 +68,14 @@ export const stixCoreRelationshipsNumber = (context, user, args) => {
   }
   const finalArgs = R.assoc('types', types, args);
   return {
-    count: elCount(user, [READ_INDEX_STIX_CORE_RELATIONSHIPS, INDEX_INFERRED_RELATIONSHIPS], finalArgs),
+    count: elCount(
+      user,
+      args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS],
+      finalArgs
+    ),
     total: elCount(
       user,
-      [READ_INDEX_STIX_CORE_RELATIONSHIPS, INDEX_INFERRED_RELATIONSHIPS],
+      args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS],
       R.dissoc('endDate', finalArgs)
     ),
   };

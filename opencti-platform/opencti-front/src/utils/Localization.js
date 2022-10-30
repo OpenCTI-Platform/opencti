@@ -2808,6 +2808,9 @@ const i18n = {
       'Add context': 'Ajouter du contexte',
       'Delete the element if no other containers contain it':
         "Supprimer l'élément si aucun autre conteneur ne le contient",
+      IF: 'SI',
+      THEN: 'ALORS',
+      CREATE: 'CREER',
       // Time
       '24h': '24h',
       // Types

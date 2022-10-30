@@ -526,20 +526,20 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
 export const timeSeriesEntities = async (context, user, entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, field, interval, toTypes = [] } = options;
+  const { startDate, endDate, field, interval, toTypes = [], onlyInferred = false } = options;
   // Check if can be supported by ES
-  const histogramData = await elHistogramCount(context, user, entityType, field, interval, startDate, endDate, toTypes, filters);
+  const histogramData = await elHistogramCount(context, user, entityType, field, interval, startDate, endDate, toTypes, filters, onlyInferred);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesRelations = async (context, user, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid }
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, relationship_type: relationshipType, field, interval, toTypes = [] } = options;
+  const { startDate, endDate, relationship_type: relationshipType, field, interval, toTypes = [], onlyInferred = false } = options;
   const { fromId } = options;
   // Check if can be supported by ES
-  const entityType = relationshipType ? escape(relationshipType) : 'stix-relationship';
+  const entityType = relationshipType ? escape(relationshipType) : 'stix-core-relationship';
   const filters = fromId ? [{ isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId }] : [];
-  const histogramData = await elHistogramCount(context, user, entityType, field, interval, startDate, endDate, toTypes, filters);
+  const histogramData = await elHistogramCount(context, user, entityType, field, interval, startDate, endDate, toTypes, filters, onlyInferred);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const distributionEntities = async (context, user, entityType, filters, options = {}) => {

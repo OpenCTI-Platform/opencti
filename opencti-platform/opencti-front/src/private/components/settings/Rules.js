@@ -14,6 +14,7 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../utils/ListParameters';
+import { yearsAgo } from '../../../utils/Time';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -83,6 +84,7 @@ class Rules extends Component {
               <div className="clearfix" />
               <QueryRenderer
                 query={rulesListQuery}
+                variables={{ startDate: yearsAgo(1) }}
                 render={({ props }) => {
                   if (props) {
                     return <RulesList data={props} keyword={searchTerm} />;

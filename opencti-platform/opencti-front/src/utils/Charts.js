@@ -28,6 +28,7 @@ export const areaChartOptions = (
   xFormatter = null,
   yFormatter = null,
   tickAmount = undefined,
+  distributed = false,
 ) => ({
   chart: {
     type: 'area',
@@ -47,7 +48,9 @@ export const areaChartOptions = (
     curve: 'smooth',
     width: 2,
   },
-  colors: [theme.palette.primary.main],
+  colors: distributed
+    ? colors(theme.palette.mode === 'dark' ? 400 : 600)
+    : [theme.palette.primary.main],
   states: {
     hover: {
       filter: {
