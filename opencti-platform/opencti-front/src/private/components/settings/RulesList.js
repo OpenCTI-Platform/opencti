@@ -471,7 +471,12 @@ const RulesListComponent = ({ relay, data, keyword }) => {
               );
               const displayDefinition = JSON.parse(rule.display);
               return (
-                <Grid container={true} spacing={3} style={{ marginBottom: 50 }}>
+                <Grid
+                  key={rule.id}
+                  container={true}
+                  spacing={3}
+                  style={{ marginBottom: 50 }}
+                >
                   <Grid item={true} xs={3}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t(rule.name)}
@@ -566,9 +571,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                     >
                       <div className={classes.definition}>
                         <div className={classes.left}>
-                          {displayDefinition.if.map((step) => {
+                          {displayDefinition.if.map((step, index) => {
                             return (
-                              <div className={classes.step}>
+                              <div key={index} className={classes.step}>
                                 <div className={classes.if}>{t('IF')}</div>
                                 <div className={classes.element}>
                                   <div
@@ -608,9 +613,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                           <div className={classes.then}>{t('THEN')}</div>
                         </div>
                         <div className={classes.right}>
-                          {displayDefinition.then.map((step) => {
+                          {displayDefinition.then.map((step, index) => {
                             return (
-                              <div className={classes.step}>
+                              <div key={index} className={classes.step}>
                                 <div className={classes.action}>
                                   {t(step.action)}
                                 </div>
