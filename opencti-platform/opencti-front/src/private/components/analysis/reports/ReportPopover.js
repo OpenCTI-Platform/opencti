@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useHistory } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -11,14 +11,14 @@ import AlertTitle from '@mui/material/AlertTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql } from 'react-relay';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
 import Loader from '../../../../components/Loader';
@@ -89,6 +89,7 @@ const ReportPopover = (props) => {
     handleClose();
   };
   const handleCloseEdit = () => setDisplayEdit(false);
+  const data = useLazyLoadQuery(reportEditionQuery, { id });
   return (
     <div className={classes.container}>
       <IconButton
@@ -151,21 +152,12 @@ const ReportPopover = (props) => {
         classes={{ paper: classes.drawerPaper }}
         onClose={handleCloseEdit}
       >
-        <QueryRenderer
-          query={reportEditionQuery}
-          variables={{ id }}
-          render={({ editionProps }) => {
-            if (editionProps) {
-              return (
-                <ReportEditionContainer
-                  report={editionProps.report}
-                  handleClose={handleCloseEdit}
-                />
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
+        <Suspense fallback={<Loader variant="inElement" />}>
+          <ReportEditionContainer
+            report={data.report}
+            handleClose={handleCloseEdit}
+          />
+        </Suspense>
       </Drawer>
     </div>
   );
