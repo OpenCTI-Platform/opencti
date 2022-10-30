@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import {
-  createEntity, deleteElementById,
+  createEntity,
   distributionEntities,
   internalDeleteElementById, internalFindByIds,
   internalLoadById,
@@ -12,11 +12,10 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
-import { SYSTEM_USER } from '../utils/access';
 import { stixDomainObjectDelete } from './stixDomainObject';
 
 export const findById = (context, user, reportId) => {
@@ -132,16 +131,19 @@ export const addReport = async (context, user, report) => {
 
 // Delete all report contained entities if no other reports are linked
 export const reportDeleteWithElements = async (context, user, reportId) => {
+  // Load the report to get all rel_object
   const report = await findById(context, user, reportId);
   // Delete the report
   await stixDomainObjectDelete(context, user, reportId);
   // Load all entities and see if they no longer have any report
   const callback = (objects) => objects.map((object) => {
+    // If rel_object is 0, means the deleted report was the only one
     if (object.object === 0) {
       return internalDeleteElementById(context, context.user, object.id);
     }
     return true;
   });
+  // Load all report objects with a callback
   await internalFindByIds(context, user, report.object, { callback });
   return reportId;
 };
