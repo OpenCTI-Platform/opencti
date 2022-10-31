@@ -70,7 +70,7 @@ extend type Query {
     search: String
   ): AssociatedActivityConnection  @hasPermission(resources:"Assessment:view")
   # Characterizations
-  characterization(id: ID!): Characterization  @hasPermission(resources:"Assessment:view")
+  characterization(id: ID!): Characterization  @hasPermission(resources:"Risk:view")
   characterizations(
     first: Int
     offset: Int
@@ -79,9 +79,9 @@ extend type Query {
     filters: [CharacterizationFiltering]
     filterMode: FilterMode
     search: String
-  ): CharacterizationConnection  @hasPermission(resources:"Assessment:view")
+  ): CharacterizationConnection  @hasPermission(resources:"Risk:view")
   # Evidence
-  evidence(id: ID!): Evidence  @hasPermission(resources:"Assessment:view")
+  evidence(id: ID!): Evidence  @hasPermission(resources:"Observation:view")
   evidenceList(
     first: Int
     offset: Int
@@ -90,9 +90,9 @@ extend type Query {
     filters: [EvidenceFiltering]
     filterMode: FilterMode
     search: String
-  ): EvidenceConnection  @hasPermission(resources:"Assessment:view")
+  ): EvidenceConnection  @hasPermission(resources:"Observation:view")
   # Facet
-  facet(id: ID!): Facet  @hasPermission(resources:"Assessment:view")
+  facet(id: ID!): Facet  @hasPermission(resources:"Risk:view")
   facets(
     first: Int
     offset: Int
@@ -101,7 +101,7 @@ extend type Query {
     filters: [FacetFiltering]
     filterMode: FilterMode
     search: String
-  ): FacetConnection  @hasPermission(resources:"Assessment:view")
+  ): FacetConnection  @hasPermission(resources:"Risk:view")
   #Log Entry Author
   logEntryAuthor(id: ID!): LogEntryAuthor  @hasPermission(resources:"Assessment:view")
   logEntryAuthors(
@@ -114,7 +114,7 @@ extend type Query {
     search: String
   ): LogEntryAuthorConnection  @hasPermission(resources:"Assessment:view")
   #Mitigating Factor
-  mitigatingFactor(id: ID!): MitigatingFactor  @hasPermission(resources:"Assessment:view")
+  mitigatingFactor(id: ID!): MitigatingFactor  @hasPermission(resources:"Risk:view")
   mitigatingFactors(
     first: Int
     offset: Int
@@ -123,9 +123,9 @@ extend type Query {
     filters: [MitigatingFactorFiltering]
     filterMode: FilterMode
     search: String
-  ): MitigatingFactorConnection  @hasPermission(resources:"Assessment:view")
+  ): MitigatingFactorConnection  @hasPermission(resources:"Risk:view")
   # Observation
-  observation(id: ID!): Observation  @hasPermission(resources:"Assessment:view")
+  observation(id: ID!): Observation  @hasPermission(resources:"Observation:view")
   observations(
     first: Int
     offset: Int
@@ -134,7 +134,7 @@ extend type Query {
     filters: [ObservationsFiltering]
     filterMode: FilterMode
     search: String
-  ): ObservationConnection  @hasPermission(resources:"Assessment:view")
+  ): ObservationConnection  @hasPermission(resources:"Observation:view")
   # Origin
   origin(id: ID!): Origin  @hasPermission(resources:"Assessment:view")
   origins(
@@ -169,7 +169,7 @@ extend type Query {
     search: String
   ): RequiredAssetConnection  @hasPermission(resources:"Assessment:view")
   # Risk
-  risk(id: ID!): Risk  @hasPermission(resources:"Assessment:view")
+  risk(id: ID!): Risk  @hasPermission(resources:"Risk:view")
   risks(
     first: Int
     offset: Int
@@ -178,9 +178,9 @@ extend type Query {
     filters: [RisksFiltering]
     filterMode: FilterMode
     search: String
-  ): RiskConnection  @hasPermission(resources:"Assessment:view")
+  ): RiskConnection  @hasPermission(resources:"Risk:view")
   # Risk Log Entry
-  riskLogEntry(id: ID!): RiskLogEntry  @hasPermission(resources:"Assessment:view")
+  riskLogEntry(id: ID!): RiskLogEntry  @hasPermission(resources:"Risk:view")
   riskLogEntries(
     first: Int
     offset: Int
@@ -189,9 +189,9 @@ extend type Query {
     filters: [RiskLogEntriesFiltering]
     filterMode: FilterMode
     search: String
-  ): RiskLogEntryConnection  @hasPermission(resources:"Assessment:view")
+  ): RiskLogEntryConnection  @hasPermission(resources:"Risk:view")
   # Risk Response
-  riskResponse(id: ID!): RiskResponse  @hasPermission(resources:"Assessment:view")
+  riskResponse(id: ID!): RiskResponse  @hasPermission(resources:"Risk:view")
   riskResponses(
     first: Int
     offset: Int
@@ -200,7 +200,7 @@ extend type Query {
     filters: [RiskResponsesFiltering]
     filterMode: FilterMode
     search: String
-  ): RiskResponseConnection  @hasPermission(resources:"Assessment:view")
+  ): RiskResponseConnection  @hasPermission(resources:"Risk:view")
   # Subject
   subject(id: ID!): Subject  @hasPermission(resources:"Assessment:view")
   subjects(
@@ -241,25 +241,25 @@ extend type Mutation {
   deleteAssociatedActivity(taskId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
   editAssociatedActivity(id: ID!, input: [EditInput]!, commitMessage: String): AssociatedActivity  @hasPermission(resources:"Assessment:update")
   # Characterization
-  createCharacterization(input: CharacterizationAddInput): Characterization  @hasPermission(resources:"Assessment:update")
-  deleteCharacterization(riskId: ID!, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
-  editCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): Characterization  @hasPermission(resources:"Assessment:update")
+  createCharacterization(input: CharacterizationAddInput): Characterization  @hasPermission(resources:"Risk:update")
+  deleteCharacterization(riskId: ID!, id: ID!): String!  @hasPermission(resources:"Risk:delete")
+  editCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): Characterization  @hasPermission(resources:"Risk:update")
   # Evidence
-  createEvidence(input: EvidenceAddInput): Evidence  @hasPermission(resources:"Assessment:update")
-  deleteEvidence(observationId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
-  editEvidence(id: ID!, input: [EditInput]!, commitMessage: String): Evidence  @hasPermission(resources:"Assessment:update")
+  createEvidence(input: EvidenceAddInput): Evidence  @hasPermission(resources:"Observation:update")
+  deleteEvidence(observationId: ID, id: ID!): String!  @hasPermission(resources:"Observation:delete")
+  editEvidence(id: ID!, input: [EditInput]!, commitMessage: String): Evidence  @hasPermission(resources:"Observation:update")
   # Facet
-  createFacet(input: FacetAddInput): Facet  @hasPermission(resources:"Assessment:update")
-  deleteFacet(characterizationId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
-  editFacet(id: ID!, input: [EditInput]!, commitMessage: String): Facet  @hasPermission(resources:"Assessment:update")
+  createFacet(input: FacetAddInput): Facet  @hasPermission(resources:"Risk:update")
+  deleteFacet(characterizationId: ID, id: ID!): String!  @hasPermission(resources:"Risk:delete")
+  editFacet(id: ID!, input: [EditInput]!, commitMessage: String): Facet  @hasPermission(resources:"Risk:update")
   # Mitigating Factor
-  createMitigatingFactor(input: MitigatingFactorAddInput): MitigatingFactor  @hasPermission(resources:"Assessment:update")
-  deleteMitigatingFactor(riskId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
-  editMitigatingFactor(id: ID!, input: [EditInput]!, commitMessage: String): MitigatingFactor  @hasPermission(resources:"Assessment:update")
+  createMitigatingFactor(input: MitigatingFactorAddInput): MitigatingFactor  @hasPermission(resources:"Risk:update")
+  deleteMitigatingFactor(riskId: ID, id: ID!): String!  @hasPermission(resources:"Risk:delete")
+  editMitigatingFactor(id: ID!, input: [EditInput]!, commitMessage: String): MitigatingFactor  @hasPermission(resources:"Risk:update")
   # Observation
-  createObservation(poamId: ID, resultId: ID, input: ObservationAddInput): Observation  @hasPermission(resources:"Assessment:update")
-  deleteObservation(poamId: ID, resultId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
-  editObservation(id: ID!, input: [EditInput]!, commitMessage: String): Observation  @hasPermission(resources:"Assessment:update")
+  createObservation(poamId: ID, resultId: ID, input: ObservationAddInput): Observation  @hasPermission(resources:"Observation:update")
+  deleteObservation(poamId: ID, resultId: ID, id: ID!): String!  @hasPermission(resources:"Observation:delete")
+  editObservation(id: ID!, input: [EditInput]!, commitMessage: String): Observation  @hasPermission(resources:"Observation:update")
   # Origins
   createOrigin(input: OriginAddInput): Origin  @hasPermission(resources:"Assessment:update")
   deleteOrigin(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
@@ -273,17 +273,17 @@ extend type Mutation {
   deleteRequiredAsset(remediationId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
   editRequiredAsset(id: ID!, input: [EditInput]!, commitMessage: String): RequiredAsset  @hasPermission(resources:"Assessment:update")
   # RiskLog Entry
-  createRiskLogEntry(input: RiskLogEntryAddInput): RiskLogEntry  @hasPermission(resources:"Assessment:update")
-  deleteRiskLogEntry(riskId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
-  editRiskLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): RiskLogEntry  @hasPermission(resources:"Assessment:update")
+  createRiskLogEntry(input: RiskLogEntryAddInput): RiskLogEntry  @hasPermission(resources:"Risk:update")
+  deleteRiskLogEntry(riskId: ID, id: ID!): String!  @hasPermission(resources:"Risk:delete")
+  editRiskLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): RiskLogEntry  @hasPermission(resources:"Risk:update")
   # Risk
-  createRisk(poamId: ID, resultId: ID, input: RiskAddInput): Risk  @hasPermission(resources:"Assessment:update")
-  deleteRisk(poamId: ID, resultId: ID, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
-  editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk  @hasPermission(resources:"Assessment:update")
+  createRisk(poamId: ID, resultId: ID, input: RiskAddInput): Risk  @hasPermission(resources:"Risk:update")
+  deleteRisk(poamId: ID, resultId: ID, id: ID!): String!  @hasPermission(resources:"Risk:delete")
+  editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk  @hasPermission(resources:"Risk:update")
   # Risk Response
-  createRiskResponse(input: RiskResponseAddInput): RiskResponse  @hasPermission(resources:"Assessment:update")
-  deleteRiskResponse(riskId: ID!, id: ID!): String!  @hasPermission(resources:"Assessment:delete")
-  editRiskResponse(id: ID!, input: [EditInput]!, commitMessage: String): RiskResponse  @hasPermission(resources:"Assessment:update")
+  createRiskResponse(input: RiskResponseAddInput): RiskResponse  @hasPermission(resources:"Risk:update")
+  deleteRiskResponse(riskId: ID!, id: ID!): String!  @hasPermission(resources:"Risk:delete")
+  editRiskResponse(id: ID!, input: [EditInput]!, commitMessage: String): RiskResponse  @hasPermission(resources:"Risk:update")
   # Subject
   createSubject(input: SubjectAddInput): Subject  @hasPermission(resources:"Assessment:update")
   deleteSubject(id: ID!): String!  @hasPermission(resources:"Assessment:delete")
@@ -1825,6 +1825,10 @@ type Risk implements BasicObject & LifecycleObject & OscalObject {
   characterizations: [Characterization]
   "Identifies one or more existing mitigating factors that may affect the overall determination of the risk, with an optional link to an implementation statement in the SSP."
   mitigating_factors: [MitigatingFactor]
+  "Identifies the date/time when the risk was first seen/observered."
+  first_seen: Timestamp
+  "Idetifies the date/time when the risk was last seen/observed."
+  last_seen: Timestamp
   "Identifies the date/time by which the risk must be resolved."
   deadline: Timestamp
   "Identifies either recommended or an actual plan for addressing the risk."

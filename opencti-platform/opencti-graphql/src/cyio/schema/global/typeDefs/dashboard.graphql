@@ -9,17 +9,19 @@ extend type Query {
   end date and time.
   """
   assetsCount(
-    field: String!
+    type: String
+    field: String
     match: [String]
     operation: StatsOperation
     endDate: DateTime
-  ): Number
+  ): Number  @hasPermission(resources: ["Knowledge:view","Explore:view"])
   """
   Retrieves the total number of assets that were created between the
   start and end date that match the filter, and buckets the counts 
   into intervals, as specified.
   """
   assetsTimeSeries(
+    type: String
     objectId: ID
     field: String!
     match: [String]
@@ -27,7 +29,22 @@ extend type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: Interval!
-  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  ): [CyioTimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  """
+  Retrieves the total number of assets that were created between the
+  start and end date that match the filter, and returns only as many
+  as the limit specifies
+  """
+  assetsDistribution(
+    type: String
+    objectId: ID
+    field: String!
+    match: [String]
+    operation: StatsOperation
+    startDate: DateTime!
+    endDate: DateTime!
+    limit: Int
+  ): [CyioDistribution] @hasPermission(resources: ["Knowledge:view","Explore:view"])
 
 
   # Risk dashboard query support
@@ -37,36 +54,34 @@ extend type Query {
   end date and time.
   """
   risksCount(
-    "field on which to match risk"
-    field: String!
-    "list of value(s) that the specified field must match at least one"
+    type: String
+    field: String
     match: [String]
     operation: StatsOperation
     endDate: DateTime!
-  ): Number
+  ): Number  @hasPermission(resources: ["Knowledge:view","Explore:view"])
   """
   Retrieves the total number of risks that were created between the
   start and end date that match the filter, and buckets the counts 
   into intervals, as specified.
   """
   risksTimeSeries(
+    type: String
     objectId: ID
-    "field on which to match risk"
     field: String!
-    "list value(s) that the specified field must match at least one"
     match: [String]
     operation: StatsOperation
     startDate: DateTime!
     endDate: DateTime!
-    "interval into which counts are to be accumulated"
     interval: Interval!
-  ): [TimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
+  ): [CyioTimeSeries] @hasPermission(resources: ["Knowledge:view","Explore:view"])
   """
   Retrieves the total number of risks that were created between the
   start and end date that match the filter, and returns only as many
   as the limit specifies
   """
   risksDistribution(
+    type: String
     objectId: ID
     field: String!
     match: [String]
@@ -86,8 +101,14 @@ enum Interval {
 
 union CyioObject = Risk | Component | InventoryItem
 
+type CyioTimeSeries {
+  date: DateTime!
+  label: String
+  value: Int!
+}
+
 type CyioDistribution {
   label: String!
   entity: CyioObject
-  value: Int
+  value: Float
 }
