@@ -1,4 +1,4 @@
-import { CyioError } from '../../utils.js';
+import { compareValues, CyioError } from '../../utils.js';
 import { UserInputError } from 'apollo-server-errors';
 import conf from '../../../../config/conf.js';
 import { 
@@ -8,6 +8,9 @@ import {
   entitiesDistributionQuery,
   dashboardSingularizeSchema as singularizeSchema,
 } from './dashboard-sparqlQuery.js';
+import { calculateRiskLevel } from '../../risk-assessments/riskUtils.js';
+import { getReducer as getAssessmentReducer } from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
+import { objectTypeMapping } from '../../assets/asset-mappings.js';
 
 const cyioDashboardResolvers = {
   Query: {
@@ -358,6 +361,33 @@ const cyioDashboardResolvers = {
       // none found
       if (response === undefined || response.length === 0 ) return null; 
       if (Object.entries(response[0]).length === 0) return null;
+
+      for (let risk of response) {
+        risk.risk_level = 'unknown';
+        if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
+          // calculate the risk level
+          const {riskLevel, riskScore} = calculateRiskLevel(risk);
+          risk.risk_score = riskScore;
+          risk.risk_level = riskLevel;
+          if ('match' in args) risk.o = riskLevel;
+
+          // clean up
+          delete risk.cvssV2Base_score;
+          delete risk.cvssV2Temporal_score;
+          delete risk.cvssV3Base_score
+          delete risk.cvssV3Temporal_score;
+          delete risk.available_exploit_values;
+          delete risk.exploitability_ease_values;
+        }
+      }
+
+      // sort the values
+      let riskList, sortBy ;
+      if (args.field === 'risk_level' ) {
+        sortBy = 'risk_score';
+        riskList = response.sort(compareValues(sortBy, 'desc' ));
+        response = riskList;
+      }
       
       // build buckets for each of the potential match items
       let bucket = {};
@@ -365,14 +395,32 @@ const cyioDashboardResolvers = {
         for (let value of args.match) {
           bucket[value] = {label:value, value: 0}
         }  
+        // for each response, increment the count in the match bucket
+        for (let value of response) {
+          if (value.o in bucket) {
+            bucket[value.o].value++;
+          } else {
+            bucket[value.o] = {label: value.o, value: 1};
+          }
+        }
       }
-
-      // for each response, increment the count in the match bucket
-      for (let value of response ) {
-        if (value.o in bucket) {
-          bucket[value.o].value++;
+      if (!('match' in args)) {
+        const reducer = getAssessmentReducer("RISK");
+        let limit = 0;
+        if ('limit' in args) {
+          limit = args.limit;
         } else {
-          bucket[value.o] = {label: value.o, value: 1};
+          limit = 5;
+        }
+        for (let value of response) {
+          if (limit) {
+            bucket[value.name] = {
+              label: value.name,
+              value: (args.field === 'risk_level' ? value.risk_score : value.occurrences),
+              entity: reducer(value)
+            }
+            limit--;
+          }
         }
       }
 
@@ -383,6 +431,13 @@ const cyioDashboardResolvers = {
       }
 
       return results;
+    }
+  },
+  CyioObject: {
+    __resolveType: (item) => {
+      if (item.entity_type === 'risk') return 'Risk';
+      if (item.entity_type === 'component') return 'Component';
+      if (item.entity_type === 'inventory-item') return 'InventoryItem';
     }
   }
 };
