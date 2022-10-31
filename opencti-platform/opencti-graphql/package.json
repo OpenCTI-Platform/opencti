@@ -19,7 +19,8 @@
     "serv": "node build/back.js",
     "test:base": "node --max-old-space-size=8192 ./node_modules/jest/bin/jest.js --bail --testSequencer ./tests/utils/testSequencer.js --no-watchman --runInBand --forceExit",
     "test:dev": "yarn test:base ./tests/01-unit ./tests/02-integration ./tests/03-streams ./tests/05-rules",
-    "test": "yarn test:base --coverage --e test"
+    "test": "yarn test:base --coverage --e test",
+    "insert:dev": "node build/script-insert-dataset.js"
   },
   "pkg": {
     "scripts": "dist/**/*.js",

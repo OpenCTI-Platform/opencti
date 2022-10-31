@@ -9,7 +9,8 @@ esbuild.build({
     plugins: [importGlobPlugin(), graphqlLoaderPlugin(), nativeNodePlugin()],
     entryPoints: [
         'src/back.js',
-        'script/script-clean-relations.js'
+        'script/script-clean-relations.js',
+        'script/script-insert-dataset.js'
     ],
     entryNames: "[name]",
     bundle: true,
