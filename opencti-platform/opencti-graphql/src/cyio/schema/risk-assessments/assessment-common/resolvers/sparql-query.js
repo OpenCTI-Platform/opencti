@@ -406,7 +406,8 @@ const riskReducer = (item) => {
   if ( item.object_type === undefined ) {
     item.object_type = 'risk';
   }
-
+  
+  if (!('deadline' in item)) item.deadline = null;
   return {
     iri: item.iri,
     id: item.id,
@@ -428,6 +429,8 @@ const riskReducer = (item) => {
     ...(item.threats && {threats_iri: item.threats}),
     ...(item.characterizations && {characterizations_iri: item.characterizations}),
     ...(item.mitigating_factors && {mitigating_factors_iri: item.mitigating_factors}),
+    ...(item.first_seen && {first_seen: item.first_seen}),
+    ...(item.last_seen && {last_seen: item.last_seen}),
     ...(item.deadline && {deadline: item.deadline}),
     ...(item.remediations && {remediations_iri: item.remediations}),
     ...(item.risk_log && {risk_log_iri: item.risk_log}),
@@ -3086,6 +3089,9 @@ export const selectRiskByIriQuery = (iri, select) => {
     if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
     if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp')
   }
+  if (select.includes('first_seen') || select.includes('last_seen')) {
+    if(!select.includes('collected')) select.push('collected');
+  }
 
   // build selectionClause and predicate list
   let { selectionClause, predicates } = buildSelectVariables(riskPredicateMap, select);
@@ -3104,6 +3110,9 @@ export const selectRiskByIriQuery = (iri, select) => {
     selectionClause = selectionClause.replace('?remediation_lifecycle','')
     selectionClause = selectionClause.replace('?remediation_timestamp','')
   }
+  if (select.includes('first_seen') || select.includes('last_seen')) {
+    selectionClause = selectionClause.replace('?collected','');
+  }
 
   // Populate the insertSelections that compute results
   if (select.includes('risk_level')) {
@@ -3116,6 +3125,9 @@ export const selectRiskByIriQuery = (iri, select) => {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
+  }
+  if (select.includes('first_seen') || select.includes('last_seen')) {
+    insertSelections.push(`(MIN(?collected) AS ?first_seen) (MAX(?collected) as ?last_seen)`);
   }
   if (select.includes('occurrences')) {
     occurrences = '?occurrences';
@@ -3185,8 +3197,11 @@ export const selectAllRisks = (select, args, parent) => {
   // Update select to collect additional predicates if looking for response type
   if (select.includes('response_type')|| select.includes('lifecycle')) {
     if (!select.includes('remediation_type')) select.push('remediation_type');
-    if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle')
-    if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp')
+    if (!select.includes('remediation_lifecycle')) select.push('remediation_lifecycle');
+    if (!select.includes('remediation_timestamp')) select.push('remediation_timestamp');
+  }
+  if (select.includes('first_seen') || select.includes('last_seen')) {
+    if(!select.includes('collected')) select.push('collected');
   }
 
   if (args !== undefined ) {
@@ -3251,6 +3266,9 @@ export const selectAllRisks = (select, args, parent) => {
     selectionClause = selectionClause.replace('?remediation_lifecycle','')
     selectionClause = selectionClause.replace('?remediation_timestamp','')    
   }
+  if (select.includes('first_seen') || select.includes('last_seen')) {
+    selectionClause = selectionClause.replace('?collected','');
+  }
 
   // Populate the insertSelections that compute results
   if (select.includes('risk_level')) {
@@ -3263,6 +3281,9 @@ export const selectAllRisks = (select, args, parent) => {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
+  }
+  if (select.includes('first_seen') || select.includes('last_seen')) {
+    insertSelections.push(`(MIN(?collected) AS ?first_seen) (MAX(?collected) as ?last_seen)`);
   }
   if (select.includes('occurrences')) {
     occurrences = '?occurrences';
@@ -4966,6 +4987,11 @@ export const riskPredicateMap = {
   mitigating_factors: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#mitigating_factors>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "mitigating_factors");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  collected: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://csrc.nist.gov/ns/oscal/assessment/common#collected>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "collected");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   deadline: {
