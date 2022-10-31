@@ -14,7 +14,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 const subscription = graphql`
   subscription RootDashboardSubscription($id: ID!) {
     workspace(id: $id) {
-      ...Dashboard_workspace
+      ...CyioDashboard_workspace
     }
   }
 `;
@@ -24,7 +24,7 @@ const dashboardQuery = graphql`
     workspace(id: $id) {
       id
       name
-      ...Dashboard_workspace
+      ...CyioDashboard_workspace
     }
   }
 `;

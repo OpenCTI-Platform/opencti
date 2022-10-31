@@ -135,7 +135,7 @@ class CyioCoreObjectTotalInventoryItemsAreaChart extends Component {
                   // labelFormatter={tickFormatter}
                   />
                   <Area
-                    dataKey="uv"
+                    dataKey="value"
                     stroke={theme.palette.primary.main}
                     strokeWidth={2}
                     // fill={theme.palette.primary.main}

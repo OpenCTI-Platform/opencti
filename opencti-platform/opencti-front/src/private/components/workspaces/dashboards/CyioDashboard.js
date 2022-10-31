@@ -10,6 +10,9 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import Dialog from '@material-ui/core/Dialog';
+import Slide from '@material-ui/core/Slide';
+import DialogContent from '@material-ui/core/DialogContent';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import {
@@ -21,7 +24,7 @@ import {
 } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import CyioWorkspaceHeader from '../CyioWorkspaceHeader';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer, fetchQuery } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import CyioWidgetCreation from './CyioWidgetCreation';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
@@ -37,7 +40,7 @@ import EntityThreatsMalwares from './EntityThreatsMalwares';
 import EntityActivityCampaigns from './EntityActivityCampaigns';
 import EntityActivityIncidents from './EntityActivityIncidents';
 import EntityActivityReports from './EntityActivityReports';
-import WidgetPopover from './WidgetPopover';
+import CyioWidgetPopover from './CyioWidgetPopover';
 import GlobalVictimologyAll from './GlobalVictimologyAll';
 import GlobalVictimologySectors from './GlobalVictimologySectors';
 import GlobalVictimologyCountries from './GlobalVictimologyCountries';
@@ -47,8 +50,15 @@ import GlobalActivityReports from './GlobalActivityReports';
 import GlobalActivityIndicators from './GlobalActivityIndicators';
 import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
 import ThreatVulnerabilities from './ThreatVulnerabilities';
+import { toastGenericError } from '../../../../utils/bakedToast';
+import Loader from '../../../../components/Loader';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -69,6 +79,10 @@ const styles = (theme) => ({
     display: 'relative',
     overflow: 'auto',
   },
+  dialogContent: {
+    overflow: 'hidden',
+    height: '300px',
+  },
 });
 
 const cyioDashboardWizardQuery = graphql`
@@ -85,6 +99,7 @@ class DashboardComponent extends Component {
       currentWidget: {},
       mapReload: false,
       openWidgetCreate: false,
+      wizardConfig: {},
     };
   }
 
@@ -108,13 +123,6 @@ class DashboardComponent extends Component {
   }
 
   handleWidgetCreation() {
-    // console.log('CyioDashboardCalled!!');
-    fetchQuery(cyioDashboardWizardQuery)
-      .toPromise()
-      .then((data) => {
-        console.log('CyioDashboardQuery', data);
-      });
-    // .catch((error) => )
     this.setState({ openWidgetCreate: !this.state.openWidgetCreate });
   }
 
@@ -470,11 +478,6 @@ class DashboardComponent extends Component {
           variant="dashboard"
           handleWidgetCreation={this.handleWidgetCreation.bind(this)}
         />
-        {/* <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        > */}
         <div className={classes.bottomNav}>
           <Security
             needs={[EXPLORE_EXUPDATE]}
@@ -579,7 +582,6 @@ class DashboardComponent extends Component {
             </Grid>
           </Security>
         </div>
-        {/* </Drawer> */}
         {/* <Security
           needs={[EXPLORE_EXUPDATE]}
           placeholder={
@@ -649,7 +651,7 @@ class DashboardComponent extends Component {
               classes={{ root: classes.paper }}
               elevation={2}
             >
-              <WidgetPopover
+              <CyioWidgetPopover
                 onDelete={this.handleDeleteWidget.bind(this, widget.id)}
               />
               {widget.perspective === 'global'
@@ -661,11 +663,37 @@ class DashboardComponent extends Component {
             </Paper>
           ))}
         </ResponsiveGridLayout>
-        <CyioWidgetCreation
+        <Dialog
           open={this.state.openWidgetCreate}
-          handleWidgetCreation={this.handleWidgetCreation.bind(this)}
-          onComplete={this.handleAddWidget.bind(this)}
-        />
+          TransitionComponent={Transition}
+          fullWidth={true}
+          maxWidth="md"
+        >
+          <QueryRenderer
+            query={cyioDashboardWizardQuery}
+            render={({ error, props }) => {
+              if (error) {
+                toastGenericError('Request Failed');
+              }
+              if (props) {
+                const wizardConfig = JSON.parse(Buffer.from(props.workspaceWizardConfig, 'base64').toString('ascii'));
+                return (
+                  <CyioWidgetCreation
+                    open={this.state.openWidgetCreate}
+                    wizardConfig={wizardConfig}
+                    handleWidgetCreation={this.handleWidgetCreation.bind(this)}
+                    onComplete={this.handleAddWidget.bind(this)}
+                  />
+                );
+              }
+              return (
+                <DialogContent classes={{ root: classes.dialogContent }}>
+                  <Loader />
+                </DialogContent>
+              );
+            }}
+          />
+        </Dialog>
         {/* </Security> */}
       </div>
     );

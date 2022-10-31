@@ -125,7 +125,7 @@ class CyioCoreObjectTotalActiveRiskDonutChart extends Component {
     } = this.props;
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const stixDomainObjectsDistributionVariables = {
+    const riskDistributionVariables = {
       type: 'Risk',
       field: 'risk_status',
       operation: 'count',
@@ -136,7 +136,7 @@ class CyioCoreObjectTotalActiveRiskDonutChart extends Component {
     return (
       <QueryRenderer
         query={CyioCoreObjectTotalActiveRiskDonutsQuery}
-        variables={stixDomainObjectsDistributionVariables}
+        variables={riskDistributionVariables}
         render={({ props }) => {
           if (
             props

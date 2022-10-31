@@ -127,7 +127,6 @@ class CyioCoreObjectTotalAcceptedRiskDonutChart extends Component {
     const finalEndDate = endDate || now();
     const riskDistributionVariables = {
       type: 'Risk',
-      field: 'risk_status',
       field: 'accepted',
       match: ['approved'],
       startDate: finalStartDate,
