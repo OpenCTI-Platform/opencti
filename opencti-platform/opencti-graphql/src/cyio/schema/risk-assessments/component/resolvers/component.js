@@ -80,8 +80,8 @@ const componentResolvers = {
             continue
           }
 
-        // Determine the proper component type for the asset
-        if (component.component_type === undefined) {
+          // Determine the proper component type for the asset
+          if (component.component_type === undefined) {
             switch(component.asset_type) {
               case 'software':
               case 'operating-system':
@@ -92,11 +92,16 @@ const componentResolvers = {
                 component.component_type = 'network';
                 break;
               default:
-                console.error(`[CYIO] UNKNOWN-COMPONENT Unknown component type '${item.component_type}' for object ${item.iri}`);        
-                console.error(`[CYIO] UNKNOWN-TYPE Unknown asset type '${item.asset_type}' for object ${item.iri}`);        
-                if (component.iri.includes('Software')) item.component_type = 'software';
-                if (component.iri.includes('Network')) item.component_type = 'network';
-                if (component.component_type === undefined) continue;
+                if (component.asset_type) {
+                  console.error(`[CYIO] INVALID-COMPONENT: (${dbName}) Invalid asset type "${component.asset_type}" specified for component ${component.iri}`);
+                  continue;
+                }
+                if (component.iri.includes('Software')) component.component_type = 'software';
+                if (component.iri.includes('Network')) component.component_type = 'network';
+                if (component.component_type === undefined) {
+                  console.error(`[CYIO] INVALID-COMPONENT: (${dbName}) Unknown component type is unspecified for object ${component.iri}`);        
+                  continue;
+                }
             }
           }
 

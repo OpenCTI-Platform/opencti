@@ -1825,6 +1825,10 @@ type Risk implements BasicObject & LifecycleObject & OscalObject {
   characterizations: [Characterization]
   "Identifies one or more existing mitigating factors that may affect the overall determination of the risk, with an optional link to an implementation statement in the SSP."
   mitigating_factors: [MitigatingFactor]
+  "Identifies the date/time when the risk was first seen/observered."
+  first_seen: Timestamp
+  "Idetifies the date/time when the risk was last seen/observed."
+  last_seen: Timestamp
   "Identifies the date/time by which the risk must be resolved."
   deadline: Timestamp
   "Identifies either recommended or an actual plan for addressing the risk."
