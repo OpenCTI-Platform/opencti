@@ -42,6 +42,10 @@ class RemediationComponent extends Component {
     this.setState({ displayEdit: !this.state.displayEdit });
   }
 
+  handleCloseEdit() {
+    this.setState({ displayEdit: false });
+  }
+
   handleOpen() {
     this.setState({ openCreation: true });
   }
@@ -149,6 +153,7 @@ class RemediationComponent extends Component {
             cyioCoreRelationshipId={remediation.id}
             risk={risk}
             riskId={riskId}
+            handleCloseEdit={this.handleCloseEdit.bind(this)}
           />
           {this.state.openCreation 
             && <RemediationCreation
