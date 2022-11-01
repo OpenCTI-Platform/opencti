@@ -62,19 +62,7 @@ const userResolvers = {
     roles: (_, args, { user }) => findRoles(user, args),
     sessions: () => findSessions(),
     capabilities: (_, args, { user }) => findCapabilities(user, args),
-    me: async (_, args, { user }) => {
-      const q = {email: user.user_email}
-      const kcUserRes = await keycloakAdminClient.users.find(q)
-      if(kcUserRes.length === 0) {
-        return null
-      }
-      const kcUser = kcUserRes[0]
-      const userObj = await findById(user, user.id)
-      userObj.user_email = kcUser.email
-      userObj.firstName = kcUser.firstName
-      userObj.lastName = kcUser.lastName
-      return userObj
-    },
+    me: (_, args, { user }) => findById(user, user.id),
     bookmarks: (_, { types }, { user }) => bookmarks(user, types),
   },
   User: {
