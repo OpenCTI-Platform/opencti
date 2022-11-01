@@ -154,7 +154,7 @@ class StixCoreObject:
                 name
                 description
                 context
-            }          
+            }
             ... on CourseOfAction {
                 name
                 description
@@ -643,7 +643,7 @@ class StixCoreObject:
                                     name
                                     description
                                     report_types
-                                    published                             
+                                    published
                                 }
                             }
                         }

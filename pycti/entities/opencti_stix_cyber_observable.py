@@ -1391,8 +1391,8 @@ class StixCyberObservable:
                     if custom_attributes is not None
                     else self.properties
                 )
-                + """    
-                            }                               
+                + """
+                            }
                         }
                     }
              """
@@ -2016,7 +2016,7 @@ class StixCyberObservable:
                                     name
                                     description
                                     report_types
-                                    published                                    
+                                    published
                                 }
                             }
                         }
@@ -2155,7 +2155,7 @@ class StixCyberObservable:
                                     modified
                                     attribute_abstract
                                     content
-                                    authors                                
+                                    authors
                                 }
                             }
                         }
@@ -2307,7 +2307,7 @@ class StixCyberObservable:
                                                     }
                                                 }
                                             }
-                                        }    
+                                        }
                                     }
                                 }
                             }

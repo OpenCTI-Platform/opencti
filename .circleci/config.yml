@@ -6,7 +6,7 @@ orbs:
 jobs:
   ensure_formatting:
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/python:3.10
     working_directory: ~/repo
     steps:
       - checkout

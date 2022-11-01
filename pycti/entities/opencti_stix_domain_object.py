@@ -245,7 +245,7 @@ class StixDomainObject:
                         }
                     }
                 }
-            }            
+            }
             ... on CourseOfAction {
                 name
                 description
@@ -423,7 +423,7 @@ class StixDomainObject:
                 description
                 aliases
                 narrative_types
-            }            
+            }
             ... on Vulnerability {
                 name
                 description
@@ -1385,7 +1385,7 @@ class StixDomainObject:
                                     name
                                     description
                                     report_types
-                                    published                                    
+                                    published
                                 }
                             }
                         }
@@ -1524,7 +1524,7 @@ class StixDomainObject:
                                     modified
                                     attribute_abstract
                                     content
-                                    authors                                  
+                                    authors
                                 }
                             }
                         }
@@ -1676,7 +1676,7 @@ class StixDomainObject:
                                                     }
                                                 }
                                             }
-                                        }    
+                                        }
                                     }
                                 }
                             }
