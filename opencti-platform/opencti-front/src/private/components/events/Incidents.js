@@ -145,6 +145,7 @@ class Incidents extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'incident_type',
           'labelledBy',
           'markedBy',
           'created_start_date',
@@ -175,22 +176,32 @@ class Incidents extends Component {
     return {
       name: {
         label: 'Name',
-        width: '28%',
+        width: '25%',
+        isSortable: true,
+      },
+      incident_type: {
+        label: 'Incident type',
+        width: '10%',
+        isSortable: true,
+      },
+      criticality: {
+        label: 'Criticality',
+        width: '10%',
         isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '17%',
         isSortable: false,
       },
       created: {
         label: 'Creation date',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       modified: {
         label: 'Modification date',
-        width: '13%',
+        width: '10%',
         isSortable: true,
       },
       x_opencti_workflow_id: {
@@ -234,6 +245,7 @@ class Incidents extends Component {
             paginationOptions={paginationOptions}
             numberOfElements={numberOfElements}
             availableFilterKeys={[
+              'incident_type',
               'labelledBy',
               'markedBy',
               'x_opencti_workflow_id',

@@ -389,6 +389,9 @@ const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixInc
     last_seen: instance.last_seen,
     aliases: instance.aliases,
     objective: instance.objective,
+    incident_type: instance.incident_type,
+    criticality: instance.criticality,
+    source: instance.source,
     extensions: {
       [STIX_EXT_OCTI]: {
         ...incident.extensions[STIX_EXT_OCTI],

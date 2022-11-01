@@ -10,7 +10,7 @@ const styles = () => ({
     marginRight: 7,
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 150,
+    width: 80,
   },
   chipInList: {
     fontSize: 12,
@@ -18,22 +18,14 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 150,
+    width: 80,
   },
 });
 
 const inlineStyles = {
-  white: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-  },
   green: {
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
     color: '#4caf50',
-  },
-  darkGreen: {
-    backgroundColor: 'rgba(27,94,32, 0.08)',
-    color: '#1b5e20',
   },
   blue: {
     backgroundColor: 'rgba(92, 123, 245, 0.08)',
@@ -48,23 +40,17 @@ const inlineStyles = {
     color: '#ff9800',
   },
   blueGrey: {
-    backgroundColor: '#607d8b',
+    backgroundColor: 'rgba(96, 125, 139, 0.08)',
+    color: '#607d8b',
+    fontStyle: 'italic',
   },
 };
 
-const ItemReliability = (props) => {
-  const { classes, label, reliability, variant } = props;
+const ItemCriticality = (props) => {
+  const { classes, label, criticality, variant } = props;
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
-  switch (reliability) {
-    case 'A':
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.darkGreen}
-          label={label}
-        />
-      );
-    case 'B':
+  switch (criticality) {
+    case 'Low':
       return (
         <Chip
           classes={{ root: style }}
@@ -72,7 +58,7 @@ const ItemReliability = (props) => {
           label={label}
         />
       );
-    case 'C':
+    case 'Medium':
       return (
         <Chip
           classes={{ root: style }}
@@ -80,7 +66,7 @@ const ItemReliability = (props) => {
           label={label}
         />
       );
-    case 'D':
+    case 'High':
       return (
         <Chip
           classes={{ root: style }}
@@ -88,19 +74,11 @@ const ItemReliability = (props) => {
           label={label}
         />
       );
-    case 'E':
+    case 'Critical':
       return (
         <Chip
           classes={{ root: style }}
           style={inlineStyles.red}
-          label={label}
-        />
-      );
-    case 'F':
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.blueGrey}
           label={label}
         />
       );
@@ -115,11 +93,11 @@ const ItemReliability = (props) => {
   }
 };
 
-ItemReliability.propTypes = {
+ItemCriticality.propTypes = {
   classes: PropTypes.object.isRequired,
   reliability: PropTypes.string,
   label: PropTypes.string,
   variant: PropTypes.string,
 };
 
-export default withStyles(styles)(ItemReliability);
+export default withStyles(styles)(ItemCriticality);

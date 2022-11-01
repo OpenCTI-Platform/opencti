@@ -5028,6 +5028,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
   creator?: Maybe<User>;
+  criticality?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<Maybe<EditUserContext>>>;
   entity_type: Scalars['String'];
@@ -5037,6 +5038,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID'];
   importFiles?: Maybe<FileConnection>;
+  incident_type?: Maybe<Scalars['String']>;
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']>;
@@ -5053,6 +5055,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   pendingFiles?: Maybe<FileConnection>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
+  source?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
@@ -5151,9 +5154,11 @@ export type IncidentAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
+  criticality?: InputMaybe<Scalars['String']>;
   description: Scalars['String'];
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
+  incident_type?: InputMaybe<Scalars['String']>;
   lang?: InputMaybe<Scalars['String']>;
   last_seen?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -5162,6 +5167,7 @@ export type IncidentAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objective?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
+  source?: InputMaybe<Scalars['String']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
@@ -5217,10 +5223,13 @@ export enum IncidentsFilter {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Criticality = 'criticality',
+  IncidentType = 'incident_type',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Source = 'source',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -5234,11 +5243,14 @@ export type IncidentsFiltering = {
 export enum IncidentsOrdering {
   Created = 'created',
   CreatedAt = 'created_at',
+  Criticality = 'criticality',
   FirstSeen = 'first_seen',
+  IncidentType = 'incident_type',
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
+  Source = 'source',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -21517,6 +21529,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  criticality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -21526,6 +21539,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IncidentGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentImportFilesArgs>>;
+  incident_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IncidentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -21542,6 +21556,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentPendingFilesArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IncidentReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;

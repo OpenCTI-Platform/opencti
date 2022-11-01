@@ -891,6 +891,44 @@ export const openVocabularies: {
         'A set of STIX content contextually related but without any precise characterization of the contextual relationship between the objects.',
     },
   ],
+  'incident-type-ov': [
+    {
+      key: 'alert',
+      description: 'An alert.',
+    },
+    {
+      key: 'compromise',
+      description: 'A compromise.',
+    },
+    {
+      key: 'information-system-disruption',
+      description: 'Disruption in the information system.',
+    },
+    {
+      key: 'ransomware',
+      description: 'A ransomware.',
+    },
+    {
+      key: 'reputation-damage',
+      description: 'Damage to reputation.',
+    },
+    {
+      key: 'data-leak',
+      description: 'A data leak.',
+    },
+    {
+      key: 'typosquatting',
+      description: 'A typosquatting.',
+    },
+    {
+      key: 'phishing',
+      description: 'A phishing attack.',
+    },
+    {
+      key: 'cybercrime',
+      description: 'Related to cybercrime.',
+    },
+  ],
   'integrity_level-ov': [
     { key: 'low', description: 'A low level of integrity.' },
     { key: 'medium', description: 'A medium level of integrity.' },

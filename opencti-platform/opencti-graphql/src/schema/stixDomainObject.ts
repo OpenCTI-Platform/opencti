@@ -255,7 +255,7 @@ const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
     'confidence',
     'x_opencti_aliases',
   ],
-  [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective', 'confidence', 'aliases'],
+  [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'incident_type', 'criticality', 'source', 'first_seen', 'last_seen', 'objective', 'confidence', 'aliases'],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerUpsertAttributes(key, value), stixDomainObjectFieldsToBeUpdated);
 
@@ -908,6 +908,9 @@ const stixDomainObjectsAttributes: { [k: string]: Array<string> } = {
     'name',
     'description',
     'aliases',
+    'incident_type',
+    'criticality',
+    'source',
     'i_aliases_ids',
     'first_seen',
     'i_first_seen_day',
