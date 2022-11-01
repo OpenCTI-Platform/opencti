@@ -34,10 +34,11 @@ const styles = () => ({
   },
 });
 
-const cyioCoreObjectSeverityVerticalBarsQuery = graphql`
-  query CyioCoreObjectSeverityVerticalBarsQuery(
+const cyioCoreObjectTotalActiveRiskVerticalBarsQuery = graphql`
+  query CyioCoreObjectTotalActiveRiskVerticalBarsQuery(
     $type: String
     $field: String!
+    $match: [String]
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
@@ -45,24 +46,13 @@ const cyioCoreObjectSeverityVerticalBarsQuery = graphql`
     risksDistribution(
       type: $type
       field: $field
+      match: $match
       operation: $operation
       startDate: $startDate
       endDate: $endDate
     ) {
       label
       value
-      entity {
-        ... on Risk {
-          id
-          created
-          name
-          first_seen
-          last_seen
-          risk_level
-          occurrences
-          deadline
-        }
-      }
     }
   }
 `;
@@ -80,7 +70,8 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
     const finalEndDate = endDate || now();
     const riskDistributionVariables = {
       type: 'Risk',
-      field: 'risk_level',
+      field: 'risk_status',
+      match: ['open', 'investigating', 'remediating', 'deviation_requested', 'deviation_approved'],
       operation: 'count',
       startDate: finalStartDate,
       endDate: finalEndDate,
@@ -88,7 +79,7 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
 
     return (
       <QueryRenderer
-        query={cyioCoreObjectSeverityVerticalBarsQuery}
+        query={cyioCoreObjectTotalActiveRiskVerticalBarsQuery}
         variables={riskDistributionVariables}
         render={({ props }) => {
           if (props && props.risksDistribution) {

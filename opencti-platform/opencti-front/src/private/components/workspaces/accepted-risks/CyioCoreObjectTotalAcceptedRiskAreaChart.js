@@ -75,7 +75,7 @@ class CyioCoreObjectTotalAcceptedRiskAreaChart extends Component {
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
     const days = numberOfDays(finalStartDate, finalEndDate);
-    // let tickFormatter = md;
+    let tickFormatter = md;
     if (days <= 30) {
       tickFormatter = nsd;
     }

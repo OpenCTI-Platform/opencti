@@ -34,10 +34,11 @@ const styles = () => ({
   },
 });
 
-const cyioCoreObjectSeverityVerticalBarsQuery = graphql`
-  query CyioCoreObjectSeverityVerticalBarsQuery(
+const cyioCoreObjectTotalAcceptedRiskHorizontalBarsQuery = graphql`
+  query CyioCoreObjectTotalAcceptedRiskHorizontalBarsQuery(
     $type: String
     $field: String!
+    $match: [String]
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
@@ -45,29 +46,18 @@ const cyioCoreObjectSeverityVerticalBarsQuery = graphql`
     risksDistribution(
       type: $type
       field: $field
+      match: $match
       operation: $operation
       startDate: $startDate
       endDate: $endDate
     ) {
       label
       value
-      entity {
-        ... on Risk {
-          id
-          created
-          name
-          first_seen
-          last_seen
-          risk_level
-          occurrences
-          deadline
-        }
-      }
     }
   }
 `;
 
-class CyioCoreObjectRiskSeverityVerticalBars extends Component {
+class CyioCoreObjectTotalAcceptedRiskHorizontalBars extends Component {
   renderContent() {
     const {
       t,
@@ -80,7 +70,8 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
     const finalEndDate = endDate || now();
     const riskDistributionVariables = {
       type: 'Risk',
-      field: 'risk_level',
+      field: 'accepted',
+      match: ['approved'],
       operation: 'count',
       startDate: finalStartDate,
       endDate: finalEndDate,
@@ -88,14 +79,13 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
 
     return (
       <QueryRenderer
-        query={cyioCoreObjectSeverityVerticalBarsQuery}
+        query={cyioCoreObjectTotalAcceptedRiskHorizontalBarsQuery}
         variables={riskDistributionVariables}
         render={({ props }) => {
           if (props && props.risksDistribution) {
             return (
               <ResponsiveContainer height="100%" width="100%">
                 <BarChart
-                  layout='vertical'
                   data={props.risksDistribution}
                   margin={{
                     top: 20,
@@ -112,14 +102,14 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
                     vertical={false}
                   />
                   <XAxis
-                    dataKey='value'
+                    dataKey='label'
                     stroke={theme.palette.text.primary}
                   // interval={interval}
                   // angle={-45}
                   // textAnchor="end"
                   // tickFormatter={md}
                   />
-                  <YAxis type='category' dataKey='label' stroke={theme.palette.text.primary} />
+                  <YAxis type='category' dataKey='value' stroke={theme.palette.text.primary} />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -184,7 +174,7 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Top N Risks by Severity')}
+          {title || t('Top Accepted Risk')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -198,7 +188,7 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
   }
 }
 
-CyioCoreObjectRiskSeverityVerticalBars.propTypes = {
+CyioCoreObjectTotalAcceptedRiskHorizontalBars.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -209,4 +199,4 @@ export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(CyioCoreObjectRiskSeverityVerticalBars);
+)(CyioCoreObjectTotalAcceptedRiskHorizontalBars);

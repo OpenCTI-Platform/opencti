@@ -3,12 +3,12 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  BarChart,
   ResponsiveContainer,
   CartesianGrid,
-  Bar,
+  AreaChart,
   XAxis,
   YAxis,
+  Area,
   Tooltip,
 } from 'recharts';
 import { withStyles, withTheme } from '@material-ui/core/styles';
@@ -17,14 +17,14 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
 
 const styles = () => ({
   paper: {
     minHeight: 280,
     height: '100%',
     margin: '4px 0 0 0',
-    padding: '1rem',
+    padding: '0 0 10px 0',
     borderRadius: 6,
   },
   chip: {
@@ -34,92 +34,91 @@ const styles = () => ({
   },
 });
 
-const cyioCoreObjectSeverityVerticalBarsQuery = graphql`
-  query CyioCoreObjectSeverityVerticalBarsQuery(
+const cyioCoreObjectTotalAcceptedRiskLineChartQuery = graphql`
+  query CyioCoreObjectTotalAcceptedRiskLineChartQuery(
     $type: String
     $field: String!
+    $match: [String]
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
+    $interval: Interval!
   ) {
-    risksDistribution(
+    risksTimeSeries(
       type: $type
+      match: $match
       field: $field
       operation: $operation
       startDate: $startDate
       endDate: $endDate
+      interval: $interval
     ) {
+      date
       label
       value
-      entity {
-        ... on Risk {
-          id
-          created
-          name
-          first_seen
-          last_seen
-          risk_level
-          occurrences
-          deadline
-        }
-      }
     }
   }
 `;
 
-class CyioCoreObjectRiskSeverityVerticalBars extends Component {
+class CyioCoreObjectTotalAcceptedRiskLineChart extends Component {
   renderContent() {
     const {
       t,
       md,
+      nsd,
       startDate,
       endDate,
       theme,
     } = this.props;
+    const interval = 'month';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const riskDistributionVariables = {
+    const days = numberOfDays(finalStartDate, finalEndDate);
+    let tickFormatter = md;
+    if (days <= 30) {
+      tickFormatter = nsd;
+    }
+    const reportsTimeSeriesVariables = {
       type: 'Risk',
-      field: 'risk_level',
+      field: 'accepted',
+      match: ['approved'],
       operation: 'count',
       startDate: finalStartDate,
       endDate: finalEndDate,
+      interval,
     };
-
     return (
       <QueryRenderer
-        query={cyioCoreObjectSeverityVerticalBarsQuery}
-        variables={riskDistributionVariables}
+        query={cyioCoreObjectTotalAcceptedRiskLineChartQuery}
+        variables={reportsTimeSeriesVariables}
         render={({ props }) => {
-          if (props && props.risksDistribution) {
+          if (props && props.risksTimeSeries) {
             return (
               <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  layout='vertical'
-                  data={props.risksDistribution}
+                <AreaChart
+                  data={props.risksTimeSeries}
                   margin={{
                     top: 20,
-                    right: 20,
-                    bottom: 0,
-                    left: 0,
+                    right: 0,
+                    bottom: 20,
+                    left: -10,
                   }}
-                  barGap={0}
                 >
                   <CartesianGrid
                     strokeDasharray="2 2"
+                    // stroke={theme.palette.primary.main}
                     stroke='rgba(241, 241, 242, 0.35)'
-                    // stroke={theme.palette.action.grid}
                     vertical={false}
                   />
                   <XAxis
-                    dataKey='value'
+                    dataKey="label"
                     stroke={theme.palette.text.primary}
-                  // interval={interval}
-                  // angle={-45}
-                  // textAnchor="end"
-                  // tickFormatter={md}
+                    interval={interval}
+                    textAnchor="end"
+                  // angle={-30}
+                  // tickFormatter={tickFormatter}
                   />
-                  <YAxis type='category' dataKey='label' stroke={theme.palette.text.primary} />
+                  <YAxis stroke={theme.palette.text.primary} />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -132,15 +131,15 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
                       border: '1px solid #06102D',
                       borderRadius: 10,
                     }}
-                    labelFormatter={md}
+                  // labelFormatter={tickFormatter}
                   />
-                  <Bar
-                    // fill={theme.palette.primary.main}
-                    fill="#075AD3"
-                    dataKey="value"
-                    barSize={20}
+                  <Area
+                    dataKey='value'
+                    stroke={theme.palette.primary.main}
+                    strokeWidth={2}
+                  // fill={theme.palette.primary.main}
                   />
-                </BarChart>
+                </AreaChart>
               </ResponsiveContainer>
             );
           }
@@ -184,7 +183,7 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Top N Risks by Severity')}
+          {title || t('Total Accepted Risks')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -198,15 +197,16 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
   }
 }
 
-CyioCoreObjectRiskSeverityVerticalBars.propTypes = {
+CyioCoreObjectTotalAcceptedRiskLineChart.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,
+  nsd: PropTypes.func,
 };
 
 export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(CyioCoreObjectRiskSeverityVerticalBars);
+)(CyioCoreObjectTotalAcceptedRiskLineChart);

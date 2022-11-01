@@ -87,7 +87,7 @@ class CyioCoreObjectTotalAcceptedRiskCount extends Component {
     const finalEndDate = endDate || now();
     const riskCountVariables = {
       type: 'Risk',
-      field: 'accepted', 
+      field: 'accepted',
       match: ['approved'],
       operation: 'count',
       endDate: finalEndDate,
@@ -162,7 +162,7 @@ class CyioCoreObjectTotalAcceptedRiskCount extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Total Active Risks')}
+          {title || t('Total Accepted Risks')}
         </Typography>
         {variant === 'inLine' ? (
           this.renderContent()

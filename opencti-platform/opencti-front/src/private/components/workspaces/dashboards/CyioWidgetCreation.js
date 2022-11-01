@@ -28,6 +28,8 @@ import {
   DatabaseOutline,
   ViewListOutline,
 } from 'mdi-material-ui';
+import ShowChart from '@material-ui/icons/ShowChart';
+import Money from '@material-ui/icons/Money';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -123,7 +125,7 @@ class WidgetCreation extends Component {
   }
 
   handleEntitySearch(entity) {
-    this.setState({ selectedEntity: entity, stepIndex: 3 });
+    this.setState({ selectedEntity: entity, dataType: entity.dataTypes, stepIndex: 2 });
   }
 
   completeSetup() {
@@ -139,7 +141,6 @@ class WidgetCreation extends Component {
         ? {
           id: selectedEntity.id,
           name: selectedEntity.name,
-          type: selectedEntity.entity_type,
         }
         : null,
     });
@@ -163,6 +164,10 @@ class WidgetCreation extends Component {
         return <ChartTimeline fontSize="large" color="primary" />;
       case 'list':
         return <ViewListOutline fontSize="large" color="primary" />;
+      case 'line':
+        return <ShowChart fontSize="large" color="primary" />;
+      case 'count':
+        return <Money fontSize="large" color="primary" />;
       default:
         return 'Go away';
     }
@@ -375,37 +380,34 @@ class WidgetCreation extends Component {
       case 1:
         return (
           <div>
-            <Grid
-              container={true}
-              spacing={3}
-              style={{ marginTop: 20, marginBottom: 20 }}
+            <List
+              style={{ margin: '20px 0' }}
             >
               {filteredEntities && filteredEntities.map((entity) => (
-                <Grid key={entity.id} item={true} xs="4">
-                  <Card elevation={3} className={classes.card}>
-                    <CardActionArea
-                      onClick={this.handleEntitySearch.bind(this, entity)}
-                      classes={{ root: classes.cardAction }}
-                    >
-                      <CardContent>
-                        <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
-                        <Typography
-                          gutterBottom
-                          variant="h1"
-                          style={{ marginTop: 20 }}
-                        >
-                          {entity.name && t(entity.name)}
-                        </Typography>
-                        <br />
-                        <Typography variant="body1">
-                          {entity.description && t(entity.description)}
-                        </Typography>
-                      </CardContent>
-                    </CardActionArea>
-                  </Card>
-                </Grid>
+                <ListItem
+                  key={entity.id}
+                  divider={true}
+                  button={true}
+                  onClick={this.handleEntitySearch.bind(this, entity)}
+                >
+                  <ListItemIcon>
+                    <ItemIcon variant='inline' type='inventory_item' />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={entity.name}
+                    secondary={
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
+                        className="markdown"
+                      >
+                        {truncate(entity.description, 200)}
+                      </Markdown>
+                    }
+                  />
+                </ListItem>
               ))}
-            </Grid>
+            </List>
             {/* <SearchInput
               keyword={this.state.searchTerm}
               onSubmit={this.handleSearch.bind(this)}
