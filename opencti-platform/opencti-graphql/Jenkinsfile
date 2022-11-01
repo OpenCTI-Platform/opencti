@@ -1,0 +1,29 @@
+@Library('Shared') _
+
+node {
+  checkout scm
+
+  String registry = 'docker.darklight.ai'
+  String product = 'graphql'
+  String branch = "${env.BRANCH_NAME}"
+  String commit = "${sh(returnStdout: true, script: 'git rev-parse HEAD')}"
+  String commitMessage = "${sh(returnStdout: true, script: "git log --pretty=format:%s -n 1 ${commit}")}"
+  String version = 'undefined'
+
+  dir('opencti-platform') {
+    dir('opencti-graphql') {
+      // stage('Setup') {
+      //   sh 'yarn install'
+      //   version = readJSON(file: 'package.json')['version']
+      // }
+
+      stage('Build') {
+        docker.test(test: 'merp')
+      }
+
+      // stage('Upload & Archive') {
+      //   // TODO: Push and save a local archive here
+      // }
+    }
+  }
+}
