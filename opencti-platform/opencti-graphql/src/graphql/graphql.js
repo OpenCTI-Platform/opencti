@@ -1,8 +1,7 @@
 import { ApolloServer } from 'apollo-server-express';
 import { formatError as apolloFormatError } from 'apollo-errors';
-import {execute, GraphQLError, subscribe} from 'graphql';
+import { GraphQLError } from 'graphql';
 import { dissocPath } from 'ramda';
-import {SubscriptionServer} from 'subscriptions-transport-ws';
 import createSchema from './schema';
 import conf, {basePath, DEV_MODE} from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
@@ -15,7 +14,6 @@ import {getSettings} from "../domain/settings";
 import { applicationSession } from '../database/session';
 import StardogKB from '../datasources/stardog.js';
 import Artemis from '../datasources/artemis.js';
-import mockList from './mocks.js' ;
 import nconf from "nconf";
 import querySelectMap from "../cyio/schema/querySelectMap";
 import {
@@ -25,10 +23,6 @@ import {
   permissionDirectiveTransformer,
   roleDirectiveTransformer
 } from "../service/keycloak";
-import {
-  ApolloServerPluginLandingPageDisabled,
-  ApolloServerPluginLandingPageGraphQLPlayground
-} from "apollo-server-core";
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
@@ -54,30 +48,14 @@ const buildContext = (user, req, res) => {
 // perform the standard keycloak-connect middleware setup on our app
 // const { keycloak } = configureKeycloak(app, graphqlPath)  // Same ApolloServer initialization as before, plus the drain plugin.
 
-// check to see if mocks are disbled
-let mocks;
-if (process.env.MOCKS === '0') {
-  mocks = false;
-}
-else {
-  mocks = mockList;
-}
 
 let plugins = [
   loggerPlugin,
   httpResponsePlugin,
-  process.env.NODE_ENV === 'production'
-    ? ApolloServerPluginLandingPageDisabled()
-    : ApolloServerPluginLandingPageGraphQLPlayground({
-      cdnUrl: conf.get('app:playground_cdn_url'),
-      settings: {
-        'request.credentials': 'same-origin',
-      }}
-    ),
   {
-     requestDidStart: async () => {
+     requestDidStart: () => {
       return {
-        async executionDidStart() {
+        executionDidStart: () => {
           return {
             willResolveField: ({source, args, context, info}) =>{
               context.selectMap = querySelectMap(info)
@@ -89,10 +67,10 @@ let plugins = [
   }
 ];
 
-const createApolloServer = async (app, httpServer) => {
+const createApolloServer = (app) => {
   if(process.env.GRAPHQL_METRICS_ENABLED === '1') plugins.push(createPrometheusExporterPlugin({app}))
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
-  const allowedOrigins = nconf.get('app:cors:origins') || [];
+
   const cdnUrl = conf.get('app:playground_cdn_url');
 
   let schema = createSchema()
@@ -100,22 +78,11 @@ const createApolloServer = async (app, httpServer) => {
   schema = permissionDirectiveTransformer(schema)
   schema = roleDirectiveTransformer(schema)
 
-  let subscriptionServer;
-  plugins.push({
-    async serverWillStart() {
-      return {
-        async drainServer() {
-          subscriptionServer.close();
-        }
-      };
-    }
-  });
-
   const server = new ApolloServer({
     schema,
     introspection: true,
-    mocks,
-    preserveResolvers: true,
+    mocks: false,
+    mockEntireSchema: false,
     dataSources: () => ({
       Stardog: new StardogKB( ),
       Artemis: new Artemis( ),
@@ -153,50 +120,39 @@ const createApolloServer = async (app, httpServer) => {
       // Remove the exception stack in production.
       return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
     },
-  });
-
-  subscriptionServer = SubscriptionServer.create({
-    schema,
-    execute,
-    subscribe,
-    validationRules: server.requestOptions.validationRules,
-    onConnect: async (connectionParams, webSocket) => {
-      const wsSession = await new Promise((resolve) => {
-        // use same session parser as normal gql queries
-        const { session } = applicationSession();
-        session(webSocket.upgradeReq, {}, () => {
-          if (webSocket.upgradeReq.session) {
-            resolve(webSocket.upgradeReq.session);
-          }
-          return false;
+    subscriptions: {
+      keepAlive: 10000,
+      // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
+      onConnect: async (connectionParams, webSocket) => {
+        const wsSession = await new Promise((resolve) => {
+          // use same session parser as normal gql queries
+          const { session } = applicationSession();
+          session(webSocket.upgradeReq, {}, () => {
+            if (webSocket.upgradeReq.session) {
+              resolve(webSocket.upgradeReq.session);
+            }
+            return false;
+          });
         });
-      });
-      // We have a good session. attach to context
-      if (wsSession.user) {
-        return { user: wsSession.user };
-      }
-      // throwing error rejects the connection
-      return { user: null };
+        // We have a good session. attach to context
+        if (wsSession.user) {
+          return { user: wsSession.user };
+        }
+        // throwing error rejects the connection
+        return { user: null };
+      },
     },
-  },{
-    server: httpServer,
-    path: server.graphqlPath
-  })
-
-  await server.start();
-
+  });
   server.applyMiddleware({
     app,
-    cors: {
-      origin: allowedOrigins,
-      credentials: true
-    },
+    cors: true,
     bodyParserConfig: {
       limit: requestSizeLimit,
     },
     onHealthCheck,
       path: `${basePath}/graphql`,
   })
+  return server;
 };
 
 export default createApolloServer;

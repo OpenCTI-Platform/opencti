@@ -33,14 +33,12 @@ const styles = (theme) => ({
   },
   bodyItem: {
     float: 'left',
-    height: '48px',
     display: 'flex',
     overflow: 'hidden',
-    fontSize: '13px',
     alignItems: 'center',
-    whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     justifyContent: 'left',
+    marginRight: '1rem',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -73,6 +71,8 @@ class RemediationEntityLineComponent extends Component {
       riskId,
       node,
       paginationOptions,
+      location,
+      remediationId,
     } = this.props;
 
     const SourceOfDetection = R.pipe(
@@ -81,6 +81,22 @@ class RemediationEntityLineComponent extends Component {
       R.path(['origin_actors']),
       R.mergeAll,
     )(node);
+
+    const orderedStartDate = R.sort((a, b) => Date.parse(a) - Date.parse(b));
+    const orderedEndDate = R.sort((a, b) => Date.parse(b) - Date.parse(a));
+
+    const startDate = R.pipe(
+      R.map((n) => n.timing.start_date),
+      orderedStartDate,
+      R.head,
+    )(R.pathOr([], ['tasks'], node));
+
+    const endDate = R.pipe(
+      R.map((n) => n.timing.end_date),
+      orderedEndDate,
+      R.head,
+    )(R.pathOr([], ['tasks'], node));
+
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -133,16 +149,27 @@ class RemediationEntityLineComponent extends Component {
                   {node.lifecycle && t(node.lifecycle)}
                 </Button>
               </div>
-              <div className={classes.bodyItem}>
-                <Typography align="left">
-                  {node.created && fldt(node.created)}
-                </Typography>
-              </div>
-              <div className={classes.bodyItem}>
-                <Typography align="left">
-                  {node.modified && fldt(node.modified)}
-                </Typography>
-              </div>
+              {node?.tasks.length > 0
+                ? <>
+                    <div className={classes.bodyItem}>
+                      <Typography align="left">
+                        {node.created && fldt(startDate)}
+                      </Typography>
+                    </div>
+                    <div className={classes.bodyItem}>
+                      <Typography align="left">
+                        {node.modified && fldt(endDate)}
+                      </Typography>
+                    </div>
+                  </>
+                : <>
+                {/* <div style={{ display: 'grid', placeItems: 'center' }}>
+                  -
+                </div>
+                <div style={{ display: 'grid', placeItems: 'center' }}>
+                  -
+                </div> */}
+              </>}
             </div>
           }
         />
@@ -171,6 +198,7 @@ RemediationEntityLineComponent.propTypes = {
   fldt: PropTypes.func,
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
+  location: PropTypes.object,
 };
 
 const RemediationEntityLineFragment = createFragmentContainer(

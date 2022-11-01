@@ -73,6 +73,7 @@ class RiskObservation extends Component {
       t,
       risk,
       classes,
+      history,
     } = this.props;
     return (
       <div style={{ marginTop: '50px', height: '500px' }}>
@@ -94,6 +95,7 @@ class RiskObservation extends Component {
                 return (
                   <RiskObservationLines
                     risk={props.risk}
+                    history={history}
                   />
                 );
               }
@@ -154,6 +156,7 @@ RiskObservation.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  history: PropTypes.object,
 };
 
 // const RiskObservationComponent = createFragmentContainer(

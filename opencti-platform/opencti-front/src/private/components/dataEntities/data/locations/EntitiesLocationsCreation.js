@@ -114,6 +114,7 @@ class EntitiesLocationsCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/data/entities/notes',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -161,7 +162,6 @@ class EntitiesLocationsCreation extends Component {
       t,
       classes,
       openDataCreation,
-      handleLocationCreation,
     } = this.props;
     return (
       <>

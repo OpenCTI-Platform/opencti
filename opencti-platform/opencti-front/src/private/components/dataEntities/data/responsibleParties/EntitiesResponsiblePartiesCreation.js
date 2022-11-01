@@ -111,6 +111,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: '/data/entities/responsible_parties',
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
