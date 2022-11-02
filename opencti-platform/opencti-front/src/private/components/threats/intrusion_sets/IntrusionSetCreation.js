@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -12,10 +12,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -24,10 +21,6 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -110,10 +103,6 @@ class IntrusionSetCreation extends Component {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
@@ -184,7 +173,6 @@ class IntrusionSetCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                objectOrganization: [],
                 objectLabel: [],
                 externalReferences: [],
               }}
@@ -249,12 +237,6 @@ class IntrusionSetCreation extends Component {
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                   />
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ marginTop: 20, width: '100%' }}
-                    />
-                  </Security>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"

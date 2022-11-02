@@ -194,6 +194,7 @@ class RootSystem extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.system}
                             PopoverComponent={<SystemPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
@@ -217,6 +218,7 @@ class RootSystem extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.system}
                             PopoverComponent={<SystemPopover />}
                             enableReferences={props.settings.platform_enable_reference?.includes(

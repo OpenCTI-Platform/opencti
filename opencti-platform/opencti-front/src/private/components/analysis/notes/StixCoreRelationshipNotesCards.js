@@ -22,7 +22,6 @@ import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStix
 import Security, {
   KNOWLEDGE_KNPARTICIPATE,
   KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
 } from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import { commitMutation } from '../../../../relay/environment';
@@ -32,7 +31,6 @@ import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   paper: {
@@ -101,7 +99,6 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
         ...defaultMarking,
         ...R.pluck('value', values.objectMarking),
       ]),
-      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('objects', [stixCoreRelationshipId]),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
@@ -203,7 +200,6 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
                   attribute_abstract: '',
                   content: '',
                   objectMarking: [],
-                  objectOrganization: [],
                   objectLabel: [],
                 }}
                 validationSchema={noteValidation(t)}
@@ -218,11 +214,6 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
                   isSubmitting,
                 }) => (
                   <Form style={{ width: '100%' }}>
-                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                      <div style={{ marginBottom: 20 }}>
-                        <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
-                      </div>
-                    </Security>
                     <Field
                       component={TextField}
                       variant="standard"

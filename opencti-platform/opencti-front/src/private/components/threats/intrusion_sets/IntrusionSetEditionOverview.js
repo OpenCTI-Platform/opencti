@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -14,16 +14,8 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/Edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -88,32 +80,6 @@ const intrusionSetMutationRelationDelete = graphql`
   }
 `;
 
-const intrusionSetMutationGroupAdd = graphql`
-  mutation IntrusionSetEditionOverviewGroupAddMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...IntrusionSetEditionOverview_intrusionSet
-      }
-    }
-  }
-`;
-
-const intrusionSetMutationGroupDelete = graphql`
-  mutation IntrusionSetEditionOverviewGroupDeleteMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...IntrusionSetEditionOverview_intrusionSet
-      }
-    }
-  }
-`;
-
 const intrusionSetValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
@@ -147,10 +113,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -192,37 +154,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
           });
         })
         .catch(() => false);
-    }
-  }
-
-  handleChangeObjectOrganization(name, values) {
-    const { intrusionSet } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(intrusionSet);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: intrusionSetMutationGroupAdd,
-        variables: {
-          id: this.props.intrusionSet.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: intrusionSetMutationGroupDelete,
-        variables: {
-          id: this.props.intrusionSet.id,
-          organizationId: R.head(removed).value,
-        },
-      });
     }
   }
 
@@ -401,19 +332,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
                 id={intrusionSet.id}
               />
             )}
-            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-              <ObjectOrganizationField
-                name="objectOrganization"
-                style={{ marginTop: 20, width: '100%' }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldname="objectOrganization"
-                  />
-                }
-                onChange={this.handleChangeObjectOrganization.bind(this)}
-              />
-            </Security>
           </Form>
         )}
       </Formik>
@@ -444,28 +362,12 @@ const IntrusionSetEditionOverview = createFragmentContainer(
             entity_type
           }
         }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
-        }
         objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-          }
-        }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
             }
           }
         }

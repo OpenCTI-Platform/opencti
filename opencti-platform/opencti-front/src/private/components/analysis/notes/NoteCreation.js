@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { compose, evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
@@ -26,10 +26,6 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { dayStartDate } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -130,7 +126,6 @@ class NoteCreation extends Component {
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
-        objectOrganization: pluck('value'),
       },
       values,
     );
@@ -207,7 +202,6 @@ class NoteCreation extends Component {
                 content: '',
                 confidence: 75,
                 createdBy: '',
-                objectOrganization: [],
                 objectMarking: [],
                 objectLabel: [],
               }}
@@ -270,12 +264,6 @@ class NoteCreation extends Component {
                     name="objectMarking"
                     style={fieldSpacingContainerStyle}
                   />
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ marginTop: 20, width: '100%' }}
-                    />
-                  </Security>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -386,12 +374,6 @@ class NoteCreation extends Component {
                     name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ marginTop: 20, width: '100%' }}
-                    />
-                  </Security>
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>

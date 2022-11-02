@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
-import { graphql, createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import {
-  EditOutlined,
-  ExpandMoreOutlined,
-  RateReviewOutlined,
-} from '@mui/icons-material';
+import { EditOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -19,11 +15,7 @@ import * as Yup from 'yup';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, {
-  KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -31,7 +23,6 @@ import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   paper: {
@@ -100,7 +91,6 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
         ...defaultMarking,
         ...R.pluck('value', values.objectMarking),
       ]),
-      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
       R.assoc('objects', [stixSightingRelationshipId]),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
@@ -184,7 +174,6 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
                 initialValues={{
                   attribute_abstract: '',
                   content: '',
-                  objectOrganization: [],
                   objectMarking: [],
                   objectLabel: [],
                 }}
@@ -200,11 +189,6 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
                   isSubmitting,
                 }) => (
                   <Form style={{ width: '100%' }}>
-                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                      <div style={{ marginBottom: 20 }}>
-                        <ObjectOrganizationField name="objectOrganization" style={{ width: '100%' }}/>
-                      </div>
-                    </Security>
                     <Field
                       component={TextField}
                       variant="standard"
@@ -274,7 +258,7 @@ StixSightingRelationshipNotesCardsContainer.propTypes = {
 export const stixSightingRelationshipNotesCardsQuery = graphql`
   query StixSightingRelationshipNotesCardsQuery($count: Int!, $id: String!) {
     ...StixSightingRelationshipNotesCards_data
-      @arguments(count: $count, id: $id)
+    @arguments(count: $count, id: $id)
   }
 `;
 

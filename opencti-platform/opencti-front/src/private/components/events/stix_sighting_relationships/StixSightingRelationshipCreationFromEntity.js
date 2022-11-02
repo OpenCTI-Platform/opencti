@@ -40,10 +40,6 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -323,7 +319,6 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       assoc('last_seen', parse(values.last_seen).format()),
       assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
-      assoc('objectOrganization', pluck('value', values.objectOrganization)),
     )(values);
     commitMutation({
       mutation: stixSightingRelationshipCreationFromEntityMutation,
@@ -569,7 +564,6 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       last_seen: dayStartDate(),
       description: '',
       objectMarking: [],
-      objectOrganization: [],
       createdBy: '',
       x_opencti_negative: false,
     };
@@ -765,12 +759,6 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                 name="objectMarking"
                 style={{ marginTop: 20, width: '100%' }}
               />
-              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                <ObjectOrganizationField
-                  name="objectOrganization"
-                  style={{ marginTop: 20, width: '100%' }}
-                />
-              </Security>
               <Field
                 component={SwitchField}
                 type="checkbox"

@@ -1,17 +1,11 @@
 import React, { useContext, useState } from 'react';
 import * as R from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { GraphOutline, VectorLink } from 'mdi-material-ui';
-import {
-  AddTaskOutlined,
-  ViewColumnOutlined,
-  AssistantOutlined,
-  ShareOutlined,
-  AccountBalanceOutlined,
-} from '@mui/icons-material';
+import { AddTaskOutlined, AssistantOutlined, ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { DialogTitle } from '@mui/material';
@@ -32,29 +26,18 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Markdown from 'react-markdown';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Form, Formik } from 'formik';
-import Chip from '@mui/material/Chip';
 import { makeStyles, useTheme } from '@mui/styles';
 import ExportButtons from '../../../../components/ExportButtons';
-import Security, {
-  granted,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  UserContext,
-} from '../../../../utils/Security';
+import Security, { granted, KNOWLEDGE_KNUPDATE, UserContext } from '../../../../utils/Security';
 import ItemMarking from '../../../../components/ItemMarking';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-import {
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { defaultValue } from '../../../../utils/Graph';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
-import ObjectOrganizationField from '../form/ObjectOrganizationField';
+import StixCoreHeaderShared from '../sharing/StixCoreHeaderShared';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -98,51 +81,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const containerHeaderMutationGroupAdd = graphql`
-  mutation ContainerHeaderGroupAddMutation($id: ID!, $organizationId: ID!) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        id
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const containerHeaderMutationGroupDelete = graphql`
-  mutation ContainerHeaderGroupDeleteMutation($id: ID!, $organizationId: ID!) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        id
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const containerHeaderTaskAddMutation = graphql`
-  mutation ContainerHeaderTaskAddMutation($input: QueryTaskAddInput) {
-    queryTaskAdd(input: $input) {
-      id
-      type
-    }
-  }
-`;
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -448,14 +386,6 @@ export const containerHeaderObjectsQuery = graphql`
                   }
                 }
               }
-              objectOrganization {
-                edges {
-                  node {
-                    id
-                    name
-                  }
-                }
-              }
             }
           }
         }
@@ -473,9 +403,9 @@ const ContainerHeader = (props) => {
     modes,
     currentMode,
     knowledge,
+    disableSharing,
     adjust,
     enableSuggestions,
-    enableSharing,
     onApplied,
   } = props;
   const theme = useTheme();
@@ -483,123 +413,13 @@ const ContainerHeader = (props) => {
   const { t, fd } = useFormatter();
   const { me } = useContext(UserContext);
   const userIsKnowledgeEditor = granted(me, [KNOWLEDGE_KNUPDATE]);
-  const userIsOrganizationEditor = granted(me, [
-    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  ]);
-  const [displaySharing, setDisplaySharing] = useState(false);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});
   const [applying, setApplying] = useState([]);
   const [applied, setApplied] = useState([]);
-  // Sharing
-  const handleOpenSharing = () => {
-    setDisplaySharing(true);
-  };
-  const handleCloseSharing = () => {
-    setDisplaySharing(false);
-  };
-  const removeOrganization = (organizationId) => {
-    commitMutation({
-      mutation: containerHeaderMutationGroupDelete,
-      variables: {
-        id: container.id,
-        organizationId,
-      },
-      onCompleted: () => {
-        const filters = {
-          containedBy: [
-            {
-              id: container.id,
-              value: container.name,
-            },
-          ],
-          entity_type: [
-            { id: 'Basic-Object', value: t('All entities') },
-            { id: 'basic-relationship', value: t('All relationships') },
-          ],
-        };
-        const jsonFilters = JSON.stringify(filters);
-        commitMutation({
-          mutation: containerHeaderTaskAddMutation,
-          variables: {
-            input: {
-              filters: jsonFilters,
-              actions: [
-                {
-                  type: 'UNSHARE',
-                  context: {
-                    values: [organizationId],
-                  },
-                },
-              ],
-            },
-          },
-          onCompleted: () => {
-            MESSAGING$.notifySuccess('This container has been unshared');
-          },
-        });
-      },
-    });
-  };
-  const onSubmitOrganizations = (values, { setSubmitting, resetForm }) => {
-    const { objectOrganization } = values;
-    if (objectOrganization.value) {
-      commitMutation({
-        mutation: containerHeaderMutationGroupAdd,
-        variables: {
-          id: container.id,
-          organizationId: objectOrganization.value,
-        },
-        onCompleted: () => {
-          setSubmitting(false);
-          resetForm();
-          setDisplaySharing(false);
-          const filters = {
-            containedBy: [
-              {
-                id: container.id,
-                value: container.name,
-              },
-            ],
-            entity_type: [
-              { id: 'Basic-Object', value: t('All entities') },
-              { id: 'basic-relationship', value: t('All relationships') },
-            ],
-          };
-          const jsonFilters = JSON.stringify(filters);
-          commitMutation({
-            mutation: containerHeaderTaskAddMutation,
-            variables: {
-              input: {
-                filters: jsonFilters,
-                actions: [
-                  {
-                    type: 'SHARE',
-                    context: {
-                      values: [objectOrganization.value],
-                    },
-                  },
-                ],
-              },
-            },
-            onCompleted: () => {
-              MESSAGING$.notifySuccess('This container has been shared');
-            },
-          });
-        },
-      });
-    }
-  };
-  const onResetOrganizations = () => {
-    handleCloseSharing();
-  };
   // Suggestions
-  const handleOpenSuggestions = () => {
-    setDisplaySuggestions(true);
-  };
-  const handleCloseSuggestions = () => {
-    setDisplaySuggestions(false);
-  };
+  const handleOpenSuggestions = () => setDisplaySuggestions(true);
+  const handleCloseSuggestions = () => setDisplaySuggestions(false);
   const resolveThreats = (objects) => objects.filter((o) => [
     'Threat-Actor',
     'Intrusion-Set',
@@ -700,12 +520,12 @@ const ContainerHeader = (props) => {
         >
           {truncate(
             container.name
-              || container.attribute_abstract
-              || container.content
-              || container.opinion
-              || `${fd(container.first_observed)} - ${fd(
-                container.last_observed,
-              )}`,
+            || container.attribute_abstract
+            || container.content
+            || container.opinion
+            || `${fd(container.first_observed)} - ${fd(
+              container.last_observed,
+            )}`,
             80,
           )}
         </Typography>
@@ -743,11 +563,9 @@ const ContainerHeader = (props) => {
           <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
             {modes.includes('graph') && (
               <Tooltip title={t('Graph view')}>
-                <ToggleButton
-                  component={Link}
-                  to={`${link}/graph`}
-                  selected={currentMode === 'graph'}
-                >
+                <ToggleButton component={Link}
+                              to={`${link}/graph`}
+                              selected={currentMode === 'graph'}>
                   <GraphOutline
                     fontSize="small"
                     color={currentMode === 'graph' ? 'secondary' : 'primary'}
@@ -789,30 +607,6 @@ const ContainerHeader = (props) => {
         </div>
       )}
       <div className={classes.actions}>
-        {enableSharing && (
-          <div className={classes.organizations}>
-            {container.objectOrganization.edges.map((organizationEdge) => (userIsOrganizationEditor ? (
-                <Chip
-                  key={organizationEdge.node.id}
-                  icon={<AccountBalanceOutlined />}
-                  classes={{ root: classes.organization }}
-                  color="warning"
-                  variant="outlined"
-                  label={organizationEdge.node.name}
-                  onDelete={() => removeOrganization(organizationEdge.node.id)}
-                />
-            ) : (
-                <Chip
-                  key={organizationEdge.node.id}
-                  icon={<AccountBalanceOutlined />}
-                  classes={{ root: classes.organization }}
-                  color="warning"
-                  variant="outlined"
-                  label={organizationEdge.node.name}
-                />
-            )))}
-          </div>
-        )}
         <QueryRenderer
           query={containerHeaderObjectsQuery}
           variables={{ id: container.id }}
@@ -824,68 +618,10 @@ const ContainerHeader = (props) => {
               const appliedSuggestions = localStorage.getItem(`suggestions-${container.id}`) || [];
               if (userIsKnowledgeEditor) {
                 return (
-                  <ToggleButtonGroup
-                    size="small"
-                    color="secondary"
-                    exclusive={true}
-                  >
-                    {enableSharing && userIsOrganizationEditor && (
-                      <Tooltip title={t('Share with organizations')}>
-                        <ToggleButton onClick={handleOpenSharing}>
-                          <ShareOutlined fontSize="small" color="primary" />
-                          <Formik
-                            initialValues={{ objectOrganization: '' }}
-                            onSubmit={onSubmitOrganizations}
-                            onReset={onResetOrganizations}
-                          >
-                            {({ submitForm, handleReset, isSubmitting }) => (
-                              <Dialog
-                                PaperProps={{ elevation: 1 }}
-                                open={displaySharing}
-                                TransitionComponent={Transition}
-                                onClose={handleReset}
-                                fullWidth={true}
-                              >
-                                <DialogTitle>
-                                  {t('Share with organizations')}
-                                </DialogTitle>
-                                <DialogContent style={{ overflowY: 'hidden' }}>
-                                  <Form>
-                                    <ObjectOrganizationField
-                                      name="objectOrganization"
-                                      style={{ width: '100%' }}
-                                      label={t('Organizations')}
-                                      multiple={false}
-                                    />
-                                  </Form>
-                                </DialogContent>
-                                <DialogActions>
-                                  <Button
-                                    onClick={handleReset}
-                                    disabled={isSubmitting}
-                                  >
-                                    {t('Close')}
-                                  </Button>
-                                  <Button
-                                    onClick={submitForm}
-                                    disabled={isSubmitting}
-                                    color="secondary"
-                                  >
-                                    {t('Share')}
-                                  </Button>
-                                </DialogActions>
-                              </Dialog>
-                            )}
-                          </Formik>
-                        </ToggleButton>
-                      </Tooltip>
-                    )}
+                  <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
                     {enableSuggestions && (
                       <Tooltip title={t('Open suggestions')}>
-                        <ToggleButton
-                          onClick={handleOpenSuggestions}
-                          disabled={suggestions.length === 0}
-                        >
+                        <ToggleButton onClick={handleOpenSuggestions} disabled={suggestions.length === 0}>
                           <Badge
                             badgeContent={
                               suggestions.filter(
@@ -1012,6 +748,7 @@ const ContainerHeader = (props) => {
           }}
         />
       </div>
+      { disableSharing !== true && <StixCoreHeaderShared en elementId={container.id} />}
       <div className="clearfix" />
     </div>
   );
@@ -1043,14 +780,6 @@ export default createFragmentContainer(ContainerHeader, {
       }
       createdBy {
         id
-      }
-      objectOrganization {
-        edges {
-          node {
-            id
-            name
-          }
-        }
       }
       objectMarking {
         edges {

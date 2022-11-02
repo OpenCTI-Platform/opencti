@@ -30,6 +30,7 @@ import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import CommitMessage from '../form/CommitMessage';
+import StixCoreHeaderShared from '../sharing/StixCoreHeaderShared';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -267,6 +268,7 @@ class StixDomainObjectHeader extends Component {
       onViewAs,
       disablePopover,
       enableReferences,
+      disableSharing,
     } = this.props;
     const aliases = R.propOr(
       [],
@@ -278,8 +280,7 @@ class StixDomainObjectHeader extends Component {
         <Typography
           variant="h1"
           gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
+          classes={{ root: classes.title }}>
           {stixDomainObject.name}
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -313,6 +314,7 @@ class StixDomainObjectHeader extends Component {
           </div>
         )}
         <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
+        { disableSharing !== true && <StixCoreHeaderShared elementId={stixDomainObject.id} /> }
         {variant !== 'noaliases' && (
           <div className={classes.aliases}>
             {R.take(5, aliases).map(
@@ -427,13 +429,11 @@ class StixDomainObjectHeader extends Component {
           </div>
         )}
         <div className="clearfix" />
-        <Dialog
-          PaperProps={{ elevation: 1 }}
+        <Dialog PaperProps={{ elevation: 1 }}
           open={this.state.openAliases}
           TransitionComponent={Transition}
           onClose={this.handleToggleOpenAliases.bind(this)}
-          fullWidth={true}
-        >
+          fullWidth={true}>
           <DialogTitle>
             {t('Entity aliases')}
             <Formik
@@ -571,10 +571,7 @@ class StixDomainObjectHeader extends Component {
             </div>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={this.handleToggleOpenAliases.bind(this)}
-              color="primary"
-            >
+            <Button onClick={this.handleToggleOpenAliases.bind(this)} color="primary">
               {t('Close')}
             </Button>
           </DialogActions>

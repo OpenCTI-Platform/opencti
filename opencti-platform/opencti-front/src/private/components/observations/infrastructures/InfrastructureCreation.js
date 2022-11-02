@@ -25,10 +25,6 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
@@ -120,7 +116,6 @@ class InfrastructureCreation extends Component {
         confidence: () => parseInt(values.confidence, 10),
         createdBy: R.path(['value']),
         objectMarking: R.pluck('value'),
-        objectOrganization: R.pluck('value'),
         objectLabel: R.pluck('value'),
         externalReferences: R.pluck('value'),
       },
@@ -201,7 +196,6 @@ class InfrastructureCreation extends Component {
                 confidence: 75,
                 description: '',
                 createdBy: '',
-                objectOrganization: [],
                 objectMarking: [],
                 objectLabel: [],
                 externalReferences: [],
@@ -269,12 +263,6 @@ class InfrastructureCreation extends Component {
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                   />
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ marginTop: 20, width: '100%' }}
-                    />
-                  </Security>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"

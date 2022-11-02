@@ -26,22 +26,23 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-  BASE_TYPE_RELATION
+  BASE_TYPE_RELATION,
+  buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
 import { adaptFiltersFrontendFormat, convertFiltersToQueryOptions, TYPE_FILTER } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
-import { listAllRelations } from '../database/middleware-loader';
-import { getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { listAllRelations, listEntities } from '../database/middleware-loader';
+import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -56,6 +57,7 @@ const LABEL_FILTER = 'labelledBy';
 const CREATOR_FILTER = 'createdBy';
 const SCORE_FILTER = 'x_opencti_score';
 const DETECTION_FILTER = 'x_opencti_detection';
+const WORKFLOW_FILTER = 'x_opencti_workflow_id';
 const CONFIDENCE_FILTER = 'confidence';
 const REVOKED_FILTER = 'revoked';
 const PATTERN_FILTER = 'pattern_type';
@@ -78,35 +80,9 @@ const filterCacheResolver = async (context, values, filterCache) => {
 };
 
 const isInstanceAccessible = async (context, user, instance, filterCache, filters = {}) => {
-  // First we need to check if the user can access to it (marking and organizations)
-  // If bypass just return true
-  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
-  if (isBypass) {
-    return true;
-  }
-  // Check if user have correct markings.
-  const instanceMarkings = instance.object_marking_refs ?? [];
-  if (instanceMarkings.length > 0) {
-    const userMarkings = (user.allowed_marking || []).map((m) => m.standard_id);
-    const isUserHaveAccess = instanceMarkings.every((m) => userMarkings.includes(m));
-    if (!isUserHaveAccess) {
-      return false;
-    }
-  }
-  // Check user have correct organizations
-  const dataOrganizations = instance.extensions[STIX_EXT_OCTI].granted_refs ?? [];
-  const platformSettings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  if (platformSettings.platform_organization) {
-    const isUserPartOfPlatformOrganization = (user.organizations ?? []).includes(platformSettings.platform_organization);
-    if (!isUserPartOfPlatformOrganization) {
-      if (dataOrganizations.length === 0) {
-        return false;
-      } // User cant see empty shared
-      if (!dataOrganizations.some((r) => user.organizations.includes(r))) {
-        return false;
-      }
-    }
-  } else if (dataOrganizations.length > 0 && !dataOrganizations.some((r) => user.organizations.includes(r))) {
+  // Check if user have correct access rights.
+  const isUserHaveAccessToElement = await isUserCanAccessStixElement(context, user, instance);
+  if (!isUserHaveAccessToElement) {
     return false;
   }
   // When apply extra filters if needed.
@@ -147,6 +123,14 @@ const isInstanceAccessible = async (context, user, instance, filterCache, filter
             }
           }
         }
+        if (!found) {
+          return false;
+        }
+      }
+      // Workflow
+      if (type === WORKFLOW_FILTER) {
+        const workflowId = instance.extensions[STIX_EXT_OCTI].workflow_id;
+        const found = values.includes(workflowId);
         if (!found) {
           return false;
         }
@@ -474,6 +458,17 @@ const createSeeMiddleware = () => {
           return false;
         }
       }
+      // Workflow
+      if (type === WORKFLOW_FILTER) {
+        const workflowId = instance.extensions[STIX_EXT_OCTI].workflow_id;
+        if (!workflowId) {
+          return false;
+        }
+        const found = values.map((v) => v.id).includes(workflowId);
+        if (!found) {
+          return false;
+        }
+      }
       // Creator filtering
       if (type === CREATOR_FILTER) {
         if (values.length === 0) {
@@ -628,7 +623,6 @@ const createSeeMiddleware = () => {
       const isToVisible = await isInstanceMatchFilters(context, toStix, streamFilters, filterCache);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
-        // await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stix);
         // From or to are visible, consider it as a dependency
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: stix, message, origin, version: EVENT_CURRENT_VERSION };
@@ -651,7 +645,9 @@ const createSeeMiddleware = () => {
       }
       const recoverTo = extractQueryParameter(req, 'recover') || req.headers.recover || req.headers['recover-date'];
       const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
+      const publishDependencies = noDependencies === false;
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
+      const publishDeletion = noDelete === false;
       const withInferences = (req.query['with-inferences'] || req.headers['with-inferences']) === 'true';
       if (withInferences) {
         // Check if platform option is enable
@@ -741,21 +737,43 @@ const createSeeMiddleware = () => {
                 } else if (isCurrentlyVisible) { // Just an update
                   await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
                   client.sendEvent(eventId, event, eventData);
-                } else if (noDependencies === false && isRelation) { // Update but not visible
+                } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                   // In case of relationship publication, from or to can be related to something that
                   // is part of the filtering. We can consider this as dependencies
                   await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                } else { // Update but not visible - entity type
+                  // Entity can be part of a container that is authorized by the filters
+                  // If it's the case, the element must be published
+                  const elementInternalId = stix.extensions[STIX_EXT_OCTI].id;
+                  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }];
+                  const args = { connectionFormat: false, filters };
+                  const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);
+                  let isContainerMatching = false;
+                  for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
+                    const container = containers[containerIndex];
+                    const stixContainer = convertStoreToStix(container);
+                    const containerMatch = await isInstanceMatchFilters(context, stixContainer, streamFilters, filterCache);
+                    if (containerMatch) {
+                      isContainerMatching = true;
+                      break;
+                    }
+                  }
+                  // At least one container is matching the filter, so publishing the event
+                  if (isContainerMatching) {
+                    await resolveAndPublishMissingRefs(context, cache, channel, req, streamFilters, eventId, stix);
+                    client.sendEvent(eventId, event, eventData);
+                  }
                 }
               } else if (isCurrentlyVisible) {
                 if (type === EVENT_TYPE_DELETE) {
-                  if (noDelete === false) {
+                  if (publishDeletion) {
                     client.sendEvent(eventId, event, eventData);
                   }
                 } else { // Create and merge
                   await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
                   client.sendEvent(eventId, event, eventData);
                 }
-              } else if (noDependencies === false && isRelation) { // Not an update and not visible
+              } else if (isRelation && publishDependencies) { // Not an update and not visible
                 // In case of relationship publication, from or to can be related to something that
                 // is part of the filtering. We can consider this as dependencies
                 await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
@@ -835,5 +853,4 @@ const createSeeMiddleware = () => {
     },
   };
 };
-
 export default createSeeMiddleware;

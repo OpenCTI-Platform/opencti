@@ -30,16 +30,14 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixMetaRelationship,
-  RELATION_CREATED_BY, RELATION_GRANTED_TO,
+  RELATION_CREATED_BY,
+  RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_INTERNAL_OBJECT,
-  ABSTRACT_STIX_META_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -69,18 +67,14 @@ import {
   ATTRIBUTE_DESCRIPTION,
   ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  ENTITY_TYPE_IDENTITY_SECTOR,
-  ENTITY_TYPE_LOCATION_CITY,
-  ENTITY_TYPE_LOCATION_COUNTRY,
-  ENTITY_TYPE_LOCATION_REGION,
   isStixObjectAliased,
+  STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import { BYPASS, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
+import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
@@ -259,7 +253,7 @@ const buildDataRestrictions = async (context, user) => {
     // region Handle marking restrictions
     if (user.allowed_marking.length === 0) {
       // If user have no marking, he can only access to data with no markings.
-      must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING, ID_INTERNAL) } });
+      must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING) } });
     } else {
       // Markings should be grouped by types for restriction
       const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
@@ -310,47 +304,45 @@ const buildDataRestrictions = async (context, user) => {
     // endregion
     // region Handle organization restrictions
     // If user have organization management role, he can bypass this restriction.
-    const isOrganizationManager = R.find((s) => s.name === KNOWLEDGE_ORGANIZATION_RESTRICT, capabilities) !== undefined;
     // If platform is for specific organization, only user from this organization can access empty defined
     const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-    const isUserPartOfPlatformOrganization = settings.platform_organization
-      ? (user.organizations ?? []).includes(settings.platform_organization) : false;
-    // If user is part of the platform organization, no restriction
-    if (!isOrganizationManager && !isUserPartOfPlatformOrganization) {
-      const should = [];
-      // If no platform organization is configured, user have access to all data without organization
-      if (!settings.platform_organization) {
-        should.push({
-          bool: {
-            must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GRANTED_TO) } }],
-          },
-        });
+    const excludedEntityMatches = STIX_ORGANIZATIONS_UNRESTRICTED
+      .map((t) => [{ match: { 'parent_types.keyword': t } }, { match_phrase: { 'entity_type.keyword': t } }])
+      .flat();
+    if (settings.platform_organization) {
+      if (user.inside_platform_organization) {
+        // Data are visible independently of the organizations
+        // Nothing to restrict.
       } else {
-        should.push(...[
-          { match: { 'parent_types.keyword': ABSTRACT_INTERNAL_OBJECT } },
-          { match: { 'parent_types.keyword': ABSTRACT_STIX_META_OBJECT } },
-          { match: { 'parent_types.keyword': ABSTRACT_STIX_META_RELATIONSHIP } },
-          { match: { 'entity_type.keyword': ENTITY_TYPE_LOCATION_CITY } },
-          { match: { 'entity_type.keyword': ENTITY_TYPE_LOCATION_COUNTRY } },
-          { match: { 'entity_type.keyword': ENTITY_TYPE_LOCATION_REGION } },
-          { match: { 'entity_type.keyword': ENTITY_TYPE_IDENTITY_ORGANIZATION } },
-          { match: { 'entity_type.keyword': ENTITY_TYPE_IDENTITY_SECTOR } },
-        ]);
+        // Data with Empty granted_refs are not visible
+        // Data with granted_refs users that participate to at least one
+        const should = [...excludedEntityMatches];
+        const shouldOrgs = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
+        should.push(...shouldOrgs);
+        // User individual or data created by this individual must be accessible
         if (user.individual_id) {
-          should.push(...[
-            // Add individual instance and related created by
-            { match: { 'internal_id.keyword': user.individual_id } },
-            { match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } }
-          ]);
+          should.push({ match: { 'internal_id.keyword': user.individual_id } });
+          should.push({ match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } });
         }
+        // Finally build the bool should search
+        must.push({ bool: { should, minimum_should_match: 1 } });
       }
-      // If not, all user can access empty organization data
+    } else {
+      // Data with Empty granted_refs are granted to everyone
+      const should = [...excludedEntityMatches];
+      should.push({ bool: { must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GRANTED_TO) } }] } });
+      // Data with granted_refs users that participate to at least one
       if (user.organizations.length > 0) {
-        const shouldOrgs = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m } }));
+        const shouldOrgs = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
         should.push(...shouldOrgs);
       }
-      const markingBool = { bool: { should, minimum_should_match: 1 } };
-      must.push(markingBool);
+      // User individual or data created by this individual must be accessible
+      if (user.individual_id) {
+        should.push({ match: { 'internal_id.keyword': user.individual_id } });
+        should.push({ match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } });
+      }
+      // Finally build the bool should search
+      must.push({ bool: { should, minimum_should_match: 1 } });
     }
     // endregion
   }

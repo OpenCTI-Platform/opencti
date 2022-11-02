@@ -27,6 +27,7 @@ class CountryKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={country}
           PopoverComponent={<CountryPopover />}
           variant="noaliases"

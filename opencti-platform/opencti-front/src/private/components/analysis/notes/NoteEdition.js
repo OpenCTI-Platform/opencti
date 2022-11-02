@@ -11,7 +11,6 @@ import NoteEditionContainer from './NoteEditionContainer';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { noteEditionOverviewFocus } from './NoteEditionOverview';
 import Loader from '../../../../components/Loader';
-import { granted, KNOWLEDGE_KNUPDATE_KNORGARESTRICT, UserContext } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   editButton: {
@@ -33,9 +32,9 @@ const styles = (theme) => ({
 });
 
 export const noteEditionQuery = graphql`
-  query NoteEditionContainerQuery($id: String!, $userIsOrganizationEditor: Boolean!) {
+  query NoteEditionContainerQuery($id: String!) {
     note(id: $id) {
-      ...NoteEditionContainer_note @arguments(userIsOrganizationEditor: $userIsOrganizationEditor)
+      ...NoteEditionContainer_note
     }
   }
 `;
@@ -77,26 +76,21 @@ class NoteEdition extends Component {
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}>
-          <UserContext.Consumer>
-            {({ me }) => {
-              const userIsOrganizationEditor = granted(me, [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
-              return <QueryRenderer
-                  query={noteEditionQuery}
-                  variables={{ id: noteId, userIsOrganizationEditor }}
-                  render={({ props }) => {
-                    if (props) {
-                      return (
-                          <NoteEditionContainer
-                              note={props.note}
-                              handleClose={this.handleClose.bind(this)}
-                          />
-                      );
-                    }
-                    return <Loader variant="inElement" />;
-                  }}
-              />;
+          <QueryRenderer
+            query={noteEditionQuery}
+            variables={{ id: noteId }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <NoteEditionContainer
+                    note={props.note}
+                    handleClose={this.handleClose.bind(this)}
+                  />
+                );
+              }
+              return <Loader variant="inElement" />;
             }}
-          </UserContext.Consumer>
+          />
         </Drawer>
       </div>
     );

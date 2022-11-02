@@ -160,6 +160,7 @@ import {
   isStixDomainObject,
   isStixObjectAliased,
   resolveAliasesField,
+  STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -190,9 +191,9 @@ import {
   BYPASS,
   BYPASS_REFERENCE,
   executionContext,
-  filterElementsAccordingToUser,
+  filterStoreElements,
   isBypassUser,
-  isUserCanAccessElement,
+  isUserCanAccessStoreElement,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   SYSTEM_USER
 } from '../utils/access';
@@ -478,7 +479,9 @@ const loadElementWithDependencies = async (context, user, element, args = {}) =>
       return null;
     }
     // Check relations marking access.
-    if (isUserCanAccessElement(user, from) && isUserCanAccessElement(user, to)) {
+    const canAccessFrom = await isUserCanAccessStoreElement(context, user, from);
+    const canAccessTo = await isUserCanAccessStoreElement(context, user, to);
+    if (canAccessFrom && canAccessTo) {
       return R.mergeRight(element, { from, to, ...deps });
     }
     // Relation is accessible but access rights is not align with the user asking for the information
@@ -2239,22 +2242,38 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   }
   // region upsert refs
   const createdTargets = [];
+  const removedTargets = [];
   const buildInstanceRelTo = (to, relType) => buildInnerRelation(element, to, relType);
   // region cyber observable
   // -- Upsert multiple refs specific for cyber observable
   const obsInputFields = stixCyberObservableFieldsForType(type);
   for (let fieldIndex = 0; fieldIndex < obsInputFields.length; fieldIndex += 1) {
     const inputField = obsInputFields[fieldIndex];
-    if (updatePatch[inputField] && MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.includes(inputField)) {
+    if (MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.includes(inputField)) {
       const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
       const existingInstances = element[CYBER_OBSERVABLE_FIELD_TO_META_RELATION[inputField]] || [];
-      const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), updatePatch[inputField]);
+      const patchInputData = updatePatch[inputField] ?? [];
+      const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), patchInputData);
       const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
       if (instancesToCreate.length > 0) {
         const newRelations = instancesToCreate.map((to) => R.head(buildInstanceRelTo(to, relType)));
         rawRelations.push(...newRelations);
         patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
         createdTargets.push({ key: inputField, instances: instancesToCreate });
+      }
+      // Handle full synchronization only for granted refs
+      if (inputField === INPUT_GRANTED_REFS) {
+        const instancesToRemove = existingInstances.filter((m) => !patchInputData.map((u) => u.internal_id).includes(m));
+        if (instancesToRemove.length > 0) {
+          const currentRels = await listAllRelations(context, user, relType, {
+            fromId: element.internal_id,
+            toId: instancesToRemove
+          });
+          await deleteElements(context, user, currentRels, { publishStreamEvent: false });
+          const targetsInstances = await internalFindByIds(context, user, instancesToRemove);
+          patchInputs.push({ key: inputField, value: targetsInstances, operation: UPDATE_OPERATION_REMOVE });
+          removedTargets.push({ key: inputField, instances: targetsInstances });
+        }
       }
     }
   }
@@ -2266,15 +2285,30 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   const metaInputFields = STIX_META_RELATIONSHIPS_INPUTS;
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
-    if (updatePatch[inputField] && MULTIPLE_META_RELATIONSHIPS_INPUTS.includes(inputField)) {
+    if (MULTIPLE_META_RELATIONSHIPS_INPUTS.includes(inputField)) {
       const relType = FIELD_TO_META_RELATION[inputField];
       const existingInstances = element[relType] || [];
-      const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), updatePatch[inputField]);
+      const patchInputData = updatePatch[inputField] ?? [];
+      const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), patchInputData);
       if (instancesToCreate.length > 0) {
         const newRelations = instancesToCreate.map((to) => R.head(buildInstanceRelTo(to, relType)));
         rawRelations.push(...newRelations);
         patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
         createdTargets.push({ key: inputField, instances: instancesToCreate });
+      }
+      // Handle full synchronization only for granted refs
+      if (inputField === INPUT_GRANTED_REFS) {
+        const instancesToRemove = existingInstances.filter((m) => !patchInputData.map((u) => u.internal_id).includes(m));
+        if (instancesToRemove.length > 0) {
+          const currentRels = await listAllRelations(context, user, relType, {
+            fromId: element.internal_id,
+            toId: instancesToRemove
+          });
+          await deleteElements(context, user, currentRels, { publishStreamEvent: false });
+          const targetsInstances = await internalFindByIds(context, user, instancesToRemove);
+          patchInputs.push({ key: inputField, value: targetsInstances, operation: UPDATE_OPERATION_REMOVE });
+          removedTargets.push({ key: inputField, instances: targetsInstances });
+        }
       }
     }
   }
@@ -2288,7 +2322,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
       impact: impactedInputs
     });
   }
-  const isUpdated = impactedInputs.length > 0 || rawRelations.length > 0;
+  const isUpdated = impactedInputs.length > 0 || rawRelations.length > 0 || removedTargets.length > 0;
   // Manage update_at
   if (isUpdated && isUpdatedAtObject(element.entity_type)) {
     const updatedAtInput = { key: 'updated_at', value: [now()] };
@@ -2305,6 +2339,10 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     for (let index = 0; index < createdTargets.length; index += 1) {
       const createdTarget = createdTargets[index];
       updatedInstance[createdTarget.key] = [...(resolvedInstance[createdTarget.key] ?? []), ...createdTarget.instances];
+    }
+    for (let indexRemove = 0; indexRemove < removedTargets.length; indexRemove += 1) {
+      const removedTarget = removedTargets[indexRemove];
+      resolvedInstance[removedTarget.key] = [...(resolvedInstance[removedTarget.key] ?? []), ...removedTarget.instances];
     }
     // Return the built elements
     return {
@@ -2437,9 +2475,12 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   const toRole = `${relationshipType}_to`;
   // Build final query
   const relToCreate = [];
-  // For global granted
+  // For organizations management
   if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-    relToCreate.push(...buildInnerRelation(data, input.objectOrganization, RELATION_GRANTED_TO));
+    relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
+  } else if (!user.inside_platform_organization) {
+    // If user is not part of the platform organization, put its own organizations
+    relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
   }
   if (isStixCoreRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
@@ -2547,7 +2588,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
       // We need to filter what we found with the user rights
-      const filteredRelations = filterElementsAccordingToUser(user, existingRelationships);
+      const filteredRelations = await filterStoreElements(context, user, existingRelationships);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredRelations.length === 0) {
         throw UnsupportedError('Restricted relation already exists');
@@ -2749,9 +2790,14 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
-  // For global granted
-  if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-    relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
+  // For organizations management
+  if (!STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o))) {
+    if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+      relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
+    } else if (!user.inside_platform_organization) {
+      // If user is not part of the platform organization, put its own organizations
+      relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
+    }
   }
   // For meta stix core
   if (isStixCoreObject(type)) {
@@ -2846,7 +2892,7 @@ export const createEntityRaw = async (context, user, input, type, opts = {}) => 
     let dataEntity;
     if (existingEntities.length > 0) {
       // We need to filter what we found with the user rights
-      const filteredEntities = filterElementsAccordingToUser(user, existingEntities);
+      const filteredEntities = await filterStoreElements(context, user, existingEntities);
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {

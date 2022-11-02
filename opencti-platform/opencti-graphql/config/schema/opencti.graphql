@@ -1112,7 +1112,7 @@ type User implements BasicObject & InternalObject {
   roles: [Role]!
   capabilities: [Capability]!
   groups: GroupConnection @auth(for: [SETTINGS_SETACCESSES])
-  objectOrganization: OrganizationConnection
+  objectOrganization: OrganizationConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime!
   updated_at: DateTime!
   allowed_marking: [MarkingDefinition]
@@ -1730,7 +1730,7 @@ interface StixCoreObject {
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -1847,7 +1847,7 @@ interface StixDomainObject {
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -1975,7 +1975,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2117,7 +2117,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2256,7 +2256,7 @@ interface Container {
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2378,7 +2378,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2552,7 +2552,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2707,7 +2707,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -2862,7 +2862,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3017,7 +3017,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3154,7 +3154,7 @@ interface Identity {
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3290,7 +3290,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3408,7 +3408,7 @@ input OrganizationsFiltering {
 }
 type OrganizationConnection {
   pageInfo: PageInfo!
-  edges: [OrganizationEdge]
+  edges: [OrganizationEdge!]!
 }
 type OrganizationEdge {
   cursor: String!
@@ -3438,7 +3438,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3579,7 +3579,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3715,7 +3715,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -3871,7 +3871,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4025,7 +4025,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4159,7 +4159,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4305,7 +4305,7 @@ interface Location {
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4439,7 +4439,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4580,7 +4580,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4712,7 +4712,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4844,7 +4844,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -4988,7 +4988,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5129,7 +5129,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5275,7 +5275,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5410,7 +5410,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5561,7 +5561,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5708,7 +5708,7 @@ interface StixCyberObservable {
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5793,7 +5793,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5887,7 +5887,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -5985,7 +5985,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6075,7 +6075,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6167,7 +6167,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6269,7 +6269,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6379,7 +6379,7 @@ interface HashedObservable {
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6466,7 +6466,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6569,7 +6569,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6681,7 +6681,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6828,7 +6828,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -6921,7 +6921,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7012,7 +7012,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7102,7 +7102,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7192,7 +7192,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7301,7 +7301,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7437,7 +7437,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7538,7 +7538,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7628,7 +7628,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7745,7 +7745,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7839,7 +7839,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -7933,7 +7933,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8023,7 +8023,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8113,7 +8113,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8203,7 +8203,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8293,7 +8293,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8383,7 +8383,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8477,7 +8477,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8567,7 +8567,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8664,7 +8664,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9123,7 +9123,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9263,7 +9263,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection

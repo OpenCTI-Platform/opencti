@@ -10251,7 +10251,7 @@ export type OrganizationAddInput = {
 
 export type OrganizationConnection = {
   __typename?: 'OrganizationConnection';
-  edges?: Maybe<Array<Maybe<OrganizationEdge>>>;
+  edges: Array<OrganizationEdge>;
   pageInfo: PageInfo;
 };
 
@@ -23068,7 +23068,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type OrganizationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationConnection'] = ResolversParentTypes['OrganizationConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['OrganizationEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

@@ -35,6 +35,7 @@ class IndividualComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={individual}
           isOpenctiAlias={true}
           PopoverComponent={<IndividualPopover />}

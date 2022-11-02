@@ -57,8 +57,6 @@ import {
 } from '../../../../utils/Entity';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -139,7 +137,6 @@ const stixCyberObservableMutation = graphql`
     $createdBy: String
     $objectMarking: [String]
     $objectLabel: [String]
-    $objectOrganization: [String]
     $externalReferences: [String]
     $AutonomousSystem: AutonomousSystemAddInput
     $Directory: DirectoryAddInput
@@ -179,7 +176,6 @@ const stixCyberObservableMutation = graphql`
       createdBy: $createdBy
       objectMarking: $objectMarking
       objectLabel: $objectLabel
-      objectOrganization: $objectOrganization
       externalReferences: $externalReferences
       AutonomousSystem: $AutonomousSystem
       Directory: $Directory
@@ -238,14 +234,6 @@ const stixCyberObservableMutation = graphql`
             id
             value
             color
-          }
-        }
-      }
-      objectOrganization {
-        edges {
-          node {
-            id
-            name
           }
         }
       }
@@ -332,7 +320,6 @@ class StixCyberObservableCreation extends Component {
       dissoc('x_opencti_description'),
       dissoc('x_opencti_score'),
       dissoc('createdBy'),
-      dissoc('objectOrganization'),
       dissoc('objectMarking'),
       dissoc('objectLabel'),
       dissoc('externalReferences'),
@@ -359,7 +346,6 @@ class StixCyberObservableCreation extends Component {
       x_opencti_score: parseInt(values.x_opencti_score, 10),
       createdBy: propOr(null, 'value', values.createdBy),
       objectMarking: pluck('value', values.objectMarking),
-      objectOrganization: pluck('value', values.objectOrganization),
       objectLabel: pluck('value', values.objectLabel),
       externalReferences: pluck('value', values.externalReferences),
       createIndicator: values.createIndicator,
@@ -455,7 +441,6 @@ class StixCyberObservableCreation extends Component {
               x_opencti_score: 50,
               createdBy: '',
               objectMarking: [],
-              objectOrganization: [],
               objectLabel: [],
               externalReferences: [],
               createIndicator: false,
@@ -645,12 +630,6 @@ class StixCyberObservableCreation extends Component {
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                      <ObjectOrganizationField
-                        name="objectOrganization"
-                        style={{ marginTop: 20, width: '100%' }}
-                      />
-                    </Security>
                     <Field
                       component={SwitchField}
                       type="checkbox"

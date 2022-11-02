@@ -22,6 +22,7 @@ class OrganizationAnalysisComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
           onViewAs={onViewAs.bind(this)}

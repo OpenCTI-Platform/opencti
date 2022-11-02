@@ -23,6 +23,7 @@ import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import {
@@ -50,9 +51,10 @@ import {
   USER_DELETION,
 } from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
+import { getEntityFromCache } from '../database/cache';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -68,7 +70,7 @@ const roleSessionRefresh = async (context, user, roleId) => {
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
-const userSessionRefresh = async (userId) => {
+export const userSessionRefresh = async (userId) => {
   const sessions = await findSessionsForUsers([userId]);
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
@@ -176,20 +178,16 @@ export const getUserAndGlobalMarkings = async (context, userId, capabilities) =>
   return { user: computedMarkings, all: markings };
 };
 
-export const getMarkings = async (context, userId, capabilities) => {
-  const marking = await getUserAndGlobalMarkings(context, userId, capabilities);
-  return marking.user;
-};
-
-export const getCapabilities = async (context, userId) => {
+export const getCapabilities = async (context, userId, isUserPlatform) => {
   const roles = await listThroughGetTo(context, SYSTEM_USER, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
   const roleIds = roles.map((r) => r.id);
   const capabilities = await listThroughGetTo(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
   if (userId === OPENCTI_ADMIN_UUID && !R.find(R.propEq('name', BYPASS))(capabilities)) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
+    return capabilities;
   }
-  return capabilities;
+  return isUserPlatform ? capabilities : capabilities.filter((c) => c.name !== KNOWLEDGE_ORGANIZATION_RESTRICT);
 };
 
 export const batchRoleCapabilities = async (context, user, roleId) => {
@@ -283,7 +281,7 @@ export const addUser = async (context, user, newUser) => {
   await Promise.all(R.map((role) => assignRoleToUser(context, user, userCreated.id, role), userRoles));
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
-  await Promise.all(R.map((organization) => assignOrganizationToUser(user, userCreated.id, organization), userOrganizations));
+  await Promise.all(R.map((organization) => assignOrganizationToUser(context, user, userCreated.id, organization), userOrganizations));
   // Assign default groups to user
   const defaultGroups = await findGroups(context, user, { filters: [{ key: 'default_assignation', values: [true] }] });
   const relationGroups = defaultGroups.edges.map((e) => ({
@@ -567,7 +565,7 @@ export const logout = async (context, user, req, res) => {
   });
 };
 
-const buildSessionUser = (origin, impersonate, provider) => {
+const buildSessionUser = async (context, origin, impersonate, provider) => {
   const user = impersonate ?? origin;
   return {
     id: user.id,
@@ -585,7 +583,8 @@ const buildSessionUser = (origin, impersonate, provider) => {
     login_provider: provider,
     impersonate: impersonate !== undefined,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
-    organizations: user.organizations.map((m) => m.standard_id),
+    organizations: user.organizations,
+    inside_platform_organization: user.inside_platform_organization,
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
       standard_id: m.standard_id,
@@ -602,9 +601,14 @@ const buildSessionUser = (origin, impersonate, provider) => {
 };
 
 const buildCompleteUser = async (context, client) => {
-  if (!client) return undefined;
-  const capabilities = await getCapabilities(context, client.id);
+  if (!client) {
+    return undefined;
+  }
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const organizations = await batchOrganizations(context, SYSTEM_USER, client.id, { batched: false, paginate: false });
+  const userOrganizations = organizations.map((m) => m.internal_id);
+  const isUserPlatform = settings.platform_organization ? userOrganizations.includes(settings.platform_organization) : true;
+  const capabilities = await getCapabilities(context, client.id, isUserPlatform);
   const marking = await getUserAndGlobalMarkings(context, client.id, capabilities);
   const args = { filters: [{ key: 'contact_information', values: [client.user_email] }], connectionFormat: false };
   const individuals = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
@@ -614,6 +618,7 @@ const buildCompleteUser = async (context, client) => {
     capabilities,
     organizations,
     individual_id: individualId,
+    inside_platform_organization: isUserPlatform,
     allowed_marking: marking.user,
     all_marking: marking.all
   };
@@ -655,7 +660,11 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
       logAudit.error(user, IMPERSONATE_ACTION, { to: applicantId });
     }
   }
-  const sessionUser = buildSessionUser(logged, impersonate, provider);
+  const sessionUser = await buildSessionUser(context, logged, impersonate, provider);
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  if (!isBypassUser(logged) && settings.platform_organization && logged.organizations.length === 0) {
+    throw AuthenticationFailure('You can\'t login without an organization');
+  }
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
   req.session.session_refresh = false;

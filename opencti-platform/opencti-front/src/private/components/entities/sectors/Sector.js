@@ -32,6 +32,7 @@ class SectorComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={sector}
           isOpenctiAlias={true}
           PopoverComponent={<SectorPopover />}

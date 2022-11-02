@@ -43,7 +43,7 @@ import {
 import type { OrganizationReliability, StixId } from './stix-common';
 import {
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
+  RELATION_EXTERNAL_REFERENCE, RELATION_GRANTED_TO,
   RELATION_OBJECT_MARKING
 } from '../schema/stixMetaRelationship';
 import type { PageInfo } from '../generated/graphql';
@@ -135,9 +135,8 @@ interface BasicStoreCommon extends BasicStoreBase {
   hashes?: { [k: string]: string };
   sort?: SortResults;
   // inputs
-  // [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
+  [RELATION_GRANTED_TO]?: Array<string>;
   [RELATION_OBJECT_MARKING]?: Array<string>;
-  // [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
 }
 
@@ -305,8 +304,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // number
   number_observed: number;
   confidence: number;
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
   precision: number;
   x_opencti_order: number;
   x_opencti_base_score: number;
@@ -536,6 +535,10 @@ interface BasicWorkflowStatusEntity extends BasicStoreEntity {
   type: string;
   order: number;
   disabled: boolean;
+}
+
+export interface BasicStoreSettings extends BasicStoreEntity {
+  platform_organization: string;
 }
 
 type BasicStoreObject = BasicStoreEntity | BasicStoreCyberObservable | BasicStoreRelation;

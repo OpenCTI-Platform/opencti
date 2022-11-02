@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -13,32 +13,17 @@ import * as R from 'ramda';
 import { buildDate } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertOrganizations,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/Edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -146,32 +131,6 @@ const stixSightingRelationshipMutationRelationDelete = graphql`
   }
 `;
 
-const stixSightingRelationshipMutationGroupAdd = graphql`
-  mutation StixSightingRelationshipEditionOverviewGroupAddMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixSightingRelationshipEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...StixSightingRelationshipEditionOverview_stixSightingRelationship
-      }
-    }
-  }
-`;
-
-const stixSightingRelationshipMutationGroupDelete = graphql`
-  mutation StixSightingRelationshipEditionOverviewGroupDeleteMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixSightingRelationshipEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...StixSightingRelationshipEditionOverview_stixSightingRelationship
-      }
-    }
-  }
-`;
-
 const stixSightingRelationshipValidation = (t) => Yup.object().shape({
   attribute_count: Yup.number()
     .typeError(t('The value must be a number'))
@@ -266,35 +225,6 @@ const StixSightingRelationshipEditionOverview = ({
       },
     });
   };
-  const handleChangeObjectOrganization = (name, values) => {
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(stixSightingRelationship);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: stixSightingRelationshipMutationGroupAdd,
-        variables: {
-          id: stixSightingRelationship.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixSightingRelationshipMutationGroupDelete,
-        variables: {
-          id: stixSightingRelationship.id,
-          organizationId: R.head(removed).value,
-        },
-      });
-    }
-  };
   const handleSubmitField = (name, value) => {
     let finalValue = value;
     if (name === 'x_opencti_workflow_id') {
@@ -315,13 +245,11 @@ const StixSightingRelationshipEditionOverview = ({
   };
   const createdBy = convertCreatedBy(stixSightingRelationship);
   const objectMarking = convertMarkings(stixSightingRelationship);
-  const objectOrganization = convertOrganizations(stixSightingRelationship);
   const status = convertStatus(t, stixSightingRelationship);
   const initialValues = R.pipe(
     R.assoc('first_seen', buildDate(stixSightingRelationship.first_seen)),
     R.assoc('last_seen', buildDate(stixSightingRelationship.last_seen)),
     R.assoc('createdBy', createdBy),
-    R.assoc('objectOrganization', objectOrganization),
     R.assoc('objectMarking', objectMarking),
     R.assoc('x_opencti_workflow_id', status),
     R.pick([
@@ -489,19 +417,6 @@ const StixSightingRelationshipEditionOverview = ({
                 disabled={inferred}
                 onChange={handleChangeObjectMarking}
               />
-              <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                <ObjectOrganizationField
-                  name="objectOrganization"
-                  style={{ marginTop: 20, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldname="objectOrganization"
-                    />
-                  }
-                  onChange={handleChangeObjectOrganization}
-                />
-              </Security>
               <Field
                 component={SwitchField}
                 type="checkbox"
@@ -584,14 +499,6 @@ const StixSightingRelationshipEditionFragment = createFragmentContainer(
               id
               definition
               definition_type
-            }
-          }
-        }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
             }
           }
         }

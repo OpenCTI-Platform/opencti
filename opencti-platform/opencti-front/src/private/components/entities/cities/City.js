@@ -32,6 +32,7 @@ class CityComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={city}
           isOpenctiAlias={true}
           PopoverComponent={<CityPopover />}

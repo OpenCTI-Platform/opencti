@@ -35,6 +35,7 @@ class OrganizationComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={organization}
           isOpenctiAlias={true}
           PopoverComponent={<OrganizationPopover />}

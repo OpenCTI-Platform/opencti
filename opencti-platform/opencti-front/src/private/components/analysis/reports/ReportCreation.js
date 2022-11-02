@@ -27,12 +27,8 @@ import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  SETTINGS_SETLABELS,
-} from '../../../../utils/Security';
+import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -140,10 +136,6 @@ class ReportCreation extends Component {
       R.assoc('published', parse(values.published).format()),
       R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('createdBy', values.createdBy?.value),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
@@ -235,7 +227,6 @@ class ReportCreation extends Component {
                           description: '',
                           report_types: [],
                           createdBy: '',
-                          objectOrganization: [],
                           objectMarking: [],
                           objectLabel: [],
                           externalReferences: [],
@@ -370,14 +361,6 @@ class ReportCreation extends Component {
                               setFieldValue={setFieldValue}
                               values={values.externalReferences}
                             />
-                            <Security
-                              needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                            >
-                              <ObjectOrganizationField
-                                name="objectOrganization"
-                                style={{ marginTop: 20, width: '100%' }}
-                              />
-                            </Security>
                             <div className={classes.buttons}>
                               <Button
                                 variant="contained"

@@ -3096,7 +3096,7 @@ input OrganizationsFiltering {
 
 type OrganizationConnection {
   pageInfo: PageInfo!
-  edges: [OrganizationEdge]
+  edges: [OrganizationEdge!]!
 }
 
 type OrganizationEdge {

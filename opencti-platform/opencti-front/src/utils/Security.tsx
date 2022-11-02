@@ -49,12 +49,14 @@ interface DataSecurityProps extends SecurityProps {
 }
 
 export const granted = (
-  me: RootPrivateQuery$data['me']| undefined,
+  me: RootPrivateQuery$data['me'] | undefined,
   capabilities: Array<string>,
   matchAll = false,
 ) => {
   const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
-  if (userCapabilities.includes(BYPASS)) return true;
+  if (userCapabilities.includes(BYPASS)) {
+    return true;
+  }
   let numberOfAvailableCapabilities = 0;
   for (let index = 0; index < capabilities.length; index += 1) {
     const checkCapability = capabilities[index];
@@ -93,14 +95,14 @@ export const CollaborativeSecurity: FunctionComponent<DataSecurityProps> = ({
   placeholder = <span />,
 }) => {
   const { me } = useContext<UserContextType>(UserContext);
-  if (me) {
-    const haveCapability = granted(me, needs, matchAll);
-    if (haveCapability) return children;
-    const canParticipate = granted(me, [KNOWLEDGE_KNPARTICIPATE], false);
-    const isCreator = data.createdBy?.id ? data.createdBy?.id === me.individual_id : false;
-    if (canParticipate && isCreator) {
-      return children;
-    }
+  const haveCapability = granted(me, needs, matchAll);
+  if (haveCapability) {
+    return children;
+  }
+  const canParticipate = granted(me, [KNOWLEDGE_KNPARTICIPATE], false);
+  const isCreator = data.createdBy?.id ? data.createdBy?.id === me?.individual_id : false;
+  if (canParticipate && isCreator) {
+    return children;
   }
   return placeholder;
 };

@@ -21,7 +21,6 @@ import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import Security, {
   KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
 } from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -30,7 +29,6 @@ import { noteCreationMutation } from './NoteCreation';
 import TextField from '../../../../components/TextField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   paper: {
@@ -99,10 +97,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
         ...defaultMarking,
         ...R.pluck('value', values.objectMarking),
       ]),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.assoc('objects', [stixCoreObjectId]),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
@@ -137,16 +131,11 @@ class StixCoreObjectNotesCardsContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes about this entity')}
         </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNPARTICIPATE]}
-          placeholder={<div style={{ height: 29 }} />}
-        >
-          <IconButton
-            color="secondary"
+        <Security needs={[KNOWLEDGE_KNPARTICIPATE]} placeholder={<div style={{ height: 29 }} />}>
+          <IconButton color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
-            size="large"
-          >
+            size="large">
             <EditOutlined fontSize="small" />
           </IconButton>
           <AddNotes
@@ -185,7 +174,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
                   attribute_abstract: '',
                   content: '',
                   objectMarking: [],
-                  objectOrganization: [],
                   objectLabel: [],
                 }}
                 validationSchema={noteValidation(t)}
@@ -226,12 +214,6 @@ class StixCoreObjectNotesCardsContainer extends Component {
                       name="objectMarking"
                       style={{ marginTop: 20, width: '100%' }}
                     />
-                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                      <ObjectOrganizationField
-                        name="objectOrganization"
-                        style={{ marginTop: 20, width: '100%' }}
-                      />
-                    </Security>
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"

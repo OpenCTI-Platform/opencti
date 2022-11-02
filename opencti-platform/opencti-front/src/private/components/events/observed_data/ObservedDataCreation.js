@@ -32,10 +32,6 @@ import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -124,7 +120,6 @@ class ObservedDataCreation extends Component {
         confidence: () => parseInt(values.confidence, 10),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
-        objectOrganization: pluck('value'),
         objectLabel: pluck('value'),
         externalReferences: pluck('value'),
         objects: pluck('value'),
@@ -205,7 +200,6 @@ class ObservedDataCreation extends Component {
                 confidence: 75,
                 createdBy: '',
                 objectMarking: [],
-                objectOrganization: [],
                 objectLabel: [],
                 externalReferences: [],
               }}
@@ -283,12 +277,6 @@ class ObservedDataCreation extends Component {
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                   />
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ marginTop: 20, width: '100%' }}
-                    />
-                  </Security>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"

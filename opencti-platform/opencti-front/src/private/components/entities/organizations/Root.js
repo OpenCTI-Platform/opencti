@@ -213,6 +213,7 @@ class RootOrganization extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
                             enableReferences={props.settings.platform_enable_reference?.includes(
@@ -235,6 +236,7 @@ class RootOrganization extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
                             enableReferences={props.settings.platform_enable_reference?.includes(

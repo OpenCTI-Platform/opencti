@@ -34,7 +34,6 @@ class ObservedDataComponent extends Component {
         <ContainerHeader
           container={observedData}
           PopoverComponent={<ObservedDataPopover />}
-          enableSharing={true}
         />
         <Grid
           container={true}

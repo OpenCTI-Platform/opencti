@@ -1,16 +1,15 @@
-import React, { Component } from 'react';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React, { useState } from 'react';
 import { AccountBalanceOutlined } from '@mui/icons-material';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import { makeStyles } from '@mui/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -24,9 +23,9 @@ const styles = () => ({
     width: '100%',
     overflow: 'hidden',
   },
-});
+}));
 
-export const objectOrganizationFieldQuery = graphql`
+export const searchObjectOrganizationFieldQuery = graphql`
   query ObjectOrganizationFieldQuery {
     organizations {
       edges {
@@ -39,109 +38,93 @@ export const objectOrganizationFieldQuery = graphql`
   }
 `;
 
-class ObjectOrganizationField extends Component {
-  constructor(props) {
-    super(props);
-    const { defaultOrganizations } = props;
-    const organizations = (defaultOrganizations ?? []).map((n) => ({
-      label: n.name,
-      value: n.id /* color: n.x_opencti_color */,
-    }));
-    this.state = { organizations };
-  }
+const ObjectOrganizationField = (props) => {
+  const {
+    name,
+    label,
+    style,
+    onChange,
+    helpertext,
+    disabled,
+    defaultOrganizations,
+    outlined = true,
+    multiple = true,
+  } = props;
 
-  searchOrganizations() {
-    fetchQuery(objectOrganizationFieldQuery)
+  const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({ label: n.name, value: n.id }));
+  const [organizations, setOrganizations] = useState(defaultStateOrganizations);
+  const classes = useStyles();
+  const { t } = useFormatter();
+
+  const searchOrganizations = () => {
+    fetchQuery(searchObjectOrganizationFieldQuery)
       .toPromise()
       .then((data) => {
-        const organizations = data.organizations.edges.map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-          // color: n.x_opencti_color,
-        }));
-        this.setState({ organizations });
+        const searchResults = data.organizations.edges.map((n) => ({ label: n.node.name, value: n.node.id }));
+        setOrganizations(searchResults);
       });
-  }
+  };
 
-  render() {
-    const {
-      t,
-      name,
-      label,
-      style,
-      classes,
-      onChange,
-      helpertext,
-      disabled,
-      outlined = true,
-      multiple = true,
-    } = this.props;
-    if (outlined === false) {
-      return (
-        <Field
-          component={AutocompleteField}
-          name={name}
-          multiple={true}
-          disabled={disabled}
-          style={style}
-          textfieldprops={{
-            variant: 'standard',
-            label: t(label ?? 'Organizations restriction'),
-            helperText: helpertext,
-            fullWidth: true,
-            onFocus: this.searchOrganizations.bind(this),
-          }}
-          noOptionsText={t('No available options')}
-          options={this.state.organizations}
-          onInputChange={this.searchOrganizations.bind(this)}
-          onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(props, option) => (
-            <li {...props}>
-              <div className={classes.icon} style={{ color: option.color }}>
-                <AccountBalanceOutlined />
-              </div>
-              <div className={classes.text}>{option.label}</div>
-            </li>
-          )}
-        />
-      );
-    }
+  if (outlined === false) {
     return (
-      <Alert
-        severity="warning"
-        variant="outlined"
+      <Field
+        component={AutocompleteField}
+        name={name}
+        multiple={true}
+        disabled={disabled}
         style={style}
-        classes={{ message: classes.message }}
-      >
-        <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
-        <Field
-          component={AutocompleteField}
-          name={name}
-          multiple={multiple}
-          disabled={disabled}
-          style={{ width: '100%', marginTop: 10 }}
-          textfieldprops={{
-            variant: 'standard',
-            helperText: helpertext,
-            fullWidth: true,
-            onFocus: this.searchOrganizations.bind(this),
-          }}
-          noOptionsText={t('No available options')}
-          options={this.state.organizations}
-          onInputChange={this.searchOrganizations.bind(this)}
-          onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(props, option) => (
-            <li {...props}>
-              <div className={classes.icon} style={{ color: option.color }}>
-                <AccountBalanceOutlined />
-              </div>
-              <div className={classes.text}>{option.label}</div>
-            </li>
-          )}
-        />
-      </Alert>
+        textfieldprops={{
+          variant: 'standard',
+          label: t(label ?? 'Organizations restriction'),
+          helperText: helpertext,
+          fullWidth: true,
+          onFocus: searchOrganizations,
+        }}
+        noOptionsText={t('No available options')}
+        options={organizations}
+        onInputChange={searchOrganizations}
+        onChange={typeof onChange === 'function' ? onChange : null}
+        renderOption={(renderProps, option) => (
+          <li {...renderProps}>
+            <div className={classes.icon} style={{ color: option.color }}>
+              <AccountBalanceOutlined />
+            </div>
+            <div className={classes.text}>{option.label}</div>
+          </li>
+        )}
+      />
     );
   }
-}
+  return (
+    <Alert severity="warning" variant="outlined" style={style} classes={{ message: classes.message }}>
+      <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
+      <Field
+        component={AutocompleteField}
+        name={name}
+        multiple={multiple}
+        disabled={disabled}
+        style={{ width: '100%', marginTop: 10 }}
+        textfieldprops={{
+          variant: 'standard',
+          helperText: helpertext,
+          fullWidth: true,
+          onFocus: searchOrganizations,
+        }}
+        noOptionsText={t('No available options')}
+        options={organizations}
+        onInputChange={searchOrganizations}
+        onChange={typeof onChange === 'function' ? onChange : null}
+        renderOption={(renderProps, option) => (
+          <li {...renderProps}>
+            <div className={classes.icon} style={{ color: option.color }}>
+              <AccountBalanceOutlined />
+            </div>
+            <div className={classes.text}>{option.label}</div>
+          </li>
+        )}
+      />
+    </Alert>
+  );
+};
 
-export default compose(inject18n, withStyles(styles))(ObjectOrganizationField);
+export default ObjectOrganizationField;

@@ -26,10 +26,6 @@ import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -112,7 +108,6 @@ class ThreatActorCreation extends Component {
         confidence: () => parseInt(values.confidence, 10),
         createdBy: R.path(['value']),
         objectMarking: R.pluck('value'),
-        objectOrganization: R.pluck('value'),
         objectLabel: R.pluck('value'),
         externalReferences: R.pluck('value'),
       },
@@ -186,7 +181,6 @@ class ThreatActorCreation extends Component {
                 confidence: 75,
                 description: '',
                 createdBy: '',
-                objectOrganization: [],
                 objectMarking: [],
                 objectLabel: [],
                 externalReferences: [],
@@ -304,12 +298,6 @@ class ThreatActorCreation extends Component {
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                   />
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ marginTop: 20, width: '100%' }}
-                    />
-                  </Security>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"

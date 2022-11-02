@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
@@ -19,19 +19,10 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertOrganizations,
-  convertStatus,
-} from '../../../../utils/Edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const indicatorMutationFieldPatch = graphql`
@@ -96,32 +87,6 @@ const indicatorMutationRelationDelete = graphql`
   }
 `;
 
-const indicatorMutationOrganizationAdd = graphql`
-  mutation IndicatorEditionOverviewGroupAddMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...IndicatorEditionOverview_indicator
-      }
-    }
-  }
-`;
-
-const indicatorMutationOrganizationDelete = graphql`
-  mutation IndicatorEditionOverviewGroupDeleteMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...IndicatorEditionOverview_indicator
-      }
-    }
-  }
-`;
-
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number(),
@@ -163,10 +128,6 @@ class IndicatorEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.assoc(
         'valid_from',
         values.valid_from ? parse(values.valid_from).format() : null,
@@ -219,37 +180,6 @@ class IndicatorEditionOverviewComponent extends Component {
           });
         })
         .catch(() => false);
-    }
-  }
-
-  handleChangeObjectOrganization(name, values) {
-    const { indicator } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(indicator);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: indicatorMutationOrganizationAdd,
-        variables: {
-          id: this.props.indicator.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: indicatorMutationOrganizationDelete,
-        variables: {
-          id: this.props.indicator.id,
-          organizationId: R.head(removed).value,
-        },
-      });
     }
   }
 
@@ -350,13 +280,11 @@ class IndicatorEditionOverviewComponent extends Component {
     )(indicator);
     const createdBy = convertCreatedBy(indicator);
     const objectMarking = convertMarkings(indicator);
-    const objectOrganization = convertOrganizations(indicator);
     const status = convertStatus(t, indicator);
     const initialValues = R.pipe(
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('objectOrganization', objectOrganization),
       R.assoc('x_opencti_workflow_id', status),
       R.assoc(
         'x_mitre_platforms',
@@ -380,7 +308,6 @@ class IndicatorEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
-        'objectOrganization',
         'x_opencti_workflow_id',
       ]),
     )(indicator);
@@ -392,12 +319,12 @@ class IndicatorEditionOverviewComponent extends Component {
         onSubmit={this.onSubmit.bind(this)}
       >
         {({
-          submitForm,
-          isSubmitting,
-          validateForm,
-          setFieldValue,
-          values,
-        }) => (
+            submitForm,
+            isSubmitting,
+            validateForm,
+            setFieldValue,
+            values,
+          }) => (
           <Form style={{ margin: '0px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -605,19 +532,6 @@ class IndicatorEditionOverviewComponent extends Component {
                 id={indicator.id}
               />
             )}
-            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-              <ObjectOrganizationField
-                name="objectOrganization"
-                style={{ marginTop: 20, width: '100%' }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldname="objectOrganization"
-                  />
-                }
-                onChange={this.handleChangeObjectOrganization.bind(this)}
-              />
-            </Security>
           </Form>
         )}
       </Formik>
@@ -672,14 +586,6 @@ const IndicatorEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
-            }
-          }
-        }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
             }
           }
         }

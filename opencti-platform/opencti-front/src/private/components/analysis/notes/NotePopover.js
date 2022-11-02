@@ -17,16 +17,11 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
 import Loader from '../../../../components/Loader';
-import {
-  CollaborativeSecurity,
-  granted,
-  KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  UserContext,
-} from '../../../../utils/Security';
+import { CollaborativeSecurity, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -142,8 +137,8 @@ class NotePopover extends Component {
           <MoreVert />
         </IconButton>
         <Menu anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}>
+              open={Boolean(this.state.anchorEl)}
+              onClose={this.handleClose.bind(this)}>
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -186,31 +181,26 @@ class NotePopover extends Component {
           </DialogActions>
         </Dialog>
         <Drawer open={this.state.displayEdit}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}>
-          <UserContext.Consumer>
-            {({ me }) => {
-              const userIsOrganizationEditor = granted(me, [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
-              return <QueryRenderer
-                  query={noteEditionQuery}
-                  variables={{ id, userIsOrganizationEditor }}
-                  render={({ props }) => {
-                    if (props) {
-                      return (
-                          <NoteEditionContainer
-                              note={props.note}
-                              handleClose={this.handleCloseEdit.bind(this)}
-                          />
-                      );
-                    }
-                    return <Loader variant="inElement" />;
-                  }}
-              />;
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleCloseEdit.bind(this)}>
+          <QueryRenderer
+            query={noteEditionQuery}
+            variables={{ id }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <NoteEditionContainer
+                    note={props.note}
+                    handleClose={this.handleCloseEdit.bind(this)}
+                  />
+                );
+              }
+              return <Loader variant="inElement" />;
             }}
-          </UserContext.Consumer>
+          />
         </Drawer>
       </div>
     );

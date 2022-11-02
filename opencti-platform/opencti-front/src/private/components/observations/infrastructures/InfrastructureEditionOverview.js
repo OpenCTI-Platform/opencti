@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -14,20 +14,11 @@ import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertOrganizations,
-  convertStatus,
-} from '../../../../utils/Edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -110,32 +101,6 @@ const infrastructureMutationRelationDelete = graphql`
   }
 `;
 
-const infrastructureMutationGroupAdd = graphql`
-  mutation InfrastructureEditionOverviewGroupAddMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...InfrastructureEditionOverview_infrastructure
-      }
-    }
-  }
-`;
-
-const infrastructureMutationGroupDelete = graphql`
-  mutation InfrastructureEditionOverviewGroupDeleteMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...InfrastructureEditionOverview_infrastructure
-      }
-    }
-  }
-`;
-
 const infrastructureValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
@@ -175,10 +140,6 @@ class InfrastructureEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -216,37 +177,6 @@ class InfrastructureEditionOverviewComponent extends Component {
         });
       })
       .catch(() => false);
-  }
-
-  handleChangeObjectOrganization(name, values) {
-    const { infrastructure } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(infrastructure);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: infrastructureMutationGroupAdd,
-        variables: {
-          id: this.props.infrastructure.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: infrastructureMutationGroupDelete,
-        variables: {
-          id: this.props.infrastructure.id,
-          organizationId: R.head(removed).value,
-        },
-      });
-    }
   }
 
   handleChangeCreatedBy(name, value) {
@@ -338,7 +268,6 @@ class InfrastructureEditionOverviewComponent extends Component {
     const { t, infrastructure, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(infrastructure);
     const objectMarking = convertMarkings(infrastructure);
-    const objectOrganization = convertOrganizations(infrastructure);
     const status = convertStatus(t, infrastructure);
     const killChainPhases = R.pipe(
       R.pathOr([], ['killChainPhases', 'edges']),
@@ -351,7 +280,6 @@ class InfrastructureEditionOverviewComponent extends Component {
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('objectOrganization', objectOrganization),
       R.assoc('x_opencti_workflow_id', status),
       R.assoc('first_seen', buildDate(infrastructure.first_seen)),
       R.assoc('last_seen', buildDate(infrastructure.last_seen)),
@@ -370,7 +298,6 @@ class InfrastructureEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
-        'objectOrganization',
         'x_opencti_workflow_id',
       ]),
     )(infrastructure);
@@ -514,19 +441,6 @@ class InfrastructureEditionOverviewComponent extends Component {
                 id={infrastructure.id}
               />
             )}
-            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-              <ObjectOrganizationField
-                name="objectOrganization"
-                style={{ marginTop: 20, width: '100%' }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldname="objectOrganization"
-                  />
-                }
-                onChange={this.handleChangeObjectOrganization.bind(this)}
-              />
-            </Security>
           </Form>
         )}
       </Formik>
@@ -577,14 +491,6 @@ const InfrastructureEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
-            }
-          }
-        }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
             }
           }
         }

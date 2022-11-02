@@ -33,6 +33,7 @@ class RegionComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={region}
           isOpenctiAlias={true}
           PopoverComponent={<RegionPopover />}

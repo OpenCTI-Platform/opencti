@@ -110,7 +110,6 @@ class RootReport extends Component {
                           <ContainerHeader
                             container={props.report}
                             PopoverComponent={<ReportPopover />}
-                            enableSharing={true}
                           />
                           <ContainerStixDomainObjects
                             {...routeProps}
@@ -127,7 +126,6 @@ class RootReport extends Component {
                           <ContainerHeader
                             container={props.report}
                             PopoverComponent={<ReportPopover />}
-                            enableSharing={true}
                           />
                           <ContainerStixCyberObservables
                             {...routeProps}
@@ -153,7 +151,6 @@ class RootReport extends Component {
                           <ContainerHeader
                             container={props.report}
                             PopoverComponent={<ReportPopover />}
-                            enableSharing={true}
                           />
                           <StixDomainObjectContent
                             {...routeProps}
@@ -181,7 +178,6 @@ class RootReport extends Component {
                             container={props.report}
                             PopoverComponent={<ReportPopover />}
                             enableSuggestions={true}
-                            enableSharing={true}
                           />
                           <StixCoreObjectFilesAndHistory
                             {...routeProps}

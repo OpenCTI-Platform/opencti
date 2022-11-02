@@ -15,10 +15,8 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertOrganizations, convertStatus } from '../../../../utils/Edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import Security, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -108,32 +106,6 @@ const incidentMutationRelationDelete = graphql`
   }
 `;
 
-const incidentMutationGroupAdd = graphql`
-  mutation IncidentEditionOverviewGroupAddMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
-        ...IncidentEditionOverview_incident
-      }
-    }
-  }
-`;
-
-const incidentMutationGroupDelete = graphql`
-  mutation IncidentEditionOverviewGroupDeleteMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationDelete(organizationId: $organizationId) {
-        ...IncidentEditionOverview_incident
-      }
-    }
-  }
-`;
-
 const IncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
@@ -169,10 +141,6 @@ class IncidentEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -213,37 +181,6 @@ class IncidentEditionOverviewComponent extends Component {
         });
       })
       .catch(() => false);
-  }
-
-  handleChangeObjectOrganization(name, values) {
-    const { incident } = this.props;
-    const currentValues = R.pipe(
-      R.pathOr([], ['objectOrganization', 'edges']),
-      R.map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-      })),
-    )(incident);
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: incidentMutationGroupAdd,
-        variables: {
-          id: this.props.incident.id,
-          organizationId: R.head(added).value,
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: incidentMutationGroupDelete,
-        variables: {
-          id: this.props.incident.id,
-          organizationId: R.head(removed).value,
-        },
-      });
-    }
   }
 
   handleChangeCreatedBy(name, value) {
@@ -300,7 +237,6 @@ class IncidentEditionOverviewComponent extends Component {
     const isInferred = incident.is_inferred;
     const createdBy = convertCreatedBy(incident);
     const objectMarking = convertMarkings(incident);
-    const objectOrganization = convertOrganizations(incident);
     const status = convertStatus(t, incident);
     const killChainPhases = R.pipe(
       R.pathOr([], ['killChainPhases', 'edges']),
@@ -313,7 +249,6 @@ class IncidentEditionOverviewComponent extends Component {
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('objectOrganization', objectOrganization),
       R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'name',
@@ -324,7 +259,6 @@ class IncidentEditionOverviewComponent extends Component {
         'incident_type',
         'killChainPhases',
         'objectMarking',
-        'objectOrganization',
         'x_opencti_workflow_id',
       ]),
     )(incident);
@@ -450,19 +384,6 @@ class IncidentEditionOverviewComponent extends Component {
                 values={values}
               />
             )}
-            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-              <ObjectOrganizationField
-                name="objectOrganization"
-                style={{ marginTop: 20, width: '100%' }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldname="objectOrganization"
-                  />
-                }
-                onChange={this.handleChangeObjectOrganization.bind(this)}
-              />
-            </Security>
           </Form>
         )}
       </Formik>
@@ -502,14 +423,6 @@ const IncidentEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
-            }
-          }
-        }
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
             }
           }
         }

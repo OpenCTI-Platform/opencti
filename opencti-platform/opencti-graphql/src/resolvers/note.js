@@ -29,6 +29,7 @@ import { buildRefRelationKey, KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '
 import { BYPASS } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 import { addIndividual } from '../domain/individual';
+import { userSessionRefresh } from '../domain/user';
 
 // Needs to have edit rights or needs to be creator of the note
 const checkUserAccess = async (context, user, id) => {
@@ -110,6 +111,7 @@ const noteResolvers = {
       if (individualId === undefined) {
         const individual = await addIndividual(context, user, { name: user.name, contact_information: user.user_email });
         individualId = individual.id;
+        await userSessionRefresh(user.internal_id);
       }
       const inputWithCreator = { ...input, createdBy: individualId };
       return addNote(context, user, inputWithCreator);

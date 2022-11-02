@@ -19,10 +19,6 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/Security';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { insertNode } from '../../../../utils/Store';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -172,7 +168,6 @@ const IncidentCreation = ({ paginationOptions }) => {
               description: '',
               createdBy: '',
               objectMarking: [],
-              objectOrganization: [],
               objectLabel: [],
               externalReferences: [],
             }}
@@ -228,32 +223,26 @@ const IncidentCreation = ({ paginationOptions }) => {
                   style={{ marginTop: 20 }}
                 />
                 <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ marginTop: 20, width: '100%' }}
-                    />
-                  </Security>
+                  name="createdBy"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
+                />
+                <ObjectMarkingField
+                  name="objectMarking"
+                  style={{ marginTop: 20, width: '100%' }}
+                />
+                <ExternalReferencesField
+                  name="externalReferences"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.externalReferences}
+                />
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"
