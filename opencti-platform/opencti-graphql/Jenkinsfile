@@ -5,33 +5,33 @@ node {
 
   String app = 'graphql'
   String branch = "${env.BRANCH_NAME}"
-  String commitId = utils.getCommitId()
-  String commitMessage = utils.getCommitMessage()
+  // String commitId = utils.getCommitId()
+  // String commitMessage = utils.getCommitMessage()
   String version = 'undefined'
 
-  dir('opencti-platform') {
-    dir('opencti-graphql') {
-      stage('Setup') {
-        sh 'yarn install'
-        version = readJSON(file: 'package.json')['version'] + '-dev+RJTEST'
+  dir('opencti-platform/opencti-graphql') {
+    stage('Setup') {
+      docker.image('node:16').inside {
+        sh 'yarn install' 
       }
+      version = readJSON(file: 'package.json')['version'] + '-RJTEST'
+    }
 
-      // stage('Test') {
-      //   sh 'yarn test'
-      // }
+    // stage('Test') {
+    //   sh 'yarn test'
+    // }
 
-      stage('Build') {
-        utils.buildImage(name: app, version: version)
+    stage('Build') {
+      utils.buildDockerImage(name: app, version: version)
+    }
+
+    stage('Upload & Archive') {
+      parallel upload: {
+        utils.pushDockerImage(name: app, version: version)
+      }, archive: {
+        utils.archiveDockerImage(name: app, version: version)
       }
-
-      stage('Upload & Archive') {
-        parallel upload: {
-          utils.pushDockerImage(name: app, version: version)
-        }, archive: {
-          utils.arhiveDockerImage(name: app, version: version)
-        }
-        teams.sendDLBuildsMessage(message: 'Job complete!', color: teams.COLOR_GREEN)
-      }
+      teams.sendDLBuildsMessage(message: 'Job complete!', color: teams.COLOR_GREEN)
     }
   }
 }
