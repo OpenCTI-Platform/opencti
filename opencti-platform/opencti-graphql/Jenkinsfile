@@ -1,29 +1,37 @@
-@Library('Shared') _
+@Library('utils') _
 
 node {
   checkout scm
 
-  String registry = 'docker.darklight.ai'
-  String product = 'graphql'
+  String app = 'graphql'
   String branch = "${env.BRANCH_NAME}"
-  String commit = "${sh(returnStdout: true, script: 'git rev-parse HEAD')}"
-  String commitMessage = "${sh(returnStdout: true, script: "git log --pretty=format:%s -n 1 ${commit}")}"
-  String version = 'undefined'
+  String commitId = utils.getCommitId()
+  String commitMessage = utils.getCommitMessage()
+  String version: 'undefined'
 
   dir('opencti-platform') {
     dir('opencti-graphql') {
-      // stage('Setup') {
-      //   sh 'yarn install'
-      //   version = readJSON(file: 'package.json')['version']
+      stage('Setup') {
+        sh 'yarn install'
+        version = readJSON(file: 'package.json')['version'] + '-dev+RJTEST'
+      }
+
+      // stage('Test') {
+      //   sh 'yarn test'
       // }
 
       stage('Build') {
-        docker.test(test: 'merp')
+        utils.buildImage(name: app, version: version)
       }
 
-      // stage('Upload & Archive') {
-      //   // TODO: Push and save a local archive here
-      // }
+      stage('Upload & Archive') {
+        parallel upload: {
+          utils.pushDockerImage(name: app, version: version)
+        }, archive: {
+          utils.arhiveDockerImage(name: app, version: version)
+        }
+        teams.sendDLBuildsMessage(message: 'Job complete!', color: teams.COLOR_GREEN)
+      }
     }
   }
 }
