@@ -109,7 +109,7 @@ export const filterStoreElements = async (context: AuthContext, user: AuthUser, 
     // Markings
     const elementMarkings = element[RELATION_OBJECT_MARKING] ?? [];
     if (elementMarkings.length > 0) {
-      const markingAllowed = (elementMarkings ?? []).every((m) => authorizedMarkings.includes(m));
+      const markingAllowed = elementMarkings.every((m) => authorizedMarkings.includes(m));
       if (!markingAllowed) {
         return false;
       }

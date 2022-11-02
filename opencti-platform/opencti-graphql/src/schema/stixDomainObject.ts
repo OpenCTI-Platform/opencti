@@ -68,6 +68,7 @@ export const isStixDomainObjectContainer = (type: string): boolean => {
 
 const STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS: Array<string> = [
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_GROUPING,
   ENTITY_TYPE_CONTAINER_REPORT,
 ];
 export const isStixDomainObjectShareableContainer = (type: string): boolean => {

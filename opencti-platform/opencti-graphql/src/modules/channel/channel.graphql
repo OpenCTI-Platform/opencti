@@ -141,6 +141,7 @@ input ChannelAddInput {
     lang: String
     createdBy: String
     objectMarking: [String]
+    objectOrganization: [String]
     objectLabel: [String]
     externalReferences: [String]
     created: DateTime

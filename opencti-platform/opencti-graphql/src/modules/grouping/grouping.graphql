@@ -14,6 +14,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     # StixCoreObject
     createdBy: Identity
     objectMarking: MarkingDefinitionConnection
+    objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
     objectLabel: LabelConnection
     externalReferences(first: Int): ExternalReferenceConnection
     reports(first: Int): ReportConnection
@@ -191,6 +192,7 @@ input GroupingAddInput {
     createdBy: String
     objectMarking: [String]
     objectLabel: [String]
+    objectOrganization: [String]
     externalReferences: [String]
     objects: [String]
     created: DateTime

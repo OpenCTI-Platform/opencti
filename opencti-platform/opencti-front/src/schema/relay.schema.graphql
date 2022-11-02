@@ -8057,6 +8057,7 @@ input ChannelAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -8159,6 +8160,7 @@ input LanguageAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -8381,6 +8383,7 @@ input GroupingAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  objectOrganization: [String]
   externalReferences: [String]
   objects: [String]
   created: DateTime
@@ -8404,6 +8407,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   x_opencti_inferences: [Inference]
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
@@ -8492,6 +8496,7 @@ input NarrativeAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
