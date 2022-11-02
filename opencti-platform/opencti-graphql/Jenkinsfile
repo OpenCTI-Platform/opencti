@@ -7,7 +7,7 @@ node {
   String branch = "${env.BRANCH_NAME}"
   String commitId = utils.getCommitId()
   String commitMessage = utils.getCommitMessage()
-  String version: 'undefined'
+  String version = 'undefined'
 
   dir('opencti-platform') {
     dir('opencti-graphql') {
