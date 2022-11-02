@@ -154,13 +154,12 @@ class RemediationDetailsPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      pathname: '/activities/risk assessment/risks/${this.props.riskId}/remediation',
+      pathname: `/activities/risk assessment/risks/${this.props.riskId}/remediation`,
       onCompleted: (data, error) => {
         if (error) {
           this.setState({ error });
         } else {
           setSubmitting(false);
-          resetForm();
           this.handleClose();
           this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
         }
@@ -477,7 +476,11 @@ class RemediationDetailsPopover extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+              //onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+              onClick={() => {
+                this.setState({ close: false });
+                this.props.handleCloseEdit();
+              }}
               color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
@@ -508,6 +511,7 @@ RemediationDetailsPopover.propTypes = {
   riskId: PropTypes.string,
   remediation: PropTypes.object,
   remediationId: PropTypes.string,
+  handleCloseEdit: PropTypes.func,
 };
 
 export default compose(
