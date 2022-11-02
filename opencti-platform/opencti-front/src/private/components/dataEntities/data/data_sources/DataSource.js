@@ -15,8 +15,6 @@ import DataSourcesDeletion from './DataSourcesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import DataSourceEditionContainer from './DataSourceEditionContainer';
 import DataSourcesCreation from './DataSourcesCreation';
 
@@ -74,32 +72,6 @@ class DataSourceComponent extends Component {
           >
             <Grid item={true} xs={12}>
               <DataSourceDetails location={location} history={history} refreshQuery={refreshQuery} />
-            </Grid>
-          </Grid>
-          <Grid
-            container={true}
-            spacing={3}
-            classes={{ container: classes.gridContainer }}
-            style={{ marginTop: 25 }}
-          >
-            <Grid item={true} xs={6}>
-              <CyioCoreObjectExternalReferences
-                typename={location.__typename}
-                externalReferences={location.links}
-                fieldName='links'
-                cyioCoreObjectId={location?.id}
-                refreshQuery={refreshQuery}
-              />
-            </Grid>
-            <Grid item={true} xs={6}>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes
-                typename={location.__typename}
-                notes={location.remarks}
-                refreshQuery={refreshQuery}
-                fieldName='remarks'
-                marginTop='0px'
-                cyioCoreObjectOrCyioCoreRelationshipId={location?.id}
-              />
             </Grid>
           </Grid>
         </div>

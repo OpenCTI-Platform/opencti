@@ -7,14 +7,20 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import {
+  CogOutline,
+} from 'mdi-material-ui';
+import LaunchIcon from '@material-ui/icons/Launch';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import Typography from '@material-ui/core/Typography';
-import { Button, Grid, Chip } from '@material-ui/core';
+import { Button, Grid, Chip, Box } from '@material-ui/core';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
+import DataSourceInformationExchangePolicyPopover from './DataSourceInformationExchangePolicyPopover';
 
 const styles = (theme) => ({
   paper: {
@@ -72,6 +78,22 @@ const styles = (theme) => ({
 });
 
 class DataSourceDetailsComponent extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      openInformationExchangePolicy: false,
+    };
+  }
+
+  handleOpenInformationExchangePolicy() {
+    this.setState({ openInformationExchangePolicy: true });
+  }
+
+  handleCloseInformationExchangePolicy() {
+    this.setState({ openInformationExchangePolicy: false });
+  }
+
   render() {
     const {
       t,
@@ -82,7 +104,7 @@ class DataSourceDetailsComponent extends Component {
       history,
     } = this.props;
     return (
-      <div style={{ height: '100%' }}>
+      <div style={{ height: '100%', marginBottom: '1rem' }}>
         <Grid container={true} spacing={1}>
           <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
@@ -264,8 +286,34 @@ class DataSourceDetailsComponent extends Component {
                       </div>
                     </div>
                   </div>
+                </Grid>                
+              </Grid>  
+              <Grid container item xs={12}>
+                <Grid item={true} xs={4}>
+                  <div style={{ marginTop: '20px' }}>
+                    <Button 
+                      color='primary' 
+                      variant='contained'
+                      startIcon={<CogOutline />}
+                      sx={{ mr: 5 }}
+                    >
+                      {t('Configuration')}                    
+                    </Button>
+                  </div>                  
                 </Grid>
-              </Grid>              
+                <Grid item={true} xs={8}>
+                  <div style={{ marginTop: '20px' }}>
+                    <Button 
+                      color='primary' 
+                      variant='contained'
+                      startIcon={<LaunchIcon />}
+                      onClick={this.handleOpenInformationExchangePolicy.bind(this)}
+                    >
+                      {t('Information Exchange Policy')}                    
+                    </Button>
+                  </div>   
+                </Grid>
+              </Grid>            
             </Paper>                  
           </Grid>
           <Grid item xs={12}>
@@ -275,7 +323,8 @@ class DataSourceDetailsComponent extends Component {
               </Typography>
             </div>              
             <Paper classes={{ root: classes.paper }} elevation={2}>
-                <Grid container item xs={6} spacing={1}>
+              <Grid container>
+                <Grid container item xs={6}>                             
                   <Grid item xs={6}>
                     <div>
                       <Typography
@@ -301,9 +350,7 @@ class DataSourceDetailsComponent extends Component {
                       <div className="clearfix" />
                       <Chip variant="outlined" label="In Progress" style={{ backgroundColor: 'rgba(73, 184, 252, 0.2)' }} classes={{ root: classes.chip }}/>
                     </div>
-                  </Grid>
-                </Grid>
-                <Grid container item xs={6} spacing={1}>
+                  </Grid>                
                   <Grid item xs={6}>
                     <div style={{ marginTop: '20px' }}>
                       <Typography
@@ -328,12 +375,55 @@ class DataSourceDetailsComponent extends Component {
                       </Typography>
                       <div className="clearfix" />
                     </div>
-                  </Grid> 
+                  </Grid>                
                 </Grid>
+                <Grid container item xs={6}>
+                  <Grid item xs={6}>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                      >
+                        {t('Operations Completed')}
+                      </Typography>
+                      <div className="clearfix" />
+                      {t('0')}
+                    </div>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                      >
+                        {t('Total Number of Operations')}
+                      </Typography>
+                      <div className="clearfix" />
+                      {t('0')}
+                    </div>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ width: '100%', mr: 1 }}>
+                        <LinearProgress value={60} variant="determinate" style={{ height: 10, borderRadius: 5 }} />
+                      </Box>
+                      <Box sx={{ minWidth: 35 }}>
+                        <Typography variant="body2" color="text.secondary">{t('60%')}</Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Grid>                
             </Paper>        
           </Grid>
           <Grid item xs={12}></Grid>         
       </Grid>
+      <DataSourceInformationExchangePolicyPopover 
+        openInformationExchangePolicy={this.state.openInformationExchangePolicy}
+        handleCloseInformationExchangePolicy={this.handleCloseInformationExchangePolicy.bind(this)}
+      />
     </div>
     );
   }
