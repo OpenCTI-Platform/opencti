@@ -4751,7 +4751,7 @@ enum IncidentsOrdering {
   first_seen
   last_seen
   incident_type
-  criticality
+  severity
   source
   created
   modified
@@ -4764,7 +4764,7 @@ enum IncidentsOrdering {
 enum IncidentsFilter {
   name
   incident_type
-  criticality
+  severity
   source
   aliases
   created
@@ -4827,7 +4827,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   last_seen: DateTime
   objective: String
   incident_type: String
-  criticality: String
+  severity: String
   source: String
   creator: User
   toStix: String
@@ -4854,7 +4854,7 @@ input IncidentAddInput {
   last_seen: DateTime
   aliases: [String]
   incident_type: String
-  criticality: String
+  severity: String
   source: String
   createdBy: String
   objectMarking: [String]

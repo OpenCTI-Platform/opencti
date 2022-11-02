@@ -46,11 +46,11 @@ const inlineStyles = {
   },
 };
 
-const ItemCriticality = (props) => {
-  const { classes, label, criticality, variant } = props;
+const ItemSeverity = (props) => {
+  const { classes, label, severity, variant } = props;
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
-  switch (criticality) {
-    case 'Low':
+  switch (severity) {
+    case 'low':
       return (
         <Chip
           classes={{ root: style }}
@@ -58,7 +58,7 @@ const ItemCriticality = (props) => {
           label={label}
         />
       );
-    case 'Medium':
+    case 'medium':
       return (
         <Chip
           classes={{ root: style }}
@@ -66,7 +66,7 @@ const ItemCriticality = (props) => {
           label={label}
         />
       );
-    case 'High':
+    case 'high':
       return (
         <Chip
           classes={{ root: style }}
@@ -74,7 +74,7 @@ const ItemCriticality = (props) => {
           label={label}
         />
       );
-    case 'Critical':
+    case 'critical':
       return (
         <Chip
           classes={{ root: style }}
@@ -93,11 +93,11 @@ const ItemCriticality = (props) => {
   }
 };
 
-ItemCriticality.propTypes = {
+ItemSeverity.propTypes = {
   classes: PropTypes.object.isRequired,
   reliability: PropTypes.string,
   label: PropTypes.string,
   variant: PropTypes.string,
 };
 
-export default withStyles(styles)(ItemCriticality);
+export default withStyles(styles)(ItemSeverity);

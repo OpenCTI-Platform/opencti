@@ -147,7 +147,7 @@ class IncidentEditionDetailsComponent extends Component {
     const initialValues = R.pipe(
       R.assoc('first_seen', buildDate(incident.first_seen)),
       R.assoc('last_seen', buildDate(incident.last_seen)),
-      R.pick(['criticality', 'source', 'first_seen', 'last_seen', 'objective']),
+      R.pick(['severity', 'source', 'first_seen', 'last_seen', 'objective']),
     )(incident);
     return (
       <Formik

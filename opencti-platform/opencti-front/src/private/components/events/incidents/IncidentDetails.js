@@ -8,7 +8,7 @@ import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemCriticality from '../../../../components/ItemCriticality';
+import ItemSeverity from '../../../../components/ItemSeverity';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -24,10 +24,7 @@ const useStyles = makeStyles(() => ({
     marginRight: 7,
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 100,
-    backgroundColor: 'rgba(0, 105, 92, 0.08)',
-    color: '#00695c',
-    border: '1px solid #00695c',
+    width: 120,
   },
   chip2: {
     fontSize: 12,
@@ -35,10 +32,7 @@ const useStyles = makeStyles(() => ({
     marginRight: 7,
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 100,
-    backgroundColor: 'rgba(32, 201, 151, 0.10)',
-    color: '#007bff',
-    border: '1px solid #007bff',
+    width: 150,
   },
 }));
 
@@ -58,6 +52,7 @@ const IncidentDetailsComponent = ({ incident }) => {
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
+              color="primary"
               variant="outlined"
               label={incident.incident_type || t('Unknown')}
             />
@@ -80,11 +75,11 @@ const IncidentDetailsComponent = ({ incident }) => {
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Criticality')}
+              {t('Severity')}
             </Typography>
-            <ItemCriticality
-              criticality={incident.criticality}
-              label={t(incident.criticality || 'Unknown')}
+            <ItemSeverity
+              severity={incident.severity}
+              label={t(incident.severity || 'Unknown')}
             />
             <Typography
               variant="h3"
@@ -103,6 +98,7 @@ const IncidentDetailsComponent = ({ incident }) => {
             </Typography>
             <Chip
               classes={{ root: classes.chip2 }}
+              color="secondary"
               variant="outlined"
               label={incident.source || t('Unknown')}
             />
@@ -154,7 +150,7 @@ export default createFragmentContainer(IncidentDetailsComponent, {
       objective
       description
       incident_type
-      criticality
+      severity
       source
       status {
         id

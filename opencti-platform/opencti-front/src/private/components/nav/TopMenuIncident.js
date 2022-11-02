@@ -104,6 +104,26 @@ class TopMenuIncident extends Component {
         </Button>
         <Button
           component={Link}
+          to={`/dashboard/events/incidents/${incidentId}/content`}
+          variant={
+            location.pathname
+            === `/dashboard/events/incidents/${incidentId}/content`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/events/incidents/${incidentId}/content`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Content')}
+        </Button>
+        <Button
+          component={Link}
           to={`/dashboard/events/incidents/${incidentId}/analysis`}
           variant={
             location.pathname

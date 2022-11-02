@@ -238,7 +238,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   external_id: string;
   lastEventId: string;
   source: string;
-  criticality: string;
+  severity: string;
   incident_type: string;
   x_opencti_reliability: OrganizationReliability;
   x_opencti_organization_type: string;

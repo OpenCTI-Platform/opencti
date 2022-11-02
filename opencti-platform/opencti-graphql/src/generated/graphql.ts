@@ -5028,7 +5028,6 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
   creator?: Maybe<User>;
-  criticality?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<Maybe<EditUserContext>>>;
   entity_type: Scalars['String'];
@@ -5055,6 +5054,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   pendingFiles?: Maybe<FileConnection>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
+  severity?: Maybe<Scalars['String']>;
   source?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -5154,7 +5154,6 @@ export type IncidentAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  criticality?: InputMaybe<Scalars['String']>;
   description: Scalars['String'];
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
@@ -5167,6 +5166,7 @@ export type IncidentAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objective?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
+  severity?: InputMaybe<Scalars['String']>;
   source?: InputMaybe<Scalars['String']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
@@ -5223,12 +5223,12 @@ export enum IncidentsFilter {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
-  Criticality = 'criticality',
   IncidentType = 'incident_type',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Severity = 'severity',
   Source = 'source',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -5243,13 +5243,13 @@ export type IncidentsFiltering = {
 export enum IncidentsOrdering {
   Created = 'created',
   CreatedAt = 'created_at',
-  Criticality = 'criticality',
   FirstSeen = 'first_seen',
   IncidentType = 'incident_type',
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
+  Severity = 'severity',
   Source = 'source',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -21529,7 +21529,6 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  criticality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -21556,6 +21555,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentPendingFilesArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IncidentReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

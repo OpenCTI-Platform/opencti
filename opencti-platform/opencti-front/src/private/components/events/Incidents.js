@@ -184,8 +184,8 @@ class Incidents extends Component {
         width: '10%',
         isSortable: true,
       },
-      criticality: {
-        label: 'Criticality',
+      severity: {
+        label: 'Severity',
         width: '10%',
         isSortable: true,
       },

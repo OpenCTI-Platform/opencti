@@ -80,7 +80,7 @@ interface StixIncident extends StixDomainObject {
   objective: string;
   aliases: Array<string>;
   source: string;
-  criticality: string;
+  severity: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

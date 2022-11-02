@@ -15,7 +15,7 @@ import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
-import ItemCriticality from '../../../../components/ItemCriticality';
+import ItemSeverity from '../../../../components/ItemSeverity';
 
 const styles = (theme) => ({
   item: {
@@ -50,10 +50,7 @@ const styles = (theme) => ({
     fontSize: 12,
     height: 20,
     float: 'left',
-    width: 100,
-    backgroundColor: 'rgba(0, 105, 92, 0.08)',
-    color: '#00695c',
-    border: '1px solid #00695c',
+    width: 120,
   },
 });
 
@@ -86,17 +83,18 @@ class IncidentLineComponent extends Component {
               >
                 <Chip
                   classes={{ root: classes.chipInList }}
+                  color="primary"
                   variant="outlined"
                   label={node.incident_type || t('Unknown')}
                 />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.criticality.width }}
+                style={{ width: dataColumns.severity.width }}
               >
-                <ItemCriticality
-                  criticality={node.criticality}
-                  label={t(node.criticality || 'Unknown')}
+                <ItemSeverity
+                  severity={node.severity}
+                  label={t(node.severity || 'Unknown')}
                   variant="inList"
                 />
               </div>
@@ -171,7 +169,7 @@ const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
       id
       name
       incident_type
-      criticality
+      severity
       created
       modified
       objectMarking {
@@ -249,7 +247,7 @@ class IncidentLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.criticality.width }}
+                style={{ width: dataColumns.severity.width }}
               >
                 <Skeleton
                   animation="wave"
