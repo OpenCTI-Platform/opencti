@@ -565,7 +565,7 @@ export const logout = async (context, user, req, res) => {
   });
 };
 
-const buildSessionUser = (context, origin, impersonate, provider) => {
+const buildSessionUser = (origin, impersonate, provider) => {
   const user = impersonate ?? origin;
   return {
     id: user.id,
@@ -660,7 +660,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
       logAudit.error(user, IMPERSONATE_ACTION, { to: applicantId });
     }
   }
-  const sessionUser = buildSessionUser(context, logged, impersonate, provider);
+  const sessionUser = buildSessionUser(logged, impersonate, provider);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (!isBypassUser(logged) && settings.platform_organization && logged.organizations.length === 0) {
     throw AuthenticationFailure('You can\'t login without an organization');
