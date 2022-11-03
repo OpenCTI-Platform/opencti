@@ -11,10 +11,10 @@ node {
 
   dir('opencti-platform/opencti-graphql') {
     stage('Setup') {
-      docker.image('node:16').inside {
+      docker.image('node:16-alpine').inside {
         sh 'yarn install' 
       }
-      version = readJSON(file: 'package.json')['version'] + '-RJTEST'
+      version = readJSON(file: 'package.json')['version'] + "-5781"
     }
 
     // stage('Test') {
@@ -32,7 +32,7 @@ node {
         utils.archiveDockerImage(name: app, version: version)
       }
       teams.sendDLBuildsMessage(
-        message: 'Job complete!', color: teams.COLOR_GREEN, [
+        message: 'Job complete!', color: teams.COLOR_GREEN, factDefinitions: [
           [name: "Commit Message", template: "${commitMessage}"],
           [name: "Commit", template: "[${commitId[0..7]}](https://github.com/champtc/opencti/commit/${commitId})"],
           [name: "Image", template: "docker.darklight.ai/${app}:${version}"]
