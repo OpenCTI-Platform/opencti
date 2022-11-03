@@ -7,13 +7,19 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
+import { Button } from '@material-ui/core';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import DataSourcesPopover from './DataSourcesPopover';
+import resetIcon from '../../../../../resources/images/dataSources/resetIcon.svg';
+import clearAllIcon from '../../../../../resources/images/dataSources/clearAllIcon.svg';
+import startIcon from '../../../../../resources/images/dataSources/startIcon.svg';
+import stopIcon from '../../../../../resources/images/dataSources/stopIcon.svg';
 
 const styles = (theme) => ({
   item: {
@@ -37,6 +43,11 @@ const styles = (theme) => ({
   },
   goIcon: {
     minWidth: '0px',
+    display: 'flex',
+  },
+  btnIcons: {
+    minHeight: '2rem',
+    margin: '0.8em 1em 1em 0',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -134,6 +145,15 @@ class DataSourceLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
+          <Button color='primary' variant='contained' className={classes.btnIcons}>
+            <img src={startIcon} />
+          </Button>
+          <Button color='primary' variant='contained' className={classes.btnIcons}>
+            <img src={resetIcon} />
+          </Button>
+          <Button color='primary' variant='contained' className={classes.btnIcons}>
+            <img src={clearAllIcon} />
+          </Button>
           <DataSourcesPopover
             history={history}
             nodeId={node?.id}

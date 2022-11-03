@@ -10,6 +10,9 @@ import {
   Typography,
   Grid,
   Checkbox,
+  Chip,
+  Button,
+  CardActions,
 } from '@material-ui/core';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -18,14 +21,16 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import DataSourcesPopover from './DataSourcesPopover';
+import resetIcon from '../../../../../resources/images/dataSources/resetIcon.svg';
+import clearAllIcon from '../../../../../resources/images/dataSources/clearAllIcon.svg';
+import startIcon from '../../../../../resources/images/dataSources/startIcon.svg';
+import stopIcon from '../../../../../resources/images/dataSources/stopIcon.svg';
 
 const styles = (theme) => ({
   card: {
     width: '100%',
     height: '319px',
     borderRadius: 9,
-    // background: theme.palette.navAlt.background,
-
   },
   cardDummy: {
     width: '100%',
@@ -92,6 +97,14 @@ const styles = (theme) => ({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  chip: { borderRadius: '4px' },
+  btnIcons: {
+    minHeight: '2rem',
+    margin: '0.8em 1em 1em 1em',
+  },
+  iconContainer: {
+    display: 'flex',
+  },
 });
 
 class DataSourceCardComponent extends Component {
@@ -132,16 +145,19 @@ class DataSourceCardComponent extends Component {
               item={true}
               className={classes.header}
             >
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Type')}
-                </Typography>
-                {node.entity_type && t(node.entity_type)}
-              </div>
+              <Grid item xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Name')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {node?.name && t(node?.name)}
+                </div>
+              </Grid>
               <Grid
                 item={true}
                 onClick={(event) => event.preventDefault()}
@@ -160,33 +176,33 @@ class DataSourceCardComponent extends Component {
                 />
               </Grid>
             </Grid>
-            <Grid container={true} >
+            <Grid container={true}>
               <Grid item={true} xs={6} className={classes.body}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}>
-                  {t('Name')}
-                </Typography>
-                <Typography>
-                  {node?.name && t(node?.name)}
-                </Typography>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Type')}
+                  </Typography>
+                  {node.entity_type && t(node.entity_type)}
+                </div>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  style={{ marginTop: '13px' }}
-                  gutterBottom={true}
-                >
-                  {t('Creation Date')}
-                </Typography>
-                <Typography>
-                  {node.created && fsd(node.created)}
-                </Typography>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('Status')}
+                  </Typography>
+                  <Chip label="ACTIVE" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
+                </div>
               </Grid>
             </Grid>
-            <Grid container={true} >
+            <Grid container={true}>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
                   variant="h3"
@@ -215,7 +231,7 @@ class DataSourceCardComponent extends Component {
                 </Typography> */}
               </Grid>
             </Grid>
-            <Grid container={true} >
+            <Grid container={true}>
               <Grid item={true} xs={12} className={classes.body}>
                 <Typography
                   variant="h3"
@@ -231,6 +247,17 @@ class DataSourceCardComponent extends Component {
                 /> */}
               </Grid>
             </Grid>
+            <div className={classes.iconContainer}>
+                <Button color='primary' variant='contained' className={classes.btnIcons}>
+                  <img src={startIcon} />
+                </Button>
+                <Button color='primary' variant='contained' className={classes.btnIcons}>
+                  <img src={resetIcon} />
+                </Button>
+                <Button color='primary' variant='contained' className={classes.btnIcons}>
+                  <img src={clearAllIcon} />
+                </Button>
+            </div>
           </CardContent>
         </CardActionArea>
       </Card>
