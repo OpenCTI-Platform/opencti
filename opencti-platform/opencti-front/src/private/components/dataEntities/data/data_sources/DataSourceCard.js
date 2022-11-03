@@ -100,7 +100,8 @@ const styles = (theme) => ({
   chip: { borderRadius: '4px' },
   btnIcons: {
     minHeight: '2rem',
-    margin: '0.8em 1em 1em 1em',
+    minWidth: '2.5rem',
+    margin: '0.8em 1em 1em 0',
   },
   iconContainer: {
     display: 'flex',
@@ -210,11 +211,10 @@ class DataSourceCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Marking')}
+                  {t('Count')}
                 </Typography>
                 <Typography>
-                  {node?.parent_types
-                    && (node?.parent_types)}
+                  10,000,000
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -224,39 +224,21 @@ class DataSourceCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Author')}
+                  {t('Trigger')}
                 </Typography>
-                {/* <Typography>
-                  {t('')}
-                </Typography> */}
-              </Grid>
-            </Grid>
-            <Grid container={true}>
-              <Grid item={true} xs={12} className={classes.body}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  style={{ marginTop: '13px' }}
-                  gutterBottom={true}
-                >
-                  {t('Labels')}
-                </Typography>
-                {/* <CyioCoreObjectLabels
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                /> */}
+                <Chip variant="outlined" label="Automatic" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
               </Grid>
             </Grid>
             <div className={classes.iconContainer}>
-                <Button color='primary' variant='contained' className={classes.btnIcons}>
-                  <img src={startIcon} />
-                </Button>
-                <Button color='primary' variant='contained' className={classes.btnIcons}>
-                  <img src={resetIcon} />
-                </Button>
-                <Button color='primary' variant='contained' className={classes.btnIcons}>
-                  <img src={clearAllIcon} />
-                </Button>
+              <Button color='primary' variant='contained' className={classes.btnIcons}>
+                <img src={startIcon} />
+              </Button>
+              <Button color='primary' variant='contained' className={classes.btnIcons}>
+                <img src={resetIcon} />
+              </Button>
+              <Button color='primary' variant='contained' className={classes.btnIcons}>
+                <img src={clearAllIcon} />
+              </Button>
             </div>
           </CardContent>
         </CardActionArea>
@@ -385,6 +367,14 @@ class DataSourceCardDummyComponent extends Component {
               style={{ marginBottom: 10 }}
             />
           </CardContent>
+          <div style={{ width: '100%', padding: '0px 20px' }}>
+            <Skeleton
+              animation="wave"
+              variant="rect"
+              width="100%"
+              style={{ marginBottom: 10 }}
+            />
+          </div>
         </CardActionArea>
       </Card>
     );

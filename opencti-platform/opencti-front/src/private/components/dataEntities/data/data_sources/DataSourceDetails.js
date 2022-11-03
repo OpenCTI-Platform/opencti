@@ -55,7 +55,7 @@ const styles = (theme) => ({
   scrollDiv: {
     width: '100%',
     background: theme.palette.header.background,
-    height: '223px',
+    height: '130px',
     overflow: 'hidden',
     overflowY: 'scroll',
   },
@@ -114,7 +114,7 @@ class DataSourceDetailsComponent extends Component {
       history,
     } = this.props;
     return (
-      <div style={{ height: '100%', marginBottom: '1rem' }}>
+      <div style={{ height: '100%', marginBottom: '5%' }}>
         <Grid container={true} spacing={1}>
           <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
@@ -328,7 +328,7 @@ class DataSourceDetailsComponent extends Component {
             </Paper>                  
           </Grid>
           <Grid item xs={12}>
-            <div style={{ marginTop: '40px' }}>
+            <div style={{ marginTop: '3%' }}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('In Progress Works')}
               </Typography>
@@ -429,7 +429,108 @@ class DataSourceDetailsComponent extends Component {
               </Grid>                
             </Paper>        
           </Grid>
-          <Grid item xs={12}></Grid>         
+          <Grid item xs={12}>
+            <div style={{ marginTop: '6%' }}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Completed Works')}
+              </Typography>
+            </div>              
+            <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Grid container>
+                <Grid container item xs={6}>                             
+                  <Grid item xs={6}>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                      >
+                        {t('Name')}
+                      </Typography>
+                      <div className="clearfix" />
+                      {location.name && t(location.name)}
+                    </div>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                      >
+                        {t('Status')}
+                      </Typography>
+                      <div className="clearfix" />
+                      <Chip variant="outlined" label="Completed" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
+                    </div>
+                  </Grid>                
+                  <Grid item xs={6}>
+                    <div style={{ marginTop: '20px' }}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                      >
+                        {t('Work start time')}
+                      </Typography>
+                      <div className="clearfix" />
+                      {location.created && fldt(location.created)}
+                    </div>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <div style={{ marginTop: '20px' }}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                      >
+                        {t('Work end time')}
+                      </Typography>
+                      <div className="clearfix" />
+                    </div>
+                  </Grid>                
+                </Grid>
+                <Grid container item xs={6}>
+                  <Grid item xs={6}>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                      >
+                        {t('Operations Completed')}
+                      </Typography>
+                      <div className="clearfix" />
+                      {t('0')}
+                    </div>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                      >
+                        {t('Total Number of Operations')}
+                      </Typography>
+                      <div className="clearfix" />
+                      {t('0')}
+                    </div>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ width: '100%', mr: 1 }}>
+                        <LinearProgress value={100} variant="determinate" style={{ height: 10, borderRadius: 5 }} />
+                      </Box>
+                      <Box sx={{ minWidth: 35 }}>
+                        <Typography variant="body2" color="text.secondary">{t('100%')}</Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Grid>                
+            </Paper>
+          </Grid>         
       </Grid>
       <DataSourceConfigurationPopover
         openConfiguration={this.state.openConfiguration}

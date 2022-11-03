@@ -63,6 +63,7 @@ class DataSourcesPopover extends Component {
       history,
       node,
     } = this.props;
+    console.log(node);
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
@@ -77,39 +78,10 @@ class DataSourcesPopover extends Component {
           <MenuItem
             className={classes.menuItem}
             divider={true}
+            onClick={() => history.push(`/data/data source/${node?.id}`)}
           >
-            <CyioAddNotes
-              menuItemName='Add Notes'
-              cyioCoreObjectOrStixCoreRelationshipId={node.id}
-              typename={node.__typename}
-              fieldName='remarks'
-              cyioCoreObjectOrStixCoreRelationshipNotes={node.remarks}
-            />
-          </MenuItem>
-          <MenuItem
-            divider={true}
-            className={classes.menuItem}
-          >
-            <CyioAddExternalReferences
-              menuItemName='Add External Reference'
-              cyioCoreObjectOrCyioCoreRelationshipId={node.id}
-              cyioCoreObjectOrCyioCoreRelationshipReferences={node.links}
-              fieldName='links'
-              typename={node.__typename}
-            />
-          </MenuItem>
-          <MenuItem
-            className={classes.menuItem}
-          >
-            <CyioCoreObjectLabelsView
-              menuItemName='Add Labels'
-              labels={node.labels}
-              history={history}
-              marginTop={0}
-              id={node.id}
-              typename={node.__typename}
-            />
-          </MenuItem>
+            {t('View Details')}
+          </MenuItem>         
         </Menu>
       </div>
     );

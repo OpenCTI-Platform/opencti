@@ -40,7 +40,7 @@ class DataSourceComponent extends Component {
     this.setState({ displayEdit: !this.state.displayEdit });
   }
 
-  handleOpenNewCreation() {
+  handleDataSourceCreation() {
     this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
@@ -62,7 +62,7 @@ class DataSourceComponent extends Component {
             PopoverComponent={<DataSourcesPopover />}
             OperationsComponent={<DataSourcesDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+            handleOpenNewCreation={this.handleDataSourceCreation.bind(this)}
           />
           <TopBarBreadcrumbs />
           <Grid
@@ -77,7 +77,7 @@ class DataSourceComponent extends Component {
         </div>
         <DataSourcesCreation
           openDataCreation={this.state.openDataCreation}
-          handleLocationCreation={this.handleOpenNewCreation.bind(this)}
+          handleDataSourceCreation={this.handleDataSourceCreation.bind(this)}
           history={history}
         />
         <DataSourceEditionContainer

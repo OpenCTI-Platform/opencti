@@ -10,7 +10,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
-import { Button } from '@material-ui/core';
+import { Button, Chip } from '@material-ui/core';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
@@ -33,7 +33,6 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
     fontSize: 13,
     paddingLeft: 24,
     float: 'left',
@@ -47,6 +46,7 @@ const styles = (theme) => ({
   },
   btnIcons: {
     minHeight: '2rem',
+    minWidth: '2.5rem',
     margin: '0.8em 1em 1em 0',
   },
   itemIconDisabled: {
@@ -57,6 +57,7 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chip: { borderRadius: '4px' },
 });
 
 class DataSourceLineComponent extends Component {
@@ -111,35 +112,21 @@ class DataSourceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.5%' }}
+                style={{ width: dataColumns.status.width }}
               >
-                <CyioCoreObjectLabels
-                  variant="inList"
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: '21%' }}
-              >
-                <CyioCoreObjectLabels
-                  variant="inList"
-                  labels={node.labels}
-                  onClick={onLabelClick.bind(this)}
-                />
+                <Chip label="ACTIVE" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.trigger.width }}
               >
-                {node.created && fd(node.created)}
+                <Chip variant="outlined" label="Automatic" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.count.width }}
               >
-                {/* {node?.parent_types && t(node.parent_types)} */}
+                10,000,000
               </div>
             </div>
           }
@@ -239,7 +226,7 @@ class DataSourceLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '12.5%' }}
+                style={{ width: '12.5%', height: 20 }}
               >
                 <Skeleton
                   animation="wave"
@@ -250,7 +237,7 @@ class DataSourceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.5%' }}
+                style={{ width: '16.5%', height: 20 }}
               >
                 <Skeleton
                   animation="wave"
@@ -261,7 +248,7 @@ class DataSourceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.5%' }}
+                style={{ width: '16.5%', height: 20 }}
               >
                 <Skeleton
                   animation="wave"
@@ -272,7 +259,7 @@ class DataSourceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '20%' }}
+                style={{ width: '20%', height: 20 }}
               >
                 <Skeleton
                   animation="wave"
@@ -283,7 +270,7 @@ class DataSourceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.trigger.width }}
+                style={{ width: dataColumns.trigger.width, height: 20 }}
               >
                 <Skeleton
                   animation="wave"
@@ -294,7 +281,7 @@ class DataSourceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.count.width }}
+                style={{ width: dataColumns.count.width, height: 20 }}
               >
                 <Skeleton
                   animation="wave"
