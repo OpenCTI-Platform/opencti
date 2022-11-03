@@ -21,6 +21,7 @@ import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
 import DataSourceInformationExchangePolicyPopover from './DataSourceInformationExchangePolicyPopover';
+import DataSourceConfigurationPopover from './DataSourceConfigurationPopover';
 
 const styles = (theme) => ({
   paper: {
@@ -83,7 +84,16 @@ class DataSourceDetailsComponent extends Component {
     super(props);
     this.state = {
       openInformationExchangePolicy: false,
+      openConfiguration: false,
     };
+  }
+
+  handleOpenConfiguration() {
+    this.setState({ openConfiguration: true });
+  }
+
+  handleCloseConfiguration() {
+    this.setState({ openConfiguration: false });
   }
 
   handleOpenInformationExchangePolicy() {
@@ -296,6 +306,7 @@ class DataSourceDetailsComponent extends Component {
                       variant='contained'
                       startIcon={<CogOutline />}
                       sx={{ mr: 5 }}
+                      onClick={this.handleOpenConfiguration.bind(this)}
                     >
                       {t('Configuration')}                    
                     </Button>
@@ -420,6 +431,10 @@ class DataSourceDetailsComponent extends Component {
           </Grid>
           <Grid item xs={12}></Grid>         
       </Grid>
+      <DataSourceConfigurationPopover
+        openConfiguration={this.state.openConfiguration}
+        handleCloseConfiguration={this.handleCloseConfiguration.bind(this)}
+       />
       <DataSourceInformationExchangePolicyPopover 
         openInformationExchangePolicy={this.state.openInformationExchangePolicy}
         handleCloseInformationExchangePolicy={this.handleCloseInformationExchangePolicy.bind(this)}

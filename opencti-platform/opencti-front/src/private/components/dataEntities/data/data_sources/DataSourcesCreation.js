@@ -117,7 +117,7 @@ class DataSourcesCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.props.handleLocationCreation();
+        this.props.handleDataSourceCreation();
         this.props.history.push('/data/data source');
       },
       onError: () => {
@@ -153,7 +153,7 @@ class DataSourcesCreation extends Component {
   }
 
   onReset() {
-    this.props.handleLocationCreation();
+    this.props.handleDataSourceCreation();
   }
 
   render() {

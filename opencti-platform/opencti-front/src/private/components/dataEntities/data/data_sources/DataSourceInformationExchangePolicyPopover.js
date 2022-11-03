@@ -83,10 +83,7 @@ class DataSourceInformationExchangePolicyPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      anchorEl: null,
-      details: false,
       close: false,
-      onSubmit: false,
     };
   }
 
