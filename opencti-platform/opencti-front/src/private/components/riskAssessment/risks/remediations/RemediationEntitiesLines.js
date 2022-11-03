@@ -85,6 +85,7 @@ class RemediationEntitiesLines extends Component {
           placeholder={<div style={{ height: 29 }} />}
         > */}
         <RemediationCreation
+        location={location}
         remediationId={entityId}
         riskId={riskId}
         history={history}

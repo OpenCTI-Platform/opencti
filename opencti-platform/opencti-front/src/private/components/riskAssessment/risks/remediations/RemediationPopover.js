@@ -141,6 +141,10 @@ class RemediationPopover extends Component {
     this.handleClose();
   }
 
+  handleCloseEdit() {
+    this.setState({ displayEdit: false });
+  }
+
   handleOpenDelete() {
     this.setState({ displayDelete: true });
     this.handleClose();
@@ -257,6 +261,7 @@ class RemediationPopover extends Component {
                   history={history}
                   remediation={props.riskResponse}
                   riskId={riskId}
+                  handleCloseEdit={this.handleCloseEdit.bind(this)}
                 />
               );
             }
