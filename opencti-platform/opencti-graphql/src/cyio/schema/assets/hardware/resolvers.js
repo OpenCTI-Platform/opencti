@@ -96,6 +96,8 @@ const hardwareResolvers = {
             continue;
           }
 
+          if (hardware.asset_type)
+
           // skip down past the offset
           if (offset) {
             offset--
@@ -491,6 +493,11 @@ const hardwareResolvers = {
         let relationshipQuery, queryDetails;
         for (value of editItem.value) {
           switch(editItem.key) {
+            case 'asset_type':
+              isId = false;
+              if (value.includes('_')) value = value.replace(/_/g, '-');
+              editItem.value[0] = value;
+              break;
             case 'connected_to_network':
               objType = 'network';
               break;
