@@ -128,6 +128,7 @@ export const computingDeviceAssetReducer = (item) => {
       item.asset_type = 'computing-device';
       item.object_type = 'computing-device';
     } else {
+      if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
       item.object_type = item.asset_type;
     }
   } else {

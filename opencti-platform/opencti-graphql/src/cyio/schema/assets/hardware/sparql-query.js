@@ -43,6 +43,7 @@ const hardwareAssetReducer = (item) => {
       item.asset_type = 'computing-device';
       item.object_type = 'computing-device';
     } else {
+      if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
       item.object_type = item.asset_type;
     }
   } else {
@@ -122,6 +123,11 @@ export const insertHardwareQuery = (propValues) => {
     if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
     if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
     if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
+  // Fix '_' to '-' in asset_type
+  if (propValues.asset_type !== undefined) {
+    if (propValues.asset_type.includes('_')) propValues.asset_type = propValues.asset_type.replace(/_/g, '-');
   }
 
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
