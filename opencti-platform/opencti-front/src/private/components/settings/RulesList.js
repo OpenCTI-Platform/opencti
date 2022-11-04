@@ -585,10 +585,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                   <div
                                     className={classes.relation}
                                     style={{
-                                      border:
-                                        `1px solid ${step.identifier_color}`
-                                          ? step.identifier_color
-                                          : 'transparent',
+                                      border: step.identifier_color
+                                        ? `1px solid ${step.identifier_color}`
+                                        : 'transparent',
                                     }}
                                   >
                                     {t(step.relation)}
@@ -631,10 +630,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                     <div
                                       className={classes.relation}
                                       style={{
-                                        border:
-                                          `1px solid ${step.identifier_color}`
-                                            ? step.identifier_color
-                                            : 'transparent',
+                                        border: step.identifier_color
+                                          ? `1px solid ${step.identifier_color}`
+                                          : 'transparent',
                                       }}
                                     >
                                       {t(step.relation)}
