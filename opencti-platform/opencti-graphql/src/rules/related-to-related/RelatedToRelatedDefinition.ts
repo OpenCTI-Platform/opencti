@@ -5,7 +5,7 @@ const id = 'related_related';
 const name = 'Relation propagation testing rule';
 const description = 'Propagate related objects over the whole graph. Testing only.';
 const category = 'Testing';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Entity A',
@@ -32,7 +32,7 @@ const display = JSON.stringify({
       target_color: '#00bcd4',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [RELATION_RELATED_TO] };

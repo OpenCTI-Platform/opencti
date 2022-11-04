@@ -116,8 +116,8 @@ const useStyles = makeStyles((theme) => ({
   },
   if: {
     width: 40,
-    height: 40,
-    paddingTop: 8,
+    height: 30,
+    paddingTop: 3,
     marginRight: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -128,8 +128,8 @@ const useStyles = makeStyles((theme) => ({
   },
   action: {
     width: 120,
-    height: 40,
-    paddingTop: 8,
+    height: 30,
+    paddingTop: 3,
     marginRight: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -154,7 +154,6 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: '#000000',
     fontFamily: 'Consolas, monaco, monospace',
     textAlign: 'center',
   },
@@ -174,13 +173,12 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: '#000000',
     textAlign: 'center',
   },
   then: {
     width: 80,
-    height: 40,
-    paddingTop: 8,
+    height: 30,
+    paddingTop: 3,
     margin: '0 auto',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -469,7 +467,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                   R.filter((p) => p.node.rule === rule.id, tasks),
                 ),
               );
-              const displayDefinition = JSON.parse(rule.display);
+              const displayDefinition = rule.display;
               return (
                 <Grid
                   key={rule.id}
@@ -579,7 +577,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                   <div
                                     className={classes.source}
                                     style={{
-                                      backgroundColor: step.source_color,
+                                      border: `1px solid ${step.source_color}`,
                                     }}
                                   >
                                     {step.source}
@@ -587,9 +585,10 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                   <div
                                     className={classes.relation}
                                     style={{
-                                      backgroundColor: step.identifier_color
-                                        ? step.identifier_color
-                                        : 'transparent',
+                                      border:
+                                        `1px solid ${step.identifier_color}`
+                                          ? step.identifier_color
+                                          : 'transparent',
                                     }}
                                   >
                                     {t(step.relation)}
@@ -597,7 +596,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                   <div
                                     className={classes.target}
                                     style={{
-                                      backgroundColor: step.target_color,
+                                      border: `1px solid ${step.target_color}`,
                                     }}
                                   >
                                     {step.target}
@@ -617,13 +616,13 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                             return (
                               <div key={index} className={classes.step}>
                                 <div className={classes.action}>
-                                  {t(step.action)}
+                                  {step.action}
                                 </div>
                                 <div className={classes.element}>
                                   <div
                                     className={classes.source}
                                     style={{
-                                      backgroundColor: step.source_color,
+                                      border: `1px solid ${step.source_color}`,
                                     }}
                                   >
                                     {step.source}
@@ -632,9 +631,10 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                     <div
                                       className={classes.relation}
                                       style={{
-                                        backgroundColor: step.identifier_color
-                                          ? step.identifier_color
-                                          : 'transparent',
+                                        border:
+                                          `1px solid ${step.identifier_color}`
+                                            ? step.identifier_color
+                                            : 'transparent',
                                       }}
                                     >
                                       {t(step.relation)}
@@ -644,7 +644,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                     <div
                                       className={classes.target}
                                       style={{
-                                        backgroundColor: step.target_color,
+                                        border: `1px solid ${step.target_color}`,
                                       }}
                                     >
                                       {step.target}
@@ -770,7 +770,28 @@ export default createRefetchContainer(
           name
           description
           activated
-          display
+          display {
+            if {
+              action
+              source
+              source_color
+              relation
+              target
+              target_color
+              identifier
+              identifier_color
+            }
+            then {
+              action
+              source
+              source_color
+              relation
+              target
+              target_color
+              identifier
+              identifier_color
+            }
+          }
           category
         }
         tasks(

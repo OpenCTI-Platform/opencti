@@ -5,7 +5,7 @@ const id = 'attribution_attribution';
 const name = 'Attribution propagation';
 const description = 'Propagate attributions across parents or children.';
 const category = 'Parent-child propagation';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Entity A',
@@ -32,7 +32,7 @@ const display = JSON.stringify({
       target_color: '#00bcd4',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [RELATION_ATTRIBUTED_TO] };

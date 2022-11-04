@@ -13,7 +13,7 @@ const id = 'observable_related';
 const name = 'Relation propagation via an observable';
 const description = 'Propagate relation between 2 objects via a common observable.';
 const category = 'Correlation';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Observable A',
@@ -40,7 +40,7 @@ const display = JSON.stringify({
       target_color: '#00bcd4',
     },
   ],
-});
+};
 
 // For rescan
 const scan = {

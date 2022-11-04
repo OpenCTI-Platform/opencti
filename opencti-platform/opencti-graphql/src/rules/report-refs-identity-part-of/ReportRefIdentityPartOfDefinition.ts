@@ -7,7 +7,7 @@ const id = 'report_ref_identity_part_of';
 const name = 'Identities propagation in reports';
 const description = 'Propagate the parents of an identity in a report.';
 const category = 'Report propagation';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Report A',
@@ -44,7 +44,7 @@ const display = JSON.stringify({
       target_color: '#7e57c2',
     },
   ],
-});
+};
 
 // For rescan
 const scan: RuleFilters = { types: [RELATION_PART_OF], fromTypes: [ENTITY_TYPE_IDENTITY], toTypes: [ENTITY_TYPE_IDENTITY] };

@@ -10,7 +10,7 @@ const name = 'Sightings of observables via observed data';
 const description = 'Infer sightings based on observed data and indicators.';
 const behaviors = [{ ruleId: id, attribute: 'attribute_count', operation: RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.SUM }];
 const category = 'Alerting';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Observed Data A',
@@ -44,7 +44,7 @@ const display = JSON.stringify({
       target_color: '#7e57c2',
     },
   ],
-});
+};
 
 // For rescan
 const scan: RuleFilters = {

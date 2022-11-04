@@ -32,12 +32,28 @@ interface RelationTypes {
   creationType: string;
 }
 
+interface StepDefinition {
+  action?: string;
+  source: string;
+  source_color: string;
+  relation?: string;
+  target?: string;
+  target_color?: string;
+  identifier?: string;
+  identifier_color?: string;
+}
+
+interface DisplayDefinition {
+  if: Array<StepDefinition>;
+  then: Array<StepDefinition>;
+}
+
 interface RuleDefinition {
   id: string;
   name: string;
   description: string;
   category: string;
-  display: string;
+  display: DisplayDefinition;
   scan: RuleFilters;
   scopes: Array<RuleScope>;
   behaviors: Array<RuleBehavior>;

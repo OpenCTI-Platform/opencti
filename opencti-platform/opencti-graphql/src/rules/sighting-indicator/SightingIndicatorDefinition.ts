@@ -8,7 +8,7 @@ const id = 'sighting_indicator';
 const name = 'Sightings propagation from indicator';
 const description = 'Propagate sightings of indicators to observables.';
 const category = 'Alerting';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Indicator A',
@@ -35,7 +35,7 @@ const display = JSON.stringify({
       target_color: '#4caf50',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };

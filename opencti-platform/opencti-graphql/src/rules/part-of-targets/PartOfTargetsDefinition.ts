@@ -5,7 +5,7 @@ const id = 'part-of_targets';
 const name = 'Targeting propagation via belonging';
 const description = 'Propagate a targeting from a child to its parent via belonging.';
 const category = 'Victimology';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Entity A',
@@ -32,7 +32,7 @@ const display = JSON.stringify({
       target_color: '#00bcd4',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [RELATION_TARGETS] };

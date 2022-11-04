@@ -15,7 +15,7 @@ const id = 'indicate_sighted';
 const name = 'Inference of targeting via a sighting';
 const description = 'Infer the targeting of an entity through a sighting of a specific indicator.';
 const category = 'Victimology';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Indicator A',
@@ -42,7 +42,7 @@ const display = JSON.stringify({
       target_color: '#00bcd4',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };

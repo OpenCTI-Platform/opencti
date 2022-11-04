@@ -1280,13 +1280,29 @@ type RuleManager {
   errors: [RuleExecutionError]
 }
 
+type DisplayStep {
+  source: String
+  source_color: String
+  relation: String
+  target: String
+  target_color: String
+  identifier: String
+  identifier_color: String
+  action: String
+}
+
+type Display {
+  if: [DisplayStep]
+  then: [DisplayStep]
+}
+
 type Rule {
   id: ID! # internal_id
   name: String!
   description: String!
   activated: Boolean!
   category: String
-  display: String
+  display: Display
 }
 
 ######## STIX OBJECT ENTITIES

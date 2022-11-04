@@ -5,7 +5,7 @@ const id = 'attribution_targets';
 const name = 'Targeting propagation via attribution';
 const description = 'Propagate a targeting from a child to its parent via attribution.';
 const category = 'Victimology';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Entity A',
@@ -32,7 +32,7 @@ const display = JSON.stringify({
       target_color: '#4caf50',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [RELATION_ATTRIBUTED_TO] };

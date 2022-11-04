@@ -5,7 +5,7 @@ const id = 'location_location';
 const name = 'Location propagation';
 const description = 'Propagate locations across parents or children.';
 const category = 'Parent-child propagation';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Location A',
@@ -32,7 +32,7 @@ const display = JSON.stringify({
       target_color: '#00bcd4',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [RELATION_LOCATED_AT] };

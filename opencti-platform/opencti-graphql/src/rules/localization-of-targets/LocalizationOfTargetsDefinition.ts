@@ -5,7 +5,7 @@ const id = 'localization_of_targets';
 const name = 'Targeting propagation when located';
 const description = 'Propagate targeting when the target relationship is located somewhere.';
 const category = 'Victimology';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Entity A',
@@ -41,7 +41,7 @@ const display = JSON.stringify({
       target_color: '#7e57c2',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [RELATION_LOCATED_AT] };

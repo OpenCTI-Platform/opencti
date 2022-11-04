@@ -7,7 +7,7 @@ const id = 'report_ref_indicator_based_on';
 const name = 'Observables propagation in reports';
 const description = 'Propagate observables of an indicators in a report.';
 const category = 'Report propagation';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Report A',
@@ -44,7 +44,7 @@ const display = JSON.stringify({
       target_color: '#7e57c2',
     },
   ],
-});
+};
 
 // For rescan
 const scan: RuleFilters = { types: [RELATION_BASED_ON], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] };

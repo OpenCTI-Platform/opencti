@@ -7,7 +7,7 @@ const id = 'report_ref_location_located_at';
 const name = 'Locations propagation in reports';
 const description = 'Propagate the parents of a location in a report.';
 const category = 'Report propagation';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Report A',
@@ -44,7 +44,7 @@ const display = JSON.stringify({
       target_color: '#7e57c2',
     },
   ],
-});
+};
 
 // For rescan
 const scan: RuleFilters = { types: [RELATION_LOCATED_AT], fromTypes: [ENTITY_TYPE_LOCATION], toTypes: [ENTITY_TYPE_LOCATION] };

@@ -7,7 +7,7 @@ const id = 'sighting_incident';
 const name = 'Raise incident based on sighting';
 const description = 'Infer an incident when a sighting is created for a valid indicator.';
 const category = 'Alerting';
-const display = JSON.stringify({
+const display = {
   if: [
     {
       source: 'Indicator A',
@@ -47,7 +47,7 @@ const display = JSON.stringify({
       target_color: '#00bcd4',
     },
   ],
-});
+};
 
 // For rescan
 const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY] };

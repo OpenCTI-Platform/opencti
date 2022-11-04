@@ -2712,6 +2712,24 @@ export type DirectoryAddInput = {
   path_enc?: InputMaybe<Scalars['String']>;
 };
 
+export type Display = {
+  __typename?: 'Display';
+  if?: Maybe<Array<Maybe<DisplayStep>>>;
+  then?: Maybe<Array<Maybe<DisplayStep>>>;
+};
+
+export type DisplayStep = {
+  __typename?: 'DisplayStep';
+  action?: Maybe<Scalars['String']>;
+  identifier?: Maybe<Scalars['String']>;
+  identifier_color?: Maybe<Scalars['String']>;
+  relation?: Maybe<Scalars['String']>;
+  source?: Maybe<Scalars['String']>;
+  source_color?: Maybe<Scalars['String']>;
+  target?: Maybe<Scalars['String']>;
+  target_color?: Maybe<Scalars['String']>;
+};
+
 export type Distribution = {
   __typename?: 'Distribution';
   entity?: Maybe<StixObjectOrStixRelationship>;
@@ -13440,7 +13458,7 @@ export type Rule = {
   activated: Scalars['Boolean'];
   category?: Maybe<Scalars['String']>;
   description: Scalars['String'];
-  display?: Maybe<Scalars['String']>;
+  display?: Maybe<Display>;
   id: Scalars['ID'];
   name: Scalars['String'];
 };
@@ -18760,6 +18778,8 @@ export type ResolversTypes = ResolversObject<{
   DictionaryInput: DictionaryInput;
   Directory: ResolverTypeWrapper<Omit<Directory, 'connectors' | 'createdBy' | 'creator' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, creator?: Maybe<ResolversTypes['User']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
   DirectoryAddInput: DirectoryAddInput;
+  Display: ResolverTypeWrapper<Display>;
+  DisplayStep: ResolverTypeWrapper<DisplayStep>;
   Distribution: ResolverTypeWrapper<Omit<Distribution, 'entity'> & { entity?: Maybe<ResolversTypes['StixObjectOrStixRelationship']> }>;
   DocsMetrics: ResolverTypeWrapper<DocsMetrics>;
   DomainName: ResolverTypeWrapper<Omit<DomainName, 'connectors' | 'createdBy' | 'creator' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, creator?: Maybe<ResolversTypes['User']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
@@ -19370,6 +19390,8 @@ export type ResolversParentTypes = ResolversObject<{
   DictionaryInput: DictionaryInput;
   Directory: Omit<Directory, 'connectors' | 'createdBy' | 'creator' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creator?: Maybe<ResolversParentTypes['User']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
   DirectoryAddInput: DirectoryAddInput;
+  Display: Display;
+  DisplayStep: DisplayStep;
   Distribution: Omit<Distribution, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']> };
   DocsMetrics: DocsMetrics;
   DomainName: Omit<DomainName, 'connectors' | 'createdBy' | 'creator' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creator?: Maybe<ResolversParentTypes['User']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
@@ -20694,6 +20716,24 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DisplayResolvers<ContextType = any, ParentType extends ResolversParentTypes['Display'] = ResolversParentTypes['Display']> = ResolversObject<{
+  if?: Resolver<Maybe<Array<Maybe<ResolversTypes['DisplayStep']>>>, ParentType, ContextType>;
+  then?: Resolver<Maybe<Array<Maybe<ResolversTypes['DisplayStep']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DisplayStepResolvers<ContextType = any, ParentType extends ResolversParentTypes['DisplayStep'] = ResolversParentTypes['DisplayStep']> = ResolversObject<{
+  action?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  identifier_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  relation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  source_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  target?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  target_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23589,7 +23629,7 @@ export type RuleResolvers<ContextType = any, ParentType extends ResolversParentT
   activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  display?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  display?: Resolver<Maybe<ResolversTypes['Display']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -25429,6 +25469,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DependencyVersion?: DependencyVersionResolvers<ContextType>;
   Dictionary?: DictionaryResolvers<ContextType>;
   Directory?: DirectoryResolvers<ContextType>;
+  Display?: DisplayResolvers<ContextType>;
+  DisplayStep?: DisplayStepResolvers<ContextType>;
   Distribution?: DistributionResolvers<ContextType>;
   DocsMetrics?: DocsMetricsResolvers<ContextType>;
   DomainName?: DomainNameResolvers<ContextType>;
