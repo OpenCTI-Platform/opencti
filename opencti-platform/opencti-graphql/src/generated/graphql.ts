@@ -14402,6 +14402,8 @@ export enum StixCoreRelationshipsFilter {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  ElementId = 'elementId',
+  ElementWithTargetTypes = 'elementWithTargetTypes',
   FromId = 'fromId',
   FromName = 'fromName',
   FromTypes = 'fromTypes',
