@@ -121,6 +121,26 @@ class TopMenuEvent extends Component {
         >
           {t('Analysis')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/events/${eventId}/sightings`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/events/${eventId}/sightings`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/events/${eventId}/sightings`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Sightings')}
+        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}

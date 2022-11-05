@@ -17,6 +17,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -99,7 +100,6 @@ class RootSector extends Component {
               'attack_patterns',
               'tools',
               'observables',
-              'sightings',
             ]}
           />
         </Route>
@@ -152,6 +152,19 @@ class RootSector extends Component {
                             }
                           />
                         </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/sectors/:sectorId/sightings"
+                      render={(routeProps) => (
+                        <EntityStixSightingRelationships
+                          entityId={props.sector.id}
+                          entityLink={link}
+                          noPadding={true}
+                          isTo={true}
+                          {...routeProps}
+                        />
                       )}
                     />
                     <Route

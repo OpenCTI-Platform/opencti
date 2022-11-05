@@ -22,6 +22,7 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -134,7 +135,6 @@ class RootOrganization extends Component {
                 'attack_patterns',
                 'tools',
                 'observables',
-                'sightings',
               ]}
             />
           )}
@@ -191,6 +191,19 @@ class RootOrganization extends Component {
                           organization={props.organization}
                           viewAs={viewAs}
                           onViewAs={this.handleChangeViewAs.bind(this)}
+                        />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/organizations/:organizationId/sightings"
+                      render={(routeProps) => (
+                        <EntityStixSightingRelationships
+                          entityId={props.organization.id}
+                          entityLink={link}
+                          noPadding={true}
+                          isTo={true}
+                          {...routeProps}
                         />
                       )}
                     />

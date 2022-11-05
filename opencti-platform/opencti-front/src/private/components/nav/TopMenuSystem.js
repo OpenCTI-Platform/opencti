@@ -121,6 +121,26 @@ class TopMenuSystem extends Component {
         >
           {t('Analysis')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/systems/${systemId}/sightings`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/systems/${systemId}/sightings`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/systems/${systemId}/sightings`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Sightings')}
+        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}

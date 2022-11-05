@@ -308,7 +308,7 @@ class StixSightingRelationshipContainer extends Component {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Marking')}
                   </Typography>
-                  {stixSightingRelationship.objectMarking.edges.length > 0
+                  {stixSightingRelationship?.objectMarking?.edges?.length > 0
                     && R.map(
                       (markingDefinition) => (
                         <ItemMarking

@@ -11,7 +11,6 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import IndividualPopover from './IndividualPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
-import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
@@ -239,19 +238,6 @@ class IndividualKnowledgeComponent extends Component {
                 stixCoreObjectId={individual.id}
                 stixCoreObjectLink={link}
                 noRightBar={true}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/entities/individuals/:individualId/knowledge/sightings"
-            render={(routeProps) => (
-              <EntityStixSightingRelationships
-                entityId={individual.id}
-                entityLink={link}
-                noRightBar={true}
-                isTo={true}
                 {...routeProps}
               />
             )}
