@@ -23,7 +23,15 @@ const styles = makeStyles(() => ({
   },
 }));
 
-const inlineStyles = {
+interface InlineStyle {
+  [k: string]: {
+    backgroundColor: string,
+    color: string,
+    border: string
+  }
+}
+
+const inlineStyles: InlineStyle = {
   stix: {
     backgroundColor: 'rgba(32, 58, 246, 0.08)',
     color: '#203af6',
@@ -77,56 +85,21 @@ const inlineStyles = {
 };
 
 interface ItemPatternTypeProps {
-  variant: string,
   label: string,
-  color: string
+  variant?: 'inList',
 }
 
-const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
-  variant,
-  label,
-  color,
-}) => {
+const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({ variant, label }) => {
   const { t } = useFormatter();
   const classes = styles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
-  if (color) {
+  if (Object.keys(inlineStyles).includes(label)) {
     return (
-      <Chip
-        className={style}
-        style={{
-          backgroundColor: color,
-          color: color === '#ffffff' ? '#2b2b2b' : 'inherit',
-        }}
-        label={t(label)}
-      />
-    );
-  }
-
-  if (label === 'stix'
-    || label === 'pcre'
-    || label === 'sigma'
-    || label === 'snort'
-    || label === 'suricata'
-    || label === 'yara'
-    || label === 'tanium-signal'
-    || label === 'eql'
-    || label === 'shodan'
-  ) {
-    return (
-      <Chip
-        className={style}
-        style={inlineStyles[label]}
-        label={t(label)}
-      />
+      <Chip className={style} style={inlineStyles[label]} label={t(label)} />
     );
   }
   return (
-      <Chip
-        className={style}
-        style={inlineStyles.stix}
-        label={t('Unknown')}
-      />
+    <Chip className={style} style={inlineStyles.stix} label={t('Unknown')} />
   );
 };
 export default ItemPatternType;
