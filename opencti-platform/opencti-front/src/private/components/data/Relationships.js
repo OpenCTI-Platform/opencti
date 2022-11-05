@@ -233,6 +233,7 @@ class Relationships extends Component {
               handleToggleExports={this.handleToggleExports.bind(this)}
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               openExports={openExports}
+              selectAll={selectAll}
               exportEntityType="stix-core-relationship"
               disableCards={true}
               secondaryAction={true}
