@@ -21,6 +21,7 @@ import {
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
+import OpenVocabField from "../../common/form/OpenVocabField";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -111,6 +112,7 @@ const incidentMutationRelationDelete = graphql`
 const IncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
+  incident_type: Yup.string(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -255,6 +257,7 @@ class IncidentEditionOverviewComponent extends Component {
         'confidence',
         'description',
         'createdBy',
+        'incident_type',
         'killChainPhases',
         'objectMarking',
         'x_opencti_workflow_id',
@@ -298,6 +301,17 @@ class IncidentEditionOverviewComponent extends Component {
               containerstyle={{ width: '100%', marginTop: 20 }}
               editContext={context}
               variant="edit"
+            />
+            <OpenVocabField
+              label={t('Incident type')}
+              type="incident-type-ov"
+              name="incident_type"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              variant="edit"
+              multiple={false}
+              editContext={context}
             />
             <Field
               component={MarkDownField}
@@ -385,6 +399,7 @@ const IncidentEditionOverview = createFragmentContainer(
         name
         confidence
         description
+        incident_type
         createdBy {
           ... on Identity {
             id

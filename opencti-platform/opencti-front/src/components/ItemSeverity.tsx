@@ -1,9 +1,8 @@
-import React from 'react';
-import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
+import makeStyles from '@mui/styles/makeStyles';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 12,
     height: 25,
@@ -20,7 +19,7 @@ const styles = () => ({
     borderRadius: '0',
     width: 80,
   },
-});
+}));
 
 const inlineStyles = {
   green: {
@@ -46,8 +45,10 @@ const inlineStyles = {
   },
 };
 
-const ItemSeverity = (props) => {
-  const { classes, label, severity, variant } = props;
+interface ItemSeverityProps { label: string, severity?: string, variant?: 'inList' }
+
+const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({ label, severity, variant }) => {
+  const classes = useStyles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   switch (severity) {
     case 'low':
@@ -93,11 +94,4 @@ const ItemSeverity = (props) => {
   }
 };
 
-ItemSeverity.propTypes = {
-  classes: PropTypes.object.isRequired,
-  reliability: PropTypes.string,
-  label: PropTypes.string,
-  variant: PropTypes.string,
-};
-
-export default withStyles(styles)(ItemSeverity);
+export default ItemSeverity;

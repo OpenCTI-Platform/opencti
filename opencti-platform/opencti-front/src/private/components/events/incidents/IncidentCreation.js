@@ -110,7 +110,7 @@ const IncidentCreation = ({ paginationOptions }) => {
         store,
         'Pagination_incidents',
         paginationOptions,
-        'incidentAddAdd',
+        'incidentAdd',
       ),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
