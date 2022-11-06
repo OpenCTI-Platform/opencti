@@ -6,7 +6,7 @@ export const up = async (next) => {
   logApp.info('[MIGRATION] Starting the migration of truncating history message');
   await elUpdateByQueryForMigration('[MIGRATION] Truncating history message', READ_INDEX_HISTORY, {
     script: {
-      source: "def items = ctx._source.context_data.message.splitOnToken('-'); int nbItems = items.length - 1; String item = items[0]; def message = item.substring(0, (int)Math.min(160, item.length())); ctx._source.context_data.message = nbItems > 0 ? message + '... and ' + nbItems + ' more items' : message + '...';",
+      source: "def message = ctx._source.context_data.message.substring(0, (int)Math.min(160, ctx._source.context_data.message.length())); if (message.indexOf('in `object_refs`') == -1) { ctx._source.context_data.message = message + (message.endsWith('`') ? '' : '...`') + ' in `object_refs`' }",
     },
     query: {
       bool: {
@@ -23,7 +23,7 @@ export const up = async (next) => {
           bool: {
             should: [{
               query_string: {
-                query: '"*in `object_refs`*"',
+                query: '"*in `object_refs`"',
                 fields: ['context_data.message']
               }
             }]
