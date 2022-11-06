@@ -58,7 +58,7 @@ const StixCyberObservableLineComponent = (props) => {
     selectAll,
   } = props;
   const renderValue = () => {
-    switch (node.entity_type) {0404
+    switch (node.entity_type) {
       case 'IPv4-Addr':
       case 'IPv6-Addr':
         if (node.countries.edges.length > 0) {
