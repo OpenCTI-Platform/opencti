@@ -21,7 +21,7 @@ import {
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
-import OpenVocabField from "../../common/form/OpenVocabField";
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
