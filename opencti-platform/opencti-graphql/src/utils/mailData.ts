@@ -14,7 +14,10 @@ import { isStixDomainObject } from '../schema/stixDomainObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 
-export const truncate = (str: string, limit: number) => {
+// SHA256 LENGTH
+const DEFAULT_TRUNCATE_LIMIT = 64;
+
+export const truncate = (str: string, limit = DEFAULT_TRUNCATE_LIMIT) => {
   if (str === undefined || str === null || str.length <= limit) {
     return str;
   }

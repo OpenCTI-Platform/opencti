@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { truncate } from '../../../../utils/String';
 
 const styles = () => ({
   paper: {
@@ -33,7 +34,7 @@ class ExternalReferenceOverviewComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Source name')}
               </Typography>
-              {externalReference.source_name}
+              {truncate(externalReference.source_name, 40)}
               <Typography
                 variant="h3"
                 gutterBottom={true}

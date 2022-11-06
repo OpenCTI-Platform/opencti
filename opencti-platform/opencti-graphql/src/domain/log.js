@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { head } from 'ramda';
 import { elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
@@ -8,11 +7,12 @@ import { EVENT_TYPE_CREATE, INDEX_HISTORY, READ_INDEX_HISTORY } from '../databas
 import { SYSTEM_USER } from '../utils/access';
 
 export const findAll = (context, user, args) => {
-  const finalArgs = R.pipe(
-    R.assoc('types', ['history']),
-    R.assoc('orderBy', args.orderBy || 'timestamp'),
-    R.assoc('orderMode', args.orderMode || 'desc')
-  )(args);
+  const finalArgs = {
+    orderBy: 'timestamp',
+    orderMode: 'desc',
+    ...args,
+    types: ['history'],
+  };
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
