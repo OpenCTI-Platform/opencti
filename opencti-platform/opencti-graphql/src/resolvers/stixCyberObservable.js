@@ -4,7 +4,7 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCyberObservable,
   artifactImport,
-  batchArtifacts,
+  batchArtifacts, batchCountries,
   batchIndicators,
   batchStixFiles,
   batchVulnerabilities,
@@ -39,6 +39,7 @@ import { observableValue } from '../utils/format';
 
 const indicatorsLoader = batchLoader(batchIndicators);
 const vulnerabilitiesLoader = batchLoader(batchVulnerabilities);
+const countriesLoader = batchLoader(batchCountries);
 const stixFileLoader = batchLoader(batchStixFiles);
 const artifactsLoader = batchLoader(batchArtifacts);
 
@@ -82,6 +83,12 @@ const stixCyberObservableResolvers = {
   },
   Software: {
     vulnerabilities: (software, _, context) => vulnerabilitiesLoader.load(software.id, context, context.user),
+  },
+  IPv4Addr: {
+    countries: (ip, _, context) => countriesLoader.load(ip.id, context, context.user),
+  },
+  IPv6Addr: {
+    countries: (ip, _, context) => countriesLoader.load(ip.id, context, context.user),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, context) => ({
