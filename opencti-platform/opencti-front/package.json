@@ -21,6 +21,7 @@
     "dagre": "0.8.5",
     "date-fns": "2.29.3",
     "extract-files": "13.0.0",
+    "flag-icons": "6.6.6",
     "formik": "2.2.9",
     "formik-mui": "5.0.0-alpha.0",
     "formik-mui-lab": "1.0.0",

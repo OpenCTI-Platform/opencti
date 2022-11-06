@@ -108,7 +108,7 @@ export const pascalize = (str: string): string => str.replace(
   (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase(),
 );
 
-export const resolveIdentityClass = (identityType: string) : string => {
+export const resolveIdentityClass = (identityType: string): string => {
   if (identityType === 'Individual') {
     return 'individual';
   }
@@ -121,7 +121,7 @@ export const resolveIdentityClass = (identityType: string) : string => {
   return 'organization';
 };
 
-export const resolveIdentityType = (identityClass: string) : string => {
+export const resolveIdentityType = (identityClass: string): string => {
   if (identityClass === 'individual') {
     return 'Individual';
   }
@@ -134,7 +134,9 @@ export const resolveIdentityType = (identityClass: string) : string => {
   return 'Organization';
 };
 
-export const resolveLocationType = (entity: { [k:string] : string }) : string => {
+export const resolveLocationType = (entity: {
+  [k: string]: string;
+}): string => {
   if (entity.x_opencti_location_type) {
     return entity.x_opencti_location_type;
   }
@@ -150,7 +152,9 @@ export const resolveLocationType = (entity: { [k:string] : string }) : string =>
   return 'Position';
 };
 
-export const openVocabularies: { [k: string]: Array<{ key: string, description: string }> } = {
+export const openVocabularies: {
+  [k: string]: Array<{ key: string; description: string }>;
+} = {
   'malware-type-ov': [
     {
       key: 'adware',
@@ -894,21 +898,59 @@ export const openVocabularies: { [k: string]: Array<{ key: string, description: 
     { key: 'system', description: 'A system level of integrity.' },
   ],
   'start_type-ov': [
-    { key: 'SERVICE_AUTO_START', description: 'A service started automatically by the service control manager during system startup.' },
-    { key: 'SERVICE_BOOT_START', description: 'A device driver started by the system loader. This value is valid only for driver services.' },
-    { key: 'SERVICE_DEMAND_START', description: 'A service started by the service control manager when a process calls the StartService function.' },
-    { key: 'SERVICE_DISABLED', description: 'A service that cannot be started. Attempts to start the service result in the error code ERROR_SERVICE_DISABLED.' },
-    { key: 'SERVICE_SYSTEM_ALERT', description: 'A device driver started by the IoInitSystem function. This value is valid only for driver services.' },
+    {
+      key: 'SERVICE_AUTO_START',
+      description:
+        'A service started automatically by the service control manager during system startup.',
+    },
+    {
+      key: 'SERVICE_BOOT_START',
+      description:
+        'A device driver started by the system loader. This value is valid only for driver services.',
+    },
+    {
+      key: 'SERVICE_DEMAND_START',
+      description:
+        'A service started by the service control manager when a process calls the StartService function.',
+    },
+    {
+      key: 'SERVICE_DISABLED',
+      description:
+        'A service that cannot be started. Attempts to start the service result in the error code ERROR_SERVICE_DISABLED.',
+    },
+    {
+      key: 'SERVICE_SYSTEM_ALERT',
+      description:
+        'A device driver started by the IoInitSystem function. This value is valid only for driver services.',
+    },
   ],
   'service_type-ov': [
-    { key: 'SERVICE_KERNEL_DRIVER', description: 'The service is a device driver.' },
-    { key: 'SERVICE_FILE_SYSTEM_DRIVER', description: 'The service is a file system driver.' },
-    { key: 'SERVICE_WIN32_OWN_PROCESS', description: 'The service runs in its own process.' },
-    { key: 'SERVICE_WIN32_SHARE_PROCESS', description: 'The service shares a process with other services.' },
+    {
+      key: 'SERVICE_KERNEL_DRIVER',
+      description: 'The service is a device driver.',
+    },
+    {
+      key: 'SERVICE_FILE_SYSTEM_DRIVER',
+      description: 'The service is a file system driver.',
+    },
+    {
+      key: 'SERVICE_WIN32_OWN_PROCESS',
+      description: 'The service runs in its own process.',
+    },
+    {
+      key: 'SERVICE_WIN32_SHARE_PROCESS',
+      description: 'The service shares a process with other services.',
+    },
   ],
   'service_status-ov': [
-    { key: 'SERVICE_CONTINUE_PENDING', description: 'The service continue is pending.' },
-    { key: 'SERVICE_PAUSE_PENDING', description: 'The service pause is pending.' },
+    {
+      key: 'SERVICE_CONTINUE_PENDING',
+      description: 'The service continue is pending.',
+    },
+    {
+      key: 'SERVICE_PAUSE_PENDING',
+      description: 'The service pause is pending.',
+    },
     { key: 'SERVICE_PAUSED', description: 'The service is paused.' },
     { key: 'SERVICE_RUNNING', description: 'The service is running.' },
     { key: 'SERVICE_START_PENDING', description: 'The service is starting.' },
@@ -1011,7 +1053,11 @@ export const booleanAttributes = [
   'dep_enabled',
 ];
 
-export const multipleAttributes = ['x_opencti_additional_names', 'protocols', 'descriptions'];
+export const multipleAttributes = [
+  'x_opencti_additional_names',
+  'protocols',
+  'descriptions',
+];
 
 export const markdownAttributes = ['description', 'x_opencti_description'];
 

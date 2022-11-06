@@ -1,4 +1,4 @@
-import { addThreatActor, findAll, findById, batchLocations } from '../domain/threatActor';
+import { addThreatActor, findAll, findById, batchLocations, batchCountries } from '../domain/threatActor';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -12,6 +12,7 @@ import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
 
 const locationsLoader = batchLoader(batchLocations);
+const countriesLoader = batchLoader(batchCountries);
 
 const threatActorResolvers = {
   Query: {
@@ -20,6 +21,7 @@ const threatActorResolvers = {
   },
   ThreatActor: {
     locations: (threatActor, _, context) => locationsLoader.load(threatActor.id, context, context.user),
+    countries: (threatActor, _, context) => countriesLoader.load(threatActor.id, context, context.user),
   },
   ThreatActorsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

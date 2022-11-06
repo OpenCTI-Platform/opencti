@@ -44,8 +44,12 @@ import {
   INPUT_MARKINGS
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_INDICATOR, ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
+import { RELATION_BASED_ON, RELATION_HAS, RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
+import {
+  ENTITY_TYPE_INDICATOR,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_VULNERABILITY
+} from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { escape, now, observableValue } from '../utils/format';
@@ -444,4 +448,8 @@ export const batchStixFiles = (user, softwareIds) => {
 
 export const batchArtifacts = (context, user, softwareIds) => {
   return batchLoadThroughGetTo(context, user, softwareIds, RELATION_CONTENT, ENTITY_HASHED_OBSERVABLE_ARTIFACT);
+};
+
+export const batchCountries = (context, user, ipIds) => {
+  return batchListThroughGetTo(context, user, ipIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
 };

@@ -8212,6 +8212,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"flag-icons@npm:6.6.6":
+  version: 6.6.6
+  resolution: "flag-icons@npm:6.6.6"
+  checksum: 50b60ac6e4cd945092f57718ebaf024888212c968bea03d8cf9cca533b8b151edc9a6cd4566b50c4af844f18e0ec7ab92b6c64bff96e2d5b86ceb19e622dfe0a
+  languageName: node
+  linkType: hard
+
 "flat-cache@npm:^3.0.4":
   version: 3.0.4
   resolution: "flat-cache@npm:3.0.4"
@@ -12550,6 +12557,7 @@ __metadata:
     eslint-plugin-react: 7.31.10
     express: 4.18.2
     extract-files: 13.0.0
+    flag-icons: 6.6.6
     formik: 2.2.9
     formik-mui: 5.0.0-alpha.0
     formik-mui-lab: 1.0.0

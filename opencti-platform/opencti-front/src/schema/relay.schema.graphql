@@ -4437,6 +4437,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   secondary_motivations: [String]
   personal_motivations: [String]
   locations: LocationConnection
+  countries: CountryConnection
   creator: User
   toStix: String
   importFiles(first: Int): FileConnection
@@ -5467,6 +5468,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
+  countries: CountryConnection
   creator: User
   toStix: String
   importFiles(first: Int): FileConnection
@@ -5510,6 +5512,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
+  countries: CountryConnection
   creator: User
   toStix: String
   importFiles(first: Int): FileConnection

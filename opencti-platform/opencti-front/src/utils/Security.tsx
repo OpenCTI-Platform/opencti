@@ -9,7 +9,11 @@ export interface UserContextType {
   helper: ModuleHelper | undefined;
 }
 
-const defaultContext = { me: undefined, settings: undefined, helper: undefined };
+const defaultContext = {
+  me: undefined,
+  settings: undefined,
+  helper: undefined,
+};
 export const UserContext = React.createContext<UserContextType>(defaultContext);
 
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
@@ -32,14 +36,18 @@ export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 
 interface SecurityProps {
-  children: React.ReactNode
-  needs: Array<string>
-  matchAll: boolean
+  children: React.ReactNode;
+  needs: Array<string>;
+  matchAll: boolean;
   // eslint-disable-next-line
-  placeholder: any
+  placeholder: any;
 }
 
-export const granted = (me: RootPrivateQuery$data['me'], capabilities: Array<string>, matchAll = false) => {
+export const granted = (
+  me: RootPrivateQuery$data['me'],
+  capabilities: Array<string>,
+  matchAll = false,
+) => {
   const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
   if (userCapabilities.includes(BYPASS)) return true;
   let numberOfAvailableCapabilities = 0;
@@ -59,7 +67,12 @@ export const granted = (me: RootPrivateQuery$data['me'], capabilities: Array<str
   return numberOfAvailableCapabilities > 0;
 };
 
-const Security: FunctionComponent<SecurityProps> = ({ needs, matchAll, children, placeholder = <span /> }) => {
+const Security: FunctionComponent<SecurityProps> = ({
+  needs,
+  matchAll,
+  children,
+  placeholder = <span />,
+}) => {
   const userContext = useContext(UserContext);
   if (userContext.me && granted(userContext.me, needs, matchAll)) {
     return children;
