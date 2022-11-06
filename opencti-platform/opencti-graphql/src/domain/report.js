@@ -4,11 +4,12 @@ import {
   createEntity,
   distributionEntities,
   internalDeleteElementById,
-  internalLoadById, listAllThings,
+  internalLoadById,
+  listAllThings,
   storeLoadById,
   timeSeriesEntities,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { countAllThings, listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
@@ -20,7 +21,7 @@ import {
   buildRefRelationKey
 } from '../schema/general';
 import { elCount, ES_MAX_CONCURRENCY } from '../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 import { stixDomainObjectDelete } from './stixDomainObject';
 
@@ -136,17 +137,29 @@ export const addReport = async (context, user, report) => {
 };
 
 // Delete all report contained entities if no other reports are linked
+const buildReportDeleteElementsFilter = (reportId) => {
+  const refKey = buildRefRelationKey(RELATION_OBJECT);
+  return [
+    { key: [refKey], values: [reportId] },
+    { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'script' }
+  ];
+};
 export const reportDeleteWithElements = async (context, user, reportId) => {
   // Load all entities and see if they no longer have any report
   const callback = async (objects) => {
-    const filteredObjects = objects.filter((n) => n.object.length === 1);
-    await BluePromise.map(filteredObjects, (object) => internalDeleteElementById(context, context.user, object.id), { concurrency: ES_MAX_CONCURRENCY });
+    await BluePromise.map(objects, (object) => {
+      return internalDeleteElementById(context, context.user, object.id);
+    }, { concurrency: ES_MAX_CONCURRENCY });
   };
   // Load all report objects with a callback
-  const args = { filters: [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [reportId] }], callback };
+  const args = { filters: buildReportDeleteElementsFilter(reportId), callback };
   await listAllThings(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args);
   // Delete the report
   await stixDomainObjectDelete(context, user, reportId);
   return reportId;
+};
+export const reportDeleteElementsCount = async (context, user, reportId) => {
+  const filters = buildReportDeleteElementsFilter(reportId);
+  return countAllThings(context, user, { indices: READ_DATA_INDICES_WITHOUT_INFERRED, filters });
 };
 // endregion

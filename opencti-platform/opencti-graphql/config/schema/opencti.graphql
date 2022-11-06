@@ -2835,6 +2835,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }
 input ReportAddInput {
   stix_id: StixId

@@ -13067,6 +13067,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
   creator?: Maybe<User>;
+  deleteWithElementsCount?: Maybe<Scalars['Int']>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<Maybe<EditUserContext>>>;
   entity_type: Scalars['String'];
@@ -23447,6 +23448,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  deleteWithElementsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

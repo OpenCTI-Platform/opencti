@@ -1,6 +1,6 @@
 import * as R from 'ramda';
-import { offsetToCursor, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
-import { elPaginate } from './engine';
+import { offsetToCursor, READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
+import { elPaginate, elQueryCount } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, StoreEntityConnection, StoreProxyRelation } from '../types/store';
@@ -21,6 +21,7 @@ interface Filter {
 }
 
 interface ListFilter<T extends BasicStoreCommon> {
+  indices?: Array<string>;
   first?: number | null;
   infinite?: boolean;
   after?: string | undefined | null;
@@ -313,4 +314,9 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
   }
   const paginateArgs = buildEntityFilters({ entityTypes, ...args });
   return elPaginate(context, user, indices, paginateArgs);
+};
+
+export const countAllThings = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, args: ListFilter<T> = {}) => {
+  const { indices = READ_DATA_INDICES } = args;
+  return elQueryCount(context, user, indices, args);
 };

@@ -10,7 +10,8 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
-  isEmptyField, isInferredIndex,
+  isEmptyField,
+  isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
   pascalize,
@@ -19,7 +20,8 @@ import {
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
-  READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
@@ -37,7 +39,8 @@ import {
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
-  ENTITY_TYPE_IDENTITY, ID_INFERRED,
+  ENTITY_TYPE_IDENTITY,
+  ID_INFERRED,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -211,7 +214,8 @@ const elGetTask = (taskId) => engine.tasks.get({ task_id: taskId }).then((r) => 
 export const elUpdateByQueryForMigration = async (message, index, body) => {
   logApp.info(`${message} started`);
   // Execute the update by query in async mode
-  const queryAsync = await elRawUpdateByQuery({ index,
+  const queryAsync = await elRawUpdateByQuery({
+    index,
     refresh: true,
     wait_for_completion: false,
     body
@@ -492,7 +496,7 @@ export const elDeleteIndexes = async (indexesToDelete) => {
       return engine.indices.delete({ index })
         .then((response) => oebp(response))
         .catch((err) => {
-        /* istanbul ignore next */
+          /* istanbul ignore next */
           if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
             logApp.error('[SEARCH ENGINE] Delete indices fail', { error: err });
           }
@@ -506,7 +510,8 @@ export const RUNTIME_ATTRIBUTES = {
     field: 'observable_value.keyword',
     type: 'keyword',
     getSource: async () => runtimeFieldObservableValueScript(),
-    getParams: async () => {},
+    getParams: async () => {
+    },
   },
   createdBy: {
     field: 'createdBy.keyword',
@@ -1426,10 +1431,10 @@ export const elGenerateFullTextSearchShould = (search) => {
 
 const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type', 'entity_type',
   'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
-export const elPaginate = async (context, user, indexName, options = {}) => {
+const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], baseData = false, first = 200, after, orderBy = null, orderMode = 'asc' } = options;
-  const { types = null, filters = [], filterMode = 'and', search = null, connectionFormat = true } = options;
+  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc' } = options;
+  const { types = null, filters = [], filterMode = 'and', search = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
   let mustnot = [];
@@ -1543,6 +1548,12 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
                 fields: validKeys,
               },
             });
+          } else if (operator === 'script') {
+            valuesFiltering.push({
+              script: {
+                script: values[i].toString()
+              },
+            });
           } else {
             if (validKeys.length > 1) {
               throw UnsupportedError('Must have only one field', validKeys);
@@ -1634,7 +1645,26 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   if (searchAfter) {
     body.search_after = searchAfter;
   }
-  if (querySize > ES_MAX_PAGINATION) {
+  return body;
+};
+export const elQueryCount = async (context, user, indexName, options = {}) => {
+  const body = await elQueryBodyBuilder(context, user, options);
+  const query = { index: indexName, body: { query: body.query } };
+  logApp.debug('[SEARCH ENGINE] elQueryCount', { query });
+  return engine.count(query)
+    .then((data) => {
+      return oebp(data).count;
+    })
+    .catch((err) => {
+      throw DatabaseError('Count data fail', { error: err, query });
+    });
+};
+export const elPaginate = async (context, user, indexName, options = {}) => {
+  // eslint-disable-next-line no-use-before-define
+  const { baseData = false, first = 200 } = options;
+  const { types = null, connectionFormat = true } = options;
+  const body = await elQueryBodyBuilder(context, user, options);
+  if (body.size > ES_MAX_PAGINATION) {
     const message = `You cannot ask for more than ${ES_MAX_PAGINATION} results. If you need more, please use pagination`;
     throw DatabaseError(message, { body });
   }
@@ -1651,7 +1681,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       const convertedHits = R.map((n) => elDataConverter(n), data.hits.hits);
       if (connectionFormat) {
         const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
-        return buildPagination(first, searchAfter, nodeHits, data.hits.total.value);
+        return buildPagination(first, body.search_after, nodeHits, data.hits.total.value);
       }
       return convertedHits;
     })
@@ -1896,7 +1926,7 @@ const elRemoveRelationConnection = async (context, user, relsFromTo) => {
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
     const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
       const refField = isStixMetaRelationship(relation.entity_type)
-        && isInferredIndex(relation._index) ? ID_INFERRED : ID_INTERNAL;
+      && isInferredIndex(relation._index) ? ID_INFERRED : ID_INTERNAL;
       const type = buildRefRelationKey(relation.entity_type, refField);
       const updates = [];
       const fromIndex = indexCache[relation.fromId];
@@ -2204,7 +2234,11 @@ export const elUpdateEntityConnections = async (elements) => {
         {
           script: {
             source,
-            params: { key: buildRefRelationKey(doc.relationType, refField), from: doc.toReplace, to: addMultipleFormat(doc) },
+            params: {
+              key: buildRefRelationKey(doc.relationType, refField),
+              from: doc.toReplace,
+              to: addMultipleFormat(doc)
+            },
           },
         },
       ];

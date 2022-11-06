@@ -1033,11 +1033,7 @@ class ReportKnowledgeGraphBar extends Component {
                         'Do you want to remove these elements from this report?',
                       )}
                     </Typography>
-                    <Alert
-                      severity="warning"
-                      variant="outlined"
-                      style={{ marginTop: 10 }}
-                    >
+                    <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
                       <AlertTitle>{t('Cascade delete')}</AlertTitle>
                       <FormGroup>
                         <FormControlLabel
@@ -1050,7 +1046,7 @@ class ReportKnowledgeGraphBar extends Component {
                             />
                           }
                           label={t(
-                            'Delete the element if no other reports contain it',
+                            'Delete the element if no other containers contain it',
                           )}
                         />
                       </FormGroup>

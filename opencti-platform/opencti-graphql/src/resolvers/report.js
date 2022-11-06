@@ -2,15 +2,16 @@ import {
   addReport,
   findAll,
   findById,
+  reportContainsStixObjectOrStixRelationship,
+  reportDeleteElementsCount,
+  reportDeleteWithElements,
   reportsDistributionByEntity,
   reportsNumber,
-  reportsNumberByEntity,
   reportsNumberByAuthor,
+  reportsNumberByEntity,
   reportsTimeSeries,
   reportsTimeSeriesByAuthor,
   reportsTimeSeriesByEntity,
-  reportContainsStixObjectOrStixRelationship,
-  reportDeleteWithElements,
 } from '../domain/report';
 import {
   stixDomainObjectAddRelation,
@@ -61,6 +62,9 @@ const reportResolvers = {
     reportContainsStixObjectOrStixRelationship: (_, args, context) => {
       return reportContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
+  },
+  Report: {
+    deleteWithElementsCount: (report, args, context) => reportDeleteElementsCount(context, context.user, report.id)
   },
   ReportsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
