@@ -312,7 +312,7 @@ const isCompatiblePlatform = async (context) => {
   const runtimeVersion = semver.coerce(PLATFORM_VERSION).version;
   if (semver.lt(runtimeVersion, currentVersion)) {
     throw UnsupportedError(
-      `Your platform data (${currentVersion}) are too old to start on version ${runtimeVersion}`
+      `Your platform data (${currentVersion}) are too recent to start on version ${runtimeVersion}`
     );
   }
 };
