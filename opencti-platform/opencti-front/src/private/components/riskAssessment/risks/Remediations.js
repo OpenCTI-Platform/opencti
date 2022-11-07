@@ -26,6 +26,7 @@ const Remediations = (props) => {
     classes,
     riskId,
     history,
+    location,
   } = props;
   const [openCreation, setOpenCreation] = React.useState(false);
 
@@ -58,6 +59,7 @@ const Remediations = (props) => {
           <TopMenuRisk risk={remediation.name}/>
           <RemediationEntities
             history={history}
+            location={location}
             entityId={remediation.id}
             riskId={riskId.id}
             openCreation={openCreation}
@@ -69,6 +71,9 @@ const Remediations = (props) => {
 Remediations.propTypes = {
   remediation: PropTypes.object,
   riskId: PropTypes.object,
+  location: PropTypes.object,
+  history: PropTypes.object,
+  classes: PropTypes.object,
 };
 
 export default compose(

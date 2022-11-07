@@ -110,5 +110,5 @@ type CyioTimeSeries {
 type CyioDistribution {
   label: String!
   entity: CyioObject
-  value: Int
+  value: Float
 }

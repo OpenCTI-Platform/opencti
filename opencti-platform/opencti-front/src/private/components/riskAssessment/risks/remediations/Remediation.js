@@ -42,6 +42,10 @@ class RemediationComponent extends Component {
     this.setState({ displayEdit: !this.state.displayEdit });
   }
 
+  handleCloseEdit() {
+    this.setState({ displayEdit: false });
+  }
+
   handleOpen() {
     this.setState({ openCreation: true });
   }
@@ -62,6 +66,7 @@ class RemediationComponent extends Component {
       risk,
       riskId,
       history,
+      location,
     } = this.props;
     return (
       <>
@@ -148,16 +153,20 @@ class RemediationComponent extends Component {
             cyioCoreRelationshipId={remediation.id}
             risk={risk}
             riskId={riskId}
+            handleCloseEdit={this.handleCloseEdit.bind(this)}
           />
-          <RemediationCreation
-            remediationId={remediation.id}
-            riskId={riskId}
-            history={history}
-            openCreation={this.state.openCreation}
-            handleOpenCreation={this.handleOpenCreation.bind(this)}
-            handleCreation={this.handleOpen.bind(this)}
-            refreshQuery={refreshQuery}
-        />
+          {this.state.openCreation 
+            && <RemediationCreation
+                  remediationId={remediation.id}
+                  riskId={riskId}
+                  history={history}
+                  openCreation={this.state.openCreation}
+                  handleOpenCreation={this.handleOpenCreation.bind(this)}
+                  handleCreation={this.handleOpen.bind(this)}
+                  refreshQuery={refreshQuery}
+                  location={location}
+                />
+          }          
         </div>
         {/* <RemediationEdition
             open={this.state.openEdit}
@@ -178,6 +187,7 @@ RemediationComponent.propTypes = {
   risk: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
+  location: PropTypes.object,
 };
 
 const Remediation = createFragmentContainer(RemediationComponent, {

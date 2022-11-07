@@ -186,6 +186,7 @@ class Entities extends Component {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
+        disabled={true}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
@@ -211,7 +212,7 @@ class Entities extends Component {
         ]}
       >
         <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('Select a Data Type')}</Typography>
           <Typography style={{ fontSize: '20px' }} color='textSecondary'>
             {t('Please choose from the Data Type dropdown above.')}
           </Typography>
@@ -271,6 +272,8 @@ class Entities extends Component {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
+        noHeaders={true}
+        disabled={true}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
@@ -297,7 +300,7 @@ class Entities extends Component {
         ]}
       >
         <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('Select a Data Type')}</Typography>
           <Typography style={{ fontSize: '20px' }} color='textSecondary'>
             {t('Please choose from the Data Type dropdown above.')}
           </Typography>

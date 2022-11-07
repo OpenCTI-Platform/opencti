@@ -28,7 +28,6 @@ import CyioDomainObjectAssetEditionOverview from '../../common/stix_domain_objec
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import ErrorBox from '../../common/form/ErrorBox';
 import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
@@ -115,7 +114,6 @@ class NetworkEditionContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       currentTab: 0,
       open: false,
       onSubmit: false,
@@ -174,15 +172,12 @@ class NetworkEditionContainer extends Component {
         input: finalValues,
       },
       setSubmitting,
-      onCompleted: (data, error) => {
-        if (error) {
-          this.setState({ error });
-        } else {
-          setSubmitting(false);
-          resetForm();
-          this.handleClose();
-          this.props.history.push('/defender HQ/assets/network');
-        }
+      pathname: '/defender HQ/assets/network',
+      onCompleted: (data) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        this.props.history.push('/defender HQ/assets/network');
       },
       onError: (err) => console.error(err),
     });
@@ -247,7 +242,7 @@ class NetworkEditionContainer extends Component {
       R.assoc('operational_status', network?.operational_status),
       R.assoc('network_name', network?.network_name),
       R.assoc('network_id', network?.network_id),
-      R.assoc('is_scanned', network?.is_scanned),      
+      R.assoc('is_scanned', network?.is_scanned),
       R.assoc('last_scanned', network?.last_scanned),
       R.assoc('implementation_point', network?.implementation_point),
       R.assoc('starting_address', network?.network_address_range?.starting_ip_address?.ip_address_value || ''),
@@ -421,10 +416,6 @@ class NetworkEditionContainer extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <ErrorBox
-          error={this.state.error}
-          pathname='/defender HQ/assets/devices'
-        />
       </div>
     );
   }

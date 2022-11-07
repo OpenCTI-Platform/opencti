@@ -60,7 +60,7 @@ class EntityNoteComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            name={note.name}
+            name={note.abstract}
             history={history}
             cyioDomainObject={note}
             goBack='/data/entities/notes'
