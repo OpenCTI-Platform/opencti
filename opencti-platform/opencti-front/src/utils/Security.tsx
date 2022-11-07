@@ -39,7 +39,7 @@ interface SecurityProps {
   placeholder: any
 }
 
-export const granted = (me: RootPrivateQuery$data['me'], capabilities: Array<string>, matchAll = false) => {
+export const granted = (me: RootPrivateQuery$data['me'] | undefined, capabilities: Array<string>, matchAll = false) => {
   const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
   if (userCapabilities.includes(BYPASS)) return true;
   let numberOfAvailableCapabilities = 0;
