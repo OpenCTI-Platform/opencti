@@ -55,18 +55,19 @@ const styles = (theme) => ({
     backgroundRepeat: 'no-repeat',
     backgroundPosition: '50% 70%;',
     overflow: 'hidden',
-    // transition: theme.transitions.create('width', {
-    //   easing: theme.transitions.easing.sharp,
-    //   duration: theme.transitions.duration.enteringScreen,
-    // }),
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
   },
   gridOpen: {
     display: 'grid',
     gridTemplateColumns: '255px 1fr',
-    transition: theme.transitions.create('display', {
+    transition: theme.transitions.create('grid-template-columns', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
+    overflow: 'hidden',
   },
   drawerClose: {
     backgroundColor: theme.palette.background.nav,
@@ -77,18 +78,19 @@ const styles = (theme) => ({
     [theme.breakpoints.up('sm')]: {
       width: theme.spacing(9) + 1,
     },
-    // transition: theme.transitions.create('width', {
-    //   easing: theme.transitions.easing.sharp,
-    //   duration: theme.transitions.duration.leavingScreen,
-    // }),
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
   gridClose: {
     display: 'grid',
     gridTemplateColumns: '75px 1fr',
-    transition: theme.transitions.create('display', {
+    transition: theme.transitions.create('grid-template-columns', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
+    overflow: 'hidden',
   },
   menuList: {
     marginTop: 20,
@@ -471,7 +473,7 @@ const LeftBar = ({
           />
         </Dialog>
       </Drawer>
-      <div style={{ padding: '0px 20px 0px 20px' }}>
+      <div style={{ padding: '0 1rem' }}>
         {children}
       </div>
     </div>

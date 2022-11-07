@@ -36,10 +36,10 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    marginBottom: '20px',
-    padding: '23px 0 24px 12px',
-    height: '64px',
-    backgroundColor: '#1F2842',
+    margin: '0 -1.5rem 1rem -1.5rem',
+    padding: '1rem 1.5rem',
+    height: '70px',
+    backgroundColor: theme.palette.background.paper,
     display: 'flex',
     justifyContent: 'space-between',
   },
@@ -465,7 +465,7 @@ class SoftwareCreation extends Component {
             <Button
               onClick={() => this.props.history.push('/defender HQ/assets/software')}
               // onClick={() => history.goBack()}
-              color="primary"
+              color="secondary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
               size="small"

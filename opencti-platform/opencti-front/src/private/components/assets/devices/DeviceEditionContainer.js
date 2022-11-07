@@ -34,10 +34,10 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    margin: '-25px -24px 30px -24px',
-    padding: '25px 30px 50px 50px',
-    height: '64px',
-    backgroundColor: '#1F2842',
+    margin: '0 -1.5rem 1rem -1.5rem',
+    padding: '1rem 1.5rem',
+    height: '70px',
+    backgroundColor: theme.palette.background.paper,
   },
   gridContainer: {
     marginBottom: 20,
@@ -51,6 +51,10 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
+  },
+  leftContainer: {
+    display: 'flex',
+    alignItems: 'center',
   },
   rightContainer: {
     float: 'right',
@@ -312,7 +316,7 @@ class DeviceEditionContainer extends Component {
           }) => (
             <>
               <div className={classes.header}>
-                <div>
+                <div className={classes.leftContainer}>
                   <Typography
                     variant="h2"
                     gutterBottom={true}
@@ -442,7 +446,7 @@ class DeviceEditionContainer extends Component {
             </Button>
             <Button
               onClick={() => this.props.history.goBack()}
-              color="primary"
+              color="secondary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
               size="small"
