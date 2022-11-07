@@ -123,7 +123,6 @@ const StixSightingRelationships = () => {
   };
 
   const renderLines = (paginationOptions: {
-    fromRole?: unknown,
     toId?: unknown,
     search?: unknown,
     orderBy?: unknown,
@@ -187,7 +186,6 @@ const StixSightingRelationships = () => {
   }
   const finalFilters = convertFilters(processedFilters);
   const paginationOptions = {
-    fromRole: 'stix-sighting-relationship_from',
     toId: toSightingId,
     search: searchTerm,
     orderBy: sortBy,

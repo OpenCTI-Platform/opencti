@@ -13,10 +13,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { MoreVertOutlined } from '@mui/icons-material';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StixSightingRelationshipEdition from './StixSightingRelationshipEdition';
+import { deleteNode } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   container: {
@@ -94,21 +94,20 @@ class StixSightingRelationshipPopover extends Component {
         id: this.props.stixSightingRelationshipId,
       },
       updater: (store) => {
-        if (typeof this.props.onDelete !== 'function') {
-          const container = store.getRoot();
-          const payload = store.getRootField('stixSightingRelationshipEdit');
-          const userProxy = store.get(container.getDataID());
-          const conn = ConnectionHandler.getConnection(
-            userProxy,
+        const isUndefinedCallback = this.props.onDelete === undefined || typeof this.props.onDelete !== 'function';
+        if (isUndefinedCallback) {
+          deleteNode(
+            store,
             'Pagination_stixSightingRelationships',
             this.props.paginationOptions,
+            this.props.stixSightingRelationshipId,
           );
-          ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
         }
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
+        this.handleCloseUpdate();
         if (typeof this.props.onDelete === 'function') {
           this.props.onDelete();
         }
@@ -145,15 +144,14 @@ class StixSightingRelationshipPopover extends Component {
           stixSightingRelationshipId={stixSightingRelationshipId}
           open={this.state.displayUpdate}
           handleClose={this.handleCloseUpdate.bind(this)}
-          handleDelete={() => true}
+          handleDelete={this.submitDelete.bind(this)}
         />
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
+          onClose={this.handleCloseDelete.bind(this)}>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this sighting?')}
