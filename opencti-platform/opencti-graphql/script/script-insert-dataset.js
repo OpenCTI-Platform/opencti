@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import { executionContext } from '../src/utils/access';
 import { ADMIN_USER, API_TOKEN, API_URI } from '../tests/utils/testQuery';
 import { checkPythonAvailability, execChildPython } from '../src/python/pythonBridge';
@@ -47,7 +48,7 @@ const getStartingHandler = () => {
       process.exit();
     }
   };
-  return fetch(API_URI).then(() => manualStartHandler).catch(() => autoStartHandler);
+  return fetch(API_URI, {}).then(() => manualStartHandler).catch(() => autoStartHandler);
 };
 
 // noinspection JSIgnoredPromiseFromCall
