@@ -189,18 +189,21 @@ class RemediationCreation extends Component {
       t,
       history,
       riskId,
+      location,
+      remediationId
     } = this.props;
     return (
       <>
-        <IconButton
-          color="default"
-          aria-label="Label"
-          edge="end"
-          onClick={this.props.handleCreation.bind(this)}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-        >
-          <Add fontSize="small" />
-        </IconButton>
+      {!location.pathname.includes(`/activities/risk assessment/risks/${riskId}/remediation/${remediationId}`) 
+        && <IconButton
+              color="default"
+              aria-label="Label"
+              edge="end"
+              onClick={this.props.handleCreation.bind(this)}
+              style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            >
+              <Add fontSize="small" />
+            </IconButton>}
         <Dialog
           open={this.props.openCreation}
           keepMounted={true}
@@ -503,6 +506,7 @@ RemediationCreation.propTypes = {
   handleDisplayEdit: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
+  location: PropTypes.object,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
