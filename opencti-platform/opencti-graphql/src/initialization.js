@@ -305,13 +305,14 @@ const isExistingPlatform = async (context) => {
 
 const isCompatiblePlatform = async (context) => {
   const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
-  const { platformVersion } = migration;
+  const { platformVersion: currentVersion } = migration;
   // For old platform, version is not set yet, continue
-  if (!platformVersion) return;
+  if (!currentVersion) return;
   // Runtime version must be >= of the stored runtime
-  if (semver.lt(PLATFORM_VERSION, platformVersion)) {
+  const runtimeVersion = semver.coerce(PLATFORM_VERSION).version;
+  if (semver.lt(runtimeVersion, currentVersion)) {
     throw UnsupportedError(
-      `Your platform data (${PLATFORM_VERSION}) are too old to start on version ${platformVersion}`
+      `Your platform data (${currentVersion}) are too old to start on version ${runtimeVersion}`
     );
   }
 };
