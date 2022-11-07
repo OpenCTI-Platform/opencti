@@ -95,30 +95,31 @@ const useStyles = makeStyles((theme) => ({
     padding: '0 10px 0 10px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
   },
   left: {
-    width: '40%',
+    width: '100%',
   },
   middle: {
-    flexGrow: 1,
     textAlign: 'center',
+    paddingLeft: 30,
+    paddingRight: 30,
   },
   right: {
-    width: '40%',
+    width: '100%',
   },
   step: {
     margin: 10,
+    minWidth: 400,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     height: 50,
   },
   if: {
-    width: 40,
+    minWidth: 30,
+    maxWidth: 30,
     height: 30,
     paddingTop: 3,
-    marginRight: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -127,7 +128,7 @@ const useStyles = makeStyles((theme) => ({
     boxSizing: 'border-box',
   },
   action: {
-    width: 120,
+    width: 80,
     height: 30,
     paddingTop: 3,
     marginRight: 20,
@@ -148,7 +149,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.nav,
   },
   source: {
-    width: '35%',
+    width: '30%',
     margin: '0 10px 0 10px',
     padding: 3,
     whiteSpace: 'nowrap',
@@ -167,7 +168,7 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'center',
   },
   target: {
-    width: '35%',
+    width: '30%',
     margin: '0 10px 0 10px',
     padding: 3,
     whiteSpace: 'nowrap',
@@ -482,7 +483,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                     <Paper
                       variant="outlined"
                       classes={{ root: classes.paper }}
-                      style={{ padding: 15 }}
+                      style={{ padding: 15, minWidth: 280 }}
                     >
                       <Grid container={true} spacing={3}>
                         <Grid item={true} xs={6}>
