@@ -2,21 +2,19 @@ import * as R from 'ramda';
 import { map } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
+  internalLoadById,
   storeLoadById,
-  updateAttribute, internalLoadById
+  updateAttribute
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
-import {
-  READ_INDEX_INFERRED_RELATIONSHIPS,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS
-} from '../database/utils';
+import { READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -59,25 +57,16 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 export const stixCoreRelationshipsNumber = (context, user, args) => {
   const types = [];
   if (args.type) {
-    if (isStixCoreRelationship(args.type)) {
-      types.push(args.type);
-    }
+    types.push(args.type);
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_RELATIONSHIP);
   }
   const finalArgs = R.assoc('types', types, args);
+  const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {
-    count: elCount(
-      user,
-      args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS],
-      finalArgs
-    ),
-    total: elCount(
-      user,
-      args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS],
-      R.dissoc('endDate', finalArgs)
-    ),
+    count: elCount(user, indices, finalArgs),
+    total: elCount(user, indices, R.dissoc('endDate', finalArgs)),
   };
 };
 
