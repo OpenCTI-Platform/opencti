@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles/index';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
+import { Link } from '@material-ui/core';
 import AccessTimeIcon from '@material-ui/icons/AccessTime';
 import LaunchIcon from '@material-ui/icons/Launch';
 import FindInPageIcon from '@material-ui/icons/FindInPage';
@@ -43,6 +44,11 @@ const styles = (theme) => ({
     '@media (max-height: 1000px)': {
       overflowY: 'scroll',
     },
+  },
+  link: {
+    textAlign: 'left',
+    fontSize: '16px',
+    font: 'DIN Next LT Pro',
   },
   popoverDialog: {
     fontSize: '18px',
@@ -94,6 +100,7 @@ class RiskObservationPopover extends Component {
       fd,
       data,
       handleCloseUpdate,
+      history,
     } = this.props;
     // const subjectTypes = R.pipe(
     //   R.pathOr([], ['subjects']),
@@ -118,11 +125,16 @@ class RiskObservationPopover extends Component {
                 </DialogContentText>
                 <div className={classes.componentScroll}>
                   {
-                    data.origins.map((value) => value.origin_actors.map((s, i) => (
-                      <Typography key={i} style={{ alignItems: 'center', display: 'flex' }} color="primary">
+                    data?.origins && data.origins.map((value) => value.origin_actors.map((s, i) => (
+                      <Link
+                        key={i}
+                        component="button"
+                        variant="body2"
+                        className={classes.link}
+                        onClick={() => (history.push(`/data/entities/assessment_platform/${s.actor_ref.id}`))}
+                      >
                         <LaunchIcon fontSize='small' /> {t(s.actor_ref.name)}
-                        <br />
-                      </Typography>
+                      </Link>
                     )))
                   }
                 </div>
@@ -131,7 +143,7 @@ class RiskObservationPopover extends Component {
                     <DialogContentText>
                       {t('Methods')}
                     </DialogContentText>
-                    {data.methods.map((value, i) => (
+                    {data?.methods && data.methods.map((value, i) => (
                       <Button
                         variant="outlined"
                         size="small"
@@ -150,7 +162,7 @@ class RiskObservationPopover extends Component {
                     <DialogContentText>
                       {t('Type')}
                     </DialogContentText>
-                    {data.observation_types.map((value, i) => (
+                    {data?.observation_types && data.observation_types.map((value, i) => (
                       <Button
                         variant="outlined"
                         size="small"
@@ -218,18 +230,20 @@ class RiskObservationPopover extends Component {
                     if (subject && subject.subject_context === 'target') {
                       return (
                         <div className={classes.observationContainer}>
-                          <ItemIcon
-                            key={i}
-                            type={subject.subject_type}
-                            style={{ height: '26px', padding: '0 0 10px' }}
-                          />
-                          <Typography
-                            key={i} variant="h2"
-                            color="primary"
-                            style={{ margin: '0 0 0 10px' }}
+                          <div style={{ height: '26px', padding: '0 10px 10px 0' }}>
+                            <ItemIcon
+                                key={i}
+                                type={subject.subject_type}
+                              />
+                          </div>
+                          <Link
+                            component="button"
+                            variant="body2"
+                            className={classes.link}
+                            onClick={() => (history.push(`/defender HQ/assets/devices/${subject.subject_ref.id}`))}
                           >
-                            {subject.subject_ref && t(subject.subject_ref.name)}
-                          </Typography>
+                            {t(subject.subject_ref.name)}
+                            </Link>
                         </div>
                       );
                     }
@@ -256,9 +270,24 @@ class RiskObservationPopover extends Component {
                   {data.subjects && data.subjects.map((subject, i) => {
                     if (subject && subject.subject_context === 'secondary_target') {
                       return (
-                        <Typography key={i} variant="h2" color="primary">
-                          {subject.subject_ref && t(subject.subject_ref.name)}
-                        </Typography>
+                        <div className={classes.observationContainer}>
+                          <div style={{
+                            height: '26px', padding: '0 10px 0 0', display: 'grid', placeItems: 'center',
+                          }}>
+                            <ItemIcon
+                              key={i}
+                              type={subject.subject_type}
+                            />
+                          </div>
+                          <Link
+                            component="button"
+                            variant="body2"
+                            className={classes.link}
+                            onClick={() => (history.push(`/defender HQ/assets/software/${subject.subject_ref.id}`))}
+                          >
+                            {t(subject.subject_ref.name)}
+                            </Link>
+                        </div>
                       );
                     }
                     return <></>;
@@ -291,6 +320,7 @@ RiskObservationPopover.propTypes = {
   t: PropTypes.func,
   fd: PropTypes.func,
   handleRemove: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export const riskObservationPopoverQuery = graphql`

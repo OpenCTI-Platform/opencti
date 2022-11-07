@@ -199,7 +199,6 @@ const etcdHosts = process.env.OPENCTI_ETCD_HOSTS || 'https://etcd.aws.darklight.
   }  
 // }
 
-
 // START TEST CODE
 // var etcdValue = nconf.get('foo:bar');
 // console.log("ETCD TEST VALUE: " + etcdValue)

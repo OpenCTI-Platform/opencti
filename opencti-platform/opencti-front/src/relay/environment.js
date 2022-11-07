@@ -137,6 +137,7 @@ export const commitMutation = ({
   mutation,
   variables,
   updater,
+  pathname,
   optimisticUpdater,
   optimisticResponse,
   onCompleted,
@@ -163,8 +164,9 @@ export const commitMutation = ({
       } else {
         const messages = map(
           (e) => ({
-            type: 'error',
-            text: pathOr(e.message, ['data', 'reason'], e),
+            type: e?.extensions?.code || e?.name,
+            message: pathOr(e.message, ['data', 'reason'], e),
+            pathname,
           }),
           error.res.errors,
         );

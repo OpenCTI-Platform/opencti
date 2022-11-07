@@ -141,6 +141,10 @@ class RemediationPopover extends Component {
     this.handleClose();
   }
 
+  handleCloseEdit() {
+    this.setState({ displayEdit: false });
+  }
+
   handleOpenDelete() {
     this.setState({ displayDelete: true });
     this.handleClose();
@@ -241,7 +245,8 @@ class RemediationPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <QueryRenderer
+        {this.state.displayEdit
+        && <QueryRenderer
           query={remediationPopoverQuery}
           variables={{ id: cyioCoreRelationshipId }}
           render={({ error, props }) => {
@@ -250,18 +255,19 @@ class RemediationPopover extends Component {
             }
             if (props) {
               return (
-                <RemediationDetailsPopover
+                 <RemediationDetailsPopover
                   cyioCoreRelationshipId={cyioCoreRelationshipId}
                   displayEdit={this.state.displayEdit}
                   history={history}
                   remediation={props.riskResponse}
                   riskId={riskId}
+                  handleCloseEdit={this.handleCloseEdit.bind(this)}
                 />
               );
             }
             return <></>;
           }}
-        />
+        />}
       </div>
     );
   }

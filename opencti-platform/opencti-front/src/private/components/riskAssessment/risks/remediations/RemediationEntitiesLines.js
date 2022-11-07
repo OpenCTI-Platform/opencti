@@ -71,6 +71,7 @@ class RemediationEntitiesLines extends Component {
       riskId,
       refreshQuery,
       entityId,
+      location,
     } = this.props;
     const RemediationEntitiesLogEdges = R.pathOr([], ['remediations'], risk);
 
@@ -84,6 +85,7 @@ class RemediationEntitiesLines extends Component {
           placeholder={<div style={{ height: 29 }} />}
         > */}
         <RemediationCreation
+        location={location}
         remediationId={entityId}
         riskId={riskId}
         history={history}
@@ -139,6 +141,7 @@ class RemediationEntitiesLines extends Component {
             riskId={riskId}
             remediationId={entityId}
             refreshQuery={refreshQuery}
+            location={location}
           />,
         )) : <div style={{ textAlign: 'center', padding: '20px 0' }}>
           No Record Found </div>)}
@@ -161,6 +164,7 @@ RemediationEntitiesLines.propTypes = {
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
   displayRelation: PropTypes.bool,
+  location: PropTypes.object,
 };
 
 const RemediationEntitiesLinesFragment = createFragmentContainer(

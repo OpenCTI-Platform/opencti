@@ -26,7 +26,6 @@ import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
 import { toastGenericError } from "../../../../../utils/bakedToast";
-import ErrorBox from '../../../common/form/ErrorBox';
 
 const styles = (theme) => ({
   container: {
@@ -96,7 +95,6 @@ class RemediationDetailsPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: {},
       anchorEl: null,
       details: false,
       close: false,
@@ -156,20 +154,18 @@ class RemediationDetailsPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
+      pathname: `/activities/risk assessment/risks/${this.props.riskId}/remediation`,
       onCompleted: (data, error) => {
         if (error) {
           this.setState({ error });
         } else {
           setSubmitting(false);
-          resetForm();
           this.handleClose();
           this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
         }
       },
       onError: (err) => {
         toastGenericError('Request Failed');
-        const ErrorResponse = JSON.parse(JSON.stringify(err.res.errors));
-        this.setState({ error: ErrorResponse });
       },
     });
     this.setState({ onSubmit: true });
@@ -453,10 +449,6 @@ class RemediationDetailsPopover extends Component {
               </Form>
             )}
           </Formik>
-          <ErrorBox
-            error={this.state.error}
-            pathname={this.props.history.location.pathname}
-          />
         </Dialog>
         <Dialog
           open={this.state.close}
@@ -484,7 +476,11 @@ class RemediationDetailsPopover extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+              //onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+              onClick={() => {
+                this.setState({ close: false });
+                this.props.handleCloseEdit();
+              }}
               color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
@@ -515,6 +511,7 @@ RemediationDetailsPopover.propTypes = {
   riskId: PropTypes.string,
   remediation: PropTypes.object,
   remediationId: PropTypes.string,
+  handleCloseEdit: PropTypes.func,
 };
 
 export default compose(

@@ -59,24 +59,21 @@ class AssessmentPlatformsEntities extends Component {
 
   componentWillUnmount() {
     const {
-      view,
       sortBy,
       orderAsc,
-      searchTerm,
     } = this.state;
+    const paginationOptions = {
+      sortBy,
+      orderAsc,
+      filters: [],
+    };
     if (this.props.history.location.pathname !== '/data/entities/assessment_platform'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
         this.props.location,
         'view-assessmentPlatforms',
-        {
-          view,
-          sortBy,
-          searchTerm,
-          orderAsc,
-          filters: [],
-        },
+        paginationOptions,
       );
     }
   }

@@ -79,6 +79,7 @@ class RemediationEntities extends Component {
       classes,
       history,
       riskId,
+      location,
     } = this.props;
     const dataColumns = {
       relationship_type: {
@@ -135,6 +136,7 @@ class RemediationEntities extends Component {
                   riskId={riskId}
                   entityId={entityId}
                   refreshQuery={retry}
+                  location={location}
                 />
               );
             }
@@ -266,6 +268,7 @@ RemediationEntities.propTypes = {
   risk: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default compose(
