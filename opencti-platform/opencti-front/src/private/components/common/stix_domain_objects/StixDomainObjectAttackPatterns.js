@@ -36,6 +36,7 @@ class StixDomainObjectVictimology extends Component {
       searchTerm: R.propOr('', 'searchTerm', params),
       viewMode: R.propOr('matrix', 'viewMode', params),
       filters: R.propOr({}, 'filters', params),
+      openExports: false,
     };
   }
 
@@ -91,14 +92,19 @@ class StixDomainObjectVictimology extends Component {
     this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   render() {
-    const { viewMode, searchTerm, filters } = this.state;
+    const { viewMode, searchTerm, filters, openExports } = this.state;
     const {
       classes,
       stixDomainObjectId,
       entityLink,
       defaultStartTime,
       defaultStopTime,
+      disableExport,
     } = this.props;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
@@ -131,6 +137,10 @@ class StixDomainObjectVictimology extends Component {
                   currentView={viewMode}
                   defaultStartTime={defaultStartTime}
                   defaultStopTime={defaultStopTime}
+                  handleToggleExports={
+                    disableExport ? null : this.handleToggleExports.bind(this)
+                  }
+                  openExports={openExports}
                 />
               );
             }

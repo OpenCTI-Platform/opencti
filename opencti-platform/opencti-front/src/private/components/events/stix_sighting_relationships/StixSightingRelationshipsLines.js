@@ -26,6 +26,7 @@ class StixSightingRelationshipsLines extends Component {
     return (
       <ListLinesContent
         initialLoading={initialLoading}
+        paginationOptions={this.props.paginationOptions}
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}

@@ -65,8 +65,6 @@ class EntityStixCoreRelationships extends Component {
       view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
       numberOfElements: { number: 0, symbol: '' },
-      openEntityType: false,
-      openRelationshipType: false,
       openExports: false,
     };
   }

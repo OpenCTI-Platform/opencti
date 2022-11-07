@@ -8868,6 +8868,7 @@ enum StixCoreRelationshipsOrdering {
   createdBy
 }
 enum StixCoreRelationshipsFilter {
+  elementId
   fromId
   toId
   created
@@ -8885,6 +8886,7 @@ enum StixCoreRelationshipsFilter {
   x_opencti_workflow_id
   revoked
   relationship_type
+  elementWithTargetTypes
   fromTypes
   toTypes
 }

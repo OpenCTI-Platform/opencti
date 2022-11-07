@@ -17,6 +17,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -98,7 +99,6 @@ class RootPosition extends Component {
               'attack_patterns',
               'tools',
               'observables',
-              'sightings',
             ]}
           />
         </Route>
@@ -160,6 +160,19 @@ class RootPosition extends Component {
                             }
                           />
                         </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/positions/:positionId/sightings"
+                      render={(routeProps) => (
+                        <EntityStixSightingRelationships
+                          entityId={props.position.id}
+                          entityLink={link}
+                          noPadding={true}
+                          isTo={true}
+                          {...routeProps}
+                        />
                       )}
                     />
                     <Route

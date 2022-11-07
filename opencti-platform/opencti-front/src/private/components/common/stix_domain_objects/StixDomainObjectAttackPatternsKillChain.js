@@ -9,6 +9,7 @@ import {
   ViewColumnOutlined,
   InvertColorsOffOutlined,
   FilterAltOutlined,
+  FileDownloadOutlined,
 } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -18,13 +19,17 @@ import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/Security';
 import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import StixDomainObjectAttackPatternsKillChainMatrix from './StixDomainObjectAttackPatternsKillChainMatrix';
 import StixDomainObjectAttackPatternsKillChainLines from './StixDomainObjectAttackPatternsKillChainLines';
 import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import { truncate } from '../../../../utils/String';
+import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 
 const styles = (theme) => ({
   container: {
@@ -119,6 +124,9 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       paginationOptions,
       defaultStartTime,
       defaultStopTime,
+      openExports,
+      handleToggleExports,
+      exportContext,
     } = this.props;
     const { currentColorsReversed, currentModeOnlyActive, targetEntities } = this.state;
     let csvData = null;
@@ -261,6 +269,20 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                   />
                 </ToggleButton>
               </Tooltip>
+              {typeof handleToggleExports === 'function' && (
+                <Tooltip title={t('Open export panel')}>
+                  <ToggleButton
+                    value="export"
+                    aria-label="export"
+                    onClick={handleToggleExports.bind(this)}
+                  >
+                    <FileDownloadOutlined
+                      fontSize="small"
+                      color={openExports ? 'secondary' : 'primary'}
+                    />
+                  </ToggleButton>
+                </Tooltip>
+              )}
             </ToggleButtonGroup>
             <div className={classes.export}>
               <ExportButtons
@@ -320,6 +342,14 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}
               targetEntities={targetEntities}
+            />
+          </Security>
+          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+            <StixCoreRelationshipsExports
+              open={openExports}
+              handleToggle={handleToggleExports.bind(this)}
+              paginationOptions={paginationOptions}
+              context={exportContext}
             />
           </Security>
         </div>

@@ -11,7 +11,6 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import CountryPopover from './CountryPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
-import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
@@ -229,19 +228,6 @@ class CountryKnowledgeComponent extends Component {
                 stixCoreObjectId={country.id}
                 stixCoreObjectLink={link}
                 noRightBar={true}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/entities/countries/:countryId/knowledge/sightings"
-            render={(routeProps) => (
-              <EntityStixSightingRelationships
-                entityId={country.id}
-                entityLink={link}
-                noRightBar={true}
-                isTo={true}
                 {...routeProps}
               />
             )}

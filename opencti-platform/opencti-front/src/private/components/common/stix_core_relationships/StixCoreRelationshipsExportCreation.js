@@ -144,6 +144,14 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         finalFilters,
       );
     }
+    if (paginationOptions.elementId) {
+      finalFilters = R.append(
+        { key: 'elementId', values: paginationOptions.elementId },
+        finalFilters,
+      );
+    } else {
+      finalFilters = R.filter((n) => n.key !== 'elementId', finalFilters);
+    }
     if (paginationOptions.fromId) {
       finalFilters = R.append(
         { key: 'fromId', values: paginationOptions.fromId },
@@ -159,6 +167,20 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
       );
     } else {
       finalFilters = R.filter((n) => n.key !== 'toId', finalFilters);
+    }
+    if (paginationOptions.elementWithTargetTypes) {
+      finalFilters = R.append(
+        {
+          key: 'elementWithTargetTypes',
+          values: paginationOptions.elementWithTargetTypes,
+        },
+        finalFilters,
+      );
+    } else {
+      finalFilters = R.filter(
+        (n) => n.key !== 'elementWithTargetTypes',
+        finalFilters,
+      );
     }
     if (paginationOptions.fromTypes) {
       finalFilters = R.append(

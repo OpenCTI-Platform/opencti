@@ -138,6 +138,10 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
       initialParams.relationship_type = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'relationship_type')).values);
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'relationship_type');
     }
+    if (argsFilters.filters.filter((n) => n.key === 'elementId').length > 0) {
+      initialParams.elementId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'elementId')).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'elementId');
+    }
     if (argsFilters.filters.filter((n) => n.key === 'fromId').length > 0) {
       initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'fromId')).values);
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'fromId');
@@ -145,6 +149,10 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
     if (argsFilters.filters.filter((n) => n.key === 'toId').length > 0) {
       initialParams.toId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'toId')).values);
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'toId');
+    }
+    if (argsFilters.filters.filter((n) => n.key === 'elementWithTargetTypes').length > 0) {
+      initialParams.elementWithTargetTypes = R.head(argsFilters.filters.filter((n) => n.key === 'elementWithTargetTypes')).values;
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'elementWithTargetTypes');
     }
     if (argsFilters.filters.filter((n) => n.key === 'fromTypes').length > 0) {
       initialParams.fromTypes = R.head(argsFilters.filters.filter((n) => n.key === 'fromTypes')).values;

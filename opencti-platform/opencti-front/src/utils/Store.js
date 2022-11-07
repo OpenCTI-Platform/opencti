@@ -22,10 +22,12 @@ export const insertNode = (store, key, filters, rootField) => {
 };
 
 export const deleteNode = (store, key, filters, id) => {
-  const conn = ConnectionHandler.getConnection(
-    store.get(store.getRoot().getDataID()),
-    key,
-    filters,
-  );
-  ConnectionHandler.deleteNode(conn, id);
+  const record = store.get(store.getRoot().getDataID());
+  const conn = ConnectionHandler.getConnection(record, key, filters);
+  if (conn) {
+    ConnectionHandler.deleteNode(conn, id);
+  } else {
+    // eslint-disable-next-line no-console
+    console.error('Delete node connection not found', { key, filters, id });
+  }
 };

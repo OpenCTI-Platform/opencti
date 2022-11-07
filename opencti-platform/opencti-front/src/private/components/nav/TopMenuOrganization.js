@@ -126,6 +126,26 @@ class TopMenuOrganization extends Component {
         >
           {t('Analysis')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/organizations/${organizationId}/sightings`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/organizations/${organizationId}/sightings`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/organizations/${organizationId}/sightings`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Sightings')}
+        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
