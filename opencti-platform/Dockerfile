@@ -10,7 +10,7 @@ COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
 RUN set -ex \
     ; apk add --no-cache git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre \
-    && npm install -g node-gyp \ 
+    && npm install -g node-gyp \
     && yarn install --frozen-lockfile && yarn cache clean --all
 
 
@@ -96,4 +96,4 @@ VOLUME ["/opt/opencti/logs"]
 USER "${USERNAME}"
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "build/index.js"]
+CMD ["node", "build/back.js"]
