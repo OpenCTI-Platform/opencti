@@ -2,6 +2,9 @@
   "app": {
     "port": 4000,
     "enabled": true,
+    "cors": {
+      "origins": []
+    }
     "https_cert": {
       "ca": [],
       "key": null,

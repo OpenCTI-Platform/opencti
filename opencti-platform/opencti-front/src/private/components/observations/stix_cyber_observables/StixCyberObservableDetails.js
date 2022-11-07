@@ -14,7 +14,7 @@ import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { ignoredAttributes } from './StixCyberObservableCreation';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { SERVER_URL } from '../../../../relay/environment';
 
 const styles = () => ({
   paper: {
@@ -59,7 +59,7 @@ class StixCyberObservableDetailsComponent extends Component {
                   {t('File')}
                 </Typography>
                 <Button
-                  href={`${APP_BASE_PATH}/storage/get/${file.id}`}
+                  href={`${SERVER_URL}/storage/get/${file.id}`}
                   variant="outlined"
                   color="secondary"
                   size="small"
