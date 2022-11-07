@@ -74,20 +74,16 @@ const ContainerStixCyberObservableLineComponent = (props) => {
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={
-          isOnlyThroughInference
-            ? (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-            }
-            : () => onToggleEntity(node)
+        onClick={(event) => !isOnlyThroughInference && onToggleEntity(node, event)
         }
       >
         <Checkbox
           edge="start"
           disabled={isOnlyThroughInference}
           checked={
-            (selectAll && !(node.id in (deSelectedElements || {})))
+            (selectAll
+              && !isOnlyThroughInference
+              && !(node.id in (deSelectedElements || {})))
             || node.id in (selectedElements || {})
           }
           disableRipple={true}

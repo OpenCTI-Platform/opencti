@@ -17,6 +17,7 @@ import {
   pascalize,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
@@ -1186,7 +1187,7 @@ export const elAggregationRelationsCount = async (context, user, type, opts) => 
       throw DatabaseError('Fail processing AggregationRelationsCount', { error: e });
     });
 };
-export const elHistogramCount = async (context, user, type, field, interval, start, end, toTypes, filters) => {
+export const elHistogramCount = async (context, user, type, field, interval, start, end, toTypes, filters, onlyInferred = false) => {
   const histogramFilters = R.map((f) => {
     const { isRelation = false, isNested = false, type: filterType, value, operator = 'eq' } = f;
     if (isNested) {
@@ -1278,7 +1279,7 @@ export const elHistogramCount = async (context, user, type, field, interval, sta
   const markingRestrictions = buildMarkingRestriction(user);
   must.push(...markingRestrictions.must);
   const query = {
-    index: READ_PLATFORM_INDICES,
+    index: onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_PLATFORM_INDICES,
     ignore_throttled: ES_IGNORE_THROTTLED,
     _source_excludes: '*', // Dont need to get anything
     body: {

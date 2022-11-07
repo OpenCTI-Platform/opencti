@@ -4,10 +4,50 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import type { RuleDefinition, RuleBehavior } from '../../types/rules';
 
 const id = 'sighting_incident';
-const name = 'Sighting incidents';
-const description = 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in '
-  + '**identity B**, then create **Incident C** `related-to` **indicator A** and '
-  + '`targets` **identity B**.';
+const name = 'Raise incident based on sighting';
+const description = 'Infer an incident when a sighting is created for a valid indicator.';
+const category = 'Alerting';
+const display = {
+  if: [
+    {
+      source: 'Indicator A',
+      source_color: '#ff9800',
+      relation: 'relationship_has',
+      target: 'revoked = false',
+      target_color: '#4caf50',
+    },
+    {
+      source: 'Indicator A',
+      source_color: '#ff9800',
+      relation: 'relationship_stix-sighting-relationship',
+      target: 'Entity C',
+      target_color: '#00bcd4',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      source: 'Incident D',
+      source_color: '#7e57c2',
+    },
+    {
+      action: 'CREATE',
+      relation: 'relationship_related-to',
+      source: 'Indicator A',
+      source_color: '#ff9800',
+      target: 'Incident D',
+      target_color: '#7e57c2',
+    },
+    {
+      action: 'CREATE',
+      relation: 'relationship_targets',
+      source: 'Incident D',
+      source_color: '#7e57c2',
+      target: 'Entity C',
+      target_color: '#00bcd4',
+    },
+  ],
+};
 
 // For rescan
 const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY] };
@@ -30,5 +70,5 @@ const scopes = [
   },
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

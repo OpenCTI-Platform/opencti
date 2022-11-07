@@ -2,9 +2,37 @@ import { RELATION_ATTRIBUTED_TO, RELATION_TARGETS } from '../../schema/stixCoreR
 import type { RuleBehavior, RuleDefinition } from '../../types/rules';
 
 const id = 'attribution_targets';
-const name = 'Targets via attribution';
-const description = 'If **entity A** `targets` **entity B** and **entity A** is '
-  + '`attributed-to` **entity C**, then **entity C** `targets` **entity B**.';
+const name = 'Targeting propagation via attribution';
+const description = 'Propagate a targeting from a child to its parent via attribution.';
+const category = 'Victimology';
+const display = {
+  if: [
+    {
+      source: 'Entity A',
+      source_color: '#ff9800',
+      relation: 'relationship_targets',
+      target: 'Entity B',
+      target_color: '#4caf50',
+    },
+    {
+      source: 'Entity A',
+      source_color: '#ff9800',
+      relation: 'relationship_attributed-to',
+      target: 'Entity C',
+      target_color: '#00bcd4',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      relation: 'relationship_targets',
+      source: 'Entity C',
+      source_color: '#00bcd4',
+      target: 'Entity B',
+      target_color: '#4caf50',
+    },
+  ],
+};
 
 // For rescan
 const scan = { types: [RELATION_ATTRIBUTED_TO] };
@@ -20,5 +48,5 @@ const attributes = [
 const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

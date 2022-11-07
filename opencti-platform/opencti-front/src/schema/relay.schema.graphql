@@ -1341,11 +1341,29 @@ type RuleManager {
   errors: [RuleExecutionError]
 }
 
+type DisplayStep {
+  source: String
+  source_color: String
+  relation: String
+  target: String
+  target_color: String
+  identifier: String
+  identifier_color: String
+  action: String
+}
+
+type Display {
+  if: [DisplayStep]
+  then: [DisplayStep]
+}
+
 type Rule {
   id: ID!
   name: String!
   description: String!
   activated: Boolean!
+  category: String
+  display: Display
 }
 
 type InferenceAttribute {
@@ -7002,8 +7020,8 @@ type Query {
   stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): StixDomainObjectConnection
   bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection
   stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection
-  stixDomainObjectsTimeSeries(type: String, authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!): [TimeSeries]
-  stixDomainObjectsNumber(types: [String], endDate: DateTime): Number
+  stixDomainObjectsTimeSeries(type: String, authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean): [TimeSeries]
+  stixDomainObjectsNumber(types: [String], endDate: DateTime, onlyInferred: Boolean): Number
   stixDomainObjectsDistribution(objectId: String, relationship_type: String!, toTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String): [Distribution]
   attackPattern(id: String): AttackPattern
   attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: [AttackPatternsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): AttackPatternConnection
@@ -7094,9 +7112,9 @@ type Query {
   stixRelationships(first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: StixRef, fromRole: String, fromTypes: [String], toId: StixRef, toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixRelationshipConnection
   stixCoreRelationship(id: String): StixCoreRelationship
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixCoreRelationshipConnection
-  stixCoreRelationshipsTimeSeries(fromId: StixRef, relationship_type: String, toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+  stixCoreRelationshipsTimeSeries(fromId: StixRef, relationship_type: String, toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean): [TimeSeries]
   stixCoreRelationshipsDistribution(fromId: StixRef, field: String!, operation: StatsOperation!, relationship_type: String, toTypes: [String], isTo: Boolean, noDirection: Boolean, startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
-  stixCoreRelationshipsNumber(type: String, fromId: StixRef, authorId: String, toTypes: [String], noDirection: Boolean, endDate: DateTime): Number
+  stixCoreRelationshipsNumber(type: String, fromId: StixRef, authorId: String, toTypes: [String], noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean): Number
   stixCoreRelationshipsExportFiles(first: Int, type: String!): FileConnection
   stixSightingRelationship(id: String): StixSightingRelationship
   stixSightingRelationships(first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, elementId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, search: String, filters: [StixSightingRelationshipsFiltering], filterMode: FilterMode, toStix: Boolean): StixSightingRelationshipConnection

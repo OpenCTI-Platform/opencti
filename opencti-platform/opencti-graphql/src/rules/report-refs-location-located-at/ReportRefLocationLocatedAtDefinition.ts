@@ -4,9 +4,47 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import type { RuleBehavior, RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
 
 const id = 'report_ref_location_located_at';
-const name = 'Report objects location located at';
-const description = 'If **report A** have `object_ref` **location B** and **location B** '
-  + 'is `located-at (C)` **location D**, then **report A** have `object_ref` **location D** + **located-at (C)**.';
+const name = 'Locations propagation in reports';
+const description = 'Propagate the parents of a location in a report.';
+const category = 'Report propagation';
+const display = {
+  if: [
+    {
+      source: 'Report A',
+      source_color: '#ff9800',
+      relation: 'relationship_object',
+      target: 'Location B',
+      target_color: '#4caf50',
+    },
+    {
+      source: 'Location B',
+      source_color: '#4caf50',
+      relation: 'relationship_located-at',
+      target: 'Location C',
+      target_color: '#00bcd4',
+      identifier: 'Relation D',
+      identifier_color: '#673ab7',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      relation: 'relationship_object',
+      source: 'Report A',
+      source_color: '#ff9800',
+      target: 'Location C',
+      target_color: '#00bcd4',
+    },
+    {
+      action: 'CREATE',
+      relation: 'relationship_object',
+      source: 'Report A',
+      source_color: '#ff9800',
+      target: 'Relation D',
+      target_color: '#7e57c2',
+    },
+  ],
+};
 
 // For rescan
 const scan: RuleFilters = { types: [RELATION_LOCATED_AT], fromTypes: [ENTITY_TYPE_LOCATION], toTypes: [ENTITY_TYPE_LOCATION] };
@@ -24,5 +62,5 @@ const scopes: Array<RuleScope> = [
 ];
 
 const behaviors: Array<RuleBehavior> = [];
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

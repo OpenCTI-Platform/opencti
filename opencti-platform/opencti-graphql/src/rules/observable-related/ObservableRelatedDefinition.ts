@@ -10,9 +10,37 @@ import {
 import type { RuleDefinition, RuleBehavior } from '../../types/rules';
 
 const id = 'observable_related';
-const name = 'Related via observable';
-const description = 'If **observable A** is `related-to` **entity B** and **observable A** '
-  + 'is `related-to` **entity C**, then **entity B** is `related-to` **entity C**.';
+const name = 'Relation propagation via an observable';
+const description = 'Propagate relation between 2 objects via a common observable.';
+const category = 'Correlation';
+const display = {
+  if: [
+    {
+      source: 'Observable A',
+      source_color: '#ff9800',
+      relation: 'relationship_related-to',
+      target: 'Entity B',
+      target_color: '#4caf50',
+    },
+    {
+      source: 'Observable A',
+      source_color: '#ff9800',
+      relation: 'relationship_related-to',
+      target: 'Entity C',
+      target_color: '#00bcd4',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      relation: 'relationship_related-to',
+      source: 'Entity B',
+      source_color: '#4caf50',
+      target: 'Entity C',
+      target_color: '#00bcd4',
+    },
+  ],
+};
 
 // For rescan
 const scan = {
@@ -48,5 +76,5 @@ const attributes = [
 const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

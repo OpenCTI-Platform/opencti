@@ -2,9 +2,46 @@ import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import type { RuleDefinition, RuleBehavior } from '../../types/rules';
 
 const id = 'localization_of_targets';
-const name = 'Location of targets';
-const description = 'If **entity A** `targets` **entity B** through **relation X**, and **relation X** is `located-at` **entity C**,'
-  + ' then **entity A** `targets` **entity C**.';
+const name = 'Targeting propagation when located';
+const description = 'Propagate targeting when the target relationship is located somewhere.';
+const category = 'Victimology';
+const display = {
+  if: [
+    {
+      source: 'Entity A',
+      source_color: '#ff9800',
+      relation: 'relationship_targets',
+      target: 'Entity B',
+      target_color: '#4caf50',
+      identifier_color: '#673ab7',
+    },
+    {
+      source: 'Relation C',
+      source_color: '#673ab7',
+      relation: 'relationship_located-at',
+      target: 'Location D',
+      target_color: '#00bcd4',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      relation: 'relationship_targets',
+      source: 'Entity A',
+      source_color: '#ff9800',
+      target: 'Location D',
+      target_color: '#00bcd4',
+    },
+    {
+      action: 'CREATE',
+      relation: 'relationship_object',
+      source: 'Report A',
+      source_color: '#ff9800',
+      target: 'Relation D',
+      target_color: '#7e57c2',
+    },
+  ],
+};
 
 // For rescan
 const scan = { types: [RELATION_LOCATED_AT] };
@@ -20,5 +57,5 @@ const attributes = [
 const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

@@ -6,10 +6,45 @@ import { RULES_ATTRIBUTES_BEHAVIOR } from '../rules';
 import type { RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
 
 const id = 'observe_sighting';
-const name = 'Sighting observable';
-const description = 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** '
-  + 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
+const name = 'Sightings of observables via observed data';
+const description = 'Infer sightings based on observed data and indicators.';
 const behaviors = [{ ruleId: id, attribute: 'attribute_count', operation: RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.SUM }];
+const category = 'Alerting';
+const display = {
+  if: [
+    {
+      source: 'Observed Data A',
+      source_color: '#ff9800',
+      relation: 'relationship_created-by',
+      target: 'Identity B',
+      target_color: '#7e57c2',
+    },
+    {
+      source: 'Observed Data A',
+      source_color: '#ff9800',
+      relation: 'relationship_object',
+      target: 'Observable C',
+      target_color: '#4caf50',
+    },
+    {
+      source: 'Indicator D',
+      source_color: '#00bcd4',
+      relation: 'relationship_based-on',
+      target: 'Observable C',
+      target_color: '#4caf50',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      relation: 'relationship_stix-sighting-relationship',
+      source: 'Indicator D',
+      source_color: '#00bcd4',
+      target: 'Identity B',
+      target_color: '#7e57c2',
+    },
+  ],
+};
 
 // For rescan
 const scan: RuleFilters = {
@@ -53,5 +88,5 @@ const scopes: Array<RuleScope> = [
   },
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

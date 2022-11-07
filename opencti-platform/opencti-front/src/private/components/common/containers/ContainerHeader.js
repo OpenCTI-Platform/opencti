@@ -55,12 +55,12 @@ const styles = () => ({
   },
   popover: {
     float: 'left',
-    marginTop: '-13px',
+    marginTop: '-12px',
   },
   marking: {
     float: 'left',
     overflowX: 'hidden',
-    marginLeft: 15,
+    margin: '2px 0 0 20px',
   },
   aliases: {
     marginRight: 7,

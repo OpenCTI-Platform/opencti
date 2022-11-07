@@ -5,10 +5,37 @@ import type { RuleDefinition, RuleBehavior } from '../../types/rules';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 
 const id = 'sighting_indicator';
-const name = 'Observable sighting via Indicator';
-const description = 'If **indicator A** is `sighted` in **identity/location B** and '
-    + '**indicator A** `based on` **observable C**, '
-    + 'then create **observable C** `sighted` in **identity/location B**.';
+const name = 'Sightings propagation from indicator';
+const description = 'Propagate sightings of indicators to observables.';
+const category = 'Alerting';
+const display = {
+  if: [
+    {
+      source: 'Indicator A',
+      source_color: '#ff9800',
+      relation: 'relationship_stix-sighting-relationship',
+      target: 'Entity B',
+      target_color: '#4caf50',
+    },
+    {
+      source: 'Indicator A',
+      source_color: '#ff9800',
+      relation: 'relationship_based-on',
+      target: 'Observable C',
+      target_color: '#00bcd4',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      relation: 'relationship_stix-sighting-relationship',
+      source: 'Observable C',
+      source_color: '#00bcd4',
+      target: 'Entity B',
+      target_color: '#4caf50',
+    },
+  ],
+};
 
 // For rescan
 const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };
@@ -26,5 +53,5 @@ const scopes = [
   },
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

@@ -2,9 +2,37 @@ import { RELATION_LOCATED_AT, RELATION_TARGETS } from '../../schema/stixCoreRela
 import type { RuleDefinition, RuleBehavior } from '../../types/rules';
 
 const id = 'location_targets';
-const name = 'Targets via location';
-const description = 'If **entity A** `targets` **entity B** and **entity B** is '
-  + '`located-at` **entity C**, then **entity A** `targets` **entity C**.';
+const name = 'Targeting propagation via location';
+const description = 'Propagate a targeting from a child to its parent via location.';
+const category = 'Victimology';
+const display = {
+  if: [
+    {
+      source: 'Entity A',
+      source_color: '#ff9800',
+      relation: 'relationship_targets',
+      target: 'Location B',
+      target_color: '#4caf50',
+    },
+    {
+      source: 'Location B',
+      source_color: '#4caf50',
+      relation: 'relationship_located-at',
+      target: 'Location C',
+      target_color: '#00bcd4',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      relation: 'relationship_targets',
+      source: 'Entity A',
+      source_color: '#ff9800',
+      target: 'Location C',
+      target_color: '#00bcd4',
+    }
+  ],
+};
 
 // For rescan
 const scan = { types: [RELATION_TARGETS] };
@@ -20,5 +48,5 @@ const attributes = [
 const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

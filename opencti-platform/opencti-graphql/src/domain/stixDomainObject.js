@@ -19,7 +19,7 @@ import { elCount } from '../database/engine';
 import { upload } from '../database/file-storage';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { isEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_INDICATOR,
@@ -69,8 +69,8 @@ export const stixDomainObjectsTimeSeriesByAuthor = (context, user, args) => {
 };
 
 export const stixDomainObjectsNumber = (context, user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, args),
-  total: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, dissoc('endDate', args)),
+  count: elCount(user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_INDEX_STIX_DOMAIN_OBJECTS, args),
+  total: elCount(user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_INDEX_STIX_DOMAIN_OBJECTS, dissoc('endDate', args)),
 });
 
 export const stixDomainObjectsDistributionByEntity = async (context, user, args) => {

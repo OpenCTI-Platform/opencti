@@ -12,9 +12,37 @@ import {
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 
 const id = 'indicate_sighted';
-const name = 'Targets via sighting';
-const description = 'If **indicator A** `sighted` **identity/location B** and **indicator A** '
-  + '`indicates` **malware/threat actor/intrusion set/campaign/incident C**, then **malware/threat... C** `targets` **identity/location B**.';
+const name = 'Inference of targeting via a sighting';
+const description = 'Infer the targeting of an entity through a sighting of a specific indicator.';
+const category = 'Victimology';
+const display = {
+  if: [
+    {
+      source: 'Indicator A',
+      source_color: '#ff9800',
+      relation: 'relationship_indicates',
+      target: 'Entity B',
+      target_color: '#4caf50',
+    },
+    {
+      source: 'Indicator A',
+      source_color: '#ff9800',
+      relation: 'relationship_stix-sighting-relationship',
+      target: 'Entity C',
+      target_color: '#00bcd4',
+    },
+  ],
+  then: [
+    {
+      action: 'CREATE',
+      relation: 'relationship_targets',
+      source: 'Entity B',
+      source_color: '#4caf50',
+      target: 'Entity C',
+      target_color: '#00bcd4',
+    },
+  ],
+};
 
 // For rescan
 const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };
@@ -32,5 +60,5 @@ const scopes = [
   { filters: filtersIndicates, attributes: [] }
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
 export default definition;

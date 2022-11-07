@@ -351,7 +351,19 @@ class Filters extends Component {
   searchEntities(filterKey, event) {
     const { searchScope } = this.state;
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    const scores = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'];
+    const scores = [
+      '0',
+      '10',
+      '20',
+      '30',
+      '40',
+      '50',
+      '60',
+      '70',
+      '80',
+      '90',
+      '100',
+    ];
     const confidences = ['0', '15', '50', '75', '85'];
     const { t, theme, availableEntityTypes, availableRelationshipTypes } = this.props;
     if (!event) {
@@ -1299,7 +1311,7 @@ class Filters extends Component {
             type: n,
           })),
           R.sortWith([R.ascend(R.prop('label'))]),
-        )(['Note', 'Observed-Data', 'Opinion', 'Report']);
+        )(['Note', 'Observed-Data', 'Opinion', 'Report', 'Grouping']);
         this.setState({
           entities: {
             ...this.state.entities,
@@ -1335,9 +1347,19 @@ class Filters extends Component {
   handleChange(filterKey, event, value) {
     if (value) {
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(`${filterKey}${value.group ? `_${value.group}` : ''}`, value.value, value.label, event);
+        this.handleAddFilter(
+          `${filterKey}${value.group ? `_${value.group}` : ''}`,
+          value.value,
+          value.label,
+          event,
+        );
       } else {
-        this.props.handleAddFilter(`${filterKey}${value.group ? `_${value.group}` : ''}`, value.value, value.label, event);
+        this.props.handleAddFilter(
+          `${filterKey}${value.group ? `_${value.group}` : ''}`,
+          value.value,
+          value.label,
+          event,
+        );
       }
     }
   }
@@ -1455,7 +1477,8 @@ class Filters extends Component {
                     ? (option) => option.type
                     : (option) => t(option.group ? option.group : `filter_${filterKey}`)
                 }
-                isOptionEqualToValue={(option, value) => option.value === value.value}
+                isOptionEqualToValue={(option, value) => option.value === value.value
+                }
                 renderInput={(params) => (
                   <TextField
                     {...R.dissoc('InputProps', params)}
@@ -1478,7 +1501,7 @@ class Filters extends Component {
                       className={classes.icon}
                       style={{ color: option.color }}
                     >
-                      <ItemIcon type={option.type}/>
+                      <ItemIcon type={option.type} />
                     </div>
                     <div className={classes.text}>{option.label}</div>
                   </li>
@@ -1501,7 +1524,7 @@ class Filters extends Component {
             variant="contained"
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
-            startIcon={<FilterListOutlined/>}
+            startIcon={<FilterListOutlined />}
             size="small"
             style={{ float: 'left', margin: '0 15px 0 7px' }}
           >
@@ -1514,7 +1537,7 @@ class Filters extends Component {
             style={{ float: 'left', marginTop: -2 }}
             size={size || 'large'}
           >
-            <FilterListOutlined fontSize={fontSize || 'medium'}/>
+            <FilterListOutlined fontSize={fontSize || 'medium'} />
           </IconButton>
         )}
         <Popover
@@ -1593,7 +1616,7 @@ class Filters extends Component {
                       className={classes.icon}
                       style={{ color: option.color }}
                     >
-                      <ItemIcon type={option.type}/>
+                      <ItemIcon type={option.type} />
                     </div>
                     <div className={classes.text}>{option.label}</div>
                   </li>
@@ -1601,7 +1624,7 @@ class Filters extends Component {
               />
             );
           })}
-        <div className="clearfix"/>
+        <div className="clearfix" />
       </div>
     );
   }
@@ -1744,7 +1767,7 @@ class Filters extends Component {
                       entityType.value,
                     )}
                   />
-                  <ListItemText primary={entityType.label}/>
+                  <ListItemText primary={entityType.label} />
                 </MenuItem>
               ))}
             </MenuList>
@@ -1765,7 +1788,7 @@ class Filters extends Component {
             disabled={disabled}
             size={size || 'medium'}
           >
-            <ToyBrickSearchOutline fontSize={fontSize || 'medium'}/>
+            <ToyBrickSearchOutline fontSize={fontSize || 'medium'} />
           </IconButton>
         </Tooltip>
         <Dialog
@@ -1808,7 +1831,10 @@ class Filters extends Component {
                             <strong>{label}</strong>: {values}
                           </div>
                         }
-                        onDelete={this.handleRemoveFilter.bind(this, currentFilter[0])}
+                        onDelete={this.handleRemoveFilter.bind(
+                          this,
+                          currentFilter[0],
+                        )}
                       />
                       {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
                         <Chip
