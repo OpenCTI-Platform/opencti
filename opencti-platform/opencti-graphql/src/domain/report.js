@@ -1,20 +1,29 @@
 import * as R from 'ramda';
+import { Promise as BluePromise } from 'bluebird';
 import {
   createEntity,
   distributionEntities,
+  internalDeleteElementById,
   internalLoadById,
+  listAllThings,
   storeLoadById,
   timeSeriesEntities,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { countAllThings, listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
-import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_RELATIONSHIP,
+  buildRefRelationKey
+} from '../schema/general';
+import { elCount, ES_MAX_CONCURRENCY } from '../database/engine';
+import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
+import { stixDomainObjectDelete } from './stixDomainObject';
 
 export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
@@ -125,5 +134,32 @@ export const addReport = async (context, user, report) => {
   const finalReport = R.assoc('created', report.published, report);
   const created = await createEntity(context, user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
+};
+
+// Delete all report contained entities if no other reports are linked
+const buildReportDeleteElementsFilter = (reportId) => {
+  const refKey = buildRefRelationKey(RELATION_OBJECT);
+  return [
+    { key: [refKey], values: [reportId] },
+    { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'script' }
+  ];
+};
+export const reportDeleteWithElements = async (context, user, reportId) => {
+  // Load all entities and see if they no longer have any report
+  const callback = async (objects) => {
+    await BluePromise.map(objects, (object) => {
+      return internalDeleteElementById(context, context.user, object.id);
+    }, { concurrency: ES_MAX_CONCURRENCY });
+  };
+  // Load all report objects with a callback
+  const args = { filters: buildReportDeleteElementsFilter(reportId), callback };
+  await listAllThings(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args);
+  // Delete the report
+  await stixDomainObjectDelete(context, user, reportId);
+  return reportId;
+};
+export const reportDeleteElementsCount = async (context, user, reportId) => {
+  const filters = buildReportDeleteElementsFilter(reportId);
+  return countAllThings(context, user, { indices: READ_DATA_INDICES_WITHOUT_INFERRED, filters });
 };
 // endregion

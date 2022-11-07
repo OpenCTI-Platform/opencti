@@ -37,6 +37,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
 import {
@@ -1031,19 +1033,24 @@ class ReportKnowledgeGraphBar extends Component {
                         'Do you want to remove these elements from this report?',
                       )}
                     </Typography>
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={deleteObject}
-                            onChange={this.handleToggleDeleteObject.bind(this)}
-                          />
-                        }
-                        label={t(
-                          'Delete the element if no other reports contain it',
-                        )}
-                      />
-                    </FormGroup>
+                    <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+                      <AlertTitle>{t('Cascade delete')}</AlertTitle>
+                      <FormGroup>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={deleteObject}
+                              onChange={this.handleToggleDeleteObject.bind(
+                                this,
+                              )}
+                            />
+                          }
+                          label={t(
+                            'Delete the element if no other containers contain it',
+                          )}
+                        />
+                      </FormGroup>
+                    </Alert>
                   </DialogContent>
                   <DialogActions>
                     <Button onClick={this.handleCloseRemove.bind(this)}>

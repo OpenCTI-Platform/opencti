@@ -2585,6 +2585,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  deleteWithElementsCount: Int
 }
 
 input ReportAddInput {
@@ -7346,7 +7347,7 @@ type OpinionEditMutations {
 }
 
 type ReportEditMutations {
-  delete: ID
+  delete(purgeElements: Boolean): ID
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report
   contextPatch(input: EditContext): Report
   contextClean: Report

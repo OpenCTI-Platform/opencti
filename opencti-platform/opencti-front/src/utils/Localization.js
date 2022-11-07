@@ -62,6 +62,8 @@ const i18n = {
       'Do you want to delete this kill chain phase?':
         '¿Quieres borrar esta fase de la «kill chain»?',
       'Do you want to delete this report?': '¿Quieres borrar este informe?',
+      'Cascade delete': 'Eliminación en cascada',
+      'element(s) which are only in this report': 'elemento(s) que solo están en este informe',
       'Do you want to delete this grouping?':
         '¿Quieres eliminar esta agrupación?',
       'Do you want to kill this session?': '¿Quieres cerrar esta sesión?',
@@ -111,7 +113,7 @@ const i18n = {
       'Do you want to remove these elements from this report?':
         '¿Quieres borrar estos elementos de este informe?',
       'Do you want to remove these elements from this grouping?':
-          '¿Quieres borrar estos elementos de esta agrupación?',
+        '¿Quieres borrar estos elementos de esta agrupación?',
       'Do you want to remove these elements from this investigation?':
         '¿Quieres borrar estos elementos de esta investigación?',
       'Do you want to remove this opinion?': '¿Quieres borrar esta opinión?',
@@ -1244,8 +1246,8 @@ const i18n = {
       'Manage an entity': 'Administrar una entidad',
       'Do you want to remove this entity?': '¿Quieres eliminar este objeto?',
       'Add context': 'Agregar contexto',
-      'Delete the element if no other reports contain it':
-        'Eliminar el elemento si ningún otro informe lo contiene',
+      'Delete the element if no other containers contain it':
+        'Eliminar el elemento si ningún otro contenedor lo contiene',
       // Time
       '24h': '24 h',
       // Types
@@ -1626,8 +1628,10 @@ const i18n = {
         'Souhaitez-vous supprimer cette étape de kill chain ?',
       'Do you want to delete this report?':
         'Souhaitez-vous supprimer ce rapport ?',
+      'Cascade delete': 'Suppression en cascade',
+      'element(s) which are only in this report': 'éléments uniquement présent dans ce rapport',
       'Do you want to delete this grouping?':
-          'Souhaitez-vous supprimer ce groupement ?',
+        'Souhaitez-vous supprimer ce groupement ?',
       'Do you want to kill this session?':
         'Souhaitez-vous supprimer cette session ?',
       'Do you want to kill all the sessions of this user?':
@@ -1673,7 +1677,7 @@ const i18n = {
       'Do you want to remove the entity from this report?':
         'Souhaitez-vous retirer cette entité de ce rapport ?',
       'Do you want to remove the entity from this grouping?':
-          'Souhaitez-vous retirer cette entité de ce groupement ?',
+        'Souhaitez-vous retirer cette entité de ce groupement ?',
       'Do you want to delete this attribute?':
         'Souhaitez-vous supprimer cet attribut ?',
       'Do you want to remove this external reference?':
@@ -1682,11 +1686,11 @@ const i18n = {
       'Do you want to remove this report?':
         'Souhaitez-vous supprimer ce rapport ?',
       'Do you want to remove this groupement?':
-          'Souhaitez-vous supprimer ce groupement ?',
+        'Souhaitez-vous supprimer ce groupement ?',
       'Do you want to remove these elements from this report?':
         'Souhaitez-vous supprimer ces éléments de ce rapport ?',
       'Do you want to remove these elements from this grouping?':
-          'Souhaitez-vous supprimer ces éléments de ce grouping ?',
+        'Souhaitez-vous supprimer ces éléments de ce grouping ?',
       'Do you want to remove these elements from this investigation?':
         'Souhaitez-vous supprimer ces éléments de cette investigation ?',
       'Do you want to remove this opinion?':
@@ -2802,8 +2806,8 @@ const i18n = {
       'Do you want to remove this object?':
         'Souhaitez-vous retirer cet object ?',
       'Add context': 'Ajouter du contexte',
-      'Delete the element if no other reports contain it':
-        "Supprimer l'élément si aucun autre rapport ne le contient",
+      'Delete the element if no other containers contain it':
+        "Supprimer l'élément si aucun autre conteneur ne le contient",
       // Time
       '24h': '24h',
       // Types
@@ -3161,6 +3165,8 @@ const i18n = {
       'Do you want to delete this kill chain phase?':
         'このキルチェーンフェーズを削除しますか？',
       'Do you want to delete this report?': 'このレポートを削除しますか？',
+      'Cascade delete': 'カスケード削除',
+      'element(s) which are only in this report': 'このレポートにのみ含まれる要素',
       'Do you want to kill this session?': 'このセッションを削除しますか？',
       'Do you want to kill all the sessions of this user?':
         'このユーザーのセッションをすべて削除しますか？',
@@ -4307,8 +4313,8 @@ const i18n = {
       'Manage an entity': 'エンティティを管理する',
       'Do you want to remove this object?': 'このオブジェクトを削除しますか?',
       'Add context': 'コンテキストを追加',
-      'Delete the element if no other reports contain it':
-        '他のレポートに要素が含まれていない場合は要素を削除します',
+      'Delete the element if no other containers contain it':
+        '他のコンテナに要素が含まれていない場合は、要素を削除します',
       // Time
       '24h': '24時間',
       // Types
@@ -4671,6 +4677,8 @@ const i18n = {
       'Do you want to delete this kill chain phase?':
         '是否要删除此杀伤链阶段？',
       'Do you want to delete this report?': '是否要删除此报告？',
+      'Cascade delete': '級聯刪除',
+      'element(s) which are only in this report': '僅在此報告中的元素',
       'Do you want to kill this session?': '是否要终止此会话？',
       'Do you want to kill all the sessions of this user?':
         '是否要终止此用户的所有会话？',
@@ -5745,8 +5753,8 @@ const i18n = {
       'Manage an entity': '管理实体',
       'Do you want to remove this object?': '是否要删除此对象？',
       'Add context': '添加上下文',
-      'Delete the element if no other reports contain it':
-        '如果没有其他报告包含该元素，则删除该元素',
+      'Delete the element if no other containers contain it':
+        '如果沒有其他容器包含該元素，則刪除該元素',
       // Time
       '24h': '24小时',
       // Types
