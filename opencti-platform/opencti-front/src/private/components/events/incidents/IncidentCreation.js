@@ -80,6 +80,8 @@ const IncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number(),
   incident_type: Yup.string(),
+  severity: Yup.string(),
+  source: Yup.string(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -160,6 +162,8 @@ const IncidentCreation = ({ paginationOptions }) => {
               name: '',
               confidence: 75,
               incident_type: '',
+              severity: '',
+              source: '',
               description: '',
               createdBy: '',
               objectMarking: [],
@@ -199,6 +203,13 @@ const IncidentCreation = ({ paginationOptions }) => {
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   multiple={false}
                 />
+                <OpenVocabField
+                  label={t('Severity')}
+                  type="incident-severity-ov"
+                  name="severity"
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  multiple={false}
+                />
                 <Field
                   component={MarkDownField}
                   name="description"
@@ -206,6 +217,14 @@ const IncidentCreation = ({ paginationOptions }) => {
                   fullWidth={true}
                   multiline={true}
                   rows="4"
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="source"
+                  label={t('Source')}
+                  fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
                 <CreatedByField

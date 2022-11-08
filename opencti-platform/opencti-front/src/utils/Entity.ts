@@ -929,6 +929,12 @@ export const openVocabularies: {
       description: 'Related to cybercrime.',
     },
   ],
+  'incident-severity-ov': [
+    { key: 'low', description: 'Low impact' },
+    { key: 'medium', description: 'Medium impact' },
+    { key: 'high', description: 'High impact' },
+    { key: 'critical', description: 'Critical impact' },
+  ],
   'integrity_level-ov': [
     { key: 'low', description: 'A low level of integrity.' },
     { key: 'medium', description: 'A medium level of integrity.' },

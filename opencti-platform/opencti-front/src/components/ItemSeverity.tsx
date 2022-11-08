@@ -45,9 +45,17 @@ const inlineStyles = {
   },
 };
 
-interface ItemSeverityProps { label: string, severity?: string, variant?: 'inList' }
+interface ItemSeverityProps {
+  label: string;
+  severity?: string;
+  variant?: 'inList';
+}
 
-const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({ label, severity, variant }) => {
+const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
+  label,
+  severity,
+  variant,
+}) => {
   const classes = useStyles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   switch (severity) {

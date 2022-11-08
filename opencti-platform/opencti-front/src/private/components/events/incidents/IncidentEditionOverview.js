@@ -113,6 +113,7 @@ const IncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
   incident_type: Yup.string(),
+  severity: Yup.string(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -255,6 +256,7 @@ class IncidentEditionOverviewComponent extends Component {
       R.pick([
         'name',
         'confidence',
+        'severity',
         'description',
         'createdBy',
         'incident_type',
@@ -306,6 +308,17 @@ class IncidentEditionOverviewComponent extends Component {
               label={t('Incident type')}
               type="incident-type-ov"
               name="incident_type"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              variant="edit"
+              multiple={false}
+              editContext={context}
+            />
+            <OpenVocabField
+              label={t('Severity')}
+              type="incident-severity-ov"
+              name="severity"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
               containerstyle={{ width: '100%', marginTop: 20 }}
@@ -400,6 +413,7 @@ const IncidentEditionOverview = createFragmentContainer(
         confidence
         description
         incident_type
+        severity
         createdBy {
           ... on Identity {
             id
