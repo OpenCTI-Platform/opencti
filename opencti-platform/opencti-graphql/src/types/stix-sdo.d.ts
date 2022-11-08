@@ -71,6 +71,7 @@ interface StixIdentity extends StixDomainObject {
 // Incident Specific Properties
 // name, description
 // Not in https://docs.oasis-open.org/cti/stix/v2.1
+type incident_severity_level_enum = 'low' | 'medium' | 'high' | 'critical';
 interface StixIncident extends StixDomainObject {
   name: string;
   incident_type: string; // optional
@@ -80,7 +81,7 @@ interface StixIncident extends StixDomainObject {
   objective: string;
   aliases: Array<string>;
   source: string;
-  severity: string;
+  severity: incident_severity_level_enum;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

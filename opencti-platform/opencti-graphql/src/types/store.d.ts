@@ -49,6 +49,7 @@ import type {
   windows_service_status_enum,
   windows_service_type_enum
 } from './stix-sco';
+import type { incident_severity_level_enum } from './stix-sdo';
 
 interface StoreFile {
   id: string;
@@ -238,7 +239,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   external_id: string;
   lastEventId: string;
   source: string;
-  severity: string;
+  severity: incident_severity_level_enum;
   incident_type: string;
   x_opencti_reliability: OrganizationReliability;
   x_opencti_organization_type: string;
