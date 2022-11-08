@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Tooltip from '@mui/material/Tooltip';
 import Avatar from '@mui/material/Avatar';
-import { compose, filter, find, insert, pipe, propEq } from 'ramda';
+import { compose, filter, insert, pipe } from 'ramda';
 import inject18n from './i18n';
 import { stringToColour } from '../utils/Colors';
 import { UserContext } from '../utils/hooks/useAuth';
@@ -33,7 +33,7 @@ const SubscriptionAvatarsFocusStyles = () => ({
 });
 
 const contextUsers = (me, context) => {
-  const missingMe = find(propEq('name', me.user_email))(context) === undefined;
+  const missingMe = context.find(({ name }) => name === me.user_email) === undefined;
   return missingMe ? insert(0, { name: me.user_email }, context) : context;
 };
 

@@ -226,6 +226,7 @@ class InfrastructureCreation extends Component {
                     name="infrastructure_types"
                     containerStyle={fieldSpacingContainerStyle}
                     multiple={true}
+                    onChange={(name, value) => setFieldValue(name, value)}
                   />
                   <ConfidenceField
                     name="confidence"

@@ -31,6 +31,8 @@ import {
   convertMarkings,
   convertStatus,
 } from '../../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -124,6 +126,7 @@ const toolValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
+  tool_types: Yup.array(),
 });
 
 class ToolEditionOverviewComponent extends Component {
@@ -148,6 +151,7 @@ class ToolEditionOverviewComponent extends Component {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+      R.assoc('tool_types', R.pluck('value', values.tool_types)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -295,6 +299,7 @@ class ToolEditionOverviewComponent extends Component {
       assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
       assoc('x_opencti_workflow_id', status),
+      assoc('tool_types', tool.tool_types ?? []),
       pick([
         'name',
         'description',
@@ -302,6 +307,7 @@ class ToolEditionOverviewComponent extends Component {
         'killChainPhases',
         'objectMarking',
         'x_opencti_workflow_id',
+        'tool_types',
       ]),
     )(tool);
     return (
@@ -356,6 +362,18 @@ class ToolEditionOverviewComponent extends Component {
                 />
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
+            />
+            <OpenVocabField
+              type="tool_types_ov"
+              name="tool_types"
+              label={t('Tool types')}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              variant="edit"
+              multiple={true}
+              editContext={context}
             />
             {tool.workflowEnabled && (
               <StatusField
@@ -425,6 +443,7 @@ const ToolEditionOverview = createFragmentContainer(
         id
         name
         description
+        tool_types
         createdBy {
           ... on Identity {
             id

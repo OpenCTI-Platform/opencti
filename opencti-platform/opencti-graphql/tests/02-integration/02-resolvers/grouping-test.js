@@ -85,6 +85,17 @@ describe('Grouping resolver standard behavior', () => {
   let groupingInternalId;
   const groupingStixId = 'grouping--994491f0-f114-4e41-bcf0-3288c0324f53';
   it('should grouping created', async () => {
+    await queryAsAdmin({
+      query: gql`
+        mutation vocabularyAdd($input: VocabularyAddInput!) {
+          vocabularyAdd(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: { input: { name: 'test', category: 'grouping_context_ov' } },
+    });
+
     const CREATE_QUERY = gql`
       mutation GroupingAdd($input: GroupingAddInput!) {
         groupingAdd(input: $input) {

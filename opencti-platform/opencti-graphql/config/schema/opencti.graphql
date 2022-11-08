@@ -11767,7 +11767,7 @@ type Query {
     type: String
     includeParents: Boolean
     search: String
-  ): SubTypeConnection @auth(for: [KNOWLEDGE])
+  ): SubTypeConnection! @auth(for: [KNOWLEDGE])
   file(id: String!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])

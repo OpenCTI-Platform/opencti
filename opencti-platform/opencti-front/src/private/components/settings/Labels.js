@@ -13,7 +13,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
-import LabelsAttributesMenu from './LabelsAttributesMenu';
+import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
 
 const styles = () => ({
@@ -209,7 +209,7 @@ class Labels extends Component {
     };
     return (
       <div className={classes.container}>
-        <LabelsAttributesMenu />
+        <LabelsVocabulariesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <LabelCreation paginationOptions={paginationOptions} />
       </div>

@@ -2,11 +2,22 @@ import type { StoreEntity } from './store';
 import type { ConvertFn } from '../database/stix-converter';
 import { registerStixDomainConverter } from '../database/stix-converter';
 import { registerStixDomainAliased, registerStixDomainType, resolveAliasesField } from '../schema/stixDomainObject';
+import { registerStixDomainConverter, registerStixMetaConverter } from '../database/stix-converter';
+import { registerStixDomainAliased, registerStixDomainType, resolveAliasesField } from '../schema/stixDomainObject';
 import { registerGraphqlSchema } from '../graphql/schema';
 import { registerModelIdentifier } from '../schema/identifier';
-import { schemaTypes, STIX_META_RELATIONSHIPS_INPUTS } from '../schema/general';
-import { booleanAttributes, dateAttributes, dictAttributes, jsonAttributes, multipleAttributes, numericAttributes } from '../schema/fieldDataAdapter';
+import { ABSTRACT_STIX_META_OBJECT, DEPS_KEYS, schemaTypes, STIX_META_RELATIONSHIPS_INPUTS } from '../schema/general';
+import {
+  booleanAttributes,
+  dateAttributes,
+  dictAttributes,
+  jsonAttributes,
+  multipleAttributes,
+  numericAttributes
+} from '../schema/fieldDataAdapter';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { RelationDefinition, stixCoreRelationshipsMapping as coreRels, } from '../database/stix';
+import { UnsupportedError } from '../config/errors';
 import { CHECK_META_RELATIONSHIP_VALUES, RelationDefinition, stixCoreRelationshipsMapping as coreRels, } from '../database/stix';
 import {
   SINGLE_STIX_META_RELATIONSHIPS,
@@ -23,7 +34,7 @@ export interface ModuleDefinition<T extends StoreEntity> {
     id: string;
     name: string;
     aliased: boolean;
-    category: 'StixDomainEntity';
+    category: string;
   };
   graphql: {
     schema: any,
@@ -55,6 +66,7 @@ export interface ModuleDefinition<T extends StoreEntity> {
     checker: (fromType: string, toType: string) => boolean;
   }>;
   converter: ConvertFn<T>;
+  depsKeys?: string[]
 }
 
 export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefinition<T>) => {
@@ -62,11 +74,22 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
     return definition.attributes.filter((attr) => attr.type === type).map((attr) => attr.name);
   };
     // Register types
-  if (definition.type.category === 'StixDomainEntity') {
-    registerStixDomainType(definition.type.name);
-    if (definition.type.aliased) {
-      registerStixDomainAliased(definition.type.name);
+  if (definition.type.category) {
+    switch (definition.type.category) {
+      case 'StixDomainEntity':
+        registerStixDomainType(definition.type.name);
+        registerStixDomainConverter(definition.type.name, definition.converter);
+        break;
+      case ABSTRACT_STIX_META_OBJECT:
+        schemaTypes.add(ABSTRACT_STIX_META_OBJECT, definition.type.name);
+        registerStixMetaConverter(definition.type.name, definition.converter);
+        break;
+      default:
+        throw UnsupportedError('Unsupported category');
     }
+  }
+  if (definition.type.aliased) {
+    registerStixDomainAliased(definition.type.name);
   }
   // Register graphQL schema
   registerGraphqlSchema(definition.graphql);
@@ -88,7 +111,6 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
     upsertAttributes.push(...['x_opencti_stix_ids', 'revoked', 'confidence']);
   }
   schemaTypes.registerUpsertAttributes(definition.type.name, upsertAttributes);
-  registerStixDomainConverter(definition.type.name, definition.converter);
   // Register attribute types
   dateAttributes.push(...attrsForType('date')); // --- dateAttributes
   numericAttributes.push(...attrsForType('numeric')); // --- numericAttributes
@@ -97,6 +119,9 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   const multipleAttrs = definition.attributes.filter((attr) => attr.multiple).map((attr) => attr.name);
   multipleAttributes.push(...multipleAttrs); // --- multipleAttributes
   jsonAttributes.push(...attrsForType('json')); // --- jsonAttributes
+
+  schemaTypes.register(DEPS_KEYS, (definition.depsKeys ?? []).map((src) => ({ src })));
+
   // Register relations
   definition.relations.forEach((source) => {
     STIX_CORE_RELATIONSHIPS.push(source.name);

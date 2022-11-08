@@ -211,6 +211,7 @@ const GroupingCreation = ({ paginationOptions }) => {
                   name="context"
                   multiple={false}
                   containerStyle={fieldSpacingContainerStyle}
+                  onChange={setFieldValue}
                 />
                 <Field
                   component={MarkDownField}

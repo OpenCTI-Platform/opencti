@@ -15,8 +15,7 @@ import { APP_BASE_PATH } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 import {
   dateAttributes,
-  ignoredAttributes,
-  openVocabularies,
+  ignoredAttributes, openVocabularies,
 } from '../../../../utils/Entity';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemCopy from '../../../../components/ItemCopy';
@@ -109,11 +108,7 @@ class StixCyberObservableDetailsComponent extends Component {
                   </Grid>
                 ));
               }
-              if (
-                Object.keys(openVocabularies).includes(
-                  `${observableAttribute.key}-ov`,
-                )
-              ) {
+              if (openVocabularies.includes(`${observableAttribute.key}-ov`)) {
                 return (
                   <Grid key={observableAttribute.key} item={true} xs={6}>
                     <Typography variant="h3" gutterBottom={true}>

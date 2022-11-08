@@ -17,6 +17,7 @@ import {
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -56,6 +57,10 @@ export const BUS_TOPICS = {
   [M.ENTITY_TYPE_LABEL]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}LABEL_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}LABEL_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_VOCABULARY]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}VOCABULARY_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}VOCABULARY_ADDED_TOPIC`,
   },
   [O.ENTITY_TYPE_CONNECTOR]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}CONNECTOR_EDIT_TOPIC`,

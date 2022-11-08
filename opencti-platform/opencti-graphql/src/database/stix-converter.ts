@@ -105,7 +105,8 @@ import {
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import {
   INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS,
+  INPUT_EXTERNAL_REFS,
+  INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -116,6 +117,7 @@ import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/f
 import { isRelationBuiltin } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -1227,8 +1229,12 @@ const convertEmailMimePartToStix = (instance: StoreCyberObservable): SCO.StixEma
 // CONVERTERS
 export type ConvertFn<T extends StoreEntity> = (instance: T) => S.StixObject;
 const stixDomainConverters = new Map<string, ConvertFn<any>>();
+const stixMetaConverters = new Map<string, ConvertFn<any>>();
 export const registerStixDomainConverter = <T extends StoreEntity>(type: string, convertFn: ConvertFn<T>) => {
   stixDomainConverters.set(type, convertFn);
+};
+export const registerStixMetaConverter = <T extends StoreEntity>(type: string, convertFn: ConvertFn<T>) => {
+  stixMetaConverters.set(type, convertFn);
 };
 
 const convertToStix = (instance: StoreObject): S.StixObject => {
@@ -1336,20 +1342,23 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
   }
   if (isStixMetaObject(type)) {
     const basic = instance as StoreEntity;
-    if (ENTITY_TYPE_MARKING_DEFINITION === type) {
-      return convertMarkingToStix(basic);
+    const convertFn = stixMetaConverters.get(type);
+    if (convertFn) {
+      return convertFn(basic);
     }
-    if (ENTITY_TYPE_LABEL === type) {
-      return convertLabelToStix(basic);
+    switch (type) {
+      case ENTITY_TYPE_MARKING_DEFINITION:
+        return convertMarkingToStix(basic);
+      case ENTITY_TYPE_LABEL:
+        return convertLabelToStix(basic);
+      case ENTITY_TYPE_KILL_CHAIN_PHASE:
+        return convertKillChainPhaseToStix(basic);
+      case ENTITY_TYPE_EXTERNAL_REFERENCE:
+        return convertExternalReferenceToStix(basic);
+      case ENTITY_TYPE_VOCABULARY:
+      default:
+        throw UnsupportedError(`No meta converter available for ${type}`);
     }
-    if (ENTITY_TYPE_KILL_CHAIN_PHASE === type) {
-      return convertKillChainPhaseToStix(basic);
-    }
-    if (ENTITY_TYPE_EXTERNAL_REFERENCE === type) {
-      return convertExternalReferenceToStix(basic);
-    }
-    // No converter found
-    throw UnsupportedError(`No meta converter available for ${type}`);
   }
   if (isStixCyberObservable(type)) {
     const cyber = instance as StoreCyberObservable;

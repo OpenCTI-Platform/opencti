@@ -379,9 +379,9 @@ describe('Elasticsearch relation reconstruction', () => {
 
 describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
-    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES);
+    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: 300 });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(100);
+    expect(data.edges.length).toEqual(297);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -396,9 +396,10 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       after: 'WyJleHRlcm5hbC1yZWZlcmVuY2UtLTUzYjNhZGI2LWQ4M2YtNWQyMS05Mzc2LTQ1YTE5OGU0NDA3ZSJd',
+      first: 300,
     });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(67);
+    expect(data.edges.length).toEqual(264);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -418,9 +419,9 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with classic search', async () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });
-    expect(data.edges.length).toEqual(3);
+    expect(data.edges.length).toEqual(21);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(5);
+    expect(data.edges.length).toEqual(41);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(2);
   });
@@ -446,8 +447,8 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
-    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(93);
+    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 300 });
+    expect(data.edges.length).toEqual(290);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
@@ -481,8 +482,8 @@ describe('Elasticsearch pagination', () => {
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
       { key: 'color', operator: undefined, values: [null] },
     ];
-    data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(18);
+    data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 300 });
+    expect(data.edges.length).toEqual(215);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
@@ -493,9 +494,10 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with date ordering', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       orderBy: 'created',
-      orderMode: 'asc'
+      orderMode: 'asc',
+      first: 300
     });
-    expect(data.edges.length).toEqual(57);
+    expect(data.edges.length).toEqual(254);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {

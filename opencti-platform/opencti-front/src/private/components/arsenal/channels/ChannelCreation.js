@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -13,24 +13,19 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import {
-  QueryRenderer,
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
-import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
+import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -191,18 +186,13 @@ class ChannelCreation extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={attributesQuery}
-            variables={{ key: 'channel_types' }}
+            query={vocabulariesQuery}
+            variables={{ category: 'channel_types_ov' }}
             render={({ props }) => {
-              if (props && props.runtimeAttributes) {
-                const channelEdges = props.runtimeAttributes.edges.map(
-                  (e) => e.node.value,
+              if (props && props.vocabularies) {
+                const channelEdges = props.vocabularies.edges.map(
+                  (e) => e.node.name,
                 );
-                const elements = R.uniq([
-                  ...channelEdges,
-                  'Twitter',
-                  'Facebook',
-                ]);
                 return (
                   <div>
                     <div className={classes.header}>
@@ -250,71 +240,36 @@ class ChannelCreation extends Component {
                               fullWidth={true}
                               detectDuplicate={['Channel', 'Malware']}
                             />
-                            <Security
-                              needs={[SETTINGS_SETLABELS]}
-                              placeholder={
-                                <Field
-                                  component={AutocompleteField}
-                                  style={{ marginTop: 20 }}
-                                  name="channel_types"
-                                  multiple={true}
-                                  createLabel={t('Add')}
-                                  textfieldprops={{
-                                    variant: 'standard',
-                                    label: t('Channel types'),
-                                  }}
-                                  options={elements.map((n) => ({
-                                    id: n,
-                                    value: n,
-                                    label: n,
-                                  }))}
-                                  renderOption={(optionProps, option) => (
-                                    <li {...optionProps}>
-                                      <div className={classes.icon}>
-                                        <ItemIcon type="attribute" />
-                                      </div>
-                                      <div className={classes.text}>
-                                        {option.label}
-                                      </div>
-                                    </li>
-                                  )}
-                                  classes={{
-                                    clearIndicator:
-                                      classes.autoCompleteIndicator,
-                                  }}
-                                />
-                              }
-                            >
-                              <Field
-                                component={AutocompleteFreeSoloField}
-                                style={{ marginTop: 20 }}
-                                name="channel_types"
-                                multiple={true}
-                                createLabel={t('Add')}
-                                textfieldprops={{
-                                  variant: 'standard',
-                                  label: t('Channel types'),
-                                }}
-                                options={elements.map((n) => ({
-                                  id: n,
-                                  value: n,
-                                  label: n,
-                                }))}
-                                renderOption={(optionProps, option) => (
-                                  <li {...optionProps}>
-                                    <div className={classes.icon}>
-                                      <ItemIcon type="attribute" />
-                                    </div>
-                                    <div className={classes.text}>
-                                      {option.label}
-                                    </div>
-                                  </li>
-                                )}
-                                classes={{
-                                  clearIndicator: classes.autoCompleteIndicator,
-                                }}
-                              />
-                            </Security>
+                            <Field
+                              component={AutocompleteField}
+                              style={{ marginTop: 20 }}
+                              name="channel_types"
+                              multiple={true}
+                              createLabel={t('Add')}
+                              textfieldprops={{
+                                variant: 'standard',
+                                label: t('Channel types'),
+                              }}
+                              options={channelEdges.map((n) => ({
+                                id: n,
+                                value: n,
+                                label: n,
+                              }))}
+                              renderOption={(optionProps, option) => (
+                                <li {...optionProps}>
+                                  <div className={classes.icon}>
+                                    <ItemIcon type="attribute" />
+                                  </div>
+                                  <div className={classes.text}>
+                                    {option.label}
+                                  </div>
+                                </li>
+                              )}
+                              classes={{
+                                clearIndicator:
+                                classes.autoCompleteIndicator,
+                              }}
+                            />
                             <Field
                               component={MarkDownField}
                               name="description"

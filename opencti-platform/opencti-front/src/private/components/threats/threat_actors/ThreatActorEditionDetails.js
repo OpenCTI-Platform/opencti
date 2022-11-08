@@ -287,7 +287,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="attack-motivation-ov"
                   name="primary_motivation"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={false}
@@ -298,7 +298,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="attack-motivation-ov"
                   name="secondary_motivations"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={true}
@@ -309,7 +310,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="attack-motivation-ov"
                   name="personal_motivations"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={true}

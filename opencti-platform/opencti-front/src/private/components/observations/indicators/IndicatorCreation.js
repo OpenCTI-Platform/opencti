@@ -266,6 +266,7 @@ class IndicatorCreation extends Component {
                     name="indicator_types"
                     multiple={true}
                     containerStyle={fieldSpacingContainerStyle}
+                    onChange={(n, v) => setFieldValue(n, v)}
                   />
                   <ConfidenceField
                     name="confidence"

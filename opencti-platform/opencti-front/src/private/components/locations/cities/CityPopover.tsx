@@ -12,6 +12,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
+import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
 import CityEditionContainer, { cityEditionQuery } from './CityEditionContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -21,6 +22,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -53,10 +55,8 @@ const CityPopover = ({ id }: { id: string }) => {
 
   const navigate = useNavigate();
 
-  const [anchorEl, setAnchorEl] = useState<Element>();
+  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [deleting, setDeleting] = useState<boolean>(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
 
   const [commit] = useMutation(CityPopoverDeletionMutation);
   const queryRef = useQueryLoading<CityEditionContainerQuery>(cityEditionQuery, { id });
@@ -69,15 +69,6 @@ const CityPopover = ({ id }: { id: string }) => {
     setAnchorEl(undefined);
   };
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
@@ -86,6 +77,14 @@ const CityPopover = ({ id }: { id: string }) => {
   const handleCloseEdit = () => {
     setDisplayEdit(false);
   };
+
+  const {
+    deleting,
+    handleOpenDelete,
+    displayDelete,
+    handleCloseDelete,
+    setDeleting,
+  } = useDeletion({ handleClose });
 
   const submitDelete = () => {
     setDeleting(true);

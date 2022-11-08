@@ -18,8 +18,7 @@ generates:
         Event: ../modules/event/event-types#BasicStoreEntityEvent
         Narrative: ../modules/narrative/narrative-types#BasicStoreEntityNarrative
         Grouping: ../modules/grouping/grouping-types#BasicStoreEntityGrouping
-        DataSource: ../modules/dataSource/dataSource-types#BasicStoreEntityDataSource
-        DataComponent: ../modules/dataComponent/dataComponent-types#BasicStoreEntityDataComponent
+        Vocabulary: ../modules/vocabulary/vocabulary-types#BasicStoreEntityVocabulary
   ./graphql.schema.json:
     plugins:
       - "introspection"

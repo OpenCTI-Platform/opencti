@@ -18,7 +18,7 @@
     "start": "yarn build:dev && node build/back.js",
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js",
-    "test:dev": "vitest --no-threads run -c ./builder/dev/vitest.config.ts",
+    "test:dev": "vitest --threads false run -c ./builder/dev/vitest.config.ts",
     "test": "vitest --silent --no-threads run --coverage"
   },
   "pkg": {

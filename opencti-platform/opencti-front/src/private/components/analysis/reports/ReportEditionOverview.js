@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { buildDate, parse } from '../../../../utils/Time';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -20,17 +19,13 @@ import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
-import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import Security from '../../../../utils/Security';
 import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 
 const styles = (theme) => ({
   createButton: {
@@ -280,18 +275,11 @@ class ReportEditionOverviewComponent extends Component {
     return (
       <div>
         <QueryRenderer
-          query={attributesQuery}
-          variables={{ key: 'report_types' }}
+          query={vocabulariesQuery}
+          variables={{ category: 'report_types_ov' }}
           render={({ props }) => {
-            if (props && props.runtimeAttributes) {
-              const reportEdges = props.runtimeAttributes.edges.map(
-                (e) => e.node.value,
-              );
-              const elements = R.uniq([
-                ...reportEdges,
-                'threat-report',
-                'internal-report',
-              ]);
+            if (props && props.vocabularies) {
+              const reportEdges = props.vocabularies.edges.map(({ node }) => node.name);
               return (
                 <Formik
                   enableReinitialize={true}
@@ -343,7 +331,7 @@ class ReportEditionOverviewComponent extends Component {
                                   />
                                 ),
                               }}
-                              options={elements.map((n) => ({
+                              options={reportEdges.map((n) => ({
                                 id: n,
                                 value: n,
                                 label: n,
@@ -365,7 +353,7 @@ class ReportEditionOverviewComponent extends Component {
                           }
                         >
                           <Field
-                            component={AutocompleteFreeSoloField}
+                            component={AutocompleteField}
                             onChange={this.handleSubmitField.bind(this)}
                             style={{ marginTop: 20 }}
                             name="report_types"
@@ -381,7 +369,7 @@ class ReportEditionOverviewComponent extends Component {
                                 />
                               ),
                             }}
-                            options={elements.map((n) => ({
+                            options={reportEdges.map((n) => ({
                               id: n,
                               value: n,
                               label: n,

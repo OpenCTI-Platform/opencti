@@ -774,7 +774,7 @@ const loadFromCache = async (user, id, type) => {
   return { cached, accessible: uniqByInternal };
 };
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices = READ_DATA_INDICES, toMap = false, type = null } = opts;
+  const { indices = READ_DATA_INDICES, toMap = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) {
@@ -792,7 +792,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const workingIds = groupIds[index];
       const idsTermsPerType = [];
       const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-      if (isStixObjectAliased(type)) {
+      if (isStixObjectAliased(type) || forceAliases) {
         elementTypes.push(INTERNAL_IDS_ALIASES);
       }
       for (let i = 0; i < workingIds.length; i += 1) {
@@ -1614,7 +1614,7 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
       values: {
         terms: {
           field: isDateOrNumber ? field : `${field}.keyword`,
-          size: first,
+          size: first ?? MAX_JS_PARAMS,
           order: { _key: orderMode },
         },
       },
@@ -1627,7 +1627,7 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
   };
   const data = await elRawSearch(context, user, field, query);
   const { buckets } = data.aggregations.values;
-  const values = (buckets ?? []).map((n) => n.key);
+  const values = (buckets ?? []).map((n) => n.key).filter((val) => (search ? val.includes(search.toLowerCase()) : true));
   const nodeElements = values.map((val) => ({ node: { id: val, key: field, value: val } }));
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };

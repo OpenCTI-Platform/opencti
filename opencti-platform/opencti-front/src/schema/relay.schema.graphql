@@ -2056,7 +2056,7 @@ input AttackPatternsFiltering {
 
 type AttackPatternConnection {
   pageInfo: PageInfo!
-  edges: [AttackPatternEdge!]!
+  edges: [AttackPatternEdge]
 }
 
 type AttackPatternEdge {
@@ -2106,7 +2106,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   parentAttackPatterns: AttackPatternConnection
   subAttackPatterns: AttackPatternConnection
   isSubAttackPattern: Boolean
-  dataComponents: DataComponentConnection
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -4300,12 +4299,10 @@ enum CountriesFilter {
   created
   modified
   created_at
-  updated_at
   createdBy
   markedBy
   labelledBy
   x_opencti_workflow_id
-  revoked
 }
 
 input CountriesFiltering {
@@ -4317,7 +4314,7 @@ input CountriesFiltering {
 
 type CountryConnection {
   pageInfo: PageInfo!
-  edges: [CountryEdge!]!
+  edges: [CountryEdge]
 }
 
 type CountryEdge {
@@ -6893,9 +6890,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7362,7 +7359,7 @@ type Query {
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering], filterMode: FilterMode, search: String): LogConnection
   logsTimeSeries(userId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: [LogsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   subType(id: String!): SubType
-  subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection
+  subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection!
   file(id: String!): File
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -7555,10 +7552,9 @@ type Query {
   groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   narrative(id: String!): Narrative
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering!], filterMode: FilterMode, search: String): NarrativeConnection
-  dataComponent(id: String!): DataComponent
-  dataComponents(first: Int, after: ID, orderBy: DataComponentsOrdering, orderMode: OrderingMode, filters: [DataComponentsFiltering!], filterMode: FilterMode, search: String): DataComponentConnection
-  dataSource(id: String!): DataSource
-  dataSources(first: Int, after: ID, orderBy: DataSourcesOrdering, orderMode: OrderingMode, filters: [DataSourcesFiltering!], filterMode: FilterMode, search: String): DataSourceConnection
+  vocabulary(id: String!): Vocabulary
+  vocabularyCategories: [VocabularyDefinition!]!
+  vocabularies(category: VocabularyCategory, first: Int, after: ID, orderBy: VocabularyOrdering, orderMode: OrderingMode, filters: [VocabularyFiltering!], filterMode: FilterMode, search: String): VocabularyConnection
 }
 
 type Subscription {
@@ -8196,22 +8192,10 @@ type Mutation {
   narrativeContextClean(id: ID!): Narrative
   narrativeRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
   narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative
-  dataComponentAdd(input: DataComponentAddInput!): DataComponent
-  dataComponentDelete(id: ID!): ID
-  dataComponentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataComponent
-  dataComponentContextPatch(id: ID!, input: EditContext!): DataComponent
-  dataComponentContextClean(id: ID!): DataComponent
-  dataComponentRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
-  dataComponentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataComponent
-  dataSourceAdd(input: DataSourceAddInput!): DataSource
-  dataSourceDelete(id: ID!): ID
-  dataSourceFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataSource
-  dataSourceContextPatch(id: ID!, input: EditContext!): DataSource
-  dataSourceContextClean(id: ID!): DataSource
-  dataSourceRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
-  dataSourceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataSource
-  dataSourceDataComponentAdd(id: ID!, dataComponentId: ID!): DataSource
-  dataSourceDataComponentDelete(id: ID!, dataComponentId: ID!): DataSource
+  vocabularyAdd(input: VocabularyAddInput!): Vocabulary
+  vocabularyFieldPatch(id: ID!, category: VocabularyCategory!, input: [EditInput!]!): Vocabulary
+  vocabularyDelete(id: ID!): ID
+  vocabularyMerge(fromVocab: VocabularyMergeInput!, toId: ID!): Vocabulary
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -8771,221 +8755,109 @@ input NarrativeAddInput {
   update: Boolean
 }
 
-type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+enum VocabularyCategory {
+  account_type_ov
+  attack_motivation_ov
+  attack_resource_level_ov
+  channel_types_ov
+  event_type_ov
+  grouping_context_ov
+  identity_sector_ov
+  implementation_language_ov
+  indicator_type_ov
+  infrastructure_type_ov
+  integrity_level_ov
+  malware_capabilities_ov
+  malware_type_ov
+  pattern_type_ov
+  processor_architecture_ov
+  region_ov
+  report_types_ov
+  service_status_ov
+  service_type_ov
+  start_type_ov
+  threat_actor_type_ov
+  threat_actor_role_ov
+  threat_actor_sophistication_ov
+  tool_types_ov
+}
+
+type VocabularyFieldDefinition {
+  key: String!
+  required: Boolean!
+  multiple: Boolean!
+}
+
+type VocabularyDefinition {
+  key: VocabularyCategory!
+  entity_types: [String!]!
+  fields: [VocabularyFieldDefinition!]!
+}
+
+type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  creator: Creator
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
   x_opencti_inferences: [Inference]
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
-  revoked: Boolean!
-  confidence: Int
-  lang: String
   created: DateTime
   modified: DateTime
-  x_opencti_graph_data: String
-  creator: Creator
-  toStix: String
-  importFiles(first: Int): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
+  category: VocabularyDefinition!
   name: String!
   description: String
-  aliases: [String]
-  dataSource: DataSource
-  attackPatterns: AttackPatternConnection
+  usages: [String!]!
+  aliases: [String!]
+  builtIn: Boolean
 }
 
-enum DataComponentsOrdering {
+enum VocabularyOrdering {
   name
-  created
-  modified
-  created_at
-  updated_at
-  x_opencti_workflow_id
+  category
+  description
 }
 
-enum DataComponentsFilter {
+enum VocabularyFilter {
   name
+  category
+  description
+  entity_types
   aliases
-  created
-  modified
-  created_at
-  updated_at
-  createdBy
-  markedBy
-  labelledBy
-  revoked
-  x_opencti_workflow_id
 }
 
-input DataComponentsFiltering {
-  key: [DataComponentsFilter!]!
-  values: [String]
+input VocabularyFiltering {
+  key: [VocabularyFilter!]!
+  values: [String!]!
   operator: String
   filterMode: FilterMode
 }
 
-type DataComponentConnection {
+type VocabularyConnection {
   pageInfo: PageInfo!
-  edges: [DataComponentEdge]
+  edges: [VocabularyEdge!]!
 }
 
-type DataComponentEdge {
+type VocabularyEdge {
   cursor: String!
-  node: DataComponent!
+  node: Vocabulary!
 }
 
-input DataComponentAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  objectOrganization: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
+input VocabularyAddInput {
   name: name_String_NotNull_minLength_2!
-  description: String!
-  aliases: [String]
-  dataSource: String
+  description: String
+  category: String!
+  aliases: [String!]
+  builtIn: Boolean
 }
 
-type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+input VocabularyMergeInput {
   id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  creator: Creator
-  toStix: String
-  importFiles(first: Int): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
   name: String!
   description: String
-  aliases: [String]
-  x_mitre_platforms: [String]
-  collection_layers: [String]
-  dataComponents: DataComponentConnection
-}
-
-enum DataSourcesOrdering {
-  name
-  created
-  modified
-  created_at
-  updated_at
-  x_opencti_workflow_id
-}
-
-enum DataSourcesFilter {
-  name
-  aliases
-  created
-  modified
-  created_at
-  updated_at
-  createdBy
-  markedBy
-  labelledBy
-  revoked
-  x_opencti_workflow_id
-}
-
-input DataSourcesFiltering {
-  key: [DataSourcesFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
-type DataSourceConnection {
-  pageInfo: PageInfo!
-  edges: [DataSourceEdge]
-}
-
-type DataSourceEdge {
-  cursor: String!
-  node: DataSource!
-}
-
-input DataSourceAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  objectOrganization: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
-  name: name_String_NotNull_minLength_2!
-  description: String!
-  aliases: [String]
-  x_mitre_platforms: [String]
-  collection_layers: [String]
-  dataComponents: [String]
+  aliases: [String!]
 }

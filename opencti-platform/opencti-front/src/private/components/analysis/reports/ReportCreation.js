@@ -17,7 +17,6 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -30,6 +29,7 @@ import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSo
 import Security from '../../../../utils/Security';
 import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -191,18 +191,11 @@ class ReportCreation extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={attributesQuery}
-            variables={{ key: 'report_types' }}
+            query={vocabulariesQuery}
+            variables={{ category: 'report_types_ov' }}
             render={({ props }) => {
-              if (props && props.runtimeAttributes) {
-                const reportEdges = props.runtimeAttributes.edges.map(
-                  (e) => e.node.value,
-                );
-                const elements = R.uniq([
-                  ...reportEdges,
-                  'threat-report',
-                  'internal-report',
-                ]);
+              if (props && props.vocabularies) {
+                const reportEdges = props.vocabularies.edges.map(({ node }) => node.name);
                 return (
                   <div>
                     <div className={classes.header}>
@@ -274,10 +267,11 @@ class ReportCreation extends Component {
                                     variant: 'standard',
                                     label: t('Report types'),
                                   }}
-                                  options={elements.map((n) => ({
+                                  options={reportEdges.map((n) => ({
                                     id: n,
                                     value: n,
                                     label: n,
+                                    ...n,
                                   }))}
                                   renderOption={(optionProps, option) => (
                                     <li {...optionProps}>
@@ -306,7 +300,7 @@ class ReportCreation extends Component {
                                   variant: 'standard',
                                   label: t('Report types'),
                                 }}
-                                options={elements.map((n) => ({
+                                options={reportEdges.map((n) => ({
                                   id: n,
                                   value: n,
                                   label: n,

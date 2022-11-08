@@ -1,20 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
-import * as Yup from 'yup';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
+import { assoc, compose, difference, head, map, pathOr, pick, pipe } from 'ramda';
+import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -33,36 +23,11 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import ItemIcon from '../../../../components/ItemIcon';
-import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-
-const styles = (theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-});
+import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const channelMutationFieldPatch = graphql`
   mutation ChannelEditionOverviewFieldPatchMutation(
@@ -178,9 +143,6 @@ class ChannelEditionOverviewComponent extends Component {
     if (name === 'x_opencti_workflow_id') {
       finalValue = value.value;
     }
-    if (name === 'channel_types') {
-      finalValue = R.pluck('value', value);
-    }
     channelValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -246,7 +208,7 @@ class ChannelEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, classes, channel, context, enableReferences } = this.props;
+    const { t, channel, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(channel);
     const objectMarking = convertMarkings(channel);
     const status = convertStatus(t, channel);
@@ -256,7 +218,7 @@ class ChannelEditionOverviewComponent extends Component {
       assoc('x_opencti_workflow_id', status),
       R.assoc(
         'channel_types',
-        (channel.channel_types || []).map((n) => ({ label: n, value: n })),
+        (channel.channel_types || []),
       ),
       pick([
         'name',
@@ -269,14 +231,10 @@ class ChannelEditionOverviewComponent extends Component {
     )(channel);
     return (
       <QueryRenderer
-        query={attributesQuery}
-        variables={{ key: 'channel_types' }}
+        query={vocabulariesQuery}
+        variables={{ category: 'channel_types_ov' }}
         render={({ props }) => {
-          if (props && props.runtimeAttributes) {
-            const channelEdges = props.runtimeAttributes.edges.map(
-              (e) => e.node.value,
-            );
-            const elements = R.uniq([...channelEdges, 'Twitter', 'Facebook']);
+          if (props && props.vocabularies) {
             return (
               <Formik
                 enableReinitialize={true}
@@ -285,12 +243,12 @@ class ChannelEditionOverviewComponent extends Component {
                 onSubmit={this.onSubmit.bind(this)}
               >
                 {({
-                  submitForm,
-                  isSubmitting,
-                  validateForm,
-                  setFieldValue,
-                  values,
-                }) => (
+                    submitForm,
+                    isSubmitting,
+                    validateForm,
+                    setFieldValue,
+                    values,
+                  }) => (
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
                       component={TextField}
@@ -304,80 +262,15 @@ class ChannelEditionOverviewComponent extends Component {
                         <SubscriptionFocus context={context} fieldName="name" />
                       }
                     />
-                    <Security
-                      needs={[SETTINGS_SETLABELS]}
-                      placeholder={
-                        <Field
-                          component={AutocompleteField}
-                          onChange={this.handleSubmitField.bind(this)}
-                          style={{ marginTop: 20 }}
-                          name="channel_types"
-                          multiple={true}
-                          createLabel={t('Add')}
-                          textfieldprops={{
-                            variant: 'standard',
-                            label: t('Channel types'),
-                            helperText: (
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName="channel_types"
-                              />
-                            ),
-                          }}
-                          options={elements.map((n) => ({
-                            id: n,
-                            value: n,
-                            label: n,
-                          }))}
-                          renderOption={(optionProps, option) => (
-                            <li {...optionProps}>
-                              <div className={classes.icon}>
-                                <ItemIcon type="attribute" />
-                              </div>
-                              <div className={classes.text}>{option.label}</div>
-                            </li>
-                          )}
-                          classes={{
-                            clearIndicator: classes.autoCompleteIndicator,
-                          }}
-                        />
-                      }
-                    >
-                      <Field
-                        component={AutocompleteFreeSoloField}
-                        onChange={this.handleSubmitField.bind(this)}
-                        style={{ marginTop: 20 }}
-                        name="channel_types"
-                        multiple={true}
-                        createLabel={t('Add')}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t('Channel types'),
-                          helperText: (
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="channel_types"
-                            />
-                          ),
-                        }}
-                        options={elements.map((n) => ({
-                          id: n,
-                          value: n,
-                          label: n,
-                        }))}
-                        renderOption={(optionProps, option) => (
-                          <li {...optionProps}>
-                            <div className={classes.icon}>
-                              <ItemIcon type="attribute" />
-                            </div>
-                            <div className={classes.text}>{option.label}</div>
-                          </li>
-                        )}
-                        classes={{
-                          clearIndicator: classes.autoCompleteIndicator,
-                        }}
-                      />
-                    </Security>
+                    <OpenVocabField
+                      type="channel_types_ov"
+                      name="channel_types"
+                      label="Channel types"
+                      variant="edit"
+                      multiple={true}
+                      onSubmit={this.handleSubmitField.bind(this)}
+                      onChange={(name, value) => setFieldValue(name, value)}
+                    />
                     <Field
                       component={MarkDownField}
                       name="description"
@@ -504,5 +397,4 @@ const ChannelEditionOverview = createFragmentContainer(
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
 )(ChannelEditionOverview);

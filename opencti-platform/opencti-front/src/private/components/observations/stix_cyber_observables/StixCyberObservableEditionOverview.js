@@ -21,8 +21,7 @@ import {
   dateAttributes,
   ignoredAttributes,
   multipleAttributes,
-  numberAttributes,
-  openVocabularies,
+  numberAttributes, openVocabularies,
 } from '../../../../utils/Entity';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';
@@ -454,7 +453,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           />
                         );
                       }
-                      if (Object.keys(openVocabularies).includes(`${attribute.value}-ov`)) {
+                      if (openVocabularies.includes(`${attribute.value}-ov`)) {
                         return (
                           <OpenVocabField
                             key={attribute.value}

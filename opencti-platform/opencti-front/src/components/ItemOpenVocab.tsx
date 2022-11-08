@@ -3,8 +3,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import { openVocabularies } from '../utils/Entity';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useFormatter } from './i18n';
+import useVocabularyCategory from '../utils/hooks/useVocabularyCategory';
+import { ItemOpenVocabQuery } from './__generated__/ItemOpenVocabQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -26,12 +28,32 @@ interface ItemOpenVocabProps {
   small: boolean;
 }
 
+const itemOpenVocabQuery = graphql`
+  query ItemOpenVocabQuery(
+    $category: VocabularyCategory
+  ) {
+    vocabularies(category: $category) {
+      edges {
+        node {
+          name
+          description
+        }
+      }
+    }
+  }
+`;
+
 const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
   type,
   value,
   small = true,
 }) => {
   const { t } = useFormatter();
+
+  const { typeToCategory } = useVocabularyCategory();
+  const { vocabularies } = useLazyLoadQuery<ItemOpenVocabQuery>(itemOpenVocabQuery, { category: typeToCategory(type) });
+  const openVocabList = (vocabularies?.edges ?? []).map(({ node }) => node);
+
   const classes = useStyles();
   if (!value) {
     return (
@@ -49,8 +71,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
       </span>
     );
   }
-  const openVocabList = openVocabularies[type];
-  const openVocab = R.head(openVocabList.filter((n) => n.key === value));
+  const openVocab = R.head(openVocabList.filter((n) => n.name === value));
   const description = openVocab && openVocab.description ? openVocab.description : t('No value');
   const preStyle = small
     ? { margin: 0, paddingTop: 7, paddingBottom: 4 }

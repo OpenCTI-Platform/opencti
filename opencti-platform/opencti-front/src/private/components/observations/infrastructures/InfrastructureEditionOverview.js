@@ -309,7 +309,8 @@ class InfrastructureEditionOverviewComponent extends Component {
               type="infrastructure-type-ov"
               name="infrastructure_types"
               onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={true}

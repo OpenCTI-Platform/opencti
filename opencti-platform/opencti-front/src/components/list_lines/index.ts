@@ -1,6 +1,13 @@
-import { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
+import { Option } from '../../private/components/common/form/ReferenceField';
 
-export interface DataColumn { isSortable: boolean, label: string, width?: string | number }
+export interface DataColumn {
+  isSortable: boolean,
+  label: string,
+  width?: string | number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  render?: (v: any) => ReactNode,
+}
 export type DataColumns = Record<string, DataColumn>;
 
 export type Filters<F = Record<string, unknown>[]> = Record<string, F>;
@@ -20,3 +27,5 @@ export interface PaginationOptions {
 }
 
 export type ListLines = FunctionComponent<unknown>;
+
+export type RenderOption = (props: React.AllHTMLAttributes<never>, { value, description }: Option) => ReactElement;

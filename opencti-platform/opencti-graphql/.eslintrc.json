@@ -1,5 +1,7 @@
 {
-  "plugins": ["@typescript-eslint/eslint-plugin"],
+  "plugins": [
+    "@typescript-eslint/eslint-plugin"
+  ],
   "extends": [
     "airbnb-base",
     "airbnb-typescript/base",
@@ -12,7 +14,9 @@
     "ecmaVersion": 2020,
     "project": "./tsconfig.json"
   },
-  "env": { "jest": true },
+  "env": {
+    "jest": true
+  },
   "rules": {
     "import/extensions": [
       "error",
@@ -23,7 +27,10 @@
       }
     ],
     "max-len": [
-      "error", 180, 2, {
+      "error",
+      180,
+      2,
+      {
         "ignoreUrls": true,
         "ignoreComments": false,
         "ignoreRegExpLiterals": true,
@@ -40,11 +47,22 @@
     "object-curly-newline": "off",
     "@typescript-eslint/naming-convention": "off",
     "@typescript-eslint/comma-dangle": "off",
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ]
   },
   "overrides": [
     {
-      "files": ["*.js"],
+      "files": [
+        "*.js"
+      ],
       "rules": {
         "@typescript-eslint/no-this-alias": "off",
         "@typescript-eslint/return-await": "off",

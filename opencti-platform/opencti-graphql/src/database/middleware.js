@@ -18,7 +18,8 @@ import {
   EVENT_TYPE_DELETE_DEPENDENCIES,
   fillTimeSeries,
   generateCreateMessage,
-  generateUpdateMessage, INDEX_INFERRED_RELATIONSHIPS,
+  generateUpdateMessage,
+  INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isEmptyField,
   isInferredIndex,
@@ -99,6 +100,7 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
+  DEPS_KEYS,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -221,6 +223,8 @@ import { listAllRelations, listEntities, listRelations } from './middleware-load
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
+import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
+import { getVocabularyCategoryForField } from '../modules/vocabulary/vocabulary-utils';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -557,7 +561,10 @@ export const distributionEntities = async (context, user, types, args) => {
   if (field.includes('.')) {
     finalField = REL_INDEX_PREFIX + field;
   }
-  const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, { ...distributionArgs, field: finalField });
+  const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, {
+    ...distributionArgs,
+    field: finalField
+  });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field.includes(ID_INTERNAL)) {
@@ -589,34 +596,51 @@ const TRX_CREATION = 'creation';
 const TRX_UPDATE = 'update';
 const TRX_IDLE = 'idle';
 const depsKeys = () => ([
-  // Relationship
-  { src: 'fromId', dst: 'from' },
-  { src: 'toId', dst: 'to' },
-  // Other meta refs
-  ...STIX_META_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
-  ...STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
+  ...schemaTypes.get(DEPS_KEYS),
+  ...[
+    // Relationship
+    { src: 'fromId', dst: 'from' },
+    { src: 'toId', dst: 'to' },
+    // Other meta refs
+    ...STIX_META_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
+    ...STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
+  ],
 ]);
+
+const idNormalizeDataEntity = (nameOrId, data) => (isAnId(nameOrId) ? nameOrId : generateAliasesId([nameOrId], data).at(0));
+
 const idLabel = (label) => {
   return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
 };
+
 const inputResolveRefs = async (context, user, input, type) => {
   const fetchingIds = [];
   const expectedIds = [];
   const cleanedInput = { _index: inferIndexFromConceptType(type), ...input };
   let embeddedFromResolution;
+  let forceAliases = false;
   const dependencyKeys = depsKeys();
   for (let index = 0; index < dependencyKeys.length; index += 1) {
-    const { src, dst } = dependencyKeys[index];
+    const { src, dst } = depsKeys[index];
     const destKey = dst || src;
     const id = input[src];
     if (!R.isNil(id) && !R.isEmpty(id)) {
       const isListing = Array.isArray(id);
+      const hasOpenVocab = Object.values(vocabularyDefinitions).some(({ fields }) => fields.some(({ key }) => key === src));
       // Handle specific case of object label that can be directly the value instead of the key.
       if (src === INPUT_LABELS) {
         const elements = R.uniq(id.map((label) => idLabel(label)))
           .map((lid) => ({ id: lid, destKey, multiple: true }));
         fetchingIds.push(...elements);
         expectedIds.push(...elements.map((e) => e.id));
+      } else if (hasOpenVocab) {
+        const ids = isListing ? id : [id];
+        const category = getVocabularyCategoryForField(destKey, type);
+        const elements = ids.map((i) => idNormalizeDataEntity(i, { category, entity_type: ENTITY_TYPE_VOCABULARY }))
+          .map((lid) => ({ id: lid, destKey, multiple: isListing }));
+        fetchingIds.push(...elements);
+        expectedIds.push(...elements.map((e) => e.id));
+        forceAliases = true;
       } else if (isListing) {
         const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
         fetchingIds.push(...elements);
@@ -634,7 +658,7 @@ const inputResolveRefs = async (context, user, input, type) => {
       cleanedInput[src] = null;
     }
   }
-  const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id));
+  const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id), { forceAliases });
   let embeddedFromPromise = Promise.resolve();
   if (embeddedFromResolution) {
     fetchingIds.push({ id: embeddedFromResolution, destKey: 'from', multiple: false });
@@ -687,6 +711,18 @@ const inputResolveRefs = async (context, user, input, type) => {
   }
   const complete = { ...cleanedInput, entity_type: type };
   const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
+
+  // Check Openvocab in resolved to flatten them
+  Object.values(vocabularyDefinitions)
+    .filter(({ entity_types }) => entity_types.includes(type))
+    .forEach(({ fields }) => {
+      fields.filter(({ key }) => Boolean(inputResolved[key]))
+        .forEach(({ key }) => {
+          const value = Array.isArray(inputResolved[key]) ? inputResolved[key].map(({ name }) => name) : inputResolved[key].name;
+          inputResolved[key] = value;
+        });
+    });
+
   // Check the marking allow for the user and asked inside the input
   if (!isBypassUser(user) && inputResolved[INPUT_MARKINGS]) {
     const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
@@ -1654,7 +1690,11 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       const existingEntities = await internalFindByIds(context, user, aliasesIds, { type: initial.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== initial.id, existingEntities);
       if (differentEntities.length > 0) {
-        throw FunctionalError('This update will produce a duplicate', { id: initial.id, type });
+        throw FunctionalError('This update will produce a duplicate', {
+          id: initial.id,
+          type,
+          existingIds: existingEntities.map((e) => e.id),
+        });
       }
     }
   }
@@ -1716,7 +1756,11 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         return { element: merged };
       }
       // noinspection ExceptionCaughtLocallyJS
-      throw FunctionalError('This update will produce a duplicate', { id: initial.id, type });
+      throw FunctionalError('This update will produce a duplicate', {
+        id: initial.id,
+        type,
+        existingIds: existingEntities.map((e) => e.id),
+      });
     }
     // noinspection UnnecessaryLocalVariableJS
     const data = await updateAttributeRaw(context, user, initial, attributes, opts);
@@ -1843,7 +1887,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         message: opts.commitMessage,
         references: opts.references
       } : undefined;
-      const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { commit });
+      const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit });
       return { element: updatedInstance, event };
     }
     // Return updated element after waiting for it.
@@ -2735,7 +2779,13 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
     return undefined;
   }
   // Build the instance
-  const instance = { fromId, toId, entity_type: relationship_type, relationship_type, [ruleContent.field]: [ruleContent.content] };
+  const instance = {
+    fromId,
+    toId,
+    entity_type: relationship_type,
+    relationship_type,
+    [ruleContent.field]: [ruleContent.content]
+  };
   const patch = createRuleDataPatch(instance);
   const inputRelation = { ...instance, ...patch };
   logApp.info('Create inferred relation', { relation: inputRelation });
@@ -2879,6 +2929,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       appendMetaRelationships(inputField, relType);
     }
   }
+
   // Transaction succeed, complete the result to send it back
   const created = R.pipe(
     R.assoc('id', internalId),
@@ -2891,6 +2942,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     const file = await upload(context, user, `import/${created.entity_type}/${created.internal_id}`, input.file, meta);
     created.x_opencti_files = [storeFileConverter(user, file)];
   }
+
   // Simply return the data
   return {
     type: TRX_CREATION,
@@ -3111,7 +3163,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
       const deletePromise = elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
       const eventPromise = storeUpdateEvent(context, user, previous, instance, message, opts);
-      const [,, updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
+      const [, , updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
       event = updateEvent;
     } else {
       // Start by deleting external files
@@ -3191,7 +3243,10 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
           await Promise.all([deletionPromise, taskPromise]);
           // Deleting meta must be converted to a special dependency deletion
           // This type of event will be handle by the stream to cleanup inferences.
-          const deleteEvent = { type: EVENT_TYPE_DELETE_DEPENDENCIES, data: { ids: [`${instance.to.internal_id}_ref`] } };
+          const deleteEvent = {
+            type: EVENT_TYPE_DELETE_DEPENDENCIES,
+            data: { ids: [`${instance.to.internal_id}_ref`] }
+          };
           derivedEvents.push(deleteEvent);
         } else {
           const deletionData = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
