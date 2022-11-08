@@ -39,6 +39,7 @@ import { now } from '../utils/format';
 import {
   EVENT_TYPE_CREATE,
   INDEX_INTERNAL_OBJECTS,
+  isEmptyField,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -60,6 +61,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { promoteIndicatorToObservable } from '../domain/indicator';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
+import { creatorFromHistory } from '../domain/log';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -227,8 +229,23 @@ const executeReplace = async (context, user, actionContext, element) => {
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
-    const patch = { [field]: values };
-    await patchAttribute(context, user, element.id, element.entity_type, patch);
+    // Special case for creator_id, that will be replaced from history
+    if (field === 'creator_id') {
+      if (isEmptyField(element.creator_id)) {
+        const historicCreator = await creatorFromHistory(context, user, element.internal_id);
+        // Direct elastic update to prevent any check/stream propagation
+        await elUpdate(element._index, element.id, {
+          script: {
+            source: 'ctx._source["creator_id"] = params.creator_id;',
+            lang: 'painless',
+            params: { creator_id: historicCreator }
+          },
+        });
+      }
+    } else {
+      const patch = { [field]: values };
+      await patchAttribute(context, user, element.id, element.entity_type, patch);
+    }
   }
 };
 const executeMerge = async (context, user, actionContext, element) => {

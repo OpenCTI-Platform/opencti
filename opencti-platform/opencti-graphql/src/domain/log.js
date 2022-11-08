@@ -1,10 +1,8 @@
-import { head } from 'ramda';
 import { elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
-import { findById } from './user';
-import { storeLoadById, timeSeriesEntities } from '../database/middleware';
+import { timeSeriesEntities } from '../database/middleware';
 import { EVENT_TYPE_CREATE, INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
-import { SYSTEM_USER } from '../utils/access';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 
 export const findAll = (context, user, args) => {
   const finalArgs = {
@@ -16,20 +14,17 @@ export const findAll = (context, user, args) => {
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
-export const creator = async (context, user, entityId, type) => {
-  const entity = await storeLoadById(context, user, entityId, type);
+export const creatorFromHistory = async (context, user, entityId) => {
   return elPaginate(context, user, READ_INDEX_HISTORY, {
-    orderBy: 'timestamp',
-    orderMode: 'asc',
+    size: 1,
     filters: [
       { key: 'event_type', values: [EVENT_TYPE_CREATE] },
-      { key: 'context_data.id', values: [entity.internal_id] },
+      { key: 'context_data.id', values: [entityId] },
     ],
     connectionFormat: false,
   }).then(async (logs) => {
-    const applicant = logs.length > 0 ? head(logs).applicant_id || head(logs).user_id : null;
-    const finalUser = applicant ? await findById(context, user, applicant) : undefined;
-    return finalUser || SYSTEM_USER;
+    const userId = logs.length > 0 ? logs[0].applicant_id || logs[0].user_id : null;
+    return userId ?? OPENCTI_SYSTEM_UUID;
   });
 };
 

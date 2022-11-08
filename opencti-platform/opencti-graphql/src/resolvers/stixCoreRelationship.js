@@ -2,6 +2,14 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCoreRelationship,
+  batchCreatedBy,
+  batchExternalReferences,
+  batchKillChainPhases,
+  batchLabels,
+  batchMarkingDefinitions,
+  batchNotes,
+  batchOpinions,
+  batchReports,
   findAll,
   findById,
   stixCoreRelationshipAddRelation,
@@ -11,27 +19,19 @@ import {
   stixCoreRelationshipDeleteRelation,
   stixCoreRelationshipEditContext,
   stixCoreRelationshipEditField,
-  stixCoreRelationshipsNumber,
-  batchCreatedBy,
-  batchKillChainPhases,
-  batchExternalReferences,
-  batchLabels,
-  batchMarkingDefinitions,
-  batchNotes,
-  batchOpinions,
-  batchReports,
   stixCoreRelationshipsExportAsk,
-  stixCoreRelationshipsExportPush
+  stixCoreRelationshipsExportPush,
+  stixCoreRelationshipsNumber
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, timeSeriesRelations, batchLoader, stixLoadByIdStringify } from '../database/middleware';
-import { creator } from '../domain/log';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import { batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { filesListing } from '../database/file-storage';
+import { batchUsers } from '../domain/user';
+import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -42,6 +42,7 @@ const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
+const creatorsLoader = batchLoader(batchUsers);
 
 const stixCoreRelationshipResolvers = {
   Query: {
@@ -50,18 +51,18 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsTimeSeries: (_, args, context) => timeSeriesRelations(context, context.user, args),
     stixCoreRelationshipsDistribution: (_, args, context) => distributionRelations(context, context.user, args),
     stixCoreRelationshipsNumber: (_, args, context) => stixCoreRelationshipsNumber(context, context.user, args),
-    stixCoreRelationshipsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
+    stixCoreRelationshipsExportFiles: (_, {
+      type,
+      first
+    }, context) => filesListing(context, context.user, first, `export/${type}/`),
   },
-  StixCoreRelationshipsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-  },
+  StixCoreRelationshipsFilter: stixCoreRelationshipOptions.StixCoreRelationshipsFilter,
+  StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,
   StixCoreRelationship: {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
     to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
-    creator: (rel, _, context) => creator(context, context.user, rel.id, ABSTRACT_STIX_CORE_RELATIONSHIP),
+    creator: (rel, _, context) => creatorsLoader.load(rel.id, context, context.user),
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),
     objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),
@@ -80,15 +81,21 @@ const stixCoreRelationshipResolvers = {
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, context) => ({
       delete: () => stixCoreRelationshipDelete(context, context.user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixCoreRelationshipEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) => {
+        return stixCoreRelationshipEditField(context, context.user, id, input, { commitMessage, references });
+      },
       contextPatch: ({ input }) => stixCoreRelationshipEditContext(context, context.user, id, input),
       contextClean: () => stixCoreRelationshipCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreRelationshipDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => {
+        return stixCoreRelationshipDeleteRelation(context, context.user, id, toId, relationshipType);
+      },
     }),
     stixCoreRelationshipAdd: (_, { input }, context) => addStixCoreRelationship(context, context.user, input),
     stixCoreRelationshipsExportAsk: (_, args, context) => stixCoreRelationshipsExportAsk(context, context.user, args),
-    stixCoreRelationshipsExportPush: (_, { type, file, listFilters }, context) => stixCoreRelationshipsExportPush(context, context.user, type, file, listFilters),
+    stixCoreRelationshipsExportPush: (_, { type, file, listFilters }, context) => {
+      return stixCoreRelationshipsExportPush(context, context.user, type, file, listFilters);
+    },
     stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, context) => {
       return stixCoreRelationshipDeleteByFromAndTo(context, context.user, fromId, toId, relationshipType);
     },

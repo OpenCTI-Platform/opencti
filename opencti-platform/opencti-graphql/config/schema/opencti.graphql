@@ -1064,9 +1064,22 @@ type UserConnection {
   pageInfo: PageInfo!
   edges: [UserEdge]
 }
+type CreatorConnection {
+  pageInfo: PageInfo!
+  edges: [CreatorEdge]
+}
 type UserEdge {
   cursor: String!
   node: User!
+}
+type CreatorEdge {
+  cursor: String!
+  node: Creator!
+}
+type Creator {
+  id: ID! # internal_id
+  name: String!
+  entity_type: String!
 }
 type OtpElement {
   secret: String!
@@ -1735,6 +1748,7 @@ enum StixDomainObjectsOrdering {
   indicator_pattern
   x_opencti_workflow_id
   createdBy
+  creator
   objectMarking
 }
 enum StixDomainObjectsFilter {
@@ -1762,6 +1776,7 @@ enum StixDomainObjectsFilter {
   context
   x_opencti_organization_type
   published
+  creator
   x_opencti_workflow_id
 }
 input StixDomainObjectsFiltering {
@@ -9319,6 +9334,7 @@ type Query {
   me: MeUser! @auth
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
+  creators(first: Int, search: String): CreatorConnection @auth(for: [KNOWLEDGE])
   users(
     first: Int
     after: ID

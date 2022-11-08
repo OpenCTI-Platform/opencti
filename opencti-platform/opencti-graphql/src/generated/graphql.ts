@@ -2232,6 +2232,25 @@ export enum CoursesOfActionOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type Creator = {
+  __typename?: 'Creator';
+  entity_type: Scalars['String'];
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
+export type CreatorConnection = {
+  __typename?: 'CreatorConnection';
+  edges?: Maybe<Array<Maybe<CreatorEdge>>>;
+  pageInfo: PageInfo;
+};
+
+export type CreatorEdge = {
+  __typename?: 'CreatorEdge';
+  cursor: Scalars['String'];
+  node: Creator;
+};
+
 export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'CryptocurrencyWallet';
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -11058,6 +11077,7 @@ export type Query = {
   country?: Maybe<Country>;
   courseOfAction?: Maybe<CourseOfAction>;
   coursesOfAction?: Maybe<CourseOfActionConnection>;
+  creators?: Maybe<CreatorConnection>;
   elasticSearchMetrics?: Maybe<ElasticSearchMetrics>;
   enrichmentConnectors?: Maybe<Array<Maybe<Connector>>>;
   event?: Maybe<Event>;
@@ -11383,6 +11403,12 @@ export type QueryCoursesOfActionArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryCreatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -15087,6 +15113,7 @@ export enum StixDomainObjectsFilter {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   EntityType = 'entity_type',
   HasExternalReference = 'hasExternalReference',
   Indicates = 'indicates',
@@ -15118,6 +15145,7 @@ export enum StixDomainObjectsOrdering {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   EntityType = 'entity_type',
   IndicatorPattern = 'indicator_pattern',
   Modified = 'modified',
@@ -18773,6 +18801,9 @@ export type ResolversTypes = ResolversObject<{
   CoursesOfActionFilter: CoursesOfActionFilter;
   CoursesOfActionFiltering: CoursesOfActionFiltering;
   CoursesOfActionOrdering: CoursesOfActionOrdering;
+  Creator: ResolverTypeWrapper<Creator>;
+  CreatorConnection: ResolverTypeWrapper<CreatorConnection>;
+  CreatorEdge: ResolverTypeWrapper<CreatorEdge>;
   CryptocurrencyWallet: ResolverTypeWrapper<Omit<CryptocurrencyWallet, 'connectors' | 'createdBy' | 'creator' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, creator?: Maybe<ResolversTypes['User']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
   CryptocurrencyWalletAddInput: CryptocurrencyWalletAddInput;
   CryptographicKey: ResolverTypeWrapper<Omit<CryptographicKey, 'connectors' | 'createdBy' | 'creator' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, creator?: Maybe<ResolversTypes['User']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
@@ -19385,6 +19416,9 @@ export type ResolversParentTypes = ResolversObject<{
   CourseOfActionEdge: Omit<CourseOfActionEdge, 'node'> & { node: ResolversParentTypes['CourseOfAction'] };
   CourseOfActionEditMutations: Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, relationDelete?: Maybe<ResolversParentTypes['CourseOfAction']> };
   CoursesOfActionFiltering: CoursesOfActionFiltering;
+  Creator: Creator;
+  CreatorConnection: CreatorConnection;
+  CreatorEdge: CreatorEdge;
   CryptocurrencyWallet: Omit<CryptocurrencyWallet, 'connectors' | 'createdBy' | 'creator' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creator?: Maybe<ResolversParentTypes['User']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
   CryptocurrencyWalletAddInput: CryptocurrencyWalletAddInput;
   CryptographicKey: Omit<CryptographicKey, 'connectors' | 'createdBy' | 'creator' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creator?: Maybe<ResolversParentTypes['User']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
@@ -20589,6 +20623,25 @@ export type CourseOfActionEditMutationsResolvers<ContextType = any, ParentType e
   fieldPatch?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<CourseOfActionEditMutationsRelationAddArgs>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Creator'] = ResolversParentTypes['Creator']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CreatorConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatorConnection'] = ResolversParentTypes['CreatorConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CreatorEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CreatorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatorEdge'] = ResolversParentTypes['CreatorEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Creator'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -23196,6 +23249,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, Partial<QueryCountryArgs>>;
   courseOfAction?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, Partial<QueryCourseOfActionArgs>>;
   coursesOfAction?: Resolver<Maybe<ResolversTypes['CourseOfActionConnection']>, ParentType, ContextType, Partial<QueryCoursesOfActionArgs>>;
+  creators?: Resolver<Maybe<ResolversTypes['CreatorConnection']>, ParentType, ContextType, Partial<QueryCreatorsArgs>>;
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
   enrichmentConnectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, RequireFields<QueryEnrichmentConnectorsArgs, 'type'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
@@ -25473,6 +25527,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CourseOfActionConnection?: CourseOfActionConnectionResolvers<ContextType>;
   CourseOfActionEdge?: CourseOfActionEdgeResolvers<ContextType>;
   CourseOfActionEditMutations?: CourseOfActionEditMutationsResolvers<ContextType>;
+  Creator?: CreatorResolvers<ContextType>;
+  CreatorConnection?: CreatorConnectionResolvers<ContextType>;
+  CreatorEdge?: CreatorEdgeResolvers<ContextType>;
   CryptocurrencyWallet?: CryptocurrencyWalletResolvers<ContextType>;
   CryptographicKey?: CryptographicKeyResolvers<ContextType>;
   DateTime?: GraphQLScalarType;

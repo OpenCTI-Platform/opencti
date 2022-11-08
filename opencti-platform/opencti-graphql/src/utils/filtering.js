@@ -14,6 +14,7 @@ export const GlobalFilters = {
   labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   indicates: buildRefRelationKey(RELATION_INDICATES),
   containedBy: buildRefRelationKey(RELATION_OBJECT),
+  creator: 'creator_id',
 };
 
 export const TYPE_FILTER = 'entity_type';

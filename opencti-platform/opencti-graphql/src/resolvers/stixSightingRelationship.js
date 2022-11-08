@@ -25,10 +25,10 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, timeSeriesRelations, batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { creator } from '../domain/log';
 import { buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
+import { batchUsers } from '../domain/user';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -37,7 +37,7 @@ const externalReferencesLoader = batchLoader(batchExternalReferences);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
-
+const creatorsLoader = batchLoader(batchUsers);
 const loadByIdLoader = batchLoader(elBatchIds);
 
 const stixSightingRelationshipResolvers = {
@@ -62,7 +62,7 @@ const stixSightingRelationshipResolvers = {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
     to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
-    creator: (rel, _, context) => creator(context, context.user, rel.id, STIX_SIGHTING_RELATIONSHIP),
+    creator: (rel, _, context) => creatorsLoader.load(rel.id, context, context.user),
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),
     objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),

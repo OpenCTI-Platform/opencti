@@ -50,6 +50,7 @@ const stixDomainObjectResolvers = {
     stixDomainObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
   },
   StixDomainObjectsFilter: stixDomainObjectOptions.StixDomainObjectsFilter,
+  StixDomainObjectsOrdering: stixDomainObjectOptions.StixDomainObjectsOrdering,
   StixDomainObject: {
     __resolveType(obj) {
       if (obj.entity_type) {

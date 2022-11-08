@@ -362,6 +362,8 @@ class ToolBar extends Component {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
     if (key === 'field') {
+      const values = value === 'creator_id' ? ['From history'] : [];
+      actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
       if (
         value === 'object-marking'
         || value === 'object-label'
@@ -612,6 +614,10 @@ class ToolBar extends Component {
         {
           label: t('Confidence'),
           value: 'confidence',
+        },
+        {
+          label: t('filter_creator'),
+          value: 'creator_id',
         },
       ];
       if (this.props.type) {
@@ -1009,6 +1015,16 @@ class ToolBar extends Component {
                 <div className={classes.text}>{option.label}</div>
               </li>
             )}
+          />
+        );
+      case 'creator_id':
+        return (
+          <TextField
+            variant="standard"
+            disabled={true}
+            label="&nbsp;"
+            fullWidth={true}
+            value={'From history'}
           />
         );
       default:
