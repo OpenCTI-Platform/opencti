@@ -103,11 +103,14 @@ export const isStixCoreRelationship = (type: string): boolean => [...STIX_CORE_R
 
 export const stixCoreRelationshipOptions = {
   StixCoreRelationshipsFilter: {
+    creator: 'creator_id',
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
-  StixCoreRelationshipsOrdering: {}
+  StixCoreRelationshipsOrdering: {
+    creator: 'creator_id',
+  }
 };
 export const stixCoreRelationshipsAttributes = [
   'internal_id',

@@ -51,10 +51,9 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsTimeSeries: (_, args, context) => timeSeriesRelations(context, context.user, args),
     stixCoreRelationshipsDistribution: (_, args, context) => distributionRelations(context, context.user, args),
     stixCoreRelationshipsNumber: (_, args, context) => stixCoreRelationshipsNumber(context, context.user, args),
-    stixCoreRelationshipsExportFiles: (_, {
-      type,
-      first
-    }, context) => filesListing(context, context.user, first, `export/${type}/`),
+    stixCoreRelationshipsExportFiles: (_, { type, first }, context) => {
+      return filesListing(context, context.user, first, `export/${type}/`);
+    },
   },
   StixCoreRelationshipsFilter: stixCoreRelationshipOptions.StixCoreRelationshipsFilter,
   StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,
@@ -62,7 +61,7 @@ const stixCoreRelationshipResolvers = {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
     to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
-    creator: (rel, _, context) => creatorsLoader.load(rel.id, context, context.user),
+    creator: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),
     objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),

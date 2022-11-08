@@ -1342,6 +1342,8 @@ interface StixObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  # Technical
+  creator: User
   # inferences
   x_opencti_inferences: [Inference]
 }
@@ -1416,6 +1418,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   x_opencti_order: Int!
   x_opencti_color: String
   # Technical
+  creator: User
   toStix: String
   editContext: [EditUserContext]
 }
@@ -1479,6 +1482,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   value: String
   color: String
   # Technical
+  creator: User
   toStix: String
   editContext: [EditUserContext]
 }
@@ -1548,6 +1552,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   external_id: String
   references(types: [String]): StixObjectOrStixRelationshipConnection
   # Technical
+  creator: User
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
@@ -1619,6 +1624,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   phase_name: String!
   x_opencti_order: Int
   # Technical
+  creator: User
   editContext: [EditUserContext]
 }
 input KillChainPhaseAddInput {
@@ -8614,6 +8620,8 @@ interface BasicRelationship {
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  # Technical
+  creator: User
 }
 
 ######## INTERNAL RELATIONSHIPS
@@ -8631,6 +8639,8 @@ type InternalRelationship implements BasicRelationship {
   # InternalRelationship
   from: InternalObject
   to: InternalObject
+  # Technical
+  creator: User
 }
 input InternalRelationshipAddInput {
   relationship_type: String! # Will be check by code
@@ -8881,6 +8891,8 @@ interface StixRelationship {
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
+  # Technical
+  creator: User
 }
 
 ############## StixCoreRelationships
@@ -8904,6 +8916,7 @@ enum StixCoreRelationshipsOrdering {
   toPatternType
   x_opencti_workflow_id
   createdBy
+  creator
 }
 enum StixCoreRelationshipsFilter {
   elementId
@@ -8914,6 +8927,7 @@ enum StixCoreRelationshipsFilter {
   created_at
   confidence
   createdBy
+  creator
   markedBy
   labelledBy
   fromName
@@ -9206,6 +9220,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   confidence: Int
   objectMarking: MarkingDefinitionConnection
   # Technical
+  creator: User
   editContext: [EditUserContext]
 }
 input StixCyberObservableRelationshipAddInput {
@@ -9265,6 +9280,8 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
+  # Technical
+  creator: User
 }
 input StixMetaRelationshipAddInput {
   relationship_type: String!
