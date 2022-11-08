@@ -656,6 +656,7 @@ const riskResponseResolvers = {
                     // Find the iri for each actor
                     let actorIris = [];
                     for (let actor of origin.origin_actors) {
+                      if (actor.actor_type.includes('_')) actor.actor_type = actor.actor_type.replace(/_/g, '-');
                       let sparqlQuery, result;
                       // determine what IRI of the actor_ref 
                       sparqlQuery = selectObjectIriByIdQuery( actor.actor_ref, actor.actor_type);
@@ -671,7 +672,7 @@ const riskResponseResolvers = {
                           throw e
                       }
                       if (result == undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${actor.actor_ref}`); 
-                      actor.actor_ref = `<${result[0].iri}>`;
+                      actor.actor_ref = (result[0].iri.includes('<') ? `${result[0].iri}` : `<${result[0].iri}>`);
 
                       // attempt to find the actor
                       let {iri: actorIri, id: actorId, query} = insertActorQuery(actor);
@@ -700,7 +701,7 @@ const riskResponseResolvers = {
                           throw e
                         }
                       }
-                      actorIris.push(`<${actorIri}>`);
+                      actorIris.push((actorIri.includes('<') ? `${actorIri}` : `<${actorIri}>`));
                     }
     
                     // attach the actor(s) to the Origin
