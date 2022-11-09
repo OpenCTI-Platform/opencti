@@ -29,6 +29,7 @@ import ItemCreator from '../../../../components/ItemCreator';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { copyToClipboard } from '../../../../utils/utils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -50,6 +51,11 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     textTransform: 'uppercase',
     borderRadius: '0',
+  },
+  standard_id: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 });
 
@@ -210,9 +216,9 @@ class StixCyberObservableOverview extends Component {
                   </div>
                 </Security>
                 <div className="clearfix" />
-                <pre className="light" style={{ margin: 0 }}>
+                <div onClick={() => copyToClipboard(t, stixCyberObservable.standard_id)} className={classes.standard_id}>
                   {stixCyberObservable.standard_id}
-                </pre>
+                </div>
               </div>
             </Grid>
           </Grid>

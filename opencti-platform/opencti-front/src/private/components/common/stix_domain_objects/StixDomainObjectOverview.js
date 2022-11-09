@@ -15,7 +15,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import { Delete, BrushOutlined } from '@mui/icons-material';
+import { BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
@@ -32,6 +32,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import ItemStatus from '../../../../components/ItemStatus';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { copyToClipboard } from '../../../../utils/utils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -53,6 +54,12 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     textTransform: 'uppercase',
     borderRadius: '0',
+  },
+  standard_id: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    cursor: 'pointer',
   },
 });
 
@@ -252,9 +259,9 @@ class StixDomainObjectOverview extends Component {
                   </div>
                 </Security>
                 <div className="clearfix" />
-                <pre className="light" style={{ margin: 0 }}>
+                <div onClick={() => copyToClipboard(t, stixDomainObject.standard_id)} className={classes.standard_id}>
                   {stixDomainObject.standard_id}
-                </pre>
+                </div>
               </div>
             </Grid>
           </Grid>
@@ -271,19 +278,19 @@ class StixDomainObjectOverview extends Component {
             <List>
               {stixIds.map(
                 (stixId) => stixId.length > 0 && (
-                    <ListItem key={stixId} disableGutters={true} dense={true}>
-                      <ListItemText primary={stixId} />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={this.deleteStixId.bind(this, stixId)}
-                          size="large"
-                        >
-                          <Delete />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                  <ListItem key={stixId} disableGutters={true} dense={true}>
+                    <ListItemText primary={stixId} />
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={this.deleteStixId.bind(this, stixId)}
+                        size="large"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
                 ),
               )}
             </List>

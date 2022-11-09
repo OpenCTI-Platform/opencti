@@ -54,7 +54,7 @@ const styles = () => ({
   },
   popover: {
     float: 'left',
-    marginTop: '-12px',
+    marginTop: '-13px',
   },
   marking: {
     float: 'left',

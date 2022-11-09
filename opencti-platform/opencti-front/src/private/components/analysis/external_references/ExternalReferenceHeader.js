@@ -16,11 +16,6 @@ const styles = () => ({
     float: 'left',
     marginTop: '-13px',
   },
-  marking: {
-    float: 'left',
-    overflowX: 'hidden',
-    marginLeft: 15,
-  },
   aliases: {
     marginRight: 7,
   },
