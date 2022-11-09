@@ -15,7 +15,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import { Delete, BrushOutlined } from '@mui/icons-material';
+import { BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
@@ -32,6 +32,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import ItemStatus from '../../../../components/ItemStatus';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { copyToClipboard } from '../../../../utils/utils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -53,6 +54,12 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     textTransform: 'uppercase',
     borderRadius: '0',
+  },
+  standard_id: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    cursor: 'pointer',
   },
 });
 
@@ -102,42 +109,6 @@ class StixDomainObjectOverview extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Standard STIX ID')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip
-                  title={t(
-                    'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                  )}
-                >
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
-              </div>
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
-                  <IconButton
-                    aria-label="Close"
-                    disableRipple={true}
-                    size="small"
-                    disabled={stixIds.length === 0}
-                    onClick={this.handleToggleOpenStixIds.bind(this)}
-                  >
-                    <BrushOutlined
-                      fontSize="small"
-                      color={stixIds.length === 0 ? 'inherit' : 'secondary'}
-                    />
-                  </IconButton>
-                </div>
-              </Security>
-              <div className="clearfix" />
-              <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
-            </Grid>
             <Grid item={true} xs={6}>
               {withPattern && (
                 <div>
@@ -254,6 +225,44 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
+              <div style={{ marginTop: 20 }}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Standard STIX ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <InformationOutline fontSize="small" color="primary" />
+                  </Tooltip>
+                </div>
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
+                    <IconButton
+                      aria-label="Close"
+                      disableRipple={true}
+                      size="small"
+                      disabled={stixIds.length === 0}
+                      onClick={this.handleToggleOpenStixIds.bind(this)}
+                    >
+                      <BrushOutlined
+                        fontSize="small"
+                        color={stixIds.length === 0 ? 'inherit' : 'secondary'}
+                      />
+                    </IconButton>
+                  </div>
+                </Security>
+                <div className="clearfix" />
+                <div onClick={() => copyToClipboard(t, stixDomainObject.standard_id)} className={classes.standard_id}>
+                  {stixDomainObject.standard_id}
+                </div>
+              </div>
             </Grid>
           </Grid>
         </Paper>
@@ -269,19 +278,19 @@ class StixDomainObjectOverview extends Component {
             <List>
               {stixIds.map(
                 (stixId) => stixId.length > 0 && (
-                    <ListItem key={stixId} disableGutters={true} dense={true}>
-                      <ListItemText primary={stixId} />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={this.deleteStixId.bind(this, stixId)}
-                          size="large"
-                        >
-                          <Delete />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                  <ListItem key={stixId} disableGutters={true} dense={true}>
+                    <ListItemText primary={stixId} />
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={this.deleteStixId.bind(this, stixId)}
+                        size="large"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
                 ),
               )}
             </List>

@@ -11,16 +11,10 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 const styles = () => ({
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',
     marginTop: '-13px',
-  },
-  marking: {
-    float: 'left',
-    overflowX: 'hidden',
-    marginLeft: 15,
   },
   aliases: {
     marginRight: 7,

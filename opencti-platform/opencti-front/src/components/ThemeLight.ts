@@ -132,6 +132,10 @@ const ThemeLight = (
             background: `${accent || '#c0dfff'} !important`,
             color: '#000000 !important',
           },
+          'pre.light': {
+            fontFamily: 'Consolas, monaco, monospace',
+            background: `${nav || '#f9feff'} !important`,
+          },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
             background: `${accent || '#c0dfff'} !important`,

@@ -28,6 +28,8 @@ import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObj
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { copyToClipboard } from '../../../../utils/utils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -49,6 +51,11 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     textTransform: 'uppercase',
     borderRadius: '0',
+  },
+  standard_id: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 });
 
@@ -117,40 +124,6 @@ class StixCyberObservableOverview extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Standard STIX ID')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip
-                  title={t(
-                    'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                  )}
-                >
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
-              </div>
-              <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
-                <IconButton
-                  aria-label="Close"
-                  disableRipple={true}
-                  size="small"
-                  disabled={stixIds.length === 0}
-                  onClick={this.handleToggleOpenStixIds.bind(this)}
-                >
-                  <BrushOutlined
-                    fontSize="small"
-                    color={stixIds.length === 0 ? 'inherit' : 'secondary'}
-                  />
-                </IconButton>
-              </div>
-              <div className="clearfix" />
-              <pre style={{ margin: 0 }}>{stixCyberObservable.standard_id}</pre>
-            </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Observable type')}
@@ -177,36 +150,19 @@ class StixCyberObservableOverview extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('STIX version')}
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                style={{ cursor: 'default' }}
-              >
-                {stixCyberObservable.spec_version}
-              </Button>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
                 {t('Author')}
               </Typography>
               <ItemAuthor
                 createdBy={propOr(null, 'createdBy', stixCyberObservable)}
               />
-            </Grid>
-            <Grid item={true} xs={6}>
               <StixCoreObjectLabelsView
                 labels={stixCyberObservable.objectLabel}
                 id={stixCyberObservable.id}
+                marginTop={20}
               />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixCyberObservable.creator} />
@@ -226,6 +182,44 @@ class StixCyberObservableOverview extends Component {
                 {t('Modification date')}
               </Typography>
               {fldt(stixCyberObservable.updated_at)}
+              <div style={{ marginTop: 20 }}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Standard STIX ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <InformationOutline fontSize="small" color="primary" />
+                  </Tooltip>
+                </div>
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
+                    <IconButton
+                      aria-label="Close"
+                      disableRipple={true}
+                      size="small"
+                      disabled={stixIds.length === 0}
+                      onClick={this.handleToggleOpenStixIds.bind(this)}
+                    >
+                      <BrushOutlined
+                        fontSize="small"
+                        color={stixIds.length === 0 ? 'inherit' : 'secondary'}
+                      />
+                    </IconButton>
+                  </div>
+                </Security>
+                <div className="clearfix" />
+                <div onClick={() => copyToClipboard(t, stixCyberObservable.standard_id)} className={classes.standard_id}>
+                  {stixCyberObservable.standard_id}
+                </div>
+              </div>
             </Grid>
           </Grid>
         </Paper>
