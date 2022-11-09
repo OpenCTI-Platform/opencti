@@ -7,7 +7,7 @@ venv
 .env
 node_modules
 .vscode
-**/compiled.graphql
+opencti-platform/opencti-graphql/config/schema/compiled.graphql
 *.crt
 *.key
 docker/default*.json

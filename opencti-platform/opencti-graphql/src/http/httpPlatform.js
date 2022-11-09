@@ -52,12 +52,35 @@ const createApp = async () => {
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
+  const securityMiddleware = helmet({
+    expectCt: { enforce: true, maxAge: 30 },
+    referrerPolicy: { policy: 'unsafe-url' },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc,
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'http://cdn.jsdelivr.net/npm/@apollographql/',
+          'https://fonts.googleapis.com/',
+          'https://widget.freshworks.com/',
+        ],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com/'],
+        imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+        connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
+        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+        frameSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+      },
+    },
+  });
   // Init the http server
   const app = express();
   app.use(limiter);
   if (DEV_MODE) {
     app.set('json spaces', 2);
   }
+  app.use(securityMiddleware);
   app.use(compression({}));
 
   // -- Generated CSS with correct base path
@@ -93,7 +116,7 @@ const createApp = async () => {
   //     res.attachment(file);
   //     stream.pipe(res);
   //   } catch (e) {
-  //   CookieError(res, e?.message);
+  //     setCookieError(res, e?.message);
   //     next(e);
   //   }
   // });
@@ -218,12 +241,23 @@ const createApp = async () => {
   });
 
   // Error handling
-  // app.use((err, req, res, next) => {
-  //   logApp.error(`[EXPRESS] Error http call`, { error: err, referer: req.headers.referer });
-  //   res.redirect('/');
-  //   next();
-  // });
+  app.use((err, req, res, next) => {
+    logApp.error(`[EXPRESS] Error http call`, { error: err, referer: req.headers.referer });
+    res.redirect('/');
+    next();
+  });
   return { app, seeMiddleware };
 };
 
 export default createApp;
+
+export const applyWildcard = (app) => {
+  app.get('*', (req, res) => {
+    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
+    const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.header('Expires', '-1');
+    res.header('Pragma', 'no-cache');
+    return res.send(withOptionValued);
+  });
+};

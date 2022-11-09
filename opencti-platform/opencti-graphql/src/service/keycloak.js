@@ -5,7 +5,6 @@ import Keycloak from 'keycloak-connect'
 import { defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import {auth, hasPermission, hasRole, KeycloakContext} from 'keycloak-connect-graphql';
-import KeycloakAdminClient from "@darklight/keycloak-admin-client";
 
 export const authDirectiveTransformer = (schema, directiveName = 'auth') => {
   return mapSchema(schema, {
@@ -91,7 +90,6 @@ export const keycloakEnabled = () => {
 }
 
 export const keycloakAlive = async () => {
-  await keycloakAdminClient.auth()
   if(!keycloakEnabled()) return false;
   try {
     keycloakInstance = new Keycloak({},{
@@ -123,15 +121,3 @@ export const applyKeycloakContext = (context, req) => {
 const getKeycloak = () => {
   return keycloakInstance;
 }
-
-const keycloakAdminClient = new KeycloakAdminClient({
-  serverUrl: keycloakServer,
-  clientId,
-  realm,
-  credentials: {
-    secret
-  }
-})
-
-
-export {keycloakAdminClient}

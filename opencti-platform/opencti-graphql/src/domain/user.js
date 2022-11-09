@@ -49,7 +49,6 @@ import { buildPagination, isEmptyField, isNotEmptyField } from '../database/util
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { oidcRefresh, tokenExpired } from '../config/tokenManagement';
-import {keycloakAdminClient} from "../service/keycloak";
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -91,33 +90,11 @@ const extractTokenFromBasicAuth = async (authorization) => {
 
 export const findById = async (user, userId) => {
   const data = await loadById(user, userId, ENTITY_TYPE_USER);
-  const userObj = data ? R.dissoc('password', data) : data;
-  const q = {email: userObj.user_email};
-  const kcUserRes = await keycloakAdminClient.users.find(q);
-  if(kcUserRes.length === 0) {
-    return null;
-  }
-  const kcUser = kcUserRes[0];
-  userObj.user_email = kcUser.email;
-  userObj.firstName = kcUser.firstName;
-  userObj.lastName = kcUser.lastName;
-  return userObj;
+  return data ? R.dissoc('password', data) : data;
 };
 
-export const findAll = async (user, args) => {
-  const userObjs = await listEntities(user, [ENTITY_TYPE_USER], args);
-  const filtered = userObjs.filter(u => u.user_email !== undefined);
-  const users = [];
-  for (const userObj of filtered) {
-    const kcUserRes = await keycloakAdminClient.users.find({email: userObj.user_email});
-    if(kcUserRes.length === 0) continue;
-    const kcUser = kcUserRes[0];
-    userObj.user_email = kcUser.email;
-    userObj.firstName = kcUser.firstName;
-    userObj.lastName = kcUser.lastName;
-    users.push(userObj);
-  }
-  return users;
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_USER], args);
 };
 
 export const batchGroups = async (user, userIds) => {
