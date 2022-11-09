@@ -1303,8 +1303,10 @@ type RabbitMQConnection {
 type ConnectorConfig {
   connection: RabbitMQConnection!
   listen: String!
+  listen_routing: String!
   listen_exchange: String!
   push: String!
+  push_routing: String!
   push_exchange: String!
 }
 

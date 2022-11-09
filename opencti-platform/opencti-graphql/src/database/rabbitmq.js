@@ -110,8 +110,10 @@ export const metrics = async (context, user) => {
 export const connectorConfig = (id) => ({
   connection: config(),
   push: `${RABBIT_QUEUE_PREFIX}push_${id}`,
+  push_routing: pushRouting(id),
   push_exchange: WORKER_EXCHANGE,
   listen: `${RABBIT_QUEUE_PREFIX}listen_${id}`,
+  listen_routing: listenRouting(id),
   listen_exchange: CONNECTOR_EXCHANGE,
 });
 

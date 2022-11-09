@@ -1563,8 +1563,10 @@ export type ConnectorConfig = {
   connection: RabbitMqConnection;
   listen: Scalars['String'];
   listen_exchange: Scalars['String'];
+  listen_routing: Scalars['String'];
   push: Scalars['String'];
   push_exchange: Scalars['String'];
+  push_routing: Scalars['String'];
 };
 
 export enum ConnectorType {
@@ -20368,8 +20370,10 @@ export type ConnectorConfigResolvers<ContextType = any, ParentType extends Resol
   connection?: Resolver<ResolversTypes['RabbitMQConnection'], ParentType, ContextType>;
   listen?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   listen_exchange?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  listen_routing?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   push?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   push_exchange?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  push_routing?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
