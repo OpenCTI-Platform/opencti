@@ -1,20 +1,17 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import { pick, pipe, assoc } from 'ramda';
 import * as Yup from 'yup';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import * as R from 'ramda';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { statusCreationStatusTemplatesQuery } from './StatusCreation';
-import SelectField from '../../../../components/SelectField';
+import StatusTemplateField from '../../common/form/StatusTemplateField';
 
 const statusMutationFieldPatch = graphql`
   mutation StatusEditionFieldPatchMutation(
@@ -31,7 +28,7 @@ const statusMutationFieldPatch = graphql`
 `;
 
 const statusValidation = (t) => Yup.object().shape({
-  template_id: Yup.string().required(t('This field is required')),
+  template: Yup.object().required(t('This field is required')),
   order: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
@@ -55,39 +52,44 @@ const StatusEdition = ({ subTypeId, handleClose, open, status }) => {
 
   const data = useFragment(StatusEditionFragment, status);
 
-  const initialValues = pipe(
-    assoc('template_id', data.template.id),
-    pick(['template_id', 'order']),
-  )(data);
+  const initialValues = {
+    template: {
+      label: data.template.name,
+      value: data.template.id,
+      color: data.template.color,
+    },
+    order: data.order,
+  };
 
-  const handleSubmitField = (name, value) => {
-    statusValidation(t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: statusMutationFieldPatch,
-          variables: {
-            id: subTypeId,
-            statusId: data.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+  const handleSubmitStatusTemplate = (values, { setSubmitting }) => {
+    commitMutation({
+      mutation: statusMutationFieldPatch,
+      variables: {
+        id: subTypeId,
+        statusId: data.id,
+        input: [{ key: 'template_id', value: values.template.value || '' },
+          { key: 'order', value: String(values.order) || '' }],
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        handleClose();
+      },
+    });
   };
 
   return (
     <Formik
-      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={statusValidation(t)}
+      onSubmit={handleSubmitStatusTemplate}
     >
-      {() => (
+      {({ submitForm, isSubmitting, setFieldValue, values }) => (
         <Form>
           <Dialog
             open={open}
             PaperProps={{ elevation: 1 }}
-            onClose={handleClose}
+            onClose={submitForm}
             fullWidth={true}
           >
             <DialogTitle>{t('Create a status')}</DialogTitle>
@@ -96,30 +98,13 @@ const StatusEdition = ({ subTypeId, handleClose, open, status }) => {
                 query={statusCreationStatusTemplatesQuery}
                 render={({ props }) => {
                   if (props && props.statusTemplates) {
-                    const statusTemplatesEdges = props.statusTemplates.edges;
-                    const statusTemplates = R.map(
-                      (n) => n.node,
-                      statusTemplatesEdges,
-                    );
                     return (
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="template_id"
-                        onChange={handleSubmitField}
-                        label={t('Name')}
-                        fullWidth={true}
-                        containerstyle={{ width: '100%' }}
-                      >
-                        {statusTemplates.map((statusTemplate) => (
-                          <MenuItem
-                            key={statusTemplate.id}
-                            value={statusTemplate.id}
-                          >
-                            {statusTemplate.name}
-                          </MenuItem>
-                        ))}
-                      </Field>
+                      <StatusTemplateField
+                        name="template"
+                        style={{ marginTop: 20, width: '100%' }}
+                        setFieldValue={setFieldValue}
+                        values={values.statusTemplate}
+                      />
                     );
                   }
                   return <div />;
@@ -135,7 +120,7 @@ const StatusEdition = ({ subTypeId, handleClose, open, status }) => {
                 style={{ marginTop: 20 }}
               />
               <DialogActions>
-                <Button onClick={handleClose}>{t('Close')}</Button>
+                <Button onClick={submitForm} disabled={isSubmitting}>{t('Close')}</Button>
               </DialogActions>
             </DialogContent>
           </Dialog>
