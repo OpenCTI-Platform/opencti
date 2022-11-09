@@ -41,7 +41,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
         </pre>
         <Tooltip title={t('No value')}>
           <InformationOutline
-            className={classes.icon}
+            className={small ? classes.smallIcon : classes.icon}
             fontSize="small"
             color="secondary"
           />
