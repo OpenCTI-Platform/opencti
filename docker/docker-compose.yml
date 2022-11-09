@@ -37,7 +37,7 @@ services:
       - "5672:5672"
     profiles:
       - backend
-  
+
   stardog:
     image: docker.darklight.ai/stardog:7.9.0
     container_name: stardog
@@ -50,8 +50,8 @@ services:
     volumes:
       - "./stardog-license-key.bin:/var/opt/stardog/stardog-license-key.bin"
     profiles:
-      - backend
-  
+      - stardog
+
   cyio:
     image: docker.darklight.ai/opencti:${CYIO_TAG:-latest}
     container_name: cyio
