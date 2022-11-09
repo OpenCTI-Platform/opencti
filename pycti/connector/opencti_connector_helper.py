@@ -908,10 +908,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         # Send the message
         try:
-            routing_key = "push_routing_" + self.connector_id
             channel.basic_publish(
                 exchange=self.config["push_exchange"],
-                routing_key=routing_key,
+                routing_key=self.config["push_routing"],
                 body=json.dumps(message),
                 properties=pika.BasicProperties(
                     delivery_mode=2,  # make message persistent
