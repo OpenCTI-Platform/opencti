@@ -48,7 +48,6 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
 import { getUserSubscriptions } from '../domain/userSubscription';
-import {keycloakAdminClient} from "../service/keycloak"
 
 const groupsLoader = batchLoader(batchGroups);
 const rolesLoader = batchLoader(batchRoles);
