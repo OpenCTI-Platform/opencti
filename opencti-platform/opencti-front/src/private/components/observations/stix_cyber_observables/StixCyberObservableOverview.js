@@ -29,7 +29,6 @@ import ItemCreator from '../../../../components/ItemCreator';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import { copyToClipboard } from '../../../../utils/utils';
 import ItemCopy from '../../../../components/ItemCopy';
 
 const Transition = React.forwardRef((props, ref) => (
