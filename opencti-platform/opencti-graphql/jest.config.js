@@ -7,7 +7,7 @@ module.exports = {
     '\\.(js|ts)$': ['esbuild-jest', { sourcemap: true }],
     '\\.(gql|graphql)$': '@graphql-tools/jest-transform'
   },
-  transformIgnorePatterns: ['node_modules/(?!set-interval-async|antlr4)'],
+  transformIgnorePatterns: ['node_modules/(?!set-interval-async|antlr4|graphql-upload)'],
   reporters: ['default', ['jest-junit', { outputDirectory: './test-results/jest/', outputName: 'results.xml' }]],
   collectCoverageFrom: ['src/**/*.js', 'src/**/*.ts'],
   coveragePathIgnorePatterns: [
