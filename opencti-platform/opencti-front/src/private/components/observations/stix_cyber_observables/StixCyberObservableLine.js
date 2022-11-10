@@ -13,6 +13,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { renderObservableValue } from '../../../../utils/String';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -57,22 +58,6 @@ const StixCyberObservableLineComponent = (props) => {
     deSelectedElements,
     selectAll,
   } = props;
-  const renderValue = () => {
-    switch (node.entity_type) {
-      case 'IPv4-Addr':
-      case 'IPv6-Addr':
-        if (node.countries.edges.length > 0) {
-          return (
-            <span>
-              <span className="fi fi-us" /> {node.observable_value}
-            </span>
-          );
-        }
-        return node.observable_value;
-      default:
-        return node.observable_value;
-    }
-  };
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -113,7 +98,7 @@ const StixCyberObservableLineComponent = (props) => {
               className={classes.bodyItem}
               style={{ width: dataColumns.observable_value.width }}
             >
-              {renderValue()}
+              {renderObservableValue(node)}
             </div>
             <div
               className={classes.bodyItem}
@@ -169,6 +154,7 @@ export const StixCyberObservableLine = createFragmentContainer(
           countries {
             edges {
               node {
+                name
                 x_opencti_aliases
               }
             }
@@ -178,6 +164,7 @@ export const StixCyberObservableLine = createFragmentContainer(
           countries {
             edges {
               node {
+                name
                 x_opencti_aliases
               }
             }
