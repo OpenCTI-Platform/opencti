@@ -1,6 +1,6 @@
 import https from 'node:https';
 import http from 'node:http';
-import { graphqlUploadExpress } from 'graphql-upload';
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import { readFileSync } from 'node:fs';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
