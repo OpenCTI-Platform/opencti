@@ -10,7 +10,6 @@ import './static/css/CKEditorDark.css';
 import './static/css/CKEditorLight.css';
 import 'react-grid-layout/css/styles.css';
 import 'react-mde/lib/styles/css/react-mde-all.css';
-import 'flag-icons/css/flag-icons.min.css';
 import * as serviceWorker from './config/serviceWorker';
 import App from './app';
 import { environment } from './relay/environment';

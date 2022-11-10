@@ -45,7 +45,7 @@ esbuild
     target: ["chrome58"],
     minify: false,
     keepNames: true,
-    sourcemap: 'inline',
+    sourcemap: "inline",
     sourceRoot: "src",
     outdir: "builder/dev/build",
     incremental: true,
@@ -53,6 +53,10 @@ esbuild
   .then((builder) => {
     // region Copy public files to build
     fsExtra.copySync("./src/static/ext", buildPath + "/static/ext", {
+      recursive: true,
+      overwrite: true,
+    });
+    fsExtra.copySync("./src/static/flags", buildPath + "/static/flags", {
       recursive: true,
       overwrite: true,
     });

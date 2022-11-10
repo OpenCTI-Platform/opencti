@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
+import { renderObservableValue } from '../../../../utils/String';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -105,7 +106,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
               className={classes.bodyItem}
               style={{ width: dataColumns.observable_value.width }}
             >
-              {node.observable_value}
+              {renderObservableValue(node)}
             </div>
             <div
               className={classes.bodyItem}
@@ -176,6 +177,26 @@ export const ContainerStixCyberObservableLine = createFragmentContainer(
         entity_type
         parent_types
         created_at
+        ... on IPv4Addr {
+          countries {
+            edges {
+              node {
+                name
+                x_opencti_aliases
+              }
+            }
+          }
+        }
+        ... on IPv6Addr {
+          countries {
+            edges {
+              node {
+                name
+                x_opencti_aliases
+              }
+            }
+          }
+        }
         objectLabel {
           edges {
             node {
