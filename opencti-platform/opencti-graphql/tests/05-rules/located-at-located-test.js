@@ -1,3 +1,4 @@
+import { expect, it, describe } from 'vitest';
 import { shutdownModules, startModules } from '../../src/modules';
 import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
 import { createRelation, internalDeleteElementById, internalLoadById } from '../../src/database/middleware';

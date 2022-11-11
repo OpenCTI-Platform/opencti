@@ -1,4 +1,5 @@
 /* eslint-disable no-underscore-dangle */
+import { expect, it, describe } from 'vitest';
 import { elLoadById, } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {

@@ -1,4 +1,3 @@
-import { GraphQLUpload } from 'graphql-upload';
 import { deleteFile, filesListing, loadFile } from '../database/file-storage';
 import { askJobImport, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
@@ -21,7 +20,6 @@ const fileResolvers = {
       return file.metaData;
     },
   },
-  Upload: GraphQLUpload, // Maps the `Upload` scalar to the implementation provided by the `graphql-upload` package.
   Mutation: {
     uploadImport: (_, { file }, context) => uploadImport(context, context.user, file),
     uploadPending: (_, { file, entityId }, context) => uploadPending(context, context.user, file, entityId),

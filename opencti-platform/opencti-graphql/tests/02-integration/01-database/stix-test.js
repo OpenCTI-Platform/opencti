@@ -1,3 +1,4 @@
+import { expect, it, describe } from 'vitest';
 import * as R from 'ramda';
 import { stixLoadById } from '../../../src/database/middleware';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';

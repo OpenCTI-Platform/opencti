@@ -1,9 +1,10 @@
+import { expect, it } from 'vitest';
 import { generateStandardId, isFieldContributingToStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 
-test('should report ids stable', () => {
+it('should report ids stable', () => {
   const data = {
     name: 'A demo report for testing purposes',
     published: new Date('2020-03-01T14:02:48.111Z'),
@@ -21,13 +22,13 @@ test('should report ids stable', () => {
   }
 });
 
-test('should observable ids stable', () => {
+it('should observable ids stable', () => {
   const data = { name: 'test', payload_bin: 'test', hashes: { MD5: 'yyyyyyyyyyyyy' } };
   const reportStandardId = generateStandardId(ENTITY_HASHED_OBSERVABLE_ARTIFACT, data);
   expect(reportStandardId).toEqual('artifact--c69d33b1-c44f-57b7-a88c-b0e6225ec16a');
 });
 
-test('should external reference ids stable', () => {
+it('should external reference ids stable', () => {
   const data = { url: 'http://ssss', source_name: 'http://' };
   const reportStandardId = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, data);
   expect(reportStandardId).toEqual('external-reference--b92c2140-b505-5236-82af-ae4c42146a23');

@@ -8,17 +8,17 @@ const nativeNodeModulesPlugin = () => ({
     build.onResolve({ filter: /\.node$/, namespace: 'file' }, (args) => {
       const resolvedId = require.resolve(args.path, {
         paths: [args.resolveDir],
-      })
+      });
       if (resolvedId.endsWith('.node')) {
         return {
           path: resolvedId,
           namespace: 'node-file',
-        }
+        };
       }
       return {
         path: resolvedId,
-      }
-    })
+      };
+    });
 
     // Files in the "node-file" virtual namespace call "require()" on the
     // path from esbuild of the ".node" file in the output directory.
@@ -30,8 +30,8 @@ const nativeNodeModulesPlugin = () => ({
             catch {}
           `,
         resolveDir: path.dirname(args.path),
-      }
-    })
+      };
+    });
 
     // If a ".node" file is imported within a module in the "node-file" namespace, put
     // it in the "file" namespace where esbuild's default loading behavior will handle
@@ -42,13 +42,13 @@ const nativeNodeModulesPlugin = () => ({
         path: args.path,
         namespace: 'file',
       })
-    )
+    );
 
     // Tell esbuild's default loading behavior to use the "file" loader for
     // these ".node" files.
-    const opts = build.initialOptions
-    opts.loader = opts.loader || {}
-    opts.loader['.node'] = 'file'
+    const opts = build.initialOptions;
+    opts.loader = opts.loader || {};
+    opts.loader['.node'] = 'file';
   },
 });
 

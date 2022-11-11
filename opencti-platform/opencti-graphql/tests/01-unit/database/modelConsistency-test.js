@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { isRelationConsistent } from '../../../src/utils/modelConsistency';
 import { RELATION_CONTENT } from '../../../src/schema/stixCyberObservableRelationship';
 import {
@@ -38,7 +39,7 @@ import {
 import { ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 
 describe('Testing checkRelationConsistency', () => {
-  test.each([
+  it.concurrent.each([
     // CREATED_BY
     [RELATION_CREATED_BY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_TYPE_IDENTITY_ORGANIZATION, true],
     [RELATION_CREATED_BY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_STIX_FILE, false],

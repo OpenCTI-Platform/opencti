@@ -1,4 +1,7 @@
 /* eslint-disable */
+
+import { expect, it, describe } from 'vitest';
+
 describe('Temporary', () => {
   it('should be true', () => {
     return expect(true).toBeTruthy();

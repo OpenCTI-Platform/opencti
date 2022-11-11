@@ -1,9 +1,10 @@
 import https from 'node:https';
 import http from 'node:http';
-import { graphqlUploadExpress } from 'graphql-upload';
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import { readFileSync } from 'node:fs';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { execute, subscribe } from 'graphql';
+// eslint-disable-next-line import/extensions
+import { execute, subscribe } from 'graphql/index.js';
 import nconf from 'nconf';
 import express from 'express';
 import conf, { basePath, booleanConf, logApp, PORT } from '../config/conf';

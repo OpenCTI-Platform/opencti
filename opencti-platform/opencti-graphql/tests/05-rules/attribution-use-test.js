@@ -1,3 +1,4 @@
+import { expect, it, describe } from 'vitest';
 import { shutdownModules, startModules } from '../../src/modules';
 import { addThreatActor } from '../../src/domain/threatActor';
 import { SYSTEM_USER } from '../../src/utils/access';

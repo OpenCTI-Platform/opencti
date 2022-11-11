@@ -1,7 +1,8 @@
 /* eslint-disable no-underscore-dangle,no-param-reassign */
 import { mapSchema, MapperKind, getDirective } from '@graphql-tools/utils';
 import { includes, map, filter } from 'ramda';
-import { defaultFieldResolver, responsePathAsArray } from 'graphql';
+// eslint-disable-next-line import/extensions
+import { defaultFieldResolver, responsePathAsArray } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { logAudit } from '../config/conf';
