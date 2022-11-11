@@ -13,5 +13,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await cacheManager.shutdown();
+  try {
+    await cacheManager.shutdown();
+  } catch {
+    // Dont care
+  }
 });

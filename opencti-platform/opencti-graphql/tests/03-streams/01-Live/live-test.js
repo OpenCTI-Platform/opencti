@@ -1,3 +1,4 @@
+import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import * as R from 'ramda';
 import { shutdownModules, startModules } from '../../../src/modules';
 import { ADMIN_USER, testContext, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE } from '../../utils/testQuery';

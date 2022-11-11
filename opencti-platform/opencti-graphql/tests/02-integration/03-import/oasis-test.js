@@ -1,3 +1,4 @@
+import { expect, it, describe } from 'vitest';
 import platformInit from '../../../src/initialization';
 import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI, testContext, ADMIN_USER } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';

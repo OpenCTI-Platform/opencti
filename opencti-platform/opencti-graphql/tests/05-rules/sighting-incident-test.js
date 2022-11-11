@@ -2,6 +2,7 @@
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
 // '`targets` **identity B**.';
 
+import { expect, it, describe } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
 import { shutdownModules, startModules } from '../../src/modules';

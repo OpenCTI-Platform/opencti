@@ -1,3 +1,4 @@
+import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES, RAW_EVENTS_SIZE } from '../../utils/testQuery';
 import { shutdownModules, startModules } from '../../../src/modules';

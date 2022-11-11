@@ -1,3 +1,4 @@
+import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';

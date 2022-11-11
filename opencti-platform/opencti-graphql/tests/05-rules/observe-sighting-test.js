@@ -1,6 +1,7 @@
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
 // 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
 
+import { expect, it, describe } from 'vitest';
 import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
 import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSightingRule';
 import { RULE_PREFIX } from '../../src/schema/general';

@@ -1,3 +1,4 @@
+import { expect, it, describe } from 'vitest';
 import { FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
 import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';

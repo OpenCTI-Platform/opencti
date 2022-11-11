@@ -1,3 +1,4 @@
+import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 

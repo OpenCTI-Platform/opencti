@@ -5,7 +5,8 @@ import graphql from '@rollup/plugin-graphql';
 export default defineConfig({
   plugins: [graphql()],
   test: {
-    include: ['tests/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    include: ['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    testTimeout: 1200000,
     setupFiles: ['./tests/utils/testSetup.js'],
     coverage: {
       provider: 'istanbul',
