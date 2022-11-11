@@ -1,8 +1,8 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import platformInit from '../../../src/initialization';
-import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI, testContext, ADMIN_USER } from '../../utils/testQuery';
+import { ADMIN_USER, API_TOKEN, API_URI, FIVE_MINUTES, PYTHON_PATH, testContext } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { shutdownModules, startModules } from '../../../src/modules';
+import httpServer from '../../../src/http/httpServer';
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, './tests/data/poisonivy.json'];
@@ -16,11 +16,11 @@ describe('Database provision', () => {
   it(
     'Should import creation succeed',
     async () => {
-      await startModules();
+      await httpServer.start();
       const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      await shutdownModules();
+      await httpServer.shutdown();
     },
     FIVE_MINUTES
   );

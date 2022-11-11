@@ -17,11 +17,9 @@
     "build": "yarn install:python && yarn build:prod",
     "start": "yarn build:dev && node build/back.js",
     "serv": "node build/back.js",
-    "test:base": "node --max-old-space-size=8192 ./node_modules/jest/bin/jest.js --bail --testSequencer ./tests/utils/testSequencer.js --no-watchman --runInBand --forceExit",
-    "test:dev": "yarn test:base ./tests/01-unit ./tests/02-integration ./tests/03-streams ./tests/05-rules",
-    "test": "vitest --no-threads run --coverage",
-    "vitest": "vitest --no-threads run",
-    "insert:dev": "node build/script-insert-dataset.js"
+    "insert:dev": "node build/script-insert-dataset.js",
+    "test:dev": "vitest --no-threads run -c ./builder/dev/vitest.config.ts",
+    "test": "vitest --silent --no-threads run --coverage"
   },
   "pkg": {
     "scripts": "dist/**/*.js",

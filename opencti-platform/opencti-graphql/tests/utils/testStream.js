@@ -1,3 +1,4 @@
+import { expect } from 'vitest';
 import EventSource from 'eventsource';
 import * as R from 'ramda';
 import { validate as isUuid } from 'uuid';

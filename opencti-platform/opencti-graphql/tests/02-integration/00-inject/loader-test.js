@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ADMIN_USER, API_TOKEN, API_URI, FIVE_MINUTES, PYTHON_PATH, testContext } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { shutdownModules, startModules } from '../../../src/modules';
@@ -9,6 +9,7 @@ import platformInit from '../../../src/initialization';
 import { deleteStream } from '../../../src/database/redis';
 import { deleteQueues } from '../../../src/domain/connector';
 import { deleteBucket } from '../../../src/database/file-storage';
+import httpServer from '../../../src/http/httpServer';
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];

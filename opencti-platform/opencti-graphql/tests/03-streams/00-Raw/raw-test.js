@@ -1,24 +1,24 @@
-import { expect, it, describe, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES, RAW_EVENTS_SIZE } from '../../utils/testQuery';
-import { shutdownModules, startModules } from '../../../src/modules';
 import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, } from '../../utils/testStream';
 import { PORT } from '../../../src/config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
+import httpServer from '../../../src/http/httpServer';
 
 describe('Raw streams tests', () => {
   beforeAll(async () => {
-    await startModules();
+    await httpServer.start();
   });
   afterAll(async () => {
-    await shutdownModules();
+    await httpServer.shutdown();
   });
 
   // We need to check the event format to be sure that everything is setup correctly
   it(
     'Should stream correctly formatted',
     async () => {
-      // Read all events from the beginning.
+    // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
       // Check the number of events
       expect(events.length).toBe(RAW_EVENTS_SIZE);

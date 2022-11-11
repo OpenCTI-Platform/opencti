@@ -7,7 +7,6 @@ import { STIX_META_RELATION_TO_FIELD } from '../../../src/schema/stixMetaRelatio
 
 describe.concurrent('identifier', () => {
   it('should name correctly normalize', () => {
-    console.log('identifier');
     let normalize = normalizeName('My data %test     ');
     expect(normalize).toEqual('my data %test');
     normalize = normalizeName('My ♫̟  data  test ');
