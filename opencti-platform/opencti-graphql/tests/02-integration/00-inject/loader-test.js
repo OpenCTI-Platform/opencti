@@ -9,7 +9,6 @@ import platformInit from '../../../src/initialization';
 import { deleteStream } from '../../../src/database/redis';
 import { deleteQueues } from '../../../src/domain/connector';
 import { deleteBucket } from '../../../src/database/file-storage';
-import httpServer from '../../../src/http/httpServer';
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
