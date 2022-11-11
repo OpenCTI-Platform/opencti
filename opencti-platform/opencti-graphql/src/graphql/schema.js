@@ -2,9 +2,11 @@ import { GraphQLDateTime } from 'graphql-scalars';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
-import { GraphQLScalarType, Kind } from 'graphql';
+// eslint-disable-next-line import/extensions
+import { GraphQLScalarType, Kind } from 'graphql/index.js';
 import { validate as uuidValidate } from 'uuid';
 import { UserInputError } from 'apollo-server-express';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -102,6 +104,7 @@ const validateStixRef = (stixRef) => {
 
 const globalResolvers = {
   DateTime: GraphQLDateTime,
+  Upload: GraphQLUpload,
   StixId: new GraphQLScalarType({
     name: 'StixId',
     description: 'STIX ID Scalar Type',

@@ -1,5 +1,6 @@
 import { dissoc, filter, head, includes, isEmpty, isNil } from 'ramda';
-import { stripIgnoredCharacters } from 'graphql';
+// eslint-disable-next-line import/extensions
+import { stripIgnoredCharacters } from 'graphql/index.js';
 import { booleanConf, DEV_MODE, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';

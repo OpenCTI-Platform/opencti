@@ -1,3 +1,4 @@
+import { expect, describe, it } from 'vitest';
 import { ADMIN_USER, API_TOKEN, API_URI, FIVE_MINUTES, PYTHON_PATH, testContext } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { shutdownModules, startModules } from '../../../src/modules';

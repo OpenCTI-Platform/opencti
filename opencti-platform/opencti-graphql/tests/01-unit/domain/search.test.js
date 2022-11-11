@@ -1,3 +1,4 @@
+import { expect, it } from 'vitest';
 import { elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine';
 import { isNotEmptyField } from '../../../src/database/utils';
 
@@ -15,7 +16,7 @@ const parse = (search) => {
   return { queriesString, matchesString };
 };
 
-test('should string correctly escaped', async () => {
+it('should string correctly escaped', async () => {
   // +|\-*()~={}:?\\
   let escape = specialElasticCharsEscape('Looking {for} [malware] : ~APT');
   expect(escape).toEqual('Looking \\{for\\} \\[malware\\] \\: \\~APT');
@@ -25,7 +26,7 @@ test('should string correctly escaped', async () => {
   expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
 });
 
-test('should search parsing correctly generated', () => {
+it('should search parsing correctly generated', () => {
   // URL TESTING
   let parsed = parse('first http://localhost:4000/graphql');
   expect(parsed.queriesString).toBe('first* http\\:\\/\\/localhost\\:4000\\/graphql*');
