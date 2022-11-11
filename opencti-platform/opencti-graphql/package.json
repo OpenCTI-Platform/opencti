@@ -19,7 +19,7 @@
     "serv": "node build/back.js",
     "test:base": "node --max-old-space-size=8192 ./node_modules/jest/bin/jest.js --bail --testSequencer ./tests/utils/testSequencer.js --no-watchman --runInBand --forceExit",
     "test:dev": "yarn test:base ./tests/01-unit ./tests/02-integration ./tests/03-streams ./tests/05-rules",
-    "test": "yarn test:base --coverage --e test",
+    "test": "vitest --no-threads run --coverage",
     "vitest": "vitest --no-threads run",
     "insert:dev": "node build/script-insert-dataset.js"
   },
@@ -144,6 +144,7 @@
     "@types/uuid": "8.3.4",
     "@typescript-eslint/eslint-plugin": "5.42.1",
     "@typescript-eslint/parser": "5.42.1",
+    "@vitest/coverage-istanbul": "^0.25.1",
     "cross-env": "7.0.3",
     "esbuild": "0.15.13",
     "esbuild-plugin-import-glob": "0.1.1",

@@ -8,7 +8,8 @@ export default defineConfig({
     include: ['tests/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     setupFiles: ['./tests/utils/testSetup.js'],
     coverage: {
-      provider: 'istanbul'
+      provider: 'istanbul',
+      reporter: ['text', 'json', 'html'],
     },
     sequence: {
       shuffle: false,
