@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import type { AuthUser, AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import {
   createEntity,
   distributionEntities,
@@ -56,8 +56,8 @@ export const groupingsTimeSeries = (context: AuthContext, user: AuthUser, args: 
 };
 
 export const groupingsNumber = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
-  const countPromise = elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING], args)) as Promise<number>;
-  const totalPromise = elCount(
+  const countPromise = await elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING], args)) as Promise<number>;
+  const totalPromise = await elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING]), R.dissoc('endDate'))(args)
@@ -78,7 +78,7 @@ export const groupingsTimeSeriesByAuthor = async (context: AuthContext, user: Au
 };
 
 export const groupingsNumberByEntity = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
-  const countPromise = elCount(
+  const countPromise = await elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -88,7 +88,7 @@ export const groupingsNumberByEntity = async (context: AuthContext, user: AuthUs
       R.assoc('fromId', args.objectId)
     )(args)
   ) as Promise<number>;
-  const totalPromise = elCount(
+  const totalPromise = await elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -104,7 +104,7 @@ export const groupingsNumberByEntity = async (context: AuthContext, user: AuthUs
 };
 
 export const groupingsNumberByAuthor = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
-  const countPromise = elCount(
+  const countPromise = await elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -114,7 +114,7 @@ export const groupingsNumberByAuthor = async (context: AuthContext, user: AuthUs
       R.assoc('fromId', args.authorId)
     )(args)
   ) as Promise<number>;
-  const totalPromise = elCount(
+  const totalPromise = await elCount(
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
