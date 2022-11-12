@@ -81,7 +81,7 @@ export const renderObservableValue = (observable) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':
     case 'IPv6-Addr':
-      if (observable.countries.edges.length > 0) {
+      if ((observable.countries?.edges ?? []).length > 0) {
         const country = R.head(observable.countries.edges).node;
         return (
           <div>
