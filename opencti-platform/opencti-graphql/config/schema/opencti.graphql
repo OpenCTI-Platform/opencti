@@ -5078,6 +5078,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   secondary_motivations: [String]
   personal_motivations: [String]
   locations: LocationConnection
+  countries: CountryConnection
   # Technical
   creator: User
   toStix: String
@@ -6749,6 +6750,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   ): StixCyberObservableRelationshipConnection
   # IPv4Addr
   value: String
+  countries: CountryConnection
   # Technical
   creator: User
   toStix: String
@@ -6840,6 +6842,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   ): StixCyberObservableRelationshipConnection
   # IPv4Addr
   value: String
+  countries: CountryConnection
   # Technical
   creator: User
   toStix: String

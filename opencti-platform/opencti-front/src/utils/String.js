@@ -1,4 +1,7 @@
 import * as R from 'ramda';
+import React from 'react';
+import Tooltip from '@mui/material/Tooltip';
+import { APP_BASE_PATH } from '../relay/environment';
 
 export const truncate = (str, limit) => {
   if (str === undefined || str === null || str.length <= limit) {
@@ -73,3 +76,34 @@ export const toB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 export const fromB64 = (str) => decodeURIComponent(escape(window.atob(str)));
 
 export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
+
+export const renderObservableValue = (observable) => {
+  switch (observable.entity_type) {
+    case 'IPv4-Addr':
+    case 'IPv6-Addr':
+      if ((observable.countries?.edges ?? []).length > 0) {
+        const country = R.head(observable.countries.edges).node;
+        return (
+          <div>
+            <div style={{ float: 'left', paddingTop: 2 }}>
+              <Tooltip title={country.name}>
+                <img
+                  style={{ width: 20 }}
+                  src={`${APP_BASE_PATH}/static/flags/4x3/${R.head(
+                    country.x_opencti_aliases.filter((n) => n.length === 2),
+                  )}.svg`}
+                  alt={country.name}
+                />
+              </Tooltip>
+            </div>
+            <div style={{ float: 'left', marginLeft: 10 }}>
+              {observable.observable_value}
+            </div>
+          </div>
+        );
+      }
+      return observable.observable_value;
+    default:
+      return observable.observable_value;
+  }
+};

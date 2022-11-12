@@ -26,9 +26,11 @@ const useStyles = makeStyles(() => ({
 
 const Loading = () => {
   const classes = useStyles();
-  return <div className={classes.loading}>
+  return (
+    <div className={classes.loading}>
       <Loader variant={LoaderVariant.container} withRightPadding={false} />
-    </div>;
+    </div>
+  );
 };
 
 ReactDOM.render(
