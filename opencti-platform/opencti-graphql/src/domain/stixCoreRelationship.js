@@ -66,9 +66,7 @@ export const stixCoreRelationshipsNumber = (context, user, args) => {
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {
     count: elCount(context, user, indices, finalArgs),
-    total: elCount(context,
-      user,
-      indices, R.dissoc('endDate', finalArgs)),
+    total: elCount(context, user, indices, R.dissoc('endDate', finalArgs)),
   };
 };
 
