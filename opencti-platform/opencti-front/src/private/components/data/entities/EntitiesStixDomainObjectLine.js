@@ -67,7 +67,7 @@ const EntitiesStixDomainObjectLineComponent = (props) => {
       classes={{ root: classes.item }}
       divider={true}
       button={true}
-      onClick={onToggleEntity}
+      onClick={() => onToggleEntity(node)}
       selected={node.id in (selectedElements || {})}
     >
       <ListItemIcon
@@ -81,7 +81,6 @@ const EntitiesStixDomainObjectLineComponent = (props) => {
             || node.id in (selectedElements || {})
           }
           disableRipple={true}
-          onChange={onToggleEntity}
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
