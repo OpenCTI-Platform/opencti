@@ -160,10 +160,10 @@
     "vitest": "^0.25.1"
   },
   "resolutions": {
-    "xmldom": "0.8.3",
-    "jose": "4.9.2",
     "cross-fetch": "3.1.5",
+    "jose": "4.11.0",
     "lodash": "4.17.21",
+    "@xmldom/xmldom": "0.8.4",
     "nconf": "patch:nconf@0.12.0#./patch/nconf-0.12.0.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.7.4#./patch/node-calls-python-1.7.4.patch"

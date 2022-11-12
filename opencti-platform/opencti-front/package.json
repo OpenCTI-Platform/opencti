@@ -123,8 +123,9 @@
   },
   "resolutions": {
     "d3-color": "3.1.0",
+    "loader-utils": "2.0.4",
     "scss-tokenizer": "0.4.3",
-    "node-sass": "7.0.1",
+    "node-sass": "7.0.3",
     "react-virtualized": "patch:react-virtualized@9.22.3#./patch/react-virtualized-9.22.3.patch"
   },
   "workspaces": [
