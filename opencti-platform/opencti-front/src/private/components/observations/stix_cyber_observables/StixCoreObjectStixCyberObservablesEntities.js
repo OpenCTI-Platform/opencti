@@ -142,7 +142,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixCoreRelationships;
+      return props.data && props.data.stixCyberObservables;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
