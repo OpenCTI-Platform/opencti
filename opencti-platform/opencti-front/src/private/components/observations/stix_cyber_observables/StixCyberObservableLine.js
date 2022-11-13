@@ -71,7 +71,7 @@ const StixCyberObservableLineComponent = (props) => {
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={() => onToggleEntity(node)}
+        onClick={(event) => onToggleEntity(node, event)}
       >
         <Checkbox
           edge="start"

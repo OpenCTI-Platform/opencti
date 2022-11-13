@@ -169,7 +169,7 @@ class Relationships extends Component {
         isSortable: false,
       },
       relationship_type: {
-        label: 'Relationship type',
+        label: 'Type',
         width: '10%',
         isSortable: true,
       },
@@ -188,9 +188,14 @@ class Relationships extends Component {
         width: '10%',
         isSortable: true,
       },
+      creator: {
+        label: 'Creator',
+        width: '7%',
+        isSortable: true,
+      },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        width: '7%',
         isSortable: isRuntimeSort,
       },
       objectMarking: {
@@ -253,6 +258,7 @@ class Relationships extends Component {
                 'created_start_date',
                 'created_end_date',
                 'createdBy',
+                'creator',
               ]}
             >
               <QueryRenderer
@@ -290,9 +296,7 @@ class Relationships extends Component {
                 filters,
               )}
               search={searchTerm}
-              handleClearSelectedElements={this.handleClearSelectedElements.bind(
-                this,
-              )}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
               withPaddingRight={false}
             />
           </div>

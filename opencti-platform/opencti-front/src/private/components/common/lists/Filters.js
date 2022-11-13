@@ -27,7 +27,7 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
+import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
@@ -402,6 +402,29 @@ class Filters extends Component {
                   createdByEntities,
                   this.state.entities.toSightingId,
                 ),
+              },
+            });
+          });
+        break;
+      case 'creator':
+        fetchQuery(identitySearchCreatorsSearchQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const creators = R.pipe(
+              R.pathOr([], ['creators', 'edges']),
+              R.map((n) => ({
+                label: n.node.name,
+                value: n.node.id,
+                type: 'Individual',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                creator: R.union(creators, this.state.entities.creator),
               },
             });
           });
@@ -1418,10 +1441,7 @@ class Filters extends Component {
           (n) => noDirectFilters || !R.includes(n, directFilters),
           availableFilterKeys,
         ).map((filterKey) => {
-          if (
-            filterKey.endsWith('start_date')
-            || filterKey.endsWith('end_date')
-          ) {
+          if (filterKey.endsWith('start_date') || filterKey.endsWith('end_date')) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
                 <DatePicker
@@ -1477,8 +1497,7 @@ class Filters extends Component {
                     ? (option) => option.type
                     : (option) => t(option.group ? option.group : `filter_${filterKey}`)
                 }
-                isOptionEqualToValue={(option, value) => option.value === value.value
-                }
+                isOptionEqualToValue={(option, value) => option.value === value.value}
                 renderInput={(params) => (
                   <TextField
                     {...R.dissoc('InputProps', params)}
@@ -1717,63 +1736,58 @@ class Filters extends Component {
       R.sortWith([R.ascend(R.prop('label'))]),
     )(entityTypes);
     return (
-      <React.Fragment>
-        <InputAdornment position="start">
-          <IconButton
-            onClick={this.handleOpenSearchScope.bind(this, key)}
-            size="small"
-            edge="end"
-            style={{ marginRight: -8 }}
-          >
-            <PaletteOutlined
-              fontSize="small"
-              color={
-                searchScope[key] && searchScope[key].length > 0
-                  ? 'secondary'
-                  : 'primary'
-              }
-            />
-          </IconButton>
-          <Popover
-            classes={{ paper: classes.container2 }}
-            open={openSearchScope[key]}
-            anchorEl={anchorElSearchScope[key]}
-            onClose={this.handleCloseSearchScope.bind(this, key)}
-            anchorOrigin={{
-              vertical: 'center',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'center',
-              horizontal: 'left',
-            }}
-            elevation={8}
-          >
-            <MenuList dense={true}>
-              {entitiesTypes.map((entityType) => (
-                <MenuItem
-                  key={entityType.value}
-                  value={entityType.value}
-                  dense={true}
-                  onClick={this.handleToggleSearchScope.bind(
-                    this,
-                    key,
-                    entityType.value,
-                  )}
-                >
-                  <Checkbox
-                    size="small"
-                    checked={(searchScope[key] || []).includes(
-                      entityType.value,
-                    )}
-                  />
-                  <ListItemText primary={entityType.label} />
-                </MenuItem>
-              ))}
-            </MenuList>
-          </Popover>
-        </InputAdornment>
-      </React.Fragment>
+      <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
+        <IconButton
+          onClick={this.handleOpenSearchScope.bind(this, key)}
+          size="small"
+          edge="end"
+        >
+          <PaletteOutlined
+            fontSize="small"
+            color={
+              searchScope[key] && searchScope[key].length > 0
+                ? 'secondary'
+                : 'primary'
+            }
+          />
+        </IconButton>
+        <Popover
+          classes={{ paper: classes.container2 }}
+          open={openSearchScope[key]}
+          anchorEl={anchorElSearchScope[key]}
+          onClose={this.handleCloseSearchScope.bind(this, key)}
+          anchorOrigin={{
+            vertical: 'center',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'center',
+            horizontal: 'left',
+          }}
+          elevation={8}
+        >
+          <MenuList dense={true}>
+            {entitiesTypes.map((entityType) => (
+              <MenuItem
+                key={entityType.value}
+                value={entityType.value}
+                dense={true}
+                onClick={this.handleToggleSearchScope.bind(
+                  this,
+                  key,
+                  entityType.value,
+                )}
+              >
+                <Checkbox
+                  size="small"
+                  checked={(searchScope[key] || []).includes(entityType.value)}
+                />
+                <ListItemText primary={entityType.label} />
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Popover>
+      </InputAdornment>
     );
   }
 

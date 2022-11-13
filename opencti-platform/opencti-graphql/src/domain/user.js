@@ -36,7 +36,7 @@ import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID, OPENCTI_SYSTEM_UUID
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
-import { elLoadBy } from '../database/engine';
+import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import {
@@ -49,7 +49,7 @@ import {
   USER_DELETION,
 } from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import { BYPASS, executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const BEARER = 'Bearer ';
@@ -122,6 +122,13 @@ export const findAll = (context, user, args) => {
 
 export const batchGroups = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
+};
+
+export const batchUsers = async (context, user, userIds) => {
+  const internalUserIds = Object.keys(INTERNAL_USERS);
+  const userToFinds = R.uniq(userIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
+  const users = await elFindByIds(context, user, userToFinds, { toMap: true });
+  return userIds.map((id) => INTERNAL_USERS[id] || users[id] || SYSTEM_USER);
 };
 
 export const batchRoles = async (context, user, userId) => {

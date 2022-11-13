@@ -22,7 +22,6 @@ import {
   stixCoreObjectDelete,
   stixCoreObjectImportPush
 } from '../domain/stixCoreObject';
-import { creator } from '../domain/log';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
@@ -32,6 +31,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
+import { batchUsers } from '../domain/user';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -41,6 +41,7 @@ const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
 const observedDataLoader = batchLoader(batchObservedData);
+const creatorsLoader = batchLoader(batchUsers);
 
 const stixCoreObjectResolvers = {
   Query: {
@@ -58,7 +59,7 @@ const stixCoreObjectResolvers = {
       return 'Unknown';
     },
     toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
-    creator: (stixCoreObject, _, context) => creator(context, context.user, stixCoreObject.id, ABSTRACT_STIX_CORE_OBJECT),
+    creator: (stixCoreObject, _, context) => creatorsLoader.load(stixCoreObject.creator_id, context, context.user),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
     createdBy: (stixCoreObject, _, context) => createdByLoader.load(stixCoreObject.id, context, context.user),

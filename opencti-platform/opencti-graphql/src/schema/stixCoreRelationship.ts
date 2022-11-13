@@ -1,11 +1,5 @@
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, schemaTypes } from './general';
-import {
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from './stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from './stixMetaRelationship';
 
 // region Standard STIX core
 export const RELATION_DELIVERS = 'delivers';
@@ -109,13 +103,14 @@ export const isStixCoreRelationship = (type: string): boolean => [...STIX_CORE_R
 
 export const stixCoreRelationshipOptions = {
   StixCoreRelationshipsFilter: {
+    creator: 'creator_id',
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objectContains: buildRefRelationKey(RELATION_OBJECT),
-    containedBy: buildRefRelationKey(RELATION_OBJECT),
-    hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
   },
+  StixCoreRelationshipsOrdering: {
+    creator: 'creator_id',
+  }
 };
 export const stixCoreRelationshipsAttributes = [
   'internal_id',

@@ -2321,6 +2321,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   data.internal_id = internalId;
   data.standard_id = standardId;
   data.entity_type = relationshipType;
+  data.creator_id = user.internal_id;
   data.created_at = today;
   data.updated_at = today;
   // stix-relationship
@@ -2647,6 +2648,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     R.assoc(ID_INTERNAL, internalId),
     R.assoc(ID_STANDARD, standardId),
     R.assoc('entity_type', type),
+    R.assoc('creator_id', user.internal_id),
     R.dissoc('update'),
     R.dissoc('file'),
     R.omit(STIX_META_RELATIONSHIPS_INPUTS),

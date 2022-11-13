@@ -157,7 +157,11 @@ export const stixDomainObjectOptions = {
     containedBy: buildRefRelationKey(RELATION_OBJECT),
     hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
     indicates: buildRefRelationKey(RELATION_INDICATES),
+    creator: 'creator_id',
   },
+  StixDomainObjectsOrdering: {
+    creator: 'creator_id'
+  }
 };
 
 const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {

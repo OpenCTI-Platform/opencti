@@ -66,6 +66,11 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   all_marking: [],
 };
 
+export const INTERNAL_USERS = {
+  [SYSTEM_USER.id]: SYSTEM_USER,
+  [RETENTION_MANAGER_USER.id]: RETENTION_MANAGER_USER
+};
+
 export const getBaseUrl = (req: Request): string => {
   if (baseUrl) {
     return baseUrl;

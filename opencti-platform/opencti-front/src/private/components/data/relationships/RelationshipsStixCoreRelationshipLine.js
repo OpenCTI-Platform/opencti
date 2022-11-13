@@ -163,6 +163,12 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                {pathOr('', ['creator', 'name'], node)}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
                 {pathOr('', ['createdBy', 'name'], node)}
@@ -2739,6 +2745,10 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
             entity_type
           }
         }
+        creator {
+          id
+          name
+        }
         objectMarking {
           edges {
             node {
@@ -3600,6 +3610,17 @@ class RelationshipsStixCoreRelationshipLineDummyComponent extends Component {
                   animation="wave"
                   variant="rectangular"
                   width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
                   height="100%"
                 />
               </div>

@@ -201,8 +201,13 @@ class Entities extends Component {
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        width: '12%',
         isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
+        isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
@@ -211,7 +216,7 @@ class Entities extends Component {
       },
       created_at: {
         label: 'Creation date',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       objectMarking: {
@@ -272,6 +277,7 @@ class Entities extends Component {
                 'created_start_date',
                 'created_end_date',
                 'createdBy',
+                'creator',
               ]}
             >
               <QueryRenderer
