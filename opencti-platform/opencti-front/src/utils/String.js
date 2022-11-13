@@ -83,24 +83,27 @@ export const renderObservableValue = (observable) => {
     case 'IPv6-Addr':
       if ((observable.countries?.edges ?? []).length > 0) {
         const country = R.head(observable.countries.edges).node;
-        return (
-          <div>
-            <div style={{ float: 'left', paddingTop: 2 }}>
-              <Tooltip title={country.name}>
-                <img
-                  style={{ width: 20 }}
-                  src={`${APP_BASE_PATH}/static/flags/4x3/${R.head(
-                    country.x_opencti_aliases.filter((n) => n.length === 2),
-                  )}.svg`}
-                  alt={country.name}
-                />
-              </Tooltip>
-            </div>
-            <div style={{ float: 'left', marginLeft: 10 }}>
-              {observable.observable_value}
-            </div>
-          </div>
+        const flag = R.head(
+          (country.x_opencti_aliases ?? []).filter((n) => n.length === 2),
         );
+        if (flag) {
+          return (
+            <div>
+              <div style={{ float: 'left', paddingTop: 2 }}>
+                <Tooltip title={country.name}>
+                  <img
+                    style={{ width: 20 }}
+                    src={`${APP_BASE_PATH}/static/flags/4x3/${flag}.svg`}
+                    alt={country.name}
+                  />
+                </Tooltip>
+              </div>
+              <div style={{ float: 'left', marginLeft: 10 }}>
+                {observable.observable_value}
+              </div>
+            </div>
+          );
+        }
       }
       return observable.observable_value;
     default:
