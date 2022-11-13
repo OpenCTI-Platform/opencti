@@ -36,7 +36,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({ content }) => {
         className={classes.icon}
         onClick={() => copyToClipboard(t, content)}
       >
-        <ContentCopyOutlined fontSize="small" />
+        <ContentCopyOutlined sx={{ fontSize: 18 }} />
       </span>
     </div>
   );

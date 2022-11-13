@@ -453,7 +453,7 @@ class StixCoreObjectStixCyberObservables extends Component {
               handleClearSelectedElements={this.handleClearSelectedElements.bind(
                 this,
               )}
-              withSmallPaddingRight={true}
+              variant="medium"
             />
           </div>
         )}

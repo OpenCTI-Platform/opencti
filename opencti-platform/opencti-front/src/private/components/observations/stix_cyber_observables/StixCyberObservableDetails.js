@@ -13,8 +13,13 @@ import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
-import { dateAttributes, ignoredAttributes, openVocabularies } from '../../../../utils/Entity';
+import {
+  dateAttributes,
+  ignoredAttributes,
+  openVocabularies,
+} from '../../../../utils/Entity';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ItemCopy from '../../../../components/ItemCopy';
 
 const styles = () => ({
   paper: {
@@ -58,11 +63,14 @@ class StixCyberObservableDetailsComponent extends Component {
                   {t('File')}
                 </Typography>
                 <Button
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                    file.id,
+                  )}`}
                   variant="outlined"
                   color="secondary"
                   size="small"
-                  startIcon={<GetAppOutlined />}>
+                  startIcon={<GetAppOutlined />}
+                >
                   {t('Download')} ({b(file.size)})
                 </Button>
               </Grid>
@@ -71,7 +79,10 @@ class StixCyberObservableDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
-              <ExpandableMarkdown source={stixCyberObservable.x_opencti_description} limit={400}/>
+              <ExpandableMarkdown
+                source={stixCyberObservable.x_opencti_description}
+                limit={400}
+              />
             </Grid>
             {observableAttributes.map((observableAttribute) => {
               if (observableAttribute.key === 'hashes') {
@@ -80,27 +91,41 @@ class StixCyberObservableDetailsComponent extends Component {
                     <Typography variant="h3" gutterBottom={true}>
                       {hash.algorithm} - hashes
                     </Typography>
-                    <pre>{hash.hash}</pre>
+                    <pre>
+                      <ItemCopy content={hash.hash} />
+                    </pre>
                   </Grid>
                 ));
               }
               if (observableAttribute.key === 'startup_info') {
                 return observableAttribute.value.map((hash) => (
-                    <Grid key={hash.key} item={true} xs={6}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {hash.key} - startup_info
-                      </Typography>
-                      <pre>{hash.value}</pre>
-                    </Grid>
+                  <Grid key={hash.key} item={true} xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {hash.key} - startup_info
+                    </Typography>
+                    <pre>
+                      <ItemCopy content={hash.value} />
+                    </pre>
+                  </Grid>
                 ));
               }
-              if (Object.keys(openVocabularies).includes(`${observableAttribute.key}-ov`)) {
-                return <Grid key={observableAttribute.key} item={true} xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t(observableAttribute.key)}
-                  </Typography>
-                  <ItemOpenVocab small={false} type={`${observableAttribute.key}-ov`} value={observableAttribute.value} />
-                </Grid>;
+              if (
+                Object.keys(openVocabularies).includes(
+                  `${observableAttribute.key}-ov`,
+                )
+              ) {
+                return (
+                  <Grid key={observableAttribute.key} item={true} xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t(observableAttribute.key)}
+                    </Typography>
+                    <ItemOpenVocab
+                      small={false}
+                      type={`${observableAttribute.key}-ov`}
+                      value={observableAttribute.value}
+                    />
+                  </Grid>
+                );
               }
               let finalValue = observableAttribute.value;
               if (includes(observableAttribute.key, dateAttributes)) {
@@ -119,13 +144,17 @@ class StixCyberObservableDetailsComponent extends Component {
                   <Typography variant="h3" gutterBottom={true}>
                     {t(observableAttribute.key.replace('attribute_', ''))}
                   </Typography>
-                  <pre>{finalValue || '-'}</pre>
+                  <pre>
+                    <ItemCopy content={finalValue || '-'} />
+                  </pre>
                 </Grid>
               );
             })}
           </Grid>
           <Divider />
-          <StixCyberObservableIndicators stixCyberObservable={stixCyberObservable}/>
+          <StixCyberObservableIndicators
+            stixCyberObservable={stixCyberObservable}
+          />
         </Paper>
       </div>
     );
@@ -212,7 +241,7 @@ const StixCyberObservableDetails = createFragmentContainer(
           mtime
           atime
           x_opencti_additional_names
-          obsContent{
+          obsContent {
             id
           }
           hashes {

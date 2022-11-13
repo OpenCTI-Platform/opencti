@@ -297,7 +297,6 @@ class Relationships extends Component {
               )}
               search={searchTerm}
               handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
-              withPaddingRight={false}
             />
           </div>
         )}

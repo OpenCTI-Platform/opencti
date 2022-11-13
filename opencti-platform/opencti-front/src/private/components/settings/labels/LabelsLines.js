@@ -4,12 +4,31 @@ import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { LabelLine, LabelLineDummy } from './LabelLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
 class LabelsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'labels',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
-    const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
+    const {
+      initialLoading,
+      dataColumns,
+      relay,
+      paginationOptions,
+      onToggleEntity,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -27,6 +46,10 @@ class LabelsLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
@@ -82,6 +105,8 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_labels") {
           edges {
             node {
+              id
+              entity_type
               ...LabelLine_node
             }
           }

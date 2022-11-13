@@ -83,16 +83,23 @@ const styles = (theme) => ({
     height: 50,
     overflow: 'hidden',
   },
-  bottomNavWithPadding: {
+  bottomNavWithLargePadding: {
     zIndex: 1100,
     padding: '0 230px 0 180px',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
-  withSmallPaddingRight: {
+  bottomNavWithMediumPadding: {
     zIndex: 1100,
     padding: '0 200px 0 180px',
+    display: 'flex',
+    height: 50,
+    overflow: 'hidden',
+  },
+  bottomNavWithSmallPadding: {
+    zIndex: 1100,
+    padding: '0 180px 0 180px',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -195,7 +202,7 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Indicator', 'Note', 'Opinion'];
+const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -1061,10 +1068,9 @@ class ToolBar extends Component {
       selectAll,
       filters,
       search,
-      withPaddingRight,
-      withSmallPaddingRight,
       theme,
       container,
+      variant,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -1072,6 +1078,28 @@ class ToolBar extends Component {
       R.map((o) => o.entity_type, R.values(selectedElements || {})),
     );
     const typesAreDifferent = selectedTypes.length > 1;
+    // region update
+    const notUpdatableTypes = ['Label'];
+    const typesAreNotUpdatable = R.includes(
+      R.uniq(
+        R.map((o) => o.entity_type, R.values(selectedElements || {})),
+      )[0],
+      notUpdatableTypes,
+    )
+      || ((filters?.entity_type ?? []).length === 1
+        && notUpdatableTypes.includes(R.head(filters.entity_type).id));
+    // endregion
+    // region rules
+    const notScannableTypes = ['Label'];
+    const typesAreNotScannable = R.includes(
+      R.uniq(
+        R.map((o) => o.entity_type, R.values(selectedElements || {})),
+      )[0],
+      notScannableTypes,
+    )
+      || ((filters?.entity_type ?? []).length === 1
+        && notScannableTypes.includes(R.head(filters.entity_type).id));
+    // endregion
     // region promote filters
     const promotionTypes = ['Stix-Cyber-Observable', 'Indicator'];
     const observablesFiltered = (filters?.entity_type ?? []).length === 1
@@ -1086,9 +1114,13 @@ class ToolBar extends Component {
     const promoteDisable = !isManualPromoteSelect && !isAllPromoteSelect;
     // endregion
     // region enrich
+    const notEnrichableTypes = ['Label'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
     const isAllEnrichSelect = selectAll && (filters?.entity_type ?? []).length === 1;
-    const enrichDisable = !isManualEnrichSelect && !isAllEnrichSelect;
+    const enrichDisable = notEnrichableTypes.includes(R.head(selectedTypes))
+      || ((filters?.entity_type ?? []).length === 1
+        && notEnrichableTypes.includes(R.head(filters.entity_type).id))
+      || (!isManualEnrichSelect && !isAllEnrichSelect);
     // endregion
     const typesAreNotMergable = R.includes(
       R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
@@ -1121,18 +1153,25 @@ class ToolBar extends Component {
         );
       }
     }
+    let paperClass = classes.bottomNav;
+    switch (variant) {
+      case 'large':
+        paperClass = classes.bottomNavWithLargePadding;
+        break;
+      case 'medium':
+        paperClass = classes.bottomNavWithMediumPadding;
+        break;
+      case 'small':
+        paperClass = classes.bottomNavWithSmallPadding;
+        break;
+      default:
+        paperClass = classes.bottomNav;
+    }
     return (
       <Drawer
         anchor="bottom"
         variant="persistent"
-        classes={{
-          // eslint-disable-next-line no-nested-ternary
-          paper: withPaddingRight
-            ? classes.bottomNavWithPadding
-            : withSmallPaddingRight
-              ? classes.bottomNavWithSmallPadding
-              : classes.bottomNav,
-        }}
+        classes={{ paper: paperClass }}
         open={isOpen}
         PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
@@ -1168,7 +1207,9 @@ class ToolBar extends Component {
                 <IconButton
                   aria-label="update"
                   disabled={
-                    numberOfSelectedElements === 0 || this.state.processing
+                    typesAreNotUpdatable
+                    || numberOfSelectedElements === 0
+                    || this.state.processing
                   }
                   onClick={this.handleOpenUpdate.bind(this)}
                   color="primary"
@@ -1183,7 +1224,8 @@ class ToolBar extends Component {
                 const label = helper.isRuleEngineEnable()
                   ? 'Rule rescan'
                   : 'Rule rescan (engine is disabled)';
-                const buttonDisable = !helper.isRuleEngineEnable()
+                const buttonDisable = typesAreNotScannable
+                  || !helper.isRuleEngineEnable()
                   || numberOfSelectedElements === 0
                   || this.state.processing;
                 return (
@@ -1944,8 +1986,7 @@ ToolBar.propTypes = {
   filters: PropTypes.object,
   search: PropTypes.string,
   handleClearSelectedElements: PropTypes.func,
-  withPaddingRight: PropTypes.bool,
-  withSmallPaddingRight: PropTypes.bool,
+  variant: PropTypes.string,
   container: PropTypes.object,
   type: PropTypes.string,
 };
