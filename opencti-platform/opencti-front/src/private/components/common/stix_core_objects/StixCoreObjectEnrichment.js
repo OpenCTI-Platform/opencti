@@ -7,6 +7,7 @@ import { Close } from '@mui/icons-material';
 import { CloudRefresh } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
+import ToggleButton from '@mui/material/ToggleButton';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectEnrichmentLines, {
@@ -63,17 +64,15 @@ class StixCoreObjectEnrichment extends Component {
   render() {
     const { t, classes, stixCoreObjectId } = this.props;
     return (
-      <div>
+      <React.Fragment>
         <Tooltip title={t('Enrichment')}>
-          <IconButton
+          <ToggleButton
             onClick={this.handleOpen.bind(this)}
-            color="primary"
-            aria-label="Refresh"
-            className={classes.enrichButton}
-            size="large"
+            value="enrich"
+            size="small"
           >
-            <CloudRefresh />
-          </IconButton>
+            <CloudRefresh fontSize="small" color="primary" />
+          </ToggleButton>
         </Tooltip>
         <Drawer
           open={this.state.open}
@@ -119,7 +118,7 @@ class StixCoreObjectEnrichment extends Component {
             />
           </div>
         </Drawer>
-      </div>
+      </React.Fragment>
     );
   }
 }

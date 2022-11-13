@@ -1261,6 +1261,9 @@ const i18n = {
       'Search for multiple entities': 'Buscar varias entidades',
       'One keyword by line or separated by commas':
         'Una palabra clave por línea o separada por comas',
+      'Share with an organization': 'Compartir con una organización',
+      Share: 'Compartir',
+      'Open the suggestions': 'Abre las sugerencias',
       'Reset filters': 'Restablecer filtros',
       Limit: 'Límite',
       // Time
@@ -2855,6 +2858,9 @@ const i18n = {
       'Search for multiple entities': 'Rechercher plusieurs entités',
       'One keyword by line or separated by commas':
         'Un mot-clé par ligne ou séparé par des virgules',
+      'Share with an organization': 'Partager avec une organisation',
+      Share: 'Partager',
+      'Open the suggestions': 'Ouvrir les suggestions',
       'Reset filters': 'Réinitialiser les filtres',
       Limit: 'Limite',
       // Time
@@ -4393,6 +4399,9 @@ const i18n = {
       'Search for multiple entities': '複数のエンティティを検索',
       'One keyword by line or separated by commas':
         '1 つのキーワードを 1 行またはカンマで区切る',
+      'Share with an organization': '組織と共有する',
+      Share: '共有する',
+      'Open the suggestions': '提案を開く',
       'Reset filters': 'フィルタをリセット',
       Limit: 'リミット',
       // Time
@@ -5864,6 +5873,9 @@ const i18n = {
       'Search for multiple entities': '搜索多个实体',
       'One keyword by line or separated by commas':
         '一个关键字逐行或以逗号分隔',
+      'Share with an organization': '与组织共享',
+      Share: '分享',
+      'Open the suggestions': '打开建议',
       'Reset filters': '重置过滤器',
       Limit: '限制',
       // Time
@@ -5891,6 +5903,7 @@ const i18n = {
       entity_Opinion: '意见',
       entity_Report: '分組',
       entity_Grouping: 'グループ化',
+      entity_Grouping: '分组',
       'entity_Course-Of-Action': '应对措施',
       entity_Individual: '个体',
       entity_Organization: '组织',
