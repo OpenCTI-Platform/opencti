@@ -1253,7 +1253,7 @@ const i18n = {
       'Do you want to remove this entity?': '¿Quieres eliminar este objeto?',
       'Add context': 'Agregar contexto',
       'Organizations restriction': 'Restricción de organizaciones',
-      'Platform organization - global data restriction': 'Organización de la plataforma - restricción de datos globales',
+      'Platform organization': 'Organización de la plataforma',
       'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'Cuando especificó la organización de la plataforma, los datos sin ninguna restricción de organización serán accesibles solo para los usuarios que forman parte de la plataforma.',
       'Delete the element if no other containers contain it':
         'Eliminar el elemento si ningún otro contenedor lo contiene',
@@ -2847,7 +2847,7 @@ const i18n = {
         'Souhaitez-vous retirer cet object ?',
       'Add context': 'Ajouter du contexte',
       'Organizations restriction': "Restriction d'organisations",
-      'Platform organization - global data restriction': 'Organisation de la plateforme - restriction globale des données',
+      'Platform organization': 'Organisation de la plateforme',
       'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'Lorsque vous avez spécifié l\'organisation de la plateforme, les données sans aucune restriction d\'organisation ne seront accessibles qu\'aux utilisateurs faisant partie de celle ci',
       'Delete the element if no other containers contain it':
         "Supprimer l'élément si aucun autre conteneur ne le contient",
@@ -4391,7 +4391,7 @@ const i18n = {
       'Do you want to remove this object?': 'このオブジェクトを削除しますか?',
       'Add context': 'コンテキストを追加',
       'Organizations restriction': '組織の制限',
-      'Platform organization - global data restriction': 'プラットフォーム構成 - グローバル データ制限',
+      'Platform organization': 'プラットフォーム構成',
       'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'プラットフォーム組織を指定すると、組織の制限のないデータには、プラットフォーム 1 の一部であるユーザーのみがアクセスできます',
       'Delete the element if no other containers contain it':
         '他のコンテナに要素が含まれていない場合は、要素を削除します',
@@ -5865,7 +5865,7 @@ const i18n = {
       'Do you want to remove this object?': '是否要删除此对象？',
       'Add context': '添加上下文',
       'Organizations restriction': '组织限制',
-      'Platform organization - global data restriction': '平台組織——全球數據限制',
+      'Platform organization': '平台組織',
       'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': '當您指定平台組織時，沒有任何組織限制的數據將僅適用於屬於平台一的用戶',
       'Delete the element if no other containers contain it':
         '如果沒有其他容器包含該元素，則刪除該元素',

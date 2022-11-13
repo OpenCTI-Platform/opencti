@@ -6,7 +6,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
-import StixCoreHeaderShared from '../../common/sharing/StixCoreHeaderShared';
+import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -50,7 +50,10 @@ const StixCyberObservableHeaderComponent = ({
       <div className={classes.actions}>
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
           {disableSharing !== true && (
-            <StixCoreHeaderShared elementId={stixCyberObservable.id} />
+            <StixCoreObjectSharing
+              elementId={stixCyberObservable.id}
+              variant="header"
+            />
           )}
           <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
         </ToggleButtonGroup>

@@ -20,6 +20,7 @@ import Box from '@mui/material/Box';
 import { ListItemAvatar } from '@mui/material';
 import { deepPurple } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
+import { InformationOutline } from 'mdi-material-ui';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
@@ -228,12 +229,15 @@ const Settings = () => {
   const { id, editContext } = settings;
   const initialValues = R.pipe(
     R.assoc('platform_hidden_types', settings.platform_hidden_types ?? []),
-    R.assoc('platform_organization', settings.platform_organization
-      ? {
-        label: settings.platform_organization.name,
-        value: settings.platform_organization.id,
-      }
-      : ''),
+    R.assoc(
+      'platform_organization',
+      settings.platform_organization
+        ? {
+          label: settings.platform_organization.name,
+          value: settings.platform_organization.id,
+        }
+        : '',
+    ),
     R.pick([
       'platform_title',
       'platform_favicon',
@@ -361,8 +365,12 @@ const Settings = () => {
             <Typography variant="h1" gutterBottom={true}>
               {t('Configuration')}
             </Typography>
-            <Formik onSubmit={() => {
-            }} enableReinitialize={true} initialValues={initialValues} validationSchema={settingsValidation(t)}>
+            <Formik
+              onSubmit={() => {}}
+              enableReinitialize={true}
+              initialValues={initialValues}
+              validationSchema={settingsValidation(t)}
+            >
               {({ values }) => (
                 <Form style={{ width: '100%', marginTop: 20 }}>
                   <Field
@@ -374,48 +382,64 @@ const Settings = () => {
                     onFocus={handleChangeFocus}
                     onSubmit={handleSubmitField}
                     helperText={
-                      <SubscriptionFocus context={editContext} fieldName="platform_title" />
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="platform_title"
+                      />
                     }
                   />
-                  <Tooltip
-                    title={t('When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one')}>
-                    <Alert classes={{ root: classes.alert, message: classes.message }} severity="warning"
-                           variant="outlined">
-                      <AlertTitle>{t('Platform organization - global data restriction')}</AlertTitle>
-                      <Field
-                        component={AutocompleteField}
-                        onChange={handleSubmitField}
-                        style={{ width: '100%' }}
-                        name="platform_organization"
-                        multiple={false}
-                        createLabel={t('Add')}
-                        textfieldprops={{
-                          variant: 'standard',
-                          helperText: (
-                            <SubscriptionFocus
-                              context={editContext}
-                              fieldName="platform_organization"
-                            />
-                          ),
-                        }}
-                        options={organizations.edges.map((n) => ({
-                          id: n.node.id,
-                          value: n.node.id,
-                          label: n.node.name,
-                        }))}
-                        renderOption={(optionProps, option) => (
-                          <li {...optionProps}>
-                            <div className={classes.icon}>
-                              <ItemIcon type="Organization" />
-                            </div>
-                            <div className={classes.text}>
-                              {option.label}
-                            </div>
-                          </li>
-                        )}
+                  <Alert
+                    classes={{
+                      root: classes.alert,
+                      message: classes.message,
+                    }}
+                    severity="warning"
+                    variant="outlined"
+                    style={{ position: 'relative' }}
+                  >
+                    <AlertTitle>{t('Platform organization')}</AlertTitle>
+                    <Tooltip
+                      title={t(
+                        'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one',
+                      )}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ position: 'absolute', top: 10, right: 18 }}
                       />
-                    </Alert>
-                  </Tooltip>
+                    </Tooltip>
+                    <Field
+                      component={AutocompleteField}
+                      onChange={handleSubmitField}
+                      style={{ width: '100%' }}
+                      name="platform_organization"
+                      multiple={false}
+                      createLabel={t('Add')}
+                      textfieldprops={{
+                        variant: 'standard',
+                        helperText: (
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="platform_organization"
+                          />
+                        ),
+                      }}
+                      options={organizations.edges.map((n) => ({
+                        id: n.node.id,
+                        value: n.node.id,
+                        label: n.node.name,
+                      }))}
+                      renderOption={(optionProps, option) => (
+                        <li {...optionProps}>
+                          <div className={classes.icon}>
+                            <ItemIcon type="Organization" />
+                          </div>
+                          <div className={classes.text}>{option.label}</div>
+                        </li>
+                      )}
+                    />
+                  </Alert>
                   <Field
                     component={TextField}
                     variant="standard"
@@ -426,7 +450,10 @@ const Settings = () => {
                     onFocus={handleChangeFocus}
                     onSubmit={handleSubmitField}
                     helperText={
-                      <SubscriptionFocus context={editContext} fieldName="platform_favicon" />
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="platform_favicon"
+                      />
                     }
                   />
                   <Field
@@ -439,7 +466,10 @@ const Settings = () => {
                     onFocus={handleChangeFocus}
                     onSubmit={handleSubmitField}
                     helperText={
-                      <SubscriptionFocus context={editContext} fieldName="platform_email" />
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="platform_email"
+                      />
                     }
                   />
                   <Field
@@ -455,7 +485,10 @@ const Settings = () => {
                     onFocus={handleChangeFocus}
                     onChange={handleSubmitField}
                     helpertext={
-                      <SubscriptionFocus context={editContext} fieldName="platform_theme" />
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="platform_theme"
+                      />
                     }
                   >
                     <MenuItem value="dark">{t('Dark')}</MenuItem>
@@ -474,7 +507,10 @@ const Settings = () => {
                     onFocus={handleChangeFocus}
                     onChange={handleSubmitField}
                     helpertext={
-                      <SubscriptionFocus context={editContext} fieldName="platform_language" />
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="platform_language"
+                      />
                     }
                   >
                     <MenuItem value="auto">
@@ -500,7 +536,10 @@ const Settings = () => {
                     onFocus={handleChangeFocus}
                     onChange={handleSubmitField}
                     helpertext={
-                      <SubscriptionFocus context={editContext} fieldName="platform_hidden_types" />
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="platform_hidden_types"
+                      />
                     }
                     renderValue={(selected) => (
                       <Box
@@ -511,10 +550,7 @@ const Settings = () => {
                         }}
                       >
                         {selected.map((value) => (
-                          <Chip
-                            key={value}
-                            label={t(`entity_${value}`)}
-                          />
+                          <Chip key={value} label={t(`entity_${value}`)} />
                         ))}
                       </Box>
                     )}
@@ -522,25 +558,25 @@ const Settings = () => {
                     <MenuItem value="Threats" dense={true}>
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Threats') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Threats',
+                          ) > -1
                         }
                       />
                       {t('Threats')}
                     </MenuItem>
                     <MenuItem
                       value="Threat-Actor"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Threats')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Threats',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Threat-Actor') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Threat-Actor',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -548,16 +584,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Intrusion-Set"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Threats')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Threats',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Intrusion-Set') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Intrusion-Set',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -565,16 +601,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Campaign"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Threats')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Threats',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Campaign') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Campaign',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -583,25 +619,25 @@ const Settings = () => {
                     <MenuItem value="Arsenal" dense={true}>
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Arsenal') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Arsenal',
+                          ) > -1
                         }
                       />
                       {t('Arsenal')}
                     </MenuItem>
                     <MenuItem
                       value="Malware"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Arsenal')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Arsenal',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Malware') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Malware',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -609,16 +645,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Attack-Pattern"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Arsenal')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Arsenal',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Attack-Pattern') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Attack-Pattern',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -626,16 +662,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Channel"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Arsenal')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Arsenal',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Channel') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Channel',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -643,16 +679,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Narrative"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Arsenal')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Arsenal',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Narrative') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Narrative',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -660,16 +696,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Course-Of-Action"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Arsenal')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Arsenal',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Course-Of-Action') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Course-Of-Action',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -677,16 +713,15 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Tool"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Arsenal')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Arsenal',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Tool') > -1
+                          (values.platform_hidden_types || []).indexOf('Tool')
+                          > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -694,16 +729,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Vulnerability"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Arsenal')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Arsenal',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Vulnerability') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Vulnerability',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -712,25 +747,25 @@ const Settings = () => {
                     <MenuItem value="Entities" dense={true}>
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Entities') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Entities',
+                          ) > -1
                         }
                       />
                       {t('Entities')}
                     </MenuItem>
                     <MenuItem
                       value="Sector"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Entities')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Entities',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Sector') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Sector',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -738,16 +773,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Country"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Entities')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Entities',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Country') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Country',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -755,16 +790,15 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="City"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Entities')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Entities',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('City') > -1
+                          (values.platform_hidden_types || []).indexOf('City')
+                          > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -772,16 +806,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Position"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Entities')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Entities',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Position') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Position',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -789,16 +823,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Event"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Entities')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Entities',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Event') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Event',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -806,16 +840,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Organization"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Entities')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Entities',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Organization') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Organization',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -823,16 +857,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="System"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Entities')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Entities',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('System') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'System',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -840,16 +874,16 @@ const Settings = () => {
                     </MenuItem>
                     <MenuItem
                       value="Individual"
-                      disabled={(
-                        values.platform_hidden_types || []
-                      ).includes('Entities')}
+                      disabled={(values.platform_hidden_types || []).includes(
+                        'Entities',
+                      )}
                       dense={true}
                     >
                       <Checkbox
                         checked={
-                          (
-                            values.platform_hidden_types || []
-                          ).indexOf('Individual') > -1
+                          (values.platform_hidden_types || []).indexOf(
+                            'Individual',
+                          ) > -1
                         }
                         style={{ marginLeft: 10 }}
                       />
@@ -872,12 +906,19 @@ const Settings = () => {
                   <ListItemAvatar>
                     <Avatar className={classes.purple}>{i + 1}</Avatar>
                   </ListItemAvatar>
-                  <ListItemText primary={provider.name} secondary={provider.strategy} />
+                  <ListItemText
+                    primary={provider.name}
+                    secondary={provider.strategy}
+                  />
                 </ListItem>
               ))}
             </List>
-            <Formik onSubmit={() => {
-            }} enableReinitialize={true} initialValues={initialValues} validationSchema={settingsValidation(t)}>
+            <Formik
+              onSubmit={() => {}}
+              enableReinitialize={true}
+              initialValues={initialValues}
+              validationSchema={settingsValidation(t)}
+            >
               {() => (
                 <Form style={{ marginTop: 20 }}>
                   <Field
@@ -910,9 +951,12 @@ const Settings = () => {
             <Typography variant="h1" gutterBottom={true}>
               {t('Dark theme')}
             </Typography>
-            <Formik onSubmit={() => {
-            }} enableReinitialize={true} initialValues={initialValues}
-                    validationSchema={settingsValidation(t)}>
+            <Formik
+              onSubmit={() => {}}
+              enableReinitialize={true}
+              initialValues={initialValues}
+              validationSchema={settingsValidation(t)}
+            >
               {() => (
                 <Form style={{ marginTop: 20 }}>
                   <Field
@@ -1084,8 +1128,12 @@ const Settings = () => {
             <Typography variant="h1" gutterBottom={true}>
               {t('Light theme')}
             </Typography>
-            <Formik onSubmit={() => {
-            }} enableReinitialize={true} initialValues={initialValues} validationSchema={settingsValidation(t)}>
+            <Formik
+              onSubmit={() => {}}
+              enableReinitialize={true}
+              initialValues={initialValues}
+              validationSchema={settingsValidation(t)}
+            >
               {() => (
                 <Form style={{ marginTop: 20 }}>
                   <Field
@@ -1271,10 +1319,17 @@ const Settings = () => {
                         </ListItem>
                         <List component="div" disablePadding>
                           {modules.map((module) => (
-                            <ListItem key={module.id} divider={true} className={classes.nested}>
+                            <ListItem
+                              key={module.id}
+                              divider={true}
+                              className={classes.nested}
+                            >
                               <ListItemText primary={t(module.id)} />
-                              <Chip label={module.enable ? t('Enabled') : t('Disabled')}
-                                    color={module.enable ? 'success' : 'error'}
+                              <Chip
+                                label={
+                                  module.enable ? t('Enabled') : t('Disabled')
+                                }
+                                color={module.enable ? 'success' : 'error'}
                               />
                             </ListItem>
                           ))}
@@ -1282,10 +1337,7 @@ const Settings = () => {
                         {dependencies.map((dep) => (
                           <ListItem key={dep.name} divider={true}>
                             <ListItemText primary={t(dep.name)} />
-                            <Chip
-                              label={dep.version}
-                              color="primary"
-                            />
+                            <Chip label={dep.version} color="primary" />
                           </ListItem>
                         ))}
                       </List>

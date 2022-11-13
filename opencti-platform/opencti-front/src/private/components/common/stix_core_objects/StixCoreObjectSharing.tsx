@@ -12,8 +12,10 @@ import { Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
-import { StixCoreHeaderSharedQuery } from './__generated__/StixCoreHeaderSharedQuery.graphql';
+import { StixCoreObjectSharingQuery } from './__generated__/StixCoreObjectSharingQuery.graphql';
 import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -26,6 +28,7 @@ import { truncate } from '../../../../utils/String';
 // region types
 interface ContainerHeaderSharedProps {
   elementId: string;
+  variant: string;
 }
 
 interface OrganizationForm {
@@ -34,8 +37,15 @@ interface OrganizationForm {
 // endregion
 
 const useStyles = makeStyles(() => ({
-  organization: {
+  organizationInHeader: {
     margin: '4px 7px 0 0',
+    float: 'left',
+    fontSize: 12,
+    lineHeight: '12px',
+    height: 28,
+  },
+  organization: {
+    margin: '0 7px 0 0',
     float: 'left',
     fontSize: 12,
     lineHeight: '12px',
@@ -44,7 +54,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const containerHeaderSharedQuery = graphql`
-  query StixCoreHeaderSharedQuery($id: String!) {
+  query StixCoreObjectSharingQuery($id: String!) {
     stixCoreObject(id: $id) {
       objectOrganization {
         edges {
@@ -59,7 +69,7 @@ const containerHeaderSharedQuery = graphql`
 `;
 
 const containerHeaderSharedQueryGroupDeleteMutation = graphql`
-  mutation StixCoreHeaderSharedGroupDeleteMutation(
+  mutation StixCoreObjectSharingGroupDeleteMutation(
     $id: ID!
     $organizationId: ID!
   ) {
@@ -80,7 +90,7 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
 `;
 
 const containerHeaderSharedGroupAddMutation = graphql`
-  mutation StixCoreHeaderSharedGroupAddMutation(
+  mutation StixCoreObjectSharingGroupAddMutation(
     $id: ID!
     $organizationId: ID!
   ) {
@@ -100,8 +110,9 @@ const containerHeaderSharedGroupAddMutation = graphql`
   }
 `;
 
-const StixCoreHeaderShared: FunctionComponent<ContainerHeaderSharedProps> = ({
+const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   elementId,
+  variant,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -111,12 +122,15 @@ const StixCoreHeaderShared: FunctionComponent<ContainerHeaderSharedProps> = ({
     KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   ]);
   // If user not an organization organizer, return empty div
+  if (!userIsOrganizationEditor && variant === 'header') {
+    return <div style={{ display: 'inline-block' }} />;
+  }
   if (!userIsOrganizationEditor) {
-    return <div />;
+    return <div style={{ marginTop: -20 }} />;
   }
   const handleOpenSharing = () => setDisplaySharing(true);
   const handleCloseSharing = () => setDisplaySharing(false);
-  const { stixCoreObject } = useLazyLoadQuery<StixCoreHeaderSharedQuery>(
+  const { stixCoreObject } = useLazyLoadQuery<StixCoreObjectSharingQuery>(
     containerHeaderSharedQuery,
     { id: elementId },
   );
@@ -155,12 +169,87 @@ const StixCoreHeaderShared: FunctionComponent<ContainerHeaderSharedProps> = ({
     }
   };
   const edges = stixCoreObject?.objectOrganization?.edges ?? [];
+  if (variant === 'header') {
+    return (
+      <React.Fragment>
+        {edges.map((edge) => (
+          <Tooltip key={edge.node.id} title={edge.node.name}>
+            <Chip
+              icon={<AccountBalanceOutlined />}
+              classes={{ root: classes.organizationInHeader }}
+              color="warning"
+              variant="outlined"
+              label={truncate(edge.node.name, 15)}
+              onDelete={() => removeOrganization(edge.node.id)}
+            />
+          </Tooltip>
+        ))}
+        <Tooltip title={t('Share with an organization')}>
+          <ToggleButton onClick={handleOpenSharing} value="shared" size="small">
+            <ShareOutlined fontSize="small" color="warning" />
+          </ToggleButton>
+        </Tooltip>
+        <Formik
+          initialValues={{ objectOrganization: { value: '', label: '' } }}
+          onSubmit={onSubmitOrganizations}
+          onReset={handleCloseSharing}
+        >
+          {({ submitForm, handleReset, isSubmitting }) => (
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={displaySharing}
+              onClose={() => handleReset()}
+              fullWidth={true}
+            >
+              <DialogTitle>{t('Share with an organization')}</DialogTitle>
+              <DialogContent style={{ overflowY: 'hidden' }}>
+                <Form>
+                  <ObjectOrganizationField
+                    name="objectOrganization"
+                    style={{ width: '100%' }}
+                    label={t('Organization')}
+                    multiple={false}
+                  />
+                </Form>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleReset} disabled={isSubmitting}>
+                  {t('Close')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  color="secondary"
+                >
+                  {t('Share')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </Formik>
+      </React.Fragment>
+    );
+  }
   return (
     <React.Fragment>
+      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+        {t('Organizations sharing')}
+      </Typography>
+      <Tooltip title={t('Share with an organization')}>
+        <IconButton
+          color="secondary"
+          aria-label="Label"
+          onClick={handleOpenSharing}
+          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          size="large"
+        >
+          <ShareOutlined fontSize="small" color="warning" />
+        </IconButton>
+      </Tooltip>
+      <div className="clearfix" />
       {edges.map((edge) => (
-        <Tooltip title={edge.node.name}>
+        <Tooltip key={edge.node.id} title={edge.node.name}>
           <Chip
-            key={edge.node.id}
             icon={<AccountBalanceOutlined />}
             classes={{ root: classes.organization }}
             color="warning"
@@ -170,11 +259,7 @@ const StixCoreHeaderShared: FunctionComponent<ContainerHeaderSharedProps> = ({
           />
         </Tooltip>
       ))}
-      <Tooltip title={t('Share with an organization')}>
-        <ToggleButton onClick={handleOpenSharing} value="shared" size="small">
-          <ShareOutlined fontSize="small" color="warning" />
-        </ToggleButton>
-      </Tooltip>
+      <div className="clearfix" />
       <Formik
         initialValues={{ objectOrganization: { value: '', label: '' } }}
         onSubmit={onSubmitOrganizations}
@@ -217,4 +302,4 @@ const StixCoreHeaderShared: FunctionComponent<ContainerHeaderSharedProps> = ({
   );
 };
 
-export default StixCoreHeaderShared;
+export default StixCoreObjectSharing;

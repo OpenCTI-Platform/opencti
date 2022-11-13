@@ -31,7 +31,7 @@ import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import CommitMessage from '../form/CommitMessage';
-import StixCoreHeaderShared from '../sharing/StixCoreHeaderShared';
+import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -415,7 +415,7 @@ class StixDomainObjectHeader extends Component {
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             {aliases.length > 5 ? (
               <IconButton
-                style={{ float: 'left', marginTop: -6 }}
+                style={{ float: 'left', marginTop: -8 }}
                 color="primary"
                 aria-label="More"
                 onClick={this.handleToggleOpenAliases.bind(this)}
@@ -425,8 +425,8 @@ class StixDomainObjectHeader extends Component {
               </IconButton>
             ) : (
               <IconButton
-                style={{ float: 'left', marginTop: -6 }}
-                color="secondary"
+                style={{ float: 'left', marginTop: -8 }}
+                color={this.state.openAlias ? 'primary' : 'secondary'}
                 aria-label="Alias"
                 onClick={this.handleToggleCreateAlias.bind(this)}
                 size="large"
@@ -443,7 +443,10 @@ class StixDomainObjectHeader extends Component {
         <div className={classes.actions}>
           <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
             {disableSharing !== true && (
-              <StixCoreHeaderShared elementId={stixDomainObject.id} />
+              <StixCoreObjectSharing
+                elementId={stixDomainObject.id}
+                variant="header"
+              />
             )}
             <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
           </ToggleButtonGroup>

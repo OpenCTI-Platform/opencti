@@ -47,7 +47,7 @@ import { defaultValue } from '../../../../utils/Graph';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
-import StixCoreHeaderShared from '../sharing/StixCoreHeaderShared';
+import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -621,7 +621,10 @@ const ContainerHeader = (props) => {
                       exclusive={false}
                     >
                       {disableSharing !== true && (
-                        <StixCoreHeaderShared elementId={container.id} />
+                        <StixCoreObjectSharing
+                          elementId={container.id}
+                          variant="header"
+                        />
                       )}
                       {enableSuggestions && (
                         <React.Fragment>
