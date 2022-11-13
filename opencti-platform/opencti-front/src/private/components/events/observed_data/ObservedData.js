@@ -121,6 +121,15 @@ const ObservedData = createFragmentContainer(ObservedDataComponent, {
         id
         name
       }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+            x_opencti_color
+          }
+        }
+      }
       objectLabel {
         edges {
           node {

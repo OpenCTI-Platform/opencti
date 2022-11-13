@@ -93,7 +93,7 @@ export const renderObservableValue = (observable) => {
                 <Tooltip title={country.name}>
                   <img
                     style={{ width: 20 }}
-                    src={`${APP_BASE_PATH}/static/flags/4x3/${flag}.svg`}
+                    src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
                     alt={country.name}
                   />
                 </Tooltip>

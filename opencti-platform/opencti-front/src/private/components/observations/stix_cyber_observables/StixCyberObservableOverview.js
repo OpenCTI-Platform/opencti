@@ -30,6 +30,7 @@ import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ItemCopy from '../../../../components/ItemCopy';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -60,7 +61,7 @@ const styles = (theme) => ({
       theme.palette.mode === 'light'
         ? 'rgba(0, 0, 0, 0.02)'
         : 'rgba(255, 255, 255, 0.02)',
-    lineHeight: '20px',
+    lineHeight: '18px',
   },
 });
 
@@ -131,16 +132,15 @@ class StixCyberObservableOverview extends Component {
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Observable type')}
+                {t('Marking')}
               </Typography>
-              <Chip
-                classes={{ root: classes.chip }}
-                style={{
-                  backgroundColor: 'rgba(32, 58, 246, 0.08)',
-                  color: '#203af6',
-                  border: '1px solid #203af6',
-                }}
-                label={t(`entity_${stixCyberObservable.entity_type}`)}
+              <ItemMarkings
+                markingDefinitions={R.pathOr(
+                  [],
+                  ['objectMarking', 'edges'],
+                  stixCyberObservable,
+                )}
+                limit={10}
               />
               <Typography
                 variant="h3"
@@ -168,6 +168,22 @@ class StixCyberObservableOverview extends Component {
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
+                {t('Observable type')}
+              </Typography>
+              <Chip
+                classes={{ root: classes.chip }}
+                style={{
+                  backgroundColor: 'rgba(32, 58, 246, 0.08)',
+                  color: '#203af6',
+                  border: '1px solid #203af6',
+                }}
+                label={t(`entity_${stixCyberObservable.entity_type}`)}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixCyberObservable.creator} />

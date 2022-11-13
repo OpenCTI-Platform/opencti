@@ -63,6 +63,7 @@ const styles = (theme) => ({
       theme.palette.mode === 'light'
         ? 'rgba(0, 0, 0, 0.02)'
         : 'rgba(255, 255, 255, 0.02)',
+    lineHeight: '18px',
   },
 });
 

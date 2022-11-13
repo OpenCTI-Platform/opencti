@@ -35,7 +35,6 @@ import Markdown from 'react-markdown';
 import CircularProgress from '@mui/material/CircularProgress';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import ItemMarking from '../../../../components/ItemMarking';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import {
@@ -525,7 +524,6 @@ class ContainerHeaderComponent extends Component {
     const {
       classes,
       container,
-      variant,
       PopoverComponent,
       fd,
       link,
@@ -566,19 +564,6 @@ class ContainerHeaderComponent extends Component {
             )}
           </Typography>
         </Tooltip>
-        {variant !== 'noMarking' && (
-          <div className={classes.marking}>
-            {R.pathOr([], ['objectMarking', 'edges'], container).map(
-              (markingDefinition) => (
-                <ItemMarking
-                  key={markingDefinition.node.id}
-                  label={markingDefinition.node.definition}
-                  color={markingDefinition.node.x_opencti_color}
-                />
-              ),
-            )}
-          </div>
-        )}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, { id: container.id })}
@@ -796,7 +781,6 @@ class ContainerHeaderComponent extends Component {
 ContainerHeaderComponent.propTypes = {
   container: PropTypes.object,
   PopoverComponent: PropTypes.object,
-  variant: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
@@ -834,15 +818,6 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
       }
       createdBy {
         id
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-            x_opencti_color
-          }
-        }
       }
     }
   `,
