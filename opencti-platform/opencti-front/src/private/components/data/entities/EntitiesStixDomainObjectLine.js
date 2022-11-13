@@ -49,16 +49,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EntitiesStixDomainObjectLineComponent = (props) => {
-  const {
-    dataColumns,
-    node,
-    onLabelClick,
-    onToggleEntity,
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-  } = props;
+const EntitiesStixDomainObjectLineComponent = ({
+  dataColumns,
+  node,
+  onLabelClick,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+}) => {
   const classes = useStyles();
   const { t, fd } = useFormatter();
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
@@ -330,8 +329,7 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
   },
 );
 
-export const EntitiesStixDomainObjectLineDummy = (props) => {
-  const { dataColumns } = props;
+export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem

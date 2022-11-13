@@ -42,8 +42,7 @@ export const MarkDownComponents = (theme) => ({
   ),
 });
 
-const ExpandableMarkdown = (props) => {
-  const { source, limit, theme } = props;
+const ExpandableMarkdown = ({ source, limit, theme, ...props }) => {
   const [expand, setExpand] = useState(false);
   const onClick = () => setExpand(!expand);
   const shouldBeTruncated = (source || '').length > limit;
