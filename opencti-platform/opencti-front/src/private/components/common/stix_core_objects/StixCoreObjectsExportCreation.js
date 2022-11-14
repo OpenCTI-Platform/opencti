@@ -1,23 +1,10 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import {
-  compose,
-  filter,
-  flatten,
-  fromPairs,
-  includes,
-  map,
-  propOr,
-  uniq,
-  zip,
-} from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React, { useState } from 'react';
+import * as R from 'ramda';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import Slide from '@mui/material/Slide';
 import { Add } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
@@ -25,7 +12,8 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import {
   commitMutation,
   MESSAGING$,
@@ -35,12 +23,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
-
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   createButton: {
     float: 'left',
   },
@@ -64,7 +47,7 @@ const styles = (theme) => ({
     padding: '0 15px 0 15px',
   },
   toolbar: theme.mixins.toolbar,
-});
+}));
 
 export const StixCoreObjectsExportCreationMutation = graphql`
   mutation StixCoreObjectsExportCreationMutation(
@@ -106,44 +89,41 @@ const exportValidation = (t) => Yup.object().shape({
 });
 
 export const scopesConn = (exportConnectors) => {
-  const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
-  const connectors = map((s) => {
-    const filteredConnectors = filter(
-      (e) => includes(s, e.connector_scope),
+  const scopes = R.uniq(
+    R.flatten(R.map((c) => c.connector_scope, exportConnectors)),
+  );
+  const connectors = R.map((s) => {
+    const filteredConnectors = R.filter(
+      (e) => R.includes(s, e.connector_scope),
       exportConnectors,
     );
-    return map(
+    return R.map(
       (x) => ({ data: { name: x.name, active: x.active } }),
       filteredConnectors,
     );
   }, scopes);
-  const zipped = zip(scopes, connectors);
-  return fromPairs(zipped);
+  const zipped = R.zip(scopes, connectors);
+  return R.fromPairs(zipped);
 };
 
-class StixCoreObjectsExportCreationComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const { paginationOptions, context } = this.props;
+const StixCoreObjectsExportCreationComponent = ({
+  paginationOptions,
+  context,
+  exportEntityType,
+  onExportAsk,
+  data,
+}) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
     commitMutation({
       mutation: StixCoreObjectsExportCreationMutation,
       variables: {
-        type: this.props.exportEntityType,
+        type: exportEntityType,
         format: values.format,
         exportType: 'full',
         maxMarkingDefinition,
@@ -153,168 +133,146 @@ class StixCoreObjectsExportCreationComponent extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        if (this.props.onExportAsk) this.props.onExportAsk();
-        this.handleClose();
+        if (onExportAsk) onExportAsk();
+        setOpen(false);
         MESSAGING$.notifySuccess('Export successfully started');
       },
     });
-  }
-
-  render() {
-    const { classes, t, data } = this.props;
-    const connectorsExport = propOr([], 'connectorsForExport', data);
-    const exportScopes = uniq(
-      flatten(map((c) => c.connector_scope, connectorsExport)),
-    );
-    const exportConnsPerFormat = scopesConn(connectorsExport);
-    // eslint-disable-next-line max-len
-    const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
-    const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
-    return (
-      <div className={classes.createButton}>
-        <Tooltip
-          title={
-            isExportPossible
-              ? t('Generate an export')
-              : t('No export connector available to generate an export')
-          }
-          aria-label="generate-export"
-        >
-          <span>
-            <IconButton
-              onClick={this.handleOpen.bind(this)}
-              color="secondary"
-              aria-label="Add"
-              disabled={!isExportPossible}
-              size="large"
-            >
-              <Add />
-            </IconButton>
-          </span>
-        </Tooltip>
-        <Formik
-          enableReinitialize={true}
-          initialValues={{
-            format: '',
-            maxMarkingDefinition: 'none',
-          }}
-          validationSchema={exportValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.handleClose.bind(this)}
-        >
-          {({ submitForm, handleReset, isSubmitting }) => (
-            <Form>
-              <Dialog
-                PaperProps={{ elevation: 1 }}
-                open={this.state.open}
-                onClose={this.handleClose.bind(this)}
-                fullWidth={true}
-              >
-                <DialogTitle>{t('Generate an export')}</DialogTitle>
-                <QueryRenderer
-                  query={markingDefinitionsLinesSearchQuery}
-                  variables={{ first: 200 }}
-                  render={({ props }) => {
-                    if (props && props.markingDefinitions) {
-                      return (
-                        <DialogContent>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="format"
-                            label={t('Export format')}
-                            fullWidth={true}
-                            containerstyle={{ width: '100%' }}
-                          >
-                            {exportScopes.map((value, i) => (
-                              <MenuItem
-                                key={i}
-                                value={value}
-                                disabled={!isExportActive(value)}
-                              >
-                                {value}
-                              </MenuItem>
-                            ))}
-                          </Field>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="maxMarkingDefinition"
-                            label={t('Max marking definition level')}
-                            fullWidth={true}
-                            containerstyle={{
-                              marginTop: 20,
-                              width: '100%',
-                            }}
-                          >
-                            <MenuItem value="none">{t('None')}</MenuItem>
-                            {map(
-                              (markingDefinition) => (
-                                <MenuItem
-                                  key={markingDefinition.node.id}
-                                  value={markingDefinition.node.id}
-                                >
-                                  {markingDefinition.node.definition}
-                                </MenuItem>
-                              ),
-                              props.markingDefinitions.edges,
-                            )}
-                          </Field>
-                        </DialogContent>
-                      );
-                    }
-                    return <Loader variant="inElement" />;
-                  }}
-                />
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    );
-  }
-}
-
-const StixCoreObjectsExportCreations = createFragmentContainer(
-  StixCoreObjectsExportCreationComponent,
-  {
-    data: graphql`
-      fragment StixCoreObjectsExportCreation_data on Query {
-        connectorsForExport {
-          id
-          name
-          active
-          connector_scope
-          updated_at
+  };
+  const connectorsExport = R.propOr([], 'connectorsForExport', data);
+  const exportScopes = R.uniq(
+    R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
+  );
+  const exportConnsPerFormat = scopesConn(connectorsExport);
+  // eslint-disable-next-line max-len
+  const isExportActive = (format) => R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+  const isExportPossible = R.filter((x) => isExportActive(x), exportScopes).length > 0;
+  return (
+    <div className={classes.createButton}>
+      <Tooltip
+        title={
+          isExportPossible
+            ? t('Generate an export')
+            : t('No export connector available to generate an export')
         }
-      }
-    `,
-  },
-);
-
-StixCoreObjectsExportCreations.propTypes = {
-  classes: PropTypes.object.isRequired,
-  t: PropTypes.func,
-  data: PropTypes.object,
-  exportEntityType: PropTypes.string.isRequired,
-  paginationOptions: PropTypes.object,
-  context: PropTypes.string,
-  onExportAsk: PropTypes.func,
+        aria-label="generate-export"
+      >
+        <span>
+          <IconButton
+            onClick={() => setOpen(true)}
+            color="secondary"
+            aria-label="Add"
+            disabled={!isExportPossible}
+            size="large"
+          >
+            <Add />
+          </IconButton>
+        </span>
+      </Tooltip>
+      <Formik
+        enableReinitialize={true}
+        initialValues={{
+          format: '',
+          maxMarkingDefinition: 'none',
+        }}
+        validationSchema={exportValidation(t)}
+        onSubmit={onSubmit}
+        onReset={() => setOpen(false)}
+      >
+        {({ submitForm, handleReset, isSubmitting }) => (
+          <Form>
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={open}
+              onClose={() => setOpen(false)}
+              fullWidth={true}
+            >
+              <DialogTitle>{t('Generate an export')}</DialogTitle>
+              <QueryRenderer
+                query={markingDefinitionsLinesSearchQuery}
+                variables={{ first: 200 }}
+                render={({ props }) => {
+                  if (props && props.markingDefinitions) {
+                    return (
+                      <DialogContent>
+                        <Field
+                          component={SelectField}
+                          variant="standard"
+                          name="format"
+                          label={t('Export format')}
+                          fullWidth={true}
+                          containerstyle={{ width: '100%' }}
+                        >
+                          {exportScopes.map((value, i) => (
+                            <MenuItem
+                              key={i}
+                              value={value}
+                              disabled={!isExportActive(value)}
+                            >
+                              {value}
+                            </MenuItem>
+                          ))}
+                        </Field>
+                        <Field
+                          component={SelectField}
+                          variant="standard"
+                          name="maxMarkingDefinition"
+                          label={t('Max marking definition level')}
+                          fullWidth={true}
+                          containerstyle={{
+                            marginTop: 20,
+                            width: '100%',
+                          }}
+                        >
+                          <MenuItem value="none">{t('None')}</MenuItem>
+                          {R.map(
+                            (markingDefinition) => (
+                              <MenuItem
+                                key={markingDefinition.node.id}
+                                value={markingDefinition.node.id}
+                              >
+                                {markingDefinition.node.definition}
+                              </MenuItem>
+                            ),
+                            props.markingDefinitions.edges,
+                          )}
+                        </Field>
+                      </DialogContent>
+                    );
+                  }
+                  return <Loader variant="inElement" />;
+                }}
+              />
+              <DialogActions>
+                <Button onClick={handleReset} disabled={isSubmitting}>
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {t('Create')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectsExportCreations);
+export default createFragmentContainer(StixCoreObjectsExportCreationComponent, {
+  data: graphql`
+    fragment StixCoreObjectsExportCreation_data on Query {
+      connectorsForExport {
+        id
+        name
+        active
+        connector_scope
+        updated_at
+      }
+    }
+  `,
+});
