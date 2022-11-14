@@ -15,11 +15,15 @@ import {
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
-import { lockResource, notify, storeUpdateEvent } from '../database/redis';
+import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { isStixCoreObject } from '../schema/stixCoreObject';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
+import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ENTITY_TYPE_IDENTITY
+} from '../schema/general';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -32,7 +36,7 @@ import {
 import {
   ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT
+  ENTITY_TYPE_CONTAINER_REPORT,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
@@ -48,7 +52,7 @@ import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
 import { elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
-import { askEntityExport } from './stix';
+import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -170,17 +174,29 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
   return work;
 };
 
+// region export
+export const stixCoreObjectsExportAsk = async (context, user, args) => {
+  const { format, type, exportType, maxMarkingDefinition } = args;
+  const { search, orderBy, orderMode, filters, filterMode } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const filtersOpts = stixCoreObjectOptions.StixCoreObjectsFilter;
+  const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
+  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  const works = await askListExport(context, user, format, type, listParams, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w), works);
+};
 export const stixCoreObjectExportAsk = async (context, user, args) => {
   const { format, stixCoreObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
   const entity = stixCoreObjectId ? await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
   const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
 };
+export const stixCoreObjectsExportPush = async (context, user, type, file, listFilters) => {
+  await upload(context, user, `export/${type}`, file, { list_filters: listFilters });
+  return true;
+};
 export const stixCoreObjectExportPush = async (context, user, entityId, file) => {
   const entity = await internalLoadById(context, user, entityId);
-  if (!entity) {
-    throw UnsupportedError('Cant upload a file an none existing element', { entityId });
-  }
   await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
   return true;
 };
@@ -250,3 +266,19 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     if (lock) await lock.unlock();
   }
 };
+
+// region context
+export const stixCoreObjectCleanContext = async (context, user, stixCoreObjectId) => {
+  await delEditContext(user, stixCoreObjectId);
+  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((stixCoreObject) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
+  });
+};
+
+export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId, input) => {
+  await setEditContext(user, stixCoreObjectId, input);
+  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((stixCoreObject) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
+  });
+};
+// endregion

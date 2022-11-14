@@ -9571,6 +9571,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
@@ -10849,6 +10850,19 @@ type Mutation {
 
   ######## STIX CORE OBJECT ENTITIES
   stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCoreObjectsExportAsk(
+    type: String!
+    format: String!
+    exportType: String!
+    maxMarkingDefinition: String
+    context: String
+    search: String
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
   stixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])

@@ -238,7 +238,7 @@ class Search extends Component {
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               handleToggleExports={this.handleToggleExports.bind(this)}
               openExports={openExports}
-              exportEntityType="Stix-Domain-Object"
+              exportEntityType="Stix-Core-Object"
               selectAll={selectAll}
               disableCards={true}
               filters={filters}

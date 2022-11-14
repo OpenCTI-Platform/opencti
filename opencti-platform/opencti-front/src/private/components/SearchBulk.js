@@ -17,6 +17,8 @@ import { Link } from 'react-router-dom';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
+import { Subject, timer } from 'rxjs';
+import { debounce } from 'rxjs/operators';
 import ItemIcon from '../../components/ItemIcon';
 import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
@@ -24,6 +26,8 @@ import { useFormatter } from '../../components/i18n';
 import { defaultValue } from '../../utils/Graph';
 import { resolveLink } from '../../utils/Entity';
 import StixCoreObjectLabels from './common/stix_core_objects/StixCoreObjectLabels';
+
+const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
 const useStyles = makeStyles((theme) => ({
   linesContainer: {
@@ -185,69 +189,103 @@ const SearchBulk = () => {
   const [orderAsc, setOrderAsc] = useState(true);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const result = await Promise.all(
-        textFieldValue
-          .split('\n')
-          .filter((o) => o.length > 1)
-          .map((val) => {
-            return fetchQuery(searchStixCoreObjectsLinesSearchQuery, {
-              filters: [
-                {
-                  key: [
-                    'name',
-                    'aliases',
-                    'x_opencti_aliases',
-                    'x_mitre_id',
-                    'value',
-                    'subject',
-                    'abstract',
-                  ],
-                  values: val.trim(),
-                },
-              ],
-              count: 1,
-            })
-              .toPromise()
-              .then((data) => {
-                const stixCoreObjectsEdges = data.stixCoreObjects.edges;
-                const firstStixCoreObject = R.head(stixCoreObjectsEdges)?.node;
-                if (firstStixCoreObject) {
-                  return {
-                    id: firstStixCoreObject.id,
-                    type: firstStixCoreObject.entity_type,
-                    value: defaultValue(firstStixCoreObject),
-                    labels: firstStixCoreObject.objectLabel,
-                    markings: firstStixCoreObject.objectMarking,
-                    reports: firstStixCoreObject.reports,
-                    updated_at: firstStixCoreObject.updated_at,
-                    author: R.pathOr(
-                      '',
-                      ['createdBy', 'name'],
-                      firstStixCoreObject,
-                    ),
-                    creator: R.pathOr(
-                      '',
-                      ['creator', 'name'],
-                      firstStixCoreObject,
-                    ),
-                    in_platform: true,
-                  };
-                }
-                return {
-                  id: val.trim(),
-                  type: 'Unknown',
-                  value: val.trim(),
-                  in_platform: false,
-                };
-              });
-          }),
-      );
-      setLoading(false);
-      setResolvedEntities(result);
+    const subscription = SEARCH$.subscribe({
+      next: () => {
+        const fetchData = async () => {
+          const values = textFieldValue
+            .split('\n')
+            .filter((o) => o.length > 1)
+            .map((val) => val.trim());
+          if (values.length > 0) {
+            setLoading(true);
+            const result = (
+              await fetchQuery(searchStixCoreObjectsLinesSearchQuery, {
+                filters: [
+                  {
+                    key: [
+                      'name',
+                      'aliases',
+                      'x_opencti_aliases',
+                      'x_mitre_id',
+                      'value',
+                      'subject',
+                      'abstract',
+                    ],
+                    values,
+                  },
+                ],
+                count: 5000,
+              })
+                .toPromise()
+                .then((data) => {
+                  const stixCoreObjectsEdges = data.stixCoreObjects.edges;
+                  const stixCoreObjects = stixCoreObjectsEdges.map(
+                    (o) => o.node,
+                  );
+                  return values.map((value) => {
+                    const resolvedStixCoreObjects = stixCoreObjects.filter(
+                      (o) => o.name?.toLowerCase() === value.toLowerCase()
+                        || o.aliases
+                          ?.map((p) => p.toLowerCase())
+                          .includes(value.toLowerCase())
+                        || o.x_opencti_aliases
+                          ?.map((p) => p.toLowerCase())
+                          .includes(value.toLowerCase())
+                        || o.x_mitre_id?.toLowerCase() === value.toLowerCase()
+                        || o.value?.toLowerCase() === value.toLowerCase()
+                        || o.subject?.toLowerCase() === value.toLowerCase()
+                        || o.abstract?.toLowerCase() === value.toLowerCase(),
+                    );
+                    if (resolvedStixCoreObjects.length > 0) {
+                      return resolvedStixCoreObjects.map(
+                        (resolvedStixCoreObject) => ({
+                          id: resolvedStixCoreObject.id,
+                          type: resolvedStixCoreObject.entity_type,
+                          value: defaultValue(resolvedStixCoreObject),
+                          labels: resolvedStixCoreObject.objectLabel,
+                          markings: resolvedStixCoreObject.objectMarking,
+                          reports: resolvedStixCoreObject.reports,
+                          updated_at: resolvedStixCoreObject.updated_at,
+                          author: R.pathOr(
+                            '',
+                            ['createdBy', 'name'],
+                            resolvedStixCoreObject,
+                          ),
+                          creator: R.pathOr(
+                            '',
+                            ['creator', 'name'],
+                            resolvedStixCoreObject,
+                          ),
+                          in_platform: true,
+                        }),
+                      );
+                    }
+                    return [
+                      {
+                        id: value.trim(),
+                        type: 'Unknown',
+                        value: value.trim(),
+                        in_platform: false,
+                      },
+                    ];
+                  });
+                })
+            ).flat();
+            setLoading(false);
+            setResolvedEntities(result);
+          } else {
+            setResolvedEntities([]);
+          }
+        };
+        fetchData();
+      },
+    });
+    return () => {
+      subscription.unsubscribe();
     };
-    fetchData();
+  });
+  useEffect(() => {
+    SEARCH$.next({ action: 'Search' });
   }, [textFieldValue, setResolvedEntities]);
   const reverseBy = (field) => {
     setSortBy(field);
@@ -307,9 +345,8 @@ const SearchBulk = () => {
             value={textFieldValue}
             multiline={true}
             fullWidth={true}
-            minRows={12}
+            minRows={20}
             placeholder={t('One keyword by line or separated by commas')}
-            inputProps={{ style: { paddingTop: 20, lineHeight: '50px' } }}
           />
         </Grid>
         <Grid item={true} xs={9}>
