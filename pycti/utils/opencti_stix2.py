@@ -1717,6 +1717,7 @@ class OpenCTIStix2:
 
         # List
         lister = {
+            "Stix-Core-Object": self.opencti.stix_core_object.list,
             "Stix-Domain-Object": self.opencti.stix_domain_object.list,
             "Attack-Pattern": self.opencti.attack_pattern.list,
             "Campaign": self.opencti.campaign.list,
