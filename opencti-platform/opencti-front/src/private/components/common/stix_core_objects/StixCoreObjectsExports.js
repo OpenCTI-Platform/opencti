@@ -34,7 +34,7 @@ const StixCoreObjectsExports = ({
       elevation={1}
       sx={{ zIndex: 1202 }}
       classes={{ paper: classes.drawerPaper }}
-      onClose={handleToggle.bind(this)}
+      onClose={handleToggle}
     >
       <div className={classes.toolbar} />
       <QueryRenderer
