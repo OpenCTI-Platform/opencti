@@ -5,7 +5,7 @@ import { withStyles, withTheme } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import {
-  Card, CardContent, ListItemIcon, SvgIcon,
+  Card, CardContent, ListItemIcon,
 } from '@material-ui/core';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -237,7 +237,7 @@ class CyioCoreObjectWidgetRiskCount extends Component {
 
   render() {
     const {
-      t, height,
+      height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>

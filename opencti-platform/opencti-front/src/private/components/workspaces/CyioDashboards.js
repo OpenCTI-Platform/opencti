@@ -125,7 +125,6 @@ class Dashboards extends Component {
       sortBy,
       orderAsc,
       searchTerm,
-      filters,
       openExports,
       numberOfElements,
       selectedElements,
@@ -201,7 +200,6 @@ class Dashboards extends Component {
   renderLines(paginationOptions) {
     const {
       sortBy,
-      filters,
       orderAsc,
       selectAll,
       searchTerm,

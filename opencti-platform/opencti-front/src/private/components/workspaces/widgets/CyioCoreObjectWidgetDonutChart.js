@@ -6,7 +6,6 @@ import {
 } from 'recharts';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from 'rich-markdown-editor/dist/components/Tooltip';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -266,7 +265,7 @@ class CyioCoreObjectWidgetDonutChart extends Component {
 
   render() {
     const {
-      t, title, height,
+      height,
     } = this.props;
     return (
       <div style={{ height: height || '100%', padding: '20px' }}>

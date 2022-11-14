@@ -61,7 +61,6 @@ class CyioCoreObjectWidgetHorizontalBars extends Component {
   renderRiskChart() {
     const {
       t,
-      md,
       widget,
       startDate,
       endDate,

@@ -10,6 +10,7 @@ import Index from './Index';
 import { UserContext } from '../utils/Security';
 import AuthBoundaryComponent from './components/AuthBoundary';
 import RootPublic from '../public/Root';
+import { toastGenericError } from '../utils/bakedToast';
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
@@ -77,7 +78,7 @@ function checkToken(history) {
             },
           });
         } else {
-          console.error('failed to refresh token');
+          toastGenericError('failed to refresh token');
         }
       },
     });

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import {
   ResponsiveContainer,
   CartesianGrid,
@@ -13,7 +12,6 @@ import {
 } from 'recharts';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -301,7 +299,7 @@ class CyioCoreObjectWidgetLineChart extends Component {
 
   render() {
     const {
-      t, title, height,
+      height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>

@@ -39,7 +39,7 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
   renderhorizontalBarChartQuery() {
     const { widget, t } = this.props;
     switch (widget.config.queryType) {
-      case 'riskDistribution':
+      case 'risksDistribution':
         return this.renderRiskChart();
       default:
         return (

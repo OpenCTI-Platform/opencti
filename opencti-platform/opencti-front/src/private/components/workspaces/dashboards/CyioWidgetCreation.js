@@ -18,14 +18,11 @@ import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
 import { MapOutlined } from '@material-ui/icons';
 import {
-  FlaskOutline,
-  FolderTableOutline,
   ChartTimeline,
   ChartAreasplineVariant,
   ChartBar,
   ChartDonut,
   AlignHorizontalLeft,
-  DatabaseOutline,
   ViewListOutline,
 } from 'mdi-material-ui';
 import ShowChart from '@material-ui/icons/ShowChart';
@@ -43,7 +40,6 @@ import { stixDomainObjectsLinesSearchQuery } from '../../common/stix_domain_obje
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
-import SearchInput from '../../../../components/SearchInput';
 
 const styles = (theme) => ({
   createButton: {

@@ -9,7 +9,6 @@ import {
   YAxis,
   Area,
   Tooltip,
-  Legend,
 } from 'recharts';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -305,7 +304,7 @@ class CyioCoreObjectWidgetAreaChart extends Component {
 
   render() {
     const {
-      t, height,
+      height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>

@@ -13,7 +13,6 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import inject18n from '../../../../components/i18n';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {

@@ -272,10 +272,10 @@ class Network extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
-    }
+    // let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    // if (selectAll) {
+    //   numberOfSelectedElements = numberOfElements.original;
+    // }
     const dataColumns = {
       name: {
         label: 'Name',
