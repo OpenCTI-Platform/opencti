@@ -323,29 +323,6 @@ const TopBar = ({
           </div>
           <Divider className={classes.divider} orientation="vertical" />
           <div className={classes.barContainer}>
-            <Tooltip title={t('Custom dashboards')}>
-              <IconButton
-                component={Link}
-                to="/dashboard/workspaces/dashboards"
-                variant={
-                  location.pathname.includes(
-                    '/dashboard/workspaces/dashboards',
-                  )
-                    ? 'contained'
-                    : 'text'
-                }
-                color={
-                  location.pathname.includes(
-                    '/dashboard/workspaces/dashboards',
-                  )
-                    ? 'secondary'
-                    : 'inherit'
-                }
-                classes={{ root: classes.button }}
-              >
-                <InsertChartOutlined fontSize="medium" />
-              </IconButton>
-            </Tooltip>
             <Security needs={[EXPLORE]}>
               <Tooltip title={t('Investigations')}>
                 <IconButton
@@ -388,6 +365,17 @@ const TopBar = ({
                   history={history}
                   location={location}
                 />
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <Tooltip title={t('Custom dashboards')}>
+                  <IconButton
+                    component={Link}
+                    to="/dashboard/workspaces/dashboards"
+                    classes={{ root: classes.button }}
+                  >
+                    <InsertChartOutlined fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
               </Grid>
               <Grid item={true} xs='auto'>
                 <Tooltip title={t('Find in Page')}>

@@ -87,64 +87,82 @@ class CyioCoreObjectWidgetAreaChart extends Component {
     };
 
     return (
-      <QueryRenderer
-        query={dashboardQueryAssetsTimeSeries}
-        variables={areaChartVariables}
-        render={({ props }) => {
-          if (props && props[widget.config.queryType]) {
-            return (
-              <ResponsiveContainer height="100%" width="100%">
-                <AreaChart
-                  data={props[widget.config.queryType]}
-                  margin={{
-                    top: 20,
-                    right: 0,
-                    bottom: 20,
-                    left: -10,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    // stroke={theme.palette.primary.main}
-                    stroke='rgba(241, 241, 242, 0.35)'
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="label"
-                    stroke={theme.palette.text.primary}
-                    interval={interval}
-                    textAnchor="end"
-                    // angle={-30}
-                    tickFormatter={tickFormatter}
-                  />
-                  <YAxis stroke={theme.palette.text.primary} />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
+      <>
+        <Typography variant="h4" gutterBottom={true}>
+          {widget.config.name || t('Component')}
+        </Typography>
+        <QueryRenderer
+          query={dashboardQueryAssetsTimeSeries}
+          variables={areaChartVariables}
+          render={({ props }) => {
+            if (props && props[widget.config.queryType]) {
+              return (
+                <ResponsiveContainer height="100%" width="100%">
+                  <AreaChart
+                    data={props[widget.config.queryType]}
+                    margin={{
+                      top: 20,
+                      right: 0,
+                      bottom: 20,
+                      left: -10,
                     }}
-                    contentStyle={{
-                      backgroundColor: '#1F2842',
-                      fontSize: 12,
-                      border: '1px solid #06102D',
-                      borderRadius: 10,
+                  >
+                    <CartesianGrid
+                      strokeDasharray="2 2"
+                      // stroke={theme.palette.primary.main}
+                      stroke='rgba(241, 241, 242, 0.35)'
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="label"
+                      stroke={theme.palette.text.primary}
+                      interval={interval}
+                      textAnchor="end"
+                      // angle={-30}
+                      tickFormatter={tickFormatter}
+                    />
+                    <YAxis stroke={theme.palette.text.primary} />
+                    <Tooltip
+                      cursor={{
+                        fill: 'rgba(0, 0, 0, 0.2)',
+                        stroke: 'rgba(0, 0, 0, 0.2)',
+                        strokeWidth: 2,
+                      }}
+                      contentStyle={{
+                        backgroundColor: '#1F2842',
+                        fontSize: 12,
+                        border: '1px solid #06102D',
+                        borderRadius: 10,
+                      }}
+                      labelFormatter={tickFormatter}
+                    />
+                    <Area
+                      dataKey='value'
+                      stroke={theme.palette.primary.main}
+                      strokeWidth={2}
+                      // fill={theme.palette.primary.main}
+                      fill='#49B8FC'
+                      fillOpacity={0.3}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              );
+            }
+            if (props) {
+              return (
+                <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
                     }}
-                    labelFormatter={tickFormatter}
-                  />
-                  <Area
-                    dataKey='value'
-                    stroke={theme.palette.primary.main}
-                    strokeWidth={2}
-                    // fill={theme.palette.primary.main}
-                    fill='#49B8FC'
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            );
-          }
-          if (props) {
+                  >
+                    {t('No entities of this type has been found.')}
+                  </span>
+                </div>
+              );
+            }
             return (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
                 <span
@@ -154,26 +172,13 @@ class CyioCoreObjectWidgetAreaChart extends Component {
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  <CircularProgress size={40} thickness={2} />
                 </span>
               </div>
             );
-          }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
-        }}
-      />
+          }}
+        />
+      </>
     );
   }
 
@@ -203,64 +208,82 @@ class CyioCoreObjectWidgetAreaChart extends Component {
     };
 
     return (
-      <QueryRenderer
-        query={dashboardQueryRiskTimeSeries}
-        variables={areaChartVariables}
-        render={({ props }) => {
-          if (props && props[widget.config.queryType]) {
-            return (
-              <ResponsiveContainer height="100%" width="100%">
-                <AreaChart
-                  data={props[widget.config.queryType]}
-                  margin={{
-                    top: 20,
-                    right: 0,
-                    bottom: 20,
-                    left: -10,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    // stroke={theme.palette.primary.main}
-                    stroke='rgba(241, 241, 242, 0.35)'
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="label"
-                    stroke={theme.palette.text.primary}
-                    interval={interval}
-                    textAnchor="end"
-                    // angle={-30}
-                    tickFormatter={tickFormatter}
-                  />
-                  <YAxis stroke={theme.palette.text.primary} />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
+      <>
+        <Typography variant="h4" gutterBottom={true}>
+          {widget.config.name || t('Component')}
+        </Typography>
+        <QueryRenderer
+          query={dashboardQueryRiskTimeSeries}
+          variables={areaChartVariables}
+          render={({ props }) => {
+            if (props && props[widget.config.queryType]) {
+              return (
+                <ResponsiveContainer height="100%" width="100%">
+                  <AreaChart
+                    data={props[widget.config.queryType]}
+                    margin={{
+                      top: 20,
+                      right: 0,
+                      bottom: 20,
+                      left: -10,
                     }}
-                    contentStyle={{
-                      backgroundColor: '#1F2842',
-                      fontSize: 12,
-                      border: '1px solid #06102D',
-                      borderRadius: 10,
+                  >
+                    <CartesianGrid
+                      strokeDasharray="2 2"
+                      // stroke={theme.palette.primary.main}
+                      stroke='rgba(241, 241, 242, 0.35)'
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="label"
+                      stroke={theme.palette.text.primary}
+                      interval={interval}
+                      textAnchor="end"
+                      // angle={-30}
+                      tickFormatter={tickFormatter}
+                    />
+                    <YAxis stroke={theme.palette.text.primary} />
+                    <Tooltip
+                      cursor={{
+                        fill: 'rgba(0, 0, 0, 0.2)',
+                        stroke: 'rgba(0, 0, 0, 0.2)',
+                        strokeWidth: 2,
+                      }}
+                      contentStyle={{
+                        backgroundColor: '#1F2842',
+                        fontSize: 12,
+                        border: '1px solid #06102D',
+                        borderRadius: 10,
+                      }}
+                      labelFormatter={tickFormatter}
+                    />
+                    <Area
+                      dataKey='value'
+                      stroke={theme.palette.primary.main}
+                      strokeWidth={2}
+                      // fill={theme.palette.primary.main}
+                      fill='#49B8FC'
+                      fillOpacity={0.3}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              );
+            }
+            if (props) {
+              return (
+                <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
                     }}
-                    labelFormatter={tickFormatter}
-                  />
-                  <Area
-                    dataKey='value'
-                    stroke={theme.palette.primary.main}
-                    strokeWidth={2}
-                    // fill={theme.palette.primary.main}
-                    fill='#49B8FC'
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            );
-          }
-          if (props) {
+                  >
+                    {t('No entities of this type has been found.')}
+                  </span>
+                </div>
+              );
+            }
             return (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
                 <span
@@ -270,38 +293,22 @@ class CyioCoreObjectWidgetAreaChart extends Component {
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  <CircularProgress size={40} thickness={2} />
                 </span>
               </div>
             );
-          }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
-        }}
-      />
+          }}
+        />
+      </>
     );
   }
 
   render() {
     const {
-      t, classes, title, height,
+      t, height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {title || t('Total Accepted Risks')}
-        </Typography>
         {this.renderAreaChartQuery()}
       </div>
     );

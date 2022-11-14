@@ -24,32 +24,11 @@ import {
 } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import CyioWorkspaceHeader from '../CyioWorkspaceHeader';
-import { commitMutation, QueryRenderer, fetchQuery } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import CyioWidgetCreation from './CyioWidgetCreation';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
-import ThreatVictimologyAll from './ThreatVictimologyAll';
-import ThreatVictimologySectors from './ThreatVictimologySectors';
-import ThreatVictimologyCountries from './ThreatVictimologyCountries';
-import ThreatActivityCampaigns from './ThreatActivityCampaigns';
-import ThreatActivityIndicators from './ThreatActivityIndicators';
-import ThreatActivityReports from './ThreatActivityReports';
-import EntityThreatsAll from './EntityThreatsAll';
-import EntityThreatsIntrusionSets from './EntityThreatsIntrusionSets';
-import EntityThreatsMalwares from './EntityThreatsMalwares';
-import EntityActivityCampaigns from './EntityActivityCampaigns';
-import EntityActivityIncidents from './EntityActivityIncidents';
-import EntityActivityReports from './EntityActivityReports';
 import CyioWidgetPopover from './CyioWidgetPopover';
-import GlobalVictimologyAll from './GlobalVictimologyAll';
-import GlobalVictimologySectors from './GlobalVictimologySectors';
-import GlobalVictimologyCountries from './GlobalVictimologyCountries';
-import GlobalActivityIntrusionSets from './GlobalActivityIntrusionSets';
-import GlobalActivityMalwares from './GlobalActivityMalwares';
-import GlobalActivityReports from './GlobalActivityReports';
-import GlobalActivityIndicators from './GlobalActivityIndicators';
-import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
-import ThreatVulnerabilities from './ThreatVulnerabilities';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import Loader from '../../../../components/Loader';
 import CyioCoreObjectWidgetAreaChart from '../widgets/CyioCoreObjectWidgetAreaChart';
@@ -319,176 +298,6 @@ class DashboardComponent extends Component {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  renderGlobalVisualization(widget, config) {
-    const { relativeDate } = config;
-    const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
-      : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
-    switch (widget.dataType) {
-      case 'all':
-        return (
-          <GlobalVictimologyAll
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'sectors':
-        return (
-          <GlobalVictimologySectors
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'countries':
-        return (
-          <GlobalVictimologyCountries
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-            mapReload={this.state.mapReload}
-          />
-        );
-      case 'intrusion-sets':
-        return (
-          <GlobalActivityIntrusionSets
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'malwares':
-        return (
-          <GlobalActivityMalwares
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'vulnerabilities':
-        return (
-          <GlobalActivityVulnerabilities
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'reports':
-        return (
-          <GlobalActivityReports
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'indicators':
-        return (
-          <GlobalActivityIndicators
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'indicators_lifecycle':
-        return (
-          <GlobalActivityIndicators
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-            field="revoked"
-          />
-        );
-      case 'indicators_detection':
-        return (
-          <GlobalActivityIndicators
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-            field="x_opencti_detection"
-          />
-        );
-      default:
-        return 'Go away!';
-    }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderThreatVisualization(widget, config) {
-    const { relativeDate } = config;
-    const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
-      : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
-    switch (widget.dataType) {
-      case 'all':
-        return (
-          <ThreatVictimologyAll
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'sectors':
-        return (
-          <ThreatVictimologySectors
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'countries':
-        return (
-          <ThreatVictimologyCountries
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-            mapReload={this.state.mapReload}
-          />
-        );
-      case 'campaigns':
-        return (
-          <ThreatActivityCampaigns
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'indicators':
-        return (
-          <ThreatActivityIndicators
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'vulnerabilities':
-        return (
-          <ThreatVulnerabilities
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'reports':
-        return (
-          <ThreatActivityReports
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      default:
-        return 'Go away!';
-    }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
   computerRelativeDate(relativeDate) {
     if (relativeDate.includes('days')) {
       return daysAgo(relativeDate.split('-')[1], null, false);
@@ -500,69 +309,6 @@ class DashboardComponent extends Component {
       return yearsAgo(relativeDate.split('-')[1]);
     }
     return null;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderEntityVisualization(widget, config) {
-    const { relativeDate } = config;
-    const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
-      : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
-    switch (widget.dataType) {
-      case 'all':
-        return (
-          <EntityThreatsAll
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'intrusion-sets':
-        return (
-          <EntityThreatsIntrusionSets
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'malwares':
-        return (
-          <EntityThreatsMalwares
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'campaigns':
-        return (
-          <EntityActivityCampaigns
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'incidents':
-        return (
-          <EntityActivityIncidents
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      case 'reports':
-        return (
-          <EntityActivityReports
-            startDate={startDate}
-            endDate={endDate}
-            widget={widget}
-          />
-        );
-      default:
-        return 'Go away!';
-    }
   }
 
   render() {
@@ -683,48 +429,6 @@ class DashboardComponent extends Component {
             </Grid>
           </Security>
         </div>
-        {/* <Security
-          needs={[EXPLORE_EXUPDATE]}
-          placeholder={
-            <ResponsiveGridLayout
-              className="layout"
-              margin={[20, 20]}
-              rowHeight={50}
-              breakpoints={{
-                lg: 1200,
-                md: 1200,
-                sm: 1200,
-                xs: 1200,
-                xxs: 1200,
-              }}
-              cols={{
-                lg: 18,
-                md: 18,
-                sm: 18,
-                xs: 18,
-                xxs: 18,
-              }}
-              isDraggable={false}
-              isResizable={false}
-            >
-              {R.values(manifest.widgets).map((widget) => (
-                <Paper
-                  key={widget.id}
-                  data-grid={widget.layout}
-                  classes={{ root: classes.paper }}
-                  elevation={2}
-                >
-                  {widget.perspective === 'global'
-                    && this.renderGlobalVisualization(widget, manifest.config)}
-                  {widget.perspective === 'threat'
-                    && this.renderThreatVisualization(widget, manifest.config)}
-                  {widget.perspective === 'entity'
-                    && this.renderEntityVisualization(widget, manifest.config)}
-                </Paper>
-              ))}
-            </ResponsiveGridLayout>
-          }
-        > */}
         <ResponsiveGridLayout
           className="layout"
           margin={[20, 20]}
@@ -790,7 +494,6 @@ class DashboardComponent extends Component {
             }}
           />
         </Dialog>
-        {/* </Security> */}
       </div>
     );
   }

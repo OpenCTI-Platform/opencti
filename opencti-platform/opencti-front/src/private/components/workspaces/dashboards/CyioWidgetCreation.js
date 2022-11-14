@@ -147,6 +147,7 @@ class WidgetCreation extends Component {
         : null,
       config: {
         queryType,
+        name: dataType.name,
         variables: dataType.variables,
       },
     });
@@ -364,7 +365,7 @@ class WidgetCreation extends Component {
                     classes={{ root: classes.cardAction }}
                   >
                     <CardContent>
-                      <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
+                      <ItemIcon type={perspective.perspectiveType} />
                       <Typography
                         gutterBottom
                         variant="h1"

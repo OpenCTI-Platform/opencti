@@ -36,6 +36,7 @@ export const workspaceEditionQuery = graphql`
   query WorkspaceEditionContainerQuery($id: String!) {
     workspace(id: $id) {
       ...WorkspaceEditionContainer_workspace
+      ...CyioWorkspaceEditionContainer_workspace
     }
   }
 `;

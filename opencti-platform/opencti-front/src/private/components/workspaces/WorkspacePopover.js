@@ -7,7 +7,6 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -18,8 +17,7 @@ import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../relay/environment';
 import { workspaceEditionQuery } from './WorkspaceEdition';
-import WorkspaceEditionContainer from './WorkspaceEditionContainer';
-import Loader from '../../../components/Loader';
+import CyioWorkspaceEditionContainer from './CyioWorkspaceEditionContainer';
 import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -96,18 +94,14 @@ class WorkspacePopover extends Component {
     });
   }
 
-  handleOpenEdit() {
-    this.setState({ displayEdit: true });
+  handleDisplayEdit() {
+    this.setState({ displayEdit: !this.state.displayEdit });
     this.handleClose();
-  }
-
-  handleCloseEdit() {
-    this.setState({ displayEdit: false });
   }
 
   render() {
     const {
-      classes, t, id, disabled,
+      classes, t, id, disabled, history,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -124,7 +118,7 @@ class WorkspacePopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
+          <MenuItem onClick={this.handleDisplayEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
@@ -160,28 +154,25 @@ class WorkspacePopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
+        {this.state.displayEdit && (
           <QueryRenderer
             query={workspaceEditionQuery}
             variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <WorkspaceEditionContainer
+                  <CyioWorkspaceEditionContainer
+                    history={history}
                     workspace={props.workspace}
-                    handleClose={this.handleCloseEdit.bind(this)}
+                    displayEdit={this.state.displayEdit}
+                    handleDisplayEdit={this.handleDisplayEdit.bind(this)}
                   />
                 );
               }
-              return <Loader variant="inElement" />;
+              return <></>;
             }}
           />
-        </Drawer>
+        )}
       </div>
     );
   }

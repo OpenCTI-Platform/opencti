@@ -15,6 +15,7 @@ import {
   dashboardQueryAssetsCount,
   dashboardQueryRisksCount,
 } from '../../settings/DashboardQuery';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -62,9 +63,9 @@ class CyioCoreObjectWidgetRiskCount extends Component {
     const { widget, t } = this.props;
     switch (widget.config.queryType) {
       case 'assetsCount':
-        return this.renderAssetChart();
+        return this.renderAssetChart('asset');
       case 'risksCount':
-        return this.renderRiskChart();
+        return this.renderRiskChart('risk');
       default:
         return (
           <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -82,10 +83,9 @@ class CyioCoreObjectWidgetRiskCount extends Component {
     }
   }
 
-  renderAssetChart() {
+  renderAssetChart(itemIcon) {
     const {
       t,
-      title,
       widget,
       endDate,
       classes,
@@ -96,37 +96,50 @@ class CyioCoreObjectWidgetRiskCount extends Component {
       endDate: finalEndDate,
     };
     return (
-      <QueryRenderer
-        query={dashboardQueryAssetsCount}
-        variables={countChartVariables}
-        render={({ props }) => {
-          if (props && props[widget.config.queryType]) {
-            return (
-              <Card classes={{ root: classes.card }} variant="outlined">
-                <Suspense fallback={<Loader variant="inElement" />}>
-                  <CardContent>
-                    <div className={classes.title}>
-                      {title || t('Total Component')}
-                    </div>
-                    <div className={classes.content}>
-                      <div className={classes.number}>
-                        {props[widget.config.queryType].total
-                          && t(props[widget.config.queryType].total)}
+      <>
+        <Typography variant="h4" gutterBottom={true}>
+          {widget.config.name || t('Component')}
+        </Typography>
+        <QueryRenderer
+          query={dashboardQueryAssetsCount}
+          variables={countChartVariables}
+          render={({ props }) => {
+            if (props && props[widget.config.queryType]) {
+              return (
+                <Card classes={{ root: classes.card }} variant="outlined">
+                  <Suspense fallback={<Loader variant="inElement" />}>
+                    <CardContent>
+                      <div className={classes.content}>
+                        <div className={classes.number}>
+                          {props[widget.config.queryType].total
+                            && t(props[widget.config.queryType].total)}
+                        </div>
                       </div>
-                    </div>
-                    <div className={classes.icon}>
-                      <ListItemIcon style={{ minWidth: 35 }}>
-                        <SvgIcon style={{ fontSize: '2rem' }}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#ffffff" d="M12 4.942c1.827 1.105 3.474 1.6 5 1.833v7.76c0 1.606-.415 1.935-5 4.76v-14.353zm9-1.942v11.535c0 4.603-3.203 5.804-9 9.465-5.797-3.661-9-4.862-9-9.465v-11.535c3.516 0 5.629-.134 9-3 3.371 2.866 5.484 3 9 3zm-2 1.96c-2.446-.124-4.5-.611-7-2.416-2.5 1.805-4.554 2.292-7 2.416v9.575c0 3.042 1.69 3.83 7 7.107 5.313-3.281 7-4.065 7-7.107v-9.575z" /></svg>
-                        </SvgIcon>
-                      </ListItemIcon>
-                    </div>
-                  </CardContent>
-                </Suspense>
-              </Card>
-            );
-          }
-          if (props) {
+                      <div className={classes.icon}>
+                        <ListItemIcon style={{ minWidth: 35 }}>
+                          <ItemIcon type={itemIcon} />
+                        </ListItemIcon>
+                      </div>
+                    </CardContent>
+                  </Suspense>
+                </Card>
+              );
+            }
+            if (props) {
+              return (
+                <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t('No entities of this type has been found.')}
+                  </span>
+                </div>
+              );
+            }
             return (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
                 <span
@@ -136,33 +149,19 @@ class CyioCoreObjectWidgetRiskCount extends Component {
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  <CircularProgress size={40} thickness={2} />
                 </span>
               </div>
             );
-          }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
-        }}
-      />
+          }}
+        />
+      </>
     );
   }
 
-  renderRiskChart() {
+  renderRiskChart(itemIcon) {
     const {
       t,
-      title,
       widget,
       endDate,
       classes,
@@ -173,37 +172,50 @@ class CyioCoreObjectWidgetRiskCount extends Component {
       endDate: finalEndDate,
     };
     return (
-      <QueryRenderer
-        query={dashboardQueryRisksCount}
-        variables={countChartVariables}
-        render={({ props }) => {
-          if (props && props[widget.config.queryType]) {
-            return (
-              <Card classes={{ root: classes.card }} variant="outlined">
-                <Suspense fallback={<Loader variant="inElement" />}>
-                  <CardContent>
-                    <div className={classes.title}>
-                      {title || t('Total Component')}
-                    </div>
-                    <div className={classes.content}>
-                      <div className={classes.number}>
-                        {props[widget.config.queryType].total
-                          && t(props[widget.config.queryType].total)}
+      <>
+        <Typography variant="h4" gutterBottom={true}>
+          {widget.config.name || t('Component')}
+        </Typography>
+        <QueryRenderer
+          query={dashboardQueryRisksCount}
+          variables={countChartVariables}
+          render={({ props }) => {
+            if (props && props[widget.config.queryType]) {
+              return (
+                <Card classes={{ root: classes.card }} variant="outlined">
+                  <Suspense fallback={<Loader variant="inElement" />}>
+                    <CardContent>
+                      <div className={classes.content}>
+                        <div className={classes.number}>
+                          {props[widget.config.queryType].total
+                            && t(props[widget.config.queryType].total)}
+                        </div>
                       </div>
-                    </div>
-                    <div className={classes.icon}>
-                      <ListItemIcon style={{ minWidth: 35 }}>
-                        <SvgIcon style={{ fontSize: '2rem' }}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#ffffff" d="M12 4.942c1.827 1.105 3.474 1.6 5 1.833v7.76c0 1.606-.415 1.935-5 4.76v-14.353zm9-1.942v11.535c0 4.603-3.203 5.804-9 9.465-5.797-3.661-9-4.862-9-9.465v-11.535c3.516 0 5.629-.134 9-3 3.371 2.866 5.484 3 9 3zm-2 1.96c-2.446-.124-4.5-.611-7-2.416-2.5 1.805-4.554 2.292-7 2.416v9.575c0 3.042 1.69 3.83 7 7.107 5.313-3.281 7-4.065 7-7.107v-9.575z" /></svg>
-                        </SvgIcon>
-                      </ListItemIcon>
-                    </div>
-                  </CardContent>
-                </Suspense>
-              </Card>
-            );
-          }
-          if (props) {
+                      <div className={classes.icon}>
+                        <ListItemIcon style={{ minWidth: 35 }}>
+                          <ItemIcon type={itemIcon} />
+                        </ListItemIcon>
+                      </div>
+                    </CardContent>
+                  </Suspense>
+                </Card>
+              );
+            }
+            if (props) {
+              return (
+                <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t('No entities of this type has been found.')}
+                  </span>
+                </div>
+              );
+            }
             return (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
                 <span
@@ -213,38 +225,22 @@ class CyioCoreObjectWidgetRiskCount extends Component {
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  <CircularProgress size={40} thickness={2} />
                 </span>
               </div>
             );
-          }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
-        }}
-      />
+          }}
+        />
+      </>
     );
   }
 
   render() {
     const {
-      t, classes, title, height,
+      t, height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {title || t('Total Accepted Risks')}
-        </Typography>
         {this.renderCountChartQuery()}
       </div>
     );
