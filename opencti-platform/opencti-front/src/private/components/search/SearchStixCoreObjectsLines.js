@@ -100,9 +100,10 @@ export const searchStixCoreObjectsLinesQuery = graphql`
 export const searchStixCoreObjectsLinesSearchQuery = graphql`
   query SearchStixCoreObjectsLinesSearchQuery(
     $types: [String]
+    $filters: [StixCoreObjectsFiltering]
     $search: String
   ) {
-    stixCoreObjects(types: $types, search: $search) {
+    stixCoreObjects(types: $types, search: $search, filters: $filters) {
       edges {
         node {
           id
@@ -267,6 +268,33 @@ export const searchStixCoreObjectsLinesSearchQuery = graphql`
           createdBy {
             ... on Identity {
               name
+            }
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition
+                x_opencti_color
+              }
+            }
+          }
+          objectLabel {
+            edges {
+              node {
+                id
+                value
+                color
+              }
+            }
+          }
+          creator {
+            id
+            name
+          }
+          reports {
+            pageInfo {
+              globalCount
             }
           }
         }

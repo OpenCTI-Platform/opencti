@@ -1657,6 +1657,8 @@ enum StixCoreObjectsOrdering {
   creator
   objectMarking
   observable_value
+  subject
+  value
   _score
 }
 enum StixCoreObjectsFilter {
@@ -1686,6 +1688,9 @@ enum StixCoreObjectsFilter {
   published
   creator
   x_opencti_workflow_id
+  subject
+  value
+  abstract
 }
 input StixCoreObjectsFiltering {
   key: [StixCoreObjectsFilter!]!

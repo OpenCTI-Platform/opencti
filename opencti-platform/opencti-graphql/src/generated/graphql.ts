@@ -14280,6 +14280,7 @@ export type StixCoreObjectEditMutationsRelationsAddArgs = {
 export type StixCoreObjectOrStixCoreRelationship = Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | Channel | City | Country | CourseOfAction | CryptocurrencyWallet | CryptographicKey | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Event | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | Language | MacAddr | Malware | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | PhoneNumber | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixFile | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate;
 
 export enum StixCoreObjectsFilter {
+  Abstract = 'abstract',
   Aliases = 'aliases',
   Confidence = 'confidence',
   ContainedBy = 'containedBy',
@@ -14299,8 +14300,10 @@ export enum StixCoreObjectsFilter {
   PatternType = 'pattern_type',
   Published = 'published',
   ReportTypes = 'report_types',
+  Subject = 'subject',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
+  Value = 'value',
   XMitreId = 'x_mitre_id',
   XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
@@ -14328,9 +14331,11 @@ export enum StixCoreObjectsOrdering {
   ObjectMarking = 'objectMarking',
   ObservableValue = 'observable_value',
   Published = 'published',
+  Subject = 'subject',
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
+  Value = 'value',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 

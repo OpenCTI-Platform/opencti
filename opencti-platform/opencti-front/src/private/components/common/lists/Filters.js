@@ -9,10 +9,13 @@ import TextField from '@mui/material/TextField';
 import Popover from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import { FilterListOutlined, PaletteOutlined } from '@mui/icons-material';
+import {
+  FilterListOutlined,
+  PaletteOutlined,
+  BiotechOutlined,
+} from '@mui/icons-material';
 import * as PropTypes from 'prop-types';
 import Tooltip from '@mui/material/Tooltip';
-import { ToyBrickSearchOutline } from 'mdi-material-ui';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
@@ -27,7 +30,10 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
+import {
+  identitySearchCreatorsSearchQuery,
+  identitySearchIdentitiesSearchQuery,
+} from '../identities/IdentitySearch';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
@@ -1441,7 +1447,10 @@ class Filters extends Component {
           (n) => noDirectFilters || !R.includes(n, directFilters),
           availableFilterKeys,
         ).map((filterKey) => {
-          if (filterKey.endsWith('start_date') || filterKey.endsWith('end_date')) {
+          if (
+            filterKey.endsWith('start_date')
+            || filterKey.endsWith('end_date')
+          ) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
                 <DatePicker
@@ -1497,7 +1506,8 @@ class Filters extends Component {
                     ? (option) => option.type
                     : (option) => t(option.group ? option.group : `filter_${filterKey}`)
                 }
-                isOptionEqualToValue={(option, value) => option.value === value.value}
+                isOptionEqualToValue={(option, value) => option.value === value.value
+                }
                 renderInput={(params) => (
                   <TextField
                     {...R.dissoc('InputProps', params)}
@@ -1802,7 +1812,7 @@ class Filters extends Component {
             disabled={disabled}
             size={size || 'medium'}
           >
-            <ToyBrickSearchOutline fontSize={fontSize || 'medium'} />
+            <BiotechOutlined fontSize={fontSize || 'medium'} />
           </IconButton>
         </Tooltip>
         <Dialog

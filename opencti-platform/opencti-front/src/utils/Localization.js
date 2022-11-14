@@ -64,7 +64,8 @@ const i18n = {
         '¿Quieres borrar esta fase de la «kill chain»?',
       'Do you want to delete this report?': '¿Quieres borrar este informe?',
       'Cascade delete': 'Eliminación en cascada',
-      'element(s) which are only in this report': 'elemento(s) que solo están en este informe',
+      'element(s) which are only in this report':
+        'elemento(s) que solo están en este informe',
       'Do you want to delete this grouping?':
         '¿Quieres eliminar esta agrupación?',
       'Do you want to kill this session?': '¿Quieres cerrar esta sesión?',
@@ -110,7 +111,8 @@ const i18n = {
         '¿Quieres borrar esta referencia externa?',
       'Do you want to remove this note?': '¿Quieres borrar esta nota?',
       'Do you want to remove this report?': '¿Quieres borrar este informe?',
-      'Do you want to remove this grouping?': '¿Quieres borrar esta agrupación?',
+      'Do you want to remove this grouping?':
+        '¿Quieres borrar esta agrupación?',
       'Do you want to remove these elements from this report?':
         '¿Quieres borrar estos elementos de este informe?',
       'Do you want to remove these elements from this grouping?':
@@ -1249,6 +1251,10 @@ const i18n = {
       'Add context': 'Agregar contexto',
       'Delete the element if no other containers contain it':
         'Eliminar el elemento si ningún otro contenedor lo contiene',
+      'Bulk search': 'Búsqueda masiva',
+      'Search for multiple entities': 'Buscar varias entidades',
+      'One keyword by line or separated by commas':
+        'Una palabra clave por línea o separada por comas',
       // Time
       '24h': '24 h',
       // Types
@@ -1632,7 +1638,8 @@ const i18n = {
       'Do you want to delete this report?':
         'Souhaitez-vous supprimer ce rapport ?',
       'Cascade delete': 'Suppression en cascade',
-      'element(s) which are only in this report': 'éléments uniquement présent dans ce rapport',
+      'element(s) which are only in this report':
+        'éléments uniquement présent dans ce rapport',
       'Do you want to delete this grouping?':
         'Souhaitez-vous supprimer ce groupement ?',
       'Do you want to kill this session?':
@@ -2814,6 +2821,10 @@ const i18n = {
       IF: 'SI',
       THEN: 'ALORS',
       CREATE: 'CREER',
+      'Bulk search': 'Recherche de massage',
+      'Search for multiple entities': 'Rechercher plusieurs entités',
+      'One keyword by line or separated by commas':
+        'Un mot-clé par ligne ou séparé par des virgules',
       // Time
       '24h': '24h',
       // Types
@@ -3174,7 +3185,8 @@ const i18n = {
         'このキルチェーンフェーズを削除しますか？',
       'Do you want to delete this report?': 'このレポートを削除しますか？',
       'Cascade delete': 'カスケード削除',
-      'element(s) which are only in this report': 'このレポートにのみ含まれる要素',
+      'element(s) which are only in this report':
+        'このレポートにのみ含まれる要素',
       'Do you want to kill this session?': 'このセッションを削除しますか？',
       'Do you want to kill all the sessions of this user?':
         'このユーザーのセッションをすべて削除しますか？',
@@ -4323,6 +4335,10 @@ const i18n = {
       'Add context': 'コンテキストを追加',
       'Delete the element if no other containers contain it':
         '他のコンテナに要素が含まれていない場合は、要素を削除します',
+      'Bulk search': '一括検索',
+      'Search for multiple entities': '複数のエンティティを検索',
+      'One keyword by line or separated by commas':
+        '1 つのキーワードを 1 行またはカンマで区切る',
       // Time
       '24h': '24時間',
       // Types
@@ -5765,6 +5781,10 @@ const i18n = {
       'Add context': '添加上下文',
       'Delete the element if no other containers contain it':
         '如果沒有其他容器包含該元素，則刪除該元素',
+      'Bulk search': '批量搜索',
+      'Search for multiple entities': '搜索多个实体',
+      'One keyword by line or separated by commas':
+        '一个关键字逐行或以逗号分隔',
       // Time
       '24h': '24小时',
       // Types

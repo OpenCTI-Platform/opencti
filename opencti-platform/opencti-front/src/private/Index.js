@@ -21,6 +21,7 @@ import Profile from './components/Profile';
 import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
 import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
+import SearchBulk from './components/SearchBulk';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -73,6 +74,11 @@ const Index = ({ me, location }) => {
             exact
             path="/dashboard/search/:keyword"
             render={(routeProps) => <Search {...routeProps} me={me} />}
+          />
+          <BoundaryRoute
+            exact
+            path="/dashboard/search_bulk"
+            render={(routeProps) => <SearchBulk {...routeProps} me={me} />}
           />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/events" component={RootEvents} />
