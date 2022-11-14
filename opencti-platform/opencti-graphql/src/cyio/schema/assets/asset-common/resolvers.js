@@ -439,6 +439,7 @@ const assetCommonResolvers = {
         sparqlQuery: ra,
         queryId: "Delete Asset from Inventory"
       });
+      return id;
     },
     deleteAssets: async (_, { ids }, {dbName, dataSources}) => {
       const dq = deleteMultipleAssetsQuery(ids);
@@ -453,6 +454,7 @@ const assetCommonResolvers = {
         sparqlQuery: ra,
         queryId: "Delete Assets from Inventory"
       });
+      return ids;
     },
     createAssetLocation: async (_, {input}, {dbName, selectMap, dataSources}) => {
       // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
