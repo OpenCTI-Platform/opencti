@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import {
   BarChart,
   ResponsiveContainer,
@@ -13,11 +12,13 @@ import {
 } from 'recharts';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
+import {
+  dashboardQueryRisksDistribution,
+} from '../../settings/DashboardQuery';
 
 const styles = () => ({
   paper: {
@@ -34,69 +35,56 @@ const styles = () => ({
   },
 });
 
-const cyioCoreObjectSeverityVerticalBarsQuery = graphql`
-  query CyioCoreObjectSeverityVerticalBarsQuery(
-    $type: String
-    $field: String!
-    $operation: StatsOperation!
-    $startDate: DateTime!
-    $endDate: DateTime!
-  ) {
-    risksDistribution(
-      type: $type
-      field: $field
-      operation: $operation
-      startDate: $startDate
-      endDate: $endDate
-    ) {
-      label
-      value
-      entity {
-        ... on Risk {
-          id
-          created
-          name
-          first_seen
-          last_seen
-          risk_level
-          occurrences
-          deadline
-        }
-      }
+class CyioCoreObjectWidgetHorizontalBars extends Component {
+  renderhorizontalBarChartQuery() {
+    const { widget, t } = this.props;
+    switch (widget.config.queryType) {
+      case 'risksDistribution':
+        return this.renderRiskChart();
+      default:
+        return (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('Not implemented yet.')}
+            </span>
+          </div>
+        );
     }
   }
-`;
 
-class CyioCoreObjectRiskSeverityVerticalBars extends Component {
-  renderContent() {
+  renderRiskChart() {
     const {
       t,
       md,
+      widget,
       startDate,
       endDate,
       theme,
     } = this.props;
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const riskDistributionVariables = {
-      type: 'Risk',
-      field: 'risk_level',
-      operation: 'count',
+    const horizontalBarsChartVariables = {
+      ...widget.config.variables,
       startDate: finalStartDate,
       endDate: finalEndDate,
     };
 
     return (
       <QueryRenderer
-        query={cyioCoreObjectSeverityVerticalBarsQuery}
-        variables={riskDistributionVariables}
+        query={dashboardQueryRisksDistribution}
+        variables={horizontalBarsChartVariables}
         render={({ props }) => {
-          if (props && props.risksDistribution) {
+          if (props && props[widget.config.queryType]) {
             return (
               <ResponsiveContainer height="100%" width="100%">
                 <BarChart
-                  layout='vertical'
-                  data={props.risksDistribution}
+                  data={props[widget.config.queryType]}
                   margin={{
                     top: 20,
                     right: 20,
@@ -112,14 +100,14 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
                     vertical={false}
                   />
                   <XAxis
-                    dataKey='value'
+                    dataKey='label'
                     stroke={theme.palette.text.primary}
                   // interval={interval}
                   // angle={-45}
                   // textAnchor="end"
                   // tickFormatter={md}
                   />
-                  <YAxis type='category' dataKey='label' stroke={theme.palette.text.primary} />
+                  <YAxis stroke={theme.palette.text.primary} />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -132,7 +120,7 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
                       border: '1px solid #06102D',
                       borderRadius: 10,
                     }}
-                    labelFormatter={md}
+                  // labelFormatter={md}
                   />
                   <Bar
                     // fill={theme.palette.primary.main}
@@ -179,34 +167,29 @@ class CyioCoreObjectRiskSeverityVerticalBars extends Component {
 
   render() {
     const {
-      t, classes, title, variant, height,
+      t, classes, title, height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Top N Risks by Severity')}
+          {title || t('Top Accepted Risk')}
         </Typography>
-        {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
-            {this.renderContent()}
-          </Paper>
-        ) : (
-          this.renderContent()
-        )}
+        {this.renderhorizontalBarChartQuery()}
       </div>
     );
   }
 }
 
-CyioCoreObjectRiskSeverityVerticalBars.propTypes = {
+CyioCoreObjectWidgetHorizontalBars.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,
+  widget: PropTypes.object,
 };
 
 export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(CyioCoreObjectRiskSeverityVerticalBars);
+)(CyioCoreObjectWidgetHorizontalBars);

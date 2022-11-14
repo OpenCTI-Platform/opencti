@@ -85,6 +85,7 @@ class WidgetCreation extends Component {
       selectedEntity: null,
       dataType: null,
       visualizationType: null,
+      queryType: null,
     };
   }
 
@@ -96,6 +97,7 @@ class WidgetCreation extends Component {
       selectedEntity: null,
       dataType: null,
       visualizationType: null,
+      queryType: null,
     });
     this.props.handleWidgetCreation();
   }
@@ -112,8 +114,8 @@ class WidgetCreation extends Component {
     this.setState({ dataType, stepIndex: 3 });
   }
 
-  handleSelectVisualizationType(visualizationType) {
-    this.setState({ visualizationType }, () => this.completeSetup());
+  handleSelectVisualizationType(visualizationType, queryType) {
+    this.setState({ visualizationType, queryType }, () => this.completeSetup());
   }
 
   handleSetStep(stepIndex) {
@@ -130,11 +132,11 @@ class WidgetCreation extends Component {
 
   completeSetup() {
     const {
-      perspective, dataType, visualizationType, selectedEntity,
+      perspective, dataType, visualizationType, selectedEntity, queryType,
     } = this.state;
     this.props.onComplete({
       id: uuid(),
-      perspective: perspective.name,
+      perspective: perspective.perspectiveType,
       dataType: dataType.dataType,
       visualizationType,
       entity: selectedEntity
@@ -143,6 +145,10 @@ class WidgetCreation extends Component {
           name: selectedEntity.name,
         }
         : null,
+      config: {
+        queryType,
+        variables: dataType.variables,
+      },
     });
     this.handleClose();
   }
@@ -175,7 +181,7 @@ class WidgetCreation extends Component {
 
   renderDataTypes() {
     const { perspective } = this.state;
-    const { t, classes } = this.props;
+    const { t, classes, wizardConfig } = this.props;
     if (perspective.lifecycle_step === 'dataType') {
       return (
         <div>
@@ -184,8 +190,8 @@ class WidgetCreation extends Component {
             spacing={3}
             style={{ marginTop: 20, marginBottom: 20 }}
           >
-            {this.props.wizardConfig.dataTypes
-              .filter((dataType) => perspective.dataTypes.includes(dataType.name))
+            {wizardConfig.dataTypes
+              .filter((dataType) => perspective.dataTypes.includes(dataType.id))
               .map((data) => (
                 <Grid key={data.id} item={true} xs="4">
                   <Card elevation={3} className={classes.card2}>
@@ -298,22 +304,22 @@ class WidgetCreation extends Component {
 
   renderVisualizationTypes() {
     const { t, classes, wizardConfig } = this.props;
-    const visualizationTypes = wizardConfig
-      .dataTypeVisualizationMapping[this.state.dataType.dataType];
+    const dataTypeVisualizations = Object.keys(this.state.dataType.visualizations);
     return (
       <Grid
         container={true}
         spacing={3}
         style={{ marginTop: 20, marginBottom: 20 }}
       >
-        {visualizationTypes
-          && visualizationTypes.map((visualizationType, i) => (
+        {dataTypeVisualizations
+          && dataTypeVisualizations.map((visualizationType, i) => (
             <Grid key={i} item={true} xs="4">
               <Card elevation={3} className={classes.card3}>
                 <CardActionArea
                   onClick={this.handleSelectVisualizationType.bind(
                     this,
                     visualizationType,
+                    this.state.dataType.visualizations[visualizationType],
                   )}
                   style={{ height: '100%' }}
                 >

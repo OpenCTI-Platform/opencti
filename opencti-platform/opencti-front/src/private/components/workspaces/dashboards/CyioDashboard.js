@@ -52,6 +52,12 @@ import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
 import ThreatVulnerabilities from './ThreatVulnerabilities';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import Loader from '../../../../components/Loader';
+import CyioCoreObjectWidgetAreaChart from '../widgets/CyioCoreObjectWidgetAreaChart';
+import CyioCoreObjectWidgetCount from '../widgets/CyioCoreObjectWidgetCount';
+import CyioCoreObjectWidgetDonutChart from '../widgets/CyioCoreObjectWidgetDonutChart';
+import CyioCoreObjectWidgetHorizontalBars from '../widgets/CyioCoreObjectWidgetHorizontalBars';
+import CyioCoreObjectWidgetLineChart from '../widgets/CyioCoreObjectWidgetLineChart';
+import CyioCoreObjectWidgetVerticalBars from '../widgets/CyioCoreObjectWidgetVerticalBars';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -77,7 +83,6 @@ const styles = (theme) => ({
     padding: 20,
     borderRadius: 6,
     display: 'relative',
-    overflow: 'auto',
   },
   dialogContent: {
     overflow: 'hidden',
@@ -215,6 +220,102 @@ class DashboardComponent extends Component {
 
   static getDayStartDate() {
     return dayStartDate(null, false);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  renderVisualization(widget, config) {
+    const { t } = this.props;
+    const { relativeDate } = config;
+    const startDate = relativeDate
+      ? this.computerRelativeDate(relativeDate)
+      : config.startDate;
+    const endDate = relativeDate
+      ? DashboardComponent.getDayStartDate()
+      : config.endDate;
+    switch (widget.visualizationType) {
+      case 'area':
+        return (
+          <CyioCoreObjectWidgetAreaChart
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'count':
+        return (
+          <CyioCoreObjectWidgetCount
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'donut':
+        return (
+          <CyioCoreObjectWidgetDonutChart
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+            mapReload={this.state.mapReload}
+          />
+        );
+      case 'horizontal-bar':
+        return (
+          <CyioCoreObjectWidgetHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'line':
+        return (
+          <CyioCoreObjectWidgetLineChart
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+            mapReload={this.state.mapReload}
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <CyioCoreObjectWidgetVerticalBars
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      // case 'map':
+      //   return (
+      //     <GlobalVictimologyCountries
+      //       startDate={startDate}
+      //       endDate={endDate}
+      //       widget={widget}
+      //       mapReload={this.state.mapReload}
+      //     />
+      //   );
+      // case 'timeline':
+      //   return (
+      //     <GlobalVictimologyCountries
+      //       startDate={startDate}
+      //       endDate={endDate}
+      //       widget={widget}
+      //       mapReload={this.state.mapReload}
+      //     />
+      //   );
+      default:
+        return (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('Not implemented yet.')}
+            </span>
+          </div>
+        );
+    }
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -654,12 +755,7 @@ class DashboardComponent extends Component {
               <CyioWidgetPopover
                 onDelete={this.handleDeleteWidget.bind(this, widget.id)}
               />
-              {widget.perspective === 'global'
-                && this.renderGlobalVisualization(widget, manifest.config)}
-              {widget.perspective === 'threat'
-                && this.renderThreatVisualization(widget, manifest.config)}
-              {widget.perspective === 'entity'
-                && this.renderEntityVisualization(widget, manifest.config)}
+              {widget.perspective && this.renderVisualization(widget, manifest.config)}
             </Paper>
           ))}
         </ResponsiveGridLayout>
@@ -676,11 +772,11 @@ class DashboardComponent extends Component {
                 toastGenericError('Request Failed');
               }
               if (props) {
-                const wizardConfig = JSON.parse(Buffer.from(props.workspaceWizardConfig, 'base64').toString('ascii'));
+                const propsWizard = JSON.parse(Buffer.from(props.workspaceWizardConfig, 'base64').toString('ascii'));
                 return (
                   <CyioWidgetCreation
                     open={this.state.openWidgetCreate}
-                    wizardConfig={wizardConfig}
+                    wizardConfig={propsWizard.wizardConfig}
                     handleWidgetCreation={this.handleWidgetCreation.bind(this)}
                     onComplete={this.handleAddWidget.bind(this)}
                   />

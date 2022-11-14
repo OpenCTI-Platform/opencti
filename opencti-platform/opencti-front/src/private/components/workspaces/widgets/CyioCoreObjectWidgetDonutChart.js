@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, map, assoc } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import {
   ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
@@ -13,38 +12,18 @@ import Tooltip from 'rich-markdown-editor/dist/components/Tooltip';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
+import {
+  dashboardQueryRisksDistribution,
+} from '../../settings/DashboardQuery';
 
 const styles = () => ({
   paper: {
     height: '100%',
-    margin: '10px 0 0 0',
+    margin: '4px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
 });
-
-const CyioCoreObjectTotalActiveRiskDonutsQuery = graphql`
-  query CyioCoreObjectTotalActiveRiskDonutChartQuery(
-    $type: String
-    $match: [String]
-    $field: String!
-    $operation: StatsOperation!
-    $startDate: DateTime!
-    $endDate: DateTime!
-  ) {
-    risksDistribution(
-      type: $type
-      match: $match
-      field: $field
-      operation: $operation
-      startDate: $startDate
-      endDate: $endDate
-    ) {
-      label
-      value
-    }
-  }
-`;
 
 const COLORS = {
   open: '#FFD773',
@@ -55,7 +34,7 @@ const COLORS = {
   Informational: '#FFEBBC',
 };
 
-class CyioCoreObjectTotalActiveRiskDonutChart extends Component {
+class CyioCoreObjectWidgetDonutChart extends Component {
   constructor(props) {
     super(props);
     this.renderLabel = this.renderLabel.bind(this);
@@ -115,35 +94,55 @@ class CyioCoreObjectTotalActiveRiskDonutChart extends Component {
     );
   }
 
-  renderContent() {
+  renderDonutChartQuery() {
+    const { widget, t } = this.props;
+    switch (widget.config.queryType) {
+      case 'risksDistribution':
+        return this.renderRiskChart();
+      default:
+        return (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('Not implemented yet.')}
+            </span>
+          </div>
+        );
+    }
+  }
+
+  renderRiskChart() {
     const {
       t,
       toTypes,
+      widget,
       field,
       startDate,
       endDate,
     } = this.props;
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const riskDistributionVariables = {
-      type: 'Risk',
-      field: 'risk_status',
-      operation: 'count',
-      match: ['open', 'investigating', 'remediating', 'deviation_requested', 'deviation_approved'],
+    const donutChartVariables = {
+      ...widget.config.variables,
       startDate: finalStartDate,
       endDate: finalEndDate,
     };
     return (
       <QueryRenderer
-        query={CyioCoreObjectTotalActiveRiskDonutsQuery}
-        variables={riskDistributionVariables}
+        query={dashboardQueryRisksDistribution}
+        variables={donutChartVariables}
         render={({ props }) => {
           if (
             props
-            && props.risksDistribution
-            && props.risksDistribution.length > 0
+            && props[widget.config.queryType]
+            && props[widget.config.queryType].length > 0
           ) {
-            let data = props.risksDistribution;
+            let data = props[widget.config.queryType];
             if (field === 'internal_id') {
               data = map(
                 (n) => assoc(
@@ -155,7 +154,7 @@ class CyioCoreObjectTotalActiveRiskDonutChart extends Component {
                   }`,
                   n,
                 ),
-                props.risksDistribution,
+                props[widget.config.queryType],
               );
             }
             return (
@@ -168,11 +167,11 @@ class CyioCoreObjectTotalActiveRiskDonutChart extends Component {
                     left: 0,
                   }}
                 >
-                  {props.risksDistribution
+                  {props[widget.config.queryType]
                     && <Pie
                       cx='45%'
                       cy='45%'
-                      data={props.risksDistribution}
+                      data={props[widget.config.queryType]}
                       fill="#82ca9d"
                       nameKey="name"
                       dataKey="value"
@@ -269,19 +268,13 @@ class CyioCoreObjectTotalActiveRiskDonutChart extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {title || t('Total Active Risks')}
         </Typography>
-        {variant === 'inLine' ? (
-          this.renderContent()
-        ) : (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
-            {this.renderContent()}
-          </Paper>
-        )}
+        {this.renderDonutChartQuery()}
       </div>
     );
   }
 }
 
-CyioCoreObjectTotalActiveRiskDonutChart.propTypes = {
+CyioCoreObjectWidgetDonutChart.propTypes = {
   title: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
@@ -290,7 +283,7 @@ CyioCoreObjectTotalActiveRiskDonutChart.propTypes = {
   height: PropTypes.number,
   startDate: PropTypes.object,
   endDate: PropTypes.object,
-  dateAttribute: PropTypes.string,
+  widget: PropTypes.object,
   variant: PropTypes.string,
 };
 
@@ -298,4 +291,4 @@ export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(CyioCoreObjectTotalActiveRiskDonutChart);
+)(CyioCoreObjectWidgetDonutChart);

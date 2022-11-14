@@ -1,30 +1,31 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import {
+  BarChart,
   ResponsiveContainer,
   CartesianGrid,
-  AreaChart,
+  Bar,
   XAxis,
   YAxis,
-  Area,
   Tooltip,
 } from 'recharts';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
+import { monthsAgo, now } from '../../../../utils/Time';
+import {
+  dashboardQueryRisksDistribution,
+} from '../../settings/DashboardQuery';
 
 const styles = () => ({
   paper: {
     minHeight: 280,
     height: '100%',
     margin: '4px 0 0 0',
-    padding: '0 0 10px 0',
+    padding: '1rem',
     borderRadius: 6,
   },
   chip: {
@@ -34,91 +35,80 @@ const styles = () => ({
   },
 });
 
-const cyioCoreObjectTotalActiveRiskLineChartQuery = graphql`
-  query CyioCoreObjectTotalActiveRiskLineChartQuery(
-    $type: String
-    $field: String!
-    $match: [String]
-    $operation: StatsOperation!
-    $startDate: DateTime!
-    $endDate: DateTime!
-    $interval: Interval!
-  ) {
-    risksTimeSeries(
-      type: $type
-      match: $match
-      field: $field
-      operation: $operation
-      startDate: $startDate
-      endDate: $endDate
-      interval: $interval
-    ) {
-      date
-      label
-      value
+class CyioCoreObjectWidgetVerticalBars extends Component {
+  renderhorizontalBarChartQuery() {
+    const { widget, t } = this.props;
+    switch (widget.config.queryType) {
+      case 'risksDistribution':
+        return this.renderRiskChart();
+      default:
+        return (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('Not implemented yet.')}
+            </span>
+          </div>
+        );
     }
   }
-`;
 
-class CyioCoreObjectTotalActiveRiskLineChart extends Component {
-  renderContent() {
+  renderRiskChart() {
     const {
       t,
       md,
-      nsd,
+      widget,
       startDate,
       endDate,
       theme,
     } = this.props;
-    const interval = 'month';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const days = numberOfDays(finalStartDate, finalEndDate);
-    // let tickFormatter = md;
-    if (days <= 30) {
-      tickFormatter = nsd;
-    }
-    const reportsTimeSeriesVariables = {
-      type: 'Risk',
-      field: 'risk_status',
-      match: ['open', 'investigating', 'remediating', 'deviation_requested', 'deviation_approved'],
-      operation: 'count',
+    const verticalBarsChartVariables = {
+      ...widget.config.variables,
       startDate: finalStartDate,
       endDate: finalEndDate,
-      interval,
     };
+
     return (
       <QueryRenderer
-        query={cyioCoreObjectTotalActiveRiskLineChartQuery}
-        variables={reportsTimeSeriesVariables}
+        query={dashboardQueryRisksDistribution}
+        variables={verticalBarsChartVariables}
         render={({ props }) => {
-          if (props && props.risksTimeSeries) {
+          if (props && props[widget.config.queryType]) {
             return (
               <ResponsiveContainer height="100%" width="100%">
-                <AreaChart
-                  data={props.risksTimeSeries}
+                <BarChart
+                  data={props[widget.config.queryType]}
                   margin={{
                     top: 20,
-                    right: 0,
-                    bottom: 20,
-                    left: -10,
+                    right: 20,
+                    bottom: 0,
+                    left: 0,
                   }}
+                  barGap={0}
+                  layout='vertical'
                 >
                   <CartesianGrid
                     strokeDasharray="2 2"
-                    // stroke={theme.palette.primary.main}
                     stroke='rgba(241, 241, 242, 0.35)'
+                    // stroke={theme.palette.action.grid}
                     vertical={false}
                   />
                   <XAxis
-                    dataKey="label"
                     stroke={theme.palette.text.primary}
-                    interval={interval}
-                    textAnchor="end"
-                  // angle={-30}
-                  // tickFormatter={tickFormatter}
+                    dataKey='value'
+                  // interval={interval}
+                  // angle={-45}
+                  // textAnchor="end"
+                  // tickFormatter={md}
                   />
-                  <YAxis stroke={theme.palette.text.primary} />
+                  <YAxis dataKey='label' stroke={theme.palette.text.primary} />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -131,15 +121,15 @@ class CyioCoreObjectTotalActiveRiskLineChart extends Component {
                       border: '1px solid #06102D',
                       borderRadius: 10,
                     }}
-                  // labelFormatter={tickFormatter}
+                    labelFormatter={md}
                   />
-                  <Area
-                    dataKey='value'
-                    stroke={theme.palette.primary.main}
-                    strokeWidth={2}
-                  // fill={theme.palette.primary.main}
+                  <Bar
+                    // fill={theme.palette.primary.main}
+                    fill="#075AD3"
+                    dataKey="value"
+                    barSize={20}
                   />
-                </AreaChart>
+                </BarChart>
               </ResponsiveContainer>
             );
           }
@@ -178,35 +168,29 @@ class CyioCoreObjectTotalActiveRiskLineChart extends Component {
 
   render() {
     const {
-      t, classes, title, variant, height,
+      t, title, height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Total Active Risks')}
+          {title || t('Top Accepted Risk')}
         </Typography>
-        {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
-            {this.renderContent()}
-          </Paper>
-        ) : (
-          this.renderContent()
-        )}
+        {this.renderhorizontalBarChartQuery()}
       </div>
     );
   }
 }
 
-CyioCoreObjectTotalActiveRiskLineChart.propTypes = {
+CyioCoreObjectWidgetVerticalBars.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,
-  nsd: PropTypes.func,
+  widget: PropTypes.object,
 };
 
 export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(CyioCoreObjectTotalActiveRiskLineChart);
+)(CyioCoreObjectWidgetVerticalBars);
