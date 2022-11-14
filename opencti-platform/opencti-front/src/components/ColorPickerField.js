@@ -5,12 +5,11 @@ import { SketchPicker } from 'react-color';
 import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Popover from '@material-ui/core/Popover';
-import { useField, Field } from 'formik';
+import { useField } from 'formik';
 import { fieldToTextField } from 'formik-material-ui';
-import CardContent from '@material-ui/core/CardContent';
-import TextField from './TextField';
 import { ColorLens } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
+import MuiTextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -23,7 +22,7 @@ const ColorPickerField = (props) => {
   const [color, setColor] = React.useState('');
   const {
     form: { setFieldValue, setTouched },
-    field: { name },
+    field: { name, label },
     onChange,
     onFocus,
     onSubmit,
@@ -79,31 +78,23 @@ const ColorPickerField = (props) => {
   }
   return (
     <div style={{ margin: '10px 0' }}>
-      <CardContent
+      <MuiTextField
+        variant="standard"
         {...fieldToTextField(props)}
         ref={anchorEl}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
-        style={{ display: 'flex', padding: '0px' }}
-      >
-        <Field
-          component={TextField}
-          name="color"
-          label='Color'
-          fullWidth={true}
-          className={classes.margin}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton  aria-label="open" onClick={handleOpen}>
-                  <ColorLens />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </CardContent>
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton aria-label="open" onClick={handleOpen } size="large">
+                <ColorLens />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
       <Popover
         open={open}
         anchorEl={anchorEl}

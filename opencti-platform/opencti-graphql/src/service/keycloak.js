@@ -1,10 +1,11 @@
 // Keycloak Admin Client
-import conf from '../config/conf';
+import conf, {logApp} from '../config/conf';
 import Keycloak from 'keycloak-connect'
 
 import { defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import {auth, hasPermission, hasRole, KeycloakContext} from 'keycloak-connect-graphql';
+import KeycloakAdminClient, {AuthError} from "@darklight/keycloak-admin-client";
 
 export const authDirectiveTransformer = (schema, directiveName = 'auth') => {
   return mapSchema(schema, {
@@ -90,6 +91,13 @@ export const keycloakEnabled = () => {
 }
 
 export const keycloakAlive = async () => {
+  try {
+    await keycloakAdminClient.auth()
+  } catch (e) {
+    const error = (e instanceof AuthError)? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
+    logApp.error(`[INIT] Keycloak Admin Client failed to authenticate`, error)
+    throw e;
+  }
   if(!keycloakEnabled()) return false;
   try {
     keycloakInstance = new Keycloak({},{
@@ -102,6 +110,8 @@ export const keycloakAlive = async () => {
     });
     return true;
   } catch (e) {
+    const error = { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
+    logApp.error(`[INIT] Failed to establish Keycloak Connect`, error)
     return false;
   }
 };
@@ -121,3 +131,15 @@ export const applyKeycloakContext = (context, req) => {
 const getKeycloak = () => {
   return keycloakInstance;
 }
+
+const keycloakAdminClient = new KeycloakAdminClient({
+  serverUrl: keycloakServer,
+  clientId,
+  realm,
+  credentials: {
+    secret
+  }
+})
+
+
+export {keycloakAdminClient}
