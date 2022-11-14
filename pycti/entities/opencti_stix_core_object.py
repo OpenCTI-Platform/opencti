@@ -522,6 +522,27 @@ class StixCoreObject:
         entity = self.opencti.process_multiple_fields(result["data"]["stixCoreObject"])
         return entity["importFiles"]
 
+    def push_list_export(
+        self, entity_type, file_name, data, list_filters="", mime_type=None
+    ):
+        query = """
+            mutation StixCoreObjectsExportPush($type: String!, $file: Upload!, $listFilters: String) {
+                stixCoreObjectsExportPush(type: $type, file: $file, listFilters: $listFilters)
+            }
+        """
+        if mime_type is None:
+            file = self.file(file_name, data)
+        else:
+            file = self.file(file_name, data, mime_type)
+        self.opencti.query(
+            query,
+            {
+                "type": entity_type,
+                "file": file,
+                "listFilters": list_filters,
+            },
+        )
+
     """
         Get the reports about a Stix-Core-Object object
 
