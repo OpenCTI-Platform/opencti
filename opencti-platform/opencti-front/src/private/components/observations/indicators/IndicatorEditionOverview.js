@@ -28,6 +28,7 @@ import {
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -372,7 +373,7 @@ class IndicatorEditionOverviewComponent extends Component {
               onChange={this.handleSubmitField.bind(this)}
               label={t('Confidence')}
               fullWidth={true}
-              containerstyle={{ width: '100%', marginTop: 20 }}
+              containerStyle={fieldSpacingContainerStyle}
               editContext={context}
               variant="edit"
             />
@@ -430,7 +431,7 @@ class IndicatorEditionOverviewComponent extends Component {
               name="indicator_types"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={true}
               editContext={context}

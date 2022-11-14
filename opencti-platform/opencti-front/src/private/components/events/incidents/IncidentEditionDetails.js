@@ -69,6 +69,7 @@ const incidentValidation = (t) => Yup.object().shape({
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   objective: Yup.string().nullable(),
+  source: Yup.string().nullable(),
 });
 
 class IncidentEditionDetailsComponent extends Component {
@@ -147,7 +148,7 @@ class IncidentEditionDetailsComponent extends Component {
     const initialValues = R.pipe(
       R.assoc('first_seen', buildDate(incident.first_seen)),
       R.assoc('last_seen', buildDate(incident.last_seen)),
-      R.pick(['first_seen', 'last_seen', 'objective']),
+      R.pick(['source', 'first_seen', 'last_seen', 'objective']),
     )(incident);
     return (
       <Formik
@@ -189,6 +190,19 @@ class IncidentEditionDetailsComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="last_seen" />
                 ),
               }}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="source"
+              label={t('Source')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="source" />
+              }
             />
             <Field
               component={TextField}
@@ -238,6 +252,7 @@ const IncidentEditionDetails = createFragmentContainer(
         id
         first_seen
         last_seen
+        source
         objective
         is_inferred
       }

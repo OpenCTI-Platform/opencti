@@ -30,6 +30,7 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -260,7 +261,7 @@ class IndicatorCreation extends Component {
                     name="confidence"
                     label={t('Confidence')}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
+                    containerStyle={fieldSpacingContainerStyle}
                   />
                   <Field
                     component={SelectField}
@@ -268,7 +269,7 @@ class IndicatorCreation extends Component {
                     name="pattern_type"
                     label={t('Pattern type')}
                     fullWidth={true}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    containerstyle={fieldSpacingContainerStyle}
                   >
                     <MenuItem value="stix">STIX</MenuItem>
                     <MenuItem value="pcre">PCRE</MenuItem>

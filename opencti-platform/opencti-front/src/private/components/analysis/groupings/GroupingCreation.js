@@ -10,7 +10,10 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
-import { commitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -21,6 +24,7 @@ import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/Store';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -98,7 +102,7 @@ const GroupingCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(
       {
         confidence: () => parseInt(values.confidence, 10),
@@ -121,6 +125,10 @@ const GroupingCreation = ({ paginationOptions }) => {
         paginationOptions,
         'groupingAdd',
       ),
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
@@ -195,14 +203,14 @@ const GroupingCreation = ({ paginationOptions }) => {
                   name="confidence"
                   label={t('Confidence')}
                   fullWidth={true}
-                  containerstyle={{ width: '100%', marginTop: 20 }}
+                  containerStyle={fieldSpacingContainerStyle}
                 />
                 <OpenVocabField
                   label={t('Context')}
                   type="grouping-context-ov"
                   name="context"
                   multiple={false}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  containerStyle={fieldSpacingContainerStyle}
                 />
                 <Field
                   component={MarkDownField}

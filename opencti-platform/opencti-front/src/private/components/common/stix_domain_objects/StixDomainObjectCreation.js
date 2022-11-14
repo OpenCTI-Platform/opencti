@@ -41,6 +41,7 @@ import {
   typesWithOpenCTIAliases,
   typesWithoutAliases,
 } from '../../../../utils/Entity';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -529,7 +530,7 @@ class StixDomainObjectCreation extends Component {
                     name="confidence"
                     label={t('Confidence')}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
+                    containerStyle={fieldSpacingContainerStyle}
                   />
                   <Field
                     component={MarkDownField}
@@ -723,7 +724,7 @@ class StixDomainObjectCreation extends Component {
                     name="confidence"
                     label={t('Confidence')}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
+                    containerStyle={fieldSpacingContainerStyle}
                   />
                   <Field
                     component={MarkDownField}

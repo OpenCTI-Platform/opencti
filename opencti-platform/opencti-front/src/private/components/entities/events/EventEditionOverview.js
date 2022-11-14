@@ -23,6 +23,7 @@ import {
 import { buildDate } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -284,7 +285,7 @@ class EventEditionOverviewComponent extends Component {
               name="event_types"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={true}
               editContext={context}

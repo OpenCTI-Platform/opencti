@@ -12,10 +12,10 @@ interface OpenVocabProps {
   name: string
   label: string
   variant?: string
-  onChange: (name: string, value: Option) => void,
+  onChange?: (name: string, value: Option) => void,
   onFocus?: (name: string, value: Option) => void,
   multiple: boolean
-  containerstyle: string
+  containerStyle: Record<string, string | number>
   editContext?: unknown
 }
 
@@ -27,7 +27,7 @@ const OpenVocabField: FunctionComponent<OpenVocabProps> = ({
   onChange,
   onFocus,
   multiple,
-  containerstyle,
+  containerStyle,
   editContext,
 }) => {
   const { t } = useFormatter();
@@ -42,7 +42,7 @@ const OpenVocabField: FunctionComponent<OpenVocabProps> = ({
           onChange={onChange}
           fullWidth={true}
           multiple={multiple}
-          containerstyle={containerstyle}
+          containerstyle={containerStyle}
           helpertext={<SubscriptionFocus context={editContext} fieldName={name} />}>
           {openVocabList.map((openVocab) => (
             <MenuItem key={openVocab.key} value={openVocab.key}>
@@ -59,7 +59,7 @@ const OpenVocabField: FunctionComponent<OpenVocabProps> = ({
         label={label}
         fullWidth={true}
         multiple={multiple}
-        containerstyle={containerstyle}>
+        containerstyle={containerStyle}>
         {openVocabList.map((openVocab) => (
           <MenuItem key={openVocab.key} value={openVocab.key}>
             {t(openVocab.key)}

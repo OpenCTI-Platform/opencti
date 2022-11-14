@@ -134,9 +134,7 @@ export const resolveIdentityType = (identityClass: string): string => {
   return 'Organization';
 };
 
-export const resolveLocationType = (entity: {
-  [k: string]: string;
-}): string => {
+export const resolveLocationType = (entity: Record<string, string>): string => {
   if (entity.x_opencti_location_type) {
     return entity.x_opencti_location_type;
   }
@@ -152,9 +150,7 @@ export const resolveLocationType = (entity: {
   return 'Position';
 };
 
-export const openVocabularies: {
-  [k: string]: Array<{ key: string; description: string }>;
-} = {
+export const openVocabularies: Record<string, { key: string, description: string }[]> = {
   'malware-type-ov': [
     {
       key: 'adware',
@@ -890,6 +886,50 @@ export const openVocabularies: {
       description:
         'A set of STIX content contextually related but without any precise characterization of the contextual relationship between the objects.',
     },
+  ],
+  'incident-type-ov': [
+    {
+      key: 'alert',
+      description: 'An alert.',
+    },
+    {
+      key: 'compromise',
+      description: 'A compromise.',
+    },
+    {
+      key: 'information-system-disruption',
+      description: 'Disruption in the information system.',
+    },
+    {
+      key: 'ransomware',
+      description: 'A ransomware.',
+    },
+    {
+      key: 'reputation-damage',
+      description: 'Damage to reputation.',
+    },
+    {
+      key: 'data-leak',
+      description: 'A data leak.',
+    },
+    {
+      key: 'typosquatting',
+      description: 'A typosquatting.',
+    },
+    {
+      key: 'phishing',
+      description: 'A phishing attack.',
+    },
+    {
+      key: 'cybercrime',
+      description: 'Related to cybercrime.',
+    },
+  ],
+  'incident-severity-ov': [
+    { key: 'low', description: 'Low impact' },
+    { key: 'medium', description: 'Medium impact' },
+    { key: 'high', description: 'High impact' },
+    { key: 'critical', description: 'Critical impact' },
   ],
   'integrity_level-ov': [
     { key: 'low', description: 'A low level of integrity.' },

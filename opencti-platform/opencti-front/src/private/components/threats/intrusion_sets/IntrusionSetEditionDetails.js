@@ -14,6 +14,7 @@ import TextField from '../../../../components/TextField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionDetailsFieldPatchMutation(
@@ -208,7 +209,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
               name="resource_level"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
               editContext={context}
@@ -219,7 +220,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
               name="primary_motivation"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
               editContext={context}
@@ -230,7 +231,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
               name="secondary_motivations"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={true}
               editContext={context}

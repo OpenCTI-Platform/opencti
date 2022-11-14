@@ -10,10 +10,12 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import { Fire } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
+import ItemSeverity from '../../../../components/ItemSeverity';
 
 const styles = (theme) => ({
   item: {
@@ -44,11 +46,17 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+  },
 });
 
 class IncidentLineComponent extends Component {
   render() {
-    const { fd, classes, dataColumns, node, onLabelClick } = this.props;
+    const { fd, t, classes, dataColumns, node, onLabelClick } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -68,6 +76,27 @@ class IncidentLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.incident_type.width }}
+              >
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  color="primary"
+                  variant="outlined"
+                  label={node.incident_type || t('Unknown')}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.severity.width }}
+              >
+                <ItemSeverity
+                  severity={node.severity}
+                  label={t(node.severity || 'Unknown')}
+                  variant="inList"
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -139,6 +168,8 @@ const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
     fragment IncidentLine_node on Incident {
       id
       name
+      incident_type
+      severity
       created
       modified
       objectMarking {
@@ -195,6 +226,28 @@ class IncidentLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.incident_type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.severity.width }}
               >
                 <Skeleton
                   animation="wave"

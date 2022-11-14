@@ -34,6 +34,7 @@ import {
   convertStatus,
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   header: {
@@ -325,7 +326,7 @@ const StixSightingRelationshipEditionContainer = ({
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}
                 editContext={editContext}
-                containerstyle={{ marginTop: 20, width: '100%' }}
+                containerStyle={fieldSpacingContainerStyle}
                 disabled={inferred}
               />
               <Field

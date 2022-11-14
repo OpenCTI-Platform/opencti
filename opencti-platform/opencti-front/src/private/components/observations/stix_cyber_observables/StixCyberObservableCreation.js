@@ -57,6 +57,7 @@ import {
 } from '../../../../utils/Entity';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -545,7 +546,7 @@ class StixCyberObservableCreation extends Component {
                               type={`${attribute.value}-ov`}
                               name={attribute.value}
                               onChange={(data) => setFieldValue(data)}
-                              containerstyle={{ marginTop: 20, width: '100%' }}
+                              containerStyle={fieldSpacingContainerStyle}
                               multiple={false}
                             />
                           );

@@ -57,6 +57,7 @@ import ExternalReferencesField from '../form/ExternalReferencesField';
 import { defaultValue } from '../../../../utils/Graph';
 import { isNodeInConnection } from '../../../../utils/Store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -805,7 +806,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 name="confidence"
                 label={t('Confidence level')}
                 fullWidth={true}
-                containerstyle={{ marginTop: 20, width: '100%' }}
+                containerStyle={fieldSpacingContainerStyle}
               />
               <Field
                 component={DateTimePickerField}

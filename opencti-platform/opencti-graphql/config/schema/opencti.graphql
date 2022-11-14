@@ -5411,10 +5411,19 @@ input VulnerabilityAddInput {
 }
 
 ############## Incident
+enum IncidentSeverity {
+  low
+  medium
+  high
+  critical
+}
 enum IncidentsOrdering {
   name
   first_seen
   last_seen
+  incident_type
+  severity
+  source
   created
   modified
   created_at
@@ -5424,6 +5433,9 @@ enum IncidentsOrdering {
 }
 enum IncidentsFilter {
   name
+  incident_type
+  severity
+  source
   aliases
   created
   modified
@@ -5507,6 +5519,9 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   first_seen: DateTime
   last_seen: DateTime
   objective: String
+  incident_type: String
+  severity: IncidentSeverity
+  source: String
   # Technical
   creator: User
   toStix: String
@@ -5531,6 +5546,9 @@ input IncidentAddInput {
   first_seen: DateTime
   last_seen: DateTime
   aliases: [String]
+  incident_type: String
+  severity: IncidentSeverity
+  source: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]

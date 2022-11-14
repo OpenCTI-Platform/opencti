@@ -35,6 +35,10 @@ const inlineStyles = {
     backgroundColor: 'rgba(27,94,32, 0.08)',
     color: '#1b5e20',
   },
+  blue: {
+    backgroundColor: 'rgba(92, 123, 245, 0.08)',
+    color: '#5c7bf5',
+  },
   red: {
     backgroundColor: 'rgba(244, 67, 54, 0.08)',
     color: '#f44336',

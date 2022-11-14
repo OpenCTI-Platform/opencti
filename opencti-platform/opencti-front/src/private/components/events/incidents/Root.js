@@ -17,6 +17,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -43,6 +44,7 @@ const IncidentQuery = graphql`
       x_opencti_graph_data
       ...Incident_incident
       ...IncidentKnowledge_incident
+      ...StixDomainObjectContent_stixDomainObject
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -134,6 +136,25 @@ class RootIncident extends Component {
                           {...routeProps}
                           incident={props.incident}
                         />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/events/incidents/:incidentId/content"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.incident}
+                            PopoverComponent={<IncidentPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Incident',
+                            )}
+                          />
+                          <StixDomainObjectContent
+                            {...routeProps}
+                            stixDomainObject={props.incident}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route
