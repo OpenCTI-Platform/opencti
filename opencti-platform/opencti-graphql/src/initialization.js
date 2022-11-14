@@ -419,7 +419,7 @@ const platformInit = async (withMarkings = true) => {
       logApp.error(`[CYIO] Platform cant get the lock for initialization`);
     } else {
       const isApolloError = e instanceof ApolloError;
-      const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
+      const error = isApolloError ? e : { name: 'UnknownError', error: e.name ,data: { message: e.message, _stack: e.stack } };
       logApp.error(`[CYIO] Platform initialization fail`, { error });
     }
     throw e;
