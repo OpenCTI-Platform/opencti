@@ -27,8 +27,8 @@ Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   header: {
-    margin: '0 0 20px 0',
-    padding: '24px 12px 30px 12px',
+    margin: '0 -1.5rem 1rem -1.5rem',
+    padding: '1.5rem',
     height: '70px',
     backgroundColor: theme.palette.background.paper,
   },
