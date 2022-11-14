@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import * as R from 'ramda';
 import Grid from '@mui/material/Grid';
@@ -10,6 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import {
   ArrowDropDown,
   ArrowDropUp,
+  FileDownloadOutlined,
   KeyboardArrowRightOutlined,
 } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -19,6 +20,8 @@ import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
 import ItemIcon from '../../components/ItemIcon';
 import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
@@ -26,10 +29,34 @@ import { useFormatter } from '../../components/i18n';
 import { defaultValue } from '../../utils/Graph';
 import { resolveLink } from '../../utils/Entity';
 import StixCoreObjectLabels from './common/stix_core_objects/StixCoreObjectLabels';
+import {
+  granted,
+  KNOWLEDGE_KNGETEXPORT,
+  UserContext,
+} from '../../utils/Security';
+import StixCoreObjectsExports from './common/stix_core_objects/StixCoreObjectsExports';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
 const useStyles = makeStyles((theme) => ({
+  container: {
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    padding: '0 0 0 0',
+  },
+  containerOpenExports: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: '0 310px 50px 0',
+  },
+  gridContainer: {
+    marginBottom: 20,
+  },
   linesContainer: {
     margin: 0,
   },
@@ -182,12 +209,16 @@ const inlineStyles = {
 
 const SearchBulk = () => {
   const { t, nsd, n } = useFormatter();
+  const { me } = useContext(UserContext);
+  const isGratedToExports = granted(me, [KNOWLEDGE_KNGETEXPORT]);
   const classes = useStyles();
   const [textFieldValue, setTextFieldValue] = useState('');
   const [resolvedEntities, setResolvedEntities] = useState([]);
+  const [openExports, setOpenExports] = useState(false);
   const [sortBy, setSortBy] = useState(null);
   const [orderAsc, setOrderAsc] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [paginationOptions, setPaginationOptions] = useState({});
   useEffect(() => {
     const subscription = SEARCH$.subscribe({
       next: () => {
@@ -198,24 +229,28 @@ const SearchBulk = () => {
             .map((val) => val.trim());
           if (values.length > 0) {
             setLoading(true);
+            const searchPaginationOptions = {
+              filters: [
+                {
+                  key: [
+                    'name',
+                    'aliases',
+                    'x_opencti_aliases',
+                    'x_mitre_id',
+                    'value',
+                    'subject',
+                    'abstract',
+                  ],
+                  values,
+                },
+              ],
+              count: 5000,
+            };
             const result = (
-              await fetchQuery(searchStixCoreObjectsLinesSearchQuery, {
-                filters: [
-                  {
-                    key: [
-                      'name',
-                      'aliases',
-                      'x_opencti_aliases',
-                      'x_mitre_id',
-                      'value',
-                      'subject',
-                      'abstract',
-                    ],
-                    values,
-                  },
-                ],
-                count: 5000,
-              })
+              await fetchQuery(
+                searchStixCoreObjectsLinesSearchQuery,
+                searchPaginationOptions,
+              )
                 .toPromise()
                 .then((data) => {
                   const stixCoreObjectsEdges = data.stixCoreObjects.edges;
@@ -273,6 +308,7 @@ const SearchBulk = () => {
             ).flat();
             setLoading(false);
             setResolvedEntities(result);
+            setPaginationOptions(searchPaginationOptions);
           } else {
             setResolvedEntities([]);
           }
@@ -334,12 +370,46 @@ const SearchBulk = () => {
     ? sort(resolvedEntities)
     : resolvedEntities;
   return (
-    <div>
-      <Typography variant="h1" gutterBottom={true} style={{ marginBottom: 18 }}>
+    <div
+      className={openExports ? classes.containerOpenExports : classes.container}
+    >
+      <Typography
+        variant="h1"
+        gutterBottom={true}
+        style={{ marginBottom: 18, float: 'left' }}
+      >
         {t('Search for multiple entities')}
       </Typography>
-      <Grid container={true} spacing={3}>
-        <Grid item={true} xs={3}>
+      <ToggleButton
+        value="export"
+        aria-label="export"
+        size="small"
+        onClick={() => setOpenExports(true)}
+        style={{ float: 'right', marginTop: -5 }}
+      >
+        <Tooltip title={t('Open export panel')}>
+          <FileDownloadOutlined
+            fontSize="small"
+            color={openExports ? 'secondary' : 'primary'}
+          />
+        </Tooltip>
+      </ToggleButton>
+      <div className="clearfix" />
+      {isGratedToExports && (
+        <StixCoreObjectsExports
+          open={openExports}
+          handleToggle={() => setOpenExports(!openExports)}
+          paginationOptions={paginationOptions}
+          exportEntityType="Stix-Core-Object"
+          variant="persistent"
+        />
+      )}
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+      >
+        <Grid item={true} xs={3} style={{ marginTop: -20 }}>
           <TextField
             onChange={handleChangeTextField}
             value={textFieldValue}
@@ -349,7 +419,7 @@ const SearchBulk = () => {
             placeholder={t('One keyword by line or separated by commas')}
           />
         </Grid>
-        <Grid item={true} xs={9}>
+        <Grid item={true} xs={9} style={{ marginTop: -20 }}>
           <Box style={{ width: '100%', marginTop: 2 }}>
             <LinearProgress
               variant={loading ? 'indeterminate' : 'determinate'}

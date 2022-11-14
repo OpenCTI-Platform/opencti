@@ -34,16 +34,17 @@ class StixCoreObjectsExports extends Component {
       open,
       handleToggle,
       context,
+      variant,
     } = this.props;
     return (
       <Drawer
-        variant="persistent"
+        variant={variant || 'persistent'}
         open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleToggle}
+        onClose={handleToggle.bind(this)}
       >
         <div className={classes.toolbar} />
         <QueryRenderer
@@ -73,6 +74,7 @@ StixCoreObjectsExports.propTypes = {
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
   context: PropTypes.string,
+  variant: PropTypes.string,
 };
 
 export default compose(withStyles(styles))(StixCoreObjectsExports);
