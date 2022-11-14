@@ -15,6 +15,8 @@ import {
 import makeStyles from '@mui/styles/makeStyles';
 import { Link } from 'react-router-dom';
 import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
 import ItemIcon from '../../components/ItemIcon';
 import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
@@ -25,7 +27,7 @@ import StixCoreObjectLabels from './common/stix_core_objects/StixCoreObjectLabel
 
 const useStyles = makeStyles((theme) => ({
   linesContainer: {
-    marginTop: -30,
+    margin: 0,
   },
   itemHead: {
     paddingLeft: 10,
@@ -179,7 +181,7 @@ const SearchBulk = () => {
   const classes = useStyles();
   const [textFieldValue, setTextFieldValue] = useState('');
   const [resolvedEntities, setResolvedEntities] = useState([]);
-  const [sortBy, setSortBy] = useState('value');
+  const [sortBy, setSortBy] = useState(null);
   const [orderAsc, setOrderAsc] = useState(true);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -279,9 +281,9 @@ const SearchBulk = () => {
     setTextFieldValue(
       value
         .split('\n')
-        .map((n) => n
+        .map((o) => o
           .split(',')
-          .map((o) => o.split(';'))
+          .map((p) => p.split(';'))
           .flat())
         .flat()
         .join('\n'),
@@ -290,14 +292,12 @@ const SearchBulk = () => {
   const sort = R.sortWith(
     orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
   );
-  const sortedResolvedEntities = sort(resolvedEntities);
+  const sortedResolvedEntities = sortBy
+    ? sort(resolvedEntities)
+    : resolvedEntities;
   return (
     <div>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        style={{ margin: '-5px 20px 20px 0' }}
-      >
+      <Typography variant="h1" gutterBottom={true} style={{ marginBottom: 18 }}>
         {t('Search for multiple entities')}
       </Typography>
       <Grid container={true} spacing={3}>
@@ -307,12 +307,18 @@ const SearchBulk = () => {
             value={textFieldValue}
             multiline={true}
             fullWidth={true}
-            minRows={10}
+            minRows={12}
             placeholder={t('One keyword by line or separated by commas')}
-            inputProps={{ style: { lineHeight: '50px' } }}
+            inputProps={{ style: { paddingTop: 20, lineHeight: '50px' } }}
           />
         </Grid>
         <Grid item={true} xs={9}>
+          <Box style={{ width: '100%', marginTop: 2 }}>
+            <LinearProgress
+              variant={loading ? 'indeterminate' : 'determinate'}
+              value={0}
+            />
+          </Box>
           <List classes={{ root: classes.linesContainer }}>
             <ListItem
               classes={{ root: classes.itemHead }}
