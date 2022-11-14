@@ -356,6 +356,7 @@ class StixCoreRelationship:
 
     def list(self, **kwargs):
         element_id = kwargs.get("elementId", None)
+        element_with_target_types = kwargs.get("elementWithTargetTypes", None)
         from_id = kwargs.get("fromId", None)
         from_types = kwargs.get("fromTypes", None)
         to_id = kwargs.get("toId", None)
@@ -388,8 +389,8 @@ class StixCoreRelationship:
         )
         query = (
             """
-                query StixCoreRelationships($elementId: [String], $fromId: [String], $fromTypes: [String], $toId: [String], $toTypes: [String], $relationship_type: [String], $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: [StixCoreRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
-                    stixCoreRelationships(elementId: $elementId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query StixCoreRelationships($elementId: [String], $elementWithTargetTypes: [String], $fromId: [String], $fromTypes: [String], $toId: [String], $toTypes: [String], $relationship_type: [String], $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: [StixCoreRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
+                    stixCoreRelationships(elementId: $elementId, elementWithTargetTypes: $elementWithTargetTypes, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
                                 """
@@ -412,6 +413,7 @@ class StixCoreRelationship:
             query,
             {
                 "elementId": element_id,
+                "elementWithTargetTypes": element_with_target_types,
                 "fromId": from_id,
                 "fromTypes": from_types,
                 "toId": to_id,
@@ -441,6 +443,7 @@ class StixCoreRelationship:
                     query,
                     {
                         "elementId": element_id,
+                        "elementWithTargetTypes": element_with_target_types,
                         "fromId": from_id,
                         "fromTypes": from_types,
                         "toId": to_id,
