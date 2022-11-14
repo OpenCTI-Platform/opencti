@@ -39,7 +39,7 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
   renderhorizontalBarChartQuery() {
     const { widget, t } = this.props;
     switch (widget.config.queryType) {
-      case 'risksDistribution':
+      case 'riskDistribution':
         return this.renderRiskChart();
       default:
         return (
@@ -74,7 +74,6 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
       startDate: finalStartDate,
       endDate: finalEndDate,
     };
-
     return (
       <>
         <Typography variant="h4" gutterBottom={true}>
@@ -107,12 +106,13 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
                     <XAxis
                       stroke={theme.palette.text.primary}
                       dataKey='value'
+                      type="number"
                     // interval={interval}
                     // angle={-45}
                     // textAnchor="end"
                     // tickFormatter={md}
                     />
-                    <YAxis dataKey='label' stroke={theme.palette.text.primary} />
+                    <YAxis dataKey='label' type="category" stroke={theme.palette.text.primary} />
                     <Tooltip
                       cursor={{
                         fill: 'rgba(0, 0, 0, 0.2)',
@@ -173,7 +173,7 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
 
   render() {
     const {
-      t, title, height,
+      height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
