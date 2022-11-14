@@ -1650,13 +1650,21 @@ enum StixCoreObjectsOrdering {
   updated_at
   published
   valid_from
-  valid_to
+  valid_until
   indicator_pattern
+  x_opencti_workflow_id
+  createdBy
+  creator
+  objectMarking
+  observable_value
+  _score
 }
 enum StixCoreObjectsFilter {
-  id
-  standard_id
   name
+  entity_type
+  aliases
+  x_opencti_aliases
+  x_mitre_id
   created
   modified
   created_at
@@ -1668,6 +1676,16 @@ enum StixCoreObjectsFilter {
   containedBy
   indicates
   confidence
+  valid_from
+  valid_until
+  pattern_type
+  x_opencti_main_observable_type
+  report_types
+  context
+  x_opencti_organization_type
+  published
+  creator
+  x_opencti_workflow_id
 }
 input StixCoreObjectsFiltering {
   key: [StixCoreObjectsFilter!]!
@@ -1756,6 +1774,7 @@ enum StixDomainObjectsOrdering {
   createdBy
   creator
   objectMarking
+  _score
 }
 enum StixDomainObjectsFilter {
   name

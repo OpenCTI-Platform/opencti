@@ -14280,20 +14280,32 @@ export type StixCoreObjectEditMutationsRelationsAddArgs = {
 export type StixCoreObjectOrStixCoreRelationship = Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | Channel | City | Country | CourseOfAction | CryptocurrencyWallet | CryptographicKey | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Event | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | Language | MacAddr | Malware | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | PhoneNumber | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixFile | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate;
 
 export enum StixCoreObjectsFilter {
+  Aliases = 'aliases',
   Confidence = 'confidence',
   ContainedBy = 'containedBy',
+  Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
+  EntityType = 'entity_type',
   HasExternalReference = 'hasExternalReference',
-  Id = 'id',
   Indicates = 'indicates',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
   ObjectContains = 'objectContains',
-  StandardId = 'standard_id'
+  PatternType = 'pattern_type',
+  Published = 'published',
+  ReportTypes = 'report_types',
+  ValidFrom = 'valid_from',
+  ValidUntil = 'valid_until',
+  XMitreId = 'x_mitre_id',
+  XOpenctiAliases = 'x_opencti_aliases',
+  XOpenctiMainObservableType = 'x_opencti_main_observable_type',
+  XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixCoreObjectsFiltering = {
@@ -14304,16 +14316,22 @@ export type StixCoreObjectsFiltering = {
 };
 
 export enum StixCoreObjectsOrdering {
+  Score = '_score',
   Created = 'created',
+  CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   EntityType = 'entity_type',
   IndicatorPattern = 'indicator_pattern',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
+  ObservableValue = 'observable_value',
   Published = 'published',
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
-  ValidTo = 'valid_to'
+  ValidUntil = 'valid_until',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixCoreRelationship = BasicRelationship & StixRelationship & {
@@ -15170,6 +15188,7 @@ export type StixDomainObjectsFiltering = {
 };
 
 export enum StixDomainObjectsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',

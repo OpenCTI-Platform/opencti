@@ -1595,10 +1595,12 @@ const elQueryBodyBuilder = async (context, user, options) => {
     for (let index = 0; index < orderCriterion.length; index += 1) {
       const orderCriteria = orderCriterion[index];
       const isDateOrNumber = dateAttributes.includes(orderCriteria) || numericOrBooleanAttributes.includes(orderCriteria);
-      const orderKeyword = isDateOrNumber ? orderCriteria : `${orderCriteria}.keyword`;
+      const orderKeyword = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
       const order = { [orderKeyword]: orderMode };
       ordering = R.append(order, ordering);
-      must = R.append({ exists: { field: orderKeyword } }, must);
+      if (!orderKeyword.startsWith('_')) {
+        must = R.append({ exists: { field: orderKeyword } }, must);
+      }
     }
     // Add standard_id if not specify to ensure ordering uniqueness
     if (!orderCriterion.includes('standard_id')) {
