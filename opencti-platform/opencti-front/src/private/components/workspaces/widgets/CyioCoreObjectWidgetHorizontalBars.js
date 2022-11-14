@@ -172,7 +172,7 @@ class CyioCoreObjectWidgetHorizontalBars extends Component {
 
   render() {
     const {
-      t, classes, title, height,
+      height,
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>

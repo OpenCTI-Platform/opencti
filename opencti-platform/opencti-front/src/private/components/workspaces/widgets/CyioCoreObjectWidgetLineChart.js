@@ -44,7 +44,7 @@ class CyioCoreObjectWidgetLineChart extends Component {
     switch (widget.config.queryType) {
       case 'assetsTimeSeries':
         return this.renderAssetChart();
-      case 'risksTimeSeries':
+      case 'risksTimSeries':
         return this.renderRiskChart();
       default:
         return (
