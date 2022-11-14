@@ -566,6 +566,13 @@ class OpenCTIApiClient:
         if "importFiles" in data:
             data["importFiles"] = self.process_multiple(data["importFiles"])
             data["importFilesIds"] = self.process_multiple_ids(data["importFiles"])
+        # See aliases of GraphQL query in stix_core_object method
+        if "name_alt" in data:
+            data["name"] = data["name_alt"]
+            del data["name_alt"]
+        if "content_alt" in data:
+            data["content"] = data["content_alt"]
+            del data["content_alt"]
         return data
 
     def upload_file(self, **kwargs):
