@@ -92,7 +92,7 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
                       top: 20,
                       right: 20,
                       bottom: 0,
-                      left: 0,
+                      left: 50,
                     }}
                     barGap={0}
                     layout='vertical'
