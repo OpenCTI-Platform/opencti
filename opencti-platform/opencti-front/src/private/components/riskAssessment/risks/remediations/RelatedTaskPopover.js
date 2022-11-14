@@ -42,6 +42,7 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import TaskType from '../../../common/form/TaskType';
 import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import { commitMutation } from '../../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
@@ -99,9 +100,7 @@ Transition.displayName = 'TransitionSlide';
 
 const relatedTaskPopoverDeletionMutation = graphql`
   mutation RelatedTaskPopoverDeletionMutation($id: ID!) {
-    externalReferenceEdit(id: $id) {
-      delete
-    }
+    deleteOscalTask(id: $id)
   }
 `;
 
