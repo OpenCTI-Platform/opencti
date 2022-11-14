@@ -114,6 +114,9 @@ class Incident:
             first_seen
             last_seen
             objective
+            incident_type
+            severity
+            source
             importFiles {
                 edges {
                     node {
@@ -267,6 +270,9 @@ class Incident:
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
         objective = kwargs.get("objective", None)
+        incident_type = kwargs.get("incident_type", None)
+        severity = kwargs.get("severity", None)
+        source = kwargs.get("source", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
@@ -301,7 +307,10 @@ class Incident:
                         "aliases": aliases,
                         "first_seen": first_seen,
                         "last_seen": last_seen,
+                        "incident_type": incident_type,
                         "objective": objective,
+                        "severity": severity,
+                        "source": source,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
@@ -367,6 +376,11 @@ class Incident:
                 last_seen=stix_object["last_seen"]
                 if "last_seen" in stix_object
                 else None,
+                incident_type=stix_object["incident_type"]
+                if "incident_type" in stix_object
+                else None,
+                severity=stix_object["severity"] if "severity" in stix_object else None,
+                source=stix_object["source"] if "source" in stix_object else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,
