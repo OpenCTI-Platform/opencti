@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
-import TopBarBreadcrumbs from './components/nav/TopBarBreadcrumbs';
 import LeftBar from './components/nav/LeftBar';
 import Message from '../components/Message';
 import { getAccount } from '../services/account.service';
@@ -48,15 +47,10 @@ const useStyles = makeStyles((theme) => ({
 
 const Index = ({ me }) => {
   const classes = useStyles();
-  const [drawer, setDrawer] = useState(false);
   const [clientId, setClientId] = useState(localStorage.getItem('client_id'));
   const clearStorage = () => {
     localStorage.removeItem('client_id');
   };
-
-  const drawerValue = useCallback((value) => {
-    setDrawer(value);
-  }, []);
 
   useEffect(() => {
     if (!clientId) {
@@ -76,6 +70,7 @@ const Index = ({ me }) => {
     <div className={classes.root}>
       <LeftBar
         clientId={clientId}
+        setClientId={setClientId}
       >
         <main
         // style={{ paddingRight: 24 }}

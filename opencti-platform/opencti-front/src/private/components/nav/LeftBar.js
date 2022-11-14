@@ -185,7 +185,7 @@ const leftBarVersionQuery = graphql`
 `;
 
 const LeftBar = ({
-  t, location, classes, clientId, history, setClientId, theme, drawerValue, children,
+  t, location, classes, clientId, history, setClientId, theme, children,
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const [user, setUser] = useState();
