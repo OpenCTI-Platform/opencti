@@ -351,6 +351,195 @@ class StixCoreObject:
             ... on StixCyberObservable {
                 observable_value
             }
+            ... on AutonomousSystem {
+                number
+                name_alt: name 
+                rir
+            }
+            ... on Directory {
+                path
+                path_enc
+                ctime
+                mtime
+                atime
+            }
+            ... on DomainName {
+                value
+            }
+            ... on EmailAddr {
+                value
+                display_name
+            }
+            ... on EmailMessage {
+                is_multipart
+                attribute_date
+                content_type
+                message_id
+                subject
+                received_lines
+                body
+            }
+            ... on Artifact {
+                mime_type
+                payload_bin
+                url
+                encryption_algorithm
+                decryption_key
+                hashes {
+                    algorithm
+                    hash
+                }
+                importFiles {
+                    edges {
+                        node {
+                            id
+                            name
+                            size
+                        }
+                    }
+                }
+            }
+            ... on StixFile {
+                extensions
+                size
+                name_alt: name
+                name_enc
+                magic_number_hex
+                mime_type
+                ctime
+                mtime
+                atime
+                x_opencti_additional_names
+                hashes {
+                  algorithm
+                  hash
+                }
+            }
+            ... on X509Certificate {
+                is_self_signed
+                version
+                serial_number
+                signature_algorithm
+                issuer
+                subject
+                subject_public_key_algorithm
+                subject_public_key_modulus
+                subject_public_key_exponent
+                validity_not_before
+                validity_not_after
+                hashes {
+                  algorithm
+                  hash
+                }
+            }
+            ... on IPv4Addr {
+                value
+            }
+            ... on IPv6Addr {
+                value
+            }
+            ... on MacAddr {
+                value
+            }
+            ... on Mutex {
+                name_alt: name
+            }
+            ... on NetworkTraffic {
+                extensions
+                start
+                end
+                is_active
+                src_port
+                dst_port
+                protocols
+                src_byte_count
+                dst_byte_count
+                src_packets
+                dst_packets
+            }
+            ... on Process {
+                extensions
+                is_hidden
+                pid
+                created_time
+                cwd
+                command_line
+                environment_variables
+            }
+            ... on Software {
+                name_alt: name
+                cpe
+                swid
+                languages
+                vendor
+                version
+            }
+            ... on Url {
+                value
+            }
+            ... on UserAccount {
+                extensions
+                user_id
+                credential
+                account_login
+                account_type
+                display_name
+                is_service_account
+                is_privileged
+                can_escalate_privs
+                is_disabled
+                account_created
+                account_expires
+                credential_last_changed
+                account_first_login
+                account_last_login
+            }
+            ... on WindowsRegistryKey {
+                attribute_key
+                modified_time
+                number_of_subkeys
+            }
+            ... on WindowsRegistryValueType {
+                name_alt: name
+                data
+                data_type
+            }
+            ... on CryptographicKey {
+                value
+            }
+            ... on CryptocurrencyWallet {
+                value
+            }
+            ... on Hostname {
+                value
+            }
+            ... on Text {
+                value
+            }
+            ... on UserAgent {
+                value
+            }
+            ... on BankAccount {
+                iban
+                bic
+                account_number
+            }
+            ... on PhoneNumber {
+                value
+            }
+            ... on PaymentCard {
+                card_number
+                expiration_date
+                cvv
+                holder_name
+            }
+            ... on MediaContent {
+                title
+                content_alt: content
+                media_category
+                url
+                publication_date
+            }
         """
 
     """
