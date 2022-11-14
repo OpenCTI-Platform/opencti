@@ -651,6 +651,7 @@ export const authenticateUserFromRequest = async (req) => {
 export const initAdmin = async (email, password, tokenValue) => {
   const existingAdmin = await findById(SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
+    logApp.info('[INIT] Admin user exists, patching...')
     // If admin user exists, just patch the fields
     const patch = {
       user_email: email,
@@ -659,6 +660,7 @@ export const initAdmin = async (email, password, tokenValue) => {
       external: true,
     };
     await patchAttribute(SYSTEM_USER, existingAdmin.id, ENTITY_TYPE_USER, patch);
+    logApp.info('[INIT] Admin user patched')
   } else {
     const userToCreate = {
       internal_id: OPENCTI_ADMIN_UUID,
@@ -674,6 +676,7 @@ export const initAdmin = async (email, password, tokenValue) => {
       password,
     };
     await addUser(SYSTEM_USER, userToCreate);
+    logApp.info('[INIT] Admin user created')
   }
 };
 

@@ -21,6 +21,7 @@ export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
 // Admin user initialization
 export const initializeAdminUser = async () => {
+  logApp.info('[INIT] Initializing admin user')
   const DEFAULT_CONF_VALUE = 'ChangeMe';
   const adminEmail = conf.get('app:admin:email');
   const adminPassword = conf.get('app:admin:password');
