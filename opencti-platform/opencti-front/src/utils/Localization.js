@@ -2821,7 +2821,7 @@ const i18n = {
       IF: 'SI',
       THEN: 'ALORS',
       CREATE: 'CREER',
-      'Bulk search': 'Recherche de massage',
+      'Bulk search': 'Recherche de masse',
       'Search for multiple entities': 'Rechercher plusieurs entités',
       'One keyword by line or separated by commas':
         'Un mot-clé par ligne ou séparé par des virgules',

@@ -359,7 +359,7 @@ export const SearchStixCoreObjectLine = createFragmentContainer(
           id
           name
         }
-        reports {
+        reports(first: 1) {
           pageInfo {
             globalCount
           }
