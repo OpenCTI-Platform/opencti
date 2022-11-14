@@ -56,7 +56,9 @@ Transition.displayName = 'TransitionSlide';
 
 const WorkspaceDeleteDarkLightMutation = graphql`
   mutation WorkspaceDeleteDarkLightMutation($id: ID!) {
-  deleteHardwareAsset(id: $id)
+  workspaceEdit(id: $id) {
+    delete
+  }
 }
 `;
 

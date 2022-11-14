@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import * as R from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -11,8 +11,11 @@ import inject18n from '../../../components/i18n';
 import CyioListLines from '../../../components/list_lines/CyioListLines';
 import CyioListCards from '../../../components/list_cards/CyioListCards';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
+import WorkspacesCards, { workspacesCardsQuery } from './WorkspacesCards';
 import WorkspaceCreation from './WorkspaceCreation';
+import CyioWorkspaceEdition from './CyioWorkspaceEdition';
 import WorkspaceDelete from './WorkspaceDelete';
+import { toastGenericError } from '../../../utils/bakedToast';
 
 class Dashboards extends Component {
   constructor(props) {
@@ -23,17 +26,22 @@ class Dashboards extends Component {
       'view-workspaces',
     );
     this.state = {
-      sortBy: propOr('name', 'sortBy', params),
-      orderAsc: propOr(true, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
+      sortBy: R.propOr('name', 'sortBy', params),
+      orderAsc: R.propOr(true, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
       openExports: false,
-      openDashboard: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      selectAll: false,
+      displayEdit: false,
+      openDashboard: false,
+      selectedWorkspaceId: '',
     };
   }
 
   saveView() {
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -58,71 +66,70 @@ class Dashboards extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleToggleSelectAll() {
+    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
+  }
+
+  handleRefresh() {
+    this.props.history.push('/dashboard/workspaces/dashboards');
+  }
+
+  handleDisplayEdit(selectedElements) {
+    let WorkspaceId = '';
+    if (selectedElements) {
+      WorkspaceId = (Object.entries(selectedElements)[0][1])?.id;
+    }
+    this.setState({
+      displayEdit: !this.state.displayEdit,
+      selectedWorkspaceId: WorkspaceId,
+    });
+  }
+
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions) {
-    const {
-      sortBy, orderAsc, searchTerm, numberOfElements,
-    } = this.state;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '35%',
-        isSortable: true,
-      },
-      tags: {
-        label: 'Tags',
-        width: '25%',
-        isSortable: false,
-      },
-      created_at: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      updated_at: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
-      },
-    };
-    return (
-      <CyioListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleChangeView={this.handleChangeView.bind(this)}
-        handleNewCreation={this.handleCreateDashboard.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        OperationsComponent={<WorkspaceDelete />}
-        keyword={searchTerm}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        style={{ marginTop: -50 }}
-      >
-        <QueryRenderer
-          query={workspacesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <WorkspacesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        />
-      </CyioListLines>
-    );
-  }
-
   renderCards(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, numberOfElements,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
+      selectedElements,
+      selectAll,
     } = this.state;
     const dataColumns = {
       name: {
@@ -152,10 +159,95 @@ class Dashboards extends Component {
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
-        handleNewCreation={this.handleCreateDashboard.bind(this)}
-        handleChangeView={this.handleChangeView.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleChangeView={this.handleChangeView.bind(this)}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        handleNewCreation={this.handleCreateDashboard.bind(this)}
+        handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
+        selectedElements={selectedElements}
+        selectAll={selectAll}
         OperationsComponent={<WorkspaceDelete />}
+        openExports={openExports}
+        keyword={searchTerm}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+      >
+        <QueryRenderer
+          query={workspacesCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ error, props }) => {
+            if (error) {
+              toastGenericError('Request Failed');
+            }
+            return (
+              <WorkspacesCards
+                data={props}
+                extra={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              />
+            );
+          }}
+        />
+      </CyioListCards>
+    );
+  }
+
+  renderLines(paginationOptions) {
+    const {
+      sortBy,
+      filters,
+      orderAsc,
+      selectAll,
+      searchTerm,
+      openExports,
+      selectedElements,
+      numberOfElements,
+    } = this.state;
+    const dataColumns = {
+      name: {
+        label: 'Name',
+        width: '35%',
+        isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '25%',
+        isSortable: false,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+      updated_at: {
+        label: 'Modification date',
+        width: '15%',
+        isSortable: true,
+      },
+    };
+    return (
+      <CyioListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        handleChangeView={this.handleChangeView.bind(this)}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
+        handleNewCreation={this.handleCreateDashboard.bind(this)}
+        handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+        selectedElements={selectedElements}
+        OperationsComponent={<WorkspaceDelete />}
+        openExports={openExports}
+        selectAll={selectAll}
         keyword={searchTerm}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
@@ -163,23 +255,34 @@ class Dashboards extends Component {
         <QueryRenderer
           query={workspacesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <WorkspacesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
+          render={({ error, props }) => {
+            if (error) {
+              toastGenericError('Request Failed');
+            }
+            return (
+              <WorkspacesLines
+                data={props}
+                selectAll={selectAll}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                paginationOptions={paginationOptions}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
-      </CyioListCards>
+      </CyioListLines>
     );
   }
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
     } = this.state;
     const paginationOptions = {
       search: searchTerm,
@@ -198,7 +301,14 @@ class Dashboards extends Component {
           paginationOptions={paginationOptions}
           type="dashboard"
         />
-        {/* </Security> */}
+        {this.state.selectedWorkspaceId && (
+          <CyioWorkspaceEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            workspaceId={this.state.selectedWorkspaceId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }
@@ -210,4 +320,4 @@ Dashboards.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(Dashboards);
+export default R.compose(inject18n, withRouter)(Dashboards);
