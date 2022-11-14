@@ -1707,14 +1707,24 @@ enum StixCoreObjectsOrdering {
   updated_at
   published
   valid_from
-  valid_to
+  valid_until
   indicator_pattern
+  x_opencti_workflow_id
+  createdBy
+  creator
+  objectMarking
+  observable_value
+  subject
+  value
+  _score
 }
 
 enum StixCoreObjectsFilter {
-  id
-  standard_id
   name
+  entity_type
+  aliases
+  x_opencti_aliases
+  x_mitre_id
   created
   modified
   created_at
@@ -1726,6 +1736,19 @@ enum StixCoreObjectsFilter {
   containedBy
   indicates
   confidence
+  valid_from
+  valid_until
+  pattern_type
+  x_opencti_main_observable_type
+  report_types
+  context
+  x_opencti_organization_type
+  published
+  creator
+  x_opencti_workflow_id
+  subject
+  value
+  abstract
 }
 
 input StixCoreObjectsFiltering {
@@ -1792,6 +1815,7 @@ enum StixDomainObjectsOrdering {
   createdBy
   creator
   objectMarking
+  _score
 }
 
 enum StixDomainObjectsFilter {
@@ -7071,6 +7095,7 @@ type Query {
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): StixCoreObjectConnection
+  stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection
   stixDomainObject(id: String!): StixDomainObject
   stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): StixDomainObjectConnection
   bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection
@@ -7714,6 +7739,8 @@ type Mutation {
   killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
   killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
   stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations
+  stixCoreObjectsExportAsk(type: String!, format: String!, exportType: String!, maxMarkingDefinition: String, context: String, search: String, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: [StixCoreObjectsFiltering], filterMode: FilterMode): FileConnection
+  stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
   stixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(type: String!, format: String!, exportType: String!, maxMarkingDefinition: String, context: String, search: String, orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: [StixDomainObjectsFiltering], filterMode: FilterMode): FileConnection

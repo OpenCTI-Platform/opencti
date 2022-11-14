@@ -43,7 +43,7 @@ class StixDomainObjectsExports extends Component {
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleToggle}
+        onClose={handleToggle.bind(this)}
       >
         <div className={classes.toolbar} />
         <QueryRenderer

@@ -11,6 +11,7 @@ import {
   AccountCircleOutlined,
   ExploreOutlined,
   InsertChartOutlined,
+  ContentPasteSearchOutlined,
 } from '@mui/icons-material';
 import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@mui/material/Menu';
@@ -327,9 +328,29 @@ const TopBar = ({
                   'created_end_date',
                   'created_at_start_date',
                   'created_at_end_date',
+                  'creator',
                 ]}
-                disabled={location.pathname.includes('/dashboard/search')}
+                disabled={location.pathname.includes('/dashboard/search/')}
               />
+              <Tooltip title={t('Bulk search')}>
+                <IconButton
+                  component={Link}
+                  to="/dashboard/search_bulk"
+                  variant={
+                    location.pathname.includes('/dashboard/search_bulk')
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    location.pathname.includes('/dashboard/search_bulk')
+                      ? 'secondary'
+                      : 'default'
+                  }
+                  size="medium"
+                >
+                  <ContentPasteSearchOutlined fontSize="medium" />
+                </IconButton>
+              </Tooltip>
             </div>
             <Divider className={classes.divider} orientation="vertical" />
           </Security>

@@ -52,15 +52,15 @@ const inlineStyles = {
   },
 };
 
-const DynamicResolutionField = (props) => {
-  const {
-    form: { setFieldValue },
-    field,
-    title,
-    types,
-    style,
-    stixDomainObjects,
-  } = props;
+const DynamicResolutionField = ({
+  form: { setFieldValue },
+  field,
+  title,
+  types,
+  style,
+  stixDomainObjects,
+  helperText,
+}) => {
   const { t } = useFormatter();
   const [textFieldValue, setTextFieldValue] = useState(
     field.value.map((n) => n.name).join('\n'),
@@ -164,7 +164,7 @@ const DynamicResolutionField = (props) => {
         <Grid item={true} xs={5}>
           <TextField
             error={!R.isNil(meta.error)}
-            helperText={props.helperText}
+            helperText={helperText}
             onChange={handleChangeTextField}
             value={textFieldValue}
             multiline={true}

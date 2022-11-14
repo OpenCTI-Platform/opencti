@@ -1650,13 +1650,23 @@ enum StixCoreObjectsOrdering {
   updated_at
   published
   valid_from
-  valid_to
+  valid_until
   indicator_pattern
+  x_opencti_workflow_id
+  createdBy
+  creator
+  objectMarking
+  observable_value
+  subject
+  value
+  _score
 }
 enum StixCoreObjectsFilter {
-  id
-  standard_id
   name
+  entity_type
+  aliases
+  x_opencti_aliases
+  x_mitre_id
   created
   modified
   created_at
@@ -1668,6 +1678,19 @@ enum StixCoreObjectsFilter {
   containedBy
   indicates
   confidence
+  valid_from
+  valid_until
+  pattern_type
+  x_opencti_main_observable_type
+  report_types
+  context
+  x_opencti_organization_type
+  published
+  creator
+  x_opencti_workflow_id
+  subject
+  value
+  abstract
 }
 input StixCoreObjectsFiltering {
   key: [StixCoreObjectsFilter!]!
@@ -1756,6 +1779,7 @@ enum StixDomainObjectsOrdering {
   createdBy
   creator
   objectMarking
+  _score
 }
 enum StixDomainObjectsFilter {
   name
@@ -9547,6 +9571,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
@@ -10825,6 +10850,19 @@ type Mutation {
 
   ######## STIX CORE OBJECT ENTITIES
   stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCoreObjectsExportAsk(
+    type: String!
+    format: String!
+    exportType: String!
+    maxMarkingDefinition: String
+    context: String
+    search: String
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
   stixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])

@@ -7744,6 +7744,8 @@ export type Mutation = {
   statusTemplateDelete: Scalars['ID'];
   statusTemplateFieldPatch: StatusTemplate;
   stixCoreObjectEdit?: Maybe<StixCoreObjectEditMutations>;
+  stixCoreObjectsExportAsk?: Maybe<FileConnection>;
+  stixCoreObjectsExportPush?: Maybe<Scalars['Boolean']>;
   stixCoreRelationshipAdd?: Maybe<StixCoreRelationship>;
   stixCoreRelationshipDelete: Scalars['Boolean'];
   stixCoreRelationshipEdit?: Maybe<StixCoreRelationshipEditMutations>;
@@ -8450,6 +8452,27 @@ export type MutationStatusTemplateFieldPatchArgs = {
 
 export type MutationStixCoreObjectEditArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationStixCoreObjectsExportAskArgs = {
+  context?: InputMaybe<Scalars['String']>;
+  exportType: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  format: Scalars['String'];
+  maxMarkingDefinition?: InputMaybe<Scalars['String']>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  type: Scalars['String'];
+};
+
+
+export type MutationStixCoreObjectsExportPushArgs = {
+  file: Scalars['Upload'];
+  listFilters?: InputMaybe<Scalars['String']>;
+  type: Scalars['String'];
 };
 
 
@@ -11212,6 +11235,7 @@ export type Query = {
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']>;
   stixCoreObjects?: Maybe<StixCoreObjectConnection>;
+  stixCoreObjectsExportFiles?: Maybe<FileConnection>;
   stixCoreRelationship?: Maybe<StixCoreRelationship>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -12238,6 +12262,12 @@ export type QueryStixCoreObjectsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryStixCoreObjectsExportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  type: Scalars['String'];
 };
 
 
@@ -14280,20 +14310,35 @@ export type StixCoreObjectEditMutationsRelationsAddArgs = {
 export type StixCoreObjectOrStixCoreRelationship = Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | Channel | City | Country | CourseOfAction | CryptocurrencyWallet | CryptographicKey | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Event | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | Language | MacAddr | Malware | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | PhoneNumber | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixFile | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate;
 
 export enum StixCoreObjectsFilter {
+  Abstract = 'abstract',
+  Aliases = 'aliases',
   Confidence = 'confidence',
   ContainedBy = 'containedBy',
+  Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
+  EntityType = 'entity_type',
   HasExternalReference = 'hasExternalReference',
-  Id = 'id',
   Indicates = 'indicates',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
   ObjectContains = 'objectContains',
-  StandardId = 'standard_id'
+  PatternType = 'pattern_type',
+  Published = 'published',
+  ReportTypes = 'report_types',
+  Subject = 'subject',
+  ValidFrom = 'valid_from',
+  ValidUntil = 'valid_until',
+  Value = 'value',
+  XMitreId = 'x_mitre_id',
+  XOpenctiAliases = 'x_opencti_aliases',
+  XOpenctiMainObservableType = 'x_opencti_main_observable_type',
+  XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixCoreObjectsFiltering = {
@@ -14304,16 +14349,24 @@ export type StixCoreObjectsFiltering = {
 };
 
 export enum StixCoreObjectsOrdering {
+  Score = '_score',
   Created = 'created',
+  CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   EntityType = 'entity_type',
   IndicatorPattern = 'indicator_pattern',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
+  ObservableValue = 'observable_value',
   Published = 'published',
+  Subject = 'subject',
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
-  ValidTo = 'valid_to'
+  ValidUntil = 'valid_until',
+  Value = 'value',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixCoreRelationship = BasicRelationship & StixRelationship & {
@@ -15170,6 +15223,7 @@ export type StixDomainObjectsFiltering = {
 };
 
 export enum StixDomainObjectsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -22537,6 +22591,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   statusTemplateDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationStatusTemplateDeleteArgs, 'id'>>;
   statusTemplateFieldPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateFieldPatchArgs, 'id' | 'input'>>;
   stixCoreObjectEdit?: Resolver<Maybe<ResolversTypes['StixCoreObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectEditArgs, 'id'>>;
+  stixCoreObjectsExportAsk?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportAskArgs, 'exportType' | 'format' | 'type'>>;
+  stixCoreObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportPushArgs, 'file' | 'type'>>;
   stixCoreRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<MutationStixCoreRelationshipAddArgs>>;
   stixCoreRelationshipDelete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationStixCoreRelationshipDeleteArgs, 'fromId' | 'relationship_type' | 'toId'>>;
   stixCoreRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipEditArgs, 'id'>>;
@@ -23400,6 +23456,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;
   stixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsArgs>>;
+  stixCoreObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsExportFilesArgs, 'type'>>;
   stixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipArgs>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;

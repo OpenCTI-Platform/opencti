@@ -40,16 +40,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LabelLineComponent = (props) => {
-  const {
-    node,
-    dataColumns,
-    paginationOptions,
-    onToggleEntity,
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-  } = props;
+const LabelLineComponent = ({
+  node,
+  dataColumns,
+  paginationOptions,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+}) => {
   const classes = useStyles();
   const { fd } = useFormatter();
   return (
@@ -118,8 +117,7 @@ export const LabelLine = createFragmentContainer(LabelLineComponent, {
   `,
 });
 
-export const LabelLineDummy = (props) => {
-  const { dataColumns } = props;
+export const LabelLineDummy = ({ dataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

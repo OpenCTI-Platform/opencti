@@ -87,8 +87,14 @@ const styles = (theme) => ({
   },
 });
 
-const StixCoreObjectEnrichment = (props) => {
-  const { stixCoreObject, connectorsForImport, relay, classes, t, nsdt } = props;
+const StixCoreObjectEnrichment = ({
+  stixCoreObject,
+  connectorsForImport,
+  relay,
+  classes,
+  t,
+  nsdt,
+}) => {
   const { id } = stixCoreObject;
   const file = stixCoreObject.importFiles && stixCoreObject.importFiles.edges.length > 0
     ? stixCoreObject.importFiles.edges[0].node

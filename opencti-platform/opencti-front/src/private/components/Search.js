@@ -3,50 +3,28 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
-import Loader from '../../components/Loader';
-import StixDomainObjectsLines, {
-  stixDomainObjectsLinesQuery,
-} from './common/stix_domain_objects/StixDomainObjectsLines';
-import StixCyberObservableSearchLines, {
-  stixCyberObservablesSearchLinesQuery,
-} from './observations/stix_cyber_observables/StixCyberObservablesSearchLines';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
   saveViewParameters,
 } from '../../utils/ListParameters';
-import Filters, { isUniqFilter } from './common/lists/Filters';
-import { truncate } from '../../utils/String';
+import { isUniqFilter } from './common/lists/Filters';
+import { UserContext } from '../../utils/Security';
+import ListLines from '../../components/list_lines/ListLines';
+import ToolBar from './data/ToolBar';
+import SearchStixCoreObjectsLines, {
+  searchStixCoreObjectsLinesQuery,
+} from './search/SearchStixCoreObjectsLines';
 
-const styles = (theme) => ({
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  filters: {
-    float: 'left',
-    margin: '2px 0 0 15px',
-  },
-  parameters: {
-    float: 'left',
-    margin: '-3px 0 0 15px',
-  },
-  filter: {
-    margin: '0 10px 10px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '0 10px 10px 0',
+const styles = () => ({
+  container: {
+    margin: 0,
   },
 });
-
-const TYPE_SEARCH_SIZE = 200;
 
 class Search extends Component {
   constructor(props) {
@@ -56,9 +34,16 @@ class Search extends Component {
       props.location,
       'view-search',
     );
-    const currentFilters = R.propOr([], 'filters', params);
     this.state = {
-      filters: currentFilters,
+      sortBy: '_score',
+      orderAsc: false,
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
+      numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      deSelectedElements: null,
+      selectAll: false,
+      openExports: false,
     };
   }
 
@@ -66,9 +51,29 @@ class Search extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-search',
+      'view-stix-domain-objects',
       this.state,
     );
+  }
+
+  handleChangeView(mode) {
+    this.setState({ view: mode }, () => this.saveView());
+  }
+
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc });
+  }
+
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({
+      selectAll: false,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -106,127 +111,223 @@ class Search extends Component {
     this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
+  handleToggleSelectEntity(entity, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements, deSelectedElements, selectAll } = this.state;
+    if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else if (selectAll && entity.id in (deSelectedElements || {})) {
+      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else if (selectAll) {
+      const newDeSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        deSelectedElements || {},
+      );
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({
+      selectAll: !this.state.selectAll,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  buildColumns(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      entity_type: {
+        label: 'Type',
+        width: '10%',
+        isSortable: true,
+      },
+      value: {
+        label: 'Value',
+        width: '22%',
+        isSortable: false,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
+        isSortable: true,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '16%',
+        isSortable: false,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '10%',
+        isSortable: true,
+      },
+      reports: {
+        label: 'Reports',
+        width: '8%',
+        isSortable: false,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+      },
+    };
+  }
+
+  renderLines(paginationOptions) {
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      numberOfElements,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+      openExports,
+    } = this.state;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original
+        - Object.keys(deSelectedElements || {}).length;
+    }
+    return (
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleChangeView={this.handleChangeView.bind(this)}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              openExports={openExports}
+              exportEntityType="Stix-Core-Object"
+              selectAll={selectAll}
+              disableCards={true}
+              filters={filters}
+              paginationOptions={paginationOptions}
+              numberOfElements={numberOfElements}
+              iconExtension={true}
+              availableFilterKeys={[
+                'entity_type',
+                'markedBy',
+                'labelledBy',
+                'createdBy',
+                'confidence',
+                'x_opencti_organization_type',
+                'created_start_date',
+                'created_end_date',
+                'created_at_start_date',
+                'created_at_end_date',
+                'creator',
+              ]}
+            >
+              <QueryRenderer
+                query={searchStixCoreObjectsLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => (
+                  <SearchStixCoreObjectsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    dataColumns={this.buildColumns(helper)}
+                    initialLoading={props === null}
+                    onLabelClick={this.handleAddFilter.bind(this)}
+                    selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                    selectAll={selectAll}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  />
+                )}
+              />
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={filters}
+              search={searchTerm}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+            />
+          </div>
+        )}
+      </UserContext.Consumer>
+    );
+  }
+
   render() {
     const {
-      t,
       me,
-      classes,
+      t,
       match: {
         params: { keyword },
       },
     } = this.props;
-    const { filters } = this.state;
-    let searchWords = '';
+    const { view, sortBy, orderAsc, filters } = this.state;
+    let searchTerm = '';
     try {
-      searchWords = decodeURIComponent(keyword || '');
+      searchTerm = decodeURIComponent(keyword || '');
     } catch (e) {
       // Do nothing
     }
     const finalFilters = convertFilters(filters);
-    let displayedFilters = filters;
-    if (filters && filters.entity_type && filters.entity_type.length === 9) {
-      displayedFilters = {
-        entity_type: [{ id: 'Default', value: t('Default scope') }],
-      };
-    }
+    const paginationOptions = {
+      search: searchTerm,
+      filters: finalFilters,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
+    };
     return (
       <div>
-        <TopBar me={me || null} keyword={searchWords} />
+        <TopBar me={me || null} keyword={searchTerm} />
         <Typography
           variant="h1"
           gutterBottom={true}
-          style={{ marginBottom: 20, float: 'left' }}
+          style={{ margin: '-5px 20px 0 0', float: 'left' }}
         >
           {t('Search for an entity')}
         </Typography>
-        <div className={classes.parameters}>
-          <Filters
-            availableFilterKeys={[
-              'entity_type',
-              'markedBy',
-              'labelledBy',
-              'createdBy',
-              'confidence',
-              'x_opencti_organization_type',
-              'created_start_date',
-              'created_end_date',
-              'created_at_start_date',
-              'created_at_end_date',
-            ]}
-            handleAddFilter={this.handleAddFilter.bind(this)}
-          />
-          <div className={classes.filters}>
-            {R.map((currentFilter) => {
-              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const values = (
-                <span>
-                  {R.map(
-                    (n) => (
-                      <span key={n.value}>
-                        {truncate(n.value, 15)}{' '}
-                        {R.last(currentFilter[1]).value !== n.value && (
-                          <code>OR</code>
-                        )}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span key={currentFilter[0]}>
-                  <Chip
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={this.handleRemoveFilter.bind(
-                      this,
-                      currentFilter[0],
-                    )}
-                  />
-                  {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
-                    <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
-                    />
-                  )}
-                </span>
-              );
-            }, R.toPairs(displayedFilters))}
-          </div>
-        </div>
-        <div className="clearfix" />
-        <QueryRenderer
-          query={stixDomainObjectsLinesQuery}
-          variables={{
-            search: keyword,
-            filters: finalFilters,
-            count: TYPE_SEARCH_SIZE,
-          }}
-          render={({ props }) => {
-            if (props) {
-              return <StixDomainObjectsLines data={props} />;
-            }
-            return <Loader variant="inside" />;
-          }}
-        />
-        <QueryRenderer
-          query={stixCyberObservablesSearchLinesQuery}
-          variables={{
-            search: keyword,
-            filters: finalFilters,
-            count: TYPE_SEARCH_SIZE,
-          }}
-          render={({ props }) => {
-            if (props) {
-              return <StixCyberObservableSearchLines data={props} />;
-            }
-            return <div />;
-          }}
-        />
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
       </div>
     );
   }

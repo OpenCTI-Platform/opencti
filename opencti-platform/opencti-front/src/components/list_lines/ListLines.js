@@ -30,6 +30,7 @@ import Filters from '../../private/components/common/lists/Filters';
 import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { truncate } from '../../utils/String';
 import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
+import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
 
 const styles = (theme) => ({
   container: {
@@ -425,6 +426,7 @@ class ListLines extends Component {
           {children}
         </List>
         {typeof handleToggleExports === 'function'
+          && exportEntityType !== 'Stix-Core-Object'
           && exportEntityType !== 'Stix-Cyber-Observable'
           && exportEntityType !== 'stix-core-relationship' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
@@ -444,6 +446,18 @@ class ListLines extends Component {
                 open={openExports}
                 handleToggle={handleToggleExports.bind(this)}
                 paginationOptions={paginationOptions}
+                context={exportContext}
+              />
+            </Security>
+        )}
+        {typeof handleToggleExports === 'function'
+          && exportEntityType === 'Stix-Core-Object' && (
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              <StixCoreObjectsExports
+                open={openExports}
+                handleToggle={handleToggleExports.bind(this)}
+                paginationOptions={paginationOptions}
+                exportEntityType={exportEntityType}
                 context={exportContext}
               />
             </Security>

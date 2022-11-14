@@ -20,13 +20,16 @@ import {
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
   stixCoreObjectDelete,
-  stixCoreObjectImportPush
+  stixCoreObjectImportPush,
+  stixCoreObjectsExportAsk,
+  stixCoreObjectsExportPush,
+  stixCoreObjectCleanContext,
+  stixCoreObjectEditContext
 } from '../domain/stixCoreObject';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { filesListing } from '../database/file-storage';
-import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../domain/stixDomainObject';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -48,6 +51,7 @@ const stixCoreObjectResolvers = {
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
   },
   StixCoreObject: {
     // eslint-disable-next-line
@@ -88,12 +92,14 @@ const stixCoreObjectResolvers = {
       exportAsk: (args) => stixCoreObjectExportAsk(context, context.user, R.assoc('stixCoreObjectId', id, args)),
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
     }),
+    stixCoreObjectsExportAsk: (_, args, context) => stixCoreObjectsExportAsk(context, context.user, args),
+    stixCoreObjectsExportPush: (_, { type, file, listFilters }, context) => stixCoreObjectsExportPush(context, context.user, type, file, listFilters),
   },
   Subscription: {
     stixCoreObject: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
-        stixDomainObjectEditContext(context, context.user, id);
+        stixCoreObjectEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC),
           (payload) => {
@@ -102,7 +108,7 @@ const stixCoreObjectResolvers = {
           }
         )(_, { id }, context);
         return withCancel(filtering, () => {
-          stixDomainObjectCleanContext(context, context.user, id);
+          stixCoreObjectCleanContext(context, context.user, id);
         });
       },
     },
