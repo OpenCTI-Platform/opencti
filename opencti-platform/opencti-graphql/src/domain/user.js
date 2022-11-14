@@ -93,7 +93,7 @@ export const findById = async (user, userId) => {
   const data = await loadById(user, userId, ENTITY_TYPE_USER);
   const userObj = data ? R.dissoc('password', data) : data;
   if(userObj === undefined) return undefined;
-  const q = {email: "admin@darklight.ai"};
+  const q = {email: userObj.user_email};
   const kcUserRes = await keycloakAdminClient.users.find(q);
   if(kcUserRes.length === 0) return userObj;
   const kcUser = kcUserRes[0];
