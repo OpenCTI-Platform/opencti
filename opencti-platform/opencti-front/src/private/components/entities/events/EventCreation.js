@@ -22,6 +22,7 @@ import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -221,7 +222,7 @@ class EventCreation extends Component {
                     label={t('Event types')}
                     type="event-type-ov"
                     name="event_types"
-                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    containerStyle={fieldSpacingContainerStyle}
                     multiple={true}
                   />
                   <Field

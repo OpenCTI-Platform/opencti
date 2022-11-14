@@ -51,6 +51,21 @@ interface ItemSeverityProps {
   variant?: 'inList';
 }
 
+const computeSeverityStyle = (severity: string | undefined) => {
+  switch (severity) {
+    case 'low':
+      return inlineStyles.green;
+    case 'medium':
+      return inlineStyles.blue;
+    case 'high':
+      return inlineStyles.orange;
+    case 'critical':
+      return inlineStyles.red;
+    default:
+      return inlineStyles.blueGrey;
+  }
+};
+
 const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
   label,
   severity,
@@ -58,48 +73,10 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
 }) => {
   const classes = useStyles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
-  switch (severity) {
-    case 'low':
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.green}
-          label={label}
-        />
-      );
-    case 'medium':
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.blue}
-          label={label}
-        />
-      );
-    case 'high':
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.orange}
-          label={label}
-        />
-      );
-    case 'critical':
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.red}
-          label={label}
-        />
-      );
-    default:
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.blueGrey}
-          label={label}
-        />
-      );
-  }
+  const classStyle = computeSeverityStyle(severity);
+  return (
+    <Chip classes={{ root: style }} style={classStyle} label={label} />
+  );
 };
 
 export default ItemSeverity;

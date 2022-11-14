@@ -134,9 +134,7 @@ export const resolveIdentityType = (identityClass: string): string => {
   return 'Organization';
 };
 
-export const resolveLocationType = (entity: {
-  [k: string]: string;
-}): string => {
+export const resolveLocationType = (entity: Record<string, string>): string => {
   if (entity.x_opencti_location_type) {
     return entity.x_opencti_location_type;
   }
@@ -152,9 +150,7 @@ export const resolveLocationType = (entity: {
   return 'Position';
 };
 
-export const openVocabularies: {
-  [k: string]: Array<{ key: string; description: string }>;
-} = {
+export const openVocabularies: Record<string, { key: string, description: string }[]> = {
   'malware-type-ov': [
     {
       key: 'adware',

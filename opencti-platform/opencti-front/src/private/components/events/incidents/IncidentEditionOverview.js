@@ -22,6 +22,7 @@ import {
   convertStatus,
 } from '../../../../utils/Edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -300,7 +301,7 @@ class IncidentEditionOverviewComponent extends Component {
               label={t('Confidence')}
               disabled={isInferred}
               fullWidth={true}
-              containerstyle={{ width: '100%', marginTop: 20 }}
+              containerStyle={fieldSpacingContainerStyle}
               editContext={context}
               variant="edit"
             />
@@ -310,7 +311,7 @@ class IncidentEditionOverviewComponent extends Component {
               name="incident_type"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ width: '100%', marginTop: 20 }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
               editContext={context}
@@ -321,7 +322,7 @@ class IncidentEditionOverviewComponent extends Component {
               name="severity"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ width: '100%', marginTop: 20 }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
               editContext={context}

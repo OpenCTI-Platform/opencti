@@ -467,7 +467,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             name={attribute.value}
                             variant={'edit'}
                             onChange={this.handleSubmitField.bind(this)}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
+                            containerStyle={fieldSpacingContainerStyle}
                             multiple={false}
                             editContext={context}
                           />

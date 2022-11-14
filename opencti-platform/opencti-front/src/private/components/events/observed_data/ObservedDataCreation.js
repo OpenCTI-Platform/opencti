@@ -32,6 +32,7 @@ import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/Store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -253,7 +254,7 @@ class ObservedDataCreation extends Component {
                     name="confidence"
                     label={t('Confidence')}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
+                    containerStyle={fieldSpacingContainerStyle}
                   />
                   <CreatedByField
                     name="createdBy"

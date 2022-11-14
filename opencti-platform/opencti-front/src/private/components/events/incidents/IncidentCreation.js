@@ -24,6 +24,8 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/Store';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { isEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -93,6 +95,7 @@ const IncidentCreation = ({ paginationOptions }) => {
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
+    const cleanedValues = isEmptyField(values.severity) ? R.dissoc('severity', values) : values;
     const adaptedValues = R.evolve(
       {
         confidence: () => parseInt(values.confidence, 10),
@@ -101,7 +104,7 @@ const IncidentCreation = ({ paginationOptions }) => {
         objectLabel: R.pluck('value'),
         externalReferences: R.pluck('value'),
       },
-      values,
+      cleanedValues,
     );
     commitMutation({
       mutation: IncidentMutation,
@@ -194,20 +197,20 @@ const IncidentCreation = ({ paginationOptions }) => {
                   name="confidence"
                   label={t('Confidence')}
                   fullWidth={true}
-                  containerstyle={{ width: '100%', marginTop: 20 }}
+                  containerStyle={fieldSpacingContainerStyle}
                 />
                 <OpenVocabField
                   label={t('Incident type')}
                   type="incident-type-ov"
                   name="incident_type"
-                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  containerStyle={fieldSpacingContainerStyle}
                   multiple={false}
                 />
                 <OpenVocabField
                   label={t('Severity')}
                   type="incident-severity-ov"
                   name="severity"
-                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  containerStyle={fieldSpacingContainerStyle}
                   multiple={false}
                 />
                 <Field

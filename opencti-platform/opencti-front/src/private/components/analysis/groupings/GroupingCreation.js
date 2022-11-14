@@ -24,6 +24,7 @@ import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/Store';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -202,14 +203,14 @@ const GroupingCreation = ({ paginationOptions }) => {
                   name="confidence"
                   label={t('Confidence')}
                   fullWidth={true}
-                  containerstyle={{ width: '100%', marginTop: 20 }}
+                  containerStyle={fieldSpacingContainerStyle}
                 />
                 <OpenVocabField
                   label={t('Context')}
                   type="grouping-context-ov"
                   name="context"
                   multiple={false}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  containerStyle={fieldSpacingContainerStyle}
                 />
                 <Field
                   component={MarkDownField}

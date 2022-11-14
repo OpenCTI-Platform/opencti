@@ -87,8 +87,6 @@ esbuild.build({
   // endregion
   // region Start a dev web server
   const app = express();
-  app.set("trust proxy", 1);
-  app.use(compression({}));
   app.get("/dev", (req, res) => {
     return clients.push(
       res.writeHead(200, {
@@ -99,6 +97,8 @@ esbuild.build({
       })
     );
   });
+  app.set("trust proxy", 1);
+  app.use(compression({}));
   app.use(middleware("/stream"));
   app.use(middleware("/storage"));
   app.use(middleware("/taxii2"));

@@ -412,7 +412,7 @@ const StixCoreRelationshipEditionContainer = ({
                 onChange={handleSubmitField}
                 label={t('Confidence level')}
                 fullWidth={true}
-                containerstyle={{ width: '100%' }}
+                containerStyle={{ width: '100%' }}
                 editContext={editContext}
               />
               <Field

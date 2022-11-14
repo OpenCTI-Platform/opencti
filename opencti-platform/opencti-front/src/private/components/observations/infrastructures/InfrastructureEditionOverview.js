@@ -22,6 +22,7 @@ import {
 } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate } from '../../../../utils/Time';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -301,7 +302,7 @@ class InfrastructureEditionOverviewComponent extends Component {
               name="infrastructure_types"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={true}
               editContext={context}

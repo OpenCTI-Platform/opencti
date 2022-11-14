@@ -20,6 +20,7 @@ import {
   convertStatus,
 } from '../../../../utils/Edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -249,7 +250,7 @@ const GroupingEditionOverviewComponent = (props) => {
               onSubmit={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
-              containerstyle={{ width: '100%', marginTop: 20 }}
+              containerStyle={fieldSpacingContainerStyle}
               editContext={context}
               variant="edit"
             />
@@ -259,7 +260,7 @@ const GroupingEditionOverviewComponent = (props) => {
               name="context"
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
               editContext={context}

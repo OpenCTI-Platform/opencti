@@ -29,6 +29,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -328,7 +329,7 @@ class ReportCreation extends Component {
                               name="confidence"
                               label={t('Confidence')}
                               fullWidth={true}
-                              containerstyle={{ width: '100%', marginTop: 20 }}
+                              containerStyle={fieldSpacingContainerStyle}
                             />
                             <Field
                               component={MarkDownField}

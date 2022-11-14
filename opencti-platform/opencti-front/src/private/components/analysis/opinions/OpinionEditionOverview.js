@@ -19,6 +19,7 @@ import {
   convertStatus,
 } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -243,7 +244,7 @@ class OpinionEditionOverviewComponent extends Component {
                 onChange={this.handleSubmitField.bind(this)}
                 label={t('Confidence')}
                 fullWidth={true}
-                containerstyle={{ width: '100%', marginTop: 20 }}
+                containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
                 variant="edit"
               />

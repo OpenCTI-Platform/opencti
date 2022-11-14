@@ -22,6 +22,7 @@ import {
   convertStatus,
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -332,7 +333,7 @@ class ObservedDataEditionOverviewComponent extends Component {
                 onChange={this.handleSubmitField.bind(this)}
                 label={t('Confidence')}
                 fullWidth={true}
-                containerstyle={{ width: '100%', marginTop: 20 }}
+                containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
                 variant="edit"
               />
