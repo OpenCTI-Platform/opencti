@@ -1,9 +1,9 @@
 import * as R from 'ramda';
-import { version as uuidVersion } from 'uuid';
+import { v4 as uuidv4, version as uuidVersion } from 'uuid';
 import { isEmptyField, isInferredIndex } from './utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { isStixObject } from '../schema/stixCoreObject';
-import { isStixRelationship } from '../schema/stixRelationship';
+import { isBasicObject } from '../schema/stixCoreObject';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   INPUT_BCC,
   INPUT_BELONGS_TO,
@@ -105,7 +105,7 @@ import {
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import {
   INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
+  INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -114,6 +114,8 @@ import {
 import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin } from './stix';
+import { isInternalRelationship } from '../schema/internalRelationship';
+import { isInternalObject } from '../schema/internalObject';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -214,6 +216,7 @@ const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
     is_inferred: instance._index ? isInferredIndex(instance._index) : undefined, // TODO Use case for empty _index?
     workflow_id: instance.x_opencti_workflow_id,
+    granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     linked_to_refs: (instance[INPUT_LINKED] ?? []).map((m) => m.standard_id),
   };
   return cleanObject(octiExtensions);
@@ -334,6 +337,17 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
   };
 };
 
+// INTERNAL
+const convertInternalToStix = (instance: StoreEntity, type: string): S.StixInternalObject => {
+  if (!isInternalObject(type)) {
+    throw UnsupportedError(`${instance.entity_type} not compatible with internal`);
+  }
+  const stixObject = buildStixObject(instance);
+  return {
+    ...stixObject,
+    sequence: uuidv4()
+  };
+};
 // SDO
 const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIdentity => {
   if (!isStixDomainObjectIdentity(type)) {
@@ -367,8 +381,8 @@ const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLoc
     ...buildStixDomain(instance),
     name: instance.name,
     description: instance.description,
-    latitude: instance.latitude,
-    longitude: instance.longitude,
+    latitude: instance.latitude ? parseFloat(instance.latitude) : undefined,
+    longitude: instance.longitude ? parseFloat(instance.longitude) : undefined,
     precision: instance.precision,
     region: instance.region,
     country: instance.country,
@@ -1246,12 +1260,15 @@ export const registerStixDomainConverter = <T extends StoreEntity>(type: string,
 const convertToStix = (instance: StoreObject): S.StixObject => {
   const type = instance.entity_type;
   // If not found try with classic
-  if (!isStixObject(type) && !isStixRelationship(type)) {
+  if (!isBasicObject(type) && !isBasicRelationship(type)) {
     throw UnsupportedError(`Type ${type} cannot be converted to Stix`, { instance });
   }
   // SRO: relations and sightings
-  if (isStixRelationship(type)) {
+  if (isBasicRelationship(type)) {
     const basic = instance as StoreRelation;
+    if (isInternalRelationship(type)) {
+      return convertRelationToStix(basic);
+    }
     if (isStixCoreRelationship(type)) {
       return convertRelationToStix(basic);
     }
@@ -1266,7 +1283,10 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     }
     throw UnsupportedError(`No relation converter available for ${type}`);
   }
-  // SDO: domains
+  if (isInternalObject(type)) {
+    const internal = instance as StoreEntity;
+    return convertInternalToStix(internal, type);
+  }
   if (isStixDomainObject(type)) {
     const basic = instance as StoreEntity;
     // First try in registered converters
@@ -1340,7 +1360,6 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     // No converter found
     throw UnsupportedError(`No entity converter available for ${type}`);
   }
-  // SMO: metas
   if (isStixMetaObject(type)) {
     const basic = instance as StoreEntity;
     if (ENTITY_TYPE_MARKING_DEFINITION === type) {
@@ -1358,7 +1377,6 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     // No converter found
     throw UnsupportedError(`No meta converter available for ${type}`);
   }
-  // SCO: Cyber observables
   if (isStixCyberObservable(type)) {
     const cyber = instance as StoreCyberObservable;
     // Meta observable
@@ -1450,7 +1468,7 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     // No converter found
     throw UnsupportedError(`No meta cyber observable available for ${type}`);
   }
-  throw UnsupportedError(`No converter available for ${type}`);
+  throw UnsupportedError(`No entity converter available for ${type}`);
 };
 
 export const convertStoreToStix = (instance: StoreObject): S.StixObject => {

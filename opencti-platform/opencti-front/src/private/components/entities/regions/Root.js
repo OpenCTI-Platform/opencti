@@ -142,6 +142,7 @@ class RootRegion extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.region}
                             PopoverComponent={<RegionPopover />}
                           />
@@ -173,6 +174,7 @@ class RootRegion extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.region}
                             PopoverComponent={<RegionPopover />}
                           />
@@ -192,6 +194,7 @@ class RootRegion extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.region}
                             PopoverComponent={<RegionPopover />}
                           />

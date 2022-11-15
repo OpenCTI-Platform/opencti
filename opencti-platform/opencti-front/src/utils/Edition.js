@@ -19,6 +19,14 @@ export const convertMarkings = (element) => R.pipe(
   })),
 )(element);
 
+export const convertOrganizations = (element) => R.pipe(
+  R.pathOr([], ['objectOrganization', 'edges']),
+  R.map((n) => ({
+    label: n.node.name,
+    value: n.node.id,
+  })),
+)(element);
+
 export const convertCreatedBy = (element) => (R.pathOr(null, ['createdBy', 'name'], element) === null
   ? ''
   : {

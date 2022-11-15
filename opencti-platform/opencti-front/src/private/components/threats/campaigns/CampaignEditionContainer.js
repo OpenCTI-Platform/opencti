@@ -71,10 +71,7 @@ class CampaignEditionContainer extends Component {
         </div>
         <div className={classes.container}>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs
-              value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}
-            >
+            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
               <Tab label={t('Overview')} />
               <Tab label={t('Details')} />
             </Tabs>

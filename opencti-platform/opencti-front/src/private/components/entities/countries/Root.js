@@ -142,6 +142,7 @@ class RootCountry extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.country}
                             PopoverComponent={<CountryPopover />}
                           />
@@ -173,6 +174,7 @@ class RootCountry extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.country}
                             PopoverComponent={<CountryPopover />}
                           />
@@ -192,6 +194,7 @@ class RootCountry extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.country}
                             PopoverComponent={<CountryPopover />}
                           />

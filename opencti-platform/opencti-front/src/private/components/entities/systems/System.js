@@ -35,6 +35,7 @@ class SystemComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={system}
           isOpenctiAlias={true}
           PopoverComponent={<SystemPopover />}

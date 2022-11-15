@@ -147,6 +147,7 @@ class RootPosition extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
                             enableReferences={props.settings.platform_enable_reference?.includes(
@@ -181,6 +182,7 @@ class RootPosition extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
                             enableReferences={props.settings.platform_enable_reference?.includes(
@@ -203,6 +205,7 @@ class RootPosition extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
                             enableReferences={props.settings.platform_enable_reference?.includes(

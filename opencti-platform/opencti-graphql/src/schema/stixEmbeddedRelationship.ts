@@ -17,6 +17,7 @@ import {
 } from './stixCyberObservableRelationship';
 import type { BasicStoreObject } from '../types/store';
 import { buildRefRelationKey, ID_INFERRED, ID_INTERNAL } from './general';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 export const INPUTS_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = {
   ...FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE,
@@ -72,6 +73,10 @@ export const stixRefsExtractor = (data: any, idGenerator: (key: string, data: un
     if (key === 'body_multipart' && data[key]) {
       // eslint-disable-next-line
       return data[key].map((e: any) => idGenerator('Email-Mime-Part-Type', e));
+    }
+    if (key === 'granted_refs' && data.extensions[STIX_EXT_OCTI][key]) {
+      // eslint-disable-next-line
+      return data.extensions[STIX_EXT_OCTI][key];
     }
     return data[key] || [];
   }).flat();

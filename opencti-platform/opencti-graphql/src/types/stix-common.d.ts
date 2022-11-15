@@ -35,6 +35,7 @@ interface StixOpenctiExtension {
   id: v4 | undefined;
   files: Array<StixFileExtension>;
   aliases: Array<string>;
+  granted_refs: Array<StixId>;
   linked_to_refs: Array<StixId>;
   stix_ids: Array<StixId>;
   type: string;
@@ -60,6 +61,10 @@ interface StixObject {
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtension;
   };
+}
+
+interface StixInternalObject extends StixObject {
+  sequence: string;
 }
 
 // --- STIX Core Objects

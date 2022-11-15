@@ -37,6 +37,7 @@ interface Event extends RuleEvent {
   id?: string;
   version: string;
   type: string;
+  scope: 'internal' | 'external';
   origin: Partial<UserOrigin>;
   message: string;
   data: StixCoreObject;

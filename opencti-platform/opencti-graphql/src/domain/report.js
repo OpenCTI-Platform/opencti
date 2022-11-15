@@ -54,8 +54,9 @@ export const reportsTimeSeries = (context, user, args) => {
 };
 
 export const reportsNumber = (context, user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
+  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), R.dissoc('endDate'))(args)
@@ -76,6 +77,7 @@ export const reportsTimeSeriesByAuthor = async (context, user, args) => {
 
 export const reportsNumberByEntity = (context, user, args) => ({
   count: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -86,6 +88,7 @@ export const reportsNumberByEntity = (context, user, args) => ({
     )(args)
   ),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -100,6 +103,7 @@ export const reportsNumberByEntity = (context, user, args) => ({
 
 export const reportsNumberByAuthor = (context, user, args) => ({
   count: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -110,6 +114,7 @@ export const reportsNumberByAuthor = (context, user, args) => ({
     )(args)
   ),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(

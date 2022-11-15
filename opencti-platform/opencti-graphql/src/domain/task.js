@@ -32,6 +32,8 @@ export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
 export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
 export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
+export const ACTION_TYPE_SHARE = 'SHARE';
+export const ACTION_TYPE_UNSHARE = 'UNSHARE';
 
 const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();

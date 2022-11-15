@@ -7,6 +7,7 @@ import AttributionUseRule from '../rules/attribution-use/AttributionUseRule';
 import RuleLocalizationOfTargets from '../rules/localization-of-targets/LocalizationOfTargetsRule';
 import LocatedAtLocatedRule from '../rules/located-at-located/LocatedAtLocatedRule';
 import LocationTargetsRule from '../rules/location-targets/LocationTargetsRule';
+import ParticipateToParts from '../rules/participate-to-parts/ParticipateToPartsRule';
 import RuleObservableRelatedObservable from '../rules/observable-related/ObservableRelatedRule';
 import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule';
 import PartOfPartRule from '../rules/part-of-part/PartOfPartRule';
@@ -20,7 +21,6 @@ import ReportRefIdentityPartOfRule from '../rules/report-refs-identity-part-of/R
 import ReportRefsIndicatorBasedOnRule from '../rules/report-refs-indicator-based-on/ReportRefIndicatorBasedOnRule';
 import ReportRefsLocationLocatedAtRule from '../rules/report-refs-location-located-at/ReportRefLocationLocatedAtRule';
 import { BUS_TOPICS, DEV_MODE, ENABLED_RULE_ENGINE } from '../config/conf';
-import { getEntitiesFromCache } from '../manager/cacheManager';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
@@ -29,6 +29,7 @@ import { listEntities } from '../database/middleware-loader';
 import { createRuleTask, deleteTask } from './task';
 import { notify } from '../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
+import { getEntitiesFromCache } from '../database/cache';
 
 export const RULES_DECLARATION: Array<RuleRuntime> = [
   AttributedToAttributedRule,
@@ -38,6 +39,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   RuleLocalizationOfTargets,
   LocatedAtLocatedRule,
   LocationTargetsRule,
+  ParticipateToParts,
   RuleObservableRelatedObservable,
   RuleObserveSighting,
   PartOfPartRule,

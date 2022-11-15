@@ -103,12 +103,12 @@ describe('Elasticsearch document loader', () => {
 describe('Elasticsearch computation', () => {
   it('should count accurate', async () => {
     // const { endDate = null, type = null, types = null } = options;
-    const malwaresCount = await elCount(ADMIN_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
+    const malwaresCount = await elCount(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
     const mostRecentMalware = await elLoadById(testContext, ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
-    const malwaresCount = await elCount(ADMIN_USER, READ_ENTITIES_INDICES, {
+    const malwaresCount = await elCount(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       types: ['Malware'],
       endDate: mostRecentMalware.created_at,
     });
@@ -402,7 +402,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(98);
+    expect(data.edges.length).toEqual(100);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -468,7 +468,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(91);
+    expect(data.edges.length).toEqual(93);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];

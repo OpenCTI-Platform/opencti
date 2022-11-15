@@ -11,7 +11,7 @@ import {
   fetchQuery as FQ,
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
-import { map, isEmpty, difference, filter, pathOr, isNil } from 'ramda';
+import { map, isEmpty, filter, pathOr, isNil } from 'ramda';
 import {
   urlMiddleware,
   RelayNetworkLayer,
@@ -75,17 +75,16 @@ export const environment = new Environment({ network, store });
 // Components
 export class QueryRenderer extends Component {
   render() {
-    const { variables, query, render, managedErrorTypes } = this.props;
+    const { variables, query, render } = this.props;
     return (
-      <QR
-        environment={environment}
+      <QR environment={environment}
         query={query}
         variables={variables}
         render={(data) => {
           const { error } = data;
-          const types = error ? map((e) => e.name, error) : [];
-          const unmanagedErrors = difference(types, managedErrorTypes || []);
-          if (!isEmpty(unmanagedErrors)) throw new ApplicationError(error);
+          if (error) {
+            throw new ApplicationError(error);
+          }
           return render(data);
         }}
       />
@@ -93,7 +92,6 @@ export class QueryRenderer extends Component {
   }
 }
 QueryRenderer.propTypes = {
-  managedErrorTypes: PropTypes.array,
   variables: PropTypes.object,
   render: PropTypes.func,
   query: PropTypes.object,

@@ -28,6 +28,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
+import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { batchUsers } from '../domain/user';
 
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -38,6 +39,7 @@ const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
 const creatorsLoader = batchLoader(batchUsers);
+const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 const loadByIdLoader = batchLoader(elBatchIds);
 
 const stixSightingRelationshipResolvers = {
@@ -65,6 +67,7 @@ const stixSightingRelationshipResolvers = {
     creator: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),
+    objectOrganization: (rel, _, context) => batchOrganizationsLoader.load(rel.id, context, context.user),
     objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),
     externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
@@ -85,6 +88,8 @@ const stixSightingRelationshipResolvers = {
       contextClean: () => stixSightingRelationshipCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType),
+      restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
+      restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
     }),
     stixSightingRelationshipAdd: (_, { input }, context) => addStixSightingRelationship(context, context.user, input),
   },

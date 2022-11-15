@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { compose, evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
@@ -78,8 +78,8 @@ const styles = (theme) => ({
 });
 
 export const noteCreationMutation = graphql`
-  mutation NoteCreationMutation($input: NoteAddInput!) {
-    noteAdd(input: $input) {
+  mutation NoteCreationMutation($input: NoteUserAddInput!) {
+    userNoteAdd(input: $input) {
       id
       ...NoteLine_node
     }
@@ -135,7 +135,7 @@ class NoteCreation extends Component {
         input: adaptedValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('noteAdd');
+        const payload = store.getRootField('userNoteAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(
@@ -216,7 +216,7 @@ class NoteCreation extends Component {
                 setFieldValue,
                 values,
               }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
+                <Form style={{ margin: '0px 0 20px 0' }}>
                   <Field
                     component={DateTimePickerField}
                     name="created"

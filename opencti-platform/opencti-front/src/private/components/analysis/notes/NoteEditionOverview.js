@@ -1,51 +1,20 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/Edition';
+import { convertMarkings, convertStatus } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -110,50 +79,42 @@ const noteValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class NoteEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
+const NoteEditionOverviewComponent = (props) => {
+  const { note, context } = props;
+  const { t } = useFormatter();
+
+  const handleChangeFocus = (name) => {
     commitMutation({
       mutation: noteEditionOverviewFocus,
       variables: {
-        id: this.props.note.id,
+        id: note.id,
         input: {
           focusOn: name,
         },
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
+  const handleSubmitField = (name, value) => {
     let finalValue = value;
     if (name === 'x_opencti_workflow_id') {
       finalValue = value.value;
     }
-    noteValidation(this.props.t)
+    noteValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: noteMutationFieldPatch,
           variables: {
-            id: this.props.note.id,
+            id: note.id,
             input: { key: name, value: finalValue ?? '' },
           },
         });
       })
       .catch(() => false);
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    commitMutation({
-      mutation: noteMutationFieldPatch,
-      variables: {
-        id: this.props.note.id,
-        input: { key: 'createdBy', value: value.value || '' },
-      },
-    });
-  }
-
-  handleChangeObjectMarking(name, values) {
-    const { note } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
     const currentMarkingDefinitions = R.pipe(
       R.pathOr([], ['objectMarking', 'edges']),
       R.map((n) => ({
@@ -167,7 +128,7 @@ class NoteEditionOverviewComponent extends Component {
       commitMutation({
         mutation: noteMutationRelationAdd,
         variables: {
-          id: this.props.note.id,
+          id: note.id,
           input: {
             toId: R.head(added).value,
             relationship_type: 'object-marking',
@@ -179,147 +140,126 @@ class NoteEditionOverviewComponent extends Component {
       commitMutation({
         mutation: noteMutationRelationDelete,
         variables: {
-          id: this.props.note.id,
+          id: note.id,
           toId: R.head(removed).value,
           relationship_type: 'object-marking',
         },
       });
     }
-  }
+  };
 
-  render() {
-    const { t, note, context } = this.props;
-    const createdBy = convertCreatedBy(note);
-    const objectMarking = convertMarkings(note);
-    const status = convertStatus(t, note);
-    const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc('x_opencti_workflow_id', status),
-      R.assoc('created', buildDate(note.created)),
-      R.pick([
-        'attribute_abstract',
-        'created',
-        'content',
-        'confidence',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(note);
-    return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={noteValidation(t)}
-      >
-        {({ setFieldValue }) => (
-          <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={DateTimePickerField}
-                name="created"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                TextFieldProps={{
-                  label: t('Publication date'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  helperText: (
-                    <SubscriptionFocus context={context} fieldName="created" />
-                  ),
-                }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="attribute_abstract"
-                label={t('Abstract')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="attribute_abstract"
-                  />
-                }
-              />
-              <Field
-                component={MarkDownField}
-                name="content"
-                label={t('Content')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="content" />
-                }
-              />
-              <ConfidenceField
-                name="confidence"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
-                label={t('Confidence')}
-                fullWidth={true}
-                containerStyle={fieldSpacingContainerStyle}
-                editContext={context}
-                variant="edit"
-              />
-              {note.workflowEnabled && (
-                <StatusField
-                  name="x_opencti_workflow_id"
-                  type="Note"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  setFieldValue={setFieldValue}
-                  style={{ marginTop: 20 }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="x_opencti_workflow_id"
-                    />
-                  }
+  const objectMarking = convertMarkings(note);
+  const status = convertStatus(t, note);
+  const initialValues = R.pipe(
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('created', buildDate(note.created)),
+    R.pick([
+      'attribute_abstract',
+      'created',
+      'content',
+      'confidence',
+      'objectOrganization',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(note);
+
+  return (
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={noteValidation(t)}
+    >
+      {({ setFieldValue }) => (
+        <div>
+          <Form style={{ margin: '0px 0 20px 0' }}>
+            <Field
+              component={DateTimePickerField}
+              name="created"
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              TextFieldProps={{
+                label: t('Publication date'),
+                variant: 'standard',
+                fullWidth: true,
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="created" />
+                ),
+              }}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="attribute_abstract"
+              label={t('Abstract')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="attribute_abstract"
                 />
-              )}
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
+              }
+            />
+            <Field
+              component={MarkDownField}
+              name="content"
+              label={t('Content')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="content" />
+              }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              variant="edit"
+            />
+            {note.workflowEnabled && (
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="Note"
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="createdBy" />
-                }
-                onChange={this.handleChangeCreatedBy.bind(this)}
-              />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
+                style={{ marginTop: 20 }}
                 helpertext={
                   <SubscriptionFocus
                     context={context}
-                    fieldname="objectMarking"
+                    fieldName="x_opencti_workflow_id"
                   />
                 }
-                onChange={this.handleChangeObjectMarking.bind(this)}
               />
-            </Form>
-          </div>
-        )}
-      </Formik>
-    );
-  }
-}
-
-NoteEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  note: PropTypes.object,
-  context: PropTypes.array,
+            )}
+            <ObjectMarkingField
+              name="objectMarking"
+              style={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldname="objectMarking"
+                />
+              }
+              onChange={handleChangeObjectMarking}
+            />
+          </Form>
+        </div>
+      )}
+    </Formik>
+  );
 };
 
 const NoteEditionOverview = createFragmentContainer(
@@ -332,13 +272,6 @@ const NoteEditionOverview = createFragmentContainer(
         attribute_abstract
         content
         confidence
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
         objectMarking {
           edges {
             node {
@@ -362,7 +295,4 @@ const NoteEditionOverview = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(NoteEditionOverview);
+export default NoteEditionOverview;

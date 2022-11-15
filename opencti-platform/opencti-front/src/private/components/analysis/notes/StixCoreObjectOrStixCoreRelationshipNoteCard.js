@@ -28,6 +28,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import NotePopover from './NotePopover';
 import { resolveLink } from '../../../../utils/Entity';
+import { CollaborativeSecurity, KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   card: {
@@ -145,24 +146,21 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
     let authorLink = null;
     if (node.createdBy) {
       authorName = node.createdBy.name;
-      authorLink = `${resolveLink(node.createdBy.entity_type)}/${
-        node.createdBy.id
-      }`;
+      authorLink = `${resolveLink(node.createdBy.entity_type)}/${node.createdBy.id}`;
     }
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
-        <CardHeader
-          style={{
-            padding: '15px 10px 10px 15px',
-            borderBottom: `1px solid ${theme.palette.divider}`,
-          }}
+        <CardHeader style={{ padding: '15px 10px 10px 15px', borderBottom: `1px solid ${theme.palette.divider}` }}
           action={
-            <NotePopover
-              id={node.id}
-              entityId={stixCoreObjectOrStixCoreRelationshipId}
-              handleOpenRemove={this.handleOpenDialog.bind(this)}
-              size="small"
-            />
+            <CollaborativeSecurity data={node} needs={[KNOWLEDGE_KNUPDATE]}>
+              <NotePopover
+                id={node.id}
+                note={node}
+                entityId={stixCoreObjectOrStixCoreRelationshipId}
+                handleOpenRemove={this.handleOpenDialog.bind(this)}
+                size="small"
+              />
+            </CollaborativeSecurity>
           }
           title={
             <div>

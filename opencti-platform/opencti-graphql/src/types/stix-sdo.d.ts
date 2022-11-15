@@ -141,8 +141,8 @@ interface StixIntrusionSet extends StixDomainObject {
 interface StixLocation extends StixDomainObject {
   name: string; // optional
   description: string; // optional
-  latitude: number; // optional
-  longitude: number; // optional
+  latitude: number | undefined; // optional
+  longitude: number | undefined; // optional
   precision: number; // optional
   region: string; // optional
   country: string; // optional

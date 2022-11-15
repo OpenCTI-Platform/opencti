@@ -1753,6 +1753,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
             }
           }
         }
+        ...ContainerHeader_container
       }
     `,
   },

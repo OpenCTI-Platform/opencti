@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -15,38 +14,12 @@ import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/Edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate } from '../../../../utils/Time';
+import { adaptFieldValue } from '../../../../utils/String';
+import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const infrastructureMutationFieldPatch = graphql`
   mutation InfrastructureEditionOverviewFieldPatchMutation(
@@ -130,6 +103,35 @@ class InfrastructureEditionOverviewComponent extends Component {
         input: {
           focusOn: name,
         },
+      },
+    });
+  }
+
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
+    )(values);
+    commitMutation({
+      mutation: infrastructureMutationFieldPatch,
+      variables: {
+        id: this.props.infrastructure.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
       },
     });
   }
@@ -239,7 +241,7 @@ class InfrastructureEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, infrastructure, context } = this.props;
+    const { t, infrastructure, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(infrastructure);
     const objectMarking = convertMarkings(infrastructure);
     const status = convertStatus(t, infrastructure);
@@ -282,7 +284,13 @@ class InfrastructureEditionOverviewComponent extends Component {
         validationSchema={infrastructureValidation(t)}
         onSubmit={() => true}
       >
-        {({ setFieldValue }) => (
+        {({
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -399,6 +407,16 @@ class InfrastructureEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
             />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                validateForm={validateForm}
+                setFieldValue={setFieldValue}
+                values={values}
+                id={infrastructure.id}
+              />
+            )}
           </Form>
         )}
       </Formik>
@@ -407,10 +425,9 @@ class InfrastructureEditionOverviewComponent extends Component {
 }
 
 InfrastructureEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   infrastructure: PropTypes.object,
+  enableReferences: PropTypes.bool,
   context: PropTypes.array,
 };
 
@@ -465,7 +482,4 @@ const InfrastructureEditionOverview = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(InfrastructureEditionOverview);
+export default inject18n(InfrastructureEditionOverview);

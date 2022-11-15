@@ -46,7 +46,7 @@ const AutocompleteField = (props) => {
         selectOnFocus={true}
         autoHighlight={true}
         handleHomeEndKeys={true}
-        getOptionLabel={(option) => (option.label ? option.label : option)}
+        getOptionLabel={(option) => (typeof option === 'object' ? option.label : option)}
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}

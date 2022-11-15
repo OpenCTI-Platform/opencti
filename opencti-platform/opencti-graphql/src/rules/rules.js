@@ -41,9 +41,11 @@ export const RULE_MANAGER_USER = {
   internal_id: RULE_MANAGER_USER_UUID,
   name: 'RULE MANAGER',
   user_email: 'RULE MANAGER',
+  inside_platform_organization: true,
   origin: { user_id: RULE_MANAGER_USER_UUID },
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
+  organizations: [],
   allowed_marking: [],
   all_marking: [],
 };

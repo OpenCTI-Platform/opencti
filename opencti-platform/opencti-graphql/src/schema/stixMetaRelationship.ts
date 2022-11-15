@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import {
   ABSTRACT_STIX_META_RELATIONSHIP,
   INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
+  INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -17,6 +17,7 @@ export const RELATION_OBJECT_LABEL = 'object-label';
 export const RELATION_OBJECT = 'object'; // object_refs
 export const RELATION_EXTERNAL_REFERENCE = 'external-reference'; // external_references
 export const RELATION_KILL_CHAIN_PHASE = 'kill-chain-phase'; // kill_chain_phases
+export const RELATION_GRANTED_TO = 'granted'; // granted_refs (OpenCTI)
 
 // Converter
 export const FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = {
@@ -26,13 +27,9 @@ export const FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string 
   [RELATION_EXTERNAL_REFERENCE]: 'external_references',
   [RELATION_KILL_CHAIN_PHASE]: 'kill_chain_phases',
   [RELATION_OBJECT_LABEL]: 'labels',
+  // OCTI
+  [RELATION_GRANTED_TO]: 'granted_refs',
 };
-
-export const STIX_ATTRIBUTE_TO_META_RELATIONS = R.mergeAll(
-  Object.keys(FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE).map((k) => ({
-    [FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE[k]]: k,
-  }))
-);
 
 export const STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD: { [k: string]: string } = {
   created_by_ref: INPUT_CREATED_BY,
@@ -41,6 +38,7 @@ export const STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD: { [k: string]: string } = {
   external_references: INPUT_EXTERNAL_REFS,
   kill_chain_phases: INPUT_KILLCHAIN,
   labels: INPUT_LABELS,
+  granted_refs: INPUT_GRANTED_REFS
 };
 
 export const META_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
@@ -56,6 +54,7 @@ export const STIX_META_RELATION_TO_FIELD: { [k: string]: string } = {
   [RELATION_OBJECT_LABEL]: INPUT_LABELS,
   [RELATION_OBJECT_MARKING]: INPUT_MARKINGS,
   [RELATION_OBJECT]: INPUT_OBJECTS,
+  [RELATION_GRANTED_TO]: INPUT_GRANTED_REFS,
 };
 
 export const FIELD_TO_META_RELATION = R.mergeAll(
@@ -64,7 +63,12 @@ export const FIELD_TO_META_RELATION = R.mergeAll(
   }))
 );
 
-const STIX_EXTERNAL_META_RELATIONSHIPS = [RELATION_CREATED_BY, RELATION_OBJECT_MARKING, RELATION_OBJECT];
+const STIX_EXTERNAL_META_RELATIONSHIPS = [
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT,
+  RELATION_GRANTED_TO
+];
 const STIX_INTERNAL_META_RELATIONSHIPS = [
   RELATION_OBJECT_LABEL,
   RELATION_EXTERNAL_REFERENCE,
@@ -76,7 +80,6 @@ export const isSingleStixMetaRelationship = (type: string): boolean => R.include
 export const isSingleStixMetaRelationshipInput = (input: string): boolean => R.includes(input, [INPUT_CREATED_BY]);
 
 export const isStixMetaRelationship = (type: string) => R.includes(type, STIX_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
-export const isStixInternalMetaRelationship = (type: string) => R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 
 export const stixMetaRelationshipsAttributes = [
   'internal_id',

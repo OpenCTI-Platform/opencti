@@ -2,9 +2,11 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
+import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -18,11 +20,16 @@ const useStyles = makeStyles(() => ({
     float: 'right',
     overflowX: 'hidden',
   },
+  actions: {
+    margin: '-6px 0 0 0',
+    float: 'right',
+  },
 }));
 
 const StixCyberObservableHeaderComponent = ({
   stixCyberObservable,
   isArtifact,
+  disableSharing,
 }) => {
   const classes = useStyles();
   return (
@@ -40,7 +47,17 @@ const StixCyberObservableHeaderComponent = ({
           isArtifact={isArtifact}
         />
       </div>
-      <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
+      <div className={classes.actions}>
+        <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+          {disableSharing !== true && (
+            <StixCoreObjectSharing
+              elementId={stixCyberObservable.id}
+              variant="header"
+            />
+          )}
+          <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
+        </ToggleButtonGroup>
+      </div>
       <div className="clearfix" />
     </div>
   );

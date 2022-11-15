@@ -26,7 +26,7 @@ export const stixMetaRelationshipsNumber = (context, user, args) => {
   }
   const finalArgs = assoc('types', types, args);
   return {
-    count: elCount(user, READ_INDEX_STIX_META_RELATIONSHIPS, finalArgs),
-    total: elCount(user, READ_INDEX_STIX_META_RELATIONSHIPS, dissoc('endDate', finalArgs)),
+    count: elCount(context, user, READ_INDEX_STIX_META_RELATIONSHIPS, finalArgs),
+    total: elCount(context, user, READ_INDEX_STIX_META_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };

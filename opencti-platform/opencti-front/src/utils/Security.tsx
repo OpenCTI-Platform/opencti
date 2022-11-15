@@ -20,7 +20,9 @@ export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const BYPASS = 'BYPASS';
 export const KNOWLEDGE = 'KNOWLEDGE';
 export const KNOWLEDGE_KNUPDATE = 'KNOWLEDGE_KNUPDATE';
+export const KNOWLEDGE_KNPARTICIPATE = 'KNOWLEDGE_KNPARTICIPATE';
 export const KNOWLEDGE_KNUPDATE_KNDELETE = 'KNOWLEDGE_KNUPDATE_KNDELETE';
+export const KNOWLEDGE_KNUPDATE_KNORGARESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
 export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
 export const KNOWLEDGE_KNGETEXPORT = 'KNOWLEDGE_KNGETEXPORT';
@@ -42,13 +44,19 @@ interface SecurityProps {
   placeholder?: ReactElement;
 }
 
+interface DataSecurityProps extends SecurityProps {
+  data: { createdBy: { id: string } };
+}
+
 export const granted = (
   me: RootPrivateQuery$data['me'] | undefined,
   capabilities: Array<string>,
   matchAll = false,
 ) => {
   const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
-  if (userCapabilities.includes(BYPASS)) return true;
+  if (userCapabilities.includes(BYPASS)) {
+    return true;
+  }
   let numberOfAvailableCapabilities = 0;
   for (let index = 0; index < capabilities.length; index += 1) {
     const checkCapability = capabilities[index];
@@ -72,8 +80,28 @@ const Security: FunctionComponent<SecurityProps> = ({
   children,
   placeholder = <span />,
 }) => {
-  const userContext = useContext(UserContext);
-  if (userContext.me && granted(userContext.me, needs, matchAll)) {
+  const { me } = useContext<UserContextType>(UserContext);
+  if (me && granted(me, needs, matchAll)) {
+    return children;
+  }
+  return placeholder;
+};
+
+export const CollaborativeSecurity: FunctionComponent<DataSecurityProps> = ({
+  data,
+  needs,
+  matchAll,
+  children,
+  placeholder = <span />,
+}) => {
+  const { me } = useContext<UserContextType>(UserContext);
+  const haveCapability = granted(me, needs, matchAll);
+  if (haveCapability) {
+    return children;
+  }
+  const canParticipate = granted(me, [KNOWLEDGE_KNPARTICIPATE], false);
+  const isCreator = data.createdBy?.id ? data.createdBy?.id === me?.individual_id : false;
+  if (canParticipate && isCreator) {
     return children;
   }
   return placeholder;

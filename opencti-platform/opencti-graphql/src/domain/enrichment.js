@@ -3,8 +3,8 @@ import { map } from 'ramda';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { connectorsEnrichment } from '../database/repository';
-import { getEntitiesFromCache } from '../manager/cacheManager';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { getEntitiesFromCache } from '../database/cache';
 
 export const createEntityAutoEnrichment = async (context, user, stixCoreObjectId, scope) => {
   // Get the list of compatible connectors

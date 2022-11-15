@@ -14,8 +14,6 @@ import {
   findCapabilities,
   findRoleById,
   findRoles,
-  getCapabilities,
-  getMarkings,
   logout,
   meEditField,
   otpUserActivation,
@@ -36,6 +34,9 @@ import {
   userIdDeleteRelation,
   userRenewToken,
   userWithOrigin,
+  batchOrganizations,
+  assignOrganizationToUser,
+  userDeleteOrganizationRelation,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -51,6 +52,7 @@ import { executionContext } from '../utils/access';
 import { fetchSessionTtl, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 
 const groupsLoader = batchLoader(batchGroups);
+const organizationsLoader = batchLoader(batchOrganizations);
 const rolesLoader = batchLoader(batchRoles);
 const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
 
@@ -69,17 +71,14 @@ const userResolvers = {
   },
   User: {
     groups: (current, _, context) => groupsLoader.load(current.id, context, context.user),
+    objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
     roles: (current, _, context) => rolesLoader.load(current.id, context, context.user),
-    allowed_marking: (current, _, context) => getMarkings(context, current.id, context.user.capabilities),
-    capabilities: (current, _, context) => getCapabilities(context, current.id),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
     userSubscriptions: (current, _, context) => getUserSubscriptions(context, context.user, current.id),
   },
   MeUser: {
-    capabilities: (current, _, context) => getCapabilities(context, current.id),
     userSubscriptions: (current, _, context) => getUserSubscriptions(context, context.user, current.id),
-    allowed_marking: (current, _, context) => getMarkings(context, current.id, context.user.capabilities),
   },
   UserSession: {
     user: (session, _, context) => findById(context, context.user, session.user_id),
@@ -153,6 +152,8 @@ const userResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => {
         return userIdDeleteRelation(context, context.user, id, toId, relationshipType);
       },
+      organizationAdd: ({ organizationId }) => assignOrganizationToUser(context, context.user, id, organizationId),
+      organizationDelete: ({ organizationId }) => userDeleteOrganizationRelation(context, context.user, id, organizationId),
     }),
     meEdit: (_, { input, password }, context) => meEditField(context, context.user, context.user.id, input, password),
     meTokenRenew: (_, __, context) => userRenewToken(context, context.user, context.user.id),

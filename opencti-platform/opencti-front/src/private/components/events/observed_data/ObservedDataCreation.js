@@ -214,7 +214,7 @@ class ObservedDataCreation extends Component {
                 setFieldValue,
                 values,
               }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
+                <Form style={{ margin: '0px 0 20px 0' }}>
                   <StixCoreObjectsField
                     name="objects"
                     style={{ width: '100%' }}

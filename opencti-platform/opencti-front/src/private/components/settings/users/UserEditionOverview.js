@@ -17,6 +17,7 @@ import {
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import { Security } from '@mui/icons-material';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -24,6 +25,8 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import MarkDownField from '../../../../components/MarkDownField';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import { convertOrganizations } from '../../../../utils/Edition';
 
 const styles = () => ({
   icon: {
@@ -96,6 +99,29 @@ const userEditionOverviewDeleteRole = graphql`
   ) {
     userEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
+        ...UserEditionOverview_user
+      }
+    }
+  }
+`;
+
+const userMutationGroupAdd = graphql`
+  mutation UserEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+    userEdit(id: $id) {
+      organizationAdd(organizationId: $organizationId) {
+        ...UserEditionOverview_user
+      }
+    }
+  }
+`;
+
+const userMutationGroupDelete = graphql`
+  mutation UserEditionOverviewGroupDeleteMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    userEdit(id: $id) {
+      organizationDelete(organizationId: $organizationId) {
         ...UserEditionOverview_user
       }
     }
@@ -191,14 +217,47 @@ class UserEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeObjectOrganization(name, values) {
+    const { user } = this.props;
+    const currentValues = R.pipe(
+      R.pathOr([], ['objectOrganization', 'edges']),
+      R.map((n) => ({
+        label: n.node.name,
+        value: n.node.id,
+      })),
+    )(user);
+    const added = R.difference(values, currentValues);
+    const removed = R.difference(currentValues, values);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: userMutationGroupAdd,
+        variables: {
+          id: this.props.user.id,
+          organizationId: R.head(added).value,
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: userMutationGroupDelete,
+        variables: {
+          id: this.props.user.id,
+          organizationId: R.head(removed).value,
+        },
+      });
+    }
+  }
+
   render() {
     const { t, user, context, classes } = this.props;
     const external = user.external === true;
     const userRoles = pipe(map((n) => ({ label: n.name, value: n.id })))(
       user.roles,
     );
+    const objectOrganization = convertOrganizations(user);
     const initialValues = pipe(
       assoc('roles', userRoles),
+      assoc('objectOrganization', objectOrganization),
       pick([
         'name',
         'user_email',
@@ -207,6 +266,7 @@ class UserEditionOverviewComponent extends Component {
         'language',
         'roles',
         'api_token',
+        'objectOrganization',
       ]),
     )(user);
     return (
@@ -316,6 +376,13 @@ class UserEditionOverviewComponent extends Component {
                 )}
                 style={{ marginTop: 20, width: '100%' }}
               />
+              <ObjectOrganizationField
+                name="objectOrganization"
+                label="Organizations"
+                onChange={this.handleChangeObjectOrganization.bind(this)}
+                style={{ marginTop: 20, width: '100%' }}
+                outlined={false}
+              />
               <Field
                 component={TextField}
                 variant="standard"
@@ -383,6 +450,14 @@ const UserEditionOverview = createFragmentContainer(
         roles {
           id
           name
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
+            }
+          }
         }
       }
     `,

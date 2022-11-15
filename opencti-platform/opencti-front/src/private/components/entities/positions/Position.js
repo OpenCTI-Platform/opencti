@@ -32,6 +32,7 @@ class PositionComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={position}
           isOpenctiAlias={true}
           PopoverComponent={<PositionPopover />}

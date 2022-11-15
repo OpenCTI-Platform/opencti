@@ -27,6 +27,7 @@ class SectorKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={sector}
           PopoverComponent={<SectorPopover />}
         />

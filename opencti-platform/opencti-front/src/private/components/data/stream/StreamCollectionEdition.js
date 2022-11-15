@@ -250,6 +250,7 @@ const StreamCollectionEditionContainer = (props) => {
                     'createdBy',
                     'x_opencti_score',
                     'x_opencti_detection',
+                    'x_opencti_workflow_id',
                     'revoked',
                     'confidence',
                     'pattern_type',

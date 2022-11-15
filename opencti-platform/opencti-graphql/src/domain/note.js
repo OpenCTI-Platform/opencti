@@ -7,7 +7,6 @@ import {
   timeSeriesEntities,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
-import { findAll as findIndividuals, addIndividual } from './individual';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
@@ -43,8 +42,9 @@ export const notesTimeSeries = (context, user, args) => {
 };
 
 export const notesNumber = (context, user, args) => ({
-  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
+  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]), R.dissoc('endDate'))(args)
@@ -72,6 +72,7 @@ export const notesTimeSeriesByAuthor = async (context, user, args) => {
 
 export const notesNumberByEntity = (context, user, args) => ({
   count: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -82,6 +83,7 @@ export const notesNumberByEntity = (context, user, args) => ({
     )(args)
   ),
   total: elCount(
+    context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     R.pipe(
@@ -103,19 +105,7 @@ export const notesDistributionByEntity = async (context, user, args) => {
 
 // region mutations
 export const addNote = async (context, user, note) => {
-  const noteToCreate = note;
-  // For note, auto assign current user as author
-  if (!note.createdBy) {
-    const args = { filters: [{ key: 'contact_information', values: [user.user_email] }], connectionFormat: false };
-    const individuals = await findIndividuals(context, user, args);
-    if (individuals.length > 0) {
-      noteToCreate.createdBy = R.head(individuals).id;
-    } else {
-      const individual = await addIndividual(context, user, { name: user.name, contact_information: user.user_email });
-      noteToCreate.createdBy = individual.id;
-    }
-  }
-  const created = await createEntity(context, user, noteToCreate, ENTITY_TYPE_CONTAINER_NOTE);
+  const created = await createEntity(context, user, note, ENTITY_TYPE_CONTAINER_NOTE);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

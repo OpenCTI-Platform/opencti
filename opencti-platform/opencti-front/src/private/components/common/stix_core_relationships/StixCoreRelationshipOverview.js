@@ -19,6 +19,7 @@ import {
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -42,10 +43,15 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemCreator from '../../../../components/ItemCreator';
+import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 
 const styles = (theme) => ({
   container: {
+    margin: 0,
     position: 'relative',
+  },
+  gridContainer: {
+    marginBottom: 20,
   },
   editButton: {
     position: 'fixed',
@@ -108,14 +114,18 @@ const styles = (theme) => ({
     padding: '15px',
     borderRadius: 6,
   },
+  paperWithoutPadding: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: 0,
+    borderRadius: 6,
+  },
   paperReports: {
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
-  },
-  gridContainer: {
-    marginBottom: 20,
   },
   buttonExpand: {
     position: 'absolute',
@@ -225,148 +235,214 @@ class StixCoreRelationshipContainer extends Component {
       && stixCoreRelationship.x_opencti_inferences.length > 1;
     return (
       <div className={classes.container}>
-        <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
-          <div
-            className={classes.item}
-            style={{
-              border: `2px solid ${itemColor(
-                !fromRestricted ? from.entity_type : 'Unknown',
-              )}`,
-              top: 10,
-              left: 0,
-            }}
-          >
-            <div
-              className={classes.itemHeader}
-              style={{
-                borderBottom: `1px solid ${itemColor(
-                  !fromRestricted ? from.entity_type : 'Unknown',
-                )}`,
-              }}
-            >
-              <div className={classes.icon}>
-                <ItemIcon
-                  type={!fromRestricted ? from.entity_type : 'Unknown'}
-                  color={itemColor(
-                    !fromRestricted ? from.entity_type : 'Unknown',
-                  )}
-                  size="small"
-                />
-              </div>
-              <div className={classes.type}>
-                {/* eslint-disable-next-line no-nested-ternary */}
-                {!fromRestricted
-                  ? from.relationship_type
-                    ? t('Relationship')
-                    : t(`entity_${from.entity_type}`)
-                  : t('Restricted')}
-              </div>
-            </div>
-            <div className={classes.content}>
-              <span className={classes.name}>
-                {!fromRestricted
-                  ? truncate(
-                    defaultValue(from) !== 'Unknown'
-                      ? defaultValue(from)
-                      : t(`relationship_${from.entity_type}`),
-                    50,
-                  )
-                  : t('Restricted')}
-              </span>
-            </div>
-          </div>
-        </Link>
-        <div className={classes.middle}>
-          <ArrowRightAlt fontSize="large" />
-          <br />
-          <div
-            style={{
-              padding: '5px 8px 5px 8px',
-              backgroundColor: theme.palette.background.accent,
-              color: theme.palette.text.primary,
-              fontSize: 12,
-              display: 'inline-block',
-            }}
-          >
-            <strong>
-              {t(`relationship_${stixCoreRelationship.relationship_type}`)}
-            </strong>
-          </div>
-        </div>
-        <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
-          <div
-            className={classes.item}
-            style={{
-              border: `2px solid ${itemColor(
-                !toRestricted ? to.entity_type : 'Unknown',
-              )}`,
-              top: 10,
-              right: 0,
-            }}
-          >
-            <div
-              className={classes.itemHeader}
-              style={{
-                borderBottom: `1px solid ${itemColor(
-                  !toRestricted ? to.entity_type : 'Unknown',
-                )}`,
-              }}
-            >
-              <div className={classes.icon}>
-                <ItemIcon
-                  type={!toRestricted ? to.entity_type : 'Unknown'}
-                  color={itemColor(!toRestricted ? to.entity_type : 'Unknown')}
-                  size="small"
-                />
-              </div>
-              <div className={classes.type}>
-                {
-                  // eslint-disable-next-line no-nested-ternary
-                  !toRestricted
-                    ? to.relationship_type
-                      ? t('Relationship')
-                      : t(`entity_${to.entity_type}`)
-                    : t('Restricted')
-                }
-              </div>
-            </div>
-            <div className={classes.content}>
-              <span className={classes.name}>
-                {!toRestricted
-                  ? truncate(
-                    defaultValue(to) !== 'Unknown'
-                      ? defaultValue(to)
-                      : t(`relationship_${to.entity_type}`),
-                    50,
-                  )
-                  : t('Restricted')}
-              </span>
-            </div>
-          </div>
-        </Link>
-        <div className="clearfix" style={{ height: 20 }} />
-        <Grid container={true} spacing={3}>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={6}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Basic information')}
+              {t('Relationship')}
+            </Typography>
+            <Paper
+              classes={{ root: classes.paperWithoutPadding }}
+              variant="outlined"
+              style={{ position: 'relative' }}
+            >
+              <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
+                <div
+                  className={classes.item}
+                  style={{
+                    border: `2px solid ${itemColor(
+                      !fromRestricted ? from.entity_type : 'Unknown',
+                    )}`,
+                    top: 20,
+                    left: 20,
+                  }}
+                >
+                  <div
+                    className={classes.itemHeader}
+                    style={{
+                      borderBottom: `1px solid ${itemColor(
+                        !fromRestricted ? from.entity_type : 'Unknown',
+                      )}`,
+                    }}
+                  >
+                    <div className={classes.icon}>
+                      <ItemIcon
+                        type={!fromRestricted ? from.entity_type : 'Unknown'}
+                        color={itemColor(
+                          !fromRestricted ? from.entity_type : 'Unknown',
+                        )}
+                        size="small"
+                      />
+                    </div>
+                    <div className={classes.type}>
+                      {/* eslint-disable-next-line no-nested-ternary */}
+                      {!fromRestricted
+                        ? from.relationship_type
+                          ? t('Relationship')
+                          : t(`entity_${from.entity_type}`)
+                        : t('Restricted')}
+                    </div>
+                  </div>
+                  <div className={classes.content}>
+                    <span className={classes.name}>
+                      {!fromRestricted
+                        ? truncate(
+                          defaultValue(from) !== 'Unknown'
+                            ? defaultValue(from)
+                            : t(`relationship_${from.entity_type}`),
+                          50,
+                        )
+                        : t('Restricted')}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+              <div className={classes.middle}>
+                <ArrowRightAlt fontSize="large" />
+                <br />
+                <div
+                  style={{
+                    padding: '5px 8px 5px 8px',
+                    backgroundColor: theme.palette.background.accent,
+                    color: theme.palette.text.primary,
+                    fontSize: 18,
+                    display: 'inline-block',
+                  }}
+                >
+                  {t(`relationship_${stixCoreRelationship.relationship_type}`)}
+                </div>
+              </div>
+              <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
+                <div
+                  className={classes.item}
+                  style={{
+                    border: `2px solid ${itemColor(
+                      !toRestricted ? to.entity_type : 'Unknown',
+                    )}`,
+                    top: 20,
+                    right: 20,
+                  }}
+                >
+                  <div
+                    className={classes.itemHeader}
+                    style={{
+                      borderBottom: `1px solid ${itemColor(
+                        !toRestricted ? to.entity_type : 'Unknown',
+                      )}`,
+                    }}
+                  >
+                    <div className={classes.icon}>
+                      <ItemIcon
+                        type={!toRestricted ? to.entity_type : 'Unknown'}
+                        color={itemColor(
+                          !toRestricted ? to.entity_type : 'Unknown',
+                        )}
+                        size="small"
+                      />
+                    </div>
+                    <div className={classes.type}>
+                      {
+                        // eslint-disable-next-line no-nested-ternary
+                        !toRestricted
+                          ? to.relationship_type
+                            ? t('Relationship')
+                            : t(`entity_${to.entity_type}`)
+                          : t('Restricted')
+                      }
+                    </div>
+                  </div>
+                  <div className={classes.content}>
+                    <span className={classes.name}>
+                      {!toRestricted
+                        ? truncate(
+                          defaultValue(to) !== 'Unknown'
+                            ? defaultValue(to)
+                            : t(`relationship_${to.entity_type}`),
+                          50,
+                        )
+                        : t('Restricted')}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+              <Divider style={{ marginTop: 30 }} />
+              <div style={{ padding: 15 }}>
+                <Grid container={true} spacing={3}>
+                  <Grid item={true} xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t('Marking')}
+                    </Typography>
+                    {stixCoreRelationship.objectMarking.edges.length > 0
+                      && R.map(
+                        (markingDefinition) => (
+                          <ItemMarking
+                            key={markingDefinition.node.id}
+                            label={markingDefinition.node.definition}
+                            color={markingDefinition.node.x_opencti_color}
+                          />
+                        ),
+                        stixCoreRelationship.objectMarking.edges,
+                      )}
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Start time')}
+                    </Typography>
+                    {nsdt(stixCoreRelationship.start_time)}
+                    <Typography
+                      variant="h3"
+                      style={{ marginTop: 20 }}
+                      gutterBottom={true}
+                    >
+                      {t('Stop time')}
+                    </Typography>
+                    {nsdt(stixCoreRelationship.stop_time)}
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    {stixCoreRelationship.x_opencti_inferences === null && (
+                      <div>
+                        <StixCoreRelationshipSharing
+                          elementId={stixCoreRelationship.id}
+                        />
+                        <Typography
+                          variant="h3"
+                          gutterBottom={true}
+                          style={{ marginTop: 20 }}
+                        >
+                          {t('Description')}
+                        </Typography>
+                        <Markdown
+                          remarkPlugins={[remarkGfm, remarkParse]}
+                          parserOptions={{ commonmark: true }}
+                          className="markdown"
+                        >
+                          {stixCoreRelationship.description}
+                        </Markdown>
+                      </div>
+                    )}
+                  </Grid>
+                </Grid>
+              </div>
+            </Paper>
+          </Grid>
+          <Grid item={true} xs={6}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Marking')}
+                    {t('Confidence level')}
                   </Typography>
-                  {stixCoreRelationship.objectMarking.edges.length > 0
-                    && R.map(
-                      (markingDefinition) => (
-                        <ItemMarking
-                          key={markingDefinition.node.id}
-                          label={markingDefinition.node.definition}
-                          color={markingDefinition.node.x_opencti_color}
-                        />
-                      ),
-                      stixCoreRelationship.objectMarking.edges,
-                    )}
+                  <ItemConfidence
+                    confidence={stixCoreRelationship.confidence}
+                  />
                   {stixCoreRelationship.x_opencti_inferences === null && (
                     <div>
                       <Typography
@@ -415,16 +491,6 @@ class StixCoreRelationshipContainer extends Component {
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Confidence level')}
-                  </Typography>
-                  <ItemConfidence
-                    confidence={stixCoreRelationship.confidence}
-                  />
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
                     {t('Creation date (in this platform)')}
                   </Typography>
                   {fldt(stixCoreRelationship.created_at)}
@@ -438,43 +504,6 @@ class StixCoreRelationshipContainer extends Component {
                   <ItemCreator creator={stixCoreRelationship.creator} />
                 </Grid>
               </Grid>
-            </Paper>
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Details')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Start time')}
-              </Typography>
-              {nsdt(stixCoreRelationship.start_time)}
-              <Typography
-                variant="h3"
-                style={{ marginTop: 20 }}
-                gutterBottom={true}
-              >
-                {t('Stop time')}
-              </Typography>
-              {nsdt(stixCoreRelationship.stop_time)}
-              {stixCoreRelationship.x_opencti_inferences === null && (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Description')}
-                  </Typography>
-                  <Markdown
-                    remarkPlugins={[remarkGfm, remarkParse]}
-                    parserOptions={{ commonmark: true }}
-                    className="markdown"
-                  >
-                    {stixCoreRelationship.description}
-                  </Markdown>
-                </div>
-              )}
             </Paper>
           </Grid>
         </Grid>
@@ -625,7 +654,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         x_opencti_inferences {
           rule {
             id
-              
+
             name
             description
           }

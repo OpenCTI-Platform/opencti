@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
-import { graphql, createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import {
-  EditOutlined,
-  ExpandMoreOutlined,
-  RateReviewOutlined,
-} from '@mui/icons-material';
+import { EditOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -19,13 +15,12 @@ import * as Yup from 'yup';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import AddNotes from './AddNotes';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
-import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
@@ -97,7 +92,6 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
         ...R.pluck('value', values.objectMarking),
       ]),
       R.assoc('objects', [stixSightingRelationshipId]),
-      R.assoc('createdBy', R.pathOr(null, ['createdBy', 'value'], values)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
@@ -162,95 +156,90 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
             />
           );
         })}
-        <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
-          expanded={open}
-          onChange={this.handleToggleWrite.bind(this)}
-          variant="outlined"
-        >
-          <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
-            <Typography className={classes.heading}>
-              <RateReviewOutlined />
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails style={{ width: '100%' }}>
-            <Formik
-              initialValues={{
-                attribute_abstract: '',
-                content: '',
-                createdBy: '',
-                objectMarking: [],
-                objectLabel: [],
-              }}
-              validationSchema={noteValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({
-                submitForm,
-                handleReset,
-                setFieldValue,
-                values,
-                isSubmitting,
-              }) => (
-                <Form style={{ width: '100%' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="attribute_abstract"
-                    label={t('Abstract')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="content"
-                    label={t('Content')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </AccordionDetails>
-        </Accordion>
+        <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
+          <Accordion
+            style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
+            expanded={open}
+            onChange={this.handleToggleWrite.bind(this)}
+            variant="outlined">
+            <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
+              <Typography className={classes.heading}>
+                <RateReviewOutlined />
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails style={{ width: '100%' }}>
+              <Formik
+                initialValues={{
+                  attribute_abstract: '',
+                  content: '',
+                  objectMarking: [],
+                  objectLabel: [],
+                }}
+                validationSchema={noteValidation(t)}
+                onSubmit={this.onSubmit.bind(this)}
+                onReset={this.onReset.bind(this)}
+              >
+                {({
+                  submitForm,
+                  handleReset,
+                  setFieldValue,
+                  values,
+                  isSubmitting,
+                }) => (
+                  <Form style={{ width: '100%' }}>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="attribute_abstract"
+                      label={t('Abstract')}
+                      fullWidth={true}
+                    />
+                    <Field
+                      component={MarkDownField}
+                      name="content"
+                      label={t('Content')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <ObjectLabelField
+                      name="objectLabel"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.objectLabel}
+                    />
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                    <div className={classes.buttons}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </AccordionDetails>
+          </Accordion>
+        </Security>
         <div style={{ marginTop: 100 }} />
         <div ref={this.bottomRef} />
       </div>
@@ -269,7 +258,7 @@ StixSightingRelationshipNotesCardsContainer.propTypes = {
 export const stixSightingRelationshipNotesCardsQuery = graphql`
   query StixSightingRelationshipNotesCardsQuery($count: Int!, $id: String!) {
     ...StixSightingRelationshipNotesCards_data
-      @arguments(count: $count, id: $id)
+    @arguments(count: $count, id: $id)
   }
 `;
 

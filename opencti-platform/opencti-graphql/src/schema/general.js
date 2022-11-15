@@ -1,7 +1,10 @@
 import * as R from 'ramda';
 
 // General
+export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNORGARESTRICT';
 export const KNOWLEDGE_DELETE = 'KNDELETE';
+export const KNOWLEDGE_UPDATE = 'KNUPDATE';
+export const KNOWLEDGE_COLLABORATION = 'KNPARTICIPATE';
 
 export const ID_INTERNAL = 'internal_id';
 export const ID_INFERRED = 'inferred_id';
@@ -12,6 +15,7 @@ export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
 
 // Inputs
+export const INPUT_GRANTED_REFS = 'objectOrganization'; // granted_refs
 export const INPUT_EXTERNAL_REFS = 'externalReferences'; // external_references
 export const INPUT_KILLCHAIN = 'killChainPhases'; // kill_chain_phases
 export const INPUT_CREATED_BY = 'createdBy'; // created_by_ref
@@ -27,6 +31,7 @@ export const MULTIPLE_META_RELATIONSHIPS_INPUTS = [
   INPUT_EXTERNAL_REFS,
   INPUT_KILLCHAIN,
   INPUT_OBJECTS,
+  INPUT_GRANTED_REFS,
 ];
 export const STIX_META_RELATIONSHIPS_INPUTS = [INPUT_CREATED_BY, ...MULTIPLE_META_RELATIONSHIPS_INPUTS];
 

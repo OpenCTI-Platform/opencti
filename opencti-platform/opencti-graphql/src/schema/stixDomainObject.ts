@@ -1,6 +1,9 @@
 import * as R from 'ramda';
 import {
+  ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
@@ -16,6 +19,7 @@ import {
 } from './stixMetaRelationship';
 import { RELATION_INDICATES } from './stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { ENTITY_TYPE_HISTORY } from './internalObject';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'abstract';
@@ -62,6 +66,15 @@ export const isStixDomainObjectContainer = (type: string): boolean => {
   return R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
 };
 
+const STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS: Array<string> = [
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_GROUPING,
+  ENTITY_TYPE_CONTAINER_REPORT,
+];
+export const isStixDomainObjectShareableContainer = (type: string): boolean => {
+  return R.includes(type, STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS);
+};
+
 const STIX_DOMAIN_OBJECT_IDENTITIES: Array<string> = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -84,7 +97,7 @@ export const isStixDomainObjectLocation = (type: string): boolean => {
   return R.includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
 };
 
-const STIX_DOMAIN_OBJECTS: Array<string> = [
+export const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -116,10 +129,10 @@ export const registerStixDomainType = (type: string) => {
 schemaTypes.register(ABSTRACT_STIX_DOMAIN_OBJECT, STIX_DOMAIN_OBJECTS);
 export const isStixDomainObject = (type: string): boolean => {
   return R.includes(type, STIX_DOMAIN_OBJECTS)
-  || isStixDomainObjectIdentity(type)
-  || isStixDomainObjectLocation(type)
-  || isStixDomainObjectContainer(type)
-  || type === ABSTRACT_STIX_DOMAIN_OBJECT;
+    || isStixDomainObjectIdentity(type)
+    || isStixDomainObjectLocation(type)
+    || isStixDomainObjectContainer(type)
+    || type === ABSTRACT_STIX_DOMAIN_OBJECT;
 };
 
 const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
@@ -147,6 +160,15 @@ export const resolveAliasesField = (type: string): string => {
   }
   return ATTRIBUTE_ALIASES;
 };
+
+export const STIX_ORGANIZATIONS_UNRESTRICTED = [
+  ABSTRACT_INTERNAL_OBJECT,
+  ENTITY_TYPE_HISTORY,
+  ABSTRACT_STIX_META_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_LOCATION
+];
 
 export const stixDomainObjectOptions = {
   StixDomainObjectsFilter: {

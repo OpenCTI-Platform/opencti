@@ -210,6 +210,7 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
     if (isStixCoreRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isStixSightingRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isStixMetaRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
+    if (isInternalRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     throw DatabaseError(`Cant find inferred index for type ${conceptType}`);
   }
   // Entities

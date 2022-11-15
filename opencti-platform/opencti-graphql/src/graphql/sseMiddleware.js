@@ -26,21 +26,23 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { BYPASS, executionContext, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-  BASE_TYPE_RELATION
+  BASE_TYPE_RELATION,
+  buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
 import { adaptFiltersFrontendFormat, convertFiltersToQueryOptions, TYPE_FILTER } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
-import { listAllRelations } from '../database/middleware-loader';
+import { listAllRelations, listEntities } from '../database/middleware-loader';
+import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -55,23 +57,150 @@ const LABEL_FILTER = 'labelledBy';
 const CREATOR_FILTER = 'createdBy';
 const SCORE_FILTER = 'x_opencti_score';
 const DETECTION_FILTER = 'x_opencti_detection';
+const WORKFLOW_FILTER = 'x_opencti_workflow_id';
 const CONFIDENCE_FILTER = 'confidence';
 const REVOKED_FILTER = 'revoked';
 const PATTERN_FILTER = 'pattern_type';
 
-const isEventGranted = (event, user) => {
-  const { data } = event;
-  // Granted if:
-  // - Event concern directly a marking definition
-  // - Event has no specified markings
-  // - User have all event markings
-  // - User have the bypass capabilities
-  const clientMarkings = R.flatten(R.map((m) => [m.standard_id, m.internal_id], user.allowed_marking));
-  const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-  const isUserHaveAccess = (event.markings || []).length === 0 || event.markings.every((m) => clientMarkings.includes(m));
-  const isBypass = isBypassUser(user);
-  const isGrantedForData = isMarkingObject || isUserHaveAccess;
-  return isBypass || isGrantedForData;
+const filterCacheResolver = async (context, values, filterCache) => {
+  const filterIds = values.map((v) => v.id);
+  const filterRefs = [];
+  for (let i = 0; i < filterIds.length; i += 1) {
+    const filterId = filterIds[i];
+    const fromCache = filterCache.get(filterId);
+    if (fromCache) {
+      filterRefs.push(fromCache.standard_id);
+    } else {
+      const creator = await internalLoadById(context, SYSTEM_USER, filterId);
+      filterRefs.push(creator.standard_id);
+      filterCache.set(filterId, creator);
+    }
+  }
+  return filterRefs;
+};
+
+const isInstanceAccessible = async (context, user, instance, filterCache, filters = {}) => {
+  // Check if user have correct access rights.
+  const isUserHaveAccessToElement = await isUserCanAccessStixElement(context, user, instance);
+  if (!isUserHaveAccessToElement) {
+    return false;
+  }
+  // When apply extra filters if needed.
+  if (isNotEmptyField(filters)) {
+    // Pre-filter transformation to handle specific frontend format
+    const adaptedFilters = adaptFiltersFrontendFormat(filters);
+    // User is granted, but we still need to apply filters if needed
+    const filterEntries = Object.entries(adaptedFilters);
+    for (let index = 0; index < filterEntries.length; index += 1) {
+      const [type, { operator, values }] = filterEntries[index];
+      // Markings filtering
+      if (type === MARKING_FILTER) {
+        if (values.length === 0) {
+          return true;
+        }
+        const markings = instance.object_marking_refs || [];
+        if (values.length > 0 && markings.length === 0) {
+          return false;
+        }
+        const filterMarkingRefs = await filterCacheResolver(values, filterCache);
+        const found = filterMarkingRefs.some((r) => markings.includes(r));
+        if (!found) {
+          return false;
+        }
+      }
+      // Entity type filtering
+      if (type === TYPE_FILTER) {
+        const instanceType = instance.extensions[STIX_EXT_OCTI].type;
+        const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
+        let found = false;
+        if (values.length === 0) {
+          found = true;
+        } else {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const filter of values) {
+            if (instanceAllTypes.includes(filter.id)) {
+              found = true;
+            }
+          }
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      // Workflow
+      if (type === WORKFLOW_FILTER) {
+        const workflowId = instance.extensions[STIX_EXT_OCTI].workflow_id;
+        const found = values.includes(workflowId);
+        if (!found) {
+          return false;
+        }
+      }
+      // Creator filtering
+      if (type === CREATOR_FILTER) {
+        if (values.length === 0) {
+          return true;
+        }
+        if (values.length > 0 && instance.created_by_ref === undefined) {
+          return false;
+        }
+        const filterCreationRefs = await filterCacheResolver(values, filterCache);
+        const found = filterCreationRefs.includes(instance.created_by_ref);
+        if (!found) {
+          return false;
+        }
+      }
+      // Labels filtering
+      if (type === LABEL_FILTER) {
+        const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
+        const found = values.map((v) => v.value).some((r) => labels.includes(r));
+        if (!found) {
+          return false;
+        }
+      }
+      // Boolean filtering
+      if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
+        const { id } = R.head(values);
+        const found = (id === 'true') === instance.revoked;
+        if (!found) {
+          return false;
+        }
+      }
+      // Numeric filtering
+      if (type === SCORE_FILTER || type === CONFIDENCE_FILTER) {
+        const { id } = R.head(values);
+        let found = false;
+        const numeric = parseInt(id, 10);
+        switch (operator) {
+          case 'lt':
+            found = instance[type] < numeric;
+            break;
+          case 'lte':
+            found = instance[type] <= numeric;
+            break;
+          case 'gt':
+            found = instance[type] > numeric;
+            break;
+          case 'gte':
+            found = instance[type] >= numeric;
+            break;
+          default:
+            found = instance[type] === numeric;
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      // String filtering
+      if (type === PATTERN_FILTER) {
+        const { id } = R.head(values);
+        const found = id === instance[type];
+        if (!found) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 };
 
 const createBroadcastClient = (channel) => {
@@ -83,10 +212,7 @@ const createBroadcastClient = (channel) => {
     setChannelDelay: (d) => channel.setDelay(d),
     close: () => channel.close(),
     sendEvent: (eventId, topic, event) => {
-      // Send event only if user is granted for
-      if (isEventGranted(event, channel)) {
-        channel.sendEvent(eventId, topic, event);
-      }
+      channel.sendEvent(eventId, topic, event);
     },
     sendHeartbeat: (eventId) => {
       // Debounce the heartbeat to STREAM_BATCH_TIME
@@ -229,17 +355,23 @@ const createSeeMiddleware = () => {
   };
   const genericStreamHandler = async (req, res) => {
     try {
-      if (!isUserGlobalCapabilityGranted(req.session.user)) {
+      const sessionUser = req.session.user;
+      const context = executionContext('raw_stream');
+      if (!isUserGlobalCapabilityGranted(sessionUser)) {
         res.statusMessage = 'You are not authorized, please check your credentials';
         res.status(401).end();
         return;
       }
       const { client } = createSseChannel(req, res);
-      const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements, lastEventId) => {
+      const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
+      const processor = createStreamProcessor(sessionUser, sessionUser.user_email, false, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
-          client.sendEvent(eventId, event, data);
+          const instanceAccessible = await isInstanceAccessible(context, sessionUser, data.data, filterCache);
+          if (instanceAccessible) {
+            client.sendEvent(eventId, event, data);
+          }
         }
         // Send the Heartbeat with last event id
         client.sendHeartbeat(lastEventId);
@@ -285,22 +417,6 @@ const createSeeMiddleware = () => {
     }
     return true;
   };
-  const filterCacheResolver = async (context, values, filterCache) => {
-    const filterIds = values.map((v) => v.id);
-    const filterRefs = [];
-    for (let i = 0; i < filterIds.length; i += 1) {
-      const filterId = filterIds[i];
-      const fromCache = filterCache.get(filterId);
-      if (fromCache) {
-        filterRefs.push(fromCache.standard_id);
-      } else {
-        const creator = await internalLoadById(context, SYSTEM_USER, filterId);
-        filterRefs.push(creator.standard_id);
-        filterCache.set(filterId, creator);
-      }
-    }
-    return filterRefs;
-  };
   const isInstanceMatchFilters = async (context, instance, filters, filterCache) => {
     // Pre-filter transformation to handle specific frontend format
     const adaptedFilters = adaptFiltersFrontendFormat(filters);
@@ -338,6 +454,17 @@ const createSeeMiddleware = () => {
             }
           }
         }
+        if (!found) {
+          return false;
+        }
+      }
+      // Workflow
+      if (type === WORKFLOW_FILTER) {
+        const workflowId = instance.extensions[STIX_EXT_OCTI].workflow_id;
+        if (!workflowId) {
+          return false;
+        }
+        const found = values.map((v) => v.id).includes(workflowId);
         if (!found) {
           return false;
         }
@@ -496,7 +623,6 @@ const createSeeMiddleware = () => {
       const isToVisible = await isInstanceMatchFilters(context, toStix, streamFilters, filterCache);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
-        // await resolveAndPublishMissingRefs(cache, channel, req, streamFilters, eventId, stix);
         // From or to are visible, consider it as a dependency
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: stix, message, origin, version: EVENT_CURRENT_VERSION };
@@ -519,7 +645,9 @@ const createSeeMiddleware = () => {
       }
       const recoverTo = extractQueryParameter(req, 'recover') || req.headers.recover || req.headers['recover-date'];
       const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
+      const publishDependencies = noDependencies === false;
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
+      const publishDeletion = noDelete === false;
       const withInferences = (req.query['with-inferences'] || req.headers['with-inferences']) === 'true';
       if (withInferences) {
         // Check if platform option is enable
@@ -584,7 +712,7 @@ const createSeeMiddleware = () => {
       // Init stream and broadcasting
       const userEmail = user.user_email;
       const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
-      const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(user, userEmail, false, async (elements, lastEventId) => {
         // Process the stream elements
         for (let index = 0; index < elements.length; index += 1) {
           const element = elements[index];
@@ -609,21 +737,43 @@ const createSeeMiddleware = () => {
                 } else if (isCurrentlyVisible) { // Just an update
                   await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
                   client.sendEvent(eventId, event, eventData);
-                } else if (noDependencies === false && isRelation) { // Update but not visible
+                } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                   // In case of relationship publication, from or to can be related to something that
                   // is part of the filtering. We can consider this as dependencies
                   await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                } else { // Update but not visible - entity type
+                  // Entity can be part of a container that is authorized by the filters
+                  // If it's the case, the element must be published
+                  const elementInternalId = stix.extensions[STIX_EXT_OCTI].id;
+                  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }];
+                  const args = { connectionFormat: false, filters };
+                  const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);
+                  let isContainerMatching = false;
+                  for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
+                    const container = containers[containerIndex];
+                    const stixContainer = convertStoreToStix(container);
+                    const containerMatch = await isInstanceMatchFilters(context, stixContainer, streamFilters, filterCache);
+                    if (containerMatch) {
+                      isContainerMatching = true;
+                      break;
+                    }
+                  }
+                  // At least one container is matching the filter, so publishing the event
+                  if (isContainerMatching) {
+                    await resolveAndPublishMissingRefs(context, cache, channel, req, streamFilters, eventId, stix);
+                    client.sendEvent(eventId, event, eventData);
+                  }
                 }
               } else if (isCurrentlyVisible) {
                 if (type === EVENT_TYPE_DELETE) {
-                  if (noDelete === false) {
+                  if (publishDeletion) {
                     client.sendEvent(eventId, event, eventData);
                   }
                 } else { // Create and merge
                   await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
                   client.sendEvent(eventId, event, eventData);
                 }
-              } else if (noDependencies === false && isRelation) { // Not an update and not visible
+              } else if (isRelation && publishDependencies) { // Not an update and not visible
                 // In case of relationship publication, from or to can be related to something that
                 // is part of the filtering. We can consider this as dependencies
                 await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
@@ -703,5 +853,4 @@ const createSeeMiddleware = () => {
     },
   };
 };
-
 export default createSeeMiddleware;

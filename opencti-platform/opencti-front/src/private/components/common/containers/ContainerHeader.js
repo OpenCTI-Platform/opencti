@@ -1,17 +1,13 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import React, { useContext, useState } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { GraphOutline, VectorLink } from 'mdi-material-ui';
 import {
   AddTaskOutlined,
-  ViewColumnOutlined,
   AssistantOutlined,
+  ViewColumnOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -33,9 +29,14 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Markdown from 'react-markdown';
 import CircularProgress from '@mui/material/CircularProgress';
+import { makeStyles, useTheme } from '@mui/styles';
 import ExportButtons from '../../../../components/ExportButtons';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import inject18n from '../../../../components/i18n';
+import Security, {
+  granted,
+  KNOWLEDGE_KNUPDATE,
+  UserContext,
+} from '../../../../utils/Security';
+import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import {
   commitMutation,
@@ -46,8 +47,9 @@ import { defaultValue } from '../../../../utils/Graph';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
+import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
   },
@@ -60,20 +62,21 @@ const styles = () => ({
     overflowX: 'hidden',
     margin: '3px 0 0 15px',
   },
-  aliases: {
-    marginRight: 7,
-  },
-  aliasesInput: {
-    margin: '4px 0 0 10px',
-    float: 'right',
-  },
   modes: {
     margin: '-6px 20px 0 20px',
     float: 'right',
   },
-  suggestions: {
+  actions: {
     margin: '-6px 0 0 0',
     float: 'right',
+  },
+  organizations: {
+    float: 'left',
+    marginRight: 15,
+    paddingTop: 2,
+  },
+  organization: {
+    marginRight: 7,
   },
   button: {
     marginRight: 20,
@@ -82,7 +85,7 @@ const styles = () => ({
     margin: '-6px 0 0 0',
     float: 'right',
   },
-});
+}));
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -401,45 +404,41 @@ export const containerHeaderObjectsQuery = graphql`
   }
 `;
 
-class ContainerHeaderComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      displaySuggestions: false,
-      selectedEntity: {},
-      applying: [],
-      applied: [],
-    };
-  }
-
-  handleOpenSuggestions() {
-    this.setState({ displaySuggestions: true });
-  }
-
-  handleCloseSuggestions() {
-    this.setState({ displaySuggestions: false });
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  resolveThreats(objects) {
-    return objects.filter((o) => [
-      'Threat-Actor',
-      'Intrusion-Set',
-      'Campaign',
-      'Incident',
-      'Malware',
-      'Tool',
-    ].includes(o.entity_type));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  resolveIndicators(objects) {
-    return objects.filter((o) => ['Indicator'].includes(o.entity_type));
-  }
-
-  generateSuggestions(objects) {
+const ContainerHeader = (props) => {
+  const {
+    container,
+    PopoverComponent,
+    link,
+    modes,
+    currentMode,
+    knowledge,
+    disableSharing,
+    adjust,
+    enableSuggestions,
+    onApplied,
+  } = props;
+  const theme = useTheme();
+  const classes = useStyles();
+  const { t, fd } = useFormatter();
+  const { me } = useContext(UserContext);
+  const userIsKnowledgeEditor = granted(me, [KNOWLEDGE_KNUPDATE]);
+  const [displaySuggestions, setDisplaySuggestions] = useState(false);
+  const [selectedEntity, setSelectedEntity] = useState({});
+  const [applying, setApplying] = useState([]);
+  const [applied, setApplied] = useState([]);
+  // Suggestions
+  const resolveThreats = (objects) => objects.filter((o) => [
+    'Threat-Actor',
+    'Intrusion-Set',
+    'Campaign',
+    'Incident',
+    'Malware',
+    'Tool',
+  ].includes(o.entity_type));
+  const resolveIndicators = (objects) => objects.filter((o) => ['Indicator'].includes(o.entity_type));
+  const generateSuggestions = (objects) => {
     const suggestions = [];
-    const resolvedThreats = this.resolveThreats(objects);
+    const resolvedThreats = resolveThreats(objects);
     // First rule, threats and indicators
     if (
       resolvedThreats.length > 0
@@ -448,24 +447,17 @@ class ContainerHeaderComponent extends Component {
       suggestions.push({ type: 'threats-indicators', data: resolvedThreats });
     }
     return suggestions;
-  }
-
-  handleSelectEntity(type, event) {
+  };
+  const handleSelectEntity = (type, event) => {
     if (event && event.target && event.target.value) {
-      const { selectedEntity } = this.state;
-      this.setState({
-        selectedEntity: { ...selectedEntity, [type]: event.target.value },
-      });
+      setSelectedEntity({ ...selectedEntity, [type]: event.target.value });
     }
-  }
-
-  async applySuggestion(type, objects) {
-    const { selectedEntity } = this.state;
-    const { container } = this.props;
+  };
+  const applySuggestion = async (type, objects) => {
     if (type === 'threats-indicators' && selectedEntity) {
       // create all indicates relationships
-      this.setState({ applying: [...this.state.applying, type] });
-      const indicators = this.resolveIndicators(objects);
+      setApplying([...applying, type]);
+      const indicators = resolveIndicators(objects);
       const createdRelationships = await Promise.all(
         indicators.map((indicator) => {
           const values = {
@@ -510,178 +502,171 @@ class ContainerHeaderComponent extends Component {
         ...(localStorage.getItem(`suggestions-${container.id}`) || []),
         type,
       ]);
-      if (this.props.onApplied) {
-        this.props.onApplied();
+      if (onApplied) {
+        onApplied();
       }
-      this.setState({
-        applied: [...this.state.applied, type],
-        applying: this.state.applying.filter((n) => n !== type),
-      });
+      setApplied([...applied, type]);
+      setApplying(applying.filter((n) => n !== type));
     }
-  }
-
-  render() {
-    const {
-      classes,
-      container,
-      PopoverComponent,
-      fd,
-      link,
-      modes,
-      currentMode,
-      knowledge,
-      adjust,
-      t,
-      theme,
-      enableSuggestions,
-    } = this.props;
-    const { displaySuggestions, selectedEntity, applying, applied } = this.state;
-    return (
-      <div>
-        <Tooltip
-          title={
-            container.name
-            || container.attribute_abstract
-            || container.content
-            || container.opinion
-            || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
-          }
+  };
+  return (
+    <div>
+      <Tooltip
+        title={
+          container.name
+          || container.attribute_abstract
+          || container.content
+          || container.opinion
+          || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
+        }
+      >
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
         >
-          <Typography
-            variant="h1"
-            gutterBottom={true}
-            classes={{ root: classes.title }}
-          >
-            {truncate(
-              container.name
-                || container.attribute_abstract
-                || container.content
-                || container.opinion
-                || `${fd(container.first_observed)} - ${fd(
-                  container.last_observed,
-                )}`,
-              80,
+          {truncate(
+            container.name
+              || container.attribute_abstract
+              || container.content
+              || container.opinion
+              || `${fd(container.first_observed)} - ${fd(
+                container.last_observed,
+              )}`,
+            80,
+          )}
+        </Typography>
+      </Tooltip>
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <div className={classes.popover}>
+          {React.cloneElement(PopoverComponent, { id: container.id })}
+        </div>
+      </Security>
+      {knowledge && (
+        <div className={classes.export}>
+          <ExportButtons
+            domElementId="container"
+            name={t('Report representation')}
+            pixelRatio={currentMode === 'graph' ? 1 : 2}
+            adjust={adjust}
+          />
+        </div>
+      )}
+      {modes && (
+        <div className={classes.modes}>
+          <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+            {modes.includes('graph') && (
+              <Tooltip title={t('Graph view')}>
+                <ToggleButton
+                  component={Link}
+                  to={`${link}/graph`}
+                  selected={currentMode === 'graph'}
+                >
+                  <GraphOutline
+                    fontSize="small"
+                    color={currentMode === 'graph' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
             )}
-          </Typography>
-        </Tooltip>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <div className={classes.popover}>
-            {React.cloneElement(PopoverComponent, { id: container.id })}
-          </div>
-        </Security>
-        {knowledge && (
-          <div className={classes.export}>
-            <ExportButtons
-              domElementId="container"
-              name={t('Report representation')}
-              pixelRatio={currentMode === 'graph' ? 1 : 2}
-              adjust={adjust}
-            />
-          </div>
-        )}
-        {modes && (
-          <div className={classes.modes}>
-            <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-              {modes.includes('graph') && (
-                <Tooltip title={t('Graph view')}>
-                  <ToggleButton
-                    component={Link}
-                    to={`${link}/graph`}
-                    selected={currentMode === 'graph'}
-                  >
-                    <GraphOutline
-                      fontSize="small"
-                      color={currentMode === 'graph' ? 'secondary' : 'primary'}
-                    />
-                  </ToggleButton>
-                </Tooltip>
-              )}
-              {modes.includes('correlation') && (
-                <Tooltip title={t('Correlation view')}>
-                  <ToggleButton
-                    component={Link}
-                    to={`${link}/correlation`}
-                    selected={currentMode === 'correlation'}
-                  >
-                    <VectorLink
-                      fontSize="small"
-                      color={
-                        currentMode === 'correlation' ? 'secondary' : 'primary'
-                      }
-                    />
-                  </ToggleButton>
-                </Tooltip>
-              )}
-              {modes.includes('matrix') && (
-                <Tooltip title={t('Tactics matrix view')}>
-                  <ToggleButton
-                    component={Link}
-                    to={`${link}/matrix`}
-                    selected={currentMode === 'matrix'}
-                  >
-                    <ViewColumnOutlined
-                      fontSize="small"
-                      color={currentMode === 'matrix' ? 'secondary' : 'primary'}
-                    />
-                  </ToggleButton>
-                </Tooltip>
-              )}
-            </ToggleButtonGroup>
-          </div>
-        )}
-        {enableSuggestions && (
-          <QueryRenderer
-            query={containerHeaderObjectsQuery}
-            variables={{ id: container.id }}
-            render={({ props }) => {
-              if (props && props.container) {
-                const suggestions = this.generateSuggestions(
-                  props.container.objects.edges.map((o) => o.node),
-                );
-                const appliedSuggestions = localStorage.getItem(`suggestions-${container.id}`) || [];
+            {modes.includes('correlation') && (
+              <Tooltip title={t('Correlation view')}>
+                <ToggleButton
+                  component={Link}
+                  to={`${link}/correlation`}
+                  selected={currentMode === 'correlation'}
+                >
+                  <VectorLink
+                    fontSize="small"
+                    color={
+                      currentMode === 'correlation' ? 'secondary' : 'primary'
+                    }
+                  />
+                </ToggleButton>
+              </Tooltip>
+            )}
+            {modes.includes('matrix') && (
+              <Tooltip title={t('Tactics matrix view')}>
+                <ToggleButton
+                  component={Link}
+                  to={`${link}/matrix`}
+                  selected={currentMode === 'matrix'}
+                >
+                  <ViewColumnOutlined
+                    fontSize="small"
+                    color={currentMode === 'matrix' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
+            )}
+          </ToggleButtonGroup>
+        </div>
+      )}
+      <div className={classes.actions}>
+        <QueryRenderer
+          query={containerHeaderObjectsQuery}
+          variables={{ id: container.id }}
+          render={({ props: containerProps }) => {
+            if (containerProps && containerProps.container) {
+              const suggestions = generateSuggestions(
+                containerProps.container.objects.edges.map((o) => o.node),
+              );
+              const appliedSuggestions = localStorage.getItem(`suggestions-${container.id}`) || [];
+              if (userIsKnowledgeEditor) {
                 return (
-                  <div className={classes.suggestions}>
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <ToggleButtonGroup
-                        size="small"
-                        color="secondary"
-                        exclusive={true}
-                      >
-                        <Tooltip title={t('Open suggestions')}>
-                          <ToggleButton
-                            onClick={this.handleOpenSuggestions.bind(this)}
-                            disabled={suggestions.length === 0}
-                          >
-                            <Badge
-                              badgeContent={
-                                suggestions.filter(
-                                  (n) => !appliedSuggestions.includes(n.type),
-                                ).length
-                              }
-                              color="secondary"
+                  <React.Fragment>
+                    <ToggleButtonGroup
+                      size="small"
+                      color="secondary"
+                      exclusive={false}
+                    >
+                      {disableSharing !== true && (
+                        <StixCoreObjectSharing
+                          elementId={container.id}
+                          variant="header"
+                        />
+                      )}
+                      {enableSuggestions && (
+                        <React.Fragment>
+                          <Tooltip title={t('Open the suggestions')}>
+                            <ToggleButton
+                              onClick={() => setDisplaySuggestions(true)}
+                              disabled={suggestions.length === 0}
+                              value="suggestion"
+                              size="small"
                             >
-                              <AssistantOutlined
-                                fontSize="small"
-                                disabled={suggestions.length === 0}
-                                color={
-                                  // eslint-disable-next-line no-nested-ternary
-                                  suggestions.length === 0
-                                    ? 'disabled'
-                                    : displaySuggestions
-                                      ? 'secondary'
-                                      : 'primary'
+                              <Badge
+                                badgeContent={
+                                  suggestions.filter(
+                                    (n) => !appliedSuggestions.includes(n.type),
+                                  ).length
                                 }
-                              />
-                            </Badge>
-                          </ToggleButton>
-                        </Tooltip>
-                      </ToggleButtonGroup>
-                    </Security>
+                                color="secondary"
+                              >
+                                <AssistantOutlined
+                                  fontSize="small"
+                                  disabled={suggestions.length === 0}
+                                  color={
+                                    // eslint-disable-next-line no-nested-ternary
+                                    suggestions.length === 0
+                                      ? 'disabled'
+                                      : displaySuggestions
+                                        ? 'secondary'
+                                        : 'primary'
+                                  }
+                                />
+                              </Badge>
+                            </ToggleButton>
+                          </Tooltip>
+                          <div> &nbsp; </div>
+                        </React.Fragment>
+                      )}
+                    </ToggleButtonGroup>
                     <Dialog
                       PaperProps={{ elevation: 1 }}
                       open={displaySuggestions}
                       TransitionComponent={Transition}
-                      onClose={this.handleCloseSuggestions.bind(this)}
+                      onClose={() => setDisplaySuggestions(false)}
                       maxWidth="md"
                       fullWidth={true}
                     >
@@ -707,12 +692,14 @@ class ContainerHeaderComponent extends Component {
                                 }
                               />
                               <Select
-                                style={{ width: 200, margin: '0 0 0 15px' }}
+                                style={{
+                                  width: 200,
+                                  margin: '0 0 0 15px',
+                                }}
                                 variant="standard"
-                                onChange={this.handleSelectEntity.bind(
-                                  this,
-                                  suggestion.type,
-                                )}
+                                onChange={(event) => handleSelectEntity(suggestion.type, event)
+                                }
+                                value={selectedEntity[suggestion.type]}
                               >
                                 {suggestion.data.map((object) => (
                                   <MenuItem key={object.id} value={object.id}>
@@ -724,13 +711,13 @@ class ContainerHeaderComponent extends Component {
                                 <IconButton
                                   edge="end"
                                   aria-label="apply"
-                                  onClick={this.applySuggestion.bind(
-                                    this,
+                                  onClick={() => applySuggestion(
                                     suggestion.type,
-                                    props.container.objects.edges.map(
+                                    containerProps.container.objects.edges.map(
                                       (o) => o.node,
                                     ),
-                                  )}
+                                  )
+                                  }
                                   size="large"
                                   color={
                                     applied.includes(suggestion.type)
@@ -758,41 +745,27 @@ class ContainerHeaderComponent extends Component {
                       </DialogContent>
                       <DialogActions>
                         <Button
-                          onClick={this.handleCloseSuggestions.bind(this)}
+                          onClick={() => setDisplaySuggestions(false)}
                           color="primary"
                         >
                           {t('Close')}
                         </Button>
                       </DialogActions>
                     </Dialog>
-                  </div>
+                  </React.Fragment>
                 );
               }
-              return <div />;
-            }}
-          />
-        )}
-        <div className="clearfix" />
+            }
+            return <div />;
+          }}
+        />
       </div>
-    );
-  }
-}
-
-ContainerHeaderComponent.propTypes = {
-  container: PropTypes.object,
-  PopoverComponent: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
-  link: PropTypes.string,
-  modes: PropTypes.array,
-  currentMode: PropTypes.string,
-  knowledge: PropTypes.bool,
-  adjust: PropTypes.func,
-  onApplied: PropTypes.func,
+      <div className="clearfix" />
+    </div>
+  );
 };
 
-const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
+export default createFragmentContainer(ContainerHeader, {
   container: graphql`
     fragment ContainerHeader_container on Container {
       id
@@ -819,12 +792,15 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
       createdBy {
         id
       }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+            x_opencti_color
+          }
+        }
+      }
     }
   `,
 });
-
-export default R.compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(ContainerHeader);

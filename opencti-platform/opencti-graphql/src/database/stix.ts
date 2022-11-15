@@ -24,6 +24,7 @@ import {
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -128,6 +129,7 @@ import { logApp } from '../config/conf';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
+  RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
@@ -139,6 +141,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION
 } from '../schema/stixMetaObject';
+import { isInternalRelationship } from '../schema/internalRelationship';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -935,6 +938,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_PUBLISHES, type: REL_NEW }
   ],
   // endregion
+  // Extended
   // region RELATIONS TO RELATIONS: DISCUSS IMPLEMENTATION!!
   [`${ENTITY_TYPE_INDICATOR}_${RELATION_USES}`]: [
     { name: RELATION_INDICATES, type: REL_EXTENDED }
@@ -1133,6 +1137,9 @@ export const checkStixCoreRelationshipMapping = (fromType: string, toType: strin
 };
 
 export const isRelationBuiltin = (instance: StoreRelation): boolean => {
+  if (isInternalRelationship(instance.entity_type)) {
+    return false;
+  }
   // Any <-> Any relationship type check
   if (instance.entity_type === RELATION_RELATED_TO) {
     return true;
@@ -1140,7 +1147,7 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
   if (instance.entity_type === RELATION_REVOKED_BY) {
     return false;
   }
-  // Well define relationship type check
+  // Well-define relationship type check
   let definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`];
   // if definition not found, check from toType parent observables
   if (!definitions && isStixCyberObservable(instance.toType)) {
@@ -1192,6 +1199,9 @@ export const checkStixCyberObservableRelationshipMapping = (fromType: string, to
 
 export const checkMetaRelationship = (fromType: string, toType: string, relationshipType: string): boolean => {
   switch (relationshipType) {
+    case RELATION_GRANTED_TO:
+      return !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType) || isStixDomainObjectLocation(fromType))
+        && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType;
     case RELATION_CREATED_BY:
       return isStixDomainObjectIdentity(toType);
     case RELATION_OBJECT_MARKING:

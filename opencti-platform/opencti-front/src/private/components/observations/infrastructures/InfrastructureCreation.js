@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { compose, pluck, evolve, path } from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
@@ -25,6 +25,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -110,12 +111,13 @@ class InfrastructureCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
-    const adaptedValues = evolve(
+    const adaptedValues = R.evolve(
       {
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-        objectLabel: pluck('value'),
-        externalReferences: pluck('value'),
+        confidence: () => parseInt(values.confidence, 10),
+        createdBy: R.path(['value']),
+        objectMarking: R.pluck('value'),
+        objectLabel: R.pluck('value'),
+        externalReferences: R.pluck('value'),
       },
       values,
     );
@@ -191,6 +193,7 @@ class InfrastructureCreation extends Component {
               initialValues={{
                 name: '',
                 infrastructure_types: [],
+                confidence: 75,
                 description: '',
                 createdBy: '',
                 objectMarking: [],
@@ -223,6 +226,12 @@ class InfrastructureCreation extends Component {
                     name="infrastructure_types"
                     containerstyle={fieldSpacingContainerStyle}
                     multiple={true}
+                  />
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
                   />
                   <Field
                     component={MarkDownField}
@@ -290,7 +299,7 @@ InfrastructureCreation.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(InfrastructureCreation);

@@ -16,6 +16,7 @@ import {
   DeleteForeverOutlined,
   SecurityOutlined,
   ReceiptOutlined,
+  AccountBalanceOutlined,
 } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -374,7 +375,27 @@ class UserComponent extends Component {
                     ))}
                   </List>
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Organizations')}
+                  </Typography>
+                  <List>
+                    {user.objectOrganization.edges.map((organizationEdge) => (
+                      <ListItem
+                        key={organizationEdge.node.id}
+                        dense={true}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon>
+                          <AccountBalanceOutlined color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary={organizationEdge.node.name} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Grid>
+                <Grid item={true} xs={6}>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
@@ -632,6 +653,14 @@ const User = createRefetchContainer(
               id
               name
               description
+            }
+          }
+        }
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
             }
           }
         }

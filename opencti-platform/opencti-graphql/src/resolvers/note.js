@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import {
   addNote,
   findAll,
@@ -24,7 +25,22 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { buildRefRelationKey } from '../schema/general';
+import { buildRefRelationKey, KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
+import { BYPASS } from '../utils/access';
+import { ForbiddenAccess } from '../config/errors';
+import { addIndividual } from '../domain/individual';
+import { userSessionRefresh } from '../domain/user';
+
+// Needs to have edit rights or needs to be creator of the note
+const checkUserAccess = async (context, user, id) => {
+  const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
+  const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
+  const note = await findById(context, user, id);
+  const isCreator = note[RELATION_CREATED_BY] ? note[RELATION_CREATED_BY] === user.individual_id : false;
+  const isCollaborationAllowed = userCapabilities.includes(KNOWLEDGE_COLLABORATION) && isCreator;
+  const accessGranted = isAuthorized || isCollaborationAllowed;
+  if (!accessGranted) throw ForbiddenAccess();
+};
 
 const noteResolvers = {
   Query: {
@@ -63,14 +79,46 @@ const noteResolvers = {
   },
   Mutation: {
     noteEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      delete: async () => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectDelete(context, context.user, id);
+      },
+      fieldPatch: async ({ input, commitMessage, references }) => {
+        await checkUserAccess(context, context.user, id);
+        const availableInputs = input.filter((i) => i.key !== 'createdBy');
+        return stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
+      },
+      contextPatch: async ({ input }) => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectEditContext(context, context.user, id, input);
+      },
+      contextClean: async () => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectCleanContext(context, context.user, id);
+      },
+      relationAdd: async ({ input }) => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectAddRelation(context, context.user, id, input);
+      },
+      relationDelete: async ({ toId, relationship_type: relationshipType }) => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+      },
     }),
-    noteAdd: (_, { input }, context) => addNote(context, context.user, input),
+    userNoteAdd: async (_, { input }, context) => {
+      const { user } = context;
+      let individualId = user.individual_id;
+      if (individualId === undefined) {
+        const individual = await addIndividual(context, user, { name: user.name, contact_information: user.user_email });
+        individualId = individual.id;
+        await userSessionRefresh(user.internal_id);
+      }
+      const inputWithCreator = { ...input, createdBy: individualId };
+      return addNote(context, user, inputWithCreator);
+    },
+    noteAdd: (_, { input }, context) => {
+      return addNote(context, context.user, input);
+    },
   },
 };
 

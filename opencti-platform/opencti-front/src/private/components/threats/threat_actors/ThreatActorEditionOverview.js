@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
@@ -23,30 +22,6 @@ import {
   convertMarkings,
   convertStatus,
 } from '../../../../utils/Edition';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const threatActorMutationFieldPatch = graphql`
   mutation ThreatActorEditionOverviewFieldPatchMutation(
@@ -425,7 +400,6 @@ class ThreatActorEditionOverviewComponent extends Component {
 }
 
 ThreatActorEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   threatActor: PropTypes.object,
@@ -474,7 +448,4 @@ const ThreatActorEditionOverview = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ThreatActorEditionOverview);
+export default inject18n(ThreatActorEditionOverview);

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -13,26 +13,16 @@ import * as R from 'ramda';
 import { buildDate } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/Edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -161,7 +151,7 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-const StixSightingRelationshipEditionContainer = ({
+const StixSightingRelationshipEditionOverview = ({
   t,
   classes,
   handleClose,
@@ -270,6 +260,7 @@ const StixSightingRelationshipEditionContainer = ({
       'description',
       'x_opencti_negative',
       'createdBy',
+      'objectOrganization',
       'objectMarking',
       'x_opencti_workflow_id',
     ]),
@@ -302,7 +293,7 @@ const StixSightingRelationshipEditionContainer = ({
           validationSchema={stixSightingRelationshipValidation(t)}
         >
           {(setFieldValue) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ margin: '0px 0 20px 0' }}>
               <Field
                 component={TextField}
                 variant="standard"
@@ -471,7 +462,7 @@ const StixSightingRelationshipEditionContainer = ({
   );
 };
 
-StixSightingRelationshipEditionContainer.propTypes = {
+StixSightingRelationshipEditionOverview.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
@@ -484,7 +475,7 @@ StixSightingRelationshipEditionContainer.propTypes = {
 };
 
 const StixSightingRelationshipEditionFragment = createFragmentContainer(
-  StixSightingRelationshipEditionContainer,
+  StixSightingRelationshipEditionOverview,
   {
     stixSightingRelationship: graphql`
       fragment StixSightingRelationshipEditionOverview_stixSightingRelationship on StixSightingRelationship {

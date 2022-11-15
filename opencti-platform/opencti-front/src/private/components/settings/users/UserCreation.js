@@ -8,15 +8,17 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { compose, omit, pipe } from 'ramda';
+import { compose, omit } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -108,7 +110,10 @@ class UserCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(omit(['confirmation']))(values);
+    const finalValues = R.pipe(
+      omit(['confirmation']),
+      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
+    )(values);
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -184,6 +189,7 @@ class UserCreation extends Component {
                 description: '',
                 password: '',
                 confirmation: '',
+                objectOrganization: [],
               }}
               validationSchema={userValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -248,6 +254,11 @@ class UserCreation extends Component {
                     type="password"
                     fullWidth={true}
                     style={{ marginTop: 20 }}
+                  />
+                  <ObjectOrganizationField
+                    name="objectOrganization"
+                    label="Organizations"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
                     <Button

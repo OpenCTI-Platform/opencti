@@ -31,6 +31,7 @@ class OrganizationKnowledgeComponent extends Component {
         style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}
       >
         <StixDomainObjectHeader
+          disableSharing={true}
           stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
           onViewAs={onViewAs.bind(this)}
@@ -116,7 +117,7 @@ class OrganizationKnowledgeComponent extends Component {
                 role="part-of_to"
                 targetStixDomainObjectTypes={['Organization']}
                 entityLink={link}
-                isRelationReversed={true}
+                isRelationReversed={false}
                 {...routeProps}
               />
             )}

@@ -1252,12 +1252,18 @@ const i18n = {
       'Manage an entity': 'Administrar una entidad',
       'Do you want to remove this entity?': '¿Quieres eliminar este objeto?',
       'Add context': 'Agregar contexto',
+      'Organizations restriction': 'Restricción de organizaciones',
+      'Platform organization': 'Organización de la plataforma',
+      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'Cuando especificó la organización de la plataforma, los datos sin ninguna restricción de organización serán accesibles solo para los usuarios que forman parte de la plataforma.',
       'Delete the element if no other containers contain it':
         'Eliminar el elemento si ningún otro contenedor lo contiene',
       'Bulk search': 'Búsqueda masiva',
       'Search for multiple entities': 'Buscar varias entidades',
       'One keyword by line or separated by commas':
         'Una palabra clave por línea o separada por comas',
+      'Share with an organization': 'Compartir con una organización',
+      Share: 'Compartir',
+      'Open the suggestions': 'Abre las sugerencias',
       'Reset filters': 'Restablecer filtros',
       Limit: 'Límite',
       // Time
@@ -1372,6 +1378,7 @@ const i18n = {
       'relationship_revoked-by': 'revocado por',
       relationship_delivers: 'entrega',
       relationship_targets: 'tiene como objetivo',
+      'relationship_granted-to': 'Concedido a',
       relationship_uses: 'usa',
       relationship_publishes: 'publica',
       relationship_amplifies: 'amplifica',
@@ -2839,6 +2846,9 @@ const i18n = {
       'Do you want to remove this object?':
         'Souhaitez-vous retirer cet object ?',
       'Add context': 'Ajouter du contexte',
+      'Organizations restriction': "Restriction d'organisations",
+      'Platform organization': 'Organisation de la plateforme',
+      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'Lorsque vous avez spécifié l\'organisation de la plateforme, les données sans aucune restriction d\'organisation ne seront accessibles qu\'aux utilisateurs faisant partie de celle ci',
       'Delete the element if no other containers contain it':
         "Supprimer l'élément si aucun autre conteneur ne le contient",
       IF: 'SI',
@@ -2848,6 +2858,9 @@ const i18n = {
       'Search for multiple entities': 'Rechercher plusieurs entités',
       'One keyword by line or separated by commas':
         'Un mot-clé par ligne ou séparé par des virgules',
+      'Share with an organization': 'Partager avec une organisation',
+      Share: 'Partager',
+      'Open the suggestions': 'Ouvrir les suggestions',
       'Reset filters': 'Réinitialiser les filtres',
       Limit: 'Limite',
       // Time
@@ -2961,6 +2974,7 @@ const i18n = {
       'relationship_revoked-by': 'révoqué par',
       relationship_delivers: 'délivre',
       relationship_targets: 'cible',
+      'relationship_granted-to': 'Accordée à',
       relationship_uses: 'utilise',
       relationship_publishes: 'publie',
       relationship_amplifies: 'amplifie',
@@ -4376,12 +4390,18 @@ const i18n = {
       'Manage an entity': 'エンティティを管理する',
       'Do you want to remove this object?': 'このオブジェクトを削除しますか?',
       'Add context': 'コンテキストを追加',
+      'Organizations restriction': '組織の制限',
+      'Platform organization': 'プラットフォーム構成',
+      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'プラットフォーム組織を指定すると、組織の制限のないデータには、プラットフォーム 1 の一部であるユーザーのみがアクセスできます',
       'Delete the element if no other containers contain it':
         '他のコンテナに要素が含まれていない場合は、要素を削除します',
       'Bulk search': '一括検索',
       'Search for multiple entities': '複数のエンティティを検索',
       'One keyword by line or separated by commas':
         '1 つのキーワードを 1 行またはカンマで区切る',
+      'Share with an organization': '組織と共有する',
+      Share: '共有する',
+      'Open the suggestions': '提案を開く',
       'Reset filters': 'フィルタをリセット',
       Limit: 'リミット',
       // Time
@@ -5844,12 +5864,18 @@ const i18n = {
       'Manage an entity': '管理实体',
       'Do you want to remove this object?': '是否要删除此对象？',
       'Add context': '添加上下文',
+      'Organizations restriction': '组织限制',
+      'Platform organization': '平台組織',
+      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': '當您指定平台組織時，沒有任何組織限制的數據將僅適用於屬於平台一的用戶',
       'Delete the element if no other containers contain it':
         '如果沒有其他容器包含該元素，則刪除該元素',
       'Bulk search': '批量搜索',
       'Search for multiple entities': '搜索多个实体',
       'One keyword by line or separated by commas':
         '一个关键字逐行或以逗号分隔',
+      'Share with an organization': '与组织共享',
+      Share: '分享',
+      'Open the suggestions': '打开建议',
       'Reset filters': '重置过滤器',
       Limit: '限制',
       // Time
@@ -5876,7 +5902,7 @@ const i18n = {
       'entity_Observed-Data': '可观测数据',
       entity_Opinion: '意见',
       entity_Report: '分組',
-      entity_Grouping: 'グループ化',
+      entity_Grouping: '分组',
       'entity_Course-Of-Action': '应对措施',
       entity_Individual: '个体',
       entity_Organization: '组织',
@@ -5963,6 +5989,7 @@ const i18n = {
       'relationship_revoked-by': '撤销',
       relationship_delivers: '投递',
       relationship_targets: '针对',
+      'relationship_granted-to': '授予',
       relationship_uses: '使用',
       relationship_publishes: '发表',
       relationship_amplifies: '放大',
@@ -6290,6 +6317,7 @@ const i18n = {
       'relationship_revoked-by': 'revoked by',
       relationship_delivers: 'delivers',
       relationship_targets: 'targets',
+      'relationship_granted-to': 'granted to',
       relationship_uses: 'uses',
       relationship_publishes: 'publishes',
       relationship_amplifies: 'amplifies',

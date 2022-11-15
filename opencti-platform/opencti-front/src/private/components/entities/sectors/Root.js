@@ -142,6 +142,7 @@ class RootSector extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.sector}
                             PopoverComponent={<SectorPopover />}
                           />
@@ -173,6 +174,7 @@ class RootSector extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.sector}
                             PopoverComponent={<SectorPopover />}
                           />
@@ -192,6 +194,7 @@ class RootSector extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.sector}
                             PopoverComponent={<SectorPopover />}
                           />

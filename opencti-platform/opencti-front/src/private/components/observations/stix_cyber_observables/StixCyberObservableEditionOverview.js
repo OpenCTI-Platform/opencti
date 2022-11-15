@@ -34,7 +34,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -189,10 +188,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(stixCyberObservable);
-
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
-
     if (added.length > 0) {
       commitMutation({
         mutation: stixCyberObservableMutationRelationAdd,
@@ -205,7 +202,6 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         },
       });
     }
-
     if (removed.length > 0) {
       commitMutation({
         mutation: stixCyberObservableMutationRelationDelete,

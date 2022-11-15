@@ -14,6 +14,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     # StixCoreObject
     createdBy: Identity
     objectMarking: MarkingDefinitionConnection
+    objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
     objectLabel: LabelConnection
     externalReferences(first: Int): ExternalReferenceConnection
     reports(first: Int): ReportConnection
@@ -143,6 +144,7 @@ input NarrativeAddInput {
     lang: String
     createdBy: String
     objectMarking: [String]
+    objectOrganization: [String]
     objectLabel: [String]
     externalReferences: [String]
     created: DateTime

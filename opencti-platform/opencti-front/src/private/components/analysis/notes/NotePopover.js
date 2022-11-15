@@ -17,13 +17,11 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+import { CollaborativeSecurity, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -128,22 +126,19 @@ class NotePopover extends Component {
   }
 
   render() {
-    const { classes, t, id, handleOpenRemove, size } = this.props;
+    const { note, classes, t, id, handleOpenRemove, size } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           size={size || 'large'}
-          style={{ marginTop: size === 'small' ? -3 : 3 }}
-        >
+          style={{ marginTop: size === 'small' ? -3 : 3 }}>
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
+        <Menu anchorEl={this.state.anchorEl}
+              open={Boolean(this.state.anchorEl)}
+              onClose={this.handleClose.bind(this)}>
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -152,11 +147,11 @@ class NotePopover extends Component {
               {t('Remove from this entity')}
             </MenuItem>
           )}
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
-          </Security>
+          </CollaborativeSecurity>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
@@ -185,14 +180,12 @@ class NotePopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
+        <Drawer open={this.state.displayEdit}
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleCloseEdit.bind(this)}>
           <QueryRenderer
             query={noteEditionQuery}
             variables={{ id }}

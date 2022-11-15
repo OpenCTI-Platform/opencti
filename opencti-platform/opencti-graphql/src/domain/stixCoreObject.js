@@ -1,16 +1,16 @@
 import * as R from 'ramda';
 import { map } from 'ramda';
 import {
+  batchListThroughGetFrom,
   batchListThroughGetTo,
+  batchLoadThroughGetTo,
   createRelation,
   createRelations,
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  batchListThroughGetFrom,
-  storeLoadById,
   mergeEntities,
-  batchLoadThroughGetTo,
+  storeLoadById,
   storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
@@ -22,7 +22,7 @@ import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObjec
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_IDENTITY
+  ENTITY_TYPE_IDENTITY,
 } from '../schema/general';
 import {
   isStixMetaRelationship,
@@ -34,7 +34,8 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
-  ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
 } from '../schema/stixDomainObject';
@@ -65,7 +66,9 @@ export const findAll = async (context, user, args) => {
   return listEntities(context, user, types, args);
 };
 
-export const findById = async (context, user, stixCoreObjectId) => storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+export const findById = async (context, user, stixCoreObjectId) => {
+  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+};
 
 export const batchCreatedBy = async (context, user, stixCoreObjectIds) => {
   return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
@@ -130,7 +133,9 @@ export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId
     input.toIds
   );
   await createRelations(context, user, finalInput);
-  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user));
+  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user);
+  });
 };
 
 export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObjectId, toId, relationshipType) => {
@@ -156,7 +161,6 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
 export const stixCoreObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
-// endregion
 
 export const askElementEnrichmentForConnector = async (context, user, elementId, connectorId) => {
   const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
@@ -191,6 +195,7 @@ export const stixCoreObjectExportAsk = async (context, user, args) => {
   const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
 };
+
 export const stixCoreObjectsExportPush = async (context, user, type, file, listFilters) => {
   await upload(context, user, `export/${type}`, file, { list_filters: listFilters });
   return true;
@@ -200,7 +205,6 @@ export const stixCoreObjectExportPush = async (context, user, entityId, file) =>
   await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
   return true;
 };
-// endregion
 
 export const stixCoreObjectImportPush = async (context, user, id, file, noTriggerImport = false) => {
   let lock;
@@ -217,7 +221,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
-    await elUpdateElement({ _index: previous._index, internal_id: internalId, updated_at: now(), x_opencti_files: files });
+    await elUpdateElement({
+      _index: previous._index,
+      internal_id: internalId,
+      updated_at: now(),
+      x_opencti_files: files
+    });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
@@ -252,7 +261,12 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
     const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
-    await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });
+    await elUpdateElement({
+      _index: previous._index,
+      internal_id: entityId,
+      updated_at: now(),
+      x_opencti_files: files
+    });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `removes \`${up.name}\` in \`files\``);

@@ -1,26 +1,26 @@
 import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import {
-  findById,
-  findAll,
-  stixCoreObjectAddRelation,
-  stixCoreObjectAddRelations,
-  stixCoreObjectDeleteRelation,
-  stixCoreRelationships,
-  stixCoreObjectMerge,
-  batchMarkingDefinitions,
-  batchLabels,
+  askElementEnrichmentForConnector,
   batchCreatedBy,
   batchExternalReferences,
+  batchLabels,
+  batchMarkingDefinitions,
   batchNotes,
-  batchOpinions,
   batchObservedData,
+  batchOpinions,
   batchReports,
-  askElementEnrichmentForConnector,
+  findAll,
+  findById,
+  stixCoreObjectAddRelation,
+  stixCoreObjectAddRelations,
+  stixCoreObjectDelete,
+  stixCoreObjectDeleteRelation,
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
-  stixCoreObjectDelete,
   stixCoreObjectImportPush,
+  stixCoreObjectMerge,
+  stixCoreRelationships,
   stixCoreObjectsExportAsk,
   stixCoreObjectsExportPush,
   stixCoreObjectCleanContext,
@@ -35,6 +35,7 @@ import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { batchUsers } from '../domain/user';
+import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -44,6 +45,7 @@ const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
 const observedDataLoader = batchLoader(batchObservedData);
+const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 const creatorsLoader = batchLoader(batchUsers);
 
 const stixCoreObjectResolvers = {
@@ -69,6 +71,7 @@ const stixCoreObjectResolvers = {
     createdBy: (stixCoreObject, _, context) => createdByLoader.load(stixCoreObject.id, context, context.user),
     objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject.id, context, context.user),
     objectLabel: (stixCoreObject, _, context) => labelsLoader.load(stixCoreObject.id, context, context.user),
+    objectOrganization: (stixCoreObject, _, context) => batchOrganizationsLoader.load(stixCoreObject.id, context, context.user),
     externalReferences: (stixCoreObject, _, context) => externalReferencesLoader.load(stixCoreObject.id, context, context.user),
     reports: (stixCoreObject, args, context) => reportsLoader.load(stixCoreObject.id, context, context.user, args),
     notes: (stixCoreObject, _, context) => notesLoader.load(stixCoreObject.id, context, context.user),
@@ -85,6 +88,8 @@ const stixCoreObjectResolvers = {
       delete: () => stixCoreObjectDelete(context, context.user, id),
       relationAdd: ({ input }) => stixCoreObjectAddRelation(context, context.user, id, input),
       relationsAdd: ({ input }) => stixCoreObjectAddRelations(context, context.user, id, input),
+      restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
+      restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       merge: ({ stixCoreObjectsIds }) => stixCoreObjectMerge(context, context.user, id, stixCoreObjectsIds),
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),

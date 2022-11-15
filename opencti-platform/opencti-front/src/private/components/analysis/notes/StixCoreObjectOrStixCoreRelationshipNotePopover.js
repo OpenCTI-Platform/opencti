@@ -153,29 +153,25 @@ class StixCoreObjectOrStixCoreRelationshipNotePopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
+        <Drawer open={this.state.displayUpdate}
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleCloseUpdate.bind(this)}>
           <QueryRenderer
             query={stixCoreObjectOrStixCoreRelationshipNotePopoverEditionQuery}
             variables={{ id: noteId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <NoteEdition
-                    note={props.note}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
+                  // eslint-disable-next-line max-len
+                  <NoteEdition note={props.note} handleClose={this.handleCloseUpdate.bind(this)}/>
                 );
               }
               return <Loader variant="inElement" />;
             }}
-          />
+          />;
         </Drawer>
         <Dialog
           open={this.state.displayDelete}

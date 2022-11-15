@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { commitMutation } from '../../../../relay/environment';
@@ -23,31 +22,6 @@ import {
 } from '../../../../utils/Edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -276,7 +250,7 @@ class ObservedDataEditionOverviewComponent extends Component {
           values,
         }) => (
           <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ margin: '0px 0 20px 0' }}>
               <Field
                 component={DateTimePickerField}
                 name="first_observed"
@@ -303,6 +277,7 @@ class ObservedDataEditionOverviewComponent extends Component {
                   label: t('Last observed'),
                   variant: 'standard',
                   fullWidth: true,
+                  style: { marginTop: 20 },
                   helperText: (
                     <SubscriptionFocus
                       context={context}
@@ -440,7 +415,4 @@ const ObservedDataEditionOverview = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ObservedDataEditionOverview);
+export default inject18n(ObservedDataEditionOverview);

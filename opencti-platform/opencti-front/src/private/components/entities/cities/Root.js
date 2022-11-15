@@ -140,6 +140,7 @@ class RootCity extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.city}
                             PopoverComponent={<CityPopover />}
                           />
@@ -169,6 +170,7 @@ class RootCity extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.city}
                             PopoverComponent={<CityPopover />}
                           />
@@ -188,6 +190,7 @@ class RootCity extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            disableSharing={true}
                             stixDomainObject={props.city}
                             PopoverComponent={<CityPopover />}
                           />

@@ -16,8 +16,8 @@ import { BASE_TYPE_ENTITY } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-common';
-import { getEntitiesFromCache } from './cacheManager';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { getEntitiesFromCache } from '../database/cache';
 import type { AuthContext } from '../types/user';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
@@ -153,7 +153,7 @@ const initHistoryManager = () => {
       // Lock the manager
       lock = await lockResource([HISTORY_ENGINE_KEY]);
       logApp.info('[OPENCTI-MODULE] Running history manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler);
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', false, historyStreamHandler);
       await streamProcessor.start(lastEventId);
       while (syncListening) {
         await wait(WAIT_TIME_ACTION);
