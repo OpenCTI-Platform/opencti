@@ -1,10 +1,11 @@
-import React, { FunctionComponent, Suspense } from 'react';
+import React, { FunctionComponent } from 'react';
 import { useParams } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql } from 'react-relay';
 import StixSightingRelationshipOverview from './StixSightingRelationshipOverview';
 import Loader from '../../../../components/Loader';
-import { StixSightingRelationshipQuery } from './__generated__/StixSightingRelationshipQuery.graphql';
+import { StixSightingRelationshipQuery$data } from './__generated__/StixSightingRelationshipQuery.graphql';
+import { QueryRenderer } from '../../../../relay/environment';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -30,19 +31,24 @@ StixSightingRelationshipProps
 > = ({ entityId, paddingRight }) => {
   const classes = useStyles();
   const { sightingId } = useParams() as { sightingId: string };
-  const data = useLazyLoadQuery<StixSightingRelationshipQuery>(
-    stixSightingRelationshipQuery,
-    { id: sightingId },
-  );
   return (
     <div className={classes.container}>
-      <Suspense fallback={<Loader />}>
-        <StixSightingRelationshipOverview
-          entityId={entityId}
-          stixSightingRelationship={data.stixSightingRelationship}
-          paddingRight={paddingRight}
-        />
-      </Suspense>
+      <QueryRenderer
+        query={stixSightingRelationshipQuery}
+        variables={{ id: sightingId }}
+        render={(result: { props: StixSightingRelationshipQuery$data }) => {
+          if (result.props && result.props.stixSightingRelationship) {
+            return (
+              <StixSightingRelationshipOverview
+                entityId={entityId}
+                stixSightingRelationship={result.props.stixSightingRelationship}
+                paddingRight={paddingRight}
+              />
+            );
+          }
+          return <Loader />;
+        }}
+      />
     </div>
   );
 };
