@@ -349,6 +349,7 @@ export const stixCyberObservablesExportAsk = async (context, user, args) => {
   const ordersOpts = stixCyberObservableOptions.StixCyberObservablesOrdering;
   const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
   const works = await askListExport(
+    context,
     user,
     format,
     'Stix-Cyber-Observable',

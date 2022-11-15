@@ -9,23 +9,34 @@ export interface ModuleHelper {
   isRuleEngineEnable: () => boolean;
 }
 
-const isFeatureEnable = (settings: RootPrivateQuery$data['settings'], id: string) => {
+const isFeatureEnable = (
+  settings: RootPrivateQuery$data['settings'],
+  id: string,
+) => {
   const flags = settings.platform_feature_flags ?? [];
   const feature = R.find((f) => f.id === id, flags);
   return feature !== undefined && feature.enable === true;
 };
 
-const isModuleEnable = (settings: RootPrivateQuery$data['settings'], id: string) => {
+const isModuleEnable = (
+  settings: RootPrivateQuery$data['settings'],
+  id: string,
+) => {
   const modules = settings.platform_modules || [];
   const module = R.find((f) => f.id === id, modules);
   return module !== undefined && module.enable === true;
 };
 
-const isEntityTypeHidden = (settings: RootPrivateQuery$data['settings'], id: string) : boolean => {
+const isEntityTypeHidden = (
+  settings: RootPrivateQuery$data['settings'],
+  id: string,
+): boolean => {
   return (settings.platform_hidden_types ?? []).includes(id);
 };
 
-const platformModuleHelper = (settings: RootPrivateQuery$data['settings']) : ModuleHelper => ({
+const platformModuleHelper = (
+  settings: RootPrivateQuery$data['settings'],
+): ModuleHelper => ({
   isModuleEnable: (id: string) => isModuleEnable(settings, id),
   isRuleEngineEnable: () => isModuleEnable(settings, 'RULE_ENGINE'),
   isFeatureEnable: (id: string) => isFeatureEnable(settings, id),

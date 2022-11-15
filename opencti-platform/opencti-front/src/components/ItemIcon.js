@@ -209,6 +209,53 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'cooperates-with':
     case 'derived-from':
     case 'downloads':
+    case 'has':
+    case 'bcc':
+    case 'cc':
+    case 'obs_belongs-to':
+    case 'owns':
+    case 'dst':
+    case 'from':
+    case 'hosts':
+    case 'image':
+    case 'publishes':
+    case 'duplicate-of':
+    case 'obs_content':
+    case 'service-dll':
+    case 'dynamic-analysis-of':
+    case 'contains':
+    case 'exfiltrates-to':
+    case 'exploits':
+    case 'investigates':
+    case 'x_opencti_linked-to':
+    case 'originates-from':
+    case 'participates-in':
+    case 'body-multipart':
+    case 'body-raw':
+    case 'child':
+    case 'creator-user':
+    case 'detects':
+    case 'dst-payload':
+    case 'encapsulated-by':
+    case 'encapsulates':
+    case 'opened-connection':
+    case 'operating-system':
+    case 'parent':
+    case 'parent-directory':
+    case 'raw-email':
+    case 'src-payload':
+    case 'remediates':
+    case 'resolves-to':
+    case 'obs_resolves-to':
+    case 'revoked-by':
+    case 'sample':
+    case 'sender':
+    case 'src':
+    case 'to':
+    case 'values':
+    case 'static-analysis-of':
+    case 'subnarrative-of':
+    case 'subtechnique-of':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     default:
       return <HelpOutlined style={style} fontSize={fontSize} role="img" />;

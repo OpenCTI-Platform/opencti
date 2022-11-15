@@ -15899,7 +15899,7 @@ export type SubType = {
 
 export type SubTypeConnection = {
   __typename?: 'SubTypeConnection';
-  edges?: Maybe<Array<Maybe<SubTypeEdge>>>;
+  edges: Array<SubTypeEdge>;
   pageInfo: PageInfo;
 };
 
@@ -24645,7 +24645,7 @@ export type SubTypeResolvers<ContextType = any, ParentType extends ResolversPare
 }>;
 
 export type SubTypeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubTypeConnection'] = ResolversParentTypes['SubTypeConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SubTypeEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['SubTypeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
