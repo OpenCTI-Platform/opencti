@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Skeleton from '@mui/material/Skeleton';
@@ -6,8 +6,10 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import { Theme } from '../../../../components/Theme';
+import { DataColumnsType } from './StatusTemplateLine';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -27,16 +29,20 @@ const useStyles = makeStyles((theme) => ({
     right: -10,
   },
   itemIconDisabled: {
-    color: theme.palette.grey[700],
+    color: theme.palette.grey?.[700],
   },
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: theme.palette.grey?.[700],
   },
 }));
 
-const StatusTemplateLineDummy = ({ dataColumns }) => {
+interface StatusTemplateLineDummyProps {
+  dataColumns: DataColumnsType,
+}
+
+const StatusTemplateLineDummy: FunctionComponent<StatusTemplateLineDummyProps> = ({ dataColumns }) => {
   const classes = useStyles();
 
   return (

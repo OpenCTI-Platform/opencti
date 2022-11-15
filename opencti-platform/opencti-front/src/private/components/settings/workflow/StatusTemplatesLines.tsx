@@ -1,27 +1,31 @@
-import React from 'react';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import React, { FunctionComponent } from 'react';
+import { graphql, createPaginationContainer, RelayPaginationProp } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import StatusTemplateLine from './StatusTemplateLine';
+import StatusTemplateLine, { DataColumnsType } from './StatusTemplateLine';
 import StatusTemplateLineDummy from './StatusTemplateLineDummy';
+import { StatusTemplatesLines_data$data } from './__generated__/StatusTemplatesLines_data.graphql';
 
 const nbOfRowsToLoad = 50;
 
-const StatusTemplatesLines = ({ relay, paginationOptions, dataColumns, data, initialLoading }) => {
+interface StatusTemplatesLinesProps {
+  relay: RelayPaginationProp,
+  paginationOptions: { search: string, orderMode: string, orderBy: string },
+  dataColumns: DataColumnsType,
+  data: StatusTemplatesLines_data$data,
+  initialLoading: boolean,
+}
+
+const StatusTemplatesLines: FunctionComponent<StatusTemplatesLinesProps> = ({ relay, paginationOptions, dataColumns, data, initialLoading }) => {
   return (
     <ListLinesContent
       initialLoading={initialLoading}
       loadMore={relay.loadMore}
       hasMore={relay.hasMore}
       isLoading={relay.isLoading}
-      dataList={pathOr([], ['statusTemplates', 'edges'], data)}
-      globalCount={pathOr(
-        nbOfRowsToLoad,
-        ['statusTemplates', 'pageInfo', 'globalCount'],
-        data,
-      )}
-      LineComponent={<StatusTemplateLine />}
-      DummyLineComponent={<StatusTemplateLineDummy />}
+      dataList={data?.statusTemplates?.edges ?? []}
+      globalCount={data?.statusTemplates?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={StatusTemplateLine}
+      DummyLineComponent={StatusTemplateLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}

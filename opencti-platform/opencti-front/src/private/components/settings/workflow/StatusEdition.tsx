@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import * as Yup from 'yup';
@@ -7,11 +7,14 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { statusCreationStatusTemplatesQuery } from './StatusCreation';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
+import { StatusEdition_status$key } from './__generated__/StatusEdition_status.graphql';
+import { StatusCreationStatusTemplatesQuery$data } from './__generated__/StatusCreationStatusTemplatesQuery.graphql';
 
 const statusMutationFieldPatch = graphql`
   mutation StatusEditionFieldPatchMutation(
@@ -27,7 +30,7 @@ const statusMutationFieldPatch = graphql`
   }
 `;
 
-const statusValidation = (t) => Yup.object().shape({
+const statusValidation = (t: (name: string | object) => string) => Yup.object().shape({
   template: Yup.object().required(t('This field is required')),
   order: Yup.number()
     .typeError(t('The value must be a number'))
@@ -47,21 +50,28 @@ export const StatusEditionFragment = graphql`
     }
 `;
 
-const StatusEdition = ({ subTypeId, handleClose, open, status }) => {
+interface StatusEditionProps {
+  subTypeId: string,
+  handleClose: () => void,
+  open: boolean,
+  status: StatusEdition_status$key,
+}
+
+const StatusEdition: FunctionComponent<StatusEditionProps> = ({ subTypeId, handleClose, open, status }) => {
   const { t } = useFormatter();
 
   const data = useFragment(StatusEditionFragment, status);
 
   const initialValues = {
     template: {
-      label: data.template.name,
-      value: data.template.id,
-      color: data.template.color,
+      label: data.template ? data.template.name : '',
+      value: data.template ? data.template.id : '',
+      color: data.template ? data.template.color : '',
     },
     order: data.order,
   };
 
-  const handleSubmitStatusTemplate = (values, { setSubmitting }) => {
+  const handleSubmitStatusTemplate: FormikConfig<{ template: { label: string, value: string, color: string }, order: number }>['onSubmit'] = (values, { setSubmitting }) => {
     commitMutation({
       mutation: statusMutationFieldPatch,
       variables: {
@@ -75,6 +85,10 @@ const StatusEdition = ({ subTypeId, handleClose, open, status }) => {
         setSubmitting(false);
         handleClose();
       },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
     });
   };
 
@@ -84,7 +98,7 @@ const StatusEdition = ({ subTypeId, handleClose, open, status }) => {
       validationSchema={statusValidation(t)}
       onSubmit={handleSubmitStatusTemplate}
     >
-      {({ submitForm, isSubmitting, setFieldValue, values }) => (
+      {({ submitForm, isSubmitting, setFieldValue }) => (
         <Form>
           <Dialog
             open={open}
@@ -96,14 +110,13 @@ const StatusEdition = ({ subTypeId, handleClose, open, status }) => {
             <DialogContent>
               <QueryRenderer
                 query={statusCreationStatusTemplatesQuery}
-                render={({ props }) => {
+                render={({ props }: { props: StatusCreationStatusTemplatesQuery$data }) => {
                   if (props && props.statusTemplates) {
                     return (
                       <StatusTemplateField
                         name="template"
-                        style={{ marginTop: 20, width: '100%' }}
                         setFieldValue={setFieldValue}
-                        values={values.statusTemplate}
+                        helpertext={''}
                       />
                     );
                   }

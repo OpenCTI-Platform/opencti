@@ -6,15 +6,16 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
+import { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 200,
     position: 'fixed',
     overflow: 'auto',
     padding: 0,
-    backgroundColor: theme.palette.background.navLight,
+    backgroundColor: theme.palette.background.nav,
   },
   toolbar: theme.mixins.toolbar,
 }));

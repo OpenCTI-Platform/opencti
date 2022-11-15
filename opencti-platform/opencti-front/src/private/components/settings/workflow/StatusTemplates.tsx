@@ -6,6 +6,7 @@ import WorkflowsStatusesMenu from './WorkflowsStatusesMenu';
 import StatusTemplateCreation from './StatusTemplateCreation';
 import StatusTemplatesLines, { statusTemplatesLinesQuery } from './StatusTemplatesLines';
 import useLocalStorage from '../../../../utils/hooks/useLocalStorage';
+import { StatusTemplatesLinesPaginationQuery$data } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -27,9 +28,9 @@ const StatusTemplates = () => {
   const { sortBy, orderAsc, searchTerm } = viewStorage;
   const queryVars = { search: searchTerm, orderMode: orderAsc ? 'asc' : 'desc', orderBy: sortBy };
 
-  const handleSearch = (value) => setViewStorage({ searchTerm: value });
+  const handleSearch = (value: string) => setViewStorage((c) => ({ ...c, searchTerm: value }));
 
-  const handleSort = (field, order) => setViewStorage((c) => ({
+  const handleSort = (field: string, order: boolean) => setViewStorage((c) => ({
     ...c,
     sortBy: field,
     orderAsc: order,
@@ -61,7 +62,7 @@ const StatusTemplates = () => {
         <QueryRenderer
           query={statusTemplatesLinesQuery}
           variables={{ count: 25, ...queryVars }}
-          render={({ props }) => (
+          render={({ props }: { props: StatusTemplatesLinesPaginationQuery$data }) => (
             <StatusTemplatesLines
               data={props}
               paginationOptions={queryVars}
@@ -78,7 +79,13 @@ const StatusTemplates = () => {
     <div className={classes.container}>
       <WorkflowsStatusesMenu/>
       {renderLines()}
-      <StatusTemplateCreation paginationOptions={queryVars}/>
+      <StatusTemplateCreation
+        paginationOptions={queryVars}
+        contextual={false}
+       creationCallback={() => {}}
+       handleCloseContextual={() => {}}
+       inputValueContextual={''}
+       openContextual={false}/>
     </div>
   );
 };

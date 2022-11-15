@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
@@ -9,16 +9,20 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
+import Slide, { SlideProps } from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
+import { Store } from 'relay-runtime';
+import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StatusTemplateEdition from './StatusTemplateEdition';
 import { deleteNode } from '../../../../utils/Store';
+import { Theme } from '../../../../components/Theme';
+import { StatusTemplatePopoverEditionQuery$data } from './__generated__/StatusTemplatePopoverEditionQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
   },
@@ -35,8 +39,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
+const Transition = React.forwardRef((props: SlideProps, ref) => (
+  <Slide direction="up" ref={ref} {...props}/>
 ));
 Transition.displayName = 'TransitionSlide';
 
@@ -54,16 +58,21 @@ const statusTemplateEditionQuery = graphql`
   }
 `;
 
-const StatusTemplatePopover = ({ statusTemplateId, paginationOptions }) => {
+interface StatusTemplatePopoverProps {
+  statusTemplateId: string,
+  paginationOptions: { search: string, orderMode: string, orderBy: string },
+}
+
+const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({ statusTemplateId, paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [displayUpdate, setDisplayUpdate] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
+  const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
+  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
 
-  const handleOpen = (event) => {
+  const handleOpen = (event: React.MouseEvent) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -96,11 +105,15 @@ const StatusTemplatePopover = ({ statusTemplateId, paginationOptions }) => {
       variables: {
         id: statusTemplateId,
       },
-      updater: (store) => deleteNode(store, 'Pagination_statusTemplates', paginationOptions, statusTemplateId),
+      updater: (store: Store) => deleteNode(store, 'Pagination_statusTemplates', paginationOptions, statusTemplateId),
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
       },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
     });
   };
 
@@ -136,8 +149,8 @@ const StatusTemplatePopover = ({ statusTemplateId, paginationOptions }) => {
         <QueryRenderer
           query={statusTemplateEditionQuery}
           variables={{ id: statusTemplateId }}
-          render={({ props }) => {
-            if (props) {
+          render={({ props }: { props: StatusTemplatePopoverEditionQuery$data }) => {
+            if (props && props.statusTemplate) {
               return (
                 <StatusTemplateEdition
                   statusTemplate={props.statusTemplate}
@@ -145,7 +158,7 @@ const StatusTemplatePopover = ({ statusTemplateId, paginationOptions }) => {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <Loader variant={LoaderVariant.inElement} />;
           }}
         />
       </Drawer>

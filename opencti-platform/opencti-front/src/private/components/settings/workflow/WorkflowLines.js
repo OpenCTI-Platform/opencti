@@ -125,8 +125,8 @@ class WorkflowLinesComponent extends Component {
   render() {
     const { classes, data, keyword, t } = this.props;
     const filterByKeyword = (n) => keyword === ''
-      || n.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || n.tlabel.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      || n.label.toLowerCase().indexOf(keyword?.toLowerCase()) !== -1
+      || n.tlabel.toLowerCase().indexOf(keyword?.toLowerCase()) !== -1;
     const subTypesEdges = data.subTypes.edges;
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const translatedOrderedList = R.pipe(

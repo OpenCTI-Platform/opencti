@@ -1,21 +1,18 @@
 import * as R from 'ramda';
 
-export const convertStatus = (t, element) => (R.pathOr(null, ['status', 'template', 'name'], element) === null
+export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null
   ? ''
   : {
-    label: R.pathOr(null, ['status', 'template', 'name'], element),
-    color: R.pathOr(null, ['status', 'template', 'color'], element),
-    value: R.pathOr(null, ['status', 'id'], element),
-    order: R.pathOr(null, ['status', 'order'], element),
+    label: element?.status?.template?.name ?? null,
+    color: element?.status?.template?.color ?? null,
+    value: element?.status?.id ?? null,
+    order: element?.status?.order ?? null,
   });
 
-export const convertMarkings = (element) => R.pipe(
-  R.pathOr([], ['objectMarking', 'edges']),
-  R.map((n) => ({
-    label: n.node.definition,
-    value: n.node.id,
-  })),
-)(element);
+export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []).map((n) => ({
+  label: n.node.definition,
+  value: n.node.id,
+}));
 
 export const convertOrganizations = (element) => R.pipe(
   R.pathOr([], ['objectOrganization', 'edges']),
@@ -28,6 +25,6 @@ export const convertOrganizations = (element) => R.pipe(
 export const convertCreatedBy = (element) => (R.pathOr(null, ['createdBy', 'name'], element) === null
   ? ''
   : {
-    label: R.pathOr(null, ['createdBy', 'name'], element),
-    value: R.pathOr(null, ['createdBy', 'id'], element),
+    label: element?.createdBy?.name ?? null,
+    value: element?.createdBy?.id ?? null,
   });

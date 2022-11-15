@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import { pick } from 'ramda';
@@ -11,8 +11,12 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
+import { Theme } from '../../../../components/Theme';
+import {
+  StatusTemplateEdition_statusTemplate$key,
+} from './__generated__/StatusTemplateEdition_statusTemplate.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -67,19 +71,24 @@ const statusTemplateEditionFocus = graphql`
     }
 `;
 
-const statusTemplateValidation = (t) => Yup.object().shape({
+const statusTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   color: Yup.string().required(t('This field is required')),
 });
 
-const StatusTemplateEdition = ({ handleClose, statusTemplate }) => {
+interface StatusTemplateEditionProps {
+  handleClose: () => void,
+  statusTemplate: StatusTemplateEdition_statusTemplate$key
+}
+
+const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({ handleClose, statusTemplate }) => {
   const classes = useStyles();
   const data = useFragment(StatusTemplateEditionFragment, statusTemplate);
 
   const { t } = useFormatter();
   const initialValues = pick(['name', 'color'], data);
 
-  const handleChangeFocus = (name) => {
+  const handleChangeFocus = (name: string) => {
     commitMutation({
       mutation: statusTemplateEditionFocus,
       variables: {
@@ -88,10 +97,16 @@ const StatusTemplateEdition = ({ handleClose, statusTemplate }) => {
           focusOn: name,
         },
       },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onCompleted: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
     });
   };
 
-  const handleSubmitField = (name, value) => {
+  const handleSubmitField = (name: string, value: string) => {
     statusTemplateValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -101,6 +116,12 @@ const StatusTemplateEdition = ({ handleClose, statusTemplate }) => {
             id: data.id,
             input: { key: name, value: value || '' },
           },
+          updater: undefined,
+          optimisticUpdater: undefined,
+          optimisticResponse: undefined,
+          onCompleted: undefined,
+          onError: undefined,
+          setSubmitting: undefined,
         });
       })
       .catch(() => false);
@@ -128,7 +149,7 @@ const StatusTemplateEdition = ({ handleClose, statusTemplate }) => {
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={statusTemplateValidation(t)}
-        >
+          onSubmit={() => {}}>
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field

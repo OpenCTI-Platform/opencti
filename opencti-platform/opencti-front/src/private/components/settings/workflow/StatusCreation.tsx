@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
@@ -10,12 +10,15 @@ import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
+import { StatusCreationStatusTemplatesQuery$data } from './__generated__/StatusCreationStatusTemplatesQuery.graphql';
+import { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -83,7 +86,7 @@ const statusCreationMutation = graphql`
   }
 `;
 
-const statusValidation = (t) => Yup.object().shape({
+const statusValidation = (t: (name: string | object) => string) => Yup.object().shape({
   template: Yup.object().required(t('This field is required')),
   order: Yup.number()
     .typeError(t('The value must be a number'))
@@ -91,7 +94,12 @@ const statusValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-const StatusCreation = ({ display, subTypeId }) => {
+interface StatusCreationProps {
+  display: string,
+  subTypeId: string,
+}
+
+const StatusCreation: FunctionComponent<StatusCreationProps> = ({ display, subTypeId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -104,7 +112,7 @@ const StatusCreation = ({ display, subTypeId }) => {
     setOpen(false);
   };
 
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<{ template: { value: string }, order: string }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues = {
       order: parseInt(values.order, 10),
       template_id: values.template.value,
@@ -121,6 +129,10 @@ const StatusCreation = ({ display, subTypeId }) => {
         resetForm();
         handleClose();
       },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
     });
   };
 
@@ -140,14 +152,16 @@ const StatusCreation = ({ display, subTypeId }) => {
       </Fab>
       <Formik
         initialValues={{
-          template_id: '',
+          template: {
+            value: '',
+          },
           order: '',
         }}
         validationSchema={statusValidation(t)}
         onSubmit={onSubmit}
         onReset={onReset}
       >
-        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
           <Form>
             <Dialog
               open={open}
@@ -159,14 +173,13 @@ const StatusCreation = ({ display, subTypeId }) => {
               <DialogContent>
                 <QueryRenderer
                   query={statusCreationStatusTemplatesQuery}
-                  render={({ props }) => {
+                  render={({ props }: { props: StatusCreationStatusTemplatesQuery$data }) => {
                     if (props && props.statusTemplates) {
                       return (
                         <StatusTemplateField
                           name="template"
-                          style={{ marginTop: 20, width: '100%' }}
                           setFieldValue={setFieldValue}
-                          values={values.statusTemplate}
+                          helpertext={''}
                         />
                       );
                     }

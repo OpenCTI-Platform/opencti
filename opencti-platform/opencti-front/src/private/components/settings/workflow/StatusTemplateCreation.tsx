@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -13,13 +13,19 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
+import { Store } from 'relay-runtime';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/Store';
+import { Theme } from '../../../../components/Theme';
+import {
+  StatusTemplateCreationContextualMutation$data,
+} from './__generated__/StatusTemplateCreationContextualMutation.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -82,18 +88,27 @@ const statusTemplateContextualMutation = graphql`
   }
 `;
 
-const statusTemplateValidation = (t) => Yup.object().shape({
+const statusTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   color: Yup.string().required(t('This field is required')),
 });
 
-const StatusTemplateCreation = ({
-  paginationOptions,
+interface StatusTemplateCreationProps {
+  contextual: boolean,
+  inputValueContextual: string,
+  creationCallback: (data: StatusTemplateCreationContextualMutation$data) => void,
+  handleCloseContextual: () => void,
+  openContextual: boolean,
+  paginationOptions?: { search: string, orderMode: string, orderBy: string },
+}
+
+const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = ({
   contextual,
   inputValueContextual,
   creationCallback,
   handleCloseContextual,
   openContextual,
+  paginationOptions,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -108,14 +123,14 @@ const StatusTemplateCreation = ({
     setOpen(false);
   };
 
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<{ name: string, color: string }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: contextual ? statusTemplateContextualMutation : statusTemplateMutation,
       variables: {
         input: values,
       },
       setSubmitting,
-      updater: (store) => {
+      updater: (store: Store) => {
         if (!contextual) {
           insertNode(
             store,
@@ -125,7 +140,7 @@ const StatusTemplateCreation = ({
           );
         }
       },
-      onCompleted: (response) => {
+      onCompleted: (response: StatusTemplateCreationContextualMutation$data) => {
         setSubmitting(false);
         resetForm();
         if (contextual) {
@@ -135,6 +150,9 @@ const StatusTemplateCreation = ({
           handleClose();
         }
       },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
     });
   };
 

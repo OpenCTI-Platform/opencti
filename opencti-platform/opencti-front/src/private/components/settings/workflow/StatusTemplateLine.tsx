@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -7,8 +7,12 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { graphql, useFragment } from 'react-relay';
 import StatusTemplatePopover from './StatusTemplatePopover';
+import { Theme } from '../../../../components/Theme';
+import {
+  StatusTemplateLine_node$key,
+} from './__generated__/StatusTemplateLine_node.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -28,14 +32,27 @@ const useStyles = makeStyles((theme) => ({
     right: -10,
   },
   itemIconDisabled: {
-    color: theme.palette.grey[700],
+    color: theme.palette.grey?.[700],
   },
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: theme.palette.grey?.[700],
   },
 }));
+
+export type DataColumnsType = {
+  name: {
+    label: string,
+    width: string,
+    isSortable: boolean,
+  },
+  color: {
+    label: string,
+    width: string,
+    isSortable: boolean,
+  },
+};
 
 export const StatusTemplateLineFragment = graphql`
     fragment StatusTemplateLine_node on StatusTemplate {
@@ -45,7 +62,13 @@ export const StatusTemplateLineFragment = graphql`
     }
 `;
 
-const StatusTemplateLine = ({ node, dataColumns, paginationOptions }) => {
+interface StatusTemplateLineProps {
+  node: StatusTemplateLine_node$key,
+  dataColumns: DataColumnsType,
+  paginationOptions: { search: string, orderMode: string, orderBy: string },
+}
+
+const StatusTemplateLine: FunctionComponent<StatusTemplateLineProps> = ({ node, dataColumns, paginationOptions }) => {
   const classes = useStyles();
 
   const data = useFragment(StatusTemplateLineFragment, node);
