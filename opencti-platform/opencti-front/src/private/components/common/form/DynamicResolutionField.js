@@ -159,7 +159,7 @@ const DynamicResolutionField = ({
   const [, meta] = useField(field.name);
   return (
     <div style={style}>
-      <Typography variant="h3">{title}</Typography>
+      <Typography variant="h4">{title}</Typography>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={5}>
           <TextField

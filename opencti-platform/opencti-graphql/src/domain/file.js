@@ -18,6 +18,6 @@ export const uploadImport = async (context, user, file) => {
 export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false) => {
   const meta = {};
   if (entityId) { meta.entity_id = entityId; }
-  if (labels) { meta.labels = labels; }
+  if (labels) { meta.labels_text = labels.join(';'); }
   return upload(context, user, 'import/pending', file, meta, false, errorOnExisting);
 };

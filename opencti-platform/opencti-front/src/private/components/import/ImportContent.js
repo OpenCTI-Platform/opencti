@@ -9,7 +9,7 @@ import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import {
-  AddOutlined,
+  Add,
   ArrowDropDown,
   ArrowDropUp,
   Extension,
@@ -28,7 +28,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { v4 as uuid } from 'uuid';
-import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
 import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import {
@@ -90,17 +90,6 @@ const styles = (theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -113,6 +102,11 @@ const styles = (theme) => ({
   },
   autoCompleteIndicator: {
     display: 'none',
+  },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
   },
 });
 
@@ -482,19 +476,10 @@ class ImportContentComponent extends Component {
               <Typography
                 variant="h4"
                 gutterBottom={true}
-                style={{ float: 'left' }}
+                style={{ marginBottom: 15 }}
               >
                 {t('Analyst workbenches')}
               </Typography>
-              <div style={{ float: 'left', marginTop: -15 }}>
-                <IconButton
-                  onClick={this.handleOpenCreate.bind(this)}
-                  color="primary"
-                >
-                  <AddOutlined />
-                </IconButton>
-              </div>
-              <div className="clearfix" />
               <Paper classes={{ root: classes.paper }} variant="outlined">
                 <List>
                   <ListItem
@@ -732,6 +717,14 @@ class ImportContentComponent extends Component {
             )}
           </Formik>
         </div>
+        <Fab
+          onClick={this.handleOpenCreate.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
       </div>
     );
   }

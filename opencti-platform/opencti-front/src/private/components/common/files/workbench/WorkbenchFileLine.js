@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
-import moment from 'moment';
+import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -49,7 +48,7 @@ const styles = (theme) => ({
     fontSize: 12,
     height: 20,
     float: 'left',
-    width: 120,
+    marginRight: 10,
   },
   linesContainer: {
     marginTop: 10,
@@ -184,7 +183,7 @@ class WorkbenchFileLineComponent extends Component {
   }
 
   render() {
-    const { classes, t, fld, file, dense, directDownload, nested, nsdt } = this.props;
+    const { classes, t, file, dense, directDownload, nested, nsdt } = this.props;
     const { displayDelete } = this.state;
     const { uploadStatus, metaData } = file;
     const { errors } = metaData;

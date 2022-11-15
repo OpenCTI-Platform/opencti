@@ -773,7 +773,9 @@ type FileMetadata {
   list_filters: String
   entity_id: String
   entity: StixCoreObject
+  labels_text: String
   labels: [String]
+  creator_id: String
   creator: User
 }
 
@@ -2048,6 +2050,7 @@ input AttackPatternAddInput {
   x_mitre_id: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   killChainPhases: [String]
   externalReferences: [String]
@@ -2821,6 +2824,7 @@ input CourseOfActionAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime

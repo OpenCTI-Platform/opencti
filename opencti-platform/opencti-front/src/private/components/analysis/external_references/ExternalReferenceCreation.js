@@ -113,7 +113,11 @@ class ExternalReferenceCreation extends Component {
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
-    commitMutation({
+    if (this.props.dryrun && this.props.onCreate) {
+      this.props.onCreate(values, true);
+      return this.props.handleClose();
+    }
+    return commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
         input: finalValues,
@@ -142,7 +146,11 @@ class ExternalReferenceCreation extends Component {
 
   onSubmitContextual(values, { setSubmitting, setErrors, resetForm }) {
     const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
-    commitMutation({
+    if (this.props.dryrun) {
+      this.props.creationCallback({ externalReferenceAdd: values });
+      return this.props.handleClose();
+    }
+    return commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
         input: finalValues,
@@ -174,7 +182,7 @@ class ExternalReferenceCreation extends Component {
   }
 
   renderClassic() {
-    const { t, classes } = this.props;
+    const { t, classes, dryrun } = this.props;
     return (
       <div>
         <Fab
@@ -254,18 +262,20 @@ class ExternalReferenceCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <Field
-                    component={SimpleFileUpload}
-                    name="file"
-                    label={t('Associated file')}
-                    FormControlProps={{ style: { marginTop: 20 } }}
-                    InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                    InputProps={{
-                      fullWidth: true,
-                      variant: 'standard',
-                    }}
-                    fullWidth={true}
-                  />
+                  {!dryrun && (
+                    <Field
+                      component={SimpleFileUpload}
+                      name="file"
+                      label={t('Associated file')}
+                      FormControlProps={{ style: { marginTop: 20 } }}
+                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                      InputProps={{
+                        fullWidth: true,
+                        variant: 'standard',
+                      }}
+                      fullWidth={true}
+                    />
+                  )}
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -295,7 +305,7 @@ class ExternalReferenceCreation extends Component {
   }
 
   renderContextual() {
-    const { t, classes, inputValue, display, open, handleClose } = this.props;
+    const { t, classes, inputValue, display, open, handleClose, dryrun } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!handleClose && (
@@ -368,20 +378,22 @@ class ExternalReferenceCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20, marginBottom: 20 }}
                   />
-                  <Field
-                    component={SimpleFileUpload}
-                    name="file"
-                    label={t('Associated file')}
-                    FormControlProps={{
-                      style: { marginTop: 20, width: '100%' },
-                    }}
-                    InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                    InputProps={{
-                      fullWidth: true,
-                      variant: 'standard',
-                    }}
-                    fullWidth={true}
-                  />
+                  {!dryrun && (
+                    <Field
+                      component={SimpleFileUpload}
+                      name="file"
+                      label={t('Associated file')}
+                      FormControlProps={{
+                        style: { marginTop: 20, width: '100%' },
+                      }}
+                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                      InputProps={{
+                        fullWidth: true,
+                        variant: 'standard',
+                      }}
+                      fullWidth={true}
+                    />
+                  )}
                 </DialogContent>
                 <DialogActions>
                   <Button

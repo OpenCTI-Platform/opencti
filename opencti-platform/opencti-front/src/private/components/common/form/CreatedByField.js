@@ -105,6 +105,7 @@ class CreatedByField extends Component {
       onChange,
       helpertext,
       disabled,
+      dryrun,
     } = this.props;
     return (
       <div>
@@ -140,6 +141,7 @@ class CreatedByField extends Component {
           inputValue={this.state.keyword}
           open={this.state.identityCreation}
           handleClose={this.handleCloseIdentityCreation.bind(this)}
+          dryrun={dryrun}
           creationCallback={(data) => {
             setFieldValue(name, {
               label: data.identityAdd.name,

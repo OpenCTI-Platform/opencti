@@ -1250,11 +1250,14 @@ const i18n = {
       'Add and complete': 'Agregar y completar',
       'Update and complete': 'Actualizar y completar',
       'Manage an entity': 'Administrar una entidad',
+      'Manage an observable': 'Administrar un observable',
+      'Manage a container': 'Administrar un contenedor',
       'Do you want to remove this entity?': '¿Quieres eliminar este objeto?',
       'Add context': 'Agregar contexto',
       'Organizations restriction': 'Restricción de organizaciones',
       'Platform organization': 'Organización de la plataforma',
-      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'Cuando especificó la organización de la plataforma, los datos sin ninguna restricción de organización serán accesibles solo para los usuarios que forman parte de la plataforma.',
+      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one':
+        'Cuando especificó la organización de la plataforma, los datos sin ninguna restricción de organización serán accesibles solo para los usuarios que forman parte de la plataforma.',
       'Delete the element if no other containers contain it':
         'Eliminar el elemento si ningún otro contenedor lo contiene',
       'Bulk search': 'Búsqueda masiva',
@@ -1265,6 +1268,7 @@ const i18n = {
       Share: 'Compartir',
       'Open the suggestions': 'Abre las sugerencias',
       'Reset filters': 'Restablecer filtros',
+      reversed: 'invertido',
       Limit: 'Límite',
       // Time
       '24h': '24 h',
@@ -2843,12 +2847,15 @@ const i18n = {
       'Add and complete': 'Ajouter et compléter',
       'Update and complete': 'Modifier et compléter',
       'Manage an entity': 'Gérer une entité',
+      'Manage an observable': 'Gérer un observable',
+      'Manage a container': 'Gérer un conteneur',
       'Do you want to remove this object?':
         'Souhaitez-vous retirer cet object ?',
       'Add context': 'Ajouter du contexte',
       'Organizations restriction': "Restriction d'organisations",
       'Platform organization': 'Organisation de la plateforme',
-      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'Lorsque vous avez spécifié l\'organisation de la plateforme, les données sans aucune restriction d\'organisation ne seront accessibles qu\'aux utilisateurs faisant partie de celle ci',
+      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one':
+        "Lorsque vous avez spécifié l'organisation de la plateforme, les données sans aucune restriction d'organisation ne seront accessibles qu'aux utilisateurs faisant partie de celle ci",
       'Delete the element if no other containers contain it':
         "Supprimer l'élément si aucun autre conteneur ne le contient",
       IF: 'SI',
@@ -2862,6 +2869,7 @@ const i18n = {
       Share: 'Partager',
       'Open the suggestions': 'Ouvrir les suggestions',
       'Reset filters': 'Réinitialiser les filtres',
+      reversed: 'inversé',
       Limit: 'Limite',
       // Time
       '24h': '24h',
@@ -4388,11 +4396,14 @@ const i18n = {
       'Add and complete': '追加して完成',
       'Update and complete': '更新して完了',
       'Manage an entity': 'エンティティを管理する',
+      'Manage an observable': 'オブザーバブルを管理する',
+      'Manage a container': 'コンテナを管理する',
       'Do you want to remove this object?': 'このオブジェクトを削除しますか?',
       'Add context': 'コンテキストを追加',
       'Organizations restriction': '組織の制限',
       'Platform organization': 'プラットフォーム構成',
-      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': 'プラットフォーム組織を指定すると、組織の制限のないデータには、プラットフォーム 1 の一部であるユーザーのみがアクセスできます',
+      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one':
+        'プラットフォーム組織を指定すると、組織の制限のないデータには、プラットフォーム 1 の一部であるユーザーのみがアクセスできます',
       'Delete the element if no other containers contain it':
         '他のコンテナに要素が含まれていない場合は、要素を削除します',
       'Bulk search': '一括検索',
@@ -4403,6 +4414,7 @@ const i18n = {
       Share: '共有する',
       'Open the suggestions': '提案を開く',
       'Reset filters': 'フィルタをリセット',
+      reversed: '反転した',
       Limit: 'リミット',
       // Time
       '24h': '24時間',
@@ -5862,11 +5874,14 @@ const i18n = {
       'Add and complete': '添加并完成',
       'Update and complete': '更新并完成',
       'Manage an entity': '管理实体',
+      'Manage an observable': '管理一个可观察的',
+      'Manage a container': '理容器',
       'Do you want to remove this object?': '是否要删除此对象？',
       'Add context': '添加上下文',
       'Organizations restriction': '组织限制',
       'Platform organization': '平台組織',
-      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one': '當您指定平台組織時，沒有任何組織限制的數據將僅適用於屬於平台一的用戶',
+      'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one':
+        '當您指定平台組織時，沒有任何組織限制的數據將僅適用於屬於平台一的用戶',
       'Delete the element if no other containers contain it':
         '如果沒有其他容器包含該元素，則刪除該元素',
       'Bulk search': '批量搜索',
@@ -5877,6 +5892,7 @@ const i18n = {
       Share: '分享',
       'Open the suggestions': '打开建议',
       'Reset filters': '重置过滤器',
+      reversed: '反转',
       Limit: '限制',
       // Time
       '24h': '24小时',

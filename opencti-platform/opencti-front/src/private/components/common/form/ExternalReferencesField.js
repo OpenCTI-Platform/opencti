@@ -107,6 +107,7 @@ class ExternalReferencesField extends Component {
       helpertext,
       noStoreUpdate,
       id,
+      dryrun,
     } = this.props;
     return (
       <div>
@@ -141,6 +142,7 @@ class ExternalReferencesField extends Component {
           display={true}
           open={this.state.externalReferenceCreation}
           handleClose={this.handleCloseExternalReferenceCreation.bind(this)}
+          dryrun={dryrun}
           creationCallback={(data) => {
             const newExternalReference = data.externalReferenceAdd;
             if (id) {

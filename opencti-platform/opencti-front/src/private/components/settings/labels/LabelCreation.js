@@ -114,7 +114,11 @@ class LabelCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    commitMutation({
+    if (this.props.dryrun && this.props.contextual) {
+      this.props.creationCallback({ labelAdd: values });
+      return this.props.handleClose();
+    }
+    return commitMutation({
       mutation: this.props.contextual ? labelContextualMutation : labelMutation,
       variables: {
         input: values,

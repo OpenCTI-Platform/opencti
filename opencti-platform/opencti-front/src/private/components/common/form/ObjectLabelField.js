@@ -62,7 +62,16 @@ class ObjectLabelField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, setFieldValue, values, helpertext } = this.props;
+    const {
+      t,
+      name,
+      style,
+      classes,
+      setFieldValue,
+      values,
+      helpertext,
+      dryrun,
+    } = this.props;
     return (
       <div>
         <Field
@@ -95,6 +104,7 @@ class ObjectLabelField extends Component {
           inputValue={this.state.labelInput}
           open={this.state.labelCreation}
           handleClose={this.handleCloseLabelCreation.bind(this)}
+          dryrun={dryrun}
           creationCallback={(data) => {
             setFieldValue(
               name,

@@ -71,6 +71,7 @@ import Filters from '../common/lists/Filters';
 import TopMenuChannel from './TopMenuChannel';
 import TopMenuNarrative from './TopMenuNarrative';
 import TopMenuEvent from './TopMenuEvent';
+import TopMenuImport from './TopMenuImport';
 
 const styles = (theme) => ({
   appBar: {
@@ -168,8 +169,7 @@ const TopBar = ({
           </Link>
         </div>
         <div className={classes.menuContainer}>
-          {(location.pathname === '/dashboard'
-            || location.pathname.includes('/dashboard/import')) && (
+          {location.pathname === '/dashboard' && (
             <TopMenuDashboard
               handleChangeTimeField={handleChangeTimeField}
               timeField={timeField}
@@ -178,6 +178,7 @@ const TopBar = ({
             />
           )}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
+          {location.pathname.includes('/dashboard/import') && <TopMenuImport />}
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
             <TopMenuAnalysis />

@@ -246,9 +246,10 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 
 export const upload = async (context, user, path, fileUpload, meta = {}, noTriggerImport = false, errorOnExisting = false) => {
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
+  const key = `${path}/${filename}`;
   let existingFile = null;
   try {
-    existingFile = await loadFile(context, user, filename);
+    existingFile = await loadFile(context, user, key);
   } catch {
     // do nothing
   }
@@ -263,13 +264,12 @@ export const upload = async (context, user, path, fileUpload, meta = {}, noTrigg
     metadata.version = now();
   }
   logAudit.info(user, UPLOAD_ACTION, { path, filename, metadata });
-  const key = `${path}/${filename}`;
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(filename),
     mimetype: fileMime,
     encoding,
-    creator: user.id,
+    creator_id: user.id,
   };
   const s3Upload = new Upload({
     client: s3Client,

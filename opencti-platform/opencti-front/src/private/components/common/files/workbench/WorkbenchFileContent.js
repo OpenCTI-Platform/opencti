@@ -1070,12 +1070,14 @@ class WorkbenchFileContentComponent extends Component {
                       name="createdBy"
                       style={{ marginTop: 20, width: '100%' }}
                       setFieldValue={setFieldValue}
+                      dryrun={true}
                     />
                     <ObjectLabelField
                       name="objectLabel"
                       style={{ marginTop: 20, width: '100%' }}
                       setFieldValue={setFieldValue}
                       values={values.objectLabel}
+                      dryrun={true}
                     />
                     <ObjectMarkingField
                       name="objectMarking"
@@ -1086,6 +1088,7 @@ class WorkbenchFileContentComponent extends Component {
                       style={{ marginTop: 20, width: '100%' }}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
+                      dryrun={true}
                     />
                     <div className={classes.buttons}>
                       <Button

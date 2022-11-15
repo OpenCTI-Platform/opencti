@@ -20,7 +20,7 @@ const styles = () => ({
   paperHistory: {
     height: '100%',
     margin: '10px 0 0 0',
-    padding: 15,
+    padding: 0,
     borderRadius: 6,
   },
 });
@@ -64,14 +64,9 @@ class StixCoreObjectLatestHistory extends Component {
               >
                 <List>
                   {Array.from(Array(5), (e, i) => (
-                    <ListItem
-                      key={i}
-                      dense={true}
-                      divider={true}
-                      button={false}
-                    >
+                    <ListItem dense={true} divider={true} button={false}>
                       <ListItemIcon>
-                        <Avatar>{i}</Avatar>
+                        <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
                       </ListItemIcon>
                       <ListItemText
                         primary={

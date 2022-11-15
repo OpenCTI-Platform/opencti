@@ -738,7 +738,9 @@ type FileMetadata {
   list_filters: String
   entity_id: String
   entity: StixCoreObject
+  labels_text: String
   labels: [String]
+  creator_id: String
   creator: User
 }
 type File {

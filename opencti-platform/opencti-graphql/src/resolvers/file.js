@@ -19,8 +19,11 @@ const fileResolvers = {
       if (metaData.entity_id) {
         metaData = { ...metaData, entity: internalLoadById(context, context.user, metaData.entity_id, { type: ABSTRACT_STIX_DOMAIN_OBJECT }) };
       }
-      if (metaData.creator) {
-        metaData = { ...metaData, creator: internalLoadById(context, context.user, metaData.creator, { type: ENTITY_TYPE_USER }) };
+      if (metaData.creator_id) {
+        metaData = { ...metaData, creator: internalLoadById(context, context.user, metaData.creator_id, { type: ENTITY_TYPE_USER }) };
+      }
+      if (metaData.labels_text) {
+        metaData = { ...metaData, labels: metaData.labels_text.split(';') };
       }
       return metaData;
     },

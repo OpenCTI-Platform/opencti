@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useContext, useState } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
@@ -15,15 +15,11 @@ import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
-import { StixCoreObjectSharingQuery } from './__generated__/StixCoreObjectSharingQuery.graphql';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  granted,
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  UserContext,
-} from '../../../../utils/Security';
+import { granted, KNOWLEDGE_KNUPDATE_KNORGARESTRICT, UserContext } from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
+import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectSharingQuery.graphql';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -130,10 +126,6 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   }
   const handleOpenSharing = () => setDisplaySharing(true);
   const handleCloseSharing = () => setDisplaySharing(false);
-  const { stixCoreObject } = useLazyLoadQuery<StixCoreObjectSharingQuery>(
-    containerHeaderSharedQuery,
-    { id: elementId },
-  );
   const removeOrganization = (organizationId: string) => {
     commitMutation({
       mutation: containerHeaderSharedQueryGroupDeleteMutation,
@@ -168,15 +160,95 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
       });
     }
   };
-  const edges = stixCoreObject?.objectOrganization?.edges ?? [];
-  if (variant === 'header') {
+  const render = ({ stixCoreObject }: StixCoreObjectSharingQuery$data) => {
+    const edges = stixCoreObject?.objectOrganization?.edges ?? [];
+    if (variant === 'header') {
+      return (
+        <React.Fragment>
+          {edges.map((edge) => (
+            <Tooltip key={edge.node.id} title={edge.node.name}>
+              <Chip
+                icon={<AccountBalanceOutlined />}
+                classes={{ root: classes.organizationInHeader }}
+                color="warning"
+                variant="outlined"
+                label={truncate(edge.node.name, 15)}
+                onDelete={() => removeOrganization(edge.node.id)}
+              />
+            </Tooltip>
+          ))}
+          <Tooltip title={t('Share with an organization')}>
+            <ToggleButton
+              onClick={handleOpenSharing}
+              value="shared"
+              size="small"
+            >
+              <ShareOutlined fontSize="small" color="warning" />
+            </ToggleButton>
+          </Tooltip>
+          <Formik
+            initialValues={{ objectOrganization: { value: '', label: '' } }}
+            onSubmit={onSubmitOrganizations}
+            onReset={handleCloseSharing}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Dialog
+                PaperProps={{ elevation: 1 }}
+                open={displaySharing}
+                onClose={() => handleReset()}
+                fullWidth={true}
+              >
+                <DialogTitle>{t('Share with an organization')}</DialogTitle>
+                <DialogContent style={{ overflowY: 'hidden' }}>
+                  <Form>
+                    <ObjectOrganizationField
+                      name="objectOrganization"
+                      style={{ width: '100%' }}
+                      label={t('Organization')}
+                      multiple={false}
+                    />
+                  </Form>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
+                    {t('Close')}
+                  </Button>
+                  <Button
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    color="secondary"
+                  >
+                    {t('Share')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            )}
+          </Formik>
+        </React.Fragment>
+      );
+    }
     return (
       <React.Fragment>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Organizations sharing')}
+        </Typography>
+        <Tooltip title={t('Share with an organization')}>
+          <IconButton
+            color="secondary"
+            aria-label="Label"
+            onClick={handleOpenSharing}
+            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            size="large"
+          >
+            <ShareOutlined fontSize="small" color="warning" />
+          </IconButton>
+        </Tooltip>
+        <div className="clearfix" />
         {edges.map((edge) => (
           <Tooltip key={edge.node.id} title={edge.node.name}>
             <Chip
               icon={<AccountBalanceOutlined />}
-              classes={{ root: classes.organizationInHeader }}
+              classes={{ root: classes.organization }}
               color="warning"
               variant="outlined"
               label={truncate(edge.node.name, 15)}
@@ -184,11 +256,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             />
           </Tooltip>
         ))}
-        <Tooltip title={t('Share with an organization')}>
-          <ToggleButton onClick={handleOpenSharing} value="shared" size="small">
-            <ShareOutlined fontSize="small" color="warning" />
-          </ToggleButton>
-        </Tooltip>
+        <div className="clearfix" />
         <Formik
           initialValues={{ objectOrganization: { value: '', label: '' } }}
           onSubmit={onSubmitOrganizations}
@@ -229,76 +297,18 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         </Formik>
       </React.Fragment>
     );
-  }
+  };
   return (
-    <React.Fragment>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Organizations sharing')}
-      </Typography>
-      <Tooltip title={t('Share with an organization')}>
-        <IconButton
-          color="secondary"
-          aria-label="Label"
-          onClick={handleOpenSharing}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
-        >
-          <ShareOutlined fontSize="small" color="warning" />
-        </IconButton>
-      </Tooltip>
-      <div className="clearfix" />
-      {edges.map((edge) => (
-        <Tooltip key={edge.node.id} title={edge.node.name}>
-          <Chip
-            icon={<AccountBalanceOutlined />}
-            classes={{ root: classes.organization }}
-            color="warning"
-            variant="outlined"
-            label={truncate(edge.node.name, 15)}
-            onDelete={() => removeOrganization(edge.node.id)}
-          />
-        </Tooltip>
-      ))}
-      <div className="clearfix" />
-      <Formik
-        initialValues={{ objectOrganization: { value: '', label: '' } }}
-        onSubmit={onSubmitOrganizations}
-        onReset={handleCloseSharing}
-      >
-        {({ submitForm, handleReset, isSubmitting }) => (
-          <Dialog
-            PaperProps={{ elevation: 1 }}
-            open={displaySharing}
-            onClose={() => handleReset()}
-            fullWidth={true}
-          >
-            <DialogTitle>{t('Share with an organization')}</DialogTitle>
-            <DialogContent style={{ overflowY: 'hidden' }}>
-              <Form>
-                <ObjectOrganizationField
-                  name="objectOrganization"
-                  style={{ width: '100%' }}
-                  label={t('Organization')}
-                  multiple={false}
-                />
-              </Form>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleReset} disabled={isSubmitting}>
-                {t('Close')}
-              </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-                color="secondary"
-              >
-                {t('Share')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-        )}
-      </Formik>
-    </React.Fragment>
+    <QueryRenderer
+      query={containerHeaderSharedQuery}
+      variables={{ id: elementId }}
+      render={(result: { props: StixCoreObjectSharingQuery$data }) => {
+        if (result.props) {
+          return render(result.props);
+        }
+        return <div />;
+      }}
+    />
   );
 };
 

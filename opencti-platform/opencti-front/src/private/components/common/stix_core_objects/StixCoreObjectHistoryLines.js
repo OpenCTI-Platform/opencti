@@ -18,6 +18,10 @@ const styles = () => ({
     padding: 15,
     borderRadius: 6,
   },
+  avatar: {
+    width: 40,
+    height: 40,
+  },
 });
 
 class StixCoreObjectHistoryLinesComponent extends Component {

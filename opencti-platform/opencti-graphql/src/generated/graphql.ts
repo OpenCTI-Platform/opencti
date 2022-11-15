@@ -391,6 +391,7 @@ export type AttackPatternAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
@@ -2162,6 +2163,7 @@ export type CourseOfActionAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
@@ -3878,11 +3880,13 @@ export type FileEdge = {
 export type FileMetadata = {
   __typename?: 'FileMetadata';
   creator?: Maybe<User>;
+  creator_id?: Maybe<Scalars['String']>;
   encoding?: Maybe<Scalars['String']>;
   entity?: Maybe<StixCoreObject>;
   entity_id?: Maybe<Scalars['String']>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
   labels?: Maybe<Array<Maybe<Scalars['String']>>>;
+  labels_text?: Maybe<Scalars['String']>;
   list_filters?: Maybe<Scalars['String']>;
   messages?: Maybe<Array<Maybe<WorkMessage>>>;
   mimetype?: Maybe<Scalars['String']>;
@@ -21435,11 +21439,13 @@ export type FileEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type FileMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileMetadata'] = ResolversParentTypes['FileMetadata']> = ResolversObject<{
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creator_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   encoding?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   labels?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  labels_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   list_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   mimetype?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

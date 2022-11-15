@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
+import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
@@ -99,12 +100,21 @@ class IdentityCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    if (this.props.dryrun && this.props.contextual) {
+      this.props.creationCallback({
+        identityAdd: {
+          ...values,
+          id: `identity--${uuid()}`,
+        },
+      });
+      return this.props.handleClose();
+    }
     const finalValues = R.pipe(
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
-    commitMutation({
+    return commitMutation({
       mutation: identityMutation,
       variables: {
         input: finalValues,
@@ -132,7 +142,7 @@ class IdentityCreation extends Component {
   }
 
   renderClassic() {
-    const { t, classes } = this.props;
+    const { t, classes, dryrun } = this.props;
     return (
       <div>
         <Fab
@@ -221,22 +231,28 @@ class IdentityCreation extends Component {
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
                     <MenuItem value="System">{t('System')}</MenuItem>
                   </Field>
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
+                  {!dryrun && (
+                    <ObjectLabelField
+                      name="objectLabel"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.objectLabel}
+                    />
+                  )}
+                  {!dryrun && (
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                  )}
+                  {!dryrun && (
+                    <ExternalReferencesField
+                      name="externalReferences"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.externalReferences}
+                    />
+                  )}
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -266,7 +282,7 @@ class IdentityCreation extends Component {
   }
 
   renderContextual() {
-    const { t, inputValue, open, onlyAuthors, handleClose } = this.props;
+    const { t, inputValue, open, onlyAuthors, handleClose, dryrun } = this.props;
     return (
       <div>
         <Formik
@@ -341,22 +357,28 @@ class IdentityCreation extends Component {
                     )}
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
                   </Field>
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
+                  {!dryrun && (
+                    <ObjectLabelField
+                      name="objectLabel"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.objectLabel}
+                    />
+                  )}
+                  {!dryrun && (
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                  )}
+                  {!dryrun && (
+                    <ExternalReferencesField
+                      name="externalReferences"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.externalReferences}
+                    />
+                  )}
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
