@@ -4,3 +4,4 @@ plyara==2.1.1
 sigmatools==0.19.1
 jsonpatch==1.32
 eql==0.9.13
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
