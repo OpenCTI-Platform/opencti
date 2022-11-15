@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import { append } from 'ramda';
 import { Field } from 'formik';
 import { Label } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
@@ -12,6 +11,7 @@ import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTempl
 import {
   StatusTemplateCreationContextualMutation$data,
 } from '../../settings/workflow/__generated__/StatusTemplateCreationContextualMutation.graphql';
+import { Option } from './ReferenceField';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles(() => ({
 
 interface StatusTemplateFieldProps {
   name: string,
-  setFieldValue: (field: string, value: (list: readonly { name: string; id: string; }[]) => { name: string; id: string; }[], shouldValidate?: boolean) => void,
+  setFieldValue: (field: string, value: Option) => void,
   helpertext: string,
 }
 
@@ -81,7 +81,6 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
       <Field
         component={AutocompleteField}
         name={name}
-        multiple={false}
         textfieldprops={{
           variant: 'standard',
           label: t('Name'),
@@ -107,16 +106,11 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
         inputValueContextual={statusTemplateInput}
         openContextual={statusTemplateCreation}
         handleCloseContextual={handleCloseStatusTemplateCreation}
-        creationCallback={(data: StatusTemplateCreationContextualMutation$data) => {
-          setFieldValue(
-            name,
-            append(
-              {
-                name: data.statusTemplateAdd.name,
-                id: data.statusTemplateAdd.id,
-              },
-            ),
-          );
+        creationCallback={({ statusTemplateAdd: data }: StatusTemplateCreationContextualMutation$data) => {
+          setFieldValue(name, {
+            value: data.id,
+            label: data.name,
+          });
         }}
       />
     </div>
