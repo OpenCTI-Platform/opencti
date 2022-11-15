@@ -17,7 +17,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import InvestigationGraphBar from './InvestigationGraphBar';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters, } from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import {
   applyFilters,
   buildGraphData,
