@@ -15,6 +15,7 @@ import { useTheme } from '@mui/styles';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
+import { Theme } from '../../../../components/Theme';
 
 const reportPopoverDeletionQuery = graphql`
   query ReportPopoverDeletionQuery($id: String) {
@@ -46,7 +47,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   handleCloseDelete,
 }) => {
   const { t } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const history = useHistory();
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);

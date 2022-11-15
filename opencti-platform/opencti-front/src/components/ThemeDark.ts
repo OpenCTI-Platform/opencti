@@ -16,6 +16,7 @@ const ThemeDark = (
   logo: logo || fileUri(LogoText),
   palette: {
     mode: 'dark',
+    error: { main: '#f44336' },
     primary: { main: primary || '#00b1ff' },
     secondary: { main: secondary || '#ec407a' },
     background: {

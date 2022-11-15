@@ -14,6 +14,7 @@ const ThemeLight = (
   logo: logo || fileUri(LogoText),
   palette: {
     mode: 'light',
+    error: { main: '#f44336' },
     primary: { main: primary || '#007fff' },
     secondary: { main: secondary || '#d81b60' },
     background: {
