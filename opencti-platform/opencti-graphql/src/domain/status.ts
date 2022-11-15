@@ -18,9 +18,9 @@ import type {
   StatusTemplate,
   StatusTemplateAddInput,
 } from '../generated/graphql';
-import { OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
+import { EditContext, OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
-import { notify } from '../database/redis';
+import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesFromCache } from '../database/cache';
@@ -75,4 +75,14 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
 };
 export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
   return deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
+};
+export const statusTemplateEditContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditContext) => {
+  await setEditContext(user, statusTemplateId, input);
+  // eslint-disable-next-line max-len
+  return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user));
+};
+export const statusTemplateCleanContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  await delEditContext(user, statusTemplateId);
+  // eslint-disable-next-line max-len
+  return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user));
 };

@@ -9,11 +9,7 @@ import TextField from '@mui/material/TextField';
 import Popover from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import {
-  FilterListOutlined,
-  PaletteOutlined,
-  BiotechOutlined,
-} from '@mui/icons-material';
+import { BiotechOutlined, FilterListOutlined, PaletteOutlined } from '@mui/icons-material';
 import * as PropTypes from 'prop-types';
 import Tooltip from '@mui/material/Tooltip';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -30,10 +26,7 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import {
-  identitySearchCreatorsSearchQuery,
-  identitySearchIdentitiesSearchQuery,
-} from '../identities/IdentitySearch';
+import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
@@ -112,7 +105,7 @@ const styles = (theme) => ({
     margin: '0 10px 10px 0',
   },
 });
-
+const onlyGroupOrganization = ['x_opencti_workflow_id'];
 const directFilters = [
   'report_types',
   'channel_types',
@@ -357,19 +350,7 @@ class Filters extends Component {
   searchEntities(filterKey, event) {
     const { searchScope } = this.state;
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    const scores = [
-      '0',
-      '10',
-      '20',
-      '30',
-      '40',
-      '50',
-      '60',
-      '70',
-      '80',
-      '90',
-      '100',
-    ];
+    const scores = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'];
     const confidences = ['0', '15', '50', '75', '85'];
     const { t, theme, availableEntityTypes, availableRelationshipTypes } = this.props;
     if (!event) {
@@ -879,10 +860,11 @@ class Filters extends Component {
             const statusEntities = R.pipe(
               R.pathOr([], ['statuses', 'edges']),
               R.map((n) => ({
-                label: t(`status_${n.node.template.name}`),
+                label: n.node.template.name,
                 color: n.node.template.color,
                 value: n.node.id,
                 order: n.node.order,
+                group: n.node.type,
                 type: 'attribute',
               })),
             )(data);
@@ -1375,20 +1357,12 @@ class Filters extends Component {
 
   handleChange(filterKey, event, value) {
     if (value) {
+      const group = !onlyGroupOrganization.includes(filterKey) ? value.group : undefined;
+      const filterAdd = `${filterKey}${group ? `_${group}` : ''}`;
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(
-          `${filterKey}${value.group ? `_${value.group}` : ''}`,
-          value.value,
-          value.label,
-          event,
-        );
+        this.handleAddFilter(filterAdd, value.value, value.label, event);
       } else {
-        this.props.handleAddFilter(
-          `${filterKey}${value.group ? `_${value.group}` : ''}`,
-          value.value,
-          value.label,
-          event,
-        );
+        this.props.handleAddFilter(filterAdd, value.value, value.label, event);
       }
     }
   }
@@ -1506,8 +1480,7 @@ class Filters extends Component {
                     ? (option) => option.type
                     : (option) => t(option.group ? option.group : `filter_${filterKey}`)
                 }
-                isOptionEqualToValue={(option, value) => option.value === value.value
-                }
+                isOptionEqualToValue={(option, value) => option.value === value.value}
                 renderInput={(params) => (
                   <TextField
                     {...R.dissoc('InputProps', params)}

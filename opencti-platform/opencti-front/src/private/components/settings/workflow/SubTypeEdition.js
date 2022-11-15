@@ -72,7 +72,7 @@ class SubTypeEditionContainer extends Component {
             aria-labelledby="nested-list-subheader"
             className={classes.root}
           >
-            {subType.statuses.edges.map((statusEdge) => {
+            {subType.statuses.edges.filter((currentObject) => Boolean(currentObject.node.template)).map((statusEdge) => {
               const status = statusEdge.node;
               return (
                 <ListItem
@@ -92,7 +92,7 @@ class SubTypeEditionContainer extends Component {
                       {status.order}
                     </Avatar>
                   </ListItemAvatar>
-                  <ListItemText primary={t(`status_${status.template.name}`)} />
+                  <ListItemText primary={status.template.name} />
                   <ListItemSecondaryAction>
                     <StatusPopover
                       subTypeId={subType.id}

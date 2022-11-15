@@ -11,14 +11,13 @@ import { ArrowRightAltOutlined } from '@mui/icons-material';
 import { interval } from 'rxjs';
 import Slide from '@mui/material/Slide';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import SubTypePopover from './SubTypePopover';
 import { hexToRGB } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
-import { commitMutation } from '../../../../relay/environment';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -80,16 +79,6 @@ const styles = (theme) => ({
   },
 });
 
-const workflowLinesFieldPatch = graphql`
-  mutation WorkflowLinesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-    settingsEdit(id: $id) {
-      fieldPatch(input: $input) {
-        platform_enable_reference
-      }
-    }
-  }
-`;
-
 class WorkflowLinesComponent extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
@@ -101,32 +90,11 @@ class WorkflowLinesComponent extends Component {
     this.subscription.unsubscribe();
   }
 
-  handleSubmitReference(type, event) {
-    const { id, platform_enable_reference: currentReference } = this.props.data.settings;
-    const { checked } = event.target;
-    let reference;
-    if (checked) {
-      reference = R.uniq([...(currentReference || []), type]);
-    } else {
-      reference = R.uniq(R.filter((n) => n !== type, currentReference));
-    }
-    commitMutation({
-      mutation: workflowLinesFieldPatch,
-      variables: {
-        id,
-        input: {
-          key: 'platform_enable_reference',
-          value: reference,
-        },
-      },
-    });
-  }
-
   render() {
     const { classes, data, keyword, t } = this.props;
     const filterByKeyword = (n) => keyword === ''
-      || n.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || n.tlabel.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      || n.label.toLowerCase().indexOf(keyword?.toLowerCase()) !== -1
+      || n.tlabel.toLowerCase().indexOf(keyword?.toLowerCase()) !== -1;
     const subTypesEdges = data.subTypes.edges;
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const translatedOrderedList = R.pipe(
@@ -137,15 +105,11 @@ class WorkflowLinesComponent extends Component {
     )(subTypesEdges);
     return (
       <div>
-        <List
-          component="nav"
-          aria-labelledby="nested-list-subheader"
-          className={classes.root}
-        >
+        <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
           {translatedOrderedList.map((subType) => {
             const statuses = R.pipe(R.map((n) => n.node))(
               subType.statuses.edges,
-            );
+            ).filter((currentObject) => Boolean(currentObject.template));
             return (
               <ListItem
                 key={subType.id}
@@ -162,14 +126,11 @@ class WorkflowLinesComponent extends Component {
                       <div className={classes.statuses}>
                         {statuses.length > 0 ? (
                           statuses.map((status) => (
-                            <div
-                              key={status.id}
-                              className={classes.labelContainer}
-                            >
+                            <div key={status.id} className={classes.labelContainer}>
                               <Chip
                                 classes={{ root: classes.label }}
                                 variant="outlined"
-                                label={t(`status_${status.template.name}`)}
+                                label={status.template.name}
                                 style={{
                                   color: status.template.color,
                                   borderColor: status.template.color,

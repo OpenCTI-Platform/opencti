@@ -15,6 +15,7 @@ import Workflow from './Workflow';
 import Retention from './Retention';
 import { BoundaryRoute } from '../Error';
 import Security, { SETTINGS } from '../../../utils/Security';
+import StatusTemplates from './workflow/StatusTemplates';
 
 const Root = () => (
   <Switch>
@@ -57,7 +58,17 @@ const Root = () => (
       <BoundaryRoute
         exact
         path="/dashboard/settings/workflow"
+        render={() => <Redirect to="/dashboard/settings/workflow/workflows" />}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/workflow/workflows"
         component={Workflow}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/workflow/statusTemplates"
+        component={StatusTemplates}
       />
       <BoundaryRoute
         exact

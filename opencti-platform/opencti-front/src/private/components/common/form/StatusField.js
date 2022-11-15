@@ -34,6 +34,7 @@ export const statusFieldStatusesSearchQuery = graphql`
         node {
           id
           order
+          type
           template {
             name
             color
@@ -109,7 +110,7 @@ class StatusField extends Component {
         const statuses = pipe(
           pathOr([], ['statuses', 'edges']),
           map((n) => ({
-            label: this.props.t(`status_${n.node.template.name}`),
+            label: n.node.template.name,
             value: n.node.id,
             order: n.node.order,
             color: n.node.template.color,
