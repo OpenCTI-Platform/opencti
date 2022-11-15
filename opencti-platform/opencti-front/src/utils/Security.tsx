@@ -44,7 +44,7 @@ interface SecurityProps {
 }
 
 export const granted = (
-  me: RootPrivateQuery$data['me']| undefined,
+  me: RootPrivateQuery$data['me'] | undefined,
   capabilities: Array<string>,
   matchAll = false,
 ) => {

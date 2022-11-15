@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ForceGraph3D from 'react-force-graph-3d';
 import SpriteText from 'three-spritetext';
 import ForceGraph2D from 'react-force-graph-2d';
@@ -17,10 +17,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import InvestigationGraphBar from './InvestigationGraphBar';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters, } from '../../../../utils/ListParameters';
 import {
   applyFilters,
   buildGraphData,
@@ -1490,45 +1487,47 @@ class InvestigationGraphComponent extends Component {
       newElementsIds = [...R.map((k) => k.id, newElements), ...newElementsIds];
       this.graphObjects = [...newElements, ...this.graphObjects];
     }
-    this.graphData = buildGraphData(
-      this.graphObjects,
-      decodeGraphData(this.props.workspace.graph_data),
-      this.props.t,
-    );
-    const selectedTimeRangeInterval = computeTimeRangeInterval(
-      this.graphObjects,
-    );
-    if (filters.reset_filters) {
-      await this.resetAllFilters();
-    } else {
-      await this.resetAllFilters(true);
-    }
-    this.setState(
-      {
-        selectedTimeRangeInterval,
-        graphData: applyFilters(
-          this.graphData,
-          this.state.stixCoreObjectsTypes,
-          this.state.markedBy,
-          this.state.createdBy,
-          [],
+    if (newElementsIds.length > 0) {
+      this.graphData = buildGraphData(
+        this.graphObjects,
+        decodeGraphData(this.props.workspace.graph_data),
+        this.props.t,
+      );
+      const selectedTimeRangeInterval = computeTimeRangeInterval(
+        this.graphObjects,
+      );
+      if (filters.reset_filters) {
+        await this.resetAllFilters();
+      } else {
+        await this.resetAllFilters(true);
+      }
+      this.setState(
+        {
           selectedTimeRangeInterval,
-        ),
-      },
-      () => {
-        commitMutation({
-          mutation: investigationGraphRelationsAddMutation,
-          variables: {
-            id: this.props.workspace.id,
-            input: {
-              toIds: newElementsIds,
-              relationship_type: 'has-reference',
+          graphData: applyFilters(
+            this.graphData,
+            this.state.stixCoreObjectsTypes,
+            this.state.markedBy,
+            this.state.createdBy,
+            [],
+            selectedTimeRangeInterval,
+          ),
+        },
+        () => {
+          commitMutation({
+            mutation: investigationGraphRelationsAddMutation,
+            variables: {
+              id: this.props.workspace.id,
+              input: {
+                toIds: newElementsIds,
+                relationship_type: 'has-reference',
+              },
             },
-          },
-        });
-        setTimeout(() => this.handleZoomToFit(), 1000);
-      },
-    );
+          });
+          setTimeout(() => this.handleZoomToFit(), 1000);
+        },
+      );
+    }
     this.handleToggleDisplayProgress();
   }
 
@@ -1668,10 +1667,7 @@ class InvestigationGraphComponent extends Component {
                     style={{ width: '100%' }}
                   />
                   <TypesField
-                    types={[
-                      'stix-core-relationship',
-                      'stix-cyber-observable-relationship',
-                    ]}
+                    types={['stix-core-relationship', 'stix-cyber-observable-relationship']}
                     name="relationship_types"
                     label={t('Relationship types')}
                     fullWidth={true}

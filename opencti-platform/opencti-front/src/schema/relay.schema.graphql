@@ -569,7 +569,7 @@ enum SubTypesOrdering {
 
 type SubTypeConnection {
   pageInfo: PageInfo!
-  edges: [SubTypeEdge]
+  edges: [SubTypeEdge!]!
 }
 
 type SubTypeEdge {

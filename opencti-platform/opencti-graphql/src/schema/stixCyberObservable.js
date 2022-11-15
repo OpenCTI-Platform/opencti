@@ -101,6 +101,7 @@ export const stixCyberObservableOptions = {
     hashes_SHA1: 'hashes.SHA-1',
     hashes_SHA256: 'hashes.SHA-256',
   },
+  StixCyberObservablesOrdering: {}
 };
 
 const stixCyberObservableFieldsToBeUpdated = {
