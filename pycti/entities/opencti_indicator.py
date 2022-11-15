@@ -353,6 +353,7 @@ class Indicator:
         kill_chain_phases = kwargs.get("killChainPhases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         create_observables = kwargs.get("x_opencti_create_observables", False)
+        granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         if (
@@ -392,6 +393,7 @@ class Indicator:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objectOrganization": granted_refs,
                         "externalReferences": external_references,
                         "revoked": revoked,
                         "confidence": confidence,
@@ -530,6 +532,10 @@ class Indicator:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+            if "granted_refs" not in stix_object:
+                stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
+                    "granted_refs", stix_object
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -599,6 +605,9 @@ class Indicator:
                 x_opencti_create_observables=stix_object["x_opencti_create_observables"]
                 if "x_opencti_create_observables" in stix_object
                 else False,
+                objectOrganization=stix_object["granted_refs"]
+                if "granted_refs" in stix_object
+                else None,
                 update=update,
             )
         else:

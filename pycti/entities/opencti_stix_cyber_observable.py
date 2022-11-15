@@ -532,6 +532,7 @@ class StixCyberObservable:
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
         external_references = kwargs.get("externalReferences", None)
+        object_organization = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         create_indicator = (
@@ -636,6 +637,7 @@ class StixCyberObservable:
                 "createIndicator": create_indicator,
                 "createdBy": created_by,
                 "objectMarking": object_marking,
+                "objectOrganization": object_organization,
                 "objectLabel": object_label,
                 "externalReferences": external_references,
                 "update": update,
@@ -650,6 +652,7 @@ class StixCyberObservable:
                     $createdBy: String,
                     $objectMarking: [String],
                     $objectLabel: [String],
+                    $objectOrganization: [String],
                     $externalReferences: [String],
                     $AutonomousSystem: AutonomousSystemAddInput,
                     $Directory: DirectoryAddInput,

@@ -443,6 +443,7 @@ class Grouping:
         description = kwargs.get("description", "")
         x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         if name is not None and description is not None and context is not None:
@@ -465,6 +466,7 @@ class Grouping:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objectOrganization": granted_refs,
                         "objects": objects,
                         "externalReferences": external_references,
                         "revoked": revoked,
@@ -602,7 +604,10 @@ class Grouping:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                # Search in extensions
+            if "granted_refs" not in stix_object:
+                stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
+                    "granted_refs", stix_object
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -635,6 +640,9 @@ class Grouping:
                 else "",
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
+                else None,
+                objectOrganization=stix_object["granted_refs"]
+                if "granted_refs" in stix_object
                 else None,
                 x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
                 update=update,

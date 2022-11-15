@@ -381,6 +381,7 @@ class ObservedData:
         last_observed = kwargs.get("last_observed", None)
         number_observed = kwargs.get("number_observed", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         if (
@@ -407,6 +408,7 @@ class ObservedData:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objectOrganization": granted_refs,
                         "objects": objects,
                         "externalReferences": external_references,
                         "revoked": revoked,
@@ -559,6 +561,9 @@ class ObservedData:
                         objectLabel=extras["object_label_ids"]
                         if "object_label_ids" in extras
                         else [],
+                        objectOrganization=extras["granted_refs_ids"]
+                        if "granted_refs_ids" in extras
+                        else None,
                     )
                 )
                 for item in stix_observable_results:
@@ -571,6 +576,10 @@ class ObservedData:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+            if "granted_refs" not in stix_object:
+                stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
+                    "granted_refs", stix_object
+                )
 
             observed_data_result = self.create(
                 stix_id=stix_object["id"],
@@ -605,6 +614,9 @@ class ObservedData:
                 else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
+                else None,
+                objectOrganization=stix_object["granted_refs"]
+                if "granted_refs" in stix_object
                 else None,
                 update=update,
             )

@@ -310,6 +310,7 @@ class AttackPattern:
         x_mitre_id = kwargs.get("x_mitre_id", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -332,6 +333,7 @@ class AttackPattern:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objectOrganization": granted_refs,
                         "externalReferences": external_references,
                         "revoked": revoked,
                         "confidence": confidence,
@@ -428,6 +430,10 @@ class AttackPattern:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+            if "granted_refs" not in stix_object:
+                stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
+                    "granted_refs", stix_object
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -474,6 +480,9 @@ class AttackPattern:
                 else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
+                else None,
+                objectOrganization=stix_object["granted_refs"]
+                if "granted_refs" in stix_object
                 else None,
                 update=update,
             )

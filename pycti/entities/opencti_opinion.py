@@ -399,6 +399,7 @@ class Opinion:
         authors = kwargs.get("authors", None)
         opinion = kwargs.get("opinion", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         if opinion is not None:
@@ -421,6 +422,7 @@ class Opinion:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objectOrganization": granted_refs,
                         "objects": objects,
                         "externalReferences": external_references,
                         "revoked": revoked,
@@ -561,6 +563,10 @@ class Opinion:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+            if "granted_refs" not in stix_object:
+                stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
+                    "granted_refs", stix_object
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -596,6 +602,9 @@ class Opinion:
                 if "x_opencti_stix_ids" in stix_object
                 else None,
                 opinion=stix_object["opinion"] if "opinion" in stix_object else None,
+                objectOrganization=stix_object["granted_refs"]
+                if "granted_refs" in stix_object
+                else None,
                 update=update,
             )
         else:
