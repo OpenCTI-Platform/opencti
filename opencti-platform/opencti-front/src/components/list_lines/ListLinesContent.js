@@ -119,7 +119,10 @@ class ListLinesContent extends Component {
     if (!edge) {
       return (
         <div key={key} style={style}>
-          {React.cloneElement(DummyLineComponent, {
+          {/* TODO remove this when all components are pure function without compose() */}
+          {!React.isValidElement(DummyLineComponent) ? (
+            <DummyLineComponent dataColumns={dataColumns} />
+          ) : React.cloneElement(DummyLineComponent, {
             dataColumns,
           })}
         </div>
@@ -128,23 +131,43 @@ class ListLinesContent extends Component {
     const { node, types } = edge;
     return (
       <div key={key} style={style}>
-        {React.cloneElement(LineComponent, {
-          dataColumns,
-          node,
-          types,
-          paginationOptions,
-          entityId,
-          entityLink,
-          refetch,
-          me,
-          onLabelClick,
-          selectedElements,
-          deSelectedElements,
-          selectAll,
-          onToggleEntity,
-          connectionKey,
-          isTo,
-        })}
+        {/* TODO remove this when all components are pure function without compose() */}
+        {!React.isValidElement(LineComponent) ? (
+          <LineComponent
+            dataColumns={dataColumns}
+            node={node}
+            types={types}
+            paginationOptions={paginationOptions}
+            entityId={entityId}
+            entityLink={entityLink}
+            refetch={refetch}
+            me={me}
+            onLabelClick={onLabelClick}
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            selectAll={selectAll}
+            onToggleEntity={onToggleEntity}
+            connectionKey={connectionKey}
+            isTo={isTo}
+          />
+        ) : (
+          React.cloneElement(LineComponent, {
+            dataColumns,
+            node,
+            types,
+            paginationOptions,
+            entityId,
+            entityLink,
+            refetch,
+            me,
+            onLabelClick,
+            selectedElements,
+            deSelectedElements,
+            selectAll,
+            onToggleEntity,
+            connectionKey,
+            isTo,
+          }))}
       </div>
     );
   }

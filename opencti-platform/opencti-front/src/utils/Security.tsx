@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent, ReactElement, useContext } from 'react';
 import { filter, includes } from 'ramda';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
 import { ModuleHelper } from './platformModulesHelper';
@@ -36,11 +36,10 @@ export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 
 interface SecurityProps {
-  children: React.ReactNode;
+  children: ReactElement;
   needs: Array<string>;
-  matchAll: boolean;
-  // eslint-disable-next-line
-  placeholder: any;
+  matchAll?: boolean;
+  placeholder?: ReactElement;
 }
 
 export const granted = (

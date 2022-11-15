@@ -1,7 +1,25 @@
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { isEmptyField } from '../utils';
+import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
 
-const useLocalStorage = <T>(key: string, initialValue: T) => {
+export interface LocalStorage {
+  numberOfElements?: { number: number, symbol: string },
+  filters?: Filters,
+  searchTerm?: string,
+  sortBy?: string,
+  orderAsc?: boolean,
+  openExports?: boolean,
+}
+
+export const localStorageToPaginationOptions = <T extends LocalStorage>({ searchTerm, filters, sortBy, orderAsc, ...props }: T): PaginationOptions => ({
+  ...props,
+  search: searchTerm,
+  orderMode: orderAsc ? OrderMode.asc : OrderMode.desc,
+  orderBy: sortBy,
+  filters,
+});
+
+const useLocalStorage = <T = LocalStorage>(key: string, initialValue: T): [value: T, setValue: Dispatch<SetStateAction<T>>] => {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -36,7 +54,7 @@ const useLocalStorage = <T>(key: string, initialValue: T) => {
       throw Error('Error while setting values in local storage');
     }
   };
-  return [storedValue, setValue] as const;
+  return [storedValue, setValue];
 };
 
 export default useLocalStorage;
