@@ -10,7 +10,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 
 const useStyles = makeStyles((theme) => ({
@@ -58,7 +60,8 @@ const ReportPopover = (props) => {
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}
-        size="large">
+        size="large"
+      >
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
@@ -67,8 +70,12 @@ const ReportPopover = (props) => {
           <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
-      <ReportPopoverDeletion reportId={id} displayDelete={displayDelete}
-                             handleClose={handleClose} handleCloseDelete={handleCloseDelete} />
+      <ReportPopoverDeletion
+        reportId={id}
+        displayDelete={displayDelete}
+        handleClose={handleClose}
+        handleCloseDelete={handleCloseDelete}
+      />
       <Drawer
         open={displayEdit}
         anchor="right"

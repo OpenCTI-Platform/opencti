@@ -64,8 +64,10 @@ const i18n = {
         '¿Quieres borrar esta fase de la «kill chain»?',
       'Do you want to delete this report?': '¿Quieres borrar este informe?',
       'Cascade delete': 'Eliminación en cascada',
-      'element(s) which are only in this report':
-        'elemento(s) que solo están en este informe',
+      'In this report, ': 'En este informe, ',
+      'element(s) are not linked to any other reports and will be orphan after the deletion.':
+        'los elementos no están vinculados a ningún otro informe y quedarán huérfanos después de la eliminación.',
+      'Also delete these elements': 'También elimine estos elementos',
       'Do you want to delete this grouping?':
         '¿Quieres eliminar esta agrupación?',
       'Do you want to kill this session?': '¿Quieres cerrar esta sesión?',
@@ -1256,10 +1258,13 @@ const i18n = {
       'Search for multiple entities': 'Buscar varias entidades',
       'One keyword by line or separated by commas':
         'Una palabra clave por línea o separada por comas',
+      'Reset filters': 'Restablecer filtros',
+      Limit: 'Límite',
       // Time
       '24h': '24 h',
       // Types
       'All types of relationship': 'Todos los tipos de relación',
+      'All types of entity': 'Todo los tipos de entidad',
       entity_All: 'Todas las entidades',
       'entity_Stix-Domain-Object': 'Entidad',
       'entity_Stix-Domain-Objects': 'Entidades',
@@ -1653,8 +1658,10 @@ const i18n = {
       'Do you want to delete this report?':
         'Souhaitez-vous supprimer ce rapport ?',
       'Cascade delete': 'Suppression en cascade',
-      'element(s) which are only in this report':
-        'éléments uniquement présent dans ce rapport',
+      'In this report, ': 'Dans ce rapport, ',
+      'element(s) are not linked to any other reports and will be orphan after the deletion.':
+        'élément(s) ne sont liés à aucun autre rapport et seront orphelins après la suppression.',
+      'Also delete these elements': 'Supprimer aussi ces éléments',
       'Do you want to delete this grouping?':
         'Souhaitez-vous supprimer ce groupement ?',
       'Do you want to kill this session?':
@@ -2841,10 +2848,13 @@ const i18n = {
       'Search for multiple entities': 'Rechercher plusieurs entités',
       'One keyword by line or separated by commas':
         'Un mot-clé par ligne ou séparé par des virgules',
+      'Reset filters': 'Réinitialiser les filtres',
+      Limit: 'Limite',
       // Time
       '24h': '24h',
       // Types
       'All types of relationship': 'Tous les types de relation',
+      'All types of entity': "Tous les types d'entité",
       entity_All: 'Toutes les entités',
       'entity_Stix-Domain-Object': 'Entité',
       'entity_Stix-Domain-Objects': 'Entités',
@@ -3215,8 +3225,10 @@ const i18n = {
         'このキルチェーンフェーズを削除しますか？',
       'Do you want to delete this report?': 'このレポートを削除しますか？',
       'Cascade delete': 'カスケード削除',
-      'element(s) which are only in this report':
-        'このレポートにのみ含まれる要素',
+      'In this report, ': 'このレポートでは、',
+      'element(s) are not linked to any other reports and will be orphan after the deletion.':
+        '要素は他のレポートにリンクされておらず、削除後に孤立します。',
+      'Also delete these elements': 'これらの要素も削除します',
       'Do you want to kill this session?': 'このセッションを削除しますか？',
       'Do you want to kill all the sessions of this user?':
         'このユーザーのセッションをすべて削除しますか？',
@@ -4370,10 +4382,13 @@ const i18n = {
       'Search for multiple entities': '複数のエンティティを検索',
       'One keyword by line or separated by commas':
         '1 つのキーワードを 1 行またはカンマで区切る',
+      'Reset filters': 'フィルタをリセット',
+      Limit: 'リミット',
       // Time
       '24h': '24時間',
       // Types
       'All types of relationship': '全てのリレーションシップの種別',
+      'All types of entity': 'すべての種類のエンティティ',
       entity_All: '全てのエンティティ',
       'entity_Stix-Domain-Object': 'エンティティ',
       'entity_Stix-Domain-Objects': 'エンティティ(複数)',
@@ -4750,7 +4765,10 @@ const i18n = {
         '是否要删除此杀伤链阶段？',
       'Do you want to delete this report?': '是否要删除此报告？',
       'Cascade delete': '級聯刪除',
-      'element(s) which are only in this report': '僅在此報告中的元素',
+      'In this report, ': '在这份报告中，',
+      'element(s) are not linked to any other reports and will be orphan after the deletion.':
+        '元素未链接到任何其他报告，删除后将成为孤立元素。',
+      'Also delete these elements': '同时删除这些元素',
       'Do you want to kill this session?': '是否要终止此会话？',
       'Do you want to kill all the sessions of this user?':
         '是否要终止此用户的所有会话？',
@@ -5832,10 +5850,13 @@ const i18n = {
       'Search for multiple entities': '搜索多个实体',
       'One keyword by line or separated by commas':
         '一个关键字逐行或以逗号分隔',
+      'Reset filters': '重置过滤器',
+      Limit: '限制',
       // Time
       '24h': '24小时',
       // Types
       'All types of relationship': '关系的所有类型',
+      'All types of entity': '所有类型的实体',
       entity_All: '所有实体',
       'entity_Stix-Domain-Object': 'STIX域对象',
       'entity_Stix-Domain-Objects': 'STIX域对象',

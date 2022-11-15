@@ -11,6 +11,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
+import { useTheme } from '@mui/styles';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
@@ -32,10 +33,10 @@ const reportPopoverDeletionMutation = graphql`
 `;
 
 interface ReportPopoverDeletionProps {
-  reportId: string,
-  displayDelete: boolean,
-  handleClose: () => void
-  handleCloseDelete: () => void
+  reportId: string;
+  displayDelete: boolean;
+  handleClose: () => void;
+  handleCloseDelete: () => void;
 }
 
 const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
@@ -45,10 +46,10 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   handleCloseDelete,
 }) => {
   const { t } = useFormatter();
+  const theme = useTheme();
   const history = useHistory();
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
@@ -66,42 +67,62 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
       setSubmitting: undefined,
     });
   };
-
-  return <Dialog open={displayDelete} PaperProps={{ elevation: 1 }} onClose={handleCloseDelete}>
-    <DialogContent>
-      <Typography variant="body1">
-        {t('Do you want to delete this report?')}
-      </Typography>
-      <QueryRenderer
-        query={reportPopoverDeletionQuery}
-        variables={{ id: reportId }}
-        render={(result: { props: ReportPopoverDeletionQuery$data }) => {
-          const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? '-';
-          if (numberOfDeletions === 0) return <div />;
-          return <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
-            <AlertTitle>
-              {t('Cascade delete')}<br/>
-              <b style={{ color: 'red' }}>{numberOfDeletions}</b>&nbsp;{t('element(s) which are only in this report')}
-            </AlertTitle>
-            <FormGroup>
-              <FormControlLabel
-                control={<Checkbox checked={purgeElements} onChange={() => setPurgeElements(!purgeElements)} />}
-                label={t('Delete the element if no other containers contain it')}
-              />
-            </FormGroup>
-          </Alert>;
-        }}
-      />
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={handleCloseDelete} disabled={deleting}>
-        {t('Cancel')}
-      </Button>
-      <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-        {t('Delete')}
-      </Button>
-    </DialogActions>
-  </Dialog>;
+  return (
+    <Dialog
+      open={displayDelete}
+      PaperProps={{ elevation: 1 }}
+      onClose={handleCloseDelete}
+    >
+      <DialogContent>
+        <Typography variant="body1">
+          {t('Do you want to delete this report?')}
+        </Typography>
+        <QueryRenderer
+          query={reportPopoverDeletionQuery}
+          variables={{ id: reportId }}
+          render={(result: { props: ReportPopoverDeletionQuery$data }) => {
+            const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? '-';
+            if (numberOfDeletions === 0) return <div />;
+            return (
+              <Alert
+                severity="warning"
+                variant="outlined"
+                style={{ marginTop: 20 }}
+              >
+                <AlertTitle>{t('Cascade delete')}</AlertTitle>
+                {t('In this report, ')}&nbsp;
+                <strong style={{ color: theme.palette.error.main }}>
+                  {numberOfDeletions}
+                </strong>
+                &nbsp;
+                {t(
+                  'element(s) are not linked to any other reports and will be orphan after the deletion.',
+                )}
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={purgeElements}
+                        onChange={() => setPurgeElements(!purgeElements)}
+                      />
+                    }
+                    label={t('Also delete these elements')}
+                  />
+                </FormGroup>
+              </Alert>
+            );
+          }}></QueryRenderer>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCloseDelete} disabled={deleting}>
+          {t('Cancel')}
+        </Button>
+        <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+          {t('Delete')}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 };
 
 export default ReportPopoverDeletion;

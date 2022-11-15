@@ -1661,7 +1661,7 @@ class InvestigationGraphComponent extends Component {
                   <TypesField
                     types={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
                     name="entity_types"
-                    label={t('Entity types')}
+                    label={t('All types of entity')}
                     fullWidth={true}
                     multiple={true}
                     style={{ width: '100%' }}
@@ -1669,7 +1669,7 @@ class InvestigationGraphComponent extends Component {
                   <TypesField
                     types={['stix-core-relationship', 'stix-cyber-observable-relationship']}
                     name="relationship_types"
-                    label={t('Relationship types')}
+                    label={t('All types of relationship')}
                     fullWidth={true}
                     multiple={true}
                     style={{ marginTop: 20, width: '100%' }}
