@@ -2,15 +2,13 @@ import React, { FunctionComponent } from 'react';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { LabelOutline } from 'mdi-material-ui';
+import { FactCheckOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { graphql, useFragment } from 'react-relay';
 import StatusTemplatePopover from './StatusTemplatePopover';
 import { Theme } from '../../../../components/Theme';
-import {
-  StatusTemplateLine_node$key,
-} from './__generated__/StatusTemplateLine_node.graphql';
+import { StatusTemplateLine_node$key } from './__generated__/StatusTemplateLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -55,11 +53,11 @@ export type DataColumnsType = {
 };
 
 export const StatusTemplateLineFragment = graphql`
-    fragment StatusTemplateLine_node on StatusTemplate {
-        id
-        name
-        color
-    }
+  fragment StatusTemplateLine_node on StatusTemplate {
+    id
+    name
+    color
+  }
 `;
 
 interface StatusTemplateLineProps {
@@ -76,31 +74,22 @@ const StatusTemplateLine: FunctionComponent<StatusTemplateLineProps> = ({ node, 
   return (
     <ListItemButton classes={{ root: classes.item }} divider={true}>
       <ListItemIcon style={{ color: data.color }}>
-        <LabelOutline />
+        <FactCheckOutlined />
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.color.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.color.width }}>
               {data.color}
             </div>
           </div>
         }
       />
       <ListItemSecondaryAction>
-        <StatusTemplatePopover
-          statusTemplateId={data.id}
-          paginationOptions={paginationOptions}
-        />
+        <StatusTemplatePopover statusTemplateId={data.id} paginationOptions={paginationOptions} />
       </ListItemSecondaryAction>
     </ListItemButton>
 

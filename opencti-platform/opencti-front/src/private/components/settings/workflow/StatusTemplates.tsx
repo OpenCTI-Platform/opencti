@@ -57,7 +57,7 @@ const StatusTemplates = () => {
         handleSort={handleSort}
         handleSearch={handleSearch}
         displayImport={false}
-        secondaryAction={true}
+        secondaryAction={false}
         keyword={searchTerm}>
         <QueryRenderer
           query={statusTemplatesLinesQuery}

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
@@ -87,7 +87,7 @@ const statusCreationMutation = graphql`
 `;
 
 const statusValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  template: Yup.object().required(t('This field is required')),
+  template: Yup.object().nullable().required(t('This field is required')),
   order: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
@@ -99,20 +99,21 @@ interface StatusCreationProps {
   subTypeId: string,
 }
 
+interface FormProps {
+  template: { value: string } | null,
+  order: string
+}
+
 const StatusCreation: FunctionComponent<StatusCreationProps> = ({ display, subTypeId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
+  const initialValues: FormProps = { template: null, order: '' };
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const onSubmit: FormikConfig<{ template: { value: string } | null, order: string }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<FormProps>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues = {
       order: parseInt(values.order, 10),
       template_id: values.template?.value,
@@ -136,37 +137,16 @@ const StatusCreation: FunctionComponent<StatusCreationProps> = ({ display, subTy
     });
   };
 
-  const onReset = () => {
-    handleClose();
-  };
-
   return (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
+      <Fab onClick={handleOpen} color="secondary" aria-label="Add" className={classes.createButton}>
         <Add />
       </Fab>
-      <Formik
-        initialValues={{
-          template: null,
-          order: '',
-        }}
-        validationSchema={statusValidation(t)}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      >
+      <Formik initialValues={initialValues} validationSchema={statusValidation(t)}
+              onSubmit={onSubmit} onReset={onReset}>
         {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
           <Form>
-            <Dialog
-              open={open}
-              PaperProps={{ elevation: 1 }}
-              onClose={handleClose}
-              fullWidth={true}
-            >
+            <Dialog open={open} PaperProps={{ elevation: 1 }} onClose={handleClose} fullWidth={true}>
               <DialogTitle>{t('Create a status')}</DialogTitle>
               <DialogContent>
                 <QueryRenderer
@@ -174,11 +154,7 @@ const StatusCreation: FunctionComponent<StatusCreationProps> = ({ display, subTy
                   render={({ props }: { props: StatusCreationStatusTemplatesQuery$data }) => {
                     if (props && props.statusTemplates) {
                       return (
-                        <StatusTemplateField
-                          name="template"
-                          setFieldValue={setFieldValue}
-                          helpertext={''}
-                        />
+                        <StatusTemplateField name="template" setFieldValue={setFieldValue} helpertext={''} />
                       );
                     }
                     return <div />;
@@ -198,11 +174,7 @@ const StatusCreation: FunctionComponent<StatusCreationProps> = ({ display, subTy
                 <Button onClick={handleReset} disabled={isSubmitting}>
                   {t('Cancel')}
                 </Button>
-                <Button
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
                   {t('Create')}
                 </Button>
               </DialogActions>

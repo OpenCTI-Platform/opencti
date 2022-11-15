@@ -34,6 +34,7 @@ export const statusFieldStatusesSearchQuery = graphql`
         node {
           id
           order
+          type
           template {
             name
             color
