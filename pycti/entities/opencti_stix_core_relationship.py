@@ -561,6 +561,7 @@ class StixCoreRelationship:
         object_label = kwargs.get("objectLabel", None)
         external_references = kwargs.get("externalReferences", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         self.opencti.log(
@@ -602,6 +603,7 @@ class StixCoreRelationship:
                     "createdBy": created_by,
                     "objectMarking": object_marking,
                     "objectLabel": object_label,
+                    "objectOrganization": granted_refs,
                     "externalReferences": external_references,
                     "killChainPhases": kill_chain_phases,
                     "update": update,
@@ -1131,6 +1133,13 @@ class StixCoreRelationship:
         update = kwargs.get("update", False)
         default_date = kwargs.get("defaultDate", False)
         if stix_relation is not None:
+
+            # Search in extensions
+            if "granted_refs" not in stix_relation:
+                stix_relation["granted_refs"] = self.opencti.get_attribute_in_extension(
+                    "granted_refs", stix_relation
+                )
+
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]
             return self.create(
@@ -1176,6 +1185,9 @@ class StixCoreRelationship:
                 else [],
                 killChainPhases=extras["kill_chain_phases_ids"]
                 if "kill_chain_phases_ids" in extras
+                else None,
+                objectOrganization=stix_relation["granted_refs"]
+                if "granted_refs" in stix_relation
                 else None,
                 update=update,
             )

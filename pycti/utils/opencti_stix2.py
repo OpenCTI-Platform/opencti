@@ -554,6 +554,16 @@ class OpenCTIStix2:
                         update=True,
                     )
                     reports[external_reference_id] = report
+        # Granted refs
+        granted_refs_ids = []
+        if (
+            "granted_refs" not in stix_object
+            and self.opencti.get_attribute_in_extension("granted_refs", stix_object)
+            is not None
+        ):
+            granted_refs_ids = self.opencti.get_attribute_in_extension(
+                "granted_refs", stix_object
+            )
 
         return {
             "created_by": created_by_id,
@@ -561,6 +571,7 @@ class OpenCTIStix2:
             "object_label": object_label_ids,
             "kill_chain_phases": kill_chain_phases_ids,
             "object_refs": object_refs_ids,
+            "granted_refs": granted_refs_ids,
             "external_references": external_references_ids,
             "reports": reports,
         }
@@ -702,6 +713,7 @@ class OpenCTIStix2:
         created_by_id = embedded_relationships["created_by"]
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
+        granted_refs_ids = embedded_relationships["granted_refs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
@@ -712,6 +724,7 @@ class OpenCTIStix2:
             "created_by_id": created_by_id,
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
+            "granted_refs_ids": granted_refs_ids,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
@@ -745,6 +758,9 @@ class OpenCTIStix2:
                 createIndicator=stix_object["x_opencti_create_indicator"]
                 if "x_opencti_create_indicator" in stix_object
                 else None,
+                objectOrganization=extras["granted_refs_ids"]
+                if "granted_refs_ids" in extras
+                else [],
                 update=update,
             )
         else:
@@ -761,6 +777,9 @@ class OpenCTIStix2:
                 else [],
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
+                else [],
+                objectOrganization=extras["granted_refs_ids"]
+                if "granted_refs_ids" in extras
                 else [],
                 update=update,
             )
@@ -831,6 +850,7 @@ class OpenCTIStix2:
         created_by_id = embedded_relationships["created_by"]
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
+        granted_refs_ids = embedded_relationships["granted_refs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
@@ -841,6 +861,7 @@ class OpenCTIStix2:
             "created_by_id": created_by_id,
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
+            "granted_refs_ids": granted_refs_ids,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
@@ -922,6 +943,7 @@ class OpenCTIStix2:
         created_by_id = embedded_relationships["created_by"]
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
+        granted_refs_ids = embedded_relationships["granted_refs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
@@ -932,6 +954,7 @@ class OpenCTIStix2:
             "created_by_id": created_by_id,
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
+            "granted_refs_ids": granted_refs_ids,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
@@ -1013,6 +1036,9 @@ class OpenCTIStix2:
             else [],
             externalReferences=extras["external_references_ids"]
             if "external_references_ids" in extras
+            else [],
+            objectOrganization=extras["granted_refs_ids"]
+            if "granted_refs_ids" in extras
             else [],
             update=update,
             ignore_dates=stix_sighting["x_opencti_ignore_dates"]
