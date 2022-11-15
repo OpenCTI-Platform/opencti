@@ -6,8 +6,9 @@ import StixSightingRelationshipsLines, {
   stixSightingRelationshipsLinesQuery,
 } from './stix_sighting_relationships/StixSightingRelationshipsLines';
 import { convertFilters } from '../../../utils/ListParameters';
-import useLocalStorage from '../../../utils/hooks/useLocalStorage';
+import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
 import { isUniqFilter } from '../common/lists/Filters';
+import { Filters, PaginationOptions } from '../../../components/list_lines';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -58,19 +59,10 @@ const dataColumns = {
 
 const LOCAL_STORAGE_KEY = 'view-stix-sighting-relationships';
 
-interface LocalStorageProps {
-  numberOfElements: { number: number, symbol: string },
-  filters: Record<string, Record<string, unknown>[]>,
-  searchTerm: string,
-  sortBy: string,
-  orderAsc: boolean,
-  openExports: boolean,
-}
-
 const StixSightingRelationships = () => {
-  const [viewStorage, setViewStorage] = useLocalStorage<LocalStorageProps>(LOCAL_STORAGE_KEY, {
+  const [viewStorage, setViewStorage] = useLocalStorage(LOCAL_STORAGE_KEY, {
     numberOfElements: { number: 0, symbol: '' },
-    filters: {},
+    filters: {} as Filters,
     searchTerm: '',
     sortBy: 'created',
     orderAsc: false,
@@ -101,7 +93,7 @@ const StixSightingRelationships = () => {
       event.stopPropagation();
       event.preventDefault();
     }
-    if ((filters?.[key]?.length ?? 0) > 0) {
+    if ((filters[key]?.length ?? 0) > 0) {
       setViewStorage((c) => ({
         ...c,
         filters: {
@@ -122,13 +114,7 @@ const StixSightingRelationships = () => {
     }
   };
 
-  const renderLines = (paginationOptions: {
-    toId?: unknown,
-    search?: unknown,
-    orderBy?: unknown,
-    orderMode?: unknown,
-    filters?: unknown,
-  }) => (
+  const renderLines = (paginationOptions: PaginationOptions) => (
     <ListLines
       sortBy={sortBy}
       orderAsc={orderAsc}
@@ -184,14 +170,8 @@ const StixSightingRelationships = () => {
     toSightingId = R.head(filters.toSightingId)?.id;
     processedFilters = R.dissoc('toSightingId', processedFilters);
   }
-  const finalFilters = convertFilters(processedFilters);
-  const paginationOptions = {
-    toId: toSightingId,
-    search: searchTerm,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-    filters: finalFilters,
-  };
+  const finalFilters = convertFilters(processedFilters) as unknown as Filters;
+  const paginationOptions = localStorageToPaginationOptions({ ...viewStorage, toId: toSightingId, filters: finalFilters });
   return (
     <div>{renderLines(paginationOptions)}</div>
   );
