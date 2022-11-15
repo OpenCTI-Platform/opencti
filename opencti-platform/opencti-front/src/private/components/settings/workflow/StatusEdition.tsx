@@ -63,21 +63,21 @@ const StatusEdition: FunctionComponent<StatusEditionProps> = ({ subTypeId, handl
   const data = useFragment(StatusEditionFragment, status);
 
   const initialValues = {
-    template: {
-      label: data.template ? data.template.name : '',
-      value: data.template ? data.template.id : '',
-      color: data.template ? data.template.color : '',
-    },
+    template: data.template ? {
+      label: data.template.name,
+      value: data.template.id,
+      color: data.template.color,
+    } : null,
     order: data.order,
   };
 
-  const handleSubmitStatusTemplate: FormikConfig<{ template: { label: string, value: string, color: string }, order: number }>['onSubmit'] = (values, { setSubmitting }) => {
+  const handleSubmitStatusTemplate: FormikConfig<{ template: { label: string, value: string, color: string } | null, order: number }>['onSubmit'] = (values, { setSubmitting }) => {
     commitMutation({
       mutation: statusMutationFieldPatch,
       variables: {
         id: subTypeId,
         statusId: data.id,
-        input: [{ key: 'template_id', value: values.template.value || '' },
+        input: [{ key: 'template_id', value: values.template?.value || '' },
           { key: 'order', value: String(values.order) || '' }],
       },
       setSubmitting,

@@ -112,10 +112,10 @@ const StatusCreation: FunctionComponent<StatusCreationProps> = ({ display, subTy
     setOpen(false);
   };
 
-  const onSubmit: FormikConfig<{ template: { value: string }, order: string }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<{ template: { value: string } | null, order: string }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues = {
       order: parseInt(values.order, 10),
-      template_id: values.template.value,
+      template_id: values.template?.value,
     };
     commitMutation({
       mutation: statusCreationMutation,
@@ -152,9 +152,7 @@ const StatusCreation: FunctionComponent<StatusCreationProps> = ({ display, subTy
       </Fab>
       <Formik
         initialValues={{
-          template: {
-            value: '',
-          },
+          template: null,
           order: '',
         }}
         validationSchema={statusValidation(t)}

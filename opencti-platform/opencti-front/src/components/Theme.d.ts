@@ -1,5 +1,5 @@
 import { PaletteColorOptions, PaletteOptions, TypeBackground } from '@mui/material/styles/createPalette';
-import { Theme as MuiTheme, ThemeOptions, Theme as MuiTheme } from '@mui/material/styles/createTheme';
+import { Theme as MuiTheme, ThemeOptions } from '@mui/material/styles/createTheme';
 
 interface ExtendedColor extends PaletteColorOptions {
   main: string
@@ -24,8 +24,4 @@ interface ExtendedThemeOptions extends ThemeOptions {
 
 export interface Theme extends MuiTheme {
   palette: ExtendedPaletteOptions
-}
-
-export interface Theme extends MuiTheme {
-  palette: ExtendedPaletteOptions;
 }
