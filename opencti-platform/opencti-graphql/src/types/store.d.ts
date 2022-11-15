@@ -35,6 +35,7 @@ import {
   INPUT_DOMAIN_FROM,
   INPUT_DOMAIN_TO,
   INPUT_EXTERNAL_REFS,
+  INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -43,7 +44,8 @@ import {
 import type { OrganizationReliability, StixId } from './stix-common';
 import {
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE, RELATION_GRANTED_TO,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_GRANTED_TO,
   RELATION_OBJECT_MARKING
 } from '../schema/stixMetaRelationship';
 import type { PageInfo } from '../generated/graphql';

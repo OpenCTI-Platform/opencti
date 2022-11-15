@@ -5902,7 +5902,6 @@ const i18n = {
       'entity_Observed-Data': '可观测数据',
       entity_Opinion: '意见',
       entity_Report: '分組',
-      entity_Grouping: 'グループ化',
       entity_Grouping: '分组',
       'entity_Course-Of-Action': '应对措施',
       entity_Individual: '个体',

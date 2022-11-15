@@ -20,31 +20,6 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
-
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
     $id: ID!
@@ -392,7 +367,6 @@ class IncidentEditionOverviewComponent extends Component {
 }
 
 IncidentEditionOverviewComponent.propTypes = {
-  theme: PropTypes.object,
   t: PropTypes.func,
   incident: PropTypes.object,
   enableReferences: PropTypes.bool,

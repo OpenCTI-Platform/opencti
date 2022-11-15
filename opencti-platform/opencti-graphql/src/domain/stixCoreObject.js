@@ -5,7 +5,6 @@ import {
   batchListThroughGetTo,
   batchLoadThroughGetTo,
   createRelation,
-  createRelationRaw,
   createRelations,
   deleteElementById,
   deleteRelationsByFromAndTo,

@@ -14,7 +14,7 @@ import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm, } from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -240,12 +240,12 @@ class IndicatorCreation extends Component {
               onReset={this.onReset.bind(this)}
             >
               {({
-                  submitForm,
-                  handleReset,
-                  isSubmitting,
-                  setFieldValue,
-                  values,
-                }) => (
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
+                values,
+              }) => (
                 <Form style={{ margin: '0px 0 20px 0' }}>
                   <Field
                     component={TextField}

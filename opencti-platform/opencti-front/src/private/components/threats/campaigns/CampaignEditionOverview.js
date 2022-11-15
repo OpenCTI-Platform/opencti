@@ -15,7 +15,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus, } from '../../../../utils/Edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/Edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const campaignMutationFieldPatch = graphql`
@@ -235,12 +235,12 @@ class CampaignEditionOverviewComponent extends Component {
         onSubmit={this.onSubmit.bind(this)}
       >
         {({
-            submitForm,
-            isSubmitting,
-            validateForm,
-            setFieldValue,
-            values,
-          }) => (
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
