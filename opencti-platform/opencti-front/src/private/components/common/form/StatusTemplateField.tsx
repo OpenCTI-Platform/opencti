@@ -61,9 +61,9 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
   const handleCloseStatusTemplateCreation = () => setStatusTemplateCreation(false);
 
   const searchStatusTemplates = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setStatusTemplateInput(event && event.target.value !== '0' ? event.target.value : '');
+    setStatusTemplateInput(event && event.target.value ? event.target.value : '');
     fetchQuery(StatusTemplateFieldQuery, {
-      search: event && event.target.value !== '0' ? event.target.value : '',
+      search: event && event.target.value ? event.target.value : '',
     })
       .toPromise()
       .then((data) => {
@@ -74,8 +74,6 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
         }));
         setStatusTemplates([...statusTemplates, ...NewStatusTemplates]);
       });
-    console.log('statusTemplates: ', statusTemplates);
-    console.log('event', event);
   };
 
   return (
@@ -94,7 +92,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
         options={statusTemplates}
         onInputChange={searchStatusTemplates}
         openCreate={handleOpenStatusTemplateCreation}
-        renderOption={({ props, option }: { props: React.HTMLAttributes<HTMLLIElement>, option: { color: string, label: string } }) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: { color: string, label: string }) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <Label />

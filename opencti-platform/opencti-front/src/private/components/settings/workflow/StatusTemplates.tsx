@@ -82,10 +82,10 @@ const StatusTemplates = () => {
       <StatusTemplateCreation
         paginationOptions={queryVars}
         contextual={false}
-       creationCallback={() => {}}
-       handleCloseContextual={() => {}}
-       inputValueContextual={''}
-       openContextual={false}/>
+        creationCallback={() => {}}
+        handleCloseContextual={() => {}}
+        inputValueContextual={''}
+        openContextual={false}/>
     </div>
   );
 };
