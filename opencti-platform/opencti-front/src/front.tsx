@@ -1,7 +1,7 @@
 import 'typeface-ibm-plex-sans';
 import 'typeface-roboto';
 import { Suspense } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import makeStyles from '@mui/styles/makeStyles';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import './static/css/index.css';
@@ -33,13 +33,16 @@ const Loading = () => {
   );
 };
 
-ReactDOM.render(
+const container = document.getElementById('root');
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const root = createRoot(container!);
+
+root.render(
   <RelayEnvironmentProvider environment={environment}>
     <Suspense fallback={<Loading />}>
       <App />
     </Suspense>
   </RelayEnvironmentProvider>,
-  document.getElementById('root'),
 );
 
 // If you want your app to work offline and load faster, you can change
