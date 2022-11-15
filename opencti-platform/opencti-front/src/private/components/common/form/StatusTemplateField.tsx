@@ -60,23 +60,22 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
 
   const handleCloseStatusTemplateCreation = () => setStatusTemplateCreation(false);
 
-  const searchStatusTemplates = (event: React.KeyboardEvent) => {
-    const target = event.target as HTMLInputElement;
-    if (target !== null && target.value) {
-      setStatusTemplateInput(event && target.value !== '0' ? target.value : '');
-      fetchQuery(StatusTemplateFieldQuery, {
-        search: event && target.value !== '0' ? target.value : '',
-      })
-        .toPromise()
-        .then((data) => {
-          const NewStatusTemplates = ((data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges ?? []).map((n) => ({
-            label: n?.node.name,
-            value: n?.node.id,
-            color: n?.node.color,
-          }));
-          setStatusTemplates([...statusTemplates, ...NewStatusTemplates]);
-        });
-    }
+  const searchStatusTemplates = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setStatusTemplateInput(event && event.target.value !== '0' ? event.target.value : '');
+    fetchQuery(StatusTemplateFieldQuery, {
+      search: event && event.target.value !== '0' ? event.target.value : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const NewStatusTemplates = ((data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges ?? []).map((n) => ({
+          label: n?.node.name,
+          value: n?.node.id,
+          color: n?.node.color,
+        }));
+        setStatusTemplates([...statusTemplates, ...NewStatusTemplates]);
+      });
+    console.log('statusTemplates: ', statusTemplates);
+    console.log('event', event);
   };
 
   return (
