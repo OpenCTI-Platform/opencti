@@ -8,7 +8,12 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import { AddOutlined, Extension } from '@mui/icons-material';
+import {
+  AddOutlined,
+  ArrowDropDown,
+  ArrowDropUp,
+  Extension,
+} from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
@@ -37,6 +42,8 @@ import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
 import TextField from '../../../components/TextField';
+import AutocompleteFreeSoloField from '../../../components/AutocompleteFreeSoloField';
+import ItemIcon from '../../../components/ItemIcon';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -69,7 +76,77 @@ const styles = (theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
+  linesContainer: {
+    marginTop: 10,
+  },
+  itemHead: {
+    paddingLeft: 10,
+    textTransform: 'uppercase',
+  },
+  bodyItem: {
+    height: '100%',
+    fontSize: 13,
+  },
+  itemIcon: {
+    color: theme.palette.primary.main,
+  },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
+  inputLabel: {
+    float: 'left',
+  },
+  sortIcon: {
+    float: 'left',
+    margin: '-5px 0 0 15px',
+  },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
+  autoCompleteIndicator: {
+    display: 'none',
+  },
 });
+
+const inlineStylesHeaders = {
+  iconSort: {
+    position: 'absolute',
+    margin: '0 0 0 5px',
+    padding: 0,
+    top: '0px',
+  },
+  name: {
+    float: 'left',
+    width: '40%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  creator_name: {
+    float: 'left',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  labels: {
+    float: 'left',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  lastModified: {
+    float: 'left',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+};
 
 export const importContentQuery = graphql`
   query ImportContentQuery {
@@ -103,8 +180,8 @@ export const importContentQuery = graphql`
 `;
 
 const importContentMutation = graphql`
-  mutation ImportContentMutation($file: Upload!) {
-    uploadPending(file: $file) {
+  mutation ImportContentMutation($file: Upload!, $labels: [String]) {
+    uploadPending(file: $file, labels: $labels, errorOnExisting: true) {
       id
       ...FileLine_file
     }
@@ -126,6 +203,8 @@ class ImportContentComponent extends Component {
       fileToImport: null,
       fileToValidate: null,
       displayCreate: false,
+      sortBy: 'name',
+      orderAsc: true,
     };
   }
 
@@ -198,6 +277,7 @@ class ImportContentComponent extends Component {
 
   onSubmitCreate(values, { setSubmitting, resetForm }) {
     let { name } = values;
+    const finalLabels = R.pluck('value', values.labels);
     if (!name.endsWith('.json')) {
       name += '.json';
     }
@@ -209,7 +289,7 @@ class ImportContentComponent extends Component {
     });
     commitMutation({
       mutation: importContentMutation,
-      variables: { file },
+      variables: { file, labels: finalLabels },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
@@ -222,6 +302,35 @@ class ImportContentComponent extends Component {
 
   onResetCreate() {
     this.handleCloseCreate();
+  }
+
+  reverseBy(field) {
+    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
+  }
+
+  SortHeader(field, label, isSortable) {
+    const { t } = this.props;
+    const sortComponent = this.state.orderAsc ? (
+      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
+    ) : (
+      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
+    );
+    if (isSortable) {
+      return (
+        <div
+          style={inlineStylesHeaders[field]}
+          onClick={this.reverseBy.bind(this, field)}
+        >
+          <span>{t(label)}</span>
+          {this.state.sortBy === field ? sortComponent : ''}
+        </div>
+      );
+    }
+    return (
+      <div style={inlineStylesHeaders[field]}>
+        <span>{t(label)}</span>
+      </div>
+    );
   }
 
   render() {
@@ -387,34 +496,50 @@ class ImportContentComponent extends Component {
               </div>
               <div className="clearfix" />
               <Paper classes={{ root: classes.paper }} variant="outlined">
-                {pendingFilesEdges.length ? (
-                  <List>
-                    {pendingFilesEdges.map((file) => (
-                      <WorkbenchFileLine
-                        key={file.node.id}
-                        file={file.node}
-                        connectors={
-                          importConnsPerFormat[file.node.metaData.mimetype]
-                        }
-                        handleOpenImport={this.handleOpenValidate.bind(this)}
-                      />
-                    ))}
-                  </List>
-                ) : (
-                  <div
-                    style={{ display: 'table', height: '100%', width: '100%' }}
+                <List>
+                  <ListItem
+                    classes={{ root: classes.itemHead }}
+                    divider={false}
+                    style={{ paddingTop: 0 }}
                   >
-                    <span
-                      style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {t('No file for the moment')}
-                    </span>
-                  </div>
-                )}
+                    <ListItemIcon>
+                      <span
+                        style={{
+                          padding: '0 8px 0 8px',
+                          fontWeight: 700,
+                          fontSize: 12,
+                        }}
+                      >
+                        #
+                      </span>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div>
+                          {this.SortHeader('name', 'Name', false)}
+                          {this.SortHeader('creator_name', 'Creator', false)}
+                          {this.SortHeader('labels', 'Labels', false)}
+                          {this.SortHeader(
+                            'lastModified',
+                            'Modification date',
+                            false,
+                          )}
+                        </div>
+                      }
+                    />
+                    <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+                  </ListItem>
+                  {pendingFilesEdges.map((file) => (
+                    <WorkbenchFileLine
+                      key={file.node.id}
+                      file={file.node}
+                      connectors={
+                        importConnsPerFormat[file.node.metaData.mimetype]
+                      }
+                      handleOpenImport={this.handleOpenValidate.bind(this)}
+                    />
+                  ))}
+                </List>
               </Paper>
             </div>
           </Grid>
@@ -544,7 +669,7 @@ class ImportContentComponent extends Component {
           </Formik>
           <Formik
             enableReinitialize={true}
-            initialValues={{ name: '' }}
+            initialValues={{ name: '', labels: [] }}
             validationSchema={fileValidation(t)}
             onSubmit={this.onSubmitCreate.bind(this)}
             onReset={this.onResetCreate.bind(this)}
@@ -565,6 +690,28 @@ class ImportContentComponent extends Component {
                       name="name"
                       label={t('Name')}
                       fullWidth={true}
+                    />
+                    <Field
+                      component={AutocompleteFreeSoloField}
+                      style={{ marginTop: 20 }}
+                      name="labels"
+                      multiple={true}
+                      textfieldprops={{
+                        variant: 'standard',
+                        label: t('Labels'),
+                      }}
+                      options={[]}
+                      renderOption={(optionProps, option) => (
+                        <li {...optionProps}>
+                          <div className={classes.icon}>
+                            <ItemIcon type="Label" />
+                          </div>
+                          <div className={classes.text}>{option.label}</div>
+                        </li>
+                      )}
+                      classes={{
+                        clearIndicator: classes.autoCompleteIndicator,
+                      }}
                     />
                   </DialogContent>
                   <DialogActions>

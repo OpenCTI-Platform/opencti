@@ -4,6 +4,7 @@ import { worksForSource } from '../domain/work';
 import { stixCoreObjectImportDelete } from '../domain/stixCoreObject';
 import { internalLoadById } from '../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
 const fileResolvers = {
   Query: {
@@ -14,15 +15,19 @@ const fileResolvers = {
   File: {
     works: (file, _, context) => worksForSource(context, context.user, file.id),
     metaData: (file, _, context) => {
-      if (file.metaData.entity_id) {
-        return { ...file.metaData, entity: internalLoadById(context, context.user, file.metaData.entity_id, { type: ABSTRACT_STIX_DOMAIN_OBJECT }) };
+      let { metaData } = file;
+      if (metaData.entity_id) {
+        metaData = { ...metaData, entity: internalLoadById(context, context.user, metaData.entity_id, { type: ABSTRACT_STIX_DOMAIN_OBJECT }) };
       }
-      return file.metaData;
+      if (metaData.creator) {
+        metaData = { ...metaData, creator: internalLoadById(context, context.user, metaData.creator, { type: ENTITY_TYPE_USER }) };
+      }
+      return metaData;
     },
   },
   Mutation: {
     uploadImport: (_, { file }, context) => uploadImport(context, context.user, file),
-    uploadPending: (_, { file, entityId }, context) => uploadPending(context, context.user, file, entityId),
+    uploadPending: (_, { file, entityId, labels, errorOnExisting }, context) => uploadPending(context, context.user, file, entityId, labels, errorOnExisting),
     deleteImport: (_, { fileName }, context) => {
       // Imported file must be handle specifically
       // File deletion must publish a specific event

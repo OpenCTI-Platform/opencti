@@ -738,6 +738,8 @@ type FileMetadata {
   list_filters: String
   entity_id: String
   entity: StixCoreObject
+  labels: [String]
+  creator: User
 }
 type File {
   id: ID!
@@ -2053,6 +2055,7 @@ input AttackPatternAddInput {
   x_mitre_id: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   killChainPhases: [String]
   externalReferences: [String]
@@ -2795,6 +2798,7 @@ input OpinionAddInput {
   confidence: Int
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   objects: [String]
@@ -3087,6 +3091,7 @@ input CourseOfActionAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -4237,6 +4242,7 @@ input IntrusionSetAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -5067,8 +5073,8 @@ input MalwareAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
-  objectOrganization: [String]
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   killChainPhases: [String]
@@ -5215,8 +5221,8 @@ input ThreatActorAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
-  objectOrganization: [String]
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -10868,7 +10874,7 @@ type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  uploadPending(file: Upload!, entityId: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String, bypassValidation: Boolean): File
     @auth(for: [KNOWLEDGE_KNASKIMPORT])
 

@@ -24,6 +24,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
+import Chip from '@mui/material/Chip';
 import FileWork from '../FileWork';
 import inject18n from '../../../../../components/i18n';
 import {
@@ -34,10 +35,6 @@ import {
 import { toB64 } from '../../../../../utils/String';
 
 const styles = (theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
   itemNested: {
     paddingLeft: theme.spacing(4),
     height: 50,
@@ -48,7 +45,80 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+  },
+  linesContainer: {
+    marginTop: 10,
+  },
+  itemHead: {
+    paddingLeft: 10,
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+  },
+  item: {
+    paddingLeft: 10,
+    height: 50,
+  },
+  bodyItem: {
+    height: '100%',
+    fontSize: 13,
+  },
+  itemIcon: {
+    color: theme.palette.primary.main,
+  },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
+  inputLabel: {
+    float: 'left',
+  },
+  sortIcon: {
+    float: 'left',
+    margin: '-5px 0 0 15px',
+  },
+  icon: {
+    color: theme.palette.primary.main,
+  },
 });
+
+const inlineStyles = {
+  name: {
+    float: 'left',
+    width: '40%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  creator_name: {
+    float: 'left',
+    width: '20%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  labels: {
+    float: 'left',
+    width: '20%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  lastModified: {
+    float: 'left',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+};
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -114,7 +184,7 @@ class WorkbenchFileLineComponent extends Component {
   }
 
   render() {
-    const { classes, t, fld, file, dense, directDownload, nested } = this.props;
+    const { classes, t, fld, file, dense, directDownload, nested, nsdt } = this.props;
     const { displayDelete } = this.state;
     const { uploadStatus, metaData } = file;
     const { errors } = metaData;
@@ -150,9 +220,35 @@ class WorkbenchFileLineComponent extends Component {
             )}
           </ListItemIcon>
           <ListItemText
-            classes={{ root: classes.itemText }}
-            primary={file.name.replace('.json', '')}
-            secondary={fld(propOr(moment(), 'lastModified', file))}
+            primary={
+              <div>
+                <div className={classes.bodyItem} style={inlineStyles.name}>
+                  {file.name.replace('.json', '')}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={inlineStyles.creator_name}
+                >
+                  {file.metaData.creator?.name || t('Unknown')}
+                </div>
+                <div className={classes.bodyItem} style={inlineStyles.labels}>
+                  {(file.metaData.labels || []).map((n) => (
+                    <Chip
+                      classes={{ root: classes.chipInList }}
+                      color="primary"
+                      variant="outlined"
+                      label={n}
+                    />
+                  ))}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={inlineStyles.lastModified}
+                >
+                  {nsdt(file.lastModified)}
+                </div>
+              </div>
+            }
           />
           <ListItemSecondaryAction>
             {!directDownload && !isFail && (
@@ -239,6 +335,7 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
       metaData {
         mimetype
         list_filters
+        labels
         messages {
           timestamp
           message
@@ -246,6 +343,9 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
         errors {
           timestamp
           message
+        }
+        creator {
+          name
         }
         entity {
           ... on AttackPattern {

@@ -60,7 +60,9 @@ const AutocompleteFreeSoloField = (props) => {
           if (inputValue !== '' && !isExisting) {
             filtered.push({
               value: inputValue,
-              label: `${createLabel} "${inputValue}"`,
+              label: createLabel
+                ? `${createLabel} "${inputValue}"`
+                : inputValue,
             });
           }
           return filtered;

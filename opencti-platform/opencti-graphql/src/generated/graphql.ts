@@ -3877,10 +3877,12 @@ export type FileEdge = {
 
 export type FileMetadata = {
   __typename?: 'FileMetadata';
+  creator?: Maybe<User>;
   encoding?: Maybe<Scalars['String']>;
   entity?: Maybe<StixCoreObject>;
   entity_id?: Maybe<Scalars['String']>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
+  labels?: Maybe<Array<Maybe<Scalars['String']>>>;
   list_filters?: Maybe<Scalars['String']>;
   messages?: Maybe<Array<Maybe<WorkMessage>>>;
   mimetype?: Maybe<Scalars['String']>;
@@ -6217,6 +6219,7 @@ export type IntrusionSetAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   primary_motivation?: InputMaybe<Scalars['String']>;
   resource_level?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
@@ -8789,7 +8792,9 @@ export type MutationUploadImportArgs = {
 
 export type MutationUploadPendingArgs = {
   entityId?: InputMaybe<Scalars['String']>;
+  errorOnExisting?: InputMaybe<Scalars['Boolean']>;
   file: Scalars['Upload'];
+  labels?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -10080,6 +10085,7 @@ export type OpinionAddInput = {
   modified?: InputMaybe<Scalars['DateTime']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   opinion: Scalars['String'];
   revoked?: InputMaybe<Scalars['Boolean']>;
@@ -19107,7 +19113,7 @@ export type ResolversTypes = ResolversObject<{
   File: ResolverTypeWrapper<Omit<File, 'metaData' | 'works'> & { metaData?: Maybe<ResolversTypes['FileMetadata']>, works?: Maybe<Array<Maybe<ResolversTypes['Work']>>> }>;
   FileConnection: ResolverTypeWrapper<Omit<FileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['FileEdge']>>> }>;
   FileEdge: ResolverTypeWrapper<Omit<FileEdge, 'node'> & { node: ResolversTypes['File'] }>;
-  FileMetadata: ResolverTypeWrapper<Omit<FileMetadata, 'entity'> & { entity?: Maybe<ResolversTypes['StixCoreObject']> }>;
+  FileMetadata: ResolverTypeWrapper<Omit<FileMetadata, 'creator' | 'entity'> & { creator?: Maybe<ResolversTypes['User']>, entity?: Maybe<ResolversTypes['StixCoreObject']> }>;
   FilterMode: FilterMode;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
@@ -19718,7 +19724,7 @@ export type ResolversParentTypes = ResolversObject<{
   File: Omit<File, 'metaData' | 'works'> & { metaData?: Maybe<ResolversParentTypes['FileMetadata']>, works?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>> };
   FileConnection: Omit<FileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['FileEdge']>>> };
   FileEdge: Omit<FileEdge, 'node'> & { node: ResolversParentTypes['File'] };
-  FileMetadata: Omit<FileMetadata, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixCoreObject']> };
+  FileMetadata: Omit<FileMetadata, 'creator' | 'entity'> & { creator?: Maybe<ResolversParentTypes['User']>, entity?: Maybe<ResolversParentTypes['StixCoreObject']> };
   Float: Scalars['Float'];
   GetMetrics: GetMetrics;
   Group: Omit<Group, 'allowed_marking' | 'members'> & { allowed_marking?: Maybe<Array<Maybe<ResolversParentTypes['MarkingDefinition']>>>, members?: Maybe<ResolversParentTypes['UserConnection']> };
@@ -21428,10 +21434,12 @@ export type FileEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type FileMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileMetadata'] = ResolversParentTypes['FileMetadata']> = ResolversObject<{
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   encoding?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
+  labels?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   list_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   mimetype?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -1,10 +1,9 @@
-import React, { Suspense, useState } from 'react';
+import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Drawer from '@mui/material/Drawer';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { useLazyLoadQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
@@ -13,6 +12,7 @@ import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
 } from '../../../../utils/Security';
+import { QueryRenderer } from '../../../../relay/environment';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 
 const useStyles = makeStyles((theme) => ({
@@ -32,8 +32,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ReportPopover = (props) => {
-  const { id } = props;
+const ReportPopover = ({ id }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -53,7 +52,6 @@ const ReportPopover = (props) => {
     handleClose();
   };
   const handleCloseEdit = () => setDisplayEdit(false);
-  const data = useLazyLoadQuery(reportEditionQuery, { id });
   return (
     <div className={classes.container}>
       <IconButton
@@ -84,12 +82,21 @@ const ReportPopover = (props) => {
         classes={{ paper: classes.drawerPaper }}
         onClose={handleCloseEdit}
       >
-        <Suspense fallback={<Loader variant="inElement" />}>
-          <ReportEditionContainer
-            report={data.report}
-            handleClose={handleCloseEdit}
-          />
-        </Suspense>
+        <QueryRenderer
+          query={reportEditionQuery}
+          variables={{ id }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <ReportEditionContainer
+                  report={props.report}
+                  handleClose={handleCloseEdit}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
       </Drawer>
     </div>
   );

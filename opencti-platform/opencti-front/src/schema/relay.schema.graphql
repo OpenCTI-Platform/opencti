@@ -773,6 +773,8 @@ type FileMetadata {
   list_filters: String
   entity_id: String
   entity: StixCoreObject
+  labels: [String]
+  creator: User
 }
 
 type File {
@@ -2593,6 +2595,7 @@ input OpinionAddInput {
   confidence: Int
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   objects: [String]
@@ -3783,6 +3786,7 @@ input IntrusionSetAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -4473,8 +4477,8 @@ input MalwareAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
-  objectOrganization: [String]
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   killChainPhases: [String]
@@ -4598,8 +4602,8 @@ input ThreatActorAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
-  objectOrganization: [String]
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -7780,7 +7784,7 @@ type StixCyberObservableRelationshipEditMutations {
 type Mutation {
   deleteImport(fileName: String): Boolean
   uploadImport(file: Upload!): File
-  uploadPending(file: Upload!, entityId: String): File
+  uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File
   askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String, bypassValidation: Boolean): File
   synchronizerAdd(input: SynchronizerAddInput): Synchronizer
   synchronizerEdit(id: ID!): SynchronizerEditMutations

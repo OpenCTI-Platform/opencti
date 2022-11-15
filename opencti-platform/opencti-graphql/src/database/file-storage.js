@@ -9,7 +9,7 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, logApp, logAudit } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { UPLOAD_ACTION } from '../config/audit';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { createWork, deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
 import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
@@ -244,8 +244,17 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
   }
 };
 
-export const upload = async (context, user, path, fileUpload, meta = {}, noTriggerImport = false) => {
+export const upload = async (context, user, path, fileUpload, meta = {}, noTriggerImport = false, errorOnExisting = false) => {
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
+  let existingFile = null;
+  try {
+    existingFile = await loadFile(context, user, filename);
+  } catch {
+    // do nothing
+  }
+  if (errorOnExisting && existingFile) {
+    throw FunctionalError('A file already exists with this name');
+  }
   // Upload the data
   const readStream = createReadStream();
   const fileMime = mime.lookup(filename) || mimetype;
@@ -260,6 +269,7 @@ export const upload = async (context, user, path, fileUpload, meta = {}, noTrigg
     filename: encodeURIComponent(filename),
     mimetype: fileMime,
     encoding,
+    creator: user.id,
   };
   const s3Upload = new Upload({
     client: s3Client,
