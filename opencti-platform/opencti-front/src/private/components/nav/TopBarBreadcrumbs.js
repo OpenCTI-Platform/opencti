@@ -38,6 +38,7 @@ import Filters from '../common/lists/Filters';
 import ExportPoam from '../../../components/ExportPoam';
 import Export from '../../../components/Export';
 import AboutModal from '../../../components/AboutModal';
+import DashboardSettings from '../DashboardSettings';
 
 const styles = (theme) => ({
   appBar: {
@@ -65,6 +66,8 @@ const styles = (theme) => ({
   },
   menuContainer: {
     float: 'left',
+    display: 'flex',
+    alignItems: 'center',
     marginLeft: '17rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
@@ -73,6 +76,8 @@ const styles = (theme) => ({
   },
   menuContainerClose: {
     float: 'left',
+    display: 'flex',
+    alignItems: 'center',
     marginLeft: '5.55rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
@@ -123,6 +128,8 @@ const TopBarBreadcrumbs = ({
   theme,
   risk,
   remediation,
+  handleChangeDashboard,
+  dashboard,
   riskId,
   drawer,
 }) => {
@@ -199,6 +206,12 @@ const TopBarBreadcrumbs = ({
               </Link>);
             })}
           </Breadcrumbs>
+          {(location.pathname === '/dashboard') && (
+            <DashboardSettings
+              dashboard={dashboard}
+              handleChangeDashboard={handleChangeDashboard}
+            />
+          )}
         </div>
         <div className={classes.barRight}>
           <div className={classes.barContainer}>
@@ -340,6 +353,8 @@ TopBarBreadcrumbs.propTypes = {
   riskId: PropTypes.string,
   risk: PropTypes.string,
   remediation: PropTypes.object,
+  dashboard: PropTypes.string,
+  handleChangeDashboard: PropTypes.func,
   keyword: PropTypes.string,
   theme: PropTypes.object,
   classes: PropTypes.object,
