@@ -807,6 +807,7 @@ const subjectResolvers = {
 
       // If all the necessary pieces are here, just build the subject and return it
       let select = selectMap.getNode("subject_ref");
+      if (select.length === 1 && select.includes('__typename')) select = undefined;
       if ( parent.hasOwnProperty('subject_id') && parent.hasOwnProperty('subject_name')) {
         return {
           iri: `${iri}`,
