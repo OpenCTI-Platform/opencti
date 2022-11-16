@@ -182,6 +182,7 @@ const initializeMigration = async () => {
 // This code will patch release <= 4.0.1
 // This prevent some complex procedure for users. To be removed after some times
 const alignMigrationLastRun = async () => {
+  logApp.info('[INIT] Aligning migration')
   const migrationStatus = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
   const { lastRun } = migrationStatus;
   const [lastRunTime] = lastRun.split('-');
@@ -192,6 +193,7 @@ const alignMigrationLastRun = async () => {
     const patch = { lastRun: `1608026400000-init` };
     await patchAttribute(SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, patch);
   }
+  logApp.info('[INIT] Migration aligned')
 };
 
 // eslint-disable-next-line
@@ -419,7 +421,7 @@ const platformInit = async (withMarkings = true) => {
       logApp.error(`[CYIO] Platform cant get the lock for initialization`);
     } else {
       const isApolloError = e instanceof ApolloError;
-      const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
+      const error = isApolloError ? e : { name: 'UnknownError', error: e.name ,data: { message: e.message, _stack: e.stack } };
       logApp.error(`[CYIO] Platform initialization fail`, { error });
     }
     throw e;

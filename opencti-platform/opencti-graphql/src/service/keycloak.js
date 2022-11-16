@@ -92,10 +92,10 @@ export const keycloakEnabled = () => {
 
 export const keycloakAlive = async () => {
   try {
+    logApp.info('[INIT] Authentication Keycloak admin client')
     await keycloakAdminClient.auth()
   } catch (e) {
-    const error = (e instanceof AuthError)? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
-    logApp.error(`[INIT] Keycloak Admin Client failed to authenticate`, error)
+    logApp.error(`[INIT] Keycloak admin client failed to authenticate`, error)
     throw e;
   }
   if(!keycloakEnabled()) return false;
@@ -110,8 +110,7 @@ export const keycloakAlive = async () => {
     });
     return true;
   } catch (e) {
-    const error = { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
-    logApp.error(`[INIT] Failed to establish Keycloak Connect`, error)
+    logApp.error(`[INIT] Failed to establish Keycloak Connect`, e)
     return false;
   }
 };
