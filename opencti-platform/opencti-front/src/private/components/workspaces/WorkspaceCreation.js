@@ -101,8 +101,9 @@ class WorkspaceCreation extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        resetForm();
+        this.props.history.push('/dashboard/workspaces/dashboards');
         this.props.handleCreateDashboard();
+        resetForm();
       },
     });
   }
@@ -189,6 +190,7 @@ WorkspaceCreation.propTypes = {
   type: PropTypes.string,
   theme: PropTypes.object,
   classes: PropTypes.object,
+  history: PropTypes.object,
   paginationOptions: PropTypes.object,
   handleCreateDashboard: PropTypes.func,
 };

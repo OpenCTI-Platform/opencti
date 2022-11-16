@@ -295,6 +295,7 @@ class Dashboards extends Component {
         {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
         <WorkspaceCreation
           open={this.state.openDashboard}
+          history={this.props.history}
           handleCreateDashboard={this.handleCreateDashboard.bind(this)}
           paginationOptions={paginationOptions}
           type="dashboard"
