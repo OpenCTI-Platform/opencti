@@ -208,9 +208,9 @@ export const findCapabilities = (context, user, args) => {
 };
 
 export const roleDelete = async (context, user, roleId) => {
-  const del = await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
+  await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
   logAudit.info(user, ROLE_DELETION, { id: roleId });
-  return del.internal_id;
+  return roleId;
 };
 
 export const roleCleanContext = async (context, user, roleId) => {

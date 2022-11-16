@@ -146,9 +146,9 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId) 
   if (!stixDomainObject) {
     throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.');
   }
-  const deleted = await deleteElementById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, deleted, user);
-  return deleted.internal_id;
+  await deleteElementById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
+  return stixDomainObjectId;
 };
 
 export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {
