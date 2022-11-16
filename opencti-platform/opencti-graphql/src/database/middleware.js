@@ -745,13 +745,17 @@ const createContainerSharingTask = (context, type, element, relations) => {
   return taskPromise;
 };
 const indexCreatedElement = async (context, user, { type, element, update, relations }) => {
-  const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
   // Continue the creation of the element and the connected relations
   if (type === TRX_CREATION) {
+    const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
     const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
     await Promise.all([taskPromise, indexPromise]);
-  } else if (update) { // Can be undefined in case of unneeded update on upsert
-    const updatePromise = elUpdateElement(update);
+  }
+  if (type === TRX_UPDATE) {
+    const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
+    // noinspection ES6MissingAwait
+    // update can be undefined in case of unneeded update on upsert on the element
+    const updatePromise = update ? elUpdateElement(update) : Promise.resolve();
     await Promise.all([taskPromise, updatePromise]);
     if (relations.length > 0) {
       const message = `${relations.length} Relation${relations.length > 1 ? 's' : ''}`;
