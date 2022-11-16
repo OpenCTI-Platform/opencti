@@ -2,9 +2,12 @@ import { deleteFile, filesListing, loadFile } from '../database/file-storage';
 import { askJobImport, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
 import { stixCoreObjectImportDelete } from '../domain/stixCoreObject';
-import { internalLoadById } from '../database/middleware';
-import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
-import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { batchLoader } from '../database/middleware';
+import { batchUsers } from '../domain/user';
+import { batchStixDomainObjects } from '../domain/stixDomainObject';
+
+const creatorLoader = batchLoader(batchUsers);
+const domainLoader = batchLoader(batchStixDomainObjects);
 
 const fileResolvers = {
   Query: {
@@ -14,23 +17,16 @@ const fileResolvers = {
   },
   File: {
     works: (file, _, context) => worksForSource(context, context.user, file.id),
-    metaData: (file, _, context) => {
-      let { metaData } = file;
-      if (metaData.entity_id) {
-        metaData = { ...metaData, entity: internalLoadById(context, context.user, metaData.entity_id, { type: ABSTRACT_STIX_DOMAIN_OBJECT }) };
-      }
-      if (metaData.creator_id) {
-        metaData = { ...metaData, creator: internalLoadById(context, context.user, metaData.creator_id, { type: ENTITY_TYPE_USER }) };
-      }
-      if (metaData.labels_text) {
-        metaData = { ...metaData, labels: metaData.labels_text.split(';') };
-      }
-      return metaData;
-    },
+  },
+  FileMetadata: {
+    entity: (metadata, _, context) => domainLoader.load(metadata.entity_id, context, context.user),
+    creator: (metadata, _, context) => creatorLoader.load(metadata.creator_id, context, context.user),
   },
   Mutation: {
     uploadImport: (_, { file }, context) => uploadImport(context, context.user, file),
-    uploadPending: (_, { file, entityId, labels, errorOnExisting }, context) => uploadPending(context, context.user, file, entityId, labels, errorOnExisting),
+    uploadPending: (_, { file, entityId, labels, errorOnExisting }, context) => {
+      return uploadPending(context, context.user, file, entityId, labels, errorOnExisting);
+    },
     deleteImport: (_, { fileName }, context) => {
       // Imported file must be handle specifically
       // File deletion must publish a specific event

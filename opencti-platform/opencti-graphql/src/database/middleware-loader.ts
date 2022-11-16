@@ -305,6 +305,12 @@ export const listEntities = async <T extends BasicStoreEntity>(context: AuthCont
   const paginateArgs = buildEntityFilters({ entityTypes, ...args });
   return elPaginate(context, user, indices, paginateArgs);
 };
+export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+  args: EntityOptions<T> = {}): Promise<Array<T>> => {
+  const { indices = READ_ENTITIES_INDICES } = args;
+  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
+  return elList(context, user, indices, paginateArgs);
+};
 
 export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {

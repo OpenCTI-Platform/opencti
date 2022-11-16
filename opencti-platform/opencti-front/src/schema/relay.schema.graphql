@@ -777,7 +777,7 @@ type FileMetadata {
   labels_text: String
   labels: [String]
   creator_id: String
-  creator: User
+  creator: Creator
 }
 
 type File {
@@ -867,7 +867,7 @@ type TaskAction {
 interface Task {
   id: ID!
   type: TaskType
-  initiator: User
+  initiator: Creator
   actions: [TaskAction]
   created_at: DateTime
   last_execution_date: DateTime
@@ -880,7 +880,7 @@ interface Task {
 type RuleTask implements Task {
   id: ID!
   type: TaskType
-  initiator: User
+  initiator: Creator
   actions: [TaskAction]
   created_at: DateTime
   last_execution_date: DateTime
@@ -895,7 +895,7 @@ type RuleTask implements Task {
 type ListTask implements Task {
   id: ID!
   type: TaskType
-  initiator: User
+  initiator: Creator
   actions: [TaskAction]
   created_at: DateTime
   last_execution_date: DateTime
@@ -909,7 +909,7 @@ type ListTask implements Task {
 type QueryTask implements Task {
   id: ID!
   type: TaskType
-  initiator: User
+  initiator: Creator
   actions: [TaskAction]
   created_at: DateTime
   last_execution_date: DateTime
@@ -1419,7 +1419,7 @@ interface StixObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  creator: User
+  creator: Creator
   x_opencti_inferences: [Inference]
 }
 
@@ -1488,7 +1488,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   definition: String
   x_opencti_order: Int!
   x_opencti_color: String
-  creator: User
+  creator: Creator
   toStix: String
   editContext: [EditUserContext]
 }
@@ -1552,7 +1552,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   modified: DateTime
   value: String
   color: String
-  creator: User
+  creator: Creator
   toStix: String
   editContext: [EditUserContext]
 }
@@ -1622,7 +1622,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   hash: String
   external_id: String
   references(types: [String]): StixObjectOrStixRelationshipConnection
-  creator: User
+  creator: Creator
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
@@ -1696,7 +1696,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   kill_chain_name: String!
   phase_name: String!
   x_opencti_order: Int
-  creator: User
+  creator: Creator
   editContext: [EditUserContext]
 }
 
@@ -1805,7 +1805,7 @@ interface StixCoreObject {
   observedData(first: Int): ObservedDataConnection
   groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -1906,7 +1906,7 @@ interface StixDomainObject {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -2024,7 +2024,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   parentAttackPatterns: AttackPatternConnection
   subAttackPatterns: AttackPatternConnection
   isSubAttackPattern: Boolean
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -2138,7 +2138,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   first_seen: DateTime
   last_seen: DateTime
   objective: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -2332,7 +2332,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   attribute_abstract: String
   content: String!
   authors: [String]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -2466,7 +2466,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   last_observed: DateTime!
   number_observed: Int!
   name: String!
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -2576,7 +2576,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   explanation: String
   authors: [String]
   opinion: String!
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -2689,7 +2689,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   description: String
   report_types: [String]
   published: DateTime
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -2801,7 +2801,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   x_opencti_threat_hunting: String
   x_opencti_log_sources: [String]
   attackPatterns: AttackPatternConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -2917,7 +2917,7 @@ interface Identity {
   roles: [String]
   contact_information: String
   x_opencti_aliases: [String]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3033,7 +3033,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   x_opencti_firstname: String
   x_opencti_lastname: String
   organizations: OrganizationConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3158,7 +3158,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_organization_type: String
   x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3276,7 +3276,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   subSectors: SectorConnection
   isSubSector: Boolean
   targetedOrganizations: StixCoreRelationshipConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3387,7 +3387,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_firstname: String
   x_opencti_lastname: String
   organizations: OrganizationConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3524,7 +3524,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_mitre_platforms: [String]
   killChainPhases: KillChainPhaseConnection
   observables(first: Int): StixCyberObservableConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3648,7 +3648,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   first_seen: DateTime
   last_seen: DateTime
   killChainPhases: KillChainPhaseConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3762,7 +3762,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   primary_motivation: String
   secondary_motivations: [String]
   locations: LocationConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3884,7 +3884,7 @@ interface Location {
   longitude: Float
   precision: Float
   x_opencti_aliases: [String]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -3998,7 +3998,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   street_address: String
   postal_code: String
   city: City
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -4113,7 +4113,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   precision: Float
   x_opencti_aliases: [String]
   country: Country
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -4221,7 +4221,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   precision: Float
   x_opencti_aliases: [String]
   region: Region
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -4332,7 +4332,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   subRegions: RegionConnection
   isSubRegion: Boolean
   countries: CountryConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -4453,7 +4453,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   implementation_languages: [String]
   capabilities: [String]
   killChainPhases: KillChainPhaseConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -4575,7 +4575,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -4689,7 +4689,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   tool_types: [String]
   tool_version: String
   killChainPhases: KillChainPhaseConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -4805,7 +4805,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   x_opencti_availability_impact: String
   x_opencti_confidentiality_impact: String
   softwares: StixCyberObservableConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -4933,7 +4933,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: IncidentSeverity
   source: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5047,7 +5047,7 @@ interface StixCyberObservable {
   observable_value: String!
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5087,7 +5087,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   number: Int
   name: String
   rir: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5135,7 +5135,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   ctime: DateTime
   mtime: DateTime
   atime: DateTime
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5181,7 +5181,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5224,7 +5224,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   display_name: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5273,7 +5273,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   subject: String
   received_lines: [String]
   body: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5323,7 +5323,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   body: String
   content_type: String
   content_disposition: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5390,7 +5390,7 @@ interface HashedObservable {
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5434,7 +5434,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   encryption_algorithm: String
   decryption_key: String
   x_opencti_additional_names: [String]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5493,7 +5493,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   atime: DateTime
   x_opencti_additional_names: [String]
   obsContent: Artifact
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5572,7 +5572,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   private_key_usage_period_not_after: DateTime
   certificate_policies: String
   policy_mappings: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5642,7 +5642,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   countries: CountryConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5687,7 +5687,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   countries: CountryConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5729,7 +5729,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5771,7 +5771,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   name: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5823,7 +5823,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   dst_byte_count: Int
   src_packets: Int
   dst_packets: Int
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5895,7 +5895,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   serviceDlls: StixFileConnection
   service_type: String
   service_status: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -5964,7 +5964,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   vendor: String
   version: String
   vulnerabilities: VulnerabilityConnection
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6011,7 +6011,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6067,7 +6067,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   credential_last_changed: DateTime
   account_first_login: DateTime
   account_last_login: DateTime
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6124,7 +6124,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   attribute_key: String
   modified_time: DateTime
   number_of_subkeys: Int
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6170,7 +6170,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   name: String
   data: String
   data_type: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6214,7 +6214,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6256,7 +6256,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6298,7 +6298,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6340,7 +6340,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6382,7 +6382,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6426,7 +6426,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   iban: String
   bic: String
   account_number: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6470,7 +6470,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   indicators(first: Int): IndicatorConnection
   stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6515,7 +6515,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   expiration_date: DateTime
   cvv: Int
   holder_name: String
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6565,7 +6565,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   media_category: String
   url: String
   publication_date: DateTime
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -6592,7 +6592,7 @@ interface BasicRelationship {
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
-  creator: User
+  creator: Creator
 }
 
 type InternalRelationship implements BasicRelationship {
@@ -6606,7 +6606,7 @@ type InternalRelationship implements BasicRelationship {
   updated_at: DateTime!
   from: InternalObject
   to: InternalObject
-  creator: User
+  creator: Creator
 }
 
 input InternalRelationshipAddInput {
@@ -6744,7 +6744,7 @@ interface StixRelationship {
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
-  creator: User
+  creator: Creator
 }
 
 enum StixCoreRelationshipsOrdering {
@@ -6847,7 +6847,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   killChainPhases: KillChainPhaseConnection
-  creator: User
+  creator: Creator
   toStix: String
   editContext: [EditUserContext]
   status: Status
@@ -6965,7 +6965,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
-  creator: User
+  creator: Creator
   toStix: String
   editContext: [EditUserContext]
   status: Status
@@ -7056,7 +7056,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   stop_time: DateTime
   confidence: Int
   objectMarking: MarkingDefinitionConnection
-  creator: User
+  creator: Creator
   editContext: [EditUserContext]
 }
 
@@ -7119,7 +7119,7 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
-  creator: User
+  creator: Creator
 }
 
 input StixMetaRelationshipAddInput {
@@ -8002,7 +8002,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   description: String
   channel_types: [String]
   aliases: [String]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -8108,7 +8108,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   x_opencti_graph_data: String
   name: String!
   aliases: [String]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -8215,7 +8215,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   start_time: DateTime
   stop_time: DateTime
   aliases: [String]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -8326,7 +8326,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   description: String
   context: String!
   x_opencti_aliases: [String]
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -8441,7 +8441,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   parentNarratives: NarrativeConnection
   subNarratives: NarrativeConnection
   isSubNarrative: Boolean
-  creator: User
+  creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection

@@ -634,7 +634,10 @@ const createSeeMiddleware = () => {
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
     try {
+      const cache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
+      const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       const { user } = req.session;
+      // If stream is starting after, we need to use the main database to catchup
       const context = executionContext('live_stream');
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       let startFrom = (paramStartFrom === '0' || paramStartFrom === '0-0') ? FROM_START_STR : paramStartFrom;
@@ -702,8 +705,6 @@ const createSeeMiddleware = () => {
       }
       // Create channel.
       const { channel, client } = createSseChannel(req, res);
-      // If stream is starting after, we need to use the main database to catchup
-      const cache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
       if (isNotEmptyField(recoverTo) && isEmptyField(startFrom)) {
@@ -711,7 +712,6 @@ const createSeeMiddleware = () => {
       }
       // Init stream and broadcasting
       const userEmail = user.user_email;
-      const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       const processor = createStreamProcessor(user, userEmail, false, async (elements, lastEventId) => {
         // Process the stream elements
         for (let index = 0; index < elements.length; index += 1) {

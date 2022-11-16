@@ -1,5 +1,9 @@
-import { deleteTask, createListTask, createQueryTask, findAll, findById } from '../domain/task';
-import { findById as findUser } from '../domain/user';
+import { deleteTask, createQueryTask, findAll, findById } from '../domain/task';
+import { createListTask } from '../domain/task-common';
+import { batchLoader } from '../database/middleware';
+import { batchUsers } from '../domain/user';
+
+const initiatorLoader = batchLoader(batchUsers);
 
 const taskResolvers = {
   Query: {
@@ -20,7 +24,7 @@ const taskResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
-    initiator: (task, _, context) => findUser(context, context.user, task.initiator_id),
+    initiator: (task, _, context) => initiatorLoader.load(task.initiator_id, context, context.user),
   },
 };
 

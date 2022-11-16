@@ -241,20 +241,25 @@ const createApp = async (app) => {
   // -- Passport callback
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
-    const { provider } = req.params;
     const { referer } = req.session;
-    const context = executionContext(`${provider}_strategy`);
-    passport.authenticate(provider, {}, async (err, user) => {
-      if (err || !user) {
-        logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
-        setCookieError(res, err?.message);
-        return res.redirect(referer ?? '/');
-      }
-      // noinspection UnnecessaryLocalVariableJS
-      await authenticateUser(context, req, user, provider);
-      req.session.referer = null;
-      return res.redirect(referer ?? '/');
-    })(req, res, next);
+    try {
+      const { provider } = req.params;
+      const context = executionContext(`${provider}_strategy`);
+      passport.authenticate(provider, {}, async (err, user) => {
+        if (err || !user) {
+          logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
+          setCookieError(res, err?.message);
+          res.redirect(referer ?? '/');
+        }
+        // noinspection UnnecessaryLocalVariableJS
+        await authenticateUser(context, req, user, provider);
+        req.session.referer = null;
+        res.redirect(referer ?? '/');
+      })(req, res, next);
+    } catch (e) {
+      setCookieError(res, e?.message);
+      res.redirect(referer ?? '/');
+    }
   });
 
   // Other routes - Render index.html

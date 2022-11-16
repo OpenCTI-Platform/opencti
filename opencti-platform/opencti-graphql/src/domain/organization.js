@@ -1,5 +1,4 @@
-import { assoc } from 'ramda';
-import { createEntity, batchListThroughGetTo, storeLoadById } from '../database/middleware';
+import { batchListThroughGetTo, createEntity, storeLoadById } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -20,11 +19,7 @@ export const batchSectors = (context, user, organizationIds) => {
 };
 
 export const addOrganization = async (context, user, organization) => {
-  const created = await createEntity(
-    context,
-    user,
-    assoc('identity_class', ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), organization),
-    ENTITY_TYPE_IDENTITY_ORGANIZATION
-  );
+  const organizationWithClass = { identity_class: ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), ...organization };
+  const created = await createEntity(context, user, organizationWithClass, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

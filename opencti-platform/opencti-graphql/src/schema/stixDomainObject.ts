@@ -19,7 +19,6 @@ import {
 } from './stixMetaRelationship';
 import { RELATION_INDICATES } from './stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
-import { ENTITY_TYPE_HISTORY } from './internalObject';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'abstract';
@@ -163,7 +162,6 @@ export const resolveAliasesField = (type: string): string => {
 
 export const STIX_ORGANIZATIONS_UNRESTRICTED = [
   ABSTRACT_INTERNAL_OBJECT,
-  ENTITY_TYPE_HISTORY,
   ABSTRACT_STIX_META_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_IDENTITY,

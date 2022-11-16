@@ -61,7 +61,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     subNarratives: NarrativeConnection
     isSubNarrative: Boolean
     # Technical
-    creator: User
+    creator: Creator
     toStix: String
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection
