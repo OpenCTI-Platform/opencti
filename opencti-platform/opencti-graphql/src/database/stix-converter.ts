@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { v4 as uuidv4, version as uuidVersion } from 'uuid';
+import { version as uuidVersion } from 'uuid';
 import { isEmptyField, isInferredIndex } from './utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
