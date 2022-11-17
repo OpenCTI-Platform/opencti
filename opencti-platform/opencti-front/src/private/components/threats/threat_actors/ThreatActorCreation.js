@@ -266,7 +266,7 @@ class ThreatActorCreation extends Component {
                     name="confidence"
                     label={t('Confidence')}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
+                    containerStyle={{ width: '100%', marginTop: 20 }}
                   />
                   <Field
                     component={MarkDownField}

@@ -224,14 +224,14 @@ class InfrastructureCreation extends Component {
                     label={t('Infrastructure types')}
                     type="infrastructure-type-ov"
                     name="infrastructure_types"
-                    containerstyle={fieldSpacingContainerStyle}
+                    containerStyle={fieldSpacingContainerStyle}
                     multiple={true}
                   />
                   <ConfidenceField
                     name="confidence"
                     label={t('Confidence')}
                     fullWidth={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
+                    containerStyle={{ width: '100%', marginTop: 20 }}
                   />
                   <Field
                     component={MarkDownField}
