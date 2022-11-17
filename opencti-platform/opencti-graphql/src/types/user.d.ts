@@ -24,6 +24,7 @@ interface AuthUser {
   origin: Partial<UserOrigin>;
   roles: Array<UserRole>;
   organizations: Array<BasicStoreCommon>;
+  allowed_organizations: Array<BasicStoreCommon>;
   capabilities: Array<UserCapability>;
   allowed_marking: Array<StoreMarkingDefinition>;
   all_marking: Array<StoreMarkingDefinition>;

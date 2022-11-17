@@ -36,6 +36,9 @@ export const SETTINGS = 'SETTINGS';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
+export const CAPABILITY_INFORMATION = {
+  [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]: 'Granted only if user is a member of platform organization',
+};
 
 interface SecurityProps {
   children: ReactElement;

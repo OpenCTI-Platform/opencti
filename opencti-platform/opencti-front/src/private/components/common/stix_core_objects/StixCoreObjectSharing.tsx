@@ -114,15 +114,10 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const { t } = useFormatter();
   const { me } = useContext(UserContext);
   const [displaySharing, setDisplaySharing] = useState(false);
-  const userIsOrganizationEditor = granted(me, [
-    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  ]);
+  const userIsOrganizationEditor = granted(me, [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   // If user not an organization organizer, return empty div
-  if (!userIsOrganizationEditor && variant === 'header') {
-    return <div style={{ display: 'inline-block' }} />;
-  }
   if (!userIsOrganizationEditor) {
-    return <div style={{ marginTop: -20 }} />;
+    return variant === 'header' ? <div style={{ display: 'inline-block' }} /> : <div style={{ marginTop: -20 }} />;
   }
   const handleOpenSharing = () => setDisplaySharing(true);
   const handleCloseSharing = () => setDisplaySharing(false);
