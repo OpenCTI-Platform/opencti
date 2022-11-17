@@ -296,8 +296,27 @@ export const defaultType = (n, t) => {
   return t(`entity_${n.entity_type}`);
 };
 
+export const defaultValueMarking = (n) => {
+  let def = 'Unknown';
+  if (n.definition) {
+    const definition = R.toPairs(n.definition);
+    if (definition[0]) {
+      if (definition[0][1].includes(':')) {
+        // eslint-disable-next-line prefer-destructuring
+        def = definition[0][1];
+      } else {
+        def = `${definition[0][0]}:${definition[0][1]}`;
+      }
+    }
+  }
+  return def;
+};
+
 export const defaultValue = (n, tooltip = false) => {
   if (!n) return '';
+  if (typeof n.definition === 'object') {
+    return defaultValueMarking(n);
+  }
   if (tooltip) {
     return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
       n.name

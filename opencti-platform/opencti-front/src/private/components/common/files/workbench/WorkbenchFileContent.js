@@ -497,8 +497,26 @@ class WorkbenchFileContentComponent extends Component {
         .map((n) => {
           const marking = this.findEntityById(n);
           if (marking) {
+            let label = truncate(marking.name, 20);
+            if (!label) {
+              if (marking.definition) {
+                const definition = R.toPairs(marking.definition);
+                if (definition[0]) {
+                  if (definition[0][1].includes(':')) {
+                    label = truncate(definition[0][1], 20);
+                  } else {
+                    label = truncate(
+                      `${definition[0][0]}:${definition[0][1]}`,
+                      20,
+                    );
+                  }
+                } else {
+                  label = 'Unknown';
+                }
+              }
+            }
             return {
-              label: marking.name || marking.definition,
+              label,
               value: marking.id,
               entity: marking,
             };
